@@ -342,17 +342,21 @@ void test_shell_construction(
       test_serialization(domain_no_corners);
     }
   }
-  CHECK(domain.excision_spheres() ==
-        std::unordered_map<std::string, ExcisionSphere<3>>{
-            {"CentralExcisionSphere",
-             ExcisionSphere<3>{inner_radius,
-                               {{0.0, 0.0, 0.0}},
-                               {{0, Direction<3>::lower_zeta()},
-                                {1, Direction<3>::lower_zeta()},
-                                {2, Direction<3>::lower_zeta()},
-                                {3, Direction<3>::lower_zeta()},
-                                {4, Direction<3>::lower_zeta()},
-                                {5, Direction<3>::lower_zeta()}}}}});
+  if (which_wedges == ShellWedges::All) {
+    CHECK(domain.excision_spheres() ==
+          std::unordered_map<std::string, ExcisionSphere<3>>{
+              {"CentralExcisionSphere",
+               ExcisionSphere<3>{inner_radius,
+                                 {{0.0, 0.0, 0.0}},
+                                 {{0, Direction<3>::lower_zeta()},
+                                  {1, Direction<3>::lower_zeta()},
+                                  {2, Direction<3>::lower_zeta()},
+                                  {3, Direction<3>::lower_zeta()},
+                                  {4, Direction<3>::lower_zeta()},
+                                  {5, Direction<3>::lower_zeta()}}}}});
+  } else {
+    CHECK(domain.excision_spheres().empty());
+  }
 }
 
 void test_shell_boundaries() {

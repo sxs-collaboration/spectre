@@ -30,6 +30,7 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 
@@ -39,6 +40,14 @@ std::array<double, 3> rotate_to_z_axis(const std::array<double, 3> input) {
       OrientationMap<3>{std::array<Direction<3>, 3>{Direction<3>::lower_zeta(),
                                                     Direction<3>::upper_eta(),
                                                     Direction<3>::upper_xi()}},
+      input);
+}
+std::array<double, 3> rotate_from_z_to_x_axis(
+    const std::array<double, 3> input) {
+  return discrete_rotation(
+      OrientationMap<3>{std::array<Direction<3>, 3>{Direction<3>::upper_zeta(),
+                                                    Direction<3>::upper_eta(),
+                                                    Direction<3>::lower_xi()}},
       input);
 }
 std::array<double, 3> flip_about_xy_plane(const std::array<double, 3> input) {
@@ -801,7 +810,68 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
   }
 
+  // Excision spheres
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
+
+  std::unordered_map<size_t, Direction<3>> abutting_directions_A;
+  size_t first_inner_sphere_block = 46;
+  if (include_inner_sphere_A_) {
+    for (size_t i = 0; i < 10; ++i) {
+      // LCOV_EXCL_START
+      abutting_directions_A.emplace(first_inner_sphere_block + i,
+                                    Direction<3>::lower_zeta());
+      // LCOV_EXCL_STOP
+    }
+    for (size_t i = 0; i < 4; ++i) {
+      // LCOV_EXCL_START
+      abutting_directions_A.emplace(first_inner_sphere_block + 10 + i,
+                                    Direction<3>::lower_xi());
+      // LCOV_EXCL_STOP
+    }
+    // Block numbers of sphereB might depend on whether there is an inner
+    // sphereA layer, so increment here to get that right.
+    first_inner_sphere_block += 14;
+  } else {
+    for (size_t i = 0; i < 5; ++i) {
+      abutting_directions_A.emplace(9 + i, Direction<3>::lower_zeta());
+      abutting_directions_A.emplace(27 + i, Direction<3>::lower_zeta());
+    }
+    for (size_t i = 0; i < 4; ++i) {
+      abutting_directions_A.emplace(14 + i, Direction<3>::lower_xi());
+    }
+  }
+  excision_spheres.emplace(
+      "ObjectAExcisionSphere",
+      ExcisionSphere<3>{radius_A_, rotate_from_z_to_x_axis(center_A_),
+                        abutting_directions_A});
+
+  std::unordered_map<size_t, Direction<3>> abutting_directions_B;
+  if (include_inner_sphere_B_) {
+    for (size_t i = 0; i < 10; ++i) {
+      // LCOV_EXCL_START
+      abutting_directions_B.emplace(first_inner_sphere_block + i,
+                                    Direction<3>::lower_zeta());
+      // LCOV_EXCL_STOP
+    }
+    for (size_t i = 0; i < 4; ++i) {
+      // LCOV_EXCL_START
+      abutting_directions_B.emplace(first_inner_sphere_block + 10 + i,
+                                    Direction<3>::lower_xi());
+      // LCOV_EXCL_STOP
+    }
+  } else {
+    for (size_t i = 0; i < 5; ++i) {
+      abutting_directions_B.emplace(18 + i, Direction<3>::lower_zeta());
+      abutting_directions_B.emplace(32 + i, Direction<3>::lower_zeta());
+    }
+    for (size_t i = 0; i < 4; ++i) {
+      abutting_directions_B.emplace(23 + i, Direction<3>::lower_xi());
+    }
+  }
+  excision_spheres.emplace(
+      "ObjectBExcisionSphere",
+      ExcisionSphere<3>{radius_B_, rotate_from_z_to_x_axis(center_B_),
+                        abutting_directions_B});
 
   Domain<3> domain{std::move(coordinate_maps), std::move(excision_spheres),
                    block_names_, block_groups_};
