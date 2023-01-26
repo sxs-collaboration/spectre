@@ -85,7 +85,12 @@ void test_1d_domains() {
                                            CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 0., 2.}))),
-        std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
+        std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}}, {}, {},
+        {"Left", "Right"}, {{"All", {"Left", "Right"}}});
+    CHECK(domain_from_corners.blocks()[0].name() == "Left");
+    CHECK(domain_from_corners.blocks()[1].name() == "Right");
+    CHECK(domain_from_corners.block_groups().at("All") ==
+          std::unordered_set<std::string>{"Left", "Right"});
 
     Domain<1> domain_no_corners(
         make_vector<std::unique_ptr<
@@ -97,8 +102,13 @@ void test_1d_domains() {
             std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
-                    CoordinateMaps::Affine{-1., 1., 2., 0.}))));
+                    CoordinateMaps::Affine{-1., 1., 2., 0.}))),
+        {}, {"Left", "Right"}, {{"All", {"Left", "Right"}}});
     CHECK_FALSE(domain_no_corners.is_time_dependent());
+    CHECK(domain_no_corners.blocks()[0].name() == "Left");
+    CHECK(domain_no_corners.blocks()[1].name() == "Right");
+    CHECK(domain_no_corners.block_groups().at("All") ==
+          std::unordered_set<std::string>{"Left", "Right"});
 
     test_serialization(domain_no_corners);
 
@@ -413,6 +423,37 @@ void test_3d_rectilinear_domains() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
+  {
+    INFO("Equality operator");
+    Domain<1> lhs{
+        make_vector(
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                CoordinateMaps::Affine{-1., 1., -2., 0.})),
+        {},
+        {"Block0"},
+        {{"All", {"Block0"}}}};
+    {
+      Domain<1> rhs{
+          make_vector(
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -2., 0.})),
+          {},
+          {"Block1"},
+          {{"All", {"Block0"}}}};
+      CHECK_FALSE(lhs == rhs);
+    }
+    {
+      Domain<1> rhs{
+          make_vector(
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -2., 0.})),
+          {},
+          {"Block0"},
+          {}};
+      CHECK_FALSE(lhs == rhs);
+    }
+  }
+
   test_1d_domains();
   test_1d_rectilinear_domains();
   test_2d_rectilinear_domains();

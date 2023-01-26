@@ -3,6 +3,7 @@
 
 from ._PyDomain import *
 
+Block = {1: Block1D, 2: Block2D, 3: Block3D}
 Domain = {1: Domain1D, 2: Domain2D, 3: Domain3D}
 ElementId = {1: ElementId1D, 2: ElementId2D, 3: ElementId3D}
 

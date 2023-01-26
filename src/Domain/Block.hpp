@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
+#include <string>
 #include <unordered_set>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -47,9 +48,11 @@ class Block {
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
+  /// \param name Human-readable name for the block
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
-        size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors);
+        size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
+        std::string name = "");
 
   Block() = default;
   ~Block() = default;
@@ -135,6 +138,8 @@ class Block {
     return external_boundaries_;
   }
 
+  const std::string& name() const { return name_; }
+
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -164,6 +169,7 @@ class Block {
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
+  std::string name_;
 };
 
 template <size_t VolumeDim>

@@ -217,7 +217,8 @@ void bind_tensor(py::module& m) {
                    TensorKind::Jacobian>(m, "Jacobian");
 
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector), (1, 2, 3),
-                          (Frame::ElementLogical, Frame::Inertial),
+                          (Frame::ElementLogical, Frame::BlockLogical,
+                           Frame::Grid, Frame::Distorted, Frame::Inertial),
                           (i, I, ij, iJ, ii, II, ijj))
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector), (1, 2, 3),
                           (Frame::Inertial))

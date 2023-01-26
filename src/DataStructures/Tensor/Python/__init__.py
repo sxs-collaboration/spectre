@@ -25,8 +25,10 @@ class TensorMeta:
             (dtype, dim, frame):
             globals()[f"Tensor{name}{_dtype_to_name(dtype)}{dim}{frame.name}"]
             for dtype, dim, frame in itertools.product(
-                [DataVector, float], [1, 2, 3],
-                [Frame.ElementLogical, Frame.Inertial])
+                [DataVector, float], [1, 2, 3], [
+                    Frame.ElementLogical, Frame.BlockLogical, Frame.Grid,
+                    Frame.Distorted, Frame.Inertial
+                ])
         }
 
     def _getitem(self, dtype: type, dim: int, frame: Frame = Frame.Inertial):

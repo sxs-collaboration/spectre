@@ -530,7 +530,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
 
   // Have corners determined automatically
-  Domain<3> domain{std::move(maps), std::move(excision_spheres)};
+  Domain<3> domain{std::move(maps), std::move(excision_spheres), block_names_,
+                   block_groups_};
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {
