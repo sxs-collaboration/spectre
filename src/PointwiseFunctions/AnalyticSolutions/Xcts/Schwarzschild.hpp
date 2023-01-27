@@ -240,6 +240,8 @@ using SchwarzschildVariablesCache =
     cached_temp_buffer_from_typelist<tmpl::push_front<
         common_tags<DataType>, detail::Tags::Radius<DataType>,
         detail::Tags::ArealRadius<DataType>,
+        ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
+                      Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -257,7 +259,7 @@ struct SchwarzschildVariables
   SchwarzschildVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x, const double local_mass,
       const SchwarzschildCoordinates local_coordinate_system)
@@ -317,6 +319,10 @@ struct SchwarzschildVariables
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataType> /*meta*/) const override;
+  void operator()(gsl::not_null<tnsr::i<DataType, 3>*> deriv_lapse,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
+                                Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,

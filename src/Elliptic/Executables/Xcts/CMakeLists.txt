@@ -15,6 +15,7 @@ set(LIBS_TO_LINK
   ErrorHandling
   Events
   EventsAndTriggers
+  Hydro
   Informer
   Initialization
   LinearOperators

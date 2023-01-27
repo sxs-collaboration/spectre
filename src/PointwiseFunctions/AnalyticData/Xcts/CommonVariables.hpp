@@ -77,7 +77,7 @@ struct CommonVariables {
   CommonVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian)
       : mesh(std::move(local_mesh)),
         inv_jacobian(std::move(local_inv_jacobian)) {}
@@ -172,7 +172,7 @@ struct CommonVariables {
 
   std::optional<std::reference_wrapper<const Mesh<Dim>>> mesh;
   std::optional<std::reference_wrapper<const InverseJacobian<
-      DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+      DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
       inv_jacobian;
 };
 
