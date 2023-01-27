@@ -38,10 +38,10 @@ void fluxes_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& drift_tilde_j,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& parallel_tilde_j,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric);
 }  // namespace detail
 
@@ -55,13 +55,14 @@ void fluxes_impl(
  *      + \epsilon^{ijk}_{(3)}\tilde{E}_k) \\
  *  F^j(\tilde{\psi}) & = -\beta^j \tilde{\psi} + \alpha \tilde{E}^j \\
  *  F^j(\tilde{\phi}) & = -\beta^j \tilde{\phi} + \alpha \tilde{B}^j \\
- *  F^j(\tilde{q}) & = \alpha \sqrt{\gamma}J^j - \beta^j \tilde{q}
+ *  F^j(\tilde{q}) & = \tilde{J}^j - \beta^j \tilde{q}
  * \f}
  *
  * where the conserved variables \f$\tilde{E}^i, \tilde{B}^i, \tilde{\psi},
  * \tilde{\phi}, \tilde{q}\f$ are densitized electric field, magnetic field,
  * electric divergence cleaning field, magnetic divergence cleaning field, and
- * electric charge density. \f$J^i\f$ is the spatial electric current density.
+ * electric charge density. \f$\tilde{J}^i = \alpha\sqrt{\gamma}J^i\f$ is the
+ * generalized spatial electric current density.
  *
  * \f$\epsilon_{(3)}^{ijk}\f$ is the spatial Levi-Civita tensor defined as
  *
@@ -94,9 +95,10 @@ struct Fluxes {
 
   using argument_tags =
       tmpl::list<Tags::TildeE, Tags::TildeB, Tags::TildePsi, Tags::TildePhi,
-                 Tags::TildeQ, Tags::SpatialCurrentDensity, gr::Tags::Lapse<>,
-                 gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
+                 Tags::TildeQ, Tags::DriftTildeJ, Tags::ParallelTildeJ,
+                 gr::Tags::Lapse<>, gr::Tags::Shift<3>,
+                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
+                 gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
       gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_e_flux,
@@ -108,7 +110,8 @@ struct Fluxes {
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
       const Scalar<DataVector>& tilde_q,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& drift_tilde_j,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& parallel_tilde_j,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const Scalar<DataVector>& sqrt_det_spatial_metric,

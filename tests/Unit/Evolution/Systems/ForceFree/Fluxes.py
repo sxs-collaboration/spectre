@@ -9,8 +9,8 @@ def levi_civita_symbol(i, j, k):
 
 
 def tilde_e_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
+                 drift_tilde_j, parallel_tilde_j, lapse, shift,
+                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric):
     magnetic_field_one_form = np.einsum(
         "a, ia", tilde_b, spatial_metric) / sqrt_det_spatial_metric
 
@@ -27,8 +27,8 @@ def tilde_e_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
 
 
 def tilde_b_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
+                 drift_tilde_j, parallel_tilde_j, lapse, shift,
+                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric):
     electric_field_one_form = np.einsum(
         "a, ia", tilde_e, spatial_metric) / sqrt_det_spatial_metric
 
@@ -45,19 +45,20 @@ def tilde_b_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
 
 
 def tilde_psi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                   current_density, lapse, shift, sqrt_det_spatial_metric,
-                   spatial_metric, inv_spatial_metric):
+                   drift_tilde_j, parallel_tilde_j, lapse, shift,
+                   sqrt_det_spatial_metric, spatial_metric,
+                   inv_spatial_metric):
     return -shift * tilde_psi + lapse * tilde_e
 
 
 def tilde_phi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                   current_density, lapse, shift, sqrt_det_spatial_metric,
-                   spatial_metric, inv_spatial_metric):
+                   drift_tilde_j, parallel_tilde_j, lapse, shift,
+                   sqrt_det_spatial_metric, spatial_metric,
+                   inv_spatial_metric):
     return -shift * tilde_phi + lapse * tilde_b
 
 
 def tilde_q_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
-    return (lapse * sqrt_det_spatial_metric * current_density -
-            shift * tilde_q)
+                 drift_tilde_j, parallel_tilde_j, lapse, shift,
+                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric):
+    return (drift_tilde_j + parallel_tilde_j - shift * tilde_q)
