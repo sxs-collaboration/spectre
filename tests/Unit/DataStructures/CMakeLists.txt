@@ -36,6 +36,7 @@ set(LIBRARY_SOURCES
   Test_SliceTensorToVariables.cpp
   Test_SliceVariables.cpp
   Test_SpinWeighted.cpp
+  Test_StaticDeque.cpp
   Test_StripeIterator.cpp
   Test_TaggedContainers.cpp
   Test_Tags.cpp
