@@ -443,7 +443,6 @@ def parse_kernels(kernels, exec_files, map_input_names):
               "-k",
               "kernels",
               multiple=True,
-              required=True,
               help=("Python function(s) to apply to the volume data. "
                     "Specify as 'path.to.module.function_name', where the "
                     "module must be available to import. "
@@ -542,6 +541,8 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
 
     # Load kernels
+    if not kernels:
+        raise click.UsageError("No '--kernel' / '-k' specified.")
     kernels = list(parse_kernels(kernels, exec_files, map_input_names))
 
     # Apply!
