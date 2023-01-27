@@ -29,9 +29,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Tags",
   TestHelpers::db::test_simple_tag<ForceFree::Tags::TildePhi>("TildePhi");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::TildeQ>("TildeQ");
 
+  // Tags related to electric current density
+  TestHelpers::db::test_simple_tag<ForceFree::Tags::CurrentDensity>(
+      "CurrentDensity");
+  TestHelpers::db::test_simple_tag<ForceFree::Tags::DriftTildeJ>("DriftTildeJ");
+  TestHelpers::db::test_simple_tag<ForceFree::Tags::ParallelTildeJ>(
+      "ParallelTildeJ");
+
   // etc.
-  TestHelpers::db::test_simple_tag<ForceFree::Tags::SpatialCurrentDensity>(
-      "SpatialCurrentDensity");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::KappaPsi>("KappaPsi");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::KappaPhi>("KappaPhi");
 }
