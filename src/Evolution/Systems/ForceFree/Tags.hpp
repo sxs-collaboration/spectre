@@ -41,13 +41,6 @@ struct ChargeDensity : db::SimpleTag {
 };
 
 /*!
- * \brief The spatial electric current density \f$J^i\f$.
- */
-struct SpatialCurrentDensity : db::SimpleTag {
-  using type = tnsr::I<DataVector, 3>;
-};
-
-/*!
  * \brief The divergence cleaning scalar field \f$\psi\f$ coupled to the
  * electric field.
  */
@@ -99,6 +92,27 @@ struct TildePhi : db::SimpleTag {
  */
 struct TildeQ : db::SimpleTag {
   using type = Scalar<DataVector>;
+};
+
+/*!
+ * \brief The spatial electric current density \f$J^i\f$.
+ */
+struct CurrentDensity : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
+};
+
+/*!
+ * \brief The non-stff (i.e. drift current) part of \f$\tilde{J}^i\f$.
+ */
+struct DriftTildeJ : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
+};
+
+/*!
+ * \brief The stiff (i.e. parallel current) part of \f$\tilde{J}^i\f$.
+ */
+struct ParallelTildeJ : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
 };
 
 /*!
@@ -211,6 +225,21 @@ struct KappaPhi : db::SimpleTag {
     return kappa_phi;
   }
 };
+
+/*!
+ * \brief The damping parameter \f$\eta\f$ in the electric current density to
+ * impose force-free conditions. Physically, this parameter is the conductivity
+ * parallel to magnetic field lines.
+ */
+struct ParallelConductivity : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::ParallelConductivity>;
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double parallel_conductivity) {
+    return parallel_conductivity;
+  }
+};
+
 }  // namespace Tags
 
 }  // namespace ForceFree
