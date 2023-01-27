@@ -35,14 +35,12 @@ class TestExtractDatFromH5(unittest.TestCase):
             shutil.rmtree(self.created_dir)
 
     def test_extract_dat_files(self):
-        h5file = spectre_h5.H5File(self.h5_filename, "r")
-
-        expected_memory_data = np.array(
-            h5file.get_dat("/Group0/MemoryData").get_data())
-        h5file.close()
-        expected_timestep_data = np.array(
-            h5file.get_dat("/TimeSteps2").get_data())
-        h5file.close()
+        with spectre_h5.H5File(self.h5_filename, "r") as h5file:
+            expected_memory_data = np.array(
+                h5file.get_dat("/Group0/MemoryData").get_data())
+            h5file.close_current_object()
+            expected_timestep_data = np.array(
+                h5file.get_dat("/TimeSteps2").get_data())
 
         # All defaults, data should be same as expected
         extract_dat_files(self.h5_filename,

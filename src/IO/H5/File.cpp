@@ -23,7 +23,7 @@
 namespace h5 {
 template <AccessType Access_t>
 H5File<Access_t>::H5File(std::string file_name, bool append_to_file,
-                         const std::string& input_source)
+                         const std::string& input_source, bool use_file_locking)
     : file_name_(std::move(file_name)) {
   if (file_name_.size() - 3 != file_name_.find(".h5")) {
     ERROR("All HDF5 file names must end in '.h5'. The path and file name '"
@@ -48,13 +48,24 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file,
                       "explicitly delete the file first using the file_system "
                       "library in SpECTRE or through your shell.");
   }
+
+  const hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+  CHECK_H5(fapl_id, "Failed to create file access property list.");
+#ifdef HDF5_SUPPORTS_SET_FILE_LOCKING
+  CHECK_H5(H5Pset_file_locking(
+               fapl_id, use_file_locking,
+               // Ignore file locks when they are disabled on the file system
+               true),
+           "Failed to configure file locking.");
+#endif
+
   file_id_ = file_exists
                  ? H5Fopen(file_name_.c_str(),
                            AccessType::ReadOnly == Access_t ? h5f_acc_rdonly()
                                                             : h5f_acc_rdwr(),
-                           h5p_default())
+                           fapl_id)
                  : H5Fcreate(file_name_.c_str(), h5f_acc_trunc(), h5p_default(),
-                             h5p_default());
+                             fapl_id);
   CHECK_H5(file_id_, "Failed to open file '"
                          << file_name_ << "'. The file exists status is: "
                          << std::boolalpha << file_exists
@@ -120,6 +131,18 @@ H5File<Access_t>::~H5File() {
     }
   }
 }
+
+template <AccessType Access_t>
+void H5File<Access_t>::close() const {
+  // Need to close current object because `H5Fclose` keeps the file open
+  // internally until all objects are closed
+  close_current_object();
+  if (file_id_ != -1) {
+    CHECK_H5(H5Fclose(file_id_), "Failed to close the file.");
+    file_id_ = -1;
+  }
+}
+
 template <AccessType Access_t>
 std::string H5File<Access_t>::input_source() const {
   return h5::read_value_attribute<std::string>(file_id_, "InputSource.yaml"s);

@@ -100,6 +100,8 @@ void test_core_functionality() {
   check_source_archive(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
   my_file0.close_current_object();
 
+  my_file0.close();
+
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }

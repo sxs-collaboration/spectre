@@ -9,7 +9,7 @@ spectre_load_sys_modules() {
     module load oneapi/mpi/2021.5.1
     module load mkl/18.1
     module load gsl/2.4
-    module load hdf5/1.10.1
+    module load hdf5/1.12.1
     module load boost/1_68_0-gcc730
     module load cmake/3.18.0
     module load python3/3.8.5
@@ -19,7 +19,7 @@ spectre_load_sys_modules() {
 # Unload system modules
 spectre_unload_sys_modules() {
     module unload boost/1_68_0-gcc730
-    module unload hdf5/1.10.1
+    module unload hdf5/1.12.1
     module unload gsl/2.4
     module unload mkl/18.1
     module unload oneapi/mpi/2021.5.1

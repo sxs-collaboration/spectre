@@ -34,6 +34,34 @@ if(HDF5_IS_PARALLEL)
   endif()
 endif()
 
+# Check if file locking API is available. The versions supporting this feature
+# are listed here:
+# https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_LIBRARIES hdf5::hdf5)
+check_cxx_source_compiles(
+  "#include <hdf5.h>\n\
+int main() {\n\
+  const hid_t fapl_id = H5Pcopy(H5P_DEFAULT);\n\
+  H5Pset_file_locking(fapl_id, false, true);\n\
+}"
+  HDF5_SUPPORTS_SET_FILE_LOCKING)
+if(${HDF5_SUPPORTS_SET_FILE_LOCKING})
+  set_property(
+    TARGET hdf5::hdf5
+    APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
+    HDF5_SUPPORTS_SET_FILE_LOCKING)
+else()
+  message(WARNING "The HDF5 library does not support 'H5Pset_file_locking'. "
+    "This means that simulations may crash when you read H5 files while "
+    "the simulation is trying to access them. To avoid this, set the "
+    "environment variable\n"
+    "  HDF5_USE_FILE_LOCKING=FALSE\n"
+    "when running simulations, or load an HDF5 module that supports "
+    "'H5Pset_file_locking'. Supporting versions are listed here:\n"
+    "https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md")
+endif()
+
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   hdf5::hdf5
