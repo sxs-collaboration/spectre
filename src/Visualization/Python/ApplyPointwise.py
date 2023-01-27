@@ -15,7 +15,7 @@ import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import (Frame, InverseJacobian, Jacobian,
-                                           Tensor, tnsr)
+                                           Scalar, Tensor, tnsr)
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
@@ -92,6 +92,7 @@ class TensorArg(KernelArg):
     """Kernel argument loaded from a volume file tensor dataset"""
     tensor_type: Type[Tensor]
     dataset_name: str
+    extract_single_component: bool = False
 
     @cached_property
     def component_names(self):
@@ -102,9 +103,15 @@ class TensorArg(KernelArg):
         tensor_data = all_tensor_data[self.dataset_name]
         if element:
             components = np.asarray(tensor_data)[:, element.data_slice]
-            return self.tensor_type(components)
+            if self.extract_single_component:
+                return DataVector(components[0])
+            else:
+                return self.tensor_type(components)
         else:
-            return tensor_data
+            if self.extract_single_component:
+                return tensor_data.get()
+            else:
+                return tensor_data
 
 
 @dataclass(frozen=True)
@@ -200,6 +207,11 @@ def parse_kernel_arg(arg: inspect.Parameter,
             InverseJacobian[DataVector, 3],
     ]:
         return ElementArg("inv_jacobian")
+    elif arg.annotation == DataVector:
+        return TensorArg(tensor_type=Scalar[DataVector],
+                         dataset_name=map_input_names.get(
+                             arg.name, snake_case_to_camel_case(arg.name)),
+                         extract_single_component=True)
     else:
         try:
             arg.annotation.rank

@@ -53,6 +53,10 @@ def sinusoid(x: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
                                              axis=0))
 
 
+def square_component(component: DataVector) -> Scalar[DataVector]:
+    return Scalar[DataVector]([component**2])
+
+
 class TestApplyPointwise(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(unit_test_build_path(),
@@ -87,6 +91,8 @@ class TestApplyPointwise(unittest.TestCase):
                    elementwise=True,
                    output_name="CoordinateRadiusElementwise"),
             Kernel(deriv_coords),
+            Kernel(square_component,
+                   map_input_names={"component": "InertialCoordinates_x"}),
         ]
 
         apply_pointwise(volfiles=open_volfiles, kernels=kernels)
@@ -116,6 +122,9 @@ class TestApplyPointwise(unittest.TestCase):
                 result_deriv_coords = open_volfiles[0].get_tensor_component(
                     obs_id, "DerivCoords_" + "xyz"[i] + "xyz"[j]).data
                 npt.assert_allclose(result_deriv_coords, 0., atol=1e-14)
+        result_square_component = open_volfiles[0].get_tensor_component(
+            obs_id, "SquareComponent").data
+        npt.assert_allclose(np.array(result_square_component), x**2)
 
     def test_integrate(self):
         open_h5_files = [spectre_h5.H5File(self.h5_filename, "a")]
