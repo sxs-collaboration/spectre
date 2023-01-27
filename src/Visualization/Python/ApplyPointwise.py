@@ -11,6 +11,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Type, Union
 
 import click
 import numpy as np
+import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import (Frame, InverseJacobian, Jacobian,
@@ -34,35 +35,37 @@ def snake_case_to_camel_case(s: str) -> str:
     return "".join([t.title() for t in s.split("_")])
 
 
-def parse_pybind11_signature(callable) -> inspect.Signature:
+def parse_pybind11_signatures(callable) -> Iterable[inspect.Signature]:
     # Pybind11 functions don't currently expose a signature that's easily
     # readable, see issue https://github.com/pybind/pybind11/issues/945.
     # Therefore, we parse the docstring. Its first line is always the function
     # signature.
-    match = re.match(callable.__name__ + r"\((.+)\) -> (.+)", callable.__doc__)
-    if not match:
+    logger.debug(callable.__doc__)
+    all_matches = re.findall(callable.__name__ + r"\((.+)\) -> (.+)",
+                             callable.__doc__)
+    if not all_matches:
         raise ValueError(
             f"Unable to extract signature for function '{callable.__name__}'. "
             "Please make sure it is a pybind11 binding of a C++ function. "
-            "If it is, please file an issue and include the following first "
-            "line of its docstring:\n\n" + callable.__doc__.partition("\n")[0])
-    match_args, match_ret = match.groups()
-    parameters = []
-    for arg in match_args.split(","):
-        arg = arg.strip()
-        if " = " in arg:
-            arg, default_value = arg.split(" = ")
-        else:
-            default = inspect.Parameter.empty
-        name, annotation = arg.split(": ")
-        annotation = locate(annotation)
-        parameters.append(
-            inspect.Parameter(name=name,
-                              kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                              default=default,
-                              annotation=annotation))
-    return inspect.Signature(parameters=parameters,
-                             return_annotation=locate(match_ret))
+            "If it is, please file an issue and include the following "
+            "docstring:\n\n" + callable.__doc__)
+    for match_args, match_ret in all_matches:
+        parameters = []
+        for arg in match_args.split(","):
+            arg = arg.strip()
+            if " = " in arg:
+                arg, default_value = arg.split(" = ")
+            else:
+                default = inspect.Parameter.empty
+            name, annotation = arg.split(": ")
+            annotation = locate(annotation)
+            parameters.append(
+                inspect.Parameter(name=name,
+                                  kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                  default=default,
+                                  annotation=annotation))
+        yield inspect.Signature(parameters=parameters,
+                                return_annotation=locate(match_ret))
 
 
 def get_tensor_component_names(tensor_name: str,
@@ -234,15 +237,37 @@ class Kernel:
             element-specific data such as a Mesh or Jacobian is requested.
         """
         self.callable = callable
-        try:
-            signature = inspect.signature(callable)
-        except ValueError:
-            signature = parse_pybind11_signature(callable)
         # Parse function arguments
-        self.args = [
-            parse_kernel_arg(arg, map_input_names)
-            for arg in signature.parameters.values()
-        ]
+        try:
+            # Try to parse as native Python function
+            signature = inspect.signature(callable)
+            self.args = [
+                parse_kernel_arg(arg, map_input_names)
+                for arg in signature.parameters.values()
+            ]
+        except ValueError:
+            # Try to parse as pybind11 binding
+            signature = None
+            # The function may have multiple overloads. We select the first one
+            # that works.
+            overloads = list(parse_pybind11_signatures(callable))
+            for overload in overloads:
+                try:
+                    self.args = [
+                        parse_kernel_arg(arg, map_input_names)
+                        for arg in overload.parameters.values()
+                    ]
+                    signature = overload
+                except ValueError:
+                    # Try the next signature
+                    continue
+            if signature is None:
+                raise ValueError(
+                    f"The function '{callable.__name__}' has no overload "
+                    "with supported arguments. See "
+                    "'ApplyPointwise.parse_kernel_arg' for a list of "
+                    "supported arguments. The overloads are: " +
+                    rich.pretty.pretty_repr(overloads))
         # If any argument is not a Tensor then we have to call the kernel
         # elementwise
         if elementwise:

@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 from spectre.Visualization.ApplyPointwise import (snake_case_to_camel_case,
-                                                  parse_pybind11_signature,
+                                                  parse_pybind11_signatures,
                                                   Kernel, apply_pointwise,
                                                   apply_pointwise_command)
 
@@ -67,9 +67,9 @@ class TestApplyPointwise(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    def test_parse_pybind11_signature(self):
-        self.assertEqual(parse_pybind11_signature(adm_mass_integrand),
-                         inspect.signature(adm_mass_integrand_signature))
+    def test_parse_pybind11_signatures(self):
+        self.assertEqual(list(parse_pybind11_signatures(adm_mass_integrand)),
+                         [inspect.signature(adm_mass_integrand_signature)])
 
     def test_snake_case_to_camel_case(self):
         self.assertEqual(snake_case_to_camel_case("hello_world"), "HelloWorld")
