@@ -49,7 +49,6 @@ namespace ForceFree {
  *  \epsilon_{abcd} &= \sqrt{-g} \, [abcd] ,\\
  *  \epsilon^{abcd} &= -\frac{1}{\sqrt{-g}} \, [abcd] ,
  * \f}
- *
  * where \f$g\f$ is the determinant of spacetime metric, and \f$[abcd]=\pm 1\f$
  * is the antisymmetric symbol with \f$[0123]=+1\f$.
  *
@@ -104,13 +103,13 @@ namespace ForceFree {
  *      \epsilon^{ijk}_{(3)}\tilde{E}_k) \\
  *  F^j(\tilde{\psi}) & = -\beta^j \tilde{\psi} + \alpha \tilde{E}^j \\
  *  F^j(\tilde{\phi}) & = -\beta^j \tilde{\phi} + \alpha \tilde{B}^j \\
- *  F^j(\tilde{q}) & = \alpha \sqrt{\gamma}J^j - \beta^j \tilde{q}
+ *  F^j(\tilde{q}) & = \tilde{J}^j - \beta^j \tilde{q}
  * \f}
  *
  * and source terms are
  *
  * \f{align*}{
- *  S(\tilde{E}^i) &= -\alpha \sqrt{\gamma} J^i - \tilde{E}^j \partial_j \beta^i
+ *  S(\tilde{E}^i) &= -\tilde{J}^i - \tilde{E}^j \partial_j \beta^i
  *    + \tilde{\psi} ( \gamma^{ij} \partial_j \alpha - \alpha \gamma^{jk}
  *      \Gamma^i_{jk} ) \\
  *  S(\tilde{B}^i) &= -\tilde{B}^j \partial_j \beta^i + \tilde{\phi} (
@@ -121,6 +120,8 @@ namespace ForceFree {
  *      (K + \kappa_\phi ) \\
  *  S(\tilde{q}) &= 0
  * \f}
+ *
+ * where $\tilde{J}^i \equiv \alpha \sqrt{\gamma}J^i$.
  *
  * See the documentation of Fluxes and Sources for further details.
  *
@@ -143,8 +144,16 @@ namespace ForceFree {
  *  B^2 - E^2 & > 0.
  * \f}
  *
- * where \f$\epsilon_{(3)}^{ijk} = n_\mu \epsilon^{\mu ijk}\f$ is the spatial
- * Levi-Civita tensor, \f$B^2=B^aB_a\f$, and \f$E^2 = E^aE_a\f$.
+ * where \f$B^2=B^aB_a\f$ and \f$E^2 = E^aE_a\f$. Also,
+ * \f$\epsilon_{(3)}^{ijk}\f$ is the spatial Levi-Civita tensor defined as
+ *
+ * \f{align*}
+ *  \epsilon_{(3)}^{ijk} \equiv n_\mu \epsilon^{\mu ijk}
+ *   = -\frac{1}{\sqrt{-g}} n_\mu [\mu ijk] = \frac{1}{\sqrt{\gamma}} [ijk]
+ * \f}
+ *
+ * where \f$n^\mu\f$ is the normal to spatial hypersurface and \f$[ijk]\f$ is
+ * the antisymmetric symbol with \f$[123] = +1\f$.
  *
  * There are a number of different ways in literature to numerically treat the
  * FF conditions. For the constraint $B_iE^i = 0$, cleaning of the parallel
@@ -153,9 +162,39 @@ namespace ForceFree {
  * were explored. On the magnetic dominance condition $B^2 - E^2 > 0$, there
  * have been approaches with modification of the drift current
  * \cite Komissarov2006 or manual rescaling of the electric field
- * \cite Palenzuela2010. We take the strategy that introduces special driver
- * terms in the current density \f$J^i\f$ (Ohm's law) following \cite Alic2012;
- * see Tags::SpatialCurrentDensityCompute for details.
+ * \cite Palenzuela2010.
+ *
+ * We take the strategy that introduces special driver terms in the electric
+ * current density \f$J^i\f$ following \cite Alic2012 :
+ *
+ * \f{align}{
+ *  J^i = J^i_\mathrm{drift} + J^i_\mathrm{parallel}
+ * \f}
+ *
+ * with
+ *
+ * \f{align}{
+ *  J^i_\mathrm{drift} & = q \frac{\epsilon^{ijk}_{(3)}E_jB_k}{B_lB^l}, \\
+ *  J^i_\mathrm{parallel} & = \eta \left[ \frac{E_jB^j}{B_lB^l}B^i
+ *          + \frac{\mathcal{R}(E_lE^l-B_lB^l)}{B_lB^l}E^i \right] .
+ * \f}
+ *
+ * where \f$\eta\f$ is the parallel conductivity and \f$\eta\rightarrow\infty\f$
+ * corresponds to the ideal force-free limit. \f$\mathcal{R}(x)\f$ is the ramp
+ * (or rectifier) function defined as
+ *
+ * \f{align*}
+ *  \mathcal{R}(x) = \left\{\begin{array}{lc}
+ *          x, & \text{if } x \geq 0 \\
+ *          0, & \text{if } x < 0 \\
+ * \end{array}\right\} = \max (x, 0) .
+ * \f}
+ *
+ * Internally we handle each pieces \f$\tilde{J}^i_\mathrm{drift} \equiv
+ * \alpha\sqrt{\gamma}J^i_\mathrm{drift}\f$ and \f$\tilde{J}^i_\mathrm{parallel}
+ * \equiv \alpha\sqrt{\gamma}J^i_\mathrm{parallel}\f$ as two separate Tags
+ * since the latter term is stiff and needs to be evolved in conjunction with
+ * implicit time steppers.
  *
  */
 struct System {
