@@ -69,6 +69,15 @@ set_property(TARGET SpectreFlags
   $<$<COMPILE_LANGUAGE:CXX>:-fno-math-errno>
   $<$<COMPILE_LANGUAGE:Fortran>:-fno-math-errno>)
 
+# Allow the compiler to transform divisions into multiplication by the
+# reciprocal.
+set_property(TARGET SpectreFlags
+  APPEND PROPERTY
+  INTERFACE_COMPILE_OPTIONS
+  $<$<COMPILE_LANGUAGE:C>:-freciprocal-math>
+  $<$<COMPILE_LANGUAGE:CXX>:-freciprocal-math>
+  $<$<COMPILE_LANGUAGE:Fortran>:-freciprocal-math>)
+
 # By default, the LLVM optimizer assumes floating point exceptions are ignored.
 create_cxx_flag_target("-ffp-exception-behavior=maytrap" SpectreFpExceptions)
 target_link_libraries(
