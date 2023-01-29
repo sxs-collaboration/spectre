@@ -59,6 +59,16 @@ set_property(TARGET SpectreFlags
   INTERFACE_COMPILE_OPTIONS
   $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
 
+# Disable cmath setting the error flag. This allows the compiler to more
+# aggressively vectorize code since it doesn't need to respect some global
+# state.
+set_property(TARGET SpectreFlags
+  APPEND PROPERTY
+  INTERFACE_COMPILE_OPTIONS
+  $<$<COMPILE_LANGUAGE:C>:-fno-math-errno>
+  $<$<COMPILE_LANGUAGE:CXX>:-fno-math-errno>
+  $<$<COMPILE_LANGUAGE:Fortran>:-fno-math-errno>)
+
 # By default, the LLVM optimizer assumes floating point exceptions are ignored.
 create_cxx_flag_target("-ffp-exception-behavior=maytrap" SpectreFpExceptions)
 target_link_libraries(
