@@ -19,7 +19,7 @@ class DataVector;
 namespace domain {
 /*!
  * \ingroup ComputationalDomainGroup
- * \brief A diagonstic comparing the analytic and numerical Jacobians for a
+ * \brief A diagnostic comparing the analytic and numerical Jacobians for a
  * map.
  *
  * Specifically, returns
@@ -50,7 +50,7 @@ void jacobian_diagnostic(
 
 /*!
  * \ingroup ComputationalDomainGroup
- * \brief A diagonstic comparing the analytic and numerical Jacobians for a
+ * \brief A diagnostic comparing the analytic and numerical Jacobians for a
  * map.
  *
  * Specifically, returns
@@ -78,7 +78,7 @@ void jacobian_diagnostic(
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// \brief A diagonstic comparing the analytic and numerical Jacobians for a
+/// \brief A diagnostic comparing the analytic and numerical Jacobians for a
 /// map. See `domain::jacobian_diagnostic` for details.
 template <size_t Dim>
 struct JacobianDiagnostic : db::SimpleTag {
