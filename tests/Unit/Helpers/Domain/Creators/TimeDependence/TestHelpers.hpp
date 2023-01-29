@@ -37,3 +37,21 @@
   const auto inertial_coords_double =                                     \
       make_with_random_values<tnsr::I<double, DIM, Frame::Inertial>>(     \
           GENERATOR, make_not_null(&dist))
+
+/*!
+ * \brief Generates random coordinates of double and DataVector types.
+ *
+ * Same as TIME_DEPENDENCE_GENERATE_COORDS except:
+ * - It creates only distorted-frame coords.
+ * - It takes a DIST as an argument, since in typical usage one would
+ *   call TIME_DEPENDENCE_GENERATE_COORDS and then call
+ *   TIME_DEPENDENCE_GENERATE_DISTORTED_COORDS.
+ *
+ */
+#define TIME_DEPENDENCE_GENERATE_DISTORTED_COORDS(GENERATOR, DIST, DIM)    \
+  const auto distorted_coords_dv =                                         \
+      make_with_random_values<tnsr::I<DataVector, DIM, Frame::Distorted>>( \
+          GENERATOR, make_not_null(&dist), DataVector{5});                 \
+  const auto distorted_coords_double =                                     \
+      make_with_random_values<tnsr::I<double, DIM, Frame::Distorted>>(     \
+          GENERATOR, make_not_null(&dist));
