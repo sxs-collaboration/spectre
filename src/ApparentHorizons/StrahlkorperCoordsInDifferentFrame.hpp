@@ -26,6 +26,14 @@ class not_null;
 /// \brief Maps (cartesian) collocation points of a Strahlkorper to
 /// a different frame.
 ///
+/// If SrcFrame is Frame::Distorted, strahlkorper_coords_in_different_frame
+/// will fail if src_strahlkorper intersects a Block that lacks a distorted
+/// frame.  Note that if such a Strahlkorper intersects
+/// such a Block, we have worse problems anyway (e.g. jacobians will usually
+/// be discontinuous at the boundaries of such a Block, and attempting to
+/// find such a Strahlkorper with an apparent-horizon finder will probably
+/// fail).
+///
 /// Note that because the Blocks inside the Domain allow access to
 /// maps only between a selected subset of frames, we cannot use
 /// strahlkorper_in_different_frame to map between arbitrary frames;

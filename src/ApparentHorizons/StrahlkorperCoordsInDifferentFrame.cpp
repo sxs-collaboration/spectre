@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -15,6 +16,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -27,6 +29,8 @@ void strahlkorper_coords_in_different_frame(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const double time) {
+  static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
+                "Destination frame must currently be Inertial frame");
   destructive_resize_components(
       dest_cartesian_coords, src_strahlkorper.ylm_spherepack().physical_size());
 
@@ -53,41 +57,34 @@ void strahlkorper_coords_in_different_frame(
 
   // We now wish to map src_cartesian_coords to the destination frame.
   // Each Block will have a different map, so the mapping must be done
-  // Block by Block.
-  for (const auto& block : domain.blocks()) {
-    // Once there are more possible source frames than the grid frame
-    // (i.e. the distorted frame), then this static_assert will change,
-    // and there will be an `if constexpr` below to treat the different
-    // possible source frames.
-    static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
-                  "Source frame must currently be Grid frame");
-    static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
-                  "Destination frame must currently be Inertial frame");
-    const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
-    const auto& logical_to_grid_map = block.moving_mesh_logical_to_grid_map();
-    // Fill only those dest_cartesian_coords that are in this Block.
-    // Determine which coords are in this Block by checking if the
-    // inverse grid-to-logical map yields logical coords between -1 and 1.
-    for (size_t s = 0; s < get<0>(src_cartesian_coords).size(); ++s) {
-      const tnsr::I<double, 3, SrcFrame> x_src{
-          {get<0>(src_cartesian_coords)[s], get<1>(src_cartesian_coords)[s],
-           get<2>(src_cartesian_coords)[s]}};
-      const auto x_logical = logical_to_grid_map.inverse(x_src);
-      // x_logical might be an empty std::optional.
-      if (x_logical.has_value() and get<0>(x_logical.value()) <= 1.0 and
-          get<0>(x_logical.value()) >= -1.0 and
-          get<1>(x_logical.value()) <= 1.0 and
-          get<1>(x_logical.value()) >= -1.0 and
-          get<2>(x_logical.value()) <= 1.0 and
-          get<2>(x_logical.value()) >= -1.0) {
-        const auto x_dest =
-            grid_to_inertial_map(x_src, time, functions_of_time);
-        get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
-        get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
-        get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
-        // Note that if a point is on the boundary of two or more
-        // Blocks, it might get filled twice, but that's ok.
-      }
+  // Block by Block.  Since each point in general has a different
+  // block (given by block_logical_coordinates), this means we must
+  // map point by point.
+  const auto block_logical_coords = block_logical_coordinates(
+      domain, src_cartesian_coords, time, functions_of_time);
+  for (size_t s = 0; s < block_logical_coords.size(); ++s) {
+    const tnsr::I<double, 3, SrcFrame> x_src{{get<0>(src_cartesian_coords)[s],
+                                              get<1>(src_cartesian_coords)[s],
+                                              get<2>(src_cartesian_coords)[s]}};
+    ASSERT(block_logical_coords[s].has_value(),
+           "Found a point (source coords " << x_src
+                                           << ") that is not in any Block.");
+    const auto& block =
+        domain.blocks()[block_logical_coords[s].value().id.get_index()];
+    if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
+      const auto x_dest = block.moving_mesh_grid_to_inertial_map()(
+          x_src, time, functions_of_time);
+      get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
+      get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
+      get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+    } else {
+      static_assert(std::is_same_v<SrcFrame, ::Frame::Distorted>,
+                    "Src frame must be Distorted if it is not Grid");
+      const auto x_dest = block.moving_mesh_distorted_to_inertial_map()(
+          x_src, time, functions_of_time);
+      get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
+      get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
+      get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
     }
   }
 }
@@ -107,7 +104,8 @@ void strahlkorper_coords_in_different_frame(
           functions_of_time,                                         \
       const double time);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Grid), (::Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Grid, ::Frame::Distorted),
+                        (::Frame::Inertial))
 
 #undef INSTANTIATE
 #undef DESTFRAME
