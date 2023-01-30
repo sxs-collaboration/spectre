@@ -105,6 +105,25 @@ class Block {
   bool is_time_dependent() const { return stationary_map_ == nullptr; }
 
   /// \brief Returns `true` if the block has a distorted frame.
+  ///
+  /// If a block has a distorted frame, then
+  ///   - moving_mesh_grid_to_distorted_map() is non-null
+  ///   - moving_mesh_distorted_to_inertial_map() is non-null
+  ///   - moving_mesh_grid_to_inertial_map() is non-null
+  /// Note in particular the last point above:  If the block is time-dependent,
+  /// then the block must have a grid_to_inertial map independent of whether
+  /// it has a distorted frame.  This allows us to write more efficient maps.
+  /// In particular, we often care only about the grid_to_inertial map, so we
+  /// can code that map directly instead of composing
+  /// grid_to_distorted + distorted_to_inertial maps at runtime.
+  ///
+  /// If a block does not have a distorted frame, then
+  ///   - moving_mesh_grid_to_distorted_map() is null
+  ///   - moving_mesh_distorted_to_inertial_map() is null
+  ///   - moving_mesh_grid_to_inertial_map() is non-null
+  ///   - If we ever find ourselves needing ::Frame::Distorted coordinates
+  ///     in that block, we can assume that ::Frame::Distorted and ::Frame::Grid
+  ///     are the same.  Usually this case will not occur.
   bool has_distorted_frame() const {
     return moving_mesh_grid_to_distorted_map_ != nullptr and
            moving_mesh_distorted_to_inertial_map_ != nullptr;
