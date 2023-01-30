@@ -220,7 +220,7 @@ def parse_kernel_arg(arg: inspect.Parameter,
                 f"Unknown argument type '{arg.annotation}' for argument "
                 f"'{arg.name}'. It must be either a Tensor or one of "
                 "the supported structural types listed in "
-                "'ApplyPointwise.parse_kernel_arg'.")
+                "'TransformVolumeData.parse_kernel_arg'.")
         return TensorArg(tensor_type=arg.annotation,
                          dataset_name=map_input_names.get(
                              arg.name, snake_case_to_camel_case(arg.name)))
@@ -232,7 +232,7 @@ class Kernel:
                  map_input_names: Dict[str, str] = {},
                  output_name: Optional[str] = None,
                  elementwise: Optional[bool] = None):
-        """Specifies input and output tensor names for a pointwise function
+        """Transforms volume data with a Python function
 
         Arguments:
           callable: A Python function that takes and returns tensors
@@ -277,7 +277,7 @@ class Kernel:
                 raise ValueError(
                     f"The function '{callable.__name__}' has no overload "
                     "with supported arguments. See "
-                    "'ApplyPointwise.parse_kernel_arg' for a list of "
+                    "'TransformVolumeData.parse_kernel_arg' for a list of "
                     "supported arguments. The overloads are: " +
                     rich.pretty.pretty_repr(overloads))
         # If any argument is not a Tensor then we have to call the kernel
@@ -309,19 +309,19 @@ class Kernel:
         return output
 
 
-def apply_pointwise(
+def transform_volume_data(
         volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
         kernels: Sequence[Kernel],
         integrate: bool = False) -> Union[None, Dict[str, Sequence[float]]]:
-    """Apply pointwise functions to data in the 'volfiles'
+    """Transforms data in the 'volfiles' with a sequence of 'kernels'
 
     Arguments:
       volfiles: Iterable of open H5 volume files, or a single H5 volume file.
         Must be opened in writable mode, e.g. in mode "a". The transformed
         data will be written back into these files. All observations in these
         files will be transformed.
-      kernels: List of pointwise transformations to apply to the volume data
-        in the form of 'Kernel' objects.
+      kernels: List of transformations to apply to the volume data in the form
+        of 'Kernel' objects.
       integrate: Compute the volume integral over the kernels instead of
         writing them back into the volume files. The integral is computed in
         inertial coordinates for every tensor component of all kernels and over
@@ -519,12 +519,12 @@ def parse_kernels(kernels, exec_files, map_input_names):
 @click.option("--output-subfile",
               help=("Subfile name in the '--output' / '-o' file, if it is "
                     "an H5 file."))
-def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
-                            map_input_names, integrate, output, output_subfile,
-                            **kwargs):
-    """Apply pointwise functions to volume data
+def transform_volume_data_command(h5files, subfile_name, kernels, exec_files,
+                                  map_input_names, integrate, output,
+                                  output_subfile, **kwargs):
+    """Transform volume data with Python functions
 
-    Run pointwise functions (kernels) over all volume data in the 'H5FILES' and
+    Run Python functions (kernels) over all volume data in the 'H5FILES' and
     write the output data back into the same files. You can use any Python
     function as kernel that takes tensors as input arguments and returns a
     tensor (from 'spectre.DataStructures.Tensor'). The function must be
@@ -607,10 +607,10 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
     task_id = progress.add_task("Applying to files")
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:
-        integrals = apply_pointwise(volfiles_progress,
-                                    kernels=kernels,
-                                    integrate=integrate,
-                                    **kwargs)
+        integrals = transform_volume_data(volfiles_progress,
+                                          kernels=kernels,
+                                          integrate=integrate,
+                                          **kwargs)
         progress.update(task_id, completed=len(volfiles))
 
     # Write integrals to output file or print to terminal
@@ -644,4 +644,4 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
 
 
 if __name__ == "__main__":
-    apply_pointwise_command(help_option_names=["-h", "--help"])
+    transform_volume_data_command(help_option_names=["-h", "--help"])

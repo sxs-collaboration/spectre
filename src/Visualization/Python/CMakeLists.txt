@@ -7,7 +7,6 @@ spectre_python_add_module(
   Visualization
   PYTHON_FILES
   __init__.py
-  ApplyPointwise.py
   GenerateXdmf.py
   InterpolateToCoords.py
   InterpolateToMesh.py
@@ -16,4 +15,5 @@ spectre_python_add_module(
   plots.mplstyle
   ReadH5.py
   Render1D.py
+  TransformVolumeData.py
 )

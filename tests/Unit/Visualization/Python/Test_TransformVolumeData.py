@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Visualization.ApplyPointwise import (snake_case_to_camel_case,
-                                                  parse_pybind11_signatures,
-                                                  Kernel, apply_pointwise,
-                                                  apply_pointwise_command)
+from spectre.Visualization.TransformVolumeData import (
+    snake_case_to_camel_case, parse_pybind11_signatures, Kernel,
+    transform_volume_data, transform_volume_data_command)
 
 import inspect
 import numpy as np
@@ -57,10 +56,10 @@ def square_component(component: DataVector) -> Scalar[DataVector]:
     return Scalar[DataVector]([component**2])
 
 
-class TestApplyPointwise(unittest.TestCase):
+class TestTransformVolumeData(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(unit_test_build_path(),
-                                     'Visualization/ApplyPointwise')
+                                     'Visualization/TransformVolumeData')
         self.h5_filename = os.path.join(self.test_dir, "Test.h5")
         os.makedirs(self.test_dir, exist_ok=True)
         shutil.copyfile(
@@ -78,7 +77,7 @@ class TestApplyPointwise(unittest.TestCase):
     def test_snake_case_to_camel_case(self):
         self.assertEqual(snake_case_to_camel_case("hello_world"), "HelloWorld")
 
-    def test_apply_pointwise(self):
+    def test_transform_volume_data(self):
         open_h5_files = [spectre_h5.H5File(self.h5_filename, "a")]
         open_volfiles = [
             h5file.get_vol("/element_data") for h5file in open_h5_files
@@ -95,7 +94,7 @@ class TestApplyPointwise(unittest.TestCase):
                    map_input_names={"component": "InertialCoordinates_x"}),
         ]
 
-        apply_pointwise(volfiles=open_volfiles, kernels=kernels)
+        transform_volume_data(volfiles=open_volfiles, kernels=kernels)
 
         obs_id = open_volfiles[0].list_observation_ids()[0]
         result_psisq = open_volfiles[0].get_tensor_component(
@@ -136,9 +135,9 @@ class TestApplyPointwise(unittest.TestCase):
             Kernel(sinusoid),
         ]
 
-        integrals = apply_pointwise(volfiles=open_volfiles,
-                                    kernels=kernels,
-                                    integrate=True)
+        integrals = transform_volume_data(volfiles=open_volfiles,
+                                          kernels=kernels,
+                                          integrate=True)
 
         npt.assert_allclose(integrals["Volume"], (2 * np.pi)**3)
         # The domain has pretty low resolution so the integral is not
@@ -154,7 +153,7 @@ class TestApplyPointwise(unittest.TestCase):
             "-e",
             __file__,
         ]
-        result = runner.invoke(apply_pointwise_command,
+        result = runner.invoke(transform_volume_data_command,
                                cli_flags + [
                                    "-k",
                                    "psi_squared",
@@ -182,7 +181,7 @@ class TestApplyPointwise(unittest.TestCase):
             npt.assert_allclose(np.array(result_radius), radius)
 
         # Test integrals
-        result = runner.invoke(apply_pointwise_command,
+        result = runner.invoke(transform_volume_data_command,
                                cli_flags + [
                                    "-k",
                                    "sinusoid",
@@ -193,7 +192,7 @@ class TestApplyPointwise(unittest.TestCase):
         self.assertIn("63.88", result.output)
 
         output_filename = os.path.join(self.test_dir, "integrals.h5")
-        result = runner.invoke(apply_pointwise_command,
+        result = runner.invoke(transform_volume_data_command,
                                cli_flags + [
                                    "-k",
                                    "sinusoid",
