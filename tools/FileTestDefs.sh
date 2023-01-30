@@ -262,6 +262,7 @@ long_lines() {
               '.js$' \
               '.json$' \
               '.min.js$' \
+              '.mplstyle$' \
               '.patch' \
               '.travis.yml$' \
               '.xml$' \

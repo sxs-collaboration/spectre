@@ -12,6 +12,8 @@ spectre_python_add_module(
   InterpolateToCoords.py
   InterpolateToMesh.py
   PlotDatFile.py
+  PlotPowerMonitors.py
+  plots.mplstyle
   ReadH5.py
   Render1D.py
 )

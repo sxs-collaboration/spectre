@@ -25,6 +25,7 @@ class Cli(click.MultiCommand):
             "interpolate-to-coords",
             "interpolate-to-mesh",
             "plot-dat",
+            "plot-power-monitors",
             "render-1d",
             "simplify-traces",
         ]
@@ -62,6 +63,10 @@ class Cli(click.MultiCommand):
         elif name == "plot-dat":
             from spectre.Visualization.PlotDatFile import plot_dat_command
             return plot_dat_command
+        elif name == "plot-power-monitors":
+            from spectre.Visualization.PlotPowerMonitors import (
+                plot_power_monitors_command)
+            return plot_power_monitors_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
             return render_1d_command
