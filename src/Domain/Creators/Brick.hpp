@@ -9,6 +9,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -149,6 +150,8 @@ class Brick : public DomainCreator<3> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
+  std::vector<std::string> block_names() const override { return block_names_; }
+
  private:
   typename LowerBound::type lower_xyz_{};
   typename UpperBound::type upper_xyz_{};
@@ -159,6 +162,7 @@ class Brick : public DomainCreator<3> {
       time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
+  inline static const std::vector<std::string> block_names_{"Brick"};
 };
 }  // namespace creators
 }  // namespace domain
