@@ -46,7 +46,8 @@ template void volume_terms<::ForceFree::TimeDerivativeTerms>(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& drift_tilde_j,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& parallel_tilde_j,
     const double& kappa_psi, const double& kappa_phi,
 
     const Scalar<DataVector>& lapse,

@@ -51,7 +51,8 @@ void TimeDerivativeTerms::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& drift_tilde_j,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& parallel_tilde_j,
     const double kappa_psi, const double kappa_phi,
 
     const Scalar<DataVector>& lapse,
@@ -80,12 +81,12 @@ void TimeDerivativeTerms::apply(
     (*lapse_times_magnetic_field_one_form).get(d) *=
         get(lapse) / get(sqrt_det_spatial_metric);
   }
-  detail::fluxes_impl(
-      tilde_e_flux, tilde_b_flux, tilde_psi_flux, tilde_phi_flux, tilde_q_flux,
-      *lapse_times_electric_field_one_form,
-      *lapse_times_magnetic_field_one_form, tilde_e, tilde_b, tilde_psi,
-      tilde_phi, tilde_q, spatial_current_density, lapse, shift,
-      sqrt_det_spatial_metric, inv_spatial_metric);
+  detail::fluxes_impl(tilde_e_flux, tilde_b_flux, tilde_psi_flux,
+                      tilde_phi_flux, tilde_q_flux,
+                      *lapse_times_electric_field_one_form,
+                      *lapse_times_magnetic_field_one_form, tilde_e, tilde_b,
+                      tilde_psi, tilde_phi, tilde_q, drift_tilde_j,
+                      parallel_tilde_j, lapse, shift, inv_spatial_metric);
 
   // Compute source terms
   gr::christoffel_first_kind(spatial_christoffel_first_kind, d_spatial_metric);
@@ -95,12 +96,13 @@ void TimeDerivativeTerms::apply(
   trace_last_indices(trace_spatial_christoffel_second,
                      *spatial_christoffel_second_kind, inv_spatial_metric);
 
+  // Note that here parallel_tilde_j is not used for source terms. This is
+  // handled in a separate IMEX routine.
   detail::sources_impl(non_flux_terms_dt_tilde_e, non_flux_terms_dt_tilde_b,
                        non_flux_terms_dt_tilde_psi, non_flux_terms_dt_tilde_phi,
                        *trace_spatial_christoffel_second, tilde_e, tilde_b,
-                       tilde_psi, tilde_phi, tilde_q, spatial_current_density,
-                       kappa_psi, kappa_phi, lapse, d_lapse, d_shift,
-                       inv_spatial_metric, sqrt_det_spatial_metric,
+                       tilde_psi, tilde_phi, tilde_q, drift_tilde_j, kappa_psi,
+                       kappa_phi, lapse, d_lapse, d_shift, inv_spatial_metric,
                        extrinsic_curvature);
 }
 
