@@ -43,8 +43,6 @@ Cce:
           MaxFactor: 2
           MinFactor: 0.25
           SafetyFactor: 0.9
-    StepController:
-      BinaryFraction
 
   LMax: 20
   NumberOfRadialPoints: 12

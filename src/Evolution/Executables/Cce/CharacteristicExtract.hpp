@@ -38,7 +38,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepControllers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -69,7 +68,6 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
     using factory_classes = tmpl::map<
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, cce_step_choosers>,
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

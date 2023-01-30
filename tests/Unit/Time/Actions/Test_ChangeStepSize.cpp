@@ -20,7 +20,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -82,7 +81,7 @@ struct Component {
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-                                 ::Tags::StepChoosers, ::Tags::StepController,
+                                 ::Tags::StepChoosers,
                                  Tags::IsUsingTimeSteppingErrorControl,
                                  history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
@@ -149,8 +148,7 @@ void check(const bool time_runs_forward,
                  std::make_unique<Constant>(2. * request),
                  std::make_unique<Constant>(request),
                  std::make_unique<Constant>(2. * request)),
-       std::make_unique<StepControllers::BinaryFraction>(), false,
-       typename history_tag::type{}, 1.});
+       false, typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
@@ -170,7 +168,6 @@ void check(const bool time_runs_forward,
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
-  Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
   Parallel::register_factory_classes_with_charm<Metavariables<>>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();

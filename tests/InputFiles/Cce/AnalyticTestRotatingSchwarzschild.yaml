@@ -40,8 +40,6 @@ Cce:
       - Constant: 0.2
       - Increase:
           Factor: 2
-    StepController:
-      BinaryFraction
 
   LMax: 8
   NumberOfRadialPoints: 8

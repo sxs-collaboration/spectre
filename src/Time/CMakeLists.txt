@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ChooseLtsStepSize.cpp
   History.cpp
   SelfStart.cpp
   Slab.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryHistory.hpp
+  ChooseLtsStepSize.hpp
   EvolutionOrdering.hpp
   History.hpp
   SelfStart.hpp
@@ -47,6 +49,5 @@ target_link_libraries(
 
 add_subdirectory(Actions)
 add_subdirectory(StepChoosers)
-add_subdirectory(StepControllers)
 add_subdirectory(TimeSteppers)
 add_subdirectory(Triggers)

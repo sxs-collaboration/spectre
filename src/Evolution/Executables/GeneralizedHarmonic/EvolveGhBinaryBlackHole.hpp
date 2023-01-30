@@ -133,8 +133,6 @@
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
-#include "Time/StepControllers/Factory.hpp"
-#include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
@@ -394,7 +392,6 @@ struct EvolutionMetavars {
         tmpl::pair<
             StepChooser<StepChooserUse::Slab>,
             StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

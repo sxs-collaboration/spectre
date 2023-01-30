@@ -5,6 +5,7 @@ set(LIBRARY "Test_Time")
 
 set(LIBRARY_SOURCES
   Test_BoundaryHistory.cpp
+  Test_ChooseLtsStepSize.cpp
   Test_EvolutionOrdering.cpp
   Test_History.cpp
   Test_SelfStart.cpp
@@ -19,7 +20,6 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Actions)
 add_subdirectory(StepChoosers)
-add_subdirectory(StepControllers)
 add_subdirectory(TimeSteppers)
 add_subdirectory(Triggers)
 
