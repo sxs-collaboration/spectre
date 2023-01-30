@@ -2,9 +2,11 @@
 # See LICENSE.txt for details.
 
 from spectre.Visualization.ApplyPointwise import (snake_case_to_camel_case,
+                                                  parse_pybind11_signature,
                                                   Kernel, apply_pointwise,
                                                   apply_pointwise_command)
 
+import inspect
 import numpy as np
 import numpy.testing as npt
 import os
@@ -15,6 +17,13 @@ from click.testing import CliRunner
 from spectre.Informer import unit_test_src_path, unit_test_build_path
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
+from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
+
+
+def adm_mass_integrand_signature(
+        field: Scalar[DataVector], alpha: Scalar[DataVector],
+        beta: Scalar[DataVector]) -> Scalar[DataVector]:
+    pass
 
 
 def psi_squared(psi: Scalar[DataVector]) -> Scalar[DataVector]:
@@ -40,6 +49,10 @@ class TestApplyPointwise(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
+
+    def test_parse_pybind11_signature(self):
+        self.assertEqual(parse_pybind11_signature(adm_mass_integrand),
+                         inspect.signature(adm_mass_integrand_signature))
 
     def test_snake_case_to_camel_case(self):
         self.assertEqual(snake_case_to_camel_case("hello_world"), "HelloWorld")
