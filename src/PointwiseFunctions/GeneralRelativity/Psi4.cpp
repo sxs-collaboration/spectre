@@ -29,7 +29,8 @@ void psi_4(const gsl::not_null<Scalar<ComplexDataVector>*> psi_4_result,
            const tnsr::II<DataVector, 3, Frame>& inverse_spatial_metric,
            const tnsr::I<DataVector, 3, Frame>& inertial_coords) {
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<0, 3, Frame>,
-                       ::Tags::TempI<1, 3, Frame>, ::Tags::Tempi<0, 3, Frame>,
+                       ::Tags::TempI<1, 3, Frame>, ::Tags::TempI<2, 3, Frame>,
+                       ::Tags::TempI<3, 3, Frame>, ::Tags::Tempi<0, 3, Frame>,
                        ::Tags::Tempij<0, 3, Frame>, ::Tags::Tempii<0, 3, Frame>,
                        ::Tags::Tempii<1, 3, Frame>, ::Tags::TempIj<0, 3, Frame>,
                        ::Tags::TempII<0, 3, Frame>>>
@@ -69,27 +70,61 @@ void psi_4(const gsl::not_null<Scalar<ComplexDataVector>*> psi_4_result,
       inverse_spatial_metric, cov_deriv_extrinsic_curvature, r_hat,
       inverse_projection_tensor, projection_tensor, projection_up_lo, 1.0);
 
-  auto& x_coord = get<::Tags::TempI<0, 3, Frame>>(temp_buffer);
+  // Gram-Schmidt x_hat, a unit vector that's orthogonal to r_hat
+  auto& x_coord = get<::Tags::TempI<1, 3, Frame>>(temp_buffer);
   x_coord.get(0) = 1.0;
   x_coord.get(1) = x_coord.get(2) = 0.0;
+  auto& x_component = get<::Tags::TempScalar<0>>(temp_buffer);
+  dot_product(make_not_null(&x_component), x_coord, r_hat, spatial_metric);
+  auto& x_hat = get<::Tags::TempI<2, 3, Frame>>(temp_buffer);
+  tenex::evaluate<ti::I>(make_not_null(&x_hat),
+                         x_coord(ti::I) - (x_component() * r_hat(ti::I)));
   auto& magnitude_x = get<::Tags::TempScalar<0>>(temp_buffer);
-  magnitude(make_not_null(&magnitude_x), x_coord, spatial_metric);
-  auto& x_hat = get<::Tags::TempI<0, 3, Frame>>(temp_buffer);
-  tenex::evaluate<ti::I>(make_not_null(&x_hat), x_coord(ti::I) / magnitude_x());
+  magnitude(make_not_null(&magnitude_x), x_hat, spatial_metric);
+  for (size_t j = 0; j < 3; j++) {
+    for (size_t i = 0; i < get(magnitude_x).size(); i++) {
+      if (magnitude_x.get()[i] != 0.0) {
+        x_hat.get(j)[i] /= magnitude_x.get()[i];
+      } else {
+        x_hat.get(j)[i] = 0.0;
+      }
+    }
+  }
 
   Variables<tmpl::list<::Tags::TempI<0, 3, Frame, ComplexDataVector>,
                        ::Tags::TempI<1, 3, Frame, ComplexDataVector>>>
       y_hat_buffer{get<0>(inertial_coords).size()};
+
+  // Grad-Schmidt y_hat, a unit vector orthogonal to r_hat and x_hat
   auto& y_coord = get<::Tags::TempI<1, 3, Frame>>(temp_buffer);
   y_coord.get(1) = 1.0;
   y_coord.get(0) = y_coord.get(2) = 0.0;
+  auto& y_component = get<::Tags::TempScalar<0>>(temp_buffer);
+  dot_product(make_not_null(&y_component), y_coord, r_hat, spatial_metric);
+  auto& y_hat_not_complex = get<::Tags::TempI<3, 3, Frame>>(temp_buffer);
+  tenex::evaluate<ti::I>(make_not_null(&y_hat_not_complex),
+                         y_coord(ti::I) - (y_component() * r_hat(ti::I)));
+  dot_product(make_not_null(&y_component), y_coord, x_hat, spatial_metric);
+  tenex::evaluate<ti::I>(
+      make_not_null(&y_hat_not_complex),
+      y_hat_not_complex(ti::I) - (y_component() * x_hat(ti::I)));
   auto& magnitude_y = get<::Tags::TempScalar<0>>(temp_buffer);
-  magnitude(make_not_null(&magnitude_y), y_coord, spatial_metric);
+  magnitude(make_not_null(&magnitude_y), y_hat_not_complex, spatial_metric);
+  for (size_t j = 0; j < 3; j++) {
+    for (size_t i = 0; i < get(magnitude_y).size(); i++) {
+      if (magnitude_y.get()[i] != 0.0) {
+        y_hat_not_complex.get(j)[i] /= magnitude_y.get()[i];
+      } else {
+        y_hat_not_complex.get(j)[i] = 0.0;
+      }
+    }
+  }
   const std::complex<double> imag = std::complex<double>(0.0, 1.0);
   auto& y_hat =
       get<::Tags::TempI<0, 3, Frame, ComplexDataVector>>(y_hat_buffer);
   tenex::evaluate<ti::I>(make_not_null(&y_hat),
-                         imag * y_coord(ti::I) / magnitude_y());
+                         imag * y_hat_not_complex(ti::I));
+
   auto& m_bar =
       get<::Tags::TempI<1, 3, Frame, ComplexDataVector>>(y_hat_buffer);
   tenex::evaluate<ti::I>(make_not_null(&m_bar), x_hat(ti::I) - y_hat(ti::I));

@@ -96,9 +96,6 @@ void test_psi_4(const RealDataType& used_for_size_real,
   auto inertial_coords =
       make_with_random_values<tnsr::I<RealDataType, 3, Frame::Inertial>>(
           nn_generator, nn_distribution, used_for_size_real);
-  for (size_t i = 0; i < 3; ++i) {
-    inertial_coords.get(i)[0] = 0.0;
-  }
 
   const auto python_psi_4 = pypp::call<Scalar<ComplexDataType>>(
       "GeneralRelativity.Psi4", "psi_4", spatial_ricci, extrinsic_curvature,

@@ -35,15 +35,24 @@ def psi_4(spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
 
     x_coord = np.zeros((3))
     x_coord[0] = 1
-    magnitude_x = math.sqrt(
-        np.einsum("a,b,ab", x_coord, x_coord, spatial_metric))
-    x_hat = x_coord / magnitude_x
+    x_component = np.einsum("a,b,ab", x_coord, r_hat, spatial_metric)
+    x_hat = x_coord - (x_component * r_hat)
+    magnitude_x = math.sqrt(np.einsum("a,b,ab", x_hat, x_hat, spatial_metric))
+    if (magnitude_x != 0.0):
+        x_hat = np.einsum("a", x_hat / magnitude_x)
+    else:
+        x_hat = np.einsum("a", x_hat * 0.0)
     y_coord = np.zeros((3))
     y_coord[1] = 1
-    magnitude_y = math.sqrt(
-        np.einsum("a,b,ab", y_coord, y_coord, spatial_metric))
-    y_hat = y_coord / magnitude_y
-
+    y_component = np.einsum("a,b,ab", y_coord, r_hat, spatial_metric)
+    y_hat = y_coord - (y_component * r_hat)
+    y_component = np.einsum("a,b,ab", y_coord, x_hat, spatial_metric)
+    y_hat = y_hat - (y_component * x_hat)
+    magnitude_y = math.sqrt(np.einsum("a,b,ab", y_hat, y_hat, spatial_metric))
+    if (magnitude_y != 0.0):
+        y_hat = np.einsum("a", y_hat / magnitude_y)
+    else:
+        y_hat = np.einsum("a", y_hat * 0.0)
     m_bar = x_hat - (y_hat * complex(0.0, 1.0))
 
     return (-0.5 * np.einsum("ab,a,b", u8_plus, m_bar, m_bar))
