@@ -47,10 +47,10 @@ class PrimitiveGhostVariables {
                  GeneralizedHarmonic::Tags::Phi<3>,
                  GeneralizedHarmonic::Tags::Pi<3>>;
 
-  static Variables<tags_for_reconstruction> apply(
+  static DataVector apply(
       const Variables<hydro::grmhd_tags<DataVector>>& prims,
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
-      const tnsr::aa<DataVector, 3, Frame::Inertial>& pi);
+      const tnsr::aa<DataVector, 3, Frame::Inertial>& pi, size_t rdmp_size);
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell

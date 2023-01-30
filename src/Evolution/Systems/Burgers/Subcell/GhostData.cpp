@@ -8,8 +8,12 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Burgers::subcell {
-Variables<tmpl::list<Burgers::Tags::U>> GhostVariables::apply(
-    const Variables<tmpl::list<Burgers::Tags::U>>& vars) {
-  return vars;
+DataVector GhostVariables::apply(
+    const Variables<tmpl::list<Burgers::Tags::U>>& vars,
+    const size_t rdmp_size) {
+  DataVector buffer{vars.number_of_grid_points() + rdmp_size};
+  DataVector var_view{buffer.data(), vars.number_of_grid_points()};
+  var_view = get(get<Burgers::Tags::U>(vars));
+  return buffer;
 }
 }  // namespace Burgers::subcell

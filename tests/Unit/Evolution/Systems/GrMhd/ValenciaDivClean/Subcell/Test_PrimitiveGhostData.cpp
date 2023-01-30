@@ -52,9 +52,11 @@ void test_primitive_ghost_data_on_subcells(
   auto box = db::create<
       db::AddSimpleTags<::Tags::Variables<hydro::grmhd_tags<DataVector>>>>(
       prims);
-  const Variables<prims_to_reconstruct_tags> recons_prims = db::mutate_apply<
+  DataVector recons_prims_rdmp = db::mutate_apply<
       grmhd::ValenciaDivClean::subcell::PrimitiveGhostVariables>(
-      make_not_null(&box));
+      make_not_null(&box), 2_st);
+  const Variables<prims_to_reconstruct_tags> recons_prims{
+      recons_prims_rdmp.data(), recons_prims_rdmp.size() - 2};
   tmpl::for_each<copied_tags>([&prims, &recons_prims](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     CHECK_ITERABLE_APPROX(get<tag>(recons_prims), get<tag>(prims));

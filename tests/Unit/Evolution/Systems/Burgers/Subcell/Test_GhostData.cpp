@@ -42,9 +42,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.GhostData",
   auto box_subcell = db::create<
       db::AddSimpleTags<::Tags::Variables<tmpl::list<Burgers::Tags::U>>>>(
       random_vars_subcell);
-  const auto retrieved_vars_subcell =
+  DataVector retrieved_vars_subcell =
       db::mutate_apply<Burgers::subcell::GhostVariables>(
-          make_not_null(&box_subcell));
-  CHECK_ITERABLE_APPROX(get<Burgers::Tags::U>(random_vars_subcell),
-                        get<Burgers::Tags::U>(retrieved_vars_subcell));
+          make_not_null(&box_subcell), 2_st);
+  REQUIRE(retrieved_vars_subcell.size() ==
+          subcell_mesh.number_of_grid_points() + 2);
+  CHECK_ITERABLE_APPROX(get(get<Burgers::Tags::U>(random_vars_subcell)),
+                        DataVector(retrieved_vars_subcell.data(),
+                                   retrieved_vars_subcell.size() - 2));
 }

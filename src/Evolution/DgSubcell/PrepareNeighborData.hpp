@@ -76,12 +76,11 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
   const size_t rdmp_size = rdmp_data.max_variables_values.size() +
                            rdmp_data.min_variables_values.size();
 
-  const auto ghost_variables = db::mutate_apply(
-      typename Metavariables::SubcellOptions::GhostVariables{}, box);
-
   DirectionMap<Dim, DataVector> all_neighbor_data_for_reconstruction{};
-  const size_t ghost_plus_rdmp_size = ghost_variables.size() + rdmp_size;
-  if (alg::all_of(neighbor_meshes,
+  if (DataVector ghost_variables = db::mutate_apply(
+          typename Metavariables::SubcellOptions::GhostVariables{}, box,
+          rdmp_size);
+      alg::all_of(neighbor_meshes,
                   [](const auto& directional_element_id_and_mesh) {
                     ASSERT(directional_element_id_and_mesh.second.basis(0) !=
                                Spectral::Basis::Chebyshev,
@@ -90,15 +89,20 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
                            Spectral::Basis::Legendre;
                   })) {
     *ghost_data_mesh = dg_mesh;
+    const auto total_to_slice = static_cast<size_t>(alg::count_if(
+        directions_to_slice, [](const auto& t) { return t.second; }));
+    size_t slice_count = 0;
     for (const auto& [direction, slice] : directions_to_slice) {
       if (slice) {
-        DataVector data{ghost_plus_rdmp_size};
-        std::copy(ghost_variables.data(),
-                  ghost_variables.data() + ghost_variables.size(),
-                  data.begin());
+        ++slice_count;
+        // Move instead of copy on the last iteration. Elides a memory
+        // allocation and copy.
         [[maybe_unused]] const auto insert_result =
-            all_neighbor_data_for_reconstruction.insert(
-                std::pair{direction, std::move(data)});
+            UNLIKELY(slice_count == total_to_slice)
+                ? all_neighbor_data_for_reconstruction.insert(
+                      std::pair{direction, std::move(ghost_variables)})
+                : all_neighbor_data_for_reconstruction.insert(
+                      std::pair{direction, ghost_variables});
         ASSERT(insert_result.second,
                "Failed to insert the neighbor data in direction " << direction);
       }
@@ -108,11 +112,14 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
     const size_t ghost_zone_size =
         Metavariables::SubcellOptions::ghost_zone_size(*box);
 
+    const DataVector data_to_project{};
+    make_const_view(make_not_null(&data_to_project), ghost_variables, 0,
+                    ghost_variables.size() - rdmp_size);
+    const DataVector projected_data = evolution::dg::subcell::fd::project(
+        data_to_project, dg_mesh, subcell_mesh.extents());
     all_neighbor_data_for_reconstruction = subcell::slice_data(
-        evolution::dg::subcell::fd::project(ghost_variables, dg_mesh,
-                                            subcell_mesh.extents()),
-        db::get<subcell::Tags::Mesh<Dim>>(*box).extents(), ghost_zone_size,
-        directions_to_slice, rdmp_size);
+        projected_data, db::get<subcell::Tags::Mesh<Dim>>(*box).extents(),
+        ghost_zone_size, directions_to_slice, rdmp_size);
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -131,6 +138,8 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
         // Only hash the direction once.
         auto& neighbor_data =
             all_neighbor_data_for_reconstruction.at(direction);
+        // Make a copy of the local orientation data, then we can re-orient
+        // directly into the send buffer.
         DataVector local_orientation_data(neighbor_data.size() - rdmp_size);
         std::copy(neighbor_data.begin(),
                   std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)),
