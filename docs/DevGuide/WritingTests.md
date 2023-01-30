@@ -234,7 +234,7 @@ of order unity in order to decrease the chance of occasionally generating large
 numbers through multiplications which can cause an error above a reasonable
 tolerance.
 
-#### Testing Failure Cases
+#### Testing Failure Cases {#testing_failure_cases}
 
 Adding the "attribute" `// [[OutputRegex, Regular expression to
 match]]` before the `SPECTRE_TEST_CASE` macro will force ctest to only

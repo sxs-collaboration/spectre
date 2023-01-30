@@ -14,11 +14,8 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
-// IWYU pragma: no_include <cmath>  // for abs
-
-// IWYU pragma: no_include "Utilities/Rational.hpp"
-
-SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
+namespace {
+void test_time() {
   using rational_t = Time::rational_t;
 
   const double tstart_d = 0.68138945475734402635;
@@ -127,9 +124,14 @@ SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
                            Time(slab, rational_t(1, 2)));
   check_structural_compare(Time(slab, rational_t(0, 1)),
                            Time(slab.advance(), rational_t(0, 1)));
+
+  {
+    const Time time = slab.start() + slab.duration() * 3 / 5;
+    test_serialization(time);
+  }
 }
 
-SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
+void test_time_roundoff_comparison() {
   const double tstart_d = 0.68138945475734402635;
   const double tend_d = 76.34481744714527451379;
   // Make sure we're using values that will trigger rounding errors.
@@ -194,14 +196,7 @@ SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Time.Time.serialization",
-                  "[Unit][Time][Serialization]") {
-  const Slab slab(1.7, 2.4);
-  const Time time = slab.start() + slab.duration() * 3 / 5;
-  test_serialization(time);
-}
-
-SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
+void test_time_delta() {
   using rational_t = TimeDelta::rational_t;
 
   const double tstart_d = 0.68138945475734402635;
@@ -286,13 +281,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
   CHECK(get_output(TimeDelta(slab, 1)) == slab_str + ":1/1");
   CHECK(get_output(TimeDelta(slab, rational_t(3, 5))) == slab_str + ":3/5");
   CHECK(get_output(TimeDelta(slab, rational_t(3, -5))) == slab_str + ":-3/5");
-}
 
-SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
-                  "[Unit][Time][Serialization]") {
-  const Slab slab(1.7, 2.4);
-  const TimeDelta dt = slab.duration() * 3 / 5;
-  test_serialization(dt);
+  {
+    const TimeDelta dt = slab.duration() * 3 / 5;
+    test_serialization(dt);
+  }
 }
 
 // Failure tests
@@ -300,339 +293,108 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
 #pragma GCC diagnostic ignored "-Wunused-comparison"
 #endif
 
-// [example_of_error_test]
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.0", "[Unit][Time]") {
-  ASSERTION_TEST();
+void test_assertions() {
 #ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), -1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-// [example_of_error_test]
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), -1),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 2),
+                    Catch::Contains("Out of range slab fraction"));
 
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(1., 2.)),
+      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(-1., 0.)),
+      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(0., 2.)),
+      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.)),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.)),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.)),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.)),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(1., 2.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(-1., 0.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0),
+      Catch::Contains("Can't subtract times from different slabs"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0),
+      Catch::Contains("Can't subtract times from different slabs"));
+  CHECK_THROWS_WITH(
+      Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1),
+      Catch::Contains("Can't subtract times from different slabs"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(0., 2.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.3", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.4", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0),
+                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0),
+                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.5", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't add TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't add TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't subtract TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
+      Catch::Contains("Can't subtract TimeDeltas from different slabs"));
+#endif  // SPECTRE_DEBUG
 }
+}  // namespace
 
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.6", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.overlap", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.3", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.4", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.5", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.6", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.7", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.8", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.9", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.10", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.11", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.lt",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.gt",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.le",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.ge",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.0",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.1",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.2",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't add TimeDeltas from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.0",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't add TimeDeltas from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.1",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't subtract TimeDeltas from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.2",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Can't subtract TimeDeltas from different slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.3",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
+  test_time();
+  test_time_roundoff_comparison();
+  test_time_delta();
+  test_assertions();
 }

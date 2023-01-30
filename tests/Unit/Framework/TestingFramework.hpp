@@ -310,6 +310,9 @@ struct check_matrix_approx {
  * we must install a signal handler after Catch does, which means inside the
  * SPECTRE_TEST_CASE itself. The ERROR_TEST() macro should be the first line in
  * the SPECTRE_TEST_CASE.
+ *
+ * \warning This macro is deprecated.  See \ref testing_failure_cases
+ * "the DevGuide" for the modern way to do this.
  */
 #define ERROR_TEST()                                      \
   do {                                                    \
@@ -332,8 +335,8 @@ struct check_matrix_approx {
  * In order to test ASSERT's properly the test must also fail for release
  * builds. This is done by adding this macro at the beginning for the test.
  *
- * \example
- * \snippet Test_Time.cpp example_of_error_test
+ * \warning This macro is deprecated.  See \ref testing_failure_cases
+ * "the DevGuide" for the modern way to do this.
  */
 #ifdef SPECTRE_DEBUG
 #define ASSERTION_TEST() \
