@@ -57,6 +57,8 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file,
                // Ignore file locks when they are disabled on the file system
                true),
            "Failed to configure file locking.");
+#else
+  (void)use_file_locking;
 #endif
 
   file_id_ = file_exists
