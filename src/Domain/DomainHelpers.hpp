@@ -133,23 +133,30 @@ enum class ShellWedges {
   OneAlongMinusX
 };
 
-/// \ingroup ComputationalDomainGroup
-/// These are the CoordinateMaps of the Wedge<3>s used in the Sphere, Shell, and
-/// binary compact object DomainCreators. This function can also be used to
-/// wrap the Sphere or Shell in a cube made of six Wedge<3>s.
-/// The argument `x_coord_of_shell_center` specifies a translation of the Shell
-/// in the x-direction in the TargetFrame. For example, the BBH DomainCreator
-/// uses this to set the position of each BH.
-/// When the argument `use_half_wedges` is set to `true`, the wedges in the
-/// +z,-z,+y,-y directions are cut in half along their xi-axes. The resulting
-/// ten CoordinateMaps are used for the outermost Blocks of the BBH Domain.
-/// The argument `aspect_ratio` sets the equatorial compression factor,
-/// used by the EquatorialCompression maps which get composed with the Wedges.
-/// This is done if `aspect_ratio` is set to something other than the default
-/// value of one. The `radial_partitioning` specifies the radial boundaries of
-/// sub-shells between `inner_radius` and `outer_radius`. Set the
-/// `radial_distribution` to select the radial distribution of grid points in
-/// the spherical shells.
+/*!
+ * \ingroup ComputationalDomainGroup
+ * These are the CoordinateMaps of the Wedge<3>s used in the Sphere, Shell, and
+ * binary compact object DomainCreators. This function can also be used to
+ * wrap the Sphere or Shell in a cube made of six Wedge<3>s.
+ *
+ * \param inner_radius Radius of the inner boundary of the shell, or the
+ * radius circumscribing the inner cube of a sphere.
+ * \param outer_radius Outer radius of the shell or sphere.
+ * \param inner_sphericity Specifies if the wedges form a spherical inner
+ * boundary (1.0) or a cubical inner boundary (0.0).
+ * \param outer_sphericity Specifies if the wedges form a spherical outer
+ * boundary (1.0) or a cubical outer boundary (0.0).
+ * \param use_equiangular_map Toggles the equiangular map of the Wedge map.
+ * \param use_half_wedges When `true`, the wedges in the +z,-z,+y,-y directions
+ * are cut in half along their xi-axes. The resulting ten CoordinateMaps are
+ * used for the outermost Blocks of the BBH Domain.
+ * \param radial_partitioning Specifies the radial boundaries of sub-shells
+ * between `inner_radius` and `outer_radius`. If the inner and outer
+ * sphericities are different, the innermost shell does the transition.
+ * \param radial_distribution Select the radial distribution of grid points in
+ * the spherical shells.
+ * \param which_wedges Select a subset of wedges.
+ */
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,

@@ -28,7 +28,9 @@ DomainCreator:
     OuterRadius: 10.
     InnerCubeSphericity: 0.
     InitialRefinement: 0
-    InitialGridPoints: [4, 4]
+    InitialGridPoints: 4
+    RadialPartitioning: []
+    RadialDistribution: [Linear]
     UseEquiangularMap: True
     TimeDependence: None
     BoundaryCondition: Flatness
