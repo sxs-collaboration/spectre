@@ -203,6 +203,12 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   using mutable_subitem_tags = tmpl::flatten<
       tmpl::transform<mutable_item_tags, db::Subitems<tmpl::_1>>>;
 
+  /// A list of all the mutable item tags used to create the DataBox
+  ///
+  /// \note This does not include subitems of mutable items
+  using mutable_item_creation_tags =
+      tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
+
   /// A list of all the compute item tags
   using compute_item_tags =
       tmpl::filter<immutable_item_tags, db::is_compute_tag<tmpl::_1>>;
@@ -257,13 +263,9 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
-    using non_subitems_tags =
-        tmpl::list_difference<mutable_item_tags,
-                              mutable_subitem_tags>;
-
     // We do not send subitems for both simple items and compute items since
     // they can be reconstructed very cheaply.
-    pup_impl(p, non_subitems_tags{}, immutable_item_creation_tags{});
+    pup_impl(p, mutable_item_creation_tags{}, immutable_item_creation_tags{});
   }
 
   template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
@@ -320,9 +322,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
                         tmpl::list<AddImmutableItemTags...> /*meta*/);
 
   // clang-tidy: no non-const references
-  template <typename... NonSubitemsTags, typename... ComputeTags>
-  void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
-                tmpl::list<ComputeTags...> /*meta*/);
+  template <typename... MutableItemCreationTags,
+            typename... ImmutableItemCreationTags>
+  void pup_impl(PUP::er& p,  // NOLINT
+                tmpl::list<MutableItemCreationTags...> /*meta*/,
+                tmpl::list<ImmutableItemCreationTags...> /*meta*/);
 
   // Mutating items in the DataBox
   template <typename ParentTag>
@@ -372,8 +376,6 @@ std::string DataBox<tmpl::list<Tags...>>::print_types() const {
 
 template <typename... Tags>
 std::string DataBox<tmpl::list<Tags...>>::print_items() const {
-  using mutable_item_creation_tags =
-      tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
   std::ostringstream os;
   os << "Items:\n";
   const auto print_item = [this, &os](auto tag_v) {
@@ -536,10 +538,11 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 // Serialization of DataBox
 
 template <typename... Tags>
-template <typename... NonSubitemsTags, typename... ComputeTags>
+template <typename... MutableItemCreationTags,
+          typename... ImmutableItemCreationTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
-    PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
-    tmpl::list<ComputeTags...> /*meta*/) {
+    PUP::er& p, tmpl::list<MutableItemCreationTags...> /*meta*/,
+    tmpl::list<ImmutableItemCreationTags...> /*meta*/) {
   const auto pup_simple_item = [&p, this](auto current_tag) {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
@@ -549,9 +552,9 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     }
   };
   (void)pup_simple_item;  // Silence GCC warning about unused variable
-  EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(NonSubitemsTags{}));
+  EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(MutableItemCreationTags{}));
 
-  EXPAND_PACK_LEFT_TO_RIGHT(get_item<ComputeTags>().pup(p));
+  EXPAND_PACK_LEFT_TO_RIGHT(get_item<ImmutableItemCreationTags>().pup(p));
 }
 
 ////////////////////////////////////////////////////////////////
