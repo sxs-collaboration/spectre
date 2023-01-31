@@ -369,7 +369,7 @@ Follow these steps:
    build directory.
 2. Determine the location of your Charm++ installation. In the Docker container
    it is `/work/charm_7_0_0/multicore-linux-x86_64-gcc` for GCC builds and
-   `/work/charm_7_0_0/multicore-linux-x86_64-clang` for clang builds. For Spack
+   `/work/charm_7_0_0/mpi-linux-x86_64-smp-clang` for clang builds. For Spack
    installations you can determine it with
    `spack location --install-dir charmpp`. We refer to the install directory as
    `CHARM_ROOT` below.
