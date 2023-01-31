@@ -346,11 +346,11 @@ auto first_index_to_different_frame(
       ->Scalar<DTYPE(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (Frame::BlockLogical, Frame::ElementLogical,
-                         Frame::Grid),
+                         Frame::Grid, Frame::Distorted),
                         (Frame::Inertial), (double, DataVector))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                         (Frame::BlockLogical, Frame::ElementLogical,
-                         Frame::Grid),
+                         Frame::Grid, Frame::Distorted),
                         (double, DataVector))
 #undef INSTANTIATE
 
@@ -377,12 +377,12 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (Frame::BlockLogical, Frame::ElementLogical,
-                         Frame::Grid),
+                         Frame::Grid, Frame::Distorted),
                         (Frame::Inertial), (double, DataVector),
                         (I, i, iJ, ii, II, ijj))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                         (Frame::BlockLogical, Frame::ElementLogical,
-                         Frame::Grid),
+                         Frame::Grid, Frame::Distorted),
                         (double, DataVector), (I, i, iJ, ii, II, ijj))
 
 #undef INSTANTIATE
@@ -414,7 +414,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
       ->tnsr::ijj<DataVector, DIM(data), DESTFRAME(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (Frame::BlockLogical, Frame::ElementLogical),
-                        (Frame::Grid))
+                        (Frame::Grid, Frame::Distorted))
 
 #undef DIM
 #undef SRCFRAME
