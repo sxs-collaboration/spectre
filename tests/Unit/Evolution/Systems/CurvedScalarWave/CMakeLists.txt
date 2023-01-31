@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_PsiSquared.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
+  Worldtube/Test_Tags.cpp
   )
 
 add_test_library(
@@ -32,6 +33,7 @@ target_link_libraries(
   CurvedWaveEquationAnalyticData
   CurvedScalarWaveHelpers
   DataStructures
+  DomainCreators
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   MathFunctions
