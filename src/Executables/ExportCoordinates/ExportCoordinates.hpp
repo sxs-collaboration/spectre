@@ -9,12 +9,14 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/JacobianDiagnostic.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -64,6 +66,7 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -145,6 +148,22 @@ struct ExportCoordinates {
         db::tag_name<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                                   Frame::Inertial>>(),
         get(det_inv_jac));
+
+    // Also output the jacobian diagnostic, which compares the analytic
+    // Jacobian (via the CoordinateMap) to the numerical Jacobian
+    // (computed via logical_partial_derivative)
+    const auto& jacobian = determinant_and_inverse(inv_jacobian).second;
+    tnsr::i<DataVector, Dim, Frame::ElementLogical> jac_diag{
+        mesh.number_of_grid_points(), 0.0};
+    domain::jacobian_diagnostic(make_not_null(&jac_diag), jacobian,
+                                inertial_coordinates, mesh);
+    for (size_t i = 0; i < Dim; ++i) {
+      components.emplace_back(
+          "JacobianDiagnostic_" +
+              jac_diag.component_name(jac_diag.get_tensor_index(i)),
+          jac_diag.get(i));
+    }
+
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
