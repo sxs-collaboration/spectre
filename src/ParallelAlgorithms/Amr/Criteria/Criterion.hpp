@@ -21,7 +21,7 @@ namespace amr {
 /// be changed
 ///
 /// \details When AMR criteria are evaluated for each element, they should
-/// return a std::aray<amr::domain::Flag, Dim> containing the recommended
+/// return a std::array<amr::domain::Flag, Dim> containing the recommended
 /// refinement choice in each logical dimension of the Element.
 class Criterion : public PUP::able {
  protected:
