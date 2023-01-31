@@ -5,6 +5,7 @@ import click
 import logging
 import rich.logging
 import rich.traceback
+from spectre.support.Machines import this_machine, UnknownMachineError
 
 logger = logging.getLogger(__name__)
 
@@ -71,11 +72,29 @@ class Cli(click.MultiCommand):
         raise NotImplementedError(f"The command '{name}' is not implemented.")
 
 
+def print_machine(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    try:
+        machine = this_machine()
+        click.echo(machine.Name)
+        ctx.exit(1)
+    except UnknownMachineError as exc:
+        click.echo(exc)
+        ctx.exit()
+
+
 # Set up CLI entry point
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]),
              help=f"SpECTRE version: {SPECTRE_VERSION}",
              cls=Cli)
 @click.version_option(version=SPECTRE_VERSION, message="%(version)s")
+@click.option('--machine',
+              is_flag=True,
+              expose_value=False,
+              is_eager=True,
+              callback=print_machine,
+              help="Show the machine we're running on and exit.")
 @click.option('--debug',
               'log_level',
               flag_value=logging.DEBUG,

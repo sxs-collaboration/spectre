@@ -1,0 +1,13 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Wheeler
+  Description: |
+    Supercomputer at Caltech.
+    More information:
+    https://github.com/sxs-collaboration/WelcomeToSXS/wiki/Wheeler
+  # Use one of the 24 available cores for communication by default
+  DefaultProcsPerNode: 23
+  DefaultQueue: "productionQ"
+  DefaultTimeLimit: "1-00:00:00"

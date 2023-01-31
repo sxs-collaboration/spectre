@@ -247,6 +247,11 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Whether to keep the frame pointer. Needed for profiling or other cases
     where you need to be able to figure out what the call stack is.
     (default is `OFF`)
+- MACHINE
+  - Select a machine that we know how to run on, such as a particular
+    supercomputer. A file named MACHINE.yaml must exist in support/Machines and
+    a submit script template named MACHINE.sh must exist in
+    support/SubmitScripts.
 - MEMORY_ALLOCATOR
   - Set which memory allocator to use. If there are unexplained segfaults or
     other memory issues, it would be worth setting `MEMORY_ALLOCATOR=SYSTEM` to

@@ -76,6 +76,7 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=ON \
           -D CMAKE_PREFIX_PATH="$PYTHON_HOME" \
           -D BOOTSTRAP_PY_DEPS=ON \
+          -D MACHINE=Wheeler \
           "$@" \
           $SPECTRE_HOME
 }
