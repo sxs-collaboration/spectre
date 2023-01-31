@@ -240,26 +240,28 @@ void test_connectivity() {
     if (excise_interiorA) {
       expected_excision_spheres.emplace(
           "ObjectAExcisionSphere",
-          ExcisionSphere<3>{inner_radius_objectA,
-                            {{xcoord_objectA, 0.0, 0.0}},
-                            {{0, Direction<3>::lower_zeta()},
-                             {1, Direction<3>::lower_zeta()},
-                             {2, Direction<3>::lower_zeta()},
-                             {3, Direction<3>::lower_zeta()},
-                             {4, Direction<3>::lower_zeta()},
-                             {5, Direction<3>::lower_zeta()}}});
+          ExcisionSphere<3>{
+              inner_radius_objectA,
+              tnsr::I<double, 3, Frame::Grid>{{xcoord_objectA, 0.0, 0.0}},
+              {{0, Direction<3>::lower_zeta()},
+               {1, Direction<3>::lower_zeta()},
+               {2, Direction<3>::lower_zeta()},
+               {3, Direction<3>::lower_zeta()},
+               {4, Direction<3>::lower_zeta()},
+               {5, Direction<3>::lower_zeta()}}});
     }
     if (excise_interiorB) {
       expected_excision_spheres.emplace(
           "ObjectBExcisionSphere",
-          ExcisionSphere<3>{inner_radius_objectB,
-                            {{xcoord_objectB, 0.0, 0.0}},
-                            {{12, Direction<3>::lower_zeta()},
-                             {13, Direction<3>::lower_zeta()},
-                             {14, Direction<3>::lower_zeta()},
-                             {15, Direction<3>::lower_zeta()},
-                             {16, Direction<3>::lower_zeta()},
-                             {17, Direction<3>::lower_zeta()}}});
+          ExcisionSphere<3>{
+              inner_radius_objectB,
+              tnsr::I<double, 3, Frame::Grid>{{xcoord_objectB, 0.0, 0.0}},
+              {{12, Direction<3>::lower_zeta()},
+               {13, Direction<3>::lower_zeta()},
+               {14, Direction<3>::lower_zeta()},
+               {15, Direction<3>::lower_zeta()},
+               {16, Direction<3>::lower_zeta()},
+               {17, Direction<3>::lower_zeta()}}});
     }
     CHECK(domain.excision_spheres() == expected_excision_spheres);
 

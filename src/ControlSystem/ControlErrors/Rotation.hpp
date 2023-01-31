@@ -12,6 +12,7 @@
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -81,16 +82,19 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
            "Excision sphere for ObjectB not in the domain but is needed to "
            "compute Rotation control error.");
 
-    const DataVector grid_position_of_A = array_to_datavector(
-        domain.excision_spheres().at("ObjectAExcisionSphere").center());
-    const DataVector grid_position_of_B = array_to_datavector(
-        domain.excision_spheres().at("ObjectBExcisionSphere").center());
+    const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A =
+        domain.excision_spheres().at("ObjectAExcisionSphere").center();
+    const tnsr::I<double, 3, Frame::Grid>& grid_position_of_B =
+        domain.excision_spheres().at("ObjectBExcisionSphere").center();
     const DataVector& current_position_of_A = get<center_A>(measurements);
     const DataVector& current_position_of_B = get<center_B>(measurements);
 
     // A is to the right of B in grid frame. To get positive differences,
     // take A - B
-    const DataVector grid_diff = grid_position_of_A - grid_position_of_B;
+    const auto grid_diff_tnsr = tenex::evaluate<ti::I>(
+        grid_position_of_A(ti::I) - grid_position_of_B(ti::I));
+    const DataVector grid_diff{
+        {grid_diff_tnsr[0], grid_diff_tnsr[1], grid_diff_tnsr[2]}};
     const DataVector current_diff =
         current_position_of_A - current_position_of_B;
 

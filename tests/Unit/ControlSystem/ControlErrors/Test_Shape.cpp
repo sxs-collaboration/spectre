@@ -39,6 +39,7 @@
 #include "Parallel/Phase.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -64,10 +65,10 @@ void test_shape_control_error() {
   MAKE_GENERATOR(generator);
   domain::FunctionsOfTime::register_derived_with_charm();
 
-  const std::array<double, 3> origin{{0.0, 0.0, 0.0}};
+  const tnsr::I<double, 3, Frame::Grid> origin{0.0};
   const double ah_radius = 1.5;
   const double initial_time = 0.0;
-  Strahlkorper fake_ah{10, 10, origin};
+  Strahlkorper fake_ah{10, 10, make_array<double, 3>(origin)};
   auto& fake_ah_coefs = fake_ah.coefficients();
 
   // Setup initial shape map coefficients. In the map the coefficients are

@@ -16,7 +16,7 @@
 
 template <size_t VolumeDim>
 ExcisionSphere<VolumeDim>::ExcisionSphere(
-    const double radius, const std::array<double, VolumeDim> center,
+    const double radius, const tnsr::I<double, VolumeDim, Frame::Grid> center,
     std::unordered_map<size_t, Direction<VolumeDim>> abutting_directions)
     : radius_(radius),
       center_(center),
