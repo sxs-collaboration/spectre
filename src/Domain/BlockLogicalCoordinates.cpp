@@ -60,14 +60,55 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           } else {
             continue;  // Not in this block
           }
-        } else {  // frame is different than ::Frame::Inertial
+        } else if constexpr (std::is_same_v<Frame, ::Frame::Distorted>) {
+          // Point is in the distorted frame, so we need to map to the grid
+          // frame and then the logical frame.
+          if (not block.has_distorted_frame()) {
+            // Note that block.has_distorted_frame() can be different for
+            // different Blocks.  However, the template parameter Frame is
+            // compile-time and is the same for all Blocks.
+            //
+            // Explanation of the logic here:
+            // 1. Recall that block_logical_coordinates loops through all the
+            //    Blocks, and skips all the Blocks except for the first Block
+            //    it finds that contains the point x.
+            // 2. If Frame is ::Frame::Distorted but
+            //    block.has_distorted_frame() is false, then this block
+            //    cannot contain the point x. Therefore, we should simply
+            //    skip this block.  If it turns out that no blocks contain
+            //    the point x, then we will get an error later.
+            //    (Note that our primary use case for ::Frame::Distorted is to
+            //    find an apparent horizon in the distorted frame. In that
+            //    case, only the Blocks near a horizon have a distorted frame
+            //    because only those Blocks have distortion maps. Thus,
+            //    the Blocks that are skipped here are those that are far
+            //    from horizons).
+            continue; // Not in this block
+          }
+          const auto moving_inv =
+              block.moving_mesh_grid_to_distorted_map().inverse(
+                  x_frame, time, functions_of_time);
+          if (not moving_inv.has_value()) {
+            continue; // Not in this block
+          }
+          // logical to grid map is time-independent.
+          const auto inv = block.moving_mesh_logical_to_grid_map().inverse(
+              moving_inv.value());
+          if (inv.has_value()) {
+            x_logical = inv.value();
+          } else {
+            continue;  // Not in this block
+          }
+        } else {
+          // frame is different than ::Frame::Inertial or ::Frame::Distorted.
           // Currently 'time' is unused in this branch.
           // To make the compiler happy, need to trick it to think that
           // 'time' is used.
           (void) time;
-          // Currently we only support Grid and Inertial frames in the
-          // block, so make sure Frame is ::Frame::Grid. (The
-          // Inertial case was handled above.)
+          // Currently we only support Grid, Distorted and Inertial
+          // frames in the block, so make sure Frame is
+          // ::Frame::Grid. (The Inertial and Distorted cases were
+          // handled above.)
           static_assert(std::is_same_v<Frame, ::Frame::Grid>,
                         "Cannot convert from given frame to Grid frame");
 
@@ -89,13 +130,14 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
             continue;  // Not in this block
           }
         } else {
-          // If the map is time-independent, then the grid and
-          // inertial frames are the same.  So if we are in the grid frame,
-          // convert to the inertial frame.  Otherwise throw a static_assert.
-          // Once we support more frames (e.g. distorted) this logic will
-          // change.
-          static_assert(std::is_same_v<Frame, ::Frame::Grid>,
-                        "Cannot convert from given frame to Grid frame");
+          // If the map is time-independent, then the grid, distorted, and
+          // inertial frames are the same.  So if we are in the grid
+          // or distorted frames, convert to the inertial frame
+          // (this conversion is just a type conversion).
+          // Otherwise throw a static_assert.
+          static_assert(std::is_same_v<Frame, ::Frame::Grid> or
+                            std::is_same_v<Frame, ::Frame::Distorted>,
+                        "Cannot convert from given frame to Inertial frame");
           tnsr::I<double, Dim, ::Frame::Inertial> x_inertial(0.0);
           for (size_t d = 0; d < Dim; ++d) {
             x_inertial.get(d) = x_frame.get(d);
@@ -151,7 +193,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
       const functions_of_time_type& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (::Frame::Inertial, ::Frame::Grid))
+                        (::Frame::Grid, ::Frame::Distorted, ::Frame::Inertial))
 
 #undef FRAME
 #undef DIM
