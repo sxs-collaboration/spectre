@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
   Actions/Test_UpdateAmrDecision.cpp
   Criteria/Test_Random.cpp
+  Projectors/Test_Mesh.cpp
   )
 
 add_test_library(
@@ -22,6 +23,7 @@ target_link_libraries(
   PRIVATE
   Amr
   AmrCriteria
+  AmrProjectors
   DomainStructure
   Utilities
   )
