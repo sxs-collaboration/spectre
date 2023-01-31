@@ -37,6 +37,7 @@ DomainCreator:
       InnerRadius: Auto
       OuterRadius: 300.0
       RadialDistribution: Linear
+    UseEquiangularMap: True
     InitialRefinement:
       ObjectAShell:   [1, 1, 1]
       ObjectBShell:   [1, 1, 1]

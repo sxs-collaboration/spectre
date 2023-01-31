@@ -374,6 +374,7 @@ void test_all_frustum_directions() {
       origin_preimage);
 
   const double projective_scale_factor = 0.3;
+  const double sphericity = 0.;
   for (const bool use_equiangular_map : {true, false}) {
     const auto expected_coord_maps = make_vector(
         FrustumMap{
@@ -385,7 +386,10 @@ void test_all_frustum_directions() {
             top,
             OrientationMap<3>{},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            -1.},
         FrustumMap{
             {{{{-displacement2[0], -lower - displacement2[1]}},
               {{2.0 * lower - displacement2[0], lower - displacement2[1]}},
@@ -395,7 +399,10 @@ void test_all_frustum_directions() {
             top,
             OrientationMap<3>{},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            1.},
         FrustumMap{
             {{{{-2.0 * lower - displacement3[0], -lower - displacement3[1]}},
               {{-displacement3[0], lower - displacement3[1]}},
@@ -407,7 +414,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            -1.},
         FrustumMap{
             {{{{-displacement4[0], -lower - displacement4[1]}},
               {{2.0 * lower - displacement4[0], lower - displacement4[1]}},
@@ -419,7 +429,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            1.},
         FrustumMap{
             {{{{-2.0 * lower - displacement5[0], -lower - displacement5[1]}},
               {{-displacement5[0], lower - displacement5[1]}},
@@ -431,7 +444,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            -1.},
         FrustumMap{
             {{{{-displacement6[0], -lower - displacement6[1]}},
               {{2.0 * lower - displacement6[0], lower - displacement6[1]}},
@@ -443,7 +459,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            1.},
         FrustumMap{
             {{{{-2.0 * lower - displacement7[0], -lower - displacement7[1]}},
               {{-displacement7[0], lower - displacement7[1]}},
@@ -455,7 +474,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            -1.},
         FrustumMap{
             {{{{-displacement8[0], -lower - displacement8[1]}},
               {{2.0 * lower - displacement8[0], lower - displacement8[1]}},
@@ -467,7 +489,10 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
             use_equiangular_map,
-            projective_scale_factor},
+            projective_scale_factor,
+            false,
+            sphericity,
+            1.},
         // Frustum on right half in the +x direction
         FrustumMap{{{{{-lower - displacement9[0], -lower - displacement9[1]}},
                      {{lower - displacement9[0], lower - displacement9[1]}},

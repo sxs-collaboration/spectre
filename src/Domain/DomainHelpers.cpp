@@ -699,7 +699,10 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
 
   using FrustumMap = domain::CoordinateMaps::Frustum;
   // Binary compact object Domains use 10 Frustums, 4 around each Shell in the
-  //+z,-z,+y,-y directions, and 1 Frustum capping each end in +x, -x.
+  // +z,-z,+y,-y directions, and 1 Frustum capping each end in +x, -x.
+  // The frustums on the left are given a -1.0 indicating a lower half
+  // equiangular map while the frustums on the right are given a 1.0 indicating
+  // an upper half equiangular map
   std::vector<FrustumMap> frustums{};
   for (size_t i = 0; i < 4; i++) {
     // frustums on the left
@@ -717,7 +720,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
         use_equiangular_map,
         projective_scale_factor,
         false,
-        sphericity});
+        sphericity,
+        -1.0});
     // frustums on the right
     frustums.push_back(FrustumMap{{{{{-displacement_from_origin[0],
                                       -lower - displacement_from_origin[1]}},
@@ -731,7 +735,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                   use_equiangular_map,
                                   projective_scale_factor,
                                   false,
-                                  sphericity});
+                                  sphericity,
+                                  1.0});
   }
   // end cap frustum on the right
   std::array<double, 3> displacement_from_origin =
