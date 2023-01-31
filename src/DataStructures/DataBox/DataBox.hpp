@@ -22,6 +22,7 @@
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/CleanupRoutine.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
@@ -256,6 +257,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   const auto& get() const;
 
+  /// \brief Copy the items with tags `TagsOfItemsToCopy` from the DataBox
+  /// into a TaggedTuple, should be called by the free function db::copy_items
+  template <typename... TagsOfItemsToCopy>
+  tuples::TaggedTuple<TagsOfItemsToCopy...> copy_items() const;
+
   /// Retrieve a mutable reference to the tag `Tag`, should be called
   /// by the free function db::get_mutable_reference
   template <typename Tag>
@@ -274,6 +280,10 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
                     AddImmutableItemTagsList /*meta*/, Args&&... args);
 
  private:
+  template <typename CopiedItemsTagList, typename DbTagList>
+  // clang-tidy: redundant declaration
+  friend auto copy_items(const DataBox<DbTagList>& box);
+
   template <typename... MutateTags, typename TagList, typename Invokable,
             typename... Args>
   // clang-tidy: redundant declaration
@@ -297,6 +307,16 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   auto& get_item() {
     return static_cast<detail::Item<Tag>&>(*this);
   }
+
+  // copy item correspond to Tag
+  template <typename Tag>
+  auto copy_item() const;
+
+  // copy items corresponding to CopiedItemsTags
+  // from the DataBox to a TaggedTuple
+  template <typename... CopiedItemsTags>
+  tuples::TaggedTuple<CopiedItemsTags...> copy_items(
+      tmpl::list<CopiedItemsTags...> /*meta*/) const;
 
   template <typename ParentTag>
   constexpr void add_mutable_subitems_to_box(tmpl::list<> /*meta*/) {}
@@ -787,6 +807,47 @@ SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) {
   return box.template get<Tag>();
 }
 
+////////////////////////////////////////////////////////////////
+// Copy mutable creation items from the DataBox
+
+/// \cond
+template <typename... Tags>
+template <typename Tag>
+SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::copy_item() const {
+  using item_tag = detail::first_matching_tag<tags_list, Tag>;
+  using item_type = typename item_tag::type;
+  static_assert(tmpl::list_contains_v<mutable_item_creation_tags, item_tag>,
+                "Can only copy mutable creation items");
+  return deserialize<item_type>(
+      serialize<item_type>(get_item<item_tag>().get()).data());
+}
+
+template <typename... DbTags>
+template <typename... CopiedItemsTags>
+tuples::TaggedTuple<CopiedItemsTags...>
+DataBox<tmpl::list<DbTags...>>::copy_items(
+    tmpl::list<CopiedItemsTags...> /*meta*/) const {
+  return tuples::TaggedTuple<CopiedItemsTags...>{
+      copy_item<CopiedItemsTags>()...};
+}
+/// \endcond
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Copy the items from the DataBox into a TaggedTuple
+ *
+ * \return The objects corresponding to CopiedItemsTagList
+ *
+ * \note The tags in CopiedItemsTagList must be a subset of
+ * the mutable_item_creation_tags of the DataBox
+ */
+template <typename CopiedItemsTagList, typename DbTagList>
+SPECTRE_ALWAYS_INLINE auto copy_items(const DataBox<DbTagList>& box) {
+  return box.copy_items(CopiedItemsTagList{});
+}
+
+////////////////////////////////////////////////////////////////
+// Get mutable reference from the DataBox
 template <typename... Tags>
 template <typename Tag>
 auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
