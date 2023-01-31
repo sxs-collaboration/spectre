@@ -13,7 +13,9 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -43,31 +45,28 @@ void test_wedge3d_all_directions() {
   using WedgeHalves = Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
       {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
-  for (const auto& halves : halves_array) {
+  for (const auto& [halves, orientation, with_equiangular_map,
+                    radial_distribution] :
+       cartesian_product(halves_array, all_wedge_directions(),
+                         make_array(true, false),
+                         make_array(CoordinateMaps::Distribution::Linear,
+                                    CoordinateMaps::Distribution::Logarithmic,
+                                    CoordinateMaps::Distribution::Inverse))) {
     CAPTURE(halves);
-    for (const auto& orientation : all_wedge_directions()) {
-      CAPTURE(orientation);
-      for (const auto& with_equiangular_map : {true, false}) {
-        CAPTURE(with_equiangular_map);
-        for (const auto radial_distribution :
-             {CoordinateMaps::Distribution::Linear,
-              CoordinateMaps::Distribution::Logarithmic,
-              CoordinateMaps::Distribution::Inverse}) {
-          CAPTURE(radial_distribution);
-          const Wedge3D wedge_map(
-              inner_radius, outer_radius,
-              radial_distribution == CoordinateMaps::Distribution::Linear
-                  ? inner_sphericity
-                  : 1.0,
-              radial_distribution == CoordinateMaps::Distribution::Linear
-                  ? outer_sphericity
-                  : 1.0,
-              orientation, with_equiangular_map, halves, radial_distribution,
-              with_equiangular_map ? half_opening_angle : M_PI_4);
-          test_suite_for_map_on_unit_cube(wedge_map);
-        }
-      }
-    }
+    CAPTURE(orientation);
+    CAPTURE(with_equiangular_map);
+    CAPTURE(radial_distribution);
+    const Wedge3D wedge_map(
+        inner_radius, outer_radius,
+        radial_distribution == CoordinateMaps::Distribution::Linear
+            ? inner_sphericity
+            : 1.0,
+        radial_distribution == CoordinateMaps::Distribution::Linear
+            ? outer_sphericity
+            : 1.0,
+        orientation, with_equiangular_map, halves, radial_distribution,
+        with_equiangular_map ? half_opening_angle : M_PI_4);
+    test_suite_for_map_on_unit_cube(wedge_map);
   }
 }
 

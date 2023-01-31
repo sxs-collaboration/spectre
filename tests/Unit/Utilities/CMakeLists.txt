@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Blas.cpp
   Test_CachedFunction.cpp
   Test_CallWithDynamicType.cpp
+  Test_CartesianProduct.cpp
   Test_CleanupRoutine.cpp
   Test_CloneUniquePtrs.cpp
   Test_ConstantExpressions.cpp
