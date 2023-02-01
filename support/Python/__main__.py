@@ -63,8 +63,7 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.PlotDatFile import plot_dat_command
             return plot_dat_command
         elif name == "render-bbh":
-            from spectre.Visualization.RenderBBH import (
-                render_bbh_command)
+            from spectre.Visualization.RenderBBH import (render_bbh_command)
             return render_bbh_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
