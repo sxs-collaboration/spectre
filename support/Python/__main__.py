@@ -20,11 +20,11 @@ class Cli(click.MultiCommand):
             "clean-output",
             "extract-dat",
             "extract-input",
-            "generate-video",
             "generate-xdmf",
             "interpolate-to-coords",
             "interpolate-to-mesh",
             "plot-dat",
+            "render-bbh",
             "render-1d",
             "simplify-traces",
         ]
@@ -47,10 +47,6 @@ class Cli(click.MultiCommand):
             from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
                 extract_input_source_from_h5_command)
             return extract_input_source_from_h5_command
-        elif name == "generate-video":
-            from spectre.Visualization.GenerateVideo import (
-                generate_video_command)
-            return generate_video_command
         elif name == "generate-xdmf":
             from spectre.Visualization.GenerateXdmf import (
                 generate_xdmf_command)
@@ -66,6 +62,10 @@ class Cli(click.MultiCommand):
         elif name == "plot-dat":
             from spectre.Visualization.PlotDatFile import plot_dat_command
             return plot_dat_command
+        elif name == "render-bbh":
+            from spectre.Visualization.RenderBBH import (
+                render_bbh_command)
+            return render_bbh_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
             return render_1d_command
