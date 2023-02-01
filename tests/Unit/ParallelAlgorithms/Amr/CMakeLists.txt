@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Actions/Test_EvaluateRefinementCriteria.cpp
   Actions/Test_Initialize.cpp
   Actions/Test_UpdateAmrDecision.cpp
+  Criteria/Test_DriveToTarget.cpp
   Criteria/Test_Random.cpp
   Projectors/Test_Mesh.cpp
   )

@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  DriveToTarget.cpp
   Random.cpp
   )
 
@@ -17,6 +18,7 @@ spectre_target_headers(
   HEADERS
   Criteria.hpp
   Criterion.hpp
+  DriveToTarget.hpp
   Random.hpp
   )
 
@@ -32,6 +34,7 @@ target_link_libraries(
   DomainStructure
   Options
   Parallel
+  Spectral
   Utilities
   )
 
