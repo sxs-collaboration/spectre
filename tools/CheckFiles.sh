@@ -17,7 +17,8 @@ staged_grep() {
     grep "$@";
 }
 pretty_grep() {
-    GREP_COLOR='1;37;41' grep --with-filename -n $color_option "$@"
+    GREP_COLOR='1;37;41' GREP_COLORS='mt=1;37;41' \
+        grep --with-filename -n $color_option "$@"
 }
 
 ##### CI checks #####
