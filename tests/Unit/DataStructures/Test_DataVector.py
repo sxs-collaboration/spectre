@@ -317,7 +317,7 @@ class TestDataVector(unittest.TestCase):
         c = DataVector([1.0, 2.0, 3.0])
         self.assertTrue(((b + c) == np.array([2.0, 4.0, 6.0])).all())
         x = np.linspace(0, 2 * np.pi, 10)
-        self.assertTrue((DataVector(list(x)).sin() == np.sin(x)).all())
+        npt.assert_allclose(DataVector(x).sin(), np.sin(x))
         # Convert a DataVector to a Numpy array
         c_array_copy = np.array(c)
         npt.assert_equal(c_array_copy, b)

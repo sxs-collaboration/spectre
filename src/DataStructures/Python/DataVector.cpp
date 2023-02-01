@@ -4,6 +4,7 @@
 #include "DataStructures/Python/DataVector.hpp"
 
 #include <memory>
+#include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -202,5 +203,6 @@ void bind_datavector(py::module& m) {
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self != py::self)
       .def("__neg__", +[](const DataVector& t) { return DataVector{-t}; });
+  py::implicitly_convertible<py::array, DataVector>();
 }
 }  // namespace py_bindings
