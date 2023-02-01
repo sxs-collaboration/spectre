@@ -597,7 +597,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true, bool use_projective_map = true,
-      double frustum_sphericity = 0.0,
+      double frustum_sphericity = 1.0,
       const std::optional<double>& radius_enveloping_sphere = std::nullopt,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
@@ -623,7 +623,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true, bool use_projective_map = true,
-      double frustum_sphericity = 0.0,
+      double frustum_sphericity = 1.0,
       const std::optional<double>& radius_enveloping_sphere = std::nullopt,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
