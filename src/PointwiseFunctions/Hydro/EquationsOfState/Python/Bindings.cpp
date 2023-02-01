@@ -7,7 +7,14 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/PolytropicFluid.hpp"
 
+namespace EquationsOfState {
+
 PYBIND11_MODULE(_PyEquationsOfState, m) {  // NOLINT
-  EquationsOfState::py_bindings::bind_equation_of_state(m);
-  EquationsOfState::py_bindings::bind_polytropic_fluid(m);
+  // Abstract base class
+  py_bindings::bind_equation_of_state(m);
+  // Derived classes
+  py_bindings::bind_piecewisepolytropic_fluid(m);
+  py_bindings::bind_polytropic_fluid(m);
 }
+
+}  // namespace EquationsOfState
