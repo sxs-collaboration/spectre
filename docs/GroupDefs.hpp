@@ -442,6 +442,11 @@
  * <td> \ref ParallelInfoExecutablePage "ParallelInfo" </td>
  * <td> Executable for checking number of nodes, cores, etc.</td>
  * </tr>
+ * <tr>
+ * <td> ExportEquationOfStateForRotNS </td>
+ * <td> Exports a 1d equation of state in a table format that the RotNS fortran
+ * code can read in.</td>
+ * </tr>
  * </table>
  */
 

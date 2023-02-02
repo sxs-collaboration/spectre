@@ -1,0 +1,60 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: ExportEquationOfStateForRotNS
+# Check: parse;execute
+# ExpectedOutput:
+#   EOS.GN
+
+EquationOfState:
+  # This equation of state is what is used in https://arxiv.org/abs/2301.13818
+  # for the quark-hadron hybrid star. It is a fit to the DBHF_2507 equation of
+  # state. It combines 3 enthalpy parametrized parts and stitches to a spectral
+  # parametrization at low densities.
+  Enthalpy(Enthalpy(Enthalpy(Spectral))):
+    ReferenceDensity: 0.001822038675716006
+    MinimumDensity: 0.001822038675716006
+    MaximumDensity: 0.0034
+    TrigScaling: 0.0
+    PolynomialCoefficients:
+      [1.2730598378768818, 1.2730598378768818, 0.6365299189384409,
+      0.21217663964614697, 0.05304415991153674, 0.01060883198230735,
+      0.0017681386637178915, 0.0002525912376739845, 3.157390470924806e-05,
+      3.5082116343608955e-06]
+    SinCoefficients: [0.0]
+    CosCoefficients: [0.0]
+    TransitionDeltaEpsilon: 0.0
+    Enthalpy:
+      ReferenceDensity: 0.0011334511674839399
+      MinimumDensity: 0.0011334511674839399
+      MaximumDensity: 0.001822038675716006
+      TrigScaling: 0.0
+      PolynomialCoefficients: [1.272585148960061, 0.001]
+      SinCoefficients: [0.0]
+      CosCoefficients: [0.0]
+      TransitionDeltaEpsilon: 0.0
+      Enthalpy:
+        ReferenceDensity: 0.00022669023349678794
+        MinimumDensity: 0.0004533804669935759
+        MaximumDensity: 0.0011334511674839399
+        TrigScaling: 1.26426988871305
+        PolynomialCoefficients:
+          [1.0,0.08063293075870805,4.406887319408924e-26,
+          8.177895241388924e-22,0.013558242085066733,0.004117320982626606,
+          9.757362504479485e-26,1.5646573325075753e-30,0.00016253964205058317]
+        SinCoefficients:
+          [0.0003763514388305583,0.017968749910748837,0.008140052979970034,
+          -0.003067418379116628,-0.0008236601907322793]
+        CosCoefficients:
+          [-0.01080996024705052,-0.003421193490191067,0.012325774692378716,
+          0.004367136076912163,-0.00020374276952538073]
+        TransitionDeltaEpsilon: 0.0
+        Spectral:
+          ReferenceDensity: 4.533804669935759e-05
+          ReferencePressure: 9.970647727158039e-08
+          Coefficients: [1.2, 0.0, 1.34440187653529, -0.46098357752567365]
+          UpperDensity: 0.0004533804669935759
+OutputFileName: ./EOS.GN
+NumberOfPoints: 40000
+LowerBoundRestMassDensityCgs: 1.0e3
+UpperBoundRestMassDensityCgs: 1.0e16
