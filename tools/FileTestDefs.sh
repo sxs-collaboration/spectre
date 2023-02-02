@@ -82,7 +82,8 @@ pretty_grep() {
             file_prefix=${file}:
         fi
         git show ":./${file}" | \
-            GREP_COLOR='1;37;41' grep -n $color "${non_file_args[@]}" | \
+            GREP_COLOR='1;37;41' GREP_COLORS='mt=1;37;41' \
+            grep -n $color "${non_file_args[@]}" | \
             sed "s|^|${file_prefix}|"
     done
 }
@@ -483,11 +484,11 @@ standard_checks+=(catch_approx)
 
 # Check for Doxygen comments on the same line as a /*!
 doxygen_start_line() {
-    is_c++ "$1" && staged_grep -q '/\*\![^\n]' "$1"
+    is_c++ "$1" && staged_grep -q '/\*![^\n]' "$1"
 }
 doxygen_start_line_report() {
     echo "Found occurrences of bad Doxygen syntax: /*! STUFF:"
-    pretty_grep -E '\/\*\!.*' "$@"
+    pretty_grep -E '\/\*!.*' "$@"
 }
 doxygen_start_line_test() {
     test_check pass foo.cpp ''
@@ -727,11 +728,11 @@ standard_checks+=(prevent_cpp_includes)
 # Check for Doxygen-comments in cpp files. We don't parse cpp files with
 # Doxygen, so they shouldn't contain Doxygen-formatting.
 prevent_cpp_doxygen() {
-    [[ $1 =~ \.cpp$ ]] && staged_grep -q '/// \|/\*\!' "$1"
+    [[ $1 =~ \.cpp$ ]] && staged_grep -q '/// \|/\*!' "$1"
 }
 prevent_cpp_doxygen_report() {
     echo "Found Doxygen-formatting in cpp file:"
-    pretty_grep '/// \|/\*\!' "$@"
+    pretty_grep '/// \|/\*!' "$@"
     echo "Doxygen-formatting only has an effect in header files."
     echo "Use standard C++ comments in cpp files."
 }
