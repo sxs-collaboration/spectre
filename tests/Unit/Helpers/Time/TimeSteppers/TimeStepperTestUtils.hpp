@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
+#include <utility>
 
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -70,7 +72,16 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
                          size_t number_of_past_steps, double epsilon,
                          bool forward);
 
-void check_convergence_order(const TimeStepper& stepper);
+/// Check that integration converges as expected.
+///
+/// The \p step_range argument specifies the range of the number of
+/// steps used to produce a fit, and should be cover a factor of a few
+/// over which a log-log plot of the error is roughly linear.  An
+/// appropriate value can be determined by passing `true` as the \p
+/// output argument, which will produce a `convergence.dat` file.
+void check_convergence_order(const TimeStepper& stepper,
+                             const std::pair<int32_t, int32_t>& step_range,
+                             bool output = false);
 
 void check_dense_output(const TimeStepper& stepper,
                         const size_t history_integration_order);

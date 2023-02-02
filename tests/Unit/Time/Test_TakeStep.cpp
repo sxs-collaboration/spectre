@@ -97,12 +97,12 @@ void test_gts() {
       Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::Next<Tags::TimeStep>,
       EvolvedVariable, Tags::dt<EvolvedVariable>,
       Tags::HistoryEvolvedVariables<EvolvedVariable>,
-      Tags::TimeStepper<LtsTimeStepper>,
+      Tags::TimeStepper<TimeStepper>,
       ::Tags::IsUsingTimeSteppingErrorControl>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
+      static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       false);
   // update the rhs

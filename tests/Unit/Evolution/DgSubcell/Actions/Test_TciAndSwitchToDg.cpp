@@ -285,7 +285,7 @@ void test_impl(
     get(get<Tags::dt<Var1>>(dt_vars)) =
         (i + 20.0) * get<0>(logical_coordinates(subcell_mesh));
     time_stepper_history.insert(
-        {true, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}},
+        {false, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}},
         dt_vars);
   }
   Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};

@@ -30,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk5Owren", "[Unit][Time]") {
                                              1.0e-2);
   TimeStepperTestUtils::integrate_variable_test(stepper, 5, 0, 1.0e-9);
   TimeStepperTestUtils::stability_test(stepper);
-  TimeStepperTestUtils::check_convergence_order(stepper);
+  TimeStepperTestUtils::check_convergence_order(stepper, {10, 50});
   TimeStepperTestUtils::check_dense_output(stepper, 5_st);
 
   TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Rk5Owren>(
