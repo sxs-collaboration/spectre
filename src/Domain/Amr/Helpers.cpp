@@ -17,18 +17,18 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace amr::domain {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
     const ElementId<VolumeDim>& id, const std::array<Flag, VolumeDim>& flags) {
-  std::array<size_t, VolumeDim> result{};
+  std::array<size_t, VolumeDim> result = id.refinement_levels();
 
   for (size_t d = 0; d < VolumeDim; ++d) {
     ASSERT(Flag::Undefined != gsl::at(flags, d),
            "Undefined Flag in dimension " << d);
-    gsl::at(result, d) = id.segment_id(d).refinement_level();
     if (Flag::Join == gsl::at(flags, d)) {
       --gsl::at(result, d);
     } else if (Flag::Split == gsl::at(flags, d)) {
@@ -46,12 +46,12 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
   if (orientation.is_aligned()) {
     return desired_refinement_levels(neighbor_id, neighbor_flags);
   }
-  std::array<size_t, VolumeDim> result{};
+  std::array<size_t, VolumeDim> result =
+      orientation.permute_from_neighbor(neighbor_id.refinement_levels());
   for (size_t d = 0; d < VolumeDim; ++d) {
     ASSERT(Flag::Undefined != gsl::at(neighbor_flags, d),
            "Undefined Flag in dimension " << d);
     const size_t mapped_dim = orientation(d);
-    gsl::at(result, d) = neighbor_id.segment_id(mapped_dim).refinement_level();
     if (Flag::Join == gsl::at(neighbor_flags, mapped_dim)) {
       --gsl::at(result, d);
     } else if (Flag::Split == gsl::at(neighbor_flags, mapped_dim)) {
@@ -64,12 +64,7 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_volume(
     const ElementId<VolumeDim>& element_id) {
-  const auto& segment_ids = element_id.segment_ids();
-  size_t sum_of_refinement_levels = 0;
-  for (const auto& segment_id : segment_ids) {
-    sum_of_refinement_levels += segment_id.refinement_level();
-  }
-  return {1, two_to_the(sum_of_refinement_levels)};
+  return {1, two_to_the(alg::accumulate(element_id.refinement_levels(), 0_st))};
 }
 
 template <size_t VolumeDim>

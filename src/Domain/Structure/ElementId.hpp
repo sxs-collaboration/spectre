@@ -93,6 +93,17 @@ class ElementId {
 
   size_t grid_index() const { return grid_index_; }
 
+  std::array<size_t, VolumeDim> refinement_levels() const {
+    if constexpr (VolumeDim == 1) {
+      return {{refinement_level_xi_}};
+    } else if constexpr (VolumeDim == 2) {
+      return {{refinement_level_xi_, refinement_level_eta_}};
+    } else if constexpr (VolumeDim == 3) {
+      return {{refinement_level_xi_, refinement_level_eta_,
+               refinement_level_zeta_}};
+    }
+  }
+
   std::array<SegmentId, VolumeDim> segment_ids() const {
     if constexpr (VolumeDim == 1) {
       return {{SegmentId{refinement_level_xi_, index_xi_}}};

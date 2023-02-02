@@ -99,6 +99,10 @@ void test_element_id() {
   CHECK(block_2_3d.segment_id(1) == segment_ids[1]);
   CHECK(block_2_3d.segment_id(2) == segment_ids[2]);
   CHECK(block_2_3d.grid_index() == 0);
+  CHECK(block_2_3d.refinement_levels() == std::array{2_st, 1_st, 1_st});
+  CHECK(ElementId<2>{31, {{{6, 3}, {9, 67}}}}.refinement_levels() ==
+        std::array{6_st, 9_st});
+  CHECK(ElementId<1>{4, {{{4, 7}}}}.refinement_levels() == std::array{4_st});
 
   // Test parent and child operations:
   const auto check_parent_and_child = [](const ElementId<3>& id) {
