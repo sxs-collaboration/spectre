@@ -15,10 +15,11 @@ spectre_python_add_module(
   ElementLogicalCoordinates.cpp
   ElementMap.cpp
   FunctionsOfTime.cpp
+  JacobianDiagnostic.cpp
   SegmentId.cpp
   PYTHON_FILES
   __init__.py
-  )
+)
 
 spectre_python_headers(
   ${LIBRARY}
@@ -31,8 +32,9 @@ spectre_python_headers(
   ElementLogicalCoordinates.hpp
   ElementMap.hpp
   FunctionsOfTime.hpp
+  JacobianDiagnostic.hpp
   SegmentId.hpp
-  )
+)
 
 spectre_python_link_libraries(
   ${LIBRARY}

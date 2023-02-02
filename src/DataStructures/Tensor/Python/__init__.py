@@ -49,7 +49,7 @@ class JacobianMeta(TensorMeta):
                       (f"{frame.name}ToElementLogical"
                        if inverse else f"ElementLogicalTo{frame.name}")]
             for dtype, dim, frame in itertools.product(
-                [DataVector, float], [1, 2, 3], [Frame.Inertial])
+                [DataVector, float], [1, 2, 3], [Frame.Grid, Frame.Inertial])
         }
 
 

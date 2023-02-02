@@ -192,7 +192,7 @@ void test_jacobian_diagnostic_random() {
               tnsr::I<DataVector, Dim, Fr>, Dim, UpLo::Lo,
               typename Frame::ElementLogical>&)>(
           &domain::jacobian_diagnostic<Dim, Fr>),
-      "Test_JacobianDiagnostic", {"jacobian_diagnostic"}, {{{-1.0, 1.0}}},
+      "JacobianDiagnostic", {"jacobian_diagnostic"}, {{{-1.0, 1.0}}},
       DataVector(5));
 }
 }  // namespace
@@ -204,7 +204,7 @@ SPECTRE_TEST_CASE("Unit.Domain.JacobianDiagnostic", "[Domain][Unit]") {
   TestHelpers::db::test_simple_tag<domain::Tags::JacobianDiagnostic<3>>(
       "JacobianDiagnostic");
 
-  pypp::SetupLocalPythonEnvironment local_python_env{"Domain/Python/"};
+  pypp::SetupLocalPythonEnvironment local_python_env{"Domain/"};
 
   test_jacobian_diagnostic_databox<1, false>();
   test_jacobian_diagnostic_databox<2, false>();
