@@ -12,12 +12,12 @@ ResourceInfo:
 Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]
-    ObjectA: &kerr_right
+    ObjectLeft: &kerr_left
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
-    ObjectB: &kerr_left
+    ObjectRight: &kerr_right
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
