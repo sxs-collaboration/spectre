@@ -1,0 +1,196 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolveXcts
+# Check: parse
+# Timeout: 30
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background: &background
+  Binary:
+    XCoords: [&x_left -20., &x_right 20.]
+    ObjectLeft: &star_left
+      TovStar:
+        # Values taken from Sec. V.C and Fig. 8 in
+        # https://arxiv.org/abs/1708.07358.
+        # This central density corresponds to h = 1.2, or about 5e14 g/cm^3.
+        CentralDensity: 8.087415253997405e-4
+        EquationOfState:
+          PolytropicFluid:
+            PolytropicConstant: 123.6489
+            PolytropicExponent: 2.
+        Coordinates: Isotropic
+    ObjectRight: *star_left
+    AngularVelocity: 0.
+    Expansion: 0.
+    FalloffWidths: None
+
+InitialGuess: *background
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 4.
+      OuterRadius: &star_radius 9.709353324763269
+      XCoord: *x_right
+      Interior: Auto
+      UseLogarithmicMap: False
+    ObjectB:
+      InnerRadius: 4.
+      OuterRadius: *star_radius
+      XCoord: *x_left
+      Interior: Auto
+      UseLogarithmicMap: False
+    EnvelopingCube:
+      Radius: 120.
+      UseProjectiveMap: True
+      Sphericity: 1.
+    OuterShell:
+      InnerRadius: Auto
+      OuterRadius: 600.
+      RadialDistribution: Inverse
+      BoundaryCondition: Flatness
+    UseEquiangularMap: True
+    # This h-refinement is set up so spherical wedges have equal angular size.
+    # Once the domain supports equatorial compression (or similar) this
+    # h-refinement will simplify considerably.
+    InitialRefinement:
+      ObjectAInterior:            [1, 1, 1]
+      ObjectBInterior:            [1, 1, 1]
+      ObjectAShell:               [1, 1, 1]
+      ObjectBShell:               [1, 1, 1]
+      ObjectACube:                [1, 1, 1]
+      ObjectBCube:                [1, 1, 1]
+      EnvelopingCubeUpperZLeft:   [1, 1, 0]
+      EnvelopingCubeLowerZLeft:   [1, 1, 0]
+      EnvelopingCubeUpperYLeft:   [1, 1, 0]
+      EnvelopingCubeLowerYLeft:   [1, 1, 0]
+      EnvelopingCubeLowerX:       [1, 1, 0]
+      EnvelopingCubeUpperZRight:  [1, 1, 0]
+      EnvelopingCubeLowerZRight:  [1, 1, 0]
+      EnvelopingCubeUpperYRight:  [1, 1, 0]
+      EnvelopingCubeLowerYRight:  [1, 1, 0]
+      EnvelopingCubeUpperX:       [1, 1, 0]
+      OuterShellUpperZLeft:       [0, 1, 0]
+      OuterShellLowerZLeft:       [0, 1, 0]
+      OuterShellUpperYLeft:       [0, 1, 0]
+      OuterShellLowerYLeft:       [0, 1, 0]
+      OuterShellLowerX:           [1, 1, 0]
+      OuterShellUpperZRight:      [0, 1, 0]
+      OuterShellLowerZRight:      [0, 1, 0]
+      OuterShellUpperYRight:      [0, 1, 0]
+      OuterShellLowerYRight:      [0, 1, 0]
+      OuterShellUpperX:           [1, 1, 0]
+    # This p-refinement represents a crude manual optimization of the domain. We
+    # will need AMR to optimize the domain further.
+    InitialGridPoints:
+      ObjectAInterior: [4, 4, 4]
+      ObjectBInterior: [4, 4, 4]
+      ObjectAShell:    [4, 4, 5]
+      ObjectBShell:    [4, 4, 5]
+      ObjectACube:     [4, 4, 5]
+      ObjectBCube:     [4, 4, 5]
+      EnvelopingCube:  [4, 4, 4]
+      OuterShell:      [4, 4, 3]
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+
+Observers:
+  VolumeFileName: "BnsVolume"
+  ReductionFileName: "BnsReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 1.e-10
+      AbsoluteResidual: 1.e-11
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Verbose
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 100
+      RelativeResidual: 1.e-3
+      AbsoluteResidual: 1.e-10
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    MaxOverlap: 2
+    Iterations: 3
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-10
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver: ExplicitInverse
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+
+EventsAndTriggers:
+  - - HasConverged
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: ConformalFactor
+              NormType: Max
+              Components: Individual
+            - Name: Lapse
+              NormType: Min
+              Components: Individual
+            - Name: Magnitude(ShiftExcess)
+              NormType: Max
+              Components: Individual
+            - Name: Conformal(EnergyDensity)
+              NormType: Max
+              Components: Individual
+            - Name: Conformal(StressTrace)
+              NormType: Max
+              Components: Individual
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - ShiftExcess
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - HamiltonianConstraint
+            - MomentumConstraint
+            - Conformal(EnergyDensity)
+            - Conformal(StressTrace)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          OverrideObservationValue: None
