@@ -14,11 +14,20 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ObjectLabel.hpp"
+#include "Domain/OptionTags.hpp"
+#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ObjectCenter.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace domain {
@@ -58,6 +67,44 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Tags::Jacobian<Dim, Frame::ElementLogical, Frame::Inertial>>(
       "Jacobian(ElementLogical,Inertial)");
+}
+
+void test_center_tags() {
+  TestHelpers::db::test_base_tag<Tags::ObjectCenter<ObjectLabel::A>>(
+      "ObjectCenter");
+  TestHelpers::db::test_base_tag<Tags::ObjectCenter<ObjectLabel::B>>(
+      "ObjectCenter");
+  TestHelpers::db::test_simple_tag<Tags::ExcisionCenter<ObjectLabel::A>>(
+      "CenterObjectA");
+  TestHelpers::db::test_simple_tag<Tags::ExcisionCenter<ObjectLabel::B>>(
+      "CenterObjectB");
+
+  using Object = domain::creators::BinaryCompactObject::Object;
+
+  const std::unique_ptr<DomainCreator<3>> domain_creator =
+      std::make_unique<domain::creators::BinaryCompactObject>(
+          Object{0.2, 5.0, 8.0, true, true}, Object{0.6, 4.0, -5.5, true, true},
+          100.0, 500.0, 1_st, 5_st);
+
+  const auto grid_center_A =
+      Tags::ExcisionCenter<ObjectLabel::A>::create_from_options(domain_creator);
+  const auto grid_center_B =
+      Tags::ExcisionCenter<ObjectLabel::B>::create_from_options(domain_creator);
+
+  CHECK(grid_center_A == tnsr::I<double, 3, Frame::Grid>{{8.0, 0.0, 0.0}});
+  CHECK(grid_center_B == tnsr::I<double, 3, Frame::Grid>{{-5.5, 0.0, 0.0}});
+
+  const std::unique_ptr<DomainCreator<3>> creator_no_excision =
+      std::make_unique<domain::creators::Brick>(
+          std::array{0.0, 0.0, 0.0}, std::array{1.0, 1.0, 1.0},
+          std::array{0_st, 0_st, 0_st}, std::array{2_st, 2_st, 2_st},
+          std::array{false, false, false});
+
+  CHECK_THROWS_WITH(
+      Tags::ExcisionCenter<ObjectLabel::B>::create_from_options(
+          creator_no_excision),
+      Catch::Contains(" is not in the domains excision spheres but is needed "
+                      "to generate the ExcisionCenter"));
 }
 
 template <size_t Dim>
@@ -156,6 +203,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
   test_simple_tags<1>();
   test_simple_tags<2>();
   test_simple_tags<3>();
+
+  test_center_tags();
 
   test_compute_tags<1>();
   test_compute_tags<2>();
