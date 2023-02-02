@@ -2107,6 +2107,13 @@ void serialization_non_subitem_simple_items() {
   CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
   CHECK(before_2 !=
         &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
+
+  auto copied_items = db::copy_items<
+      tmpl::list<test_databox_tags::Tag1, test_databox_tags::Tag2>>(
+      serialization_test_box);
+  CHECK(get<test_databox_tags::Tag1>(copied_items) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(get<test_databox_tags::Tag2>(copied_items) == "My Sample String"s);
 }
 
 void serialization_subitems_simple_items() {
@@ -2527,6 +2534,10 @@ void serialization_compute_items_of_base_tags() {
   auto copied_box = serialize_and_deserialize(original_box);
   CHECK(db::get<test_databox_tags::Tag2>(copied_box) == "My Sample String");
   CHECK(db::get<test_databox_tags::Tag6>(copied_box) == "My Sample String");
+
+  auto copied_items =
+      db::copy_items<tmpl::list<test_databox_tags::Tag2>>(original_box);
+  CHECK(get<test_databox_tags::Tag2>(copied_items) == "My Sample String");
 }
 
 void serialization_of_pointers() {
@@ -2544,6 +2555,21 @@ void serialization_of_pointers() {
   check(serialize_and_deserialize(box));  // before compute items evaluated
   check(box);
   check(serialize_and_deserialize(box));  // after compute items evaluated
+
+  auto copied_items =
+      db::copy_items<tmpl::list<test_databox_tags::Pointer>>(box);
+  check(box);
+  CHECK(*get<test_databox_tags::Pointer>(copied_items) == 3);
+  CHECK(get<test_databox_tags::Pointer>(copied_items).get() !=
+        &db::get<test_databox_tags::Pointer>(box));
+}
+
+void test_serialization_and_copy_items() {
+  serialization_non_subitem_simple_items();
+  serialization_subitems_simple_items();
+  serialization_subitem_compute_items();
+  serialization_compute_items_of_base_tags();
+  serialization_of_pointers();
 }
 
 namespace test_databox_tags {
@@ -2592,14 +2618,6 @@ void test_reference_item() {
   CHECK(get<test_databox_tags::Tag1>(box) ==
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-}
-
-void test_serialization() {
-  serialization_non_subitem_simple_items();
-  serialization_subitems_simple_items();
-  serialization_subitem_compute_items();
-  serialization_compute_items_of_base_tags();
-  serialization_of_pointers();
 }
 
 void test_get_mutable_reference() {
@@ -2807,7 +2825,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_subitems();
   test_overload_compute_tags();
   test_with_tagged_tuple();
-  test_serialization();
+  test_serialization_and_copy_items();
   test_reference_item();
   test_get_mutable_reference();
   test_output();

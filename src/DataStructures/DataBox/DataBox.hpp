@@ -22,6 +22,7 @@
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/CleanupRoutine.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
@@ -203,6 +204,12 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   using mutable_subitem_tags = tmpl::flatten<
       tmpl::transform<mutable_item_tags, db::Subitems<tmpl::_1>>>;
 
+  /// A list of all the mutable item tags used to create the DataBox
+  ///
+  /// \note This does not include subitems of mutable items
+  using mutable_item_creation_tags =
+      tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
+
   /// A list of all the compute item tags
   using compute_item_tags =
       tmpl::filter<immutable_item_tags, db::is_compute_tag<tmpl::_1>>;
@@ -250,6 +257,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   const auto& get() const;
 
+  /// \brief Copy the items with tags `TagsOfItemsToCopy` from the DataBox
+  /// into a TaggedTuple, should be called by the free function db::copy_items
+  template <typename... TagsOfItemsToCopy>
+  tuples::TaggedTuple<TagsOfItemsToCopy...> copy_items() const;
+
   /// Retrieve a mutable reference to the tag `Tag`, should be called
   /// by the free function db::get_mutable_reference
   template <typename Tag>
@@ -257,13 +269,9 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
-    using non_subitems_tags =
-        tmpl::list_difference<mutable_item_tags,
-                              mutable_subitem_tags>;
-
     // We do not send subitems for both simple items and compute items since
     // they can be reconstructed very cheaply.
-    pup_impl(p, non_subitems_tags{}, immutable_item_creation_tags{});
+    pup_impl(p, mutable_item_creation_tags{}, immutable_item_creation_tags{});
   }
 
   template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
@@ -272,6 +280,10 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
                     AddImmutableItemTagsList /*meta*/, Args&&... args);
 
  private:
+  template <typename CopiedItemsTagList, typename DbTagList>
+  // clang-tidy: redundant declaration
+  friend auto copy_items(const DataBox<DbTagList>& box);
+
   template <typename... MutateTags, typename TagList, typename Invokable,
             typename... Args>
   // clang-tidy: redundant declaration
@@ -295,6 +307,16 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   auto& get_item() {
     return static_cast<detail::Item<Tag>&>(*this);
   }
+
+  // copy item correspond to Tag
+  template <typename Tag>
+  auto copy_item() const;
+
+  // copy items corresponding to CopiedItemsTags
+  // from the DataBox to a TaggedTuple
+  template <typename... CopiedItemsTags>
+  tuples::TaggedTuple<CopiedItemsTags...> copy_items(
+      tmpl::list<CopiedItemsTags...> /*meta*/) const;
 
   template <typename ParentTag>
   constexpr void add_mutable_subitems_to_box(tmpl::list<> /*meta*/) {}
@@ -320,9 +342,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
                         tmpl::list<AddImmutableItemTags...> /*meta*/);
 
   // clang-tidy: no non-const references
-  template <typename... NonSubitemsTags, typename... ComputeTags>
-  void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
-                tmpl::list<ComputeTags...> /*meta*/);
+  template <typename... MutableItemCreationTags,
+            typename... ImmutableItemCreationTags>
+  void pup_impl(PUP::er& p,  // NOLINT
+                tmpl::list<MutableItemCreationTags...> /*meta*/,
+                tmpl::list<ImmutableItemCreationTags...> /*meta*/);
 
   // Mutating items in the DataBox
   template <typename ParentTag>
@@ -372,8 +396,6 @@ std::string DataBox<tmpl::list<Tags...>>::print_types() const {
 
 template <typename... Tags>
 std::string DataBox<tmpl::list<Tags...>>::print_items() const {
-  using mutable_item_creation_tags =
-      tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
   std::ostringstream os;
   os << "Items:\n";
   const auto print_item = [this, &os](auto tag_v) {
@@ -536,10 +558,11 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 // Serialization of DataBox
 
 template <typename... Tags>
-template <typename... NonSubitemsTags, typename... ComputeTags>
+template <typename... MutableItemCreationTags,
+          typename... ImmutableItemCreationTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
-    PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
-    tmpl::list<ComputeTags...> /*meta*/) {
+    PUP::er& p, tmpl::list<MutableItemCreationTags...> /*meta*/,
+    tmpl::list<ImmutableItemCreationTags...> /*meta*/) {
   const auto pup_simple_item = [&p, this](auto current_tag) {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
@@ -549,9 +572,9 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     }
   };
   (void)pup_simple_item;  // Silence GCC warning about unused variable
-  EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(NonSubitemsTags{}));
+  EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(MutableItemCreationTags{}));
 
-  EXPAND_PACK_LEFT_TO_RIGHT(get_item<ComputeTags>().pup(p));
+  EXPAND_PACK_LEFT_TO_RIGHT(get_item<ImmutableItemCreationTags>().pup(p));
 }
 
 ////////////////////////////////////////////////////////////////
@@ -784,6 +807,47 @@ SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) {
   return box.template get<Tag>();
 }
 
+////////////////////////////////////////////////////////////////
+// Copy mutable creation items from the DataBox
+
+/// \cond
+template <typename... Tags>
+template <typename Tag>
+SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::copy_item() const {
+  using item_tag = detail::first_matching_tag<tags_list, Tag>;
+  using item_type = typename item_tag::type;
+  static_assert(tmpl::list_contains_v<mutable_item_creation_tags, item_tag>,
+                "Can only copy mutable creation items");
+  return deserialize<item_type>(
+      serialize<item_type>(get_item<item_tag>().get()).data());
+}
+
+template <typename... DbTags>
+template <typename... CopiedItemsTags>
+tuples::TaggedTuple<CopiedItemsTags...>
+DataBox<tmpl::list<DbTags...>>::copy_items(
+    tmpl::list<CopiedItemsTags...> /*meta*/) const {
+  return tuples::TaggedTuple<CopiedItemsTags...>{
+      copy_item<CopiedItemsTags>()...};
+}
+/// \endcond
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Copy the items from the DataBox into a TaggedTuple
+ *
+ * \return The objects corresponding to CopiedItemsTagList
+ *
+ * \note The tags in CopiedItemsTagList must be a subset of
+ * the mutable_item_creation_tags of the DataBox
+ */
+template <typename CopiedItemsTagList, typename DbTagList>
+SPECTRE_ALWAYS_INLINE auto copy_items(const DataBox<DbTagList>& box) {
+  return box.copy_items(CopiedItemsTagList{});
+}
+
+////////////////////////////////////////////////////////////////
+// Get mutable reference from the DataBox
 template <typename... Tags>
 template <typename Tag>
 auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
