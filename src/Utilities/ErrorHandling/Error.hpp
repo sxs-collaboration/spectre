@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <iomanip>
 #include <string>
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
@@ -47,16 +48,16 @@
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#define ERROR(m)                                                              \
-  do {                                                                        \
-    if (__builtin_is_constant_evaluated()) {                                  \
-      throw std::runtime_error("Failed");                                     \
-    } else {                                                                  \
-      disable_floating_point_exceptions();                                    \
-      abort_with_error_message(__FILE__, __LINE__,                            \
-                               static_cast<const char*>(__PRETTY_FUNCTION__), \
-                               MakeString{} << m);                            \
-    }                                                                         \
+#define ERROR(m)                                                             \
+  do {                                                                       \
+    if (__builtin_is_constant_evaluated()) {                                 \
+      throw std::runtime_error("Failed");                                    \
+    } else {                                                                 \
+      disable_floating_point_exceptions();                                   \
+      abort_with_error_message(                                              \
+          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
+          MakeString{} << std::setprecision(18) << std::scientific << m);    \
+    }                                                                        \
   } while (false)
 
 /*!
@@ -72,6 +73,6 @@
       disable_floating_point_exceptions();                                   \
       abort_with_error_message_no_trace(                                     \
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
-          MakeString{} << m);                                                \
+          MakeString{} << std::setprecision(18) << std::scientific << m);    \
     }                                                                        \
   } while (false)

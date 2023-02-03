@@ -653,7 +653,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
       Catch::Contains(
           "The sphericity must be set between 0.0, corresponding to a flat "
           "surface, and 1.0, corresponding to a spherical surface, inclusive. "
-          "It is currently set to 1.3."));
+          "It is currently set to 1.3"));
 #endif
 }
 }  // namespace domain

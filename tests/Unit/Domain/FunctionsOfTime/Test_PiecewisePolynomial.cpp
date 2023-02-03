@@ -325,7 +325,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
       }()),
       Catch::Contains(
           "t must be increasing from call to call. Attempted to update "
-          "at time 1, which precedes the previous update time of 2."));
+          "at time 1") and
+          Catch::Contains(", which precedes the previous update time of 2"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -340,8 +341,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
       }()),
       Catch::Contains(
           "expiration_time must be nondecreasing from call to call. "
-          "Attempted to change expiration time to 1.1, which precedes "
-          "the previous expiration time of 2.1."));
+          "Attempted to change expiration time to 1.1") and
+          Catch::Contains(
+              ", which precedes the previous expiration time of 2.1"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -353,9 +355,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.update(1.0, {6.0, 0.0}, 2.1);
       }()),
-      Catch::Contains(
-          "Attempt to update PiecewisePolynomial at a time 1 that is "
-          "earlier than the previous expiration time of 2."));
+      Catch::Contains("Attempt to update PiecewisePolynomial at a time 1") and
+          Catch::Contains(
+              " that is earlier than the previous expiration time of 2"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -369,7 +371,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
       }()),
       Catch::Contains(
           "Attempt to set the expiration time of PiecewisePolynomial to "
-          "a value 2.2 that is earlier than the current time 2.5."));
+          "a value 2.2") and
+          Catch::Contains(" that is earlier than the current time 2.5"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -382,9 +385,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.reset_expiration_time(1.5);
         f_of_t.update(2.5, {6.0, 0.0}, 2.2);
       }()),
-      Catch::Contains(
-          "Attempted to change expiration time to 1.5, which precedes "
-          "the previous expiration time of 2."));
+      Catch::Contains("Attempted to change expiration time to 1.5") and
+          Catch::Contains(
+              ", which precedes the previous expiration time of 2"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -411,7 +414,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.update(2.0, {6.0, 0.0}, 2.1);
         f_of_t.func(0.5);
       }()),
-      Catch::Contains("requested time 0.5 precedes earliest time 1 of times."));
+      Catch::Contains("requested time 5.0") and
+          Catch::Contains(" precedes earliest time 1"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -424,7 +428,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.func(2.2);
       }()),
       Catch::Contains(
-          "Attempt to evaluate PiecewisePolynomial at a time 2.2 that "
-          "is after the expiration time 2."));
+          "Attempt to evaluate PiecewisePolynomial at a time 2.2") and
+          Catch::Contains(" that is after the expiration time 2"));
 }
 }  // namespace domain

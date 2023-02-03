@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <iomanip>
 #include <sstream>
 #include <string>
 
@@ -33,29 +34,31 @@
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#define ASSERT(a, m)                                                          \
-  do {                                                                        \
-    if (!(a)) {                                                               \
-      disable_floating_point_exceptions();                                    \
-      std::ostringstream avoid_name_collisions_ASSERT;                        \
-      /* clang-tidy: macro arg in parentheses */                              \
-      avoid_name_collisions_ASSERT << m; /* NOLINT */                         \
-      abort_with_error_message(#a, __FILE__, __LINE__,                        \
-                               static_cast<const char*>(__PRETTY_FUNCTION__), \
-                               avoid_name_collisions_ASSERT.str());           \
-    }                                                                         \
+#define ASSERT(a, m)                                                           \
+  do {                                                                         \
+    if (!(a)) {                                                                \
+      disable_floating_point_exceptions();                                     \
+      std::ostringstream avoid_name_collisions_ASSERT;                         \
+      /* clang-tidy: macro arg in parentheses */                               \
+      avoid_name_collisions_ASSERT << std::setprecision(18) << std::scientific \
+                                   << m; /* NOLINT */                          \
+      abort_with_error_message(#a, __FILE__, __LINE__,                         \
+                               static_cast<const char*>(__PRETTY_FUNCTION__),  \
+                               avoid_name_collisions_ASSERT.str());            \
+    }                                                                          \
   } while (false)
 #else
-#define ASSERT(a, m)                                   \
-  do {                                                 \
-    if (false) {                                       \
-      static_cast<void>(a);                            \
-      disable_floating_point_exceptions();             \
-      std::ostringstream avoid_name_collisions_ASSERT; \
-      /* clang-tidy: macro arg in parentheses */       \
-      avoid_name_collisions_ASSERT << m; /* NOLINT */  \
-      static_cast<void>(avoid_name_collisions_ASSERT); \
-      enable_floating_point_exceptions();              \
-    }                                                  \
+#define ASSERT(a, m)                                                           \
+  do {                                                                         \
+    if (false) {                                                               \
+      static_cast<void>(a);                                                    \
+      disable_floating_point_exceptions();                                     \
+      std::ostringstream avoid_name_collisions_ASSERT;                         \
+      /* clang-tidy: macro arg in parentheses */                               \
+      avoid_name_collisions_ASSERT << std::setprecision(18) << std::scientific \
+                                   << m; /* NOLINT */                          \
+      static_cast<void>(avoid_name_collisions_ASSERT);                         \
+      enable_floating_point_exceptions();                                      \
+    }                                                                          \
   } while (false)
 #endif
