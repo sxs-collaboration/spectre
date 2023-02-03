@@ -9,19 +9,23 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "ParallelAlgorithms/Actions/Goto.hpp"     // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/Goto.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Time/SelfStart.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -461,6 +465,68 @@ struct Cleanup {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
+
+/*!
+ * \ingroup ActionsGroup
+ * \ingroup TimeGroup
+ * An Action that checks if self-start has been completed properly.
+ *
+ * This Action is intended to be run in the CheckTimeStepperHistory phase. It
+ * will check that we have the proper number of entries in our history, and that
+ * our TimeStepId is not in self-start mode. If either of those are true, than
+ * an error will occur and the evolution will not proceed.
+ *
+ * This is to help protect against the case where we don't initialize the time
+ * stepper history properly, yet the evolution continues anyways and we get
+ * nonsense as a result. This can be very hard to debug, so we check it here.
+ */
+struct CheckSelfStart {
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    if (SelfStart::is_self_starting(db::get<::Tags::TimeStepId>(box))) {
+      ERROR(
+          "During the CheckTimeStepperHistory phase, our TimeStepId still "
+          "thinks it's self-starting. This is incorrect and the evolution "
+          "cannot proceed. Something went wrong in the "
+          "InitializeTimeStepperHistory phase.");
+    }
+
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
+
+    tmpl::for_each<history_tags>([&box](auto tag_v) {
+      using history_tag = typename decltype(tag_v)::type;
+      const auto& history = db::get<history_tag>(box);
+      const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+      // For multi-step methods, there should be one extra history entry
+      // compared to our number of past steps. Except when the number of our
+      // past steps is 0. Then we shouldn't have any history. For substep
+      // methods, there should never be any history.
+      const size_t expected_history_size =
+          time_stepper.number_of_past_steps() == 0
+              ? 0
+              : time_stepper.number_of_past_steps() + 1;
+
+      if (expected_history_size != history.size()) {
+        ERROR(
+            "During the CheckTimeStepperHistory phase, the history of our "
+            "evolved variables does not have the expected number of entries, "
+            << expected_history_size << ". It has " << history.size()
+            << " instead. This is incorrect and the evolution cannot proceed. "
+               "Something went wrong in the InitializeTimeStepperHistory "
+               "phase.");
+      }
+    });
+
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
 }  // namespace Actions
 
 namespace detail {
@@ -478,7 +544,7 @@ struct PhaseEnd;
 /// \see SelfStart
 template <typename StepActions, typename System>
 using self_start_procedure = tmpl::flatten<tmpl::list<
-// clang-format off
+    // clang-format off
     SelfStart::Actions::Initialize<System>,
     ::Actions::Label<detail::PhaseStart>,
     SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
@@ -491,4 +557,16 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
     ::Actions::AdvanceTime,
     Parallel::Actions::TerminatePhase>>;
 // clang-format on
+
+/// \ingroup TimeGroup
+/// List of actions meant to be run in the CheckTimeStepperHistory phase after
+/// InitializeTimeStepperHistory that check that self-start was completed
+/// properly
+///
+/// These actions can't be run during the InitializeTimeStepperHistory phase
+/// because it's possible that self start gets stuck in the `StepActions` and
+/// never actually properly exits. In that case, these checks would never be
+/// run.
+using check_self_start_actions = tmpl::list<SelfStart::Actions::CheckSelfStart,
+                                            Parallel::Actions::TerminatePhase>;
 }  // namespace SelfStart
