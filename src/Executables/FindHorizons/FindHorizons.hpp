@@ -7,13 +7,13 @@
 #include <string>
 
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -203,10 +203,10 @@ struct ComputeHorizonVolumeQuantities
   }
 };
 
-template <size_t Dim, ah::ObjectLabel Label>
+template <size_t Dim, domain::ObjectLabel Label>
 struct ApparentHorizon
     : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-  static std::string name() { return "Ah" + ah::name(Label); }
+  static std::string name() { return "Ah" + ::domain::name(Label); }
   using temporal_id = ::Tags::Time;
   using compute_target_points =
       intrp::TargetPoints::ApparentHorizon<ApparentHorizon, Frame::Inertial>;
@@ -237,8 +237,8 @@ struct Metavariables {
   // A placeholder system for the domain creators
   struct system {};
 
-  using AhA = ApparentHorizon<Dim, ah::ObjectLabel::A>;
-  using AhB = ApparentHorizon<Dim, ah::ObjectLabel::B>;
+  using AhA = ApparentHorizon<Dim, domain::ObjectLabel::A>;
+  using AhB = ApparentHorizon<Dim, domain::ObjectLabel::B>;
   static constexpr bool two_horizons = TwoHorizons;
 
   struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {

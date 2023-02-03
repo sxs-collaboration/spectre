@@ -8,7 +8,6 @@
 
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ApparentHorizons/ObserveCenters.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -17,6 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
@@ -44,14 +44,14 @@ struct Mesh;
 
 namespace control_system::ah {
 struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
-  template <::ah::ObjectLabel Horizon>
+  template <::domain::ObjectLabel Horizon>
   struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
    private:
     template <typename ControlSystems>
     struct InterpolationTarget
         : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       static std::string name() {
-        return "ControlSystemAh" + ::ah::name(Horizon);
+        return "ControlSystemAh" + ::domain::name(Horizon);
       }
 
       using temporal_id = ::Tags::TimeAndPrevious;
@@ -100,7 +100,7 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
     }
   };
 
-  using submeasurements = tmpl::list<FindHorizon<::ah::ObjectLabel::A>,
-                                     FindHorizon<::ah::ObjectLabel::B>>;
+  using submeasurements = tmpl::list<FindHorizon<::domain::ObjectLabel::A>,
+                                     FindHorizon<::domain::ObjectLabel::B>>;
 };
 }  // namespace control_system::ah

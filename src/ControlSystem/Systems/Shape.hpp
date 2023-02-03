@@ -9,7 +9,6 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
@@ -21,6 +20,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
@@ -53,11 +53,11 @@ namespace control_system::Systems {
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Shape Shape \endlink control error
  */
-template <::ah::ObjectLabel Horizon, size_t DerivOrder>
+template <::domain::ObjectLabel Horizon, size_t DerivOrder>
 struct Shape : tt::ConformsTo<protocols::ControlSystem> {
   static constexpr size_t deriv_order = DerivOrder;
 
-  static std::string name() { return "Shape"s + ::ah::name(Horizon); }
+  static std::string name() { return "Shape"s + ::domain::name(Horizon); }
 
   static std::optional<std::string> component_name(
       const size_t i, const size_t num_components) {
@@ -98,7 +98,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     using argument_tags =
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
 
-    template <::ah::ObjectLabel MeasureHorizon, typename Metavariables>
+    template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
     static void apply(ah::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
                       const Strahlkorper<Frame::Grid>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,

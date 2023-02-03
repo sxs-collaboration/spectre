@@ -8,11 +8,11 @@
 #include <pup.h>
 #include <string>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -37,14 +37,14 @@ struct Grid;
 namespace control_system {
 namespace ControlErrors {
 namespace detail {
-template <::ah::ObjectLabel Horizon>
+template <::domain::ObjectLabel Horizon>
 std::string excision_sphere_name() {
-  return "Object"s + ::ah::name(Horizon) + "ExcisionSphere"s;
+  return "Object"s + ::domain::name(Horizon) + "ExcisionSphere"s;
 }
 
-template <::ah::ObjectLabel Horizon>
+template <::domain::ObjectLabel Horizon>
 std::string size_name() {
-  return "Size"s + ::ah::name(Horizon);
+  return "Size"s + ::domain::name(Horizon);
 }
 }  // namespace detail
 
@@ -86,7 +86,7 @@ std::string size_name() {
  * - Currently this control error can only be used with the \link
  *   control_system::Systems::Shape Shape \endlink control system
  */
-template <::ah::ObjectLabel Horizon>
+template <::domain::ObjectLabel Horizon>
 struct Shape : tt::ConformsTo<protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = 1;
 

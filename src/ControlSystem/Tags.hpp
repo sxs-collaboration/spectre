@@ -26,14 +26,12 @@
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 /// \cond
-namespace ah {
-enum class ObjectLabel;
-}  // namespace ah
 namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
 }  // namespace control_system
 namespace domain {
+enum class ObjectLabel;
 namespace OptionTags {
 template <size_t Dim>
 struct DomainCreator;
@@ -59,7 +57,7 @@ namespace control_system {
 namespace QueueTags {
 /// \ingroup ControlSystemGroup
 /// Holds the centers of each horizon from measurements as DataVectors
-template <::ah::ObjectLabel Horizon>
+template <::domain::ObjectLabel Horizon>
 struct Center {
   using type = DataVector;
 };

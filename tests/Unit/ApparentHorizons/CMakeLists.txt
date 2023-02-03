@@ -8,7 +8,6 @@ set(LIBRARY_SOURCES
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
-  Test_ObjectLabel.cpp
   Test_ObserveCenters.cpp
   Test_StrahlkorperGr.cpp
   Test_StrahlkorperCoordsInDifferentFrame.cpp

@@ -8,7 +8,6 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Component.hpp"
@@ -22,6 +21,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -90,10 +90,9 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
-    using type =
-        LinkedMessageQueue<double,
-                           tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                                      QueueTags::Center<::ah::ObjectLabel::B>>>;
+    using type = LinkedMessageQueue<
+        double, tmpl::list<QueueTags::Center<::domain::ObjectLabel::A>,
+                           QueueTags::Center<::domain::ObjectLabel::B>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -103,7 +102,7 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
     using argument_tags =
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
 
-    template <::ah::ObjectLabel Horizon, typename Metavariables>
+    template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(ah::BothHorizons::FindHorizon<Horizon> /*meta*/,
                       const Strahlkorper<Frame::Grid>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,

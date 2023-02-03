@@ -6,12 +6,12 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -80,8 +80,10 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     const double current_expansion_factor =
         functions_of_time.at(function_of_time_name)->func(time)[0][0];
 
-    using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
-    using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
+    using center_A =
+        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
+    using center_B =
+        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
 
     ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "

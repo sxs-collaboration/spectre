@@ -6,13 +6,13 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -72,8 +72,10 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
                         const tuples::TaggedTuple<TupleTags...>& measurements) {
     const auto& domain = get<domain::Tags::Domain<3>>(cache);
 
-    using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
-    using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
+    using center_A =
+        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
+    using center_B =
+        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
 
     ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "

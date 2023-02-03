@@ -6,13 +6,13 @@
 #include <cstddef>
 #include <string>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -92,8 +92,8 @@ void test_rotation_control_error() {
   const auto& cache = ActionTesting::cache<element_component>(runner, 0);
 
   using QueueTuple = tuples::TaggedTuple<
-      control_system::QueueTags::Center<::ah::ObjectLabel::A>,
-      control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
+      control_system::QueueTags::Center<::domain::ObjectLabel::A>,
+      control_system::QueueTags::Center<::domain::ObjectLabel::B>>;
 
   // Create fake measurements.
   const DataVector pos_A{{2.0, 3.0, 6.0}};

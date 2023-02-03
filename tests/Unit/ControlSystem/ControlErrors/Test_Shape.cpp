@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
@@ -31,6 +30,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -101,11 +101,11 @@ void test_shape_control_error() {
 
   // Setup control system stuff
   const std::string shape_name =
-      Systems::Shape<::ah::ObjectLabel::A, deriv_order>::name();
+      Systems::Shape<::domain::ObjectLabel::A, deriv_order>::name();
   const std::string size_name =
-      ControlErrors::detail::size_name<::ah::ObjectLabel::A>();
+      ControlErrors::detail::size_name<::domain::ObjectLabel::A>();
   const std::string excision_sphere_A_name =
-      ControlErrors::detail::excision_sphere_name<::ah::ObjectLabel::A>();
+      ControlErrors::detail::excision_sphere_name<::domain::ObjectLabel::A>();
 
   // Since the map for A/B are independent of each other, we only need to test
   // one of them

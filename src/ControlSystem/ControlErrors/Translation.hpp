@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
@@ -15,6 +14,7 @@
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -93,7 +93,8 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
     const double expansion_factor =
         functions_of_time.at("Expansion")->func(time)[0][0];
 
-    using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
+    using center_A =
+        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
 
     ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "
