@@ -54,7 +54,9 @@ void test_tov(
   const double surface_log_enthalpy = 0.0;
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
   const double final_log_enthalpy =
-      initial_log_enthalpy + (current_iteration + 1.0) * step;
+      num_pts == current_iteration + 1
+          ? surface_log_enthalpy
+          : initial_log_enthalpy + (current_iteration + 1.0) * step;
   const RelativisticEuler::Solutions::TovSolution tov_out_full(
       equation_of_state, central_mass_density,
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild,
