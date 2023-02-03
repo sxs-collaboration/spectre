@@ -85,8 +85,8 @@ class H5Check:
                         test_data.dtype, expected_data.dtype,
                         "test and expected h5 datasets must have identical"
                         " types.")
-                    if (test_data.dtype == np.dtype(np.float) or
-                            test_data.dtype == np.dtype(np.complexfloating)):
+                    if (test_data.dtype == float
+                            or test_data.dtype == complex):
                         npt.assert_allclose(test_data[:, column_mask],
                                             expected_data[:, column_mask],
                                             rtol=self.relative_tolerance,
@@ -94,8 +94,8 @@ class H5Check:
                     else:
                         self.unit_test.assertEqual(test_data, expected_data)
                 else:
-                    if (test_data.dtype == np.dtype(np.float) or
-                            test_data.dtype == np.dtype(np.complexfloating)):
+                    if (test_data.dtype == float
+                            or test_data.dtype == complex):
                         npt.assert_allclose(test_data[:, column_mask],
                                             0.0,
                                             rtol=self.relative_tolerance,

@@ -17,10 +17,10 @@
  * \end{equation}
  *
  * is a nonlinear Poisson-type elliptic PDE for the "puncture field" $u$. See
- * Eq. (12.52) and surrounding discussion in \cite BaumgarteShapiro for an
- * introduction. To arrive at the puncture equation we assume conformal flatness
- * and maximal slicing in vacuum so the Einstein momentum constraint becomes
- * homogeneous:
+ * Eq. (12.52) and surrounding discussion in \cite BaumgarteShapiro, or
+ * \cite BrandtBruegmann1997 for an introduction. To arrive at the puncture
+ * equation we assume conformal flatness and maximal slicing in vacuum so the
+ * Einstein momentum constraint becomes homogeneous:
  *
  * \begin{equation}\label{eq:mom_constraint}
  * \nabla_j \bar{A}^{ij} = 0
@@ -78,7 +78,7 @@
  * where we define
  *
  * \begin{equation}
- * \frac{1}{\alpha} = \sum_I \frac{M_I}{r_I}
+ * \frac{1}{\alpha} = \sum_I \frac{M_I}{2 r_I}
  * \end{equation}
  *
  * and
@@ -87,9 +87,13 @@
  * \beta = \frac{1}{8} \alpha^7 \bar{A}_{ij} \bar{A}^{ij}.
  * \end{equation}
  *
- * Here, $M_I$ is the "puncture mass" parameter for the $I$th black hole at
- * position $\mathbf{C}_I$, and $\bar{A}_{ij}$ is the superposition of the
- * Bowen-York extrinsic curvature of the black holes with the parameters defined
- * above.
+ * Here, $M_I$ is the "puncture mass" (or "bare mass") parameter for the $I$th
+ * black hole at position $\mathbf{C}_I$, and $\bar{A}_{ij}$ is the
+ * superposition of the Bowen-York extrinsic curvature of the black holes with
+ * the parameters defined above. Note that the definition of $\frac{1}{\alpha}$
+ * in Eq. (12.51) in \cite BaumgarteShapiro is missing factors of $\frac{1}{2}$,
+ * but their Eq. (3.23) includes them, as does Eq. (8) in
+ * \cite BrandtBruegmann1997 (though the latter includes the unit offset in
+ * the definition of $u$).
  */
 namespace Punctures {}
