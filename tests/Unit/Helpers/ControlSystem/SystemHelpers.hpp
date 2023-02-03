@@ -50,6 +50,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ObjectCenter.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestingFramework.hpp"
@@ -201,7 +202,9 @@ struct MockControlComponent {
   using simple_tags = init_simple_tags<ControlSystem>;
 
   using const_global_cache_tags =
-      tmpl::list<control_system::Tags::MeasurementsPerUpdate>;
+      tmpl::list<control_system::Tags::MeasurementsPerUpdate,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,

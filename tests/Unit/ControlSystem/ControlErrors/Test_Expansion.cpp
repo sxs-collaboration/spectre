@@ -75,10 +75,16 @@ void test_expansion_control_error() {
   const std::string expansion_name =
       system_helper.template name<expansion_system>();
 
+  auto grid_center_A =
+      domain.excision_spheres().at("ObjectAExcisionSphere").center();
+  auto grid_center_B =
+      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+
   // Setup runner and element component because it's the easiest way to get the
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+                            std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(

@@ -11,6 +11,8 @@
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/ObjectLabel.hpp"
+#include "Domain/Tags/ObjectCenter.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -25,11 +27,13 @@ namespace Actions {
  * GlobalCache:
  * - Uses:
  *   - `control_system::Tags::MeasurementTimescales`
+ *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::A>`
+ *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::B>`
  *
  * DataBox:
  * - Uses: Nothing
  * - Adds:
- *   - `control_system::Tags::Averager<ContolSystem>`
+ *   - `control_system::Tags::Averager<ControlSystem>`
  *   - `control_system::Tags::Controller<ControlSystem>`
  *   - `control_system::Tags::TimescaleTuner<ControlSystem>`
  *   - `control_system::Tags::ControlError<ControlSystem>`
@@ -57,7 +61,9 @@ struct Initialize {
                       control_system::Tags::CurrentNumberOfMeasurements>;
 
   using const_global_cache_tags =
-      tmpl::list<control_system::Tags::MeasurementsPerUpdate>;
+      tmpl::list<control_system::Tags::MeasurementsPerUpdate,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
 
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
