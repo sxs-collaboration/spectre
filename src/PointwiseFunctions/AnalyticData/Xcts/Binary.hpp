@@ -281,12 +281,12 @@ class Binary : public elliptic::analytic_data::Background,
         "The coordinates on the x-axis where the two objects are placed";
     using type = std::array<double, 2>;
   };
-  struct ObjectA {
+  struct ObjectLeft {
     static constexpr Options::String help =
         "The object placed on the negative x-axis";
     using type = std::unique_ptr<IsolatedObjectBase>;
   };
-  struct ObjectB {
+  struct ObjectRight {
     static constexpr Options::String help =
         "The object placed on the positive x-axis";
     using type = std::unique_ptr<IsolatedObjectBase>;
@@ -309,7 +309,7 @@ class Binary : public elliptic::analytic_data::Background,
         "to disable the Gaussian falloff.";
     using type = Options::Auto<std::array<double, 2>, Options::AutoLabel::None>;
   };
-  using options = tmpl::list<XCoords, ObjectA, ObjectB, AngularVelocity,
+  using options = tmpl::list<XCoords, ObjectLeft, ObjectRight, AngularVelocity,
                              Expansion, FalloffWidths>;
   static constexpr Options::String help =
       "Binary compact-object data in general relativity, constructed from "
@@ -323,15 +323,20 @@ class Binary : public elliptic::analytic_data::Background,
   ~Binary() = default;
 
   Binary(std::array<double, 2> xcoords,
-         std::unique_ptr<IsolatedObjectBase> object_a,
-         std::unique_ptr<IsolatedObjectBase> object_b, double angular_velocity,
-         const double expansion,
-         std::optional<std::array<double, 2>> falloff_widths)
+         std::unique_ptr<IsolatedObjectBase> object_left,
+         std::unique_ptr<IsolatedObjectBase> object_right,
+         double angular_velocity, const double expansion,
+         std::optional<std::array<double, 2>> falloff_widths,
+         const Options::Context& context = {})
       : xcoords_(xcoords),
-        superposed_objects_({std::move(object_a), std::move(object_b)}),
+        superposed_objects_({std::move(object_left), std::move(object_right)}),
         angular_velocity_(angular_velocity),
         expansion_(expansion),
-        falloff_widths_(falloff_widths) {}
+        falloff_widths_(falloff_widths) {
+    if (xcoords_[0] >= xcoords_[1]) {
+      PARSE_ERROR(context, "Specify 'XCoords' ascending from left to right.");
+    }
+  }
 
   explicit Binary(CkMigrateMessage* m)
       : elliptic::analytic_data::Background(m),
@@ -367,7 +372,10 @@ class Binary : public elliptic::analytic_data::Background,
     p | falloff_widths_;
   }
 
+  /// Coordinates of the objects, ascending left to right
   const std::array<double, 2>& x_coords() const { return xcoords_; }
+  /// The two objects. First entry is the left object, second entry is the right
+  /// object.
   const std::array<std::unique_ptr<IsolatedObjectBase>, 2>& superposed_objects()
       const {
     return superposed_objects_;
