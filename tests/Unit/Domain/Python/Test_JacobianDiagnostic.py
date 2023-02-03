@@ -1,15 +1,34 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
+from spectre.Domain import jacobian_diagnostic
+
+import numpy.testing as npt
 import unittest
+from spectre.DataStructures import DataVector
+from spectre.DataStructures.Tensor import tnsr, Frame, Jacobian
+from spectre.Spectral import Basis, Mesh, Quadrature, collocation_points
 
 
-def jacobian_diagnostic(analytic_jacobian, numeric_jacobian_transpose):
-    analytic_sum = np.abs(analytic_jacobian).sum(axis=0)
-    numeric_sum = np.abs(numeric_jacobian_transpose).sum(axis=1)
-    jac_diag = 1.0 - analytic_sum / numeric_sum
-    return jac_diag
+def affine_map(x):
+    return 2. * x
+
+
+class TestJacobianDiagnostic(unittest.TestCase):
+    def test_jacobian_diagnostic(self):
+        mesh = Mesh[1](4, Basis.Legendre, Quadrature.GaussLobatto)
+        x = collocation_points(mesh)
+        mapped_coordinates_list = affine_map(x)
+        mapped_coordinates = tnsr.I[DataVector, 1, Frame.Grid](num_points=4,
+                                                               fill=0.)
+        mapped_coordinates[0] = mapped_coordinates_list
+
+        jac = Jacobian[DataVector, 1, Frame.Grid](num_points=4, fill=2.)
+
+        jac_diag = jacobian_diagnostic(jac, mapped_coordinates, mesh)
+        expected_jac_diag = tnsr.I[DataVector, 1,
+                                   Frame.ElementLogical](num_points=4, fill=0.)
+        npt.assert_allclose(jac_diag, expected_jac_diag)
 
 
 if __name__ == '__main__':

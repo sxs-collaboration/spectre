@@ -48,6 +48,7 @@ void jacobian_diagnostic(
         tnsr::I<DataVector, Dim, Fr>, Dim, UpLo::Lo,
         typename Frame::ElementLogical>& numeric_jacobian_transpose);
 
+/// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief A diagnostic comparing the analytic and numerical Jacobians for a
@@ -74,6 +75,13 @@ void jacobian_diagnostic(
     const ::Jacobian<DataVector, Dim, Frame::ElementLogical, Fr>&
         analytic_jacobian,
     const tnsr::I<DataVector, Dim, Fr>& mapped_coords, const ::Mesh<Dim>& mesh);
+
+template <size_t Dim, typename Fr>
+tnsr::i<DataVector, Dim, Frame::ElementLogical> jacobian_diagnostic(
+    const ::Jacobian<DataVector, Dim, Frame::ElementLogical, Fr>&
+        analytic_jacobian,
+    const tnsr::I<DataVector, Dim, Fr>& mapped_coords, const ::Mesh<Dim>& mesh);
+/// @}
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup

@@ -63,6 +63,18 @@ void jacobian_diagnostic(
   jacobian_diagnostic(jacobian_diag, analytic_jacobian,
                       numerical_jacobian_transpose);
 }
+
+template <size_t Dim, typename Fr>
+tnsr::i<DataVector, Dim, typename Frame::ElementLogical> jacobian_diagnostic(
+    const ::Jacobian<DataVector, Dim, Frame::ElementLogical, Fr>&
+        analytic_jacobian,
+    const tnsr::I<DataVector, Dim, Fr>& mapped_coords,
+    const ::Mesh<Dim>& mesh) {
+  tnsr::i<DataVector, Dim, typename Frame::ElementLogical> jacobian_diag{};
+  jacobian_diagnostic(make_not_null(&jacobian_diag), analytic_jacobian,
+                      mapped_coords, mesh);
+  return jacobian_diag;
+}
 }  // namespace domain
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -82,6 +94,12 @@ void jacobian_diagnostic(
       const gsl::not_null<                                                  \
           tnsr::i<DataVector, DIM(data), typename Frame::ElementLogical>*>  \
           jacobian_diag,                                                    \
+      const ::Jacobian<DataVector, DIM(data), Frame::ElementLogical,        \
+                       FRAME(data)>& analytic_jacobian,                     \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& mapped_coords,     \
+      const ::Mesh<DIM(data)>& mesh);                                       \
+  template tnsr::i<DataVector, DIM(data), typename Frame::ElementLogical>   \
+  domain::jacobian_diagnostic(                                              \
       const ::Jacobian<DataVector, DIM(data), Frame::ElementLogical,        \
                        FRAME(data)>& analytic_jacobian,                     \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& mapped_coords,     \
