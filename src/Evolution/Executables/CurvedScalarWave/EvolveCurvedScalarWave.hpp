@@ -304,6 +304,8 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
+          Parallel::PhaseActions<Parallel::Phase::CheckTimeStepperHistory,
+                                 SelfStart::check_self_start_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
@@ -333,10 +335,11 @@ struct EvolutionMetavars {
       "Evolve a scalar wave in Dim spatial dimension on a curved background "
       "spacetime."};
 
-  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
+  static constexpr std::array<Parallel::Phase, 6> default_phase_order{
       {Parallel::Phase::Initialization,
        Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+       Parallel::Phase::CheckTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

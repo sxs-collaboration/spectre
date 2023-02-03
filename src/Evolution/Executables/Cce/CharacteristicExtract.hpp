@@ -81,9 +81,10 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
       "Perform Cauchy Characteristic Extraction using .h5 input data.\n"
       "Uses regularity-preserving formulation."};
 
-  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
       {Parallel::Phase::Initialization,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::InitializeTimeStepperHistory,
+       Parallel::Phase::CheckTimeStepperHistory, Parallel::Phase::Evolve,
        Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)

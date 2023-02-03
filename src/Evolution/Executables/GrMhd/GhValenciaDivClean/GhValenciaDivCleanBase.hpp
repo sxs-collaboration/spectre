@@ -324,21 +324,21 @@ namespace detail {
 template <typename InitialData>
 constexpr auto make_default_phase_order() {
   if constexpr (evolution::is_numeric_initial_data_v<InitialData>) {
-    return std::array<Parallel::Phase, 8>{
+    return std::array<Parallel::Phase, 9>{
         {Parallel::Phase::Initialization,
          Parallel::Phase::RegisterWithElementDataReader,
          Parallel::Phase::ImportInitialData,
          Parallel::Phase::InitializeInitialDataDependentQuantities,
          Parallel::Phase::InitializeTimeStepperHistory,
-         Parallel::Phase::Register, Parallel::Phase::Evolve,
-         Parallel::Phase::Exit}};
+         Parallel::Phase::CheckTimeStepperHistory, Parallel::Phase::Register,
+         Parallel::Phase::Evolve, Parallel::Phase::Exit}};
   } else {
-    return std::array<Parallel::Phase, 6>{
+    return std::array<Parallel::Phase, 7>{
         {Parallel::Phase::Initialization,
          Parallel::Phase::InitializeInitialDataDependentQuantities,
          Parallel::Phase::InitializeTimeStepperHistory,
-         Parallel::Phase::Register, Parallel::Phase::Evolve,
-         Parallel::Phase::Exit}};
+         Parallel::Phase::CheckTimeStepperHistory, Parallel::Phase::Register,
+         Parallel::Phase::Evolve, Parallel::Phase::Exit}};
   }
 }
 }  // namespace detail
@@ -723,6 +723,8 @@ struct GhValenciaDivCleanTemplateBase<
           Parallel::PhaseActions<
               Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
+          Parallel::PhaseActions<Parallel::Phase::CheckTimeStepperHistory,
+                                 SelfStart::check_self_start_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
