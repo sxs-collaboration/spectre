@@ -71,6 +71,18 @@ class TaggedTuple;
 /// \endcond
 
 namespace evolution::dg::Actions {
+namespace detail {
+template <typename T>
+struct get_dg_package_temporary_tags {
+  using type = typename T::dg_package_data_temporary_tags;
+};
+template <typename System, typename T>
+struct get_primitive_tags_for_face {
+  using type = typename get_primitive_vars<
+      System::has_primitive_and_conservative_vars>::template f<T>;
+};
+}  // namespace detail
+
 /*!
  * \brief Computes the time derivative for a DG time step.
  *
@@ -379,6 +391,51 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
          "it offers are quite substantial. Relaxing this assumption is likely "
          "to require quite a bit of careful code refactoring and debugging.");
 
+  const auto& boundary_correction =
+      db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
+  using derived_boundary_corrections =
+      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+
+  // To avoid a second allocation in internal_mortar_data, we allocate the
+  // variables needed to construct the fields on the faces here along with
+  // everything else. This requires us to know all the tags necessary to apply
+  // boundary corrections. However, since we pick boundary corrections at
+  // runtime, we just gather all possible tags from all possible boundary
+  // corrections and lump them into the allocation. This may result in a
+  // larger-than-necessary allocation, but it won't be that much larger.
+  using all_dg_package_temporary_tags =
+      tmpl::transform<derived_boundary_corrections,
+                      detail::get_dg_package_temporary_tags<tmpl::_1>>;
+  using all_primitive_tags_for_face =
+      tmpl::transform<derived_boundary_corrections,
+                      detail::get_primitive_tags_for_face<
+                          tmpl::pin<EvolutionSystem>, tmpl::_1>>;
+  using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                       tmpl::size_t<Dim>, Frame::Inertial>;
+  using dg_package_data_projected_tags =
+      tmpl::list<typename variables_tag::tags_list, fluxes_tags,
+                 all_dg_package_temporary_tags, all_primitive_tags_for_face>;
+  using all_face_temporary_tags =
+      tmpl::remove_duplicates<tmpl::flatten<tmpl::push_back<
+          tmpl::list<dg_package_data_projected_tags,
+                     detail::inverse_spatial_metric_tag<EvolutionSystem>>,
+          detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>;
+
+  // We also don't use the number of volume mesh grid points. We instead use the
+  // max number of grid points from each face. That way, our allocation will be
+  // large enough to hold any face and we can reuse the allocation for each face
+  // without having to resize it.
+  size_t num_face_temporary_grid_points = 0;
+  {
+    for (const auto& [direction, neighbors_in_direction] :
+         db::get<domain::Tags::Element<Dim>>(box).neighbors()) {
+      (void)neighbors_in_direction;
+      const auto face_mesh = mesh.slice_away(direction.dimension());
+      num_face_temporary_grid_points = std::max(
+          num_face_temporary_grid_points, face_mesh.number_of_grid_points());
+    }
+  }
+
   // Allocate the Variables classes needed for the time derivative
   // computation.
   //
@@ -400,13 +457,18 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
   using VarsDivFluxes = Variables<db::wrap_tags_in<
       ::Tags::div, db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>>;
+  using VarsFaceTemporaries = Variables<all_face_temporary_tags>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   auto buffer = cpp20::make_unique_for_overwrite<double[]>(
       (VarsTemporaries::number_of_independent_components +
        VarsFluxes::number_of_independent_components +
        VarsPartialDerivatives::number_of_independent_components +
        VarsDivFluxes::number_of_independent_components) *
-      number_of_grid_points);
+          number_of_grid_points +
+      // Different number of grid points. See explanation above where
+      // num_face_temporary_grid_points is defined
+      VarsFaceTemporaries::number_of_independent_components *
+          num_face_temporary_grid_points);
   VarsTemporaries temporaries{
       &buffer[0], VarsTemporaries::number_of_independent_components *
                       number_of_grid_points};
@@ -426,6 +488,18 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
                VarsPartialDerivatives::number_of_independent_components) *
               number_of_grid_points],
       VarsDivFluxes::number_of_independent_components * number_of_grid_points};
+  // Lighter weight data structure than a Variables to avoid passing even more
+  // templates to internal_mortar_data.
+  gsl::span<double> face_temporaries = gsl::make_span<double>(
+      &buffer[(VarsTemporaries::number_of_independent_components +
+               VarsFluxes::number_of_independent_components +
+               VarsPartialDerivatives::number_of_independent_components +
+               VarsDivFluxes::number_of_independent_components) *
+              number_of_grid_points],
+      // Different number of grid points. See explanation above where
+      // num_face_temporary_grid_points is defined
+      VarsFaceTemporaries::number_of_independent_components *
+          num_face_temporary_grid_points);
 
   const Scalar<DataVector>* det_inverse_jacobian = nullptr;
   if constexpr (tmpl::size<flux_variables>::value != 0) {
@@ -462,11 +536,6 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       },
       make_not_null(&box));
 
-  const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
-  using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
-
   const Variables<detail::get_primitive_vars_tags_from_system<EvolutionSystem>>*
       primitive_vars{nullptr};
   if constexpr (EvolutionSystem::has_primitive_and_conservative_vars) {
@@ -480,7 +549,8 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       "final.");
   tmpl::for_each<derived_boundary_corrections>(
       [&boundary_correction, &box, &partial_derivs, &primitive_vars,
-       &temporaries, &volume_fluxes](auto derived_correction_v) {
+       &temporaries, &volume_fluxes,
+       &face_temporaries](auto derived_correction_v) {
         using DerivedCorrection =
             tmpl::type_from<decltype(derived_correction_v)>;
         if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -491,7 +561,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
           //  - evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
           //  - evolution::dg::Tags::MortarData<Dim>
           detail::internal_mortar_data<EvolutionSystem, Dim>(
-              make_not_null(&box),
+              make_not_null(&box), make_not_null(&face_temporaries),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               db::get<variables_tag>(box), volume_fluxes, temporaries,
               primitive_vars,
