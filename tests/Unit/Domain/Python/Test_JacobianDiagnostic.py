@@ -18,11 +18,7 @@ class TestJacobianDiagnostic(unittest.TestCase):
     def test_jacobian_diagnostic(self):
         mesh = Mesh[1](4, Basis.Legendre, Quadrature.GaussLobatto)
         x = collocation_points(mesh)
-        mapped_coordinates_list = affine_map(x)
-        mapped_coordinates = tnsr.I[DataVector, 1, Frame.Grid](num_points=4,
-                                                               fill=0.)
-        mapped_coordinates[0] = mapped_coordinates_list
-
+        mapped_coordinates = tnsr.I[DataVector, 1, Frame.Grid]([affine_map(x)])
         jac = Jacobian[DataVector, 1, Frame.Grid](num_points=4, fill=2.)
 
         jac_diag = jacobian_diagnostic(jac, mapped_coordinates, mesh)

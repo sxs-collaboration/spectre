@@ -23,8 +23,8 @@ def psi_squared(psi: Scalar[DataVector]) -> Scalar[DataVector]:
 
 def coordinate_radius(
         inertial_coordinates: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
-    return Scalar[DataVector](np.expand_dims(
-        np.linalg.norm(np.array(inertial_coordinates), axis=0), 0))
+    return Scalar[DataVector](np.linalg.norm(np.array(inertial_coordinates),
+                                             axis=0))
 
 
 class TestApplyPointwise(unittest.TestCase):
