@@ -23,6 +23,7 @@ SourceDomainCreator:
       InnerRadius: Auto
       OuterRadius: 350.
       RadialDistribution: Inverse
+    UseEquiangularMap: True
     InitialRefinement: 1
     InitialGridPoints: 7
 
@@ -48,6 +49,7 @@ TargetDomainCreator:
       InnerRadius: Auto
       OuterRadius: 300.
       RadialDistribution: Linear
+    UseEquiangularMap: True
     InitialRefinement: 0
     InitialGridPoints: 3
 

@@ -63,6 +63,7 @@ DomainCreator:
       OuterRadius: 300.
       RadialDistribution: Inverse
       BoundaryCondition: Flatness
+    UseEquiangularMap: True
     # This h-refinement is set up so spherical wedges have equal angular size.
     # Once the domain supports equatorial compression (or similar) this
     # h-refinement will simplify considerably.

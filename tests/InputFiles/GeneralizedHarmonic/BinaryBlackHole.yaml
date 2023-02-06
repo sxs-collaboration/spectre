@@ -71,6 +71,7 @@ DomainCreator:
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
+    UseEquiangularMap: True
     InitialRefinement:
       ObjectAShell:   [3, 3, 4]
       ObjectACube:    [2, 2, 1]
