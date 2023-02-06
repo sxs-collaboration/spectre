@@ -31,7 +31,7 @@ configure_or_symlink_py_file(
   "${SPECTRE_PYTHON_PREFIX}/__main__.py"
 )
 # Also link the main entry point to bin/
-set(PYTHON_SCRIPT_LOCATION "spectre")
+set(PYTHON_EXE_COMMAND "-m spectre")
 set(JEMALLOC_PRELOAD "")
 if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
   set(JEMALLOC_PRELOAD "LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
@@ -40,6 +40,17 @@ configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
   "${CMAKE_BINARY_DIR}/tmp/spectre")
 file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
+  DESTINATION "${CMAKE_BINARY_DIR}/bin"
+  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+# Also link the Python interpreter to bin/python-spectre as an easy way to jump
+# into a Python shell or run a script that uses pybindings
+set(PYTHON_EXE_COMMAND "")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+  "${CMAKE_BINARY_DIR}/tmp/python-spectre")
+file(COPY "${CMAKE_BINARY_DIR}/tmp/python-spectre"
   DESTINATION "${CMAKE_BINARY_DIR}/bin"
   FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
