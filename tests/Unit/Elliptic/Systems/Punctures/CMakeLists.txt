@@ -22,4 +22,5 @@ target_link_libraries(
   Punctures
   )
 
+add_subdirectory(AmrCriteria)
 add_subdirectory(BoundaryConditions)
