@@ -13,5 +13,6 @@ spectre_python_add_module(
   InterpolateToMesh.py
   PlotDatFile.py
   ReadH5.py
+  RenderBBH.py
   Render1D.py
 )
