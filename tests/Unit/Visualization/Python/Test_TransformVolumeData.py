@@ -31,10 +31,9 @@ def psi_squared(psi: Scalar[DataVector]) -> Scalar[DataVector]:
     return Scalar[DataVector](np.array(psi)**2)
 
 
-def coordinate_radius(
-        inertial_coordinates: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
-    return Scalar[DataVector](np.linalg.norm(np.array(inertial_coordinates),
-                                             axis=0))
+def coordinate_radius(inertial_coordinates: tnsr.I[DataVector, 3]):
+    # Return a Numpy array
+    return np.linalg.norm(np.array(inertial_coordinates), axis=0)
 
 
 def deriv_coords(
@@ -52,8 +51,18 @@ def sinusoid(x: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
                                              axis=0))
 
 
-def square_component(component: DataVector) -> Scalar[DataVector]:
-    return Scalar[DataVector]([component**2])
+def square_component(component: DataVector):
+    # Return a DataVector
+    return component**2
+
+
+def abs_and_max(component: DataVector):
+    # Return multiple datasets
+    return {
+        "Abs": component.abs(),
+        # Single number, should get expanded over the volume as constant scalar
+        "Max": component.max(),
+    }
 
 
 class TestTransformVolumeData(unittest.TestCase):
@@ -92,6 +101,7 @@ class TestTransformVolumeData(unittest.TestCase):
             Kernel(deriv_coords),
             Kernel(square_component,
                    map_input_names={"component": "InertialCoordinates_x"}),
+            Kernel(abs_and_max, map_input_names={"component": "Psi"}),
         ]
 
         transform_volume_data(volfiles=open_volfiles, kernels=kernels)
@@ -124,6 +134,11 @@ class TestTransformVolumeData(unittest.TestCase):
         result_square_component = open_volfiles[0].get_tensor_component(
             obs_id, "SquareComponent").data
         npt.assert_allclose(np.array(result_square_component), x**2)
+        result_abs = open_volfiles[0].get_tensor_component(obs_id, "Abs").data
+        npt.assert_allclose(np.array(result_abs), np.abs(np.array(psi)))
+        result_max = open_volfiles[0].get_tensor_component(obs_id, "Max").data
+        npt.assert_allclose(np.array(result_max),
+                            np.ones(len(radius)) * np.max(np.array(psi)))
 
     def test_integrate(self):
         open_h5_files = [spectre_h5.H5File(self.h5_filename, "a")]
