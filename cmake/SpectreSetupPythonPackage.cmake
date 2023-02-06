@@ -20,11 +20,10 @@ endfunction()
 set(SPECTRE_PYTHON_PREFIX "${SPECTRE_PYTHON_PREFIX_PARENT}/spectre")
 
 # Create the root __init__.py file
-if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
-  file(WRITE
-    "${SPECTRE_PYTHON_PREFIX}/__init__.py"
-    "__all__ = []\n")
-endif()
+configure_or_symlink_py_file(
+  "${CMAKE_SOURCE_DIR}/support/Python/__init__.py"
+  "${SPECTRE_PYTHON_PREFIX}/__init__.py"
+)
 
 # Create the root __main__.py entry point
 configure_or_symlink_py_file(
