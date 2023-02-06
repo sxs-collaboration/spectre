@@ -8,6 +8,14 @@
 
 #include <iosfwd>
 
+/// \cond
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+/// \endcond
+
 namespace amr::domain {
 
 /// \ingroup AmrGroup
@@ -27,3 +35,15 @@ enum class Flag {
 /// Output operator for a Flag.
 std::ostream& operator<<(std::ostream& os, const Flag& flag);
 }  // namespace amr::domain
+
+template <>
+struct Options::create_from_yaml<amr::domain::Flag> {
+  template <typename Metavariables>
+  static amr::domain::Flag create(const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+amr::domain::Flag Options::create_from_yaml<amr::domain::Flag>::create<void>(
+    const Options::Option& options);
