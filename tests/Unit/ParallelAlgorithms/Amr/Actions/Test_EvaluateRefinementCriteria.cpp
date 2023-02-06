@@ -22,6 +22,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -52,6 +53,7 @@ struct Component {
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
   using simple_tags = tmpl::list<domain::Tags::Element<volume_dim>,
+                                 domain::Tags::Mesh<volume_dim>,
                                  amr::domain::Tags::Flags<volume_dim>,
                                  amr::domain::Tags::NeighborFlags<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -59,14 +61,16 @@ struct Component {
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
+template <size_t VolumeDim>
 struct Metavariables {
-  static constexpr size_t volume_dim = 1;
+  static constexpr size_t volume_dim = VolumeDim;
 
   using component_list = tmpl::list<Component<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<amr::Criterion, tmpl::list<amr::Criteria::Random>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        amr::Criterion, tmpl::list<amr::Criteria::Random,
+                                   amr::Criteria::DriveToTarget<volume_dim>>>>;
   };
 };
 
@@ -86,32 +90,36 @@ struct Metavariables {
 // EvaluateAmrCriteria
 void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                        const std::array<amr::domain::Flag, 1> expected_flags) {
-  using my_component = Component<Metavariables>;
+  using my_component = Component<Metavariables<1>>;
 
   const ElementId<1> self_id(0, {{{1, 1}}});
   const ElementId<1> lo_id(0, {{{1, 0}}});
   const ElementId<1> up_id(1, {{{1, 0}}});
+  const Mesh<1> mesh{2_st, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   std::unordered_map<ElementId<1>, std::array<amr::domain::Flag, 1>>
       initial_neighbor_flags;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{std::move(criteria)}};
+  ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
+      {std::move(criteria)}};
 
   const Element<1> self(self_id, {{{Direction<1>::lower_xi(), {{lo_id}, {}}},
                                    {Direction<1>::upper_xi(), {{up_id}, {}}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
-      {self, std::array{amr::domain::Flag::Undefined}, initial_neighbor_flags});
+      {self, mesh, std::array{amr::domain::Flag::Undefined},
+       initial_neighbor_flags});
 
-  const auto emplace_neighbor = [&self_id, &runner, &initial_neighbor_flags](
-                                    const ElementId<1>& id,
-                                    const Direction<1>& direction) {
-    const Element<1> element(id, {{direction, {{self_id}, {}}}});
-    ActionTesting::emplace_component_and_initialize<my_component>(
-        &runner, id,
-        {element, std::array{amr::domain::Flag::Undefined},
-         initial_neighbor_flags});
-  };
+  const auto emplace_neighbor =
+      [&self_id, &mesh, &runner, &initial_neighbor_flags](
+          const ElementId<1>& id, const Direction<1>& direction) {
+        const Element<1> element(id, {{direction, {{self_id}, {}}}});
+        ActionTesting::emplace_component_and_initialize<my_component>(
+            &runner, id,
+            {element, mesh, std::array{amr::domain::Flag::Undefined},
+             initial_neighbor_flags});
+      };
 
   emplace_neighbor(up_id, Direction<1>::lower_xi());
   emplace_neighbor(lo_id, Direction<1>::upper_xi());
@@ -209,11 +217,79 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
               runner, id) == (id == self_id ? 2 : (id == lo_id ? 1 : 0)));
   }
 }
+
+void check_split_while_join_is_avoided() {
+  using my_component = Component<Metavariables<2>>;
+
+  // The part of action we are testing does not depend upon information
+  // from neighbors, so we just use a single Element setup on refinement
+  // levels (0, 1)
+  const ElementId<2> self_id(0, {{{0, 0}, {1, 1}}});
+  const Mesh<2> mesh{2_st, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  std::unordered_map<ElementId<2>, std::array<amr::domain::Flag, 2>>
+      initial_neighbor_flags{};
+
+  // the refinement criteria wants to drive self to levels (1, 0) so
+  // it will return flags (Split, Join).
+  std::vector<std::unique_ptr<amr::Criterion>> criteria;
+  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<2>>(
+      std::array{2_st, 2_st}, std::array{1_st, 0_st},
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing}));
+
+  Parallel::GlobalCache<Metavariables<2>> empty_cache{};
+  const auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
+  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<::domain::Tags::Mesh<2>>>>
+      box{databox};
+  auto flags_from_criterion =
+      criteria.front()->evaluate(box, empty_cache, self_id);
+  CHECK(flags_from_criterion ==
+        std::array{amr::domain::Flag::Split, amr::domain::Flag::Join});
+
+  // But we do not allow an Element to simultaneously split and join so the
+  // action should change the flags to (DoNothing, Split)
+  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+      {std::move(criteria)}};
+
+  const Element<2> self(self_id, {});
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, self_id,
+      {self, mesh,
+       std::array{amr::domain::Flag::Undefined, amr::domain::Flag::Undefined},
+       initial_neighbor_flags});
+
+  runner.set_phase(Parallel::Phase::Testing);
+
+  CHECK(
+      ActionTesting::get_databox_tag<my_component, amr::domain::Tags::Flags<2>>(
+          runner, self_id) ==
+      std::array{amr::domain::Flag::Undefined, amr::domain::Flag::Undefined});
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       amr::domain::Tags::NeighborFlags<2>>(
+            runner, self_id) == initial_neighbor_flags);
+  CHECK(ActionTesting::is_simple_action_queue_empty<my_component>(runner,
+                                                                  self_id));
+
+  // self runs EvaluateAmrCriteria
+  ActionTesting::simple_action<my_component,
+                               amr::Actions::EvaluateRefinementCriteria>(
+      make_not_null(&runner), self_id);
+
+  CHECK(
+      ActionTesting::get_databox_tag<my_component, amr::domain::Tags::Flags<2>>(
+          runner, self_id) ==
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing});
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       amr::domain::Tags::NeighborFlags<2>>(
+            runner, self_id) == initial_neighbor_flags);
+  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+            runner, self_id) == 0);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
                   "[Unit][ParallelAlgorithms]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<2>>();
   std::vector<std::unique_ptr<amr::Criterion>> criteria;
   // Run the test 3 times, twice with a single criterion that give known
   // decisions, and then once with two criteria, one of which always produces
@@ -230,4 +306,5 @@ SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
   criteria.emplace_back(create_always_do_nothing());
   evaluate_criteria(std::move(criteria),
                     std::array{amr::domain::Flag::DoNothing});
+  check_split_while_join_is_avoided();
 }

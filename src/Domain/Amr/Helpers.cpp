@@ -183,6 +183,23 @@ bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
   return true;
 }
 
+template <size_t VolumeDim>
+bool prevent_element_from_joining_while_splitting(
+    const gsl::not_null<std::array<Flag, VolumeDim>*> flags) {
+  bool flags_changed = false;
+  if (alg::any_of(*flags, [](amr::domain::Flag flag) {
+        return flag == amr::domain::Flag::Split;
+      })) {
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      if (gsl::at(*flags, d) == amr::domain::Flag::Join) {
+        gsl::at(*flags, d) = amr::domain::Flag::DoNothing;
+        flags_changed = true;
+      }
+    }
+  }
+  return flags_changed;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -207,7 +224,9 @@ bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
       const std::array<Flag, DIM(data)>& flags);                               \
   template bool is_child_that_creates_parent(                                  \
       const ElementId<DIM(data)>& element_id,                                  \
-      const std::array<Flag, DIM(data)>& flags);
+      const std::array<Flag, DIM(data)>& flags);                               \
+  template bool prevent_element_from_joining_while_splitting(                  \
+      const gsl::not_null<std::array<Flag, DIM(data)>*> flags);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

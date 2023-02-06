@@ -468,7 +468,7 @@ void test_is_child_that_creates_parent() {
       ElementId<2>{0, {xi_segment, eta_segment}}, join_stay));
   CHECK(amr::domain::is_child_that_creates_parent(
       ElementId<2>{0, {xi_segment.id_of_sibling(), eta_segment}}, join_stay));
-  const SegmentId zeta_segment{4,6};
+  const SegmentId zeta_segment{4, 6};
   const auto join_join_join =
       std::array{amr::domain::Flag::Join, amr::domain::Flag::Join,
                  amr::domain::Flag::Join};
@@ -504,6 +504,161 @@ void test_is_child_that_creates_parent() {
                    {xi_segment.id_of_sibling(), eta_segment.id_of_sibling(),
                     zeta_segment.id_of_sibling()}},
       join_join_join));
+}
+
+template <size_t Dim>
+void check(std::array<amr::domain::Flag, Dim> flags,
+           const std::array<amr::domain::Flag, Dim> expected_flags) {
+  const bool flags_should_change = (flags != expected_flags);
+  CHECK(amr::domain::prevent_element_from_joining_while_splitting(
+            make_not_null(&flags)) == flags_should_change);
+  CHECK(flags == expected_flags);
+}
+
+void test_prevent_element_from_joining_while_splitting() {
+  const auto join = std::array{amr::domain::Flag::Join};
+  const auto split = std::array{amr::domain::Flag::Split};
+  const auto stay = std::array{amr::domain::Flag::DoNothing};
+  check(join, join);
+  check(split, split);
+  check(stay, stay);
+
+  const auto join_join =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Join};
+  const auto join_split =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Split};
+  const auto join_stay =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::DoNothing};
+  const auto split_join =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Join};
+  const auto split_split =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Split};
+  const auto split_stay =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing};
+  const auto stay_join =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Join};
+  const auto stay_split =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split};
+  const auto stay_stay =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing};
+  check(join_join, join_join);
+  check(join_split, stay_split);
+  check(join_stay, join_stay);
+  check(split_join, split_stay);
+  check(split_split, split_split);
+  check(split_stay, split_stay);
+  check(stay_join, stay_join);
+  check(stay_split, stay_split);
+  check(stay_stay, stay_stay);
+
+  const auto join_join_join =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Join,
+                 amr::domain::Flag::Join};
+  const auto join_join_split =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Join,
+                 amr::domain::Flag::Split};
+  const auto join_join_stay =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Join,
+                 amr::domain::Flag::DoNothing};
+  const auto join_split_join =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Split,
+                 amr::domain::Flag::Join};
+  const auto join_split_split =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Split,
+                 amr::domain::Flag::Split};
+  const auto join_split_stay =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Split,
+                 amr::domain::Flag::DoNothing};
+  const auto join_stay_join =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Join};
+  const auto join_stay_split =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Split};
+  const auto join_stay_stay =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::DoNothing};
+  const auto split_join_join =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Join,
+                 amr::domain::Flag::Join};
+  const auto split_join_split =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Join,
+                 amr::domain::Flag::Split};
+  const auto split_join_stay =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Join,
+                 amr::domain::Flag::DoNothing};
+  const auto split_split_join =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Split,
+                 amr::domain::Flag::Join};
+  const auto split_split_split =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Split,
+                 amr::domain::Flag::Split};
+  const auto split_split_stay =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::Split,
+                 amr::domain::Flag::DoNothing};
+  const auto split_stay_join =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Join};
+  const auto split_stay_split =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Split};
+  const auto split_stay_stay =
+      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::DoNothing};
+  const auto stay_join_join =
+      std::array{amr::domain::Flag::Join, amr::domain::Flag::Join,
+                 amr::domain::Flag::Join};
+  const auto stay_join_split =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Join,
+                 amr::domain::Flag::Split};
+  const auto stay_join_stay =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Join,
+                 amr::domain::Flag::DoNothing};
+  const auto stay_split_join =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split,
+                 amr::domain::Flag::Join};
+  const auto stay_split_split =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split,
+                 amr::domain::Flag::Split};
+  const auto stay_split_stay =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split,
+                 amr::domain::Flag::DoNothing};
+  const auto stay_stay_join =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Join};
+  const auto stay_stay_split =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::Split};
+  const auto stay_stay_stay =
+      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing,
+                 amr::domain::Flag::DoNothing};
+  check(join_join_join, join_join_join);
+  check(join_join_split, stay_stay_split);
+  check(join_join_stay, join_join_stay);
+  check(join_split_join, stay_split_stay);
+  check(join_split_split, stay_split_split);
+  check(join_split_stay, stay_split_stay);
+  check(join_stay_join, join_stay_join);
+  check(join_stay_split, stay_stay_split);
+  check(join_stay_stay, join_stay_stay);
+  check(split_join_join, split_stay_stay);
+  check(split_join_split, split_stay_split);
+  check(split_join_stay, split_stay_stay);
+  check(split_split_join, split_split_stay);
+  check(split_split_split, split_split_split);
+  check(split_split_stay, split_split_stay);
+  check(split_stay_join, split_stay_stay);
+  check(split_stay_split, split_stay_split);
+  check(split_stay_stay, split_stay_stay);
+  check(stay_join_join, stay_join_join);
+  check(stay_join_split, stay_stay_split);
+  check(stay_join_stay, stay_join_stay);
+  check(stay_split_join, stay_split_stay);
+  check(stay_split_split, stay_split_split);
+  check(stay_split_stay, stay_split_stay);
+  check(stay_stay_join, stay_stay_join);
+  check(stay_stay_split, stay_stay_split);
+  check(stay_stay_stay, stay_stay_stay);
 }
 
 void test_assertions() {
@@ -565,5 +720,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers", "[Domain][Unit]") {
   test_ids_of_children();
   test_ids_of_joining_neighbors();
   test_is_child_that_creates_parent();
+  test_prevent_element_from_joining_while_splitting();
   test_assertions();
 }
