@@ -4,6 +4,10 @@
 spectre_add_python_bindings_test(
   "Unit.Hydro.EquationsOfState.Python.PolytropicFluid"
   "Test_PolytropicFluid.py"
+  "Unit;EquationsOfState;Python"
+  PyEquationsOfState)
+
+spectre_add_python_bindings_test(
   "Unit.Hydro.EquationsOfState.Python.PiecewisePolytropicFluid"
   "Test_PiecewisePolytropicFluid.py"
   "Unit;EquationsOfState;Python"

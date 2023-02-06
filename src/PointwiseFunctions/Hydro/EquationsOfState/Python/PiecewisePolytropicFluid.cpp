@@ -13,8 +13,6 @@ namespace py = pybind11;
 namespace EquationsOfState::py_bindings {
 
 void bind_piecewisepolytropic_fluid(py::module& m) {
-  // We can't expose any member functions without wrapping tensors in Python,
-  // so we only expose the initializer for now.
   py::class_<PiecewisePolytropicFluid<true>, EquationOfState<true, 1>>(
       m, "RelativisticPiecewisePolytropicFluid")
       .def(py::init<double, double, double, double>(),

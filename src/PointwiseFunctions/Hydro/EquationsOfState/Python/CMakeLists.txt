@@ -32,3 +32,9 @@ spectre_python_link_libraries(
   Hydro
   pybind11::module
   )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDataStructures
+  PyTensor
+  )
