@@ -219,6 +219,12 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Grid-coordinate radius of outer boundary."};
   };
+  struct UseEquiangularMap {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Distribute grid points equiangularly in 2d wedges."};
+    static bool suggested_value() { return false; }
+  };
 
   struct InitialRefinement {
     using type =
@@ -334,6 +340,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   using time_independent_options =
       tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
                  IncludeInnerSphereB, IncludeOuterSphere, OuterRadius,
+                 UseEquiangularMap,
                  InitialRefinement, InitialGridPoints>;
   using time_dependent_options =
       tmpl::list<InitialTime, ExpansionMap, InitialAngularVelocity>;
@@ -371,6 +378,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       typename IncludeInnerSphereB::type include_inner_sphere_B,
       typename IncludeOuterSphere::type include_outer_sphere,
       typename OuterRadius::type outer_radius,
+      typename UseEquiangularMap::type use_equiangular_map,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -388,6 +396,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       typename IncludeInnerSphereB::type include_inner_sphere_B,
       typename IncludeOuterSphere::type include_outer_sphere,
       typename OuterRadius::type outer_radius,
+      typename UseEquiangularMap::type use_equiangular_map,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -443,6 +452,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   typename IncludeInnerSphereB::type include_inner_sphere_B_{};
   typename IncludeOuterSphere::type include_outer_sphere_{};
   typename OuterRadius::type outer_radius_{};
+  bool use_equiangular_map_{false};
   typename std::vector<std::array<size_t, 3>> initial_refinement_{};
   typename std::vector<std::array<size_t, 3>> initial_grid_points_{};
   // cut_spheres_offset_factor_ is eta in Eq. (A.9) of
