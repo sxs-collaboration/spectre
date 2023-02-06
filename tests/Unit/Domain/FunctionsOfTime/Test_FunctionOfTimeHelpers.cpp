@@ -100,9 +100,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
         FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expr_time),
                                                      next_expr_time);
       }(),
-      Catch::Contains(
-          "Attempted to change expiration time to 3.5, which precedes "
-          "the previous expiration time of 4."));
+      Catch::Contains("Attempted to change expiration time to 3.5") and
+          Catch::Contains(
+              ", which precedes the previous expiration time of 4"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -119,7 +119,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
         (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(
             -1.0, all_stored_info);
       }()),
-      Catch::Contains("requested time -1 precedes earliest time 0 of times."));
+      Catch::Contains("requested time -1") and
+          Catch::Contains(" precedes earliest time 0"));
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
