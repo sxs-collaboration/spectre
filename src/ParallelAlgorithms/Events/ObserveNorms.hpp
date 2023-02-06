@@ -75,10 +75,6 @@ namespace Events {
  * where $V=\int_\Omega$ is the volume of the entire domain in inertial
  * coordinates.
  *
- * \note The integral norm does not currently work with a
- * Spectral::Basis::FiniteDifference mesh because ::definite_integral does not
- * support it.
- *
  * Here is an example of an input file:
  *
  * \snippet Test_ObserveNorms.cpp input_file_examples
@@ -192,7 +188,8 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
       "domain with large volume. Choose wisely! When in doubt, try the\n"
       "'L2Norm' first.\n"
       "The 'L2IntegralNorm' does not currently work with finite difference\n"
-      "(subcell) meshes.\n"
+      "(subcell) meshes. [We need to figure out how to provide the proper \n"
+      "determinant of the Jacobian]\n"
       "\n"
       "Writes reduction quantities:\n"
       " * ObservationValueTag (e.g. Time or IterationId)\n"
@@ -346,8 +343,8 @@ operator()(const typename ObservationValueTag::type& observation_value,
       norm_values_and_names{};
   const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
   const DataVector det_jacobian =
-      1. / get(get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
-                                                Frame::Inertial>>(box));
+    1. / get(get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                              Frame::Inertial>>(box));
   const size_t number_of_points = mesh.number_of_grid_points();
   const double local_volume = [&mesh, &det_jacobian]() {
     if (mesh.basis(0) == Spectral::Basis::FiniteDifference) {
@@ -398,7 +395,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
               values.push_back(
                   alg::accumulate(square(components[storage_index]), 0.0));
             } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
-              if (mesh.basis(0) == Spectral::Basis::FiniteDifference) {
+             if (mesh.basis(0) == Spectral::Basis::FiniteDifference) {
                 ERROR(
                     "The 'L2IntegralNorm' is currently not supported on finite "
                     "difference (subcell) meshes.");
