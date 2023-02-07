@@ -32,14 +32,13 @@ void sources_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
-    const double kappa_psi, const double kappa_phi,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j_drift,
+    double kappa_psi, double kappa_phi,
     // GR args
     const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature);
 }  // namespace detail
 
@@ -82,7 +81,7 @@ struct Sources {
   using argument_tags = tmpl::list<
       // EM variables
       Tags::TildeE, Tags::TildeB, Tags::TildePsi, Tags::TildePhi, Tags::TildeQ,
-      Tags::SpatialCurrentDensity, Tags::KappaPsi, Tags::KappaPhi,
+      Tags::KappaPsi, Tags::KappaPhi, Tags::ParallelConductivity,
       // GR variables
       gr::Tags::Lapse<>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
@@ -91,7 +90,8 @@ struct Sources {
                     tmpl::size_t<3>, Frame::Inertial>,
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
+      gr::Tags::SqrtDetSpatialMetric<>,
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
 
   static void apply(
@@ -103,14 +103,14 @@ struct Sources {
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_e,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
-      const Scalar<DataVector>& tilde_q,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
-      const double kappa_psi, const double kappa_phi,
+      const Scalar<DataVector>& tilde_q, double kappa_psi, double kappa_phi,
+      double parallel_conductivity,
       // GR variables
       const Scalar<DataVector>& lapse,
       const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
       const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
       const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature);
