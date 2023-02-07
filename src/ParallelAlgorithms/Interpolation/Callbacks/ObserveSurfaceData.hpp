@@ -62,19 +62,25 @@ struct ObserveSurfaceData
     const Strahlkorper<HorizonFrame>& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<HorizonFrame>>(box);
     const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
-    const auto& inertial_strahlkorper_coords =
-        get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
 
     // Output the inertial-frame coordinates of the Stralhlkorper.
     // Note that these coordinates are not
     // Spherepack-evenly-distributed over the inertial-frame sphere
     // (they are Spherepack-evenly-distributed over the HorizonFrame
     // sphere).
-    std::vector<TensorComponent> tensor_components{
-        {"InertialCoordinates_x"s, get<0>(inertial_strahlkorper_coords)},
-        {"InertialCoordinates_y"s, get<1>(inertial_strahlkorper_coords)},
-        {"InertialCoordinates_z"s, get<2>(inertial_strahlkorper_coords)}};
-
+    std::vector<TensorComponent> tensor_components;
+    if constexpr (db::tag_is_retrievable_v<
+                      StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
+                      db::DataBox<DbTags>>) {
+      const auto& inertial_strahlkorper_coords =
+          get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+      tensor_components.push_back(
+          {"InertialCoordinates_x"s, get<0>(inertial_strahlkorper_coords)});
+      tensor_components.push_back(
+          {"InertialCoordinates_y"s, get<1>(inertial_strahlkorper_coords)});
+      tensor_components.push_back(
+          {"InertialCoordinates_z"s, get<2>(inertial_strahlkorper_coords)});
+    }
     // Output each tag if it is a scalar. Otherwise, throw a compile-time
     // error. This could be generalized to handle tensors of nonzero rank by
     // looping over the components, so each component could be visualized
