@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/ForceFree/ElectricCurrentDensity.hpp"
 #include "Evolution/Systems/ForceFree/Fluxes.hpp"
 #include "Evolution/Systems/ForceFree/Sources.hpp"
 #include "Evolution/Systems/ForceFree/TimeDerivativeTerms.hpp"
@@ -35,6 +36,7 @@ void TimeDerivativeTerms::apply(
         lapse_times_electric_field_one_form,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         lapse_times_magnetic_field_one_form,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_j_drift,
     const gsl::not_null<tnsr::ijj<DataVector, 3, Frame::Inertial>*>
         spatial_christoffel_first_kind,
     const gsl::not_null<tnsr::Ijj<DataVector, 3, Frame::Inertial>*>
@@ -51,8 +53,9 @@ void TimeDerivativeTerms::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const double kappa_psi, const double kappa_phi,
+    const double parallel_conductivity,
 
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
@@ -84,10 +87,12 @@ void TimeDerivativeTerms::apply(
       tilde_e_flux, tilde_b_flux, tilde_psi_flux, tilde_phi_flux, tilde_q_flux,
       *lapse_times_electric_field_one_form,
       *lapse_times_magnetic_field_one_form, tilde_e, tilde_b, tilde_psi,
-      tilde_phi, tilde_q, spatial_current_density, lapse, shift,
-      sqrt_det_spatial_metric, inv_spatial_metric);
+      tilde_phi, tilde_q, tilde_j, lapse, shift, inv_spatial_metric);
 
   // Compute source terms
+  ComputeDriftTildeJ::apply(tilde_j_drift, tilde_q, tilde_e, tilde_b,
+                            parallel_conductivity, lapse,
+                            sqrt_det_spatial_metric, spatial_metric);
   gr::christoffel_first_kind(spatial_christoffel_first_kind, d_spatial_metric);
   raise_or_lower_first_index(spatial_christoffel_second_kind,
                              *spatial_christoffel_first_kind,
@@ -98,9 +103,8 @@ void TimeDerivativeTerms::apply(
   detail::sources_impl(non_flux_terms_dt_tilde_e, non_flux_terms_dt_tilde_b,
                        non_flux_terms_dt_tilde_psi, non_flux_terms_dt_tilde_phi,
                        *trace_spatial_christoffel_second, tilde_e, tilde_b,
-                       tilde_psi, tilde_phi, tilde_q, spatial_current_density,
-                       kappa_psi, kappa_phi, lapse, d_lapse, d_shift,
-                       inv_spatial_metric, sqrt_det_spatial_metric,
+                       tilde_psi, tilde_phi, tilde_q, *tilde_j_drift, kappa_psi,
+                       kappa_phi, lapse, d_lapse, d_shift, inv_spatial_metric,
                        extrinsic_curvature);
 }
 
