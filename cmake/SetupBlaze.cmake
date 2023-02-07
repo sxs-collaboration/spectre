@@ -21,8 +21,10 @@ endif()
 
 # Every time we've upgraded blaze compatibility in the past, we've had to change
 # vector code, so we should expect to need changes again on each subsequent
-# release, so we specify an exact version requirement.
-find_package(Blaze 3.8 EXACT REQUIRED)
+# release, so we should specify an exact version requirement. However, Blaze
+# hasn't been consistent in naming releases (version 3.8.2 has 3.9.0 written
+# in Version.h).
+find_package(Blaze 3.8 REQUIRED)
 
 message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")
