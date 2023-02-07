@@ -52,6 +52,38 @@ else()
   endif()
 endif()
 
+# We are getting multiple types of linker warnings on macOS:
+# - "ranlib: archive library: tmp/libSpectrePchLib.a the table of contents is
+#   empty (no object file members in the library define global symbols)":
+#   Yes, some of our libs have no symbols. Doesn't seem like a problem.
+# - "-undefined dynamic_lookup may not work with chained fixups":
+#   This warning appears when compiling Python bindings. Chained fixups were
+#   introduced in AppleClang 13 and enabled by default in macOS 12. See these
+#   upstream issues:
+#   - CPython: https://github.com/python/cpython/issues/97524
+#   - Pybind11: https://github.com/pybind/pybind11/pull/4301
+#   - CMake: https://gitlab.kitware.com/cmake/cmake/-/issues/24044
+#   Disabling chained fixups with `-Wl-no_fixup_chains` leads to linker warnings
+#   about inconsistent visibility settings in different translation units. We
+#   probably have to wait for an upstream solution to this issue.
+# - "could not create compact unwind for SYMBOL: registers X and
+#   Y not saved contiguously in frame":
+#   We have seen these warnings on Apple Silicon chips.
+#   Disabling compact unwind with the flags
+#     -Wl,-keep_dwarf_unwind
+#     -Wl,-no_compact_unwind
+#   seems to work on some machines, but leads to segfaults on others. We haven't
+#   investigated this in any more detail.
+# For now we just suppress these linker warnings altogether, since we haven't
+# encountered any problems with them and some are upstream issues.
+if(APPLE)
+  target_link_options(
+    SpectreFlags
+    INTERFACE
+    -Wl,-w
+    )
+endif()
+
 # We always want a detailed backtrace of template errors to make debugging them
 # easier
 set_property(TARGET SpectreFlags
