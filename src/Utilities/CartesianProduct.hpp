@@ -37,6 +37,7 @@ void insert_tuples(Op op, std::pair<InputIterator1, InputIterator1> head,
 }  // namespace detail
 
 /*!
+ * \ingroup UtilitiesGroup
  * \brief Fill the `result` iterator with the Cartesian product of a sequence of
  * iterators
  *
@@ -54,10 +55,15 @@ void cartesian_product(OutputIterator result,
 }
 
 /*!
+ * \ingroup UtilitiesGroup
  * \brief The Cartesian product of a sequence arrays
  *
  * Returns a `std::array` with all possible combinations of the input arrays.
  * The last dimension varies fastest.
+ *
+ * \example
+ * Here's an example using this function to replace a nested for loop:
+ * \snippet Test_Wedge3D.cpp cartesian_product_loop
  */
 template <typename... Ts, size_t... Lens>
 std::array<std::tuple<Ts...>, (... * Lens)> cartesian_product(
