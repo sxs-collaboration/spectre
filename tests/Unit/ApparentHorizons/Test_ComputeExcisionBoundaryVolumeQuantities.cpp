@@ -76,12 +76,19 @@ void test_compute_excision_boundary_volume_quantities() {
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   tnsr::I<DataVector, 3, TargetFrame> target_frame_coords{};
+  Jacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      jacobian_logical_to_inertial{};
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       inv_jacobian_logical_to_inertial{};
   Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>
       jacobian_target_to_inertial{};
+  InverseJacobian<DataVector, 3, TargetFrame, Frame::Inertial>
+      inv_jacobian_target_to_inertial{};
+  Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
+      jacobian_logical_to_target{};
   InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
       inv_jacobian_logical_to_target{};
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_mesh_velocity{};
   if constexpr (IsTimeDependent::value) {
     ElementMap<3, Frame::Grid> map_logical_to_grid{
         element_ids[0],
@@ -242,7 +249,8 @@ void test_compute_excision_boundary_volume_quantities() {
   if constexpr (IsTimeDependent::value) {
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
-        inv_jacobian_logical_to_target);
+        inv_jacobian_target_to_inertial, jacobian_logical_to_target,
+        inv_jacobian_logical_to_target, inertial_mesh_velocity);
   } else {
     // time-independent.
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(

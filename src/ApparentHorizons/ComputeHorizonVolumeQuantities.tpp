@@ -149,9 +149,15 @@ template <typename SrcTagList, typename DestTagList, typename TargetFrame>
 void ComputeHorizonVolumeQuantities::apply(
     const gsl::not_null<Variables<DestTagList>*> target_vars,
     const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
-    const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
+    const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
+      jac_target_to_inertial,
+    const InverseJacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
+      /*invjac_target_to_inertial*/,
+    const Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
+      /*jac_logical_to_target*/,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
-        inverse_jacobian) {
+      invjac_logical_to_target,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& /*inertial_mesh_velocity*/) {
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,
@@ -271,9 +277,9 @@ void ComputeHorizonVolumeQuantities::apply(
 
   // Transform spatial metric and extrinsic curvature
   transform::to_different_frame(make_not_null(&metric), inertial_metric,
-                                jacobian);
+                                jac_target_to_inertial);
   transform::to_different_frame(make_not_null(&extrinsic_curvature),
-                                inertial_ex_curvature, jacobian);
+                                inertial_ex_curvature, jac_target_to_inertial);
 
   // Invert transformed 3-metric.
   // put determinant of 3-metric temporarily into lapse to save memory.
@@ -284,7 +290,9 @@ void ComputeHorizonVolumeQuantities::apply(
   logical_partial_derivative(make_not_null(&logical_deriv_metric), metric,
                              mesh);
   transform::first_index_to_different_frame(
-      make_not_null(&deriv_metric), logical_deriv_metric, inverse_jacobian);
+      make_not_null(&deriv_metric),
+      logical_deriv_metric,
+      invjac_logical_to_target);
   gr::christoffel_second_kind(make_not_null(&spatial_christoffel_second_kind),
                               deriv_metric, inv_metric);
 
@@ -328,7 +336,8 @@ void ComputeHorizonVolumeQuantities::apply(
       auto& spatial_ricci =
           get<gr::Tags::SpatialRicci<3, TargetFrame>>(*target_vars);
       transform::to_different_frame(make_not_null(&spatial_ricci),
-                                    inertial_spatial_ricci, jacobian);
+                                    inertial_spatial_ricci,
+                                    jac_target_to_inertial);
     }
   }
 }
