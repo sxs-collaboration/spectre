@@ -23,6 +23,8 @@ namespace {
 template <size_t Dim>
 void bind_domain_impl(py::module& m) {  // NOLINT
   py::class_<Domain<Dim>>(m, ("Domain" + get_output(Dim) + "D").c_str())
+      .def_property_readonly_static(
+          "dim", [](const py::object& /*self */) { return Dim; })
       .def("is_time_dependent", &Domain<Dim>::is_time_dependent)
       .def_property_readonly("blocks", &Domain<Dim>::blocks)
       .def_property_readonly("block_groups", &Domain<Dim>::block_groups);

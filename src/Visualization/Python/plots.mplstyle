@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Use a lighter gray than the default for axis grids
+grid.color: lightgray
+
+# This is the 'deep' color palette from the 'seaborn' package. It's a variation
+# of matplotlib's default, but slightly more muted and more colorblind friendly.
+# To increase colorblind friendliness further we skip the orange color.
+axes.prop_cycle: cycler('color', ['4c72b0', '55a868', 'c44e52', '8172b3', '937860', 'da8bc3', '8c8c8c', 'ccb974', '64b5cd'])
+
+savefig.bbox: tight

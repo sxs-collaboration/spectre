@@ -25,6 +25,7 @@ class TestDomain(unittest.TestCase):
             serialized_fot = volfile.get_functions_of_time(obs_id)
 
         domain = deserialize_domain[3](serialized_domain)
+        self.assertEqual(domain.dim, 3)
         self.assertTrue(domain.is_time_dependent())
         for block_id, block in enumerate(domain.blocks):
             self.assertEqual(block.id, block_id)

@@ -14,7 +14,7 @@ class TestBrick(unittest.TestCase):
                       initial_number_of_grid_points_in_xyz=[3, 4, 2])
         domain = brick.create_domain()
         self.assertFalse(domain.is_time_dependent())
-        self.assertEqual(brick.block_names(), [])
+        self.assertEqual(brick.block_names(), ["Brick"])
         self.assertEqual(brick.block_groups(), {})
         self.assertEqual(brick.initial_extents(), [[3, 4, 2]])
         self.assertEqual(brick.initial_refinement_levels(), [[1, 0, 1]])

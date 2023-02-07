@@ -179,6 +179,7 @@ def parse_points(ctx, param, values):
 def interpolate_to_coords_command(h5_files, subfile_name, list_vars, vars,
                                   target_coords, target_coords_file, output,
                                   step, time, delimiter):
+    """Interpolate volume data to target coordinates."""
     # Script should be a noop if input files are empty
     if not h5_files:
         return

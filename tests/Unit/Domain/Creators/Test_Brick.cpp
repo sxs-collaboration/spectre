@@ -69,6 +69,8 @@ void test_brick_construction(
 
   CHECK(brick.initial_extents() == expected_extents);
   CHECK(brick.initial_refinement_levels() == expected_refinement_level);
+  CHECK(brick.block_names() == std::vector<std::string>{"Brick"});
+  CHECK(brick.block_groups().empty());
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,

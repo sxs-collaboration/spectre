@@ -109,7 +109,9 @@ Domain<3> Brick::create_domain() const {
                    Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
                    Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
       std::vector<std::array<size_t, 8>>{{{0, 1, 2, 3, 4, 5, 6, 7}}},
-      identifications};
+      identifications,
+      {},
+      block_names_};
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
