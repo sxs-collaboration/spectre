@@ -25,6 +25,8 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/CartesianProduct.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace {
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -83,20 +85,21 @@ void test_connectivity() {
   const double length_outer_cube = 42.4;
   const std::array<double, 3> origin_preimage = {{1.3, 0.2, -3.1}};
 
-  for (const bool with_boundary_conditions : {true, false}) {
-    for (const bool use_equiangular_map : {true, false}) {
-      const domain::creators::FrustalCloak frustal_cloak{
-          refinement,
-          grid_points,
-          use_equiangular_map,
-          projective_scale_factor,
-          length_inner_cube,
-          length_outer_cube,
-          origin_preimage,
-          with_boundary_conditions ? create_boundary_condition() : nullptr};
-      TestHelpers::domain::creators::test_domain_creator(
-          frustal_cloak, with_boundary_conditions);
-    }
+  for (const auto& [with_boundary_conditions, use_equiangular_map] :
+       cartesian_product(make_array(true, false), make_array(true, false))) {
+    CAPTURE(with_boundary_conditions);
+    CAPTURE(use_equiangular_map);
+    const domain::creators::FrustalCloak frustal_cloak{
+        refinement,
+        grid_points,
+        use_equiangular_map,
+        projective_scale_factor,
+        length_inner_cube,
+        length_outer_cube,
+        origin_preimage,
+        with_boundary_conditions ? create_boundary_condition() : nullptr};
+    TestHelpers::domain::creators::test_domain_creator(
+        frustal_cloak, with_boundary_conditions);
   }
 
   CHECK_THROWS_WITH(
