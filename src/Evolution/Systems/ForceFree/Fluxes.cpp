@@ -37,10 +37,9 @@ void fluxes_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric) {
   for (size_t j = 0; j < 3; ++j) {
     tilde_psi_flux->get(j) =
@@ -49,9 +48,7 @@ void fluxes_impl(
     tilde_phi_flux->get(j) =
         -shift.get(j) * get(tilde_phi) + get(lapse) * tilde_b.get(j);
 
-    tilde_q_flux->get(j) = get(lapse) * get(sqrt_det_spatial_metric) *
-                               spatial_current_density.get(j) -
-                           shift.get(j) * get(tilde_q);
+    tilde_q_flux->get(j) = tilde_j.get(j) - shift.get(j) * get(tilde_q);
 
     for (size_t i = 0; i < 3; ++i) {
       tilde_e_flux->get(j, i) =
@@ -89,7 +86,7 @@ void Fluxes::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
@@ -121,8 +118,8 @@ void Fluxes::apply(
       // temporaries
       lapse_times_electric_field_one_form, lapse_times_magnetic_field_one_form,
       // extra args
-      tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, spatial_current_density,
-      lapse, shift, sqrt_det_spatial_metric, inv_spatial_metric);
+      tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j, lapse, shift,
+      inv_spatial_metric);
 }
 
 }  // namespace ForceFree

@@ -8,9 +8,9 @@ def levi_civita_symbol(i, j, k):
     return np.sign(j - i) * np.sign(k - i) * np.sign(k - j)
 
 
-def tilde_e_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
+def tilde_e_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric):
     magnetic_field_one_form = np.einsum(
         "a, ia", tilde_b, spatial_metric) / sqrt_det_spatial_metric
 
@@ -26,9 +26,9 @@ def tilde_e_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
     return result
 
 
-def tilde_b_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
+def tilde_b_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric):
     electric_field_one_form = np.einsum(
         "a, ia", tilde_e, spatial_metric) / sqrt_det_spatial_metric
 
@@ -44,20 +44,19 @@ def tilde_b_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
     return result
 
 
-def tilde_psi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                   current_density, lapse, shift, sqrt_det_spatial_metric,
-                   spatial_metric, inv_spatial_metric):
+def tilde_psi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j,
+                   lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                   inv_spatial_metric):
     return -shift * tilde_psi + lapse * tilde_e
 
 
-def tilde_phi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                   current_density, lapse, shift, sqrt_det_spatial_metric,
-                   spatial_metric, inv_spatial_metric):
+def tilde_phi_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j,
+                   lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                   inv_spatial_metric):
     return -shift * tilde_phi + lapse * tilde_b
 
 
-def tilde_q_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                 current_density, lapse, shift, sqrt_det_spatial_metric,
-                 spatial_metric, inv_spatial_metric):
-    return (lapse * sqrt_det_spatial_metric * current_density -
-            shift * tilde_q)
+def tilde_q_flux(tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric):
+    return (tilde_j - shift * tilde_q)
