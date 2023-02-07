@@ -40,6 +40,7 @@ set(LIBRARY_SOURCES
   Test_StaticCache.cpp
   Test_StdArrayHelpers.cpp
   Test_StdHelpers.cpp
+  Test_StlBoilerplate.cpp
   Test_TaggedTuple.cpp
   Test_TMPL.cpp
   Test_TMPLDocumentation.cpp

@@ -65,6 +65,7 @@ spectre_target_headers(
   StaticCache.hpp
   StdArrayHelpers.hpp
   StdHelpers.hpp
+  StlBoilerplate.hpp
   StlStreamDeclarations.hpp
   TMPL.hpp
   TaggedTuple.hpp

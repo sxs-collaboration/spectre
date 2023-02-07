@@ -50,6 +50,7 @@ spectre_target_headers(
   SliceTensorToVariables.hpp
   SliceVariables.hpp
   SpinWeighted.hpp
+  StaticDeque.hpp
   StaticMatrix.hpp
   StaticVector.hpp
   StripeIterator.hpp
