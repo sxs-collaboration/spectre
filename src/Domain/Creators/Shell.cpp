@@ -162,7 +162,7 @@ Domain<3> Shell::create_domain() const {
     excision_spheres.emplace(
         "CentralExcisionSphere",
         ExcisionSphere<3>{inner_radius_,
-                          {{0.0, 0.0, 0.0}},
+                          tnsr::I<double, 3, Frame::Grid>{0.0},
                           {{0, Direction<3>::lower_zeta()},
                            {1, Direction<3>::lower_zeta()},
                            {2, Direction<3>::lower_zeta()},

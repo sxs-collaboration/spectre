@@ -99,8 +99,11 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
            "Excision sphere for ObjectA not in the domain but is needed to "
            "compute Translation control error.");
 
-    const DataVector grid_position_of_A = array_to_datavector(
-        domain.excision_spheres().at("ObjectAExcisionSphere").center());
+    const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A_tnsr =
+        domain.excision_spheres().at("ObjectAExcisionSphere").center();
+    const DataVector grid_position_of_A{{grid_position_of_A_tnsr[0],
+                                         grid_position_of_A_tnsr[1],
+                                         grid_position_of_A_tnsr[2]}};
     const DataVector& current_position_of_A = get<center_A>(measurements);
 
     const DataVector rotation_error =

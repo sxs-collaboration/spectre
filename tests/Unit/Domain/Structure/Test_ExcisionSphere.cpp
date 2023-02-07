@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <functional>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -15,7 +16,7 @@
 namespace {
 template <size_t VolumeDim>
 void check_excision_sphere_work(
-    const double radius, const std::array<double, VolumeDim> center,
+    const double radius, const tnsr::I<double, VolumeDim, Frame::Grid> center,
     const std::unordered_map<size_t, Direction<VolumeDim>>&
         abutting_directions) {
   const ExcisionSphere<VolumeDim> excision_sphere(radius, center,
@@ -49,7 +50,7 @@ void check_excision_sphere_work(
 
 void check_excision_sphere_1d() {
   const double radius = 1.2;
-  const std::array<double, 1> center = {{5.4}};
+  const tnsr::I<double, 1, Frame::Grid> center{{5.4}};
   check_excision_sphere_work<1>(
       radius, center,
       {{0, Direction<1>::lower_xi()}, {2, Direction<1>::upper_xi()}});
@@ -57,7 +58,7 @@ void check_excision_sphere_1d() {
 
 void check_excision_sphere_2d() {
   const double radius = 4.2;
-  const std::array<double, 2> center = {{5.4, -2.3}};
+  const tnsr::I<double, 2, Frame::Grid> center{{5.4, -2.3}};
   check_excision_sphere_work<2>(
       radius, center,
       {{0, Direction<2>::lower_eta()}, {2, Direction<2>::upper_xi()}});
@@ -65,7 +66,7 @@ void check_excision_sphere_2d() {
 
 void check_excision_sphere_3d() {
   const double radius = 5.2;
-  const std::array<double, 3> center = {{5.4, -2.3, 9.0}};
+  const tnsr::I<double, 3, Frame::Grid> center{{5.4, -2.3, 9.0}};
   check_excision_sphere_work<3>(
       radius, center,
       {{0, Direction<3>::lower_xi()}, {2, Direction<3>::upper_zeta()}});
@@ -84,7 +85,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ExcisionSphere", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_excision_sphere = ExcisionSphere<3>(-2.0, {{3.4, 1.2, -0.9}}, {});
+  auto failed_excision_sphere = ExcisionSphere<3>(
+      -2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}}, {});
   static_cast<void>(failed_excision_sphere);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

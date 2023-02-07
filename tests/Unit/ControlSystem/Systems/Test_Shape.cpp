@@ -40,6 +40,7 @@
 #include "Parallel/Phase.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -98,8 +99,9 @@ void test_shape_control(
   SpherepackIterator iter{l_max, l_max};
   const double ah_radius =
       ah_coefs_function_of_time.func(initial_time)[0][iter.set(0, 0)()];
-  const std::array<double, 3>& center = excision_sphere.center();
-  Strahlkorper horizon_a{l_max, l_max, ah_radius, center};
+  const tnsr::I<double, 3, Frame::Grid>& center = excision_sphere.center();
+  Strahlkorper horizon_a{l_max, l_max, ah_radius,
+                         make_array<double, 3>(center)};
   // B just needs to exist. Doesn't have to be valid
   const Strahlkorper horizon_b{};
 

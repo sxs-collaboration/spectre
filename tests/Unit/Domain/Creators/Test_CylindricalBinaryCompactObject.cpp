@@ -291,11 +291,13 @@ void test_connectivity_once(const bool with_sphere_e,
     const auto& excision_sphere_a =
         domain.excision_spheres().at("ObjectAExcisionSphere");
     CHECK(excision_sphere_a.radius() == inner_radius_objectA);
-    CHECK(excision_sphere_a.center() == center_objectA);
     const auto& excision_sphere_b =
         domain.excision_spheres().at("ObjectBExcisionSphere");
     CHECK(excision_sphere_b.radius() == inner_radius_objectB);
-    CHECK(excision_sphere_b.center() == center_objectB);
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
+      CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
+    }
 
     // The Domain has no functions of time above, so make sure
     // that the functions_of_time function returns an empty map.

@@ -347,7 +347,7 @@ void test_shell_construction(
           std::unordered_map<std::string, ExcisionSphere<3>>{
               {"CentralExcisionSphere",
                ExcisionSphere<3>{inner_radius,
-                                 {{0.0, 0.0, 0.0}},
+                                 tnsr::I<double, 3, Frame::Grid>{0.},
                                  {{0, Direction<3>::lower_zeta()},
                                   {1, Direction<3>::lower_zeta()},
                                   {2, Direction<3>::lower_zeta()},

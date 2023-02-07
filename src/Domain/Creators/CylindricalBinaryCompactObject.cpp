@@ -842,8 +842,10 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   }
   excision_spheres.emplace(
       "ObjectAExcisionSphere",
-      ExcisionSphere<3>{radius_A_, rotate_from_z_to_x_axis(center_A_),
-                        abutting_directions_A});
+      ExcisionSphere<3>{
+          radius_A_,
+          tnsr::I<double, 3, Frame::Grid>(rotate_from_z_to_x_axis(center_A_)),
+          abutting_directions_A});
 
   std::unordered_map<size_t, Direction<3>> abutting_directions_B;
   if (include_inner_sphere_B_) {
@@ -870,8 +872,10 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   }
   excision_spheres.emplace(
       "ObjectBExcisionSphere",
-      ExcisionSphere<3>{radius_B_, rotate_from_z_to_x_axis(center_B_),
-                        abutting_directions_B});
+      ExcisionSphere<3>{
+          radius_B_,
+          tnsr::I<double, 3, Frame::Grid>(rotate_from_z_to_x_axis(center_B_)),
+          abutting_directions_B});
 
   Domain<3> domain{std::move(coordinate_maps), std::move(excision_spheres),
                    block_names_, block_groups_};
