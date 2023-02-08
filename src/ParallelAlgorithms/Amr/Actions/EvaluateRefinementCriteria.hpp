@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Helpers.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -65,6 +66,9 @@ namespace amr::Actions {
 /// - Evaluates each refinement criteria held by amr::Criteria::Tags::Criteria,
 ///   and in each dimension selects the amr::domain::Flag with the highest
 ///   priority (i.e the highest integral value).
+/// - An Element that is splitting in one dimension is not allowed to join
+///   in another dimension.  If this is requested by the refinement critiera,
+///   the decision to join is changed to do nothing
 /// - Checks if any neighbors have sent their AMR decision, and if so, calls
 ///   amr:::domain::update_amr_decision with the decision of each neighbor in
 ///   order to see if the current decision needs to be updated
@@ -96,6 +100,13 @@ struct EvaluateRefinementCriteria {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }
     }
+
+    // An element cannot join if it is splitting in another dimension.
+    // Update the flags now before sending to neighbors as each time
+    // a flag is changed by UpdateAmrDecision, it sends the new flags
+    // to its neighbors.  So updating now will save some commmunication.
+    amr::domain::prevent_element_from_joining_while_splitting(
+        make_not_null(&overall_decision));
 
     // Check if we received any neighbor flags prior to determining our own
     // flags.  If yes, then possible update our flags (e.g. sibling doesn't want

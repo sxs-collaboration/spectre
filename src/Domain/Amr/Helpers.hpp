@@ -26,6 +26,11 @@ class ElementId;
 
 template <size_t VolumeDim>
 class OrientationMap;
+
+namespace gsl {
+template <typename>
+class not_null;
+}
 /// \endcond
 
 namespace amr::domain {
@@ -111,4 +116,21 @@ std::deque<ElementId<VolumeDim>> ids_of_joining_neighbors(
 template <size_t VolumeDim>
 bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
                                   const std::array<Flag, VolumeDim>& flags);
+
+/// \ingroup AmrGroup
+/// \brief Prevent an Element from splitting in one dimension, while joining in
+/// another
+///
+/// \details If `flags` (the AMR decisions of an Element) contains both
+/// amr::domain::Flag::Split and  amr::domain::Flag::Join, then all change Join
+/// to amr::domain::Flag::DoNothing.
+///
+/// \returns true if any flag is changed
+///
+/// \note This restriction could be relaxed, but it would greatly complicate
+/// the AMR algorithm.  As a Join flag has the lowest priority, it causes
+/// no problems to replace it with a DoNothing flag.
+template <size_t VolumeDim>
+bool prevent_element_from_joining_while_splitting(
+    gsl::not_null<std::array<Flag, VolumeDim>*> flags);
 }  // namespace amr::domain
