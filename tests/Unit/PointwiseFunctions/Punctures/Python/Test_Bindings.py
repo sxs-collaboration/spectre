@@ -15,9 +15,7 @@ class TestBindings(unittest.TestCase):
         field = np.random.rand(1, 5)
         alpha = np.random.rand(1, 5)
         beta = np.random.rand(1, 5)
-        result = adm_mass_integrand(Scalar[DataVector](field),
-                                    Scalar[DataVector](alpha),
-                                    Scalar[DataVector](beta))
+        result = adm_mass_integrand(field, alpha, beta)
         npt.assert_allclose(
             np.array(result),
             1. / (2. * np.pi) * beta * (alpha * (1. + field) + 1.)**(-7))

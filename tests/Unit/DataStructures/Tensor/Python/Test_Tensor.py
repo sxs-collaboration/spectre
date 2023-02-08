@@ -7,6 +7,9 @@ from spectre.DataStructures.Tensor import (tnsr, Frame, Scalar, Jacobian,
 import unittest
 import numpy as np
 import numpy.testing as npt
+from spectre.Domain import jacobian_diagnostic
+from spectre.Spectral import Mesh, Basis, Quadrature
+from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
 
 
 class TestTensor(unittest.TestCase):
@@ -35,11 +38,41 @@ class TestTensor(unittest.TestCase):
 
     def test_numpy_interoperability(self):
         data = np.random.rand(3, 4)
+        data_scalar = np.random.rand(4)
+        data_symm_tensor = np.random.rand(6, 4)
         for copy in [True, False]:
             coords = tnsr.I[DataVector, 3, Frame.Inertial](data, copy=copy)
             for i, (a, b) in enumerate(zip(coords, data)):
                 npt.assert_equal(a, b, f"Mismatch at index {i}")
             npt.assert_equal(np.array(coords), data)
+            symm_tensor = tnsr.ii[DataVector, 3](data_symm_tensor, copy=copy)
+            for i, (a, b) in enumerate(zip(symm_tensor, data_symm_tensor)):
+                npt.assert_equal(a, b, f"Mismatch at index {i}")
+            npt.assert_equal(np.array(symm_tensor), data_symm_tensor)
+            # Construction of Scalar from 1D array
+            scalar = Scalar[DataVector](data_scalar, copy=copy)
+            npt.assert_equal(np.array(scalar), [data_scalar])
+        with self.assertRaisesRegex(RuntimeError, "expected to be 2D"):
+            tnsr.ii[DataVector, 3](np.random.rand(3, 3, 4))
+        with self.assertRaisesRegex(RuntimeError, "3 independent components"):
+            tnsr.I[DataVector, 3](np.random.rand(2, 4))
+        # Implicit conversion from Numpy array to scalar
+        adm_mass_integrand(field=np.random.rand(4),
+                           alpha=np.random.rand(4),
+                           beta=np.random.rand(4))
+        # Implicit conversion from Numpy array to vector
+        mesh = Mesh[3](3, Basis.Legendre, Quadrature.GaussLobatto)
+        jac = Jacobian[DataVector, 3](np.random.rand(9, 27))
+        jacobian_diagnostic(jacobian=jac,
+                            inertial_coords=np.random.rand(3, 27),
+                            mesh=mesh)
+        # Higher-rank tensor don't convert implicitly
+        with self.assertRaisesRegex(TypeError,
+                                    "incompatible function arguments"):
+            jacobian_diagnostic(jacobian=np.random.rand(9, 27),
+                                inertial_coords=np.random.rand(3, 27),
+                                mesh=Mesh[3](3, Basis.Legendre,
+                                             Quadrature.GaussLobatto))
 
     def test_buffer_strides(self):
         # The transpose should set up data with non-unit strides
