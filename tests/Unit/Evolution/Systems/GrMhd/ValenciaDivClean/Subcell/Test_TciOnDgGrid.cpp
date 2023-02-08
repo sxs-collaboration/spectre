@@ -117,6 +117,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
+      std::nullopt,
       std::nullopt};
 
   auto box = db::create<db::AddSimpleTags<

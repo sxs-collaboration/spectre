@@ -68,6 +68,7 @@ void test(const TestThis& test_this) {
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
+      std::nullopt,
       std::nullopt};
 
   const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =

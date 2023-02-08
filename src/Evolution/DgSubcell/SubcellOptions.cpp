@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -26,7 +27,9 @@ SubcellOptions::SubcellOptions(
     double initial_data_persson_exponent, double persson_exponent,
     bool always_use_subcells, fd::ReconstructionMethod recons_method,
     bool use_halo,
-    std::optional<std::vector<std::string>> only_dg_block_and_group_names)
+    std::optional<std::vector<std::string>> only_dg_block_and_group_names,
+    std::optional<size_t> finite_difference_derivative_order,
+    const Options::Context& context)
     : initial_data_rdmp_delta0_(initial_data_rdmp_delta0),
       initial_data_rdmp_epsilon_(initial_data_rdmp_epsilon),
       rdmp_delta0_(rdmp_delta0),
@@ -36,9 +39,18 @@ SubcellOptions::SubcellOptions(
       always_use_subcells_(always_use_subcells),
       reconstruction_method_(recons_method),
       use_halo_(use_halo),
-      only_dg_block_and_group_names_(std::move(only_dg_block_and_group_names)) {
+      only_dg_block_and_group_names_(std::move(only_dg_block_and_group_names)),
+      finite_difference_derivative_order_(finite_difference_derivative_order) {
   if (not only_dg_block_and_group_names_.has_value()) {
     only_dg_block_ids_ = std::vector<size_t>{};
+  }
+  if (finite_difference_derivative_order_.has_value() and
+      not alg::found(std::array<size_t, 5>{{2, 4, 6, 8, 10}},
+                     finite_difference_derivative_order_.value())) {
+    PARSE_ERROR(context,
+                "The finite difference order must be Auto or one of "
+                "2,4,6,8,10, but got "
+                    << finite_difference_derivative_order_.value());
   }
 }
 
@@ -102,6 +114,7 @@ void SubcellOptions::pup(PUP::er& p) {
   p | use_halo_;
   p | only_dg_block_and_group_names_;
   p | only_dg_block_ids_;
+  p | finite_difference_derivative_order_;
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
@@ -117,7 +130,9 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
          lhs.use_halo() == rhs.use_halo() and
          lhs.only_dg_block_and_group_names_ ==
              rhs.only_dg_block_and_group_names_ and
-         lhs.only_dg_block_ids_ == rhs.only_dg_block_ids_;
+         lhs.only_dg_block_ids_ == rhs.only_dg_block_ids_ and
+         lhs.finite_difference_derivative_order_ ==
+             rhs.finite_difference_derivative_order_;
 }
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {

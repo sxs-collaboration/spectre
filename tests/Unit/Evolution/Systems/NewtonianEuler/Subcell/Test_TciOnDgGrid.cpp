@@ -88,6 +88,7 @@ void test(const TestThis test_this) {
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
+      std::nullopt,
       std::nullopt};
 
   auto box = db::create<db::AddSimpleTags<
