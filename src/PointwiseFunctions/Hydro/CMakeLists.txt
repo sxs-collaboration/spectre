@@ -24,6 +24,7 @@ spectre_target_headers(
   SpecificEnthalpy.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  Units.hpp
   )
 
 target_link_libraries(
