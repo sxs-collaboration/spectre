@@ -75,12 +75,11 @@ namespace amr::Actions {
 /// - Sends the (possibly updated) decision to all of the neighboring Elements
 struct EvaluateRefinementCriteria {
   template <typename ParallelComponent, typename DbTagList,
-            typename Metavariables, typename ArrayIndex>
+            typename Metavariables>
   static void apply(db::DataBox<DbTagList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index) {
+                    const ElementId<Metavariables::volume_dim>& element_id) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
-    ElementId<volume_dim> element_id{array_index};
     auto overall_decision =
         make_array<volume_dim>(amr::domain::Flag::Undefined);
 
@@ -95,7 +94,7 @@ struct EvaluateRefinementCriteria {
     const auto& refinement_criteria =
         db::get<amr::Criteria::Tags::Criteria>(box);
     for (const auto& criterion : refinement_criteria) {
-      auto decision = criterion->evaluate(observation_box, cache, array_index);
+      auto decision = criterion->evaluate(observation_box, cache, element_id);
       for (size_t d = 0; d < volume_dim; ++d) {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }

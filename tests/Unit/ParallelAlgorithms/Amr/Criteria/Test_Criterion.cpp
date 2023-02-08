@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -67,10 +68,10 @@ class CriterionOne : public amr::Criterion {
   using compute_tags_for_observartion_box = tmpl::list<>;
   using argument_tags = tmpl::list<FieldOne>;
 
-  template <typename ArrayIndex, typename Metavariables>
-  auto operator()(const double field_one,
-                  Parallel::GlobalCache<Metavariables>& /*cache*/,
-                  const ArrayIndex& /*array_index*/) const {
+  template <typename Metavariables>
+  auto operator()(
+      const double field_one, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
     return field_one > critical_value_
                ? std::array{amr::domain::Flag::Split}
                : std::array{amr::domain::Flag::DoNothing};
@@ -110,10 +111,10 @@ class CriterionTwo : public amr::Criterion {
   using compute_tags_for_observartion_box = tmpl::list<ConstraintCompute>;
   using argument_tags = tmpl::list<Constraint>;
 
-  template <typename ArrayIndex, typename Metavariables>
-  auto operator()(const double constraint,
-                  Parallel::GlobalCache<Metavariables>& /*cache*/,
-                  const ArrayIndex& /*array_index*/) const {
+  template <typename Metavariables>
+  auto operator()(
+      const double constraint, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
     return std::abs(constraint) > target_value_
                ? std::array{amr::domain::Flag::Split}
                : (std::abs(constraint) < 0.1 * target_value_
@@ -157,8 +158,8 @@ void test_criterion(const amr::Criterion& criterion, const double field_one,
   // we just explicitly list them
   using compute_tags = tmpl::list<ConstraintCompute>;
   ObservationBox<compute_tags, db::DataBox<simple_tags>> box{databox};
-  size_t fake_id{0_st};
-  auto flags = criterion.evaluate(box, empty_cache, fake_id);
+  ElementId<1> element_id{0};
+  auto flags = criterion.evaluate(box, empty_cache, element_id);
   CHECK(flags == std::array{expected_flag});
 }
 

@@ -70,9 +70,9 @@ class Random : public Criterion {
 
   using argument_tags = tmpl::list<>;
 
-  template <typename ArrayIndex, typename Metavariables>
+  template <typename Metavariables>
   auto operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                  const ArrayIndex& array_index) const;
+                  const ElementId<Metavariables::volume_dim>& element_id) const;
 
   void pup(PUP::er& p) override;
 
@@ -83,12 +83,12 @@ class Random : public Criterion {
   size_t maximum_refinement_level_{0};
 };
 
-template <typename ArrayIndex, typename Metavariables>
-auto Random::operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                        const ArrayIndex& array_index) const {
+template <typename Metavariables>
+auto Random::operator()(
+    Parallel::GlobalCache<Metavariables>& /*cache*/,
+    const ElementId<Metavariables::volume_dim>& element_id) const {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   auto result = make_array<volume_dim>(amr::domain::Flag::Undefined);
-  const ElementId<volume_dim> element_id{array_index};
   for (size_t d = 0; d < volume_dim; ++d) {
     result[d] = random_flag(element_id.segment_ids()[d].refinement_level());
   }

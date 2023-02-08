@@ -46,10 +46,10 @@ namespace amr::Actions {
 ///
 struct UpdateAmrDecision {
   template <typename ParallelComponent, typename DbTagList,
-            typename Metavariables, typename ArrayIndex>
+            typename Metavariables>
   static void apply(
       db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
+      const ElementId<Metavariables::volume_dim>& /*element_id*/,
       const ElementId<Metavariables::volume_dim>& neighbor_id,
       const std::array<amr::domain::Flag, Metavariables::volume_dim>&
           neighbor_amr_flags) {

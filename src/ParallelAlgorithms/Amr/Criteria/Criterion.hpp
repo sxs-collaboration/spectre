@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -31,9 +32,9 @@ namespace amr {
 ///   call operator.
 /// The call operator should take as arguments the values corresponding to each
 /// tag in `argument_tags` (in order), followed by the Parallel::GlobalCache,
-/// and the ArrayIndex (which is typically an ElementId).  The tags listed in
-/// `argument_tags` should either be tags in the DataBox of the array component,
-/// or listed in `compute_tags_for_observation_box`.
+/// and the ElementId.  The tags listed in `argument_tags` should either be tags
+/// in the DataBox of the array component, or listed in
+/// `compute_tags_for_observation_box`.
 ///
 /// \example
 /// \snippet Test_Criterion.cpp criterion_examples
@@ -65,17 +66,17 @@ class Criterion : public PUP::able {
   /// of the tags listed in `compute_tags_for_observation_box` for each derived
   /// Criterion listed in the `factory_classes`.
   template <typename ComputeTagsList, typename DataBoxType,
-            typename Metavariables, typename ArrayIndex>
+            typename Metavariables>
   auto evaluate(const ObservationBox<ComputeTagsList, DataBoxType>& box,
                 Parallel::GlobalCache<Metavariables>& cache,
-                const ArrayIndex& array_index) const {
+                const ElementId<Metavariables::volume_dim>& element_id) const {
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
     return call_with_dynamic_type<
         std::array<amr::domain::Flag, Metavariables::volume_dim>,
         tmpl::at<factory_classes, Criterion>>(
-        this, [&box, &cache, &array_index](auto* const criterion) {
-          return apply(*criterion, box, cache, array_index);
+        this, [&box, &cache, &element_id](auto* const criterion) {
+          return apply(*criterion, box, cache, element_id);
         });
   }
 };
