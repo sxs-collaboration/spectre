@@ -20,6 +20,9 @@ ResourceInfo:
     AhA:
       Proc: Auto
       Exclusive: false
+    ExcisionBoundaryA:
+      Proc: Auto
+      Exclusive: false
 
 Evolution:
   InitialTime: 0.0
@@ -163,6 +166,11 @@ EventsAndTriggers:
           Offset: 2
     - - AhA
   - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 2
+    - - ExcisionBoundaryA
+  - - Slabs:
         Specified:
           Values: [3]
     - - Completion
@@ -193,3 +201,10 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
+
+InterpolationTargets:
+  ExcisionBoundaryA:
+    Lmax: 10
+    Center: [0., 0., 0.]
+    Radius: 2.0
+    AngularOrdering: "Strahlkorper"

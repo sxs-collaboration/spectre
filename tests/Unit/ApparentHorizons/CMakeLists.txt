@@ -5,6 +5,7 @@ set(LIBRARY "Test_ApparentHorizons")
 
 set(LIBRARY_SOURCES
   Test_ApparentHorizonFinder.cpp
+  Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp

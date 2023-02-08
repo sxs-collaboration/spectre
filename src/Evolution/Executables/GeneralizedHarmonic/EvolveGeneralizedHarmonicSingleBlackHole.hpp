@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"
@@ -24,6 +26,7 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"
@@ -36,11 +39,13 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -85,29 +90,69 @@ struct EvolutionMetavars
                                              ::Frame::Inertial>>;
   };
 
-  using interpolation_target_tags = tmpl::list<AhA>;
+  struct ExcisionBoundaryA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    using temporal_id = ::Tags::Time;
+    using tags_to_observe = tmpl::list<
+        gr::Tags::LapseCompute<volume_dim, ::Frame::Inertial, DataVector>>;
+    using compute_vars_to_interpolate =
+        ah::ComputeExcisionBoundaryVolumeQuantities;
+    using vars_to_interpolate_to_target =
+        tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>>;
+    using compute_items_on_source = tmpl::list<>;
+    using compute_items_on_target = tmpl::append<tmpl::list<
+        gr::Tags::SpatialMetricCompute<volume_dim, Frame::Inertial, DataVector>,
+        gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, Frame::Inertial,
+                                                    DataVector>,
+        gr::Tags::ShiftCompute<volume_dim, Frame::Inertial, DataVector>,
+        gr::Tags::LapseCompute<volume_dim, Frame::Inertial, DataVector>>>;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveSurfaceData<tags_to_observe, ExcisionBoundaryA,
+                                             ::Frame::Grid>;
+    // run_callbacks
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::gh_dg_element_array;
+  };
+
+  using interpolation_target_tags = tmpl::list<AhA, ExcisionBoundaryA>;
   using interpolator_source_vars = ::ah::source_vars<volume_dim>;
+  using interpolator_source_vars_excision_boundary =
+      tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
         typename gh_base::factory_creation::factory_classes,
-        tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
-                              3, AhA, interpolator_source_vars>>>>;
+        tmpl::pair<
+            Event,
+            tmpl::list<
+                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryA, EvolutionMetavars,
+                    interpolator_source_vars_excision_boundary>>>>;
   };
 
   using typename gh_base::const_global_cache_tags;
 
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::at<typename factory_creation::factory_classes, Event>>;
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::push_back<
+          tmpl::at<typename factory_creation::factory_classes, Event>,
+          typename AhA::post_horizon_find_callbacks,
+          typename ExcisionBoundaryA::post_interpolation_callback>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,
                       intrp::Actions::RegisterElementWithInterpolator>;
 
-  using typename gh_base::initialization_actions;
-
   using typename gh_base::step_actions;
+
+  using initialization_actions =
+      tmpl::push_back<tmpl::pop_back<typename gh_base::initialization_actions>,
+                      intrp::Actions::ElementInitInterpPoints<
+                          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+                      tmpl::back<typename gh_base::initialization_actions>>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
@@ -160,7 +205,8 @@ struct EvolutionMetavars
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
-      intrp::InterpolationTarget<EvolutionMetavars, AhA>>>;
+      intrp::InterpolationTarget<EvolutionMetavars, AhA>,
+      intrp::InterpolationTarget<EvolutionMetavars, ExcisionBoundaryA>>>;
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
