@@ -33,9 +33,9 @@ void test_solution(const double mass, const std::array<double, 3> spin,
   const auto& solution = dynamic_cast<const SphericalKerr&>(*created);
   {
     INFO("Properties");
-    CHECK(solution.mass() == mass);
-    CHECK(solution.dimensionless_spin() == spin);
-    CHECK(solution.center() == center);
+    CHECK(solution.gr_solution().mass() == mass);
+    CHECK(solution.gr_solution().dimensionless_spin() == spin);
+    CHECK(solution.gr_solution().center() == center);
   }
   {
     INFO("Semantics");

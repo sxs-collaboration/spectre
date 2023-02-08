@@ -211,9 +211,13 @@ struct WrappedGrVariables
  * initial guess than flatness, such as a superposition of Kerr solutions for
  * black-hole binary initial data.
  */
-template <typename GrSolution>
-class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
-                  public GrSolution {
+template <typename GrSolution,
+          typename GrSolutionOptions = typename GrSolution::options>
+class WrappedGr;
+
+template <typename GrSolution, typename... GrSolutionOptions>
+class WrappedGr<GrSolution, tmpl::list<GrSolutionOptions...>>
+    : public elliptic::analytic_data::AnalyticSolution {
  public:
   static constexpr size_t Dim = 3;
 
@@ -221,21 +225,36 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
   static constexpr Options::String help = GrSolution::help;
   static std::string name() { return pretty_type::name<GrSolution>(); }
 
-  using GrSolution::GrSolution;
+  WrappedGr() = default;
+  WrappedGr(const WrappedGr&) = default;
+  WrappedGr& operator=(const WrappedGr&) = default;
+  WrappedGr(WrappedGr&&) = default;
+  WrappedGr& operator=(WrappedGr&&) = default;
+  ~WrappedGr() = default;
+
+  WrappedGr(typename GrSolutionOptions::type... gr_solution_options)
+      : gr_solution_(std::move(gr_solution_options)...) {}
+
+  const GrSolution& gr_solution() const { return gr_solution_; }
+
+  /// \cond
+  explicit WrappedGr(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(WrappedGr<GrSolution>);
+  WRAPPED_PUPable_decl_template(WrappedGr);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
       const override {
-    return std::make_unique<WrappedGr<GrSolution>>(*this);
+    return std::make_unique<WrappedGr>(*this);
   }
+  /// \endcond
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     const auto gr_solution =
-        GrSolution::variables(x, std::numeric_limits<double>::signaling_NaN(),
-                              detail::gr_solution_vars<DataType, Dim>{});
+        gr_solution_.variables(x, std::numeric_limits<double>::signaling_NaN(),
+                               detail::gr_solution_vars<DataType, Dim>{});
     using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
@@ -250,8 +269,8 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
     const auto gr_solution =
-        GrSolution::variables(x, std::numeric_limits<double>::signaling_NaN(),
-                              detail::gr_solution_vars<DataType, Dim>{});
+        gr_solution_.variables(x, std::numeric_limits<double>::signaling_NaN(),
+                               detail::gr_solution_vars<DataType, Dim>{});
     using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
@@ -260,9 +279,12 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
   }
 
   void pup(PUP::er& p) override {
-    GrSolution::pup(p);
     elliptic::analytic_data::AnalyticSolution::pup(p);
+    p | gr_solution_;
   }
+
+ private:
+  GrSolution gr_solution_;
 };
 
 }  // namespace Xcts::Solutions

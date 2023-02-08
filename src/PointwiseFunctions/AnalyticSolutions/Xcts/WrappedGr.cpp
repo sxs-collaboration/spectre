@@ -299,8 +299,10 @@ template class WrappedGrVariables<DataVector>;
 
 }  // namespace detail
 
-template <typename GrSolution>
-PUP::able::PUP_ID WrappedGr<GrSolution>::my_PUP_ID = 0;  // NOLINT
+template <typename GrSolution, typename... GrSolutionOptions>
+PUP::able::PUP_ID
+    WrappedGr<GrSolution, tmpl::list<GrSolutionOptions...>>::my_PUP_ID =
+        0;  // NOLINT
 
 }  // namespace Xcts::Solutions
 
