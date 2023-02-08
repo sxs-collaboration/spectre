@@ -58,8 +58,12 @@ namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <typename Metavariables, typename DbTagsList, size_t Dim>
-auto prepare_neighbor_data(gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
-                           gsl::not_null<db::DataBox<DbTagsList>*> box)
+auto prepare_neighbor_data(
+    gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    [[maybe_unused]] const Variables<db::wrap_tags_in<
+        ::Tags::Flux, typename Metavariables::system::flux_variables,
+        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes)
     -> DirectionMap<Metavariables::volume_dim, DataVector>;
 template <typename DbTagsList>
 int get_tci_decision(const db::DataBox<DbTagsList>& box);
@@ -618,7 +622,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   if constexpr (using_subcell_v<Metavariables>) {
     all_neighbor_data_for_reconstruction =
         evolution::dg::subcell::prepare_neighbor_data<Metavariables>(
-            make_not_null(&ghost_data_mesh), box);
+            make_not_null(&ghost_data_mesh), box, volume_fluxes);
     tci_decision = evolution::dg::subcell::get_tci_decision(*box);
   }
 

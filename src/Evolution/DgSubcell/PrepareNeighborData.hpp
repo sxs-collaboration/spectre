@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -53,8 +55,12 @@ namespace evolution::dg::subcell {
  * elide any slicing or projection cost in that direction.
  */
 template <typename Metavariables, typename DbTagsList, size_t Dim>
-auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
-                           const gsl::not_null<db::DataBox<DbTagsList>*> box)
+auto prepare_neighbor_data(
+    const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    [[maybe_unused]] const Variables<db::wrap_tags_in<
+        ::Tags::Flux, typename Metavariables::system::flux_variables,
+        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes)
     -> DirectionMap<Metavariables::volume_dim, DataVector> {
   const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
   const Mesh<Dim>& subcell_mesh =
