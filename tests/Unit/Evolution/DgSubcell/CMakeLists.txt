@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Actions/Test_TciAndSwitchToDg.cpp
   Test_ActiveGrid.cpp
   Test_CartesianFluxDivergence.cpp
+  Test_CellCenteredFlux.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
   Test_GetTciDecision.cpp
