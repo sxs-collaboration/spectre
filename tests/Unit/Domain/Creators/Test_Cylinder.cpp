@@ -34,6 +34,7 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace domain {
@@ -238,87 +239,85 @@ void test_cylinder_no_refinement() {
       domain::CoordinateMaps::Distribution::Linear};
   const std::vector distribution_in_z{
       domain::CoordinateMaps::Distribution::Linear};
-  for (const bool with_boundary_conditions : {true, false}) {
+  for (const auto& [with_boundary_conditions, equiangular_map, periodic_in_z] :
+       cartesian_product(make_array(true, false), make_array(true, false),
+                         make_array(true, false))) {
     CAPTURE(with_boundary_conditions);
-    for (const bool equiangular_map : {true, false}) {
-      CAPTURE(equiangular_map);
-      for (const bool periodic_in_z : {true, false}) {
-        CAPTURE(periodic_in_z);
-        const double inner_radius = 1.0;
-        const double outer_radius = 2.0;
-        const double lower_z_bound = -2.5;
-        const double upper_z_bound = 5.0;
-        const size_t refinement_level = 2;
-        const std::array<size_t, 3> grid_points{{4, 4, 3}};
+    CAPTURE(equiangular_map);
+    CAPTURE(periodic_in_z);
+    const double inner_radius = 1.0;
+    const double outer_radius = 2.0;
+    const double lower_z_bound = -2.5;
+    const double upper_z_bound = 5.0;
+    const size_t refinement_level = 2;
+    const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-        const auto cylinder =
-            with_boundary_conditions
-                ? creators::Cylinder{inner_radius,
-                                     outer_radius,
-                                     lower_z_bound,
-                                     upper_z_bound,
-                                     periodic_in_z
-                                         ? std::make_unique<PeriodicBc>()
-                                         : create_lower_z_boundary_condition(),
-                                     periodic_in_z
-                                         ? std::make_unique<PeriodicBc>()
-                                         : create_upper_z_boundary_condition(),
-                                     create_mantle_boundary_condition(),
-                                     refinement_level,
-                                     grid_points,
-                                     equiangular_map,
-                                     {},
-                                     {}}
-                : creators::Cylinder{inner_radius,
-                                     outer_radius,
-                                     lower_z_bound,
-                                     upper_z_bound,
-                                     periodic_in_z,
-                                     refinement_level,
-                                     grid_points,
-                                     equiangular_map,
-                                     {},
-                                     {}};
-        const auto domain = TestHelpers::domain::creators::test_domain_creator(
-            cylinder, with_boundary_conditions, periodic_in_z);
+    const auto cylinder =
+        with_boundary_conditions
+            ? creators::Cylinder{inner_radius,
+                                 outer_radius,
+                                 lower_z_bound,
+                                 upper_z_bound,
+                                 periodic_in_z
+                                     ? std::make_unique<PeriodicBc>()
+                                     : create_lower_z_boundary_condition(),
+                                 periodic_in_z
+                                     ? std::make_unique<PeriodicBc>()
+                                     : create_upper_z_boundary_condition(),
+                                 create_mantle_boundary_condition(),
+                                 refinement_level,
+                                 grid_points,
+                                 equiangular_map,
+                                 {},
+                                 {}}
+            : creators::Cylinder{inner_radius,
+                                 outer_radius,
+                                 lower_z_bound,
+                                 upper_z_bound,
+                                 periodic_in_z,
+                                 refinement_level,
+                                 grid_points,
+                                 equiangular_map,
+                                 {},
+                                 {}};
+    const auto domain = TestHelpers::domain::creators::test_domain_creator(
+        cylinder, with_boundary_conditions, periodic_in_z);
 
-        CHECK(cylinder.block_names() ==
-              std::vector<std::string>{"InnerCube", "East", "North", "West",
-                                       "South"});
-        CHECK(cylinder.block_groups() ==
-              std::unordered_map<std::string, std::unordered_set<std::string>>{
-                  {"Wedges", {"East", "North", "West", "South"}}});
+    CHECK(cylinder.block_names() == std::vector<std::string>{"InnerCube",
+                                                             "East", "North",
+                                                             "West", "South"});
+    CHECK(cylinder.block_groups() ==
+          std::unordered_map<std::string, std::unordered_set<std::string>>{
+              {"Wedges", {"East", "North", "West", "South"}}});
 
-        test_cylinder_construction(cylinder, inner_radius, outer_radius,
-                                   lower_z_bound, upper_z_bound, periodic_in_z,
-                                   {5, grid_points},
-                                   {5, make_array<3>(refinement_level)},
-                                   equiangular_map, with_boundary_conditions);
+    test_cylinder_construction(
+        cylinder, inner_radius, outer_radius, lower_z_bound, upper_z_bound,
+        periodic_in_z, {5, grid_points}, {5, make_array<3>(refinement_level)},
+        equiangular_map, with_boundary_conditions);
 
-        const std::string opt_string{
-            "Cylinder:\n"
-            "  InnerRadius: 1.0\n"
-            "  OuterRadius: 2.0\n"
-            "  LowerZBound: -2.5\n"
-            "  UpperZBound: 5.0\n"
-            "  InitialRefinement: 2\n"
-            "  InitialGridPoints: [4,4,3]\n"
-            "  UseEquiangularMap: " +
-            std::string{equiangular_map ? "true" : "false"} +
-            "\n"
-            "  RadialPartitioning: []\n"
-            "  PartitioningInZ: []\n"
-            "  RadialDistribution: [Linear]\n"
-            "  DistributionInZ: [Linear]\n" +
-            std::string{
-                with_boundary_conditions
-                    ? boundary_conditions_string(periodic_in_z)
-                    : "  IsPeriodicInZ: " +
-                          std::string{periodic_in_z ? "true" : "false"} +
-                          "\n"}};
+    const std::string opt_string{
+        "Cylinder:\n"
+        "  InnerRadius: 1.0\n"
+        "  OuterRadius: 2.0\n"
+        "  LowerZBound: -2.5\n"
+        "  UpperZBound: 5.0\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [4,4,3]\n"
+        "  UseEquiangularMap: " +
+        std::string{equiangular_map ? "true" : "false"} +
+        "\n"
+        "  RadialPartitioning: []\n"
+        "  PartitioningInZ: []\n"
+        "  RadialDistribution: [Linear]\n"
+        "  DistributionInZ: [Linear]\n" +
+        std::string{with_boundary_conditions
+                        ? boundary_conditions_string(periodic_in_z)
+                        : "  IsPeriodicInZ: " +
+                              std::string{periodic_in_z ? "true" : "false"} +
+                              "\n"}};
 
-        const auto cylinder_factory = [&opt_string,
-                                       with_boundary_conditions]() {
+    const auto cylinder_factory =
+        [&opt_string, with_boundary_conditions = with_boundary_conditions]() {
           if (with_boundary_conditions) {
             return TestHelpers::test_option_tag<
                 domain::OptionTags::DomainCreator<3>,
@@ -333,86 +332,81 @@ void test_cylinder_no_refinement() {
                         3, domain::creators::Cylinder>>(opt_string);
           }
         }();
-        test_cylinder_construction(
-            dynamic_cast<const creators::Cylinder&>(*cylinder_factory),
-            inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-            periodic_in_z, {5, grid_points},
-            {5, make_array<3>(refinement_level)}, equiangular_map,
-            with_boundary_conditions);
+    test_cylinder_construction(
+        dynamic_cast<const creators::Cylinder&>(*cylinder_factory),
+        inner_radius, outer_radius, lower_z_bound, upper_z_bound, periodic_in_z,
+        {5, grid_points}, {5, make_array<3>(refinement_level)}, equiangular_map,
+        with_boundary_conditions);
 
-        if (with_boundary_conditions) {
-          CHECK_THROWS_WITH(
-              creators::Cylinder(
-                  inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-                  periodic_in_z ? std::make_unique<PeriodicBc>()
-                                : create_lower_z_boundary_condition(),
-                  periodic_in_z ? std::make_unique<PeriodicBc>()
-                                : create_upper_z_boundary_condition(),
-                  std::make_unique<PeriodicBc>(), refinement_level, grid_points,
-                  equiangular_map, {}, {}, radial_distribution,
-                  distribution_in_z, Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "A Cylinder can't have periodic boundary conditions in the "
-                  "radial direction."));
-          CHECK_THROWS_WITH(
-              creators::Cylinder(inner_radius, outer_radius, lower_z_bound,
-                                 upper_z_bound, std::make_unique<PeriodicBc>(),
-                                 create_lower_z_boundary_condition(),
-                                 create_mantle_boundary_condition(),
-                                 refinement_level, grid_points, equiangular_map,
-                                 {}, {}, radial_distribution, distribution_in_z,
-                                 Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "Either both lower and upper z-boundary condition must be "
-                  "periodic, or neither."));
-          CHECK_THROWS_WITH(
-              creators::Cylinder(
-                  inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-                  create_lower_z_boundary_condition(),
-                  std::make_unique<PeriodicBc>(),
-                  create_mantle_boundary_condition(), refinement_level,
-                  grid_points, equiangular_map, {}, {}, radial_distribution,
-                  distribution_in_z, Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "Either both lower and upper z-boundary condition must be "
-                  "periodic, or neither."));
-          CHECK_THROWS_WITH(
-              creators::Cylinder(inner_radius, outer_radius, lower_z_bound,
-                                 upper_z_bound, std::make_unique<NoneBc>(),
-                                 create_upper_z_boundary_condition(),
-                                 create_mantle_boundary_condition(),
-                                 refinement_level, grid_points, equiangular_map,
-                                 {}, {}, radial_distribution, distribution_in_z,
-                                 Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "None boundary condition is not supported. If you would like "
-                  "an outflow-type boundary condition, you must use that."));
-          CHECK_THROWS_WITH(
-              creators::Cylinder(
-                  inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-                  create_lower_z_boundary_condition(),
-                  std::make_unique<NoneBc>(),
-                  create_mantle_boundary_condition(), refinement_level,
-                  grid_points, equiangular_map, {}, {}, radial_distribution,
-                  distribution_in_z, Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "None boundary condition is not supported. If you would like "
-                  "an outflow-type boundary condition, you must use that."));
-          CHECK_THROWS_WITH(
-              creators::Cylinder(
-                  inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-                  create_lower_z_boundary_condition(),
-                  create_upper_z_boundary_condition(),
-                  std::make_unique<NoneBc>(), refinement_level, grid_points,
-                  equiangular_map, {}, {}, radial_distribution,
-                  distribution_in_z, Options::Context{false, {}, 1, 1}),
-              Catch::Matchers::Contains(
-                  "None boundary condition is not supported. If you would like "
-                  "an outflow-type boundary condition, you must use that."));
-        }
-      }  // periodic_in_z
-    }    // equiangular_map
-  }      // with_boundary_conditions
+    if (with_boundary_conditions) {
+      CHECK_THROWS_WITH(
+          creators::Cylinder(
+              inner_radius, outer_radius, lower_z_bound, upper_z_bound,
+              periodic_in_z ? std::make_unique<PeriodicBc>()
+                            : create_lower_z_boundary_condition(),
+              periodic_in_z ? std::make_unique<PeriodicBc>()
+                            : create_upper_z_boundary_condition(),
+              std::make_unique<PeriodicBc>(), refinement_level, grid_points,
+              equiangular_map, {}, {}, radial_distribution, distribution_in_z,
+              Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "A Cylinder can't have periodic boundary conditions in the "
+              "radial direction."));
+      CHECK_THROWS_WITH(
+          creators::Cylinder(inner_radius, outer_radius, lower_z_bound,
+                             upper_z_bound, std::make_unique<PeriodicBc>(),
+                             create_lower_z_boundary_condition(),
+                             create_mantle_boundary_condition(),
+                             refinement_level, grid_points, equiangular_map, {},
+                             {}, radial_distribution, distribution_in_z,
+                             Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "Either both lower and upper z-boundary condition must be "
+              "periodic, or neither."));
+      CHECK_THROWS_WITH(
+          creators::Cylinder(inner_radius, outer_radius, lower_z_bound,
+                             upper_z_bound, create_lower_z_boundary_condition(),
+                             std::make_unique<PeriodicBc>(),
+                             create_mantle_boundary_condition(),
+                             refinement_level, grid_points, equiangular_map, {},
+                             {}, radial_distribution, distribution_in_z,
+                             Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "Either both lower and upper z-boundary condition must be "
+              "periodic, or neither."));
+      CHECK_THROWS_WITH(
+          creators::Cylinder(
+              inner_radius, outer_radius, lower_z_bound, upper_z_bound,
+              std::make_unique<NoneBc>(), create_upper_z_boundary_condition(),
+              create_mantle_boundary_condition(), refinement_level, grid_points,
+              equiangular_map, {}, {}, radial_distribution, distribution_in_z,
+              Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "None boundary condition is not supported. If you would like "
+              "an outflow-type boundary condition, you must use that."));
+      CHECK_THROWS_WITH(
+          creators::Cylinder(
+              inner_radius, outer_radius, lower_z_bound, upper_z_bound,
+              create_lower_z_boundary_condition(), std::make_unique<NoneBc>(),
+              create_mantle_boundary_condition(), refinement_level, grid_points,
+              equiangular_map, {}, {}, radial_distribution, distribution_in_z,
+              Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "None boundary condition is not supported. If you would like "
+              "an outflow-type boundary condition, you must use that."));
+      CHECK_THROWS_WITH(
+          creators::Cylinder(inner_radius, outer_radius, lower_z_bound,
+                             upper_z_bound, create_lower_z_boundary_condition(),
+                             create_upper_z_boundary_condition(),
+                             std::make_unique<NoneBc>(), refinement_level,
+                             grid_points, equiangular_map, {}, {},
+                             radial_distribution, distribution_in_z,
+                             Options::Context{false, {}, 1, 1}),
+          Catch::Matchers::Contains(
+              "None boundary condition is not supported. If you would like "
+              "an outflow-type boundary condition, you must use that."));
+    }
+  }
 }
 
 void test_refined_cylinder_boundaries(

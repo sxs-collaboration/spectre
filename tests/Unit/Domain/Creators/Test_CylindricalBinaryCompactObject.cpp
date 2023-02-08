@@ -34,6 +34,8 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Utilities/CartesianProduct.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -358,19 +360,17 @@ void test_connectivity_once(const bool with_sphere_e,
 void test_connectivity() {
   // When we add sphere_e support we will make the following
   // loop go over {true, false}
-  for (const bool with_sphere_e : {false}) {
+  const bool with_sphere_e = false;
+  for (const auto& [include_outer_sphere, include_inner_sphere_A,
+                    include_inner_sphere_B] :
+       cartesian_product(make_array(true, false), make_array(true, false),
+                         make_array(true, false))) {
     CAPTURE(with_sphere_e);
-    for (const bool include_outer_sphere : {true, false}) {
-      CAPTURE(include_outer_sphere);
-      for (const bool include_inner_sphere_A : {true, false}) {
-        CAPTURE(include_inner_sphere_A);
-        for (const bool include_inner_sphere_B : {true, false}) {
-          CAPTURE(include_inner_sphere_B);
-          test_connectivity_once(with_sphere_e, include_inner_sphere_A,
-                                 include_inner_sphere_B, include_outer_sphere);
-        }
-      }
-    }
+    CAPTURE(include_outer_sphere);
+    CAPTURE(include_inner_sphere_A);
+    CAPTURE(include_inner_sphere_B);
+    test_connectivity_once(with_sphere_e, include_inner_sphere_A,
+                           include_inner_sphere_B, include_outer_sphere);
   }
 }
 
@@ -545,15 +545,15 @@ void test_binary_factory() {
     TestHelpers::domain::creators::test_domain_creator(
         *binary_compact_object, with_boundary_conditions);
   };
-  for (const bool with_boundary_conds : {true, false}) {
-    for (const bool with_additional_outer_radial_refinement : {false, true}) {
-      for (const bool with_additional_grid_points : {false, true}) {
-        check_impl(create_option_string(
-                       false, with_additional_outer_radial_refinement,
-                       with_additional_grid_points, with_boundary_conds),
-                   with_boundary_conds);
-      }
-    }
+  for (const auto& [with_boundary_conds,
+                    with_additional_outer_radial_refinement,
+                    with_additional_grid_points] :
+       cartesian_product(make_array(true, false), make_array(true, false),
+                         make_array(true, false))) {
+    check_impl(
+        create_option_string(false, with_additional_outer_radial_refinement,
+                             with_additional_grid_points, with_boundary_conds),
+        with_boundary_conds);
   }
 }
 

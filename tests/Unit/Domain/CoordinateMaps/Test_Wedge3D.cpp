@@ -45,6 +45,7 @@ void test_wedge3d_all_directions() {
   using WedgeHalves = Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
       {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
+  // [cartesian_product_loop]
   for (const auto& [halves, orientation, with_equiangular_map,
                     radial_distribution] :
        cartesian_product(halves_array, all_wedge_directions(),
@@ -52,6 +53,7 @@ void test_wedge3d_all_directions() {
                          make_array(CoordinateMaps::Distribution::Linear,
                                     CoordinateMaps::Distribution::Logarithmic,
                                     CoordinateMaps::Distribution::Inverse))) {
+    // [cartesian_product_loop]
     CAPTURE(halves);
     CAPTURE(orientation);
     CAPTURE(with_equiangular_map);
