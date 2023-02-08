@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
@@ -252,9 +253,16 @@ class WrappedGr<GrSolution, tmpl::list<GrSolutionOptions...>>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    const auto gr_solution =
-        gr_solution_.variables(x, std::numeric_limits<double>::signaling_NaN(),
-                               detail::gr_solution_vars<DataType, Dim>{});
+    tuples::tagged_tuple_from_typelist<detail::gr_solution_vars<DataType, Dim>>
+        gr_solution;
+    if constexpr (is_analytic_solution_v<GrSolution>) {
+      gr_solution = gr_solution_.variables(
+          x, std::numeric_limits<double>::signaling_NaN(),
+          detail::gr_solution_vars<DataType, Dim>{});
+    } else {
+      gr_solution =
+          gr_solution_.variables(x, detail::gr_solution_vars<DataType, Dim>{});
+    }
     using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
@@ -268,9 +276,16 @@ class WrappedGr<GrSolution, tmpl::list<GrSolutionOptions...>>
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    const auto gr_solution =
-        gr_solution_.variables(x, std::numeric_limits<double>::signaling_NaN(),
-                               detail::gr_solution_vars<DataType, Dim>{});
+    tuples::tagged_tuple_from_typelist<detail::gr_solution_vars<DataType, Dim>>
+        gr_solution;
+    if constexpr (is_analytic_solution_v<GrSolution>) {
+      gr_solution = gr_solution_.variables(
+          x, std::numeric_limits<double>::signaling_NaN(),
+          detail::gr_solution_vars<DataType, Dim>{});
+    } else {
+      gr_solution =
+          gr_solution_.variables(x, detail::gr_solution_vars<DataType, Dim>{});
+    }
     using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
