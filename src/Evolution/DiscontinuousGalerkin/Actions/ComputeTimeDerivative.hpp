@@ -349,7 +349,10 @@ struct ComputeTimeDerivative {
             typename Metavariables>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      gsl::not_null<db::DataBox<DbTagsList>*> box);
+      gsl::not_null<db::DataBox<DbTagsList>*> box,
+      [[maybe_unused]] const Variables<db::wrap_tags_in<
+          ::Tags::Flux, typename EvolutionSystem::flux_variables,
+          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes);
 };
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
@@ -581,7 +584,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
-                                          make_not_null(&box));
+                                          make_not_null(&box), volume_fluxes);
   return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 }
 
@@ -593,7 +596,10 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                            LocalTimeStepping>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-        const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+        const gsl::not_null<db::DataBox<DbTagsList>*> box,
+        [[maybe_unused]] const Variables<db::wrap_tags_in<
+            ::Tags::Flux, typename EvolutionSystem::flux_variables,
+            tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes) {
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
