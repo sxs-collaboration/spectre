@@ -99,9 +99,15 @@ void test_rotation_control_system(const bool newtonian) {
   const auto& init_rot_tuple =
       system_helper.template init_tuple<rotation_system>();
 
+  auto grid_center_A =
+      domain.excision_spheres().at("ObjectAExcisionSphere").center();
+  auto grid_center_B =
+      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+                            std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<rotation_component>(

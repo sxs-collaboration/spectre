@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
@@ -31,6 +30,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -75,10 +75,17 @@ void test_shape_control(
   auto& initial_measurement_timescales =
       system_helper->initial_measurement_timescales();
 
+  auto grid_center_A =
+      domain.excision_spheres().at("ObjectAExcisionSphere").center();
+  auto grid_center_B =
+      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+
   const auto& init_shape_tuple = system_helper->template init_tuple<system>();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
+  // Excision centers aren't used so their values can be anything
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+                            std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<shape_component>(
@@ -94,7 +101,7 @@ void test_shape_control(
   const auto& cache_domain = get<::domain::Tags::Domain<3>>(cache);
   const auto& excision_sphere = cache_domain.excision_spheres().at(
       control_system::ControlErrors::detail::excision_sphere_name<
-          ::ah::ObjectLabel::A>());
+          ::domain::ObjectLabel::A>());
 
   SpherepackIterator iter{l_max, l_max};
   const double ah_radius =
@@ -122,7 +129,8 @@ void test_shape_control(
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
   const double excision_radius = sqrt(0.5 * M_PI) * excision_sphere.radius();
   const std::string size_name =
-      control_system::ControlErrors::detail::size_name<::ah::ObjectLabel::A>();
+      control_system::ControlErrors::detail::size_name<
+          ::domain::ObjectLabel::A>();
   const std::string shape_name = system_helper->template name<system>();
 
   const auto lambda_00_coef =
@@ -219,7 +227,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
             make_array<DerivOrder + 1, DataVector>(DataVector{1, 0.0});
         initial_size_func[0][0] = ah_radius;
         const std::string size_name =
-            ControlErrors::detail::size_name<::ah::ObjectLabel::A>();
+            ControlErrors::detail::size_name<::domain::ObjectLabel::A>();
         (*functions_of_time)[size_name] = std::make_unique<
             domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>>(
             local_initial_time, initial_size_func,
@@ -448,7 +456,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
 }
 
 void test_names() {
-  using shape = control_system::Systems::Shape<::ah::ObjectLabel::A, 2>;
+  using shape = control_system::Systems::Shape<::domain::ObjectLabel::A, 2>;
 
   CHECK(pretty_type::name<shape>() == "ShapeA");
 

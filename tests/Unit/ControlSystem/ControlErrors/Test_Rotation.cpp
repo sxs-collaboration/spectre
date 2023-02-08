@@ -6,13 +6,13 @@
 #include <cstddef>
 #include <string>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -80,10 +80,16 @@ void test_rotation_control_error() {
   const std::string rotation_name =
       system_helper.template name<rotation_system>();
 
+  auto grid_center_A =
+      domain.excision_spheres().at("ObjectAExcisionSphere").center();
+  auto grid_center_B =
+      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+
   // Setup runner and element component because it's the easiest way to get the
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+                            std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(
@@ -92,8 +98,8 @@ void test_rotation_control_error() {
   const auto& cache = ActionTesting::cache<element_component>(runner, 0);
 
   using QueueTuple = tuples::TaggedTuple<
-      control_system::QueueTags::Center<::ah::ObjectLabel::A>,
-      control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
+      control_system::QueueTags::Center<::domain::ObjectLabel::A>,
+      control_system::QueueTags::Center<::domain::ObjectLabel::B>>;
 
   // Create fake measurements.
   const DataVector pos_A{{2.0, 3.0, 6.0}};

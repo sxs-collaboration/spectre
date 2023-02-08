@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
@@ -31,6 +30,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -101,11 +101,13 @@ void test_shape_control_error() {
 
   // Setup control system stuff
   const std::string shape_name =
-      Systems::Shape<::ah::ObjectLabel::A, deriv_order>::name();
+      Systems::Shape<::domain::ObjectLabel::A, deriv_order>::name();
   const std::string size_name =
-      ControlErrors::detail::size_name<::ah::ObjectLabel::A>();
+      ControlErrors::detail::size_name<::domain::ObjectLabel::A>();
   const std::string excision_sphere_A_name =
-      ControlErrors::detail::excision_sphere_name<::ah::ObjectLabel::A>();
+      ControlErrors::detail::excision_sphere_name<::domain::ObjectLabel::A>();
+  const std::string excision_sphere_B_name =
+      ControlErrors::detail::excision_sphere_name<::domain::ObjectLabel::B>();
 
   // Since the map for A/B are independent of each other, we only need to test
   // one of them
@@ -129,10 +131,26 @@ void test_shape_control_error() {
                            {2, Direction<3>::lower_zeta()},
                            {3, Direction<3>::lower_zeta()},
                            {4, Direction<3>::lower_zeta()},
+                           {5, Direction<3>::lower_zeta()}}}},
+       {excision_sphere_B_name,
+        ExcisionSphere<3>{excision_radius,
+                          origin,
+                          {{0, Direction<3>::lower_zeta()},
+                           {1, Direction<3>::lower_zeta()},
+                           {2, Direction<3>::lower_zeta()},
+                           {3, Direction<3>::lower_zeta()},
+                           {4, Direction<3>::lower_zeta()},
                            {5, Direction<3>::lower_zeta()}}}}}};
 
+  auto grid_center_A =
+      fake_domain.excision_spheres().at("ObjectAExcisionSphere").center();
+  auto grid_center_B =
+      fake_domain.excision_spheres().at("ObjectAExcisionSphere").center();
+
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain), 4},
+  // Excision centers aren't used so their values can be anything
+  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain), 4,
+                            std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(

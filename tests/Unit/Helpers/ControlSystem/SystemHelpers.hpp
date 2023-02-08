@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
@@ -46,10 +45,12 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ObjectCenter.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestingFramework.hpp"
@@ -201,7 +202,9 @@ struct MockControlComponent {
   using simple_tags = init_simple_tags<ControlSystem>;
 
   using const_global_cache_tags =
-      tmpl::list<control_system::Tags::MeasurementsPerUpdate>;
+      tmpl::list<control_system::Tags::MeasurementsPerUpdate,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
+                 domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -288,8 +291,8 @@ struct MockMetavars {
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
   using translation_system =
       control_system::Systems::Translation<trans_deriv_order>;
-  using shape_system =
-      control_system::Systems::Shape<::ah::ObjectLabel::A, shape_deriv_order>;
+  using shape_system = control_system::Systems::Shape<::domain::ObjectLabel::A,
+                                                      shape_deriv_order>;
 
   using control_systems = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
@@ -687,11 +690,11 @@ struct SystemHelper {
         // because the BothHorizons measurement will always send both regardless
         // of if both are needed.
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>{}, horizon_a_,
-            cache, measurement_id);
+            ah::BothHorizons::FindHorizon<::domain::ObjectLabel::A>{},
+            horizon_a_, cache, measurement_id);
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::B>{}, horizon_b_,
-            cache, measurement_id);
+            ah::BothHorizons::FindHorizon<::domain::ObjectLabel::B>{},
+            horizon_b_, cache, measurement_id);
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
                   runner, 0) == number_of_horizons);
 
@@ -786,8 +789,9 @@ struct SystemHelper {
                   tmpl::conditional_t<
                       std::is_same_v<system, typename Metavars::shape_system>,
                       tmpl::list<QueueTags::Strahlkorper<::Frame::Grid>>,
-                      tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                                 QueueTags::Center<::ah::ObjectLabel::B>>>>{}};
+                      tmpl::list<
+                          QueueTags::Center<::domain::ObjectLabel::A>,
+                          QueueTags::Center<::domain::ObjectLabel::B>>>>{}};
     });
   }
 

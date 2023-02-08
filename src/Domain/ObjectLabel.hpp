@@ -6,7 +6,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace ah {
+namespace domain {
 /// Labels for the objects in a binary system.
 enum class ObjectLabel {
   /// The object along the positive x-axis in the grid frame
@@ -18,4 +18,4 @@ enum class ObjectLabel {
 std::string name(const ObjectLabel x);
 
 std::ostream& operator<<(std::ostream& s, const ObjectLabel x);
-}  // namespace ah
+}  // namespace domain

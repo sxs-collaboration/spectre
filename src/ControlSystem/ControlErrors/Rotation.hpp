@@ -6,13 +6,14 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ApparentHorizons/ObjectLabel.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/ObjectLabel.hpp"
+#include "Domain/Tags/ObjectCenter.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -70,22 +71,17 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
                         const double /*time*/,
                         const std::string& /*function_of_time_name*/,
                         const tuples::TaggedTuple<TupleTags...>& measurements) {
-    const auto& domain = get<domain::Tags::Domain<3>>(cache);
-
-    using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
-    using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
-
-    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
-           "Excision sphere for ObjectA not in the domain but is needed to "
-           "compute Rotation control error.");
-    ASSERT(domain.excision_spheres().count("ObjectBExcisionSphere") == 1,
-           "Excision sphere for ObjectB not in the domain but is needed to "
-           "compute Rotation control error.");
+    using center_A =
+        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
+    using center_B =
+        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
 
     const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A =
-        domain.excision_spheres().at("ObjectAExcisionSphere").center();
+        Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::A>>(
+            cache);
     const tnsr::I<double, 3, Frame::Grid>& grid_position_of_B =
-        domain.excision_spheres().at("ObjectBExcisionSphere").center();
+        Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::B>>(
+            cache);
     const DataVector& current_position_of_A = get<center_A>(measurements);
     const DataVector& current_position_of_B = get<center_B>(measurements);
 
