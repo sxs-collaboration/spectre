@@ -12,6 +12,7 @@ spectre_target_sources(
   PolytropicFluid.cpp
   RegisterDerivedWithCharm.cpp
   Spectral.cpp
+  Tabulated3d.cpp
   )
 
 spectre_target_headers(
@@ -28,6 +29,7 @@ spectre_target_headers(
   PolytropicFluid.hpp
   RegisterDerivedWithCharm.hpp
   Spectral.hpp
+  Tabulated3d.hpp
   )
 
 add_subdirectory(Python)
