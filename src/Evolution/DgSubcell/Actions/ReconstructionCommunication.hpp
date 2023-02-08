@@ -52,6 +52,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -138,10 +139,14 @@ struct SendDataForReconstruction {
         directions_to_slice[direction_neighbors.first] = true;
       }
     }
+
     // Optimization note: could save a copy+allocation if we moved
     // all_sliced_data when possible before sending.
+    //
+    // Note: RDMP size doesn't help here since we need to slice data after
+    // anyway, so no way to save an allocation through that.
     const DirectionMap<Dim, DataVector> all_sliced_data = slice_data(
-        db::mutate_apply(GhostDataMutator{}, make_not_null(&box)),
+        db::mutate_apply(GhostDataMutator{}, make_not_null(&box), 0_st),
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
 
     auto& receiver_proxy =

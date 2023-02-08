@@ -45,9 +45,12 @@ void test_subcells(
       gen, dist, subcell_mesh.number_of_grid_points());
 
   auto box = db::create<db::AddSimpleTags<::Tags::Variables<prim_tags>>>(prims);
-  const ReconsPrimVars prims_to_reconstruct =
+  DataVector prims_to_reconstruct_rdmp =
       db::mutate_apply<NewtonianEuler::subcell::PrimitiveGhostVariables<Dim>>(
-          make_not_null(&box));
+          make_not_null(&box), 2_st);
+  const ReconsPrimVars prims_to_reconstruct{
+      prims_to_reconstruct_rdmp.data(), prims_to_reconstruct_rdmp.size() - 2};
+
   tmpl::for_each<prims_to_reconstruct_tags>(
       [&expected_prims = prims, &prims_to_reconstruct](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
@@ -82,9 +85,11 @@ void test_dg(const gsl::not_null<std::mt19937*> gen,
       db::AddSimpleTags<::Tags::Variables<prim_tags>, domain::Tags::Mesh<Dim>,
                         evolution::dg::subcell::Tags::Mesh<Dim>>>(
       prims, dg_mesh, subcell_mesh);
-  const ReconsPrimVars prims_to_reconstruct =
+  DataVector prims_to_reconstruct_rdmp =
       db::mutate_apply<NewtonianEuler::subcell::PrimitiveGhostVariables<Dim>>(
-          make_not_null(&box));
+          make_not_null(&box), 2_st);
+  const ReconsPrimVars prims_to_reconstruct{
+      prims_to_reconstruct_rdmp.data(), prims_to_reconstruct_rdmp.size() - 2};
 
   const PrimVars expected_prims = prims;
   tmpl::for_each<prims_to_reconstruct_tags>(

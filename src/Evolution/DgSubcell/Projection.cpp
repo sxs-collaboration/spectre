@@ -38,10 +38,12 @@ void project_impl(gsl::span<double> subcell_u,
 template <size_t Dim>
 void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
              const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
-  ASSERT(dg_u.size() == dg_mesh.number_of_grid_points(),
-         "dg_u has incorrect size " << dg_u.size() << " since the mesh is size "
-                                    << dg_mesh.number_of_grid_points());
-  subcell_u->destructive_resize(subcell_extents.product());
+  ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
+         "The vector dg_u must have size that is a multiple of the number of "
+         "grid points "
+             << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
+  subcell_u->destructive_resize(subcell_extents.product() * dg_u.size() /
+                                dg_mesh.number_of_grid_points());
   detail::project_impl(gsl::span<double>{subcell_u->data(), subcell_u->size()},
                        gsl::span<const double>{dg_u.data(), dg_u.size()},
                        dg_mesh, subcell_extents);
@@ -50,7 +52,11 @@ void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
 template <size_t Dim>
 DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
                    const Index<Dim>& subcell_extents) {
-  DataVector subcell_u{subcell_extents.product()};
+  ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
+         "The vector dg_u must have size that is a multiple of the number of "
+         "grid points "
+             << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
+  DataVector subcell_u{};
   project(&subcell_u, dg_u, dg_mesh, subcell_extents);
   return subcell_u;
 }

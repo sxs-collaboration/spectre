@@ -30,7 +30,8 @@ class GhostVariables {
   using argument_tags =
       tmpl::list<::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>>;
 
-  static Variables<tmpl::list<ScalarAdvection::Tags::U>> apply(
-      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars);
+  static DataVector apply(
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars,
+      size_t rdmp_size);
 };
 }  // namespace ScalarAdvection::subcell

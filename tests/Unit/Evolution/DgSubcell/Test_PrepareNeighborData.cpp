@@ -59,10 +59,12 @@ struct Metavariables {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<typename system::variables_tag>;
       template <typename T>
-      static Variables<tmpl::list<Var1>> apply(const T& dg_vars) {
-        T subcell_vars_to_send = dg_vars;
-        get(get<Var1>(subcell_vars_to_send)) *= 2.0;
-        return subcell_vars_to_send;
+      static DataVector apply(const T& dg_vars, const size_t rdmp_size) {
+        DataVector buffer{dg_vars.size() + rdmp_size};
+        Variables<tmpl::list<Var1>> subcell_vars_to_send{buffer.data(),
+                                                         dg_vars.size()};
+        get(get<Var1>(subcell_vars_to_send)) = 2.0 * get(get<Var1>(dg_vars));
+        return buffer;
       }
     };
   };

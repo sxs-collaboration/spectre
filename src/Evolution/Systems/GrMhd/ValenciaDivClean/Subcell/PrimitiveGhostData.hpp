@@ -42,7 +42,7 @@ class PrimitiveGhostVariables {
   using argument_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
 
-  static Variables<prims_to_reconstruct_tags> apply(
-      const Variables<hydro::grmhd_tags<DataVector>>& prims);
+  static DataVector apply(const Variables<hydro::grmhd_tags<DataVector>>& prims,
+                          size_t rdmp_size);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

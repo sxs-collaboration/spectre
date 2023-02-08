@@ -44,7 +44,6 @@ class PrimitiveGhostVariables {
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::Variables<prim_tags>>;
 
-  static Variables<prims_to_reconstruct_tags> apply(
-      const Variables<prim_tags>& prims);
+  static DataVector apply(const Variables<prim_tags>& prims, size_t rdmp_size);
 };
 }  // namespace NewtonianEuler::subcell

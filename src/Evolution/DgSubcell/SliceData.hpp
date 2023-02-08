@@ -26,6 +26,7 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     size_t additional_buffer);
 }  // namespace detail
 
+/// @{
 /*!
  * \brief Slice the subcell variables needed for neighbors to perform
  * reconstruction.
@@ -46,10 +47,10 @@ DirectionMap<Dim, DataVector> slice_data_impl(
  * storage to be used for example for sending the RDMP TCI data. This eliminates
  * expensive data copying.
  */
-template <size_t Dim, typename TagList>
+template <size_t Dim>
 DirectionMap<Dim, DataVector> slice_data(
-    const Variables<TagList>& volume_subcell_vars,
-    const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
+    const DataVector& volume_subcell_vars, const Index<Dim>& subcell_extents,
+    const size_t number_of_ghost_points,
     const DirectionMap<Dim, bool>& directions_to_slice,
     const size_t additional_buffer) {
   return detail::slice_data_impl(
@@ -57,4 +58,18 @@ DirectionMap<Dim, DataVector> slice_data(
       subcell_extents, number_of_ghost_points, directions_to_slice,
       additional_buffer);
 }
+
+template <size_t Dim, typename TagList>
+DirectionMap<Dim, DataVector> slice_data(
+    const Variables<TagList>& volume_subcell_vars,
+    const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
+    const DirectionMap<Dim, bool>& directions_to_slice,
+    const size_t additional_buffer) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  const DataVector view{const_cast<double*>(volume_subcell_vars.data()),
+                        volume_subcell_vars.size()};
+  return slice_data(view, subcell_extents, number_of_ghost_points,
+                    directions_to_slice, additional_buffer);
+}
+/// @}
 }  // namespace evolution::dg::subcell

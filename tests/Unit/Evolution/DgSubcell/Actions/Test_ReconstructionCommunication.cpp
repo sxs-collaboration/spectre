@@ -118,13 +118,14 @@ struct Metavariables {
   struct GhostDataMutator {
     using return_tags = tmpl::list<>;
     using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var1>>>;
-    static Variables<tmpl::list<Var1>> apply(
-        const Variables<tmpl::list<Var1>>& vars) {
+    static DataVector apply(const Variables<tmpl::list<Var1>>& vars,
+                            const size_t rdmp_size) {
+      CHECK(rdmp_size == 0);
+      DataVector buffer{vars.size()};
       ghost_data_mutator_invoked = true;
       // make some trivial but testable modification
-      auto result = vars;
-      get(get<Var1>(result)) *= 2.0;
-      return result;
+      buffer = 2.0 * get(get<Var1>(vars));
+      return buffer;
     }
   };
 };
