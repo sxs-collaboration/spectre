@@ -52,7 +52,7 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
       "temperature."};
 
   /// Fields stored in the table
-  enum : size_t { Epsilon = 0, Pressure, CsSquared, NumberOfVars };
+  enum : size_t { Epsilon = 0, Pressure, CsSquared, DeltaMu,  NumberOfVars };
 
   Tabulated3D() = default;
   Tabulated3D(const Tabulated3D&) = default;
@@ -107,6 +107,32 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   bool operator==(const Tabulated3D<IsRelativistic>& rhs) const;
 
   bool operator!=(const Tabulated3D<IsRelativistic>& rhs) const;
+
+  template <class DataType>
+  Scalar<DataType> equilibrium_electron_fraction_from_density_temperature_impl(
+      const Scalar<DataType>& rest_mass_density,
+      const Scalar<DataType>& temperature) const;
+
+  /// @{
+  /*!
+   * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
+   * the rest mass density \f$\rho\f$ and the temperature \f$T\f$.
+   */
+  Scalar<double> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<double>& rest_mass_density,
+      const Scalar<double>& temperature) const {
+    return equilibrium_electron_fraction_from_density_temperature_impl<double>(
+        rest_mass_density, temperature);
+  }
+
+  Scalar<DataVector> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& temperature) const {
+    return equilibrium_electron_fraction_from_density_temperature_impl<
+        DataVector>(rest_mass_density, temperature);
+  }
+  /// @}
+  //
 
   template <typename DataType>
   void enforce_physicality(Scalar<DataType>& electron_fraction,

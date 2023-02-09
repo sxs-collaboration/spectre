@@ -18,6 +18,70 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      Tabulated3D<IsRelativistic>, double, 3)
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      Tabulated3D<IsRelativistic>, DataVector, 3)
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType> Tabulated3D<IsRelativistic>::
+    equilibrium_electron_fraction_from_density_temperature_impl(
+        const Scalar<DataType>& rest_mass_density,
+        const Scalar<DataType>& temperature) const {
+  Scalar<DataType> electron_fraction = make_with_value<Scalar<DataType>>(
+      rest_mass_density, electron_fraction_lower_bound());
+
+  Scalar<DataType> converted_electron_fraction;
+  Scalar<DataType> log_rest_mass_density;
+  Scalar<DataType> log_temperature;
+
+  convert_to_table_quantities(
+      make_not_null(&converted_electron_fraction),
+      make_not_null(&log_rest_mass_density), make_not_null(&log_temperature),
+      electron_fraction, rest_mass_density, temperature);
+
+  // Compute free-streaming beta-eq. electron fraction (from DeltaMu==0)
+
+  if constexpr (std::is_same_v<DataType, double>) {
+    const auto& log_rho = get(log_rest_mass_density);
+    const auto& log_T = get(log_temperature);
+
+    const auto f = [this, log_rho, log_T](const double ye) {
+
+      const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
+      const auto interpolated_values =
+          interpolator_.template interpolate<DeltaMu>(weights);
+
+      return interpolated_values[0];
+    };
+
+    const auto root_from_lambda =
+        RootFinder::toms748(f, electron_fraction_lower_bound(),
+                            electron_fraction_upper_bound(), 1.0e-14, 1.0e-15);
+
+    get(converted_electron_fraction) = root_from_lambda;
+
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+      const auto& log_rho = get(log_rest_mass_density)[s];
+      const auto& log_T = get(log_temperature)[s];
+
+      const auto f = [this, log_rho, log_T](const double ye) {
+
+        const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
+        const auto interpolated_values =
+            interpolator_.template interpolate<DeltaMu>(weights);
+
+        return interpolated_values[0];
+      };
+
+      const auto root_from_lambda = RootFinder::toms748(
+          f, electron_fraction_lower_bound(), electron_fraction_upper_bound(),
+          1.0e-14, 1.0e-15);
+
+      get(converted_electron_fraction)[s] = root_from_lambda;
+    }
+  }
+  return converted_electron_fraction;
+}
+
 template <bool IsRelativistic>
 std::unique_ptr<EquationOfState<IsRelativistic, 3>>
 Tabulated3D<IsRelativistic>::get_clone() const {
