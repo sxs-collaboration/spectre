@@ -8,10 +8,10 @@
 #include <string>
 
 #include "ApparentHorizons/Tags.hpp"
-#include "ControlSystem/ApparentHorizons/BothHorizons.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
+#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -46,7 +46,8 @@ namespace control_system::Systems {
  *   simulation
  * - Currently both these objects must be black holes
  * - Currently this control system can only be used with the \link
- *   control_system::ah::BothHorizons BothHorizons \endlink measurement
+ *   control_system::measurements::BothHorizons BothHorizons \endlink
+ * measurement
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Translation Translation \endlink control
  *   error
@@ -67,7 +68,7 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
     return component == 0 ? "x" : component == 1 ? "y" : "z";
   }
 
-  using measurement = ah::BothHorizons;
+  using measurement = measurements::BothHorizons;
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
@@ -90,7 +91,7 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
-    static void apply(ah::BothHorizons::FindHorizon<Horizon> /*meta*/,
+    static void apply(measurements::BothHorizons::FindHorizon<Horizon> /*meta*/,
                       const Strahlkorper<Frame::Grid>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const LinkedMessageId<double>& measurement_id) {

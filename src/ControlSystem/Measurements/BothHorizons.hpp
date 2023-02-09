@@ -42,7 +42,7 @@ struct Mesh;
 }  // namespace domain::Tags
 /// \endcond
 
-namespace control_system::ah {
+namespace control_system::measurements {
 struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
   template <::domain::ObjectLabel Horizon>
   struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
@@ -103,4 +103,4 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
   using submeasurements = tmpl::list<FindHorizon<::domain::ObjectLabel::A>,
                                      FindHorizon<::domain::ObjectLabel::B>>;
 };
-}  // namespace control_system::ah
+}  // namespace control_system::measurements

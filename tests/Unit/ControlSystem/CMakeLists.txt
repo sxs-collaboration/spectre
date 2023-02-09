@@ -5,11 +5,11 @@ set(LIBRARY "Test_ControlSystem")
 
 set(LIBRARY_SOURCES
   Test_Averager.cpp
-  Test_BothHorizons.cpp
   Test_Controller.cpp
   Test_DataVectorHelpers.cpp
   Test_EventTriggerMetafunctions.cpp
   Test_ExpirationTimes.cpp
+  Test_Measurements.cpp
   Test_Metafunctions.cpp
   Test_RunCallbacks.cpp
   Test_Tags.cpp
