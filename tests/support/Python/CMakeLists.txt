@@ -8,6 +8,14 @@ if (BUILD_PYTHON_BINDINGS)
     "support.Python.main" PROPERTIES
     PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
     LABELS "python")
+
+  add_test(NAME "support.Python.python-spectre"
+    COMMAND ${CMAKE_BINARY_DIR}/bin/python-spectre -c
+      "import spectre; print(spectre.__version__)")
+  set_tests_properties(
+    "support.Python.python-spectre" PROPERTIES
+    PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
+    LABELS "python")
 endif()
 
 spectre_add_python_bindings_test(

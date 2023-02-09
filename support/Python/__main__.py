@@ -5,11 +5,10 @@ import click
 import logging
 import rich.logging
 import rich.traceback
+import spectre
 from spectre.support.Machines import this_machine, UnknownMachineError
 
 logger = logging.getLogger(__name__)
-
-SPECTRE_VERSION = "@SPECTRE_VERSION@"
 
 
 # Load subcommands lazily, i.e., only import the module when the subcommand is
@@ -91,9 +90,9 @@ def print_machine(ctx, param, value):
 
 # Set up CLI entry point
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]),
-             help=f"SpECTRE version: {SPECTRE_VERSION}",
+             help=f"SpECTRE version: {spectre.__version__}",
              cls=Cli)
-@click.version_option(version=SPECTRE_VERSION, message="%(version)s")
+@click.version_option(version=spectre.__version__, message="%(version)s")
 @click.option('--machine',
               is_flag=True,
               expose_value=False,
