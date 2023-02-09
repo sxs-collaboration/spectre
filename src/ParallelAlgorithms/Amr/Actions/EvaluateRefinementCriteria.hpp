@@ -47,30 +47,30 @@ struct get_tags {
 
 namespace amr::Actions {
 /// \brief Evaluates the refinement criteria in order to set the
-/// amr::domain::Flag%s of an Element and sends this information to the
+/// amr::Flag%s of an Element and sends this information to the
 /// neighbors of the Element.
 ///
 /// DataBox:
 /// - Uses:
 ///   * domain::Tags::Element<volume_dim>
-///   * amr::domain::Tags::NeighborFlags<volume_dim>
+///   * amr::Tags::NeighborFlags<volume_dim>
 ///   * amr::Criteria::Tags::Criteria (from GlobalCache)
 ///   * any tags requested by the refinement criteria
 /// - Modifies:
-///   * amr::domain::Tags::Flags<volume_dim>
+///   * amr::Tags::Flags<volume_dim>
 ///
 /// Invokes:
 /// - UpdateAmrDecision on all neighboring Element%s
 ///
 /// \details
 /// - Evaluates each refinement criteria held by amr::Criteria::Tags::Criteria,
-///   and in each dimension selects the amr::domain::Flag with the highest
+///   and in each dimension selects the amr::Flag with the highest
 ///   priority (i.e the highest integral value).
 /// - An Element that is splitting in one dimension is not allowed to join
 ///   in another dimension.  If this is requested by the refinement critiera,
 ///   the decision to join is changed to do nothing
 /// - Checks if any neighbors have sent their AMR decision, and if so, calls
-///   amr:::domain::update_amr_decision with the decision of each neighbor in
+///   amr:::update_amr_decision with the decision of each neighbor in
 ///   order to see if the current decision needs to be updated
 /// - Sends the (possibly updated) decision to all of the neighboring Elements
 struct EvaluateRefinementCriteria {
@@ -80,8 +80,7 @@ struct EvaluateRefinementCriteria {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ElementId<Metavariables::volume_dim>& element_id) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
-    auto overall_decision =
-        make_array<volume_dim>(amr::domain::Flag::Undefined);
+    auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 
     using compute_tags = tmpl::remove_duplicates<tmpl::filter<
         tmpl::flatten<tmpl::transform<
@@ -104,7 +103,7 @@ struct EvaluateRefinementCriteria {
     // Update the flags now before sending to neighbors as each time
     // a flag is changed by UpdateAmrDecision, it sends the new flags
     // to its neighbors.  So updating now will save some commmunication.
-    amr::domain::prevent_element_from_joining_while_splitting(
+    amr::prevent_element_from_joining_while_splitting(
         make_not_null(&overall_decision));
 
     // Check if we received any neighbor flags prior to determining our own
@@ -112,27 +111,27 @@ struct EvaluateRefinementCriteria {
     // to join, maintain 2:1 balance, etc.)
     const auto& my_element = get<::domain::Tags::Element<volume_dim>>(box);
     const auto& my_neighbors_amr_flags =
-        get<amr::domain::Tags::NeighborFlags<volume_dim>>(box);
+        get<amr::Tags::NeighborFlags<volume_dim>>(box);
     if (not my_neighbors_amr_flags.empty()) {
       for (const auto& [neighbor_id, neighbor_amr_flags] :
            my_neighbors_amr_flags) {
-        amr::domain::update_amr_decision(make_not_null(&overall_decision),
-                                         my_element, neighbor_id,
-                                         neighbor_amr_flags);
+        amr::update_amr_decision(make_not_null(&overall_decision), my_element,
+                                 neighbor_id, neighbor_amr_flags);
       }
     }
 
-    db::mutate<amr::domain::Tags::Flags<Metavariables::volume_dim>>(
+    db::mutate<amr::Tags::Flags<Metavariables::volume_dim>>(
         make_not_null(&box),
         [&overall_decision](
-            const gsl::not_null<std::array<amr::domain::Flag, volume_dim>*>
-                amr_flags) { *amr_flags = overall_decision; });
+            const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags) {
+          *amr_flags = overall_decision;
+        });
 
     auto& amr_element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
-    const std::array<amr::domain::Flag, Metavariables::volume_dim>& my_flags =
-        get<amr::domain::Tags::Flags<volume_dim>>(box);
+    const std::array<amr::Flag, Metavariables::volume_dim>& my_flags =
+        get<amr::Tags::Flags<volume_dim>>(box);
     for (const auto& [direction, neighbors] : my_element.neighbors()) {
       (void)direction;
       for (const auto& neighbor_id : neighbors.ids()) {

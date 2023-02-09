@@ -77,7 +77,7 @@ class Random : public Criterion {
   void pup(PUP::er& p) override;
 
  private:
-  amr::domain::Flag random_flag(size_t current_refinement_level) const;
+  amr::Flag random_flag(size_t current_refinement_level) const;
 
   double do_something_fraction_{0.0};
   size_t maximum_refinement_level_{0};
@@ -88,7 +88,7 @@ auto Random::operator()(
     Parallel::GlobalCache<Metavariables>& /*cache*/,
     const ElementId<Metavariables::volume_dim>& element_id) const {
   constexpr size_t volume_dim = Metavariables::volume_dim;
-  auto result = make_array<volume_dim>(amr::domain::Flag::Undefined);
+  auto result = make_array<volume_dim>(amr::Flag::Undefined);
   for (size_t d = 0; d < volume_dim; ++d) {
     result[d] = random_flag(element_id.segment_ids()[d].refinement_level());
   }

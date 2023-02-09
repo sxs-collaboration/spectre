@@ -33,7 +33,7 @@ class not_null;
 }
 /// \endcond
 
-namespace amr::domain {
+namespace amr {
 /// \ingroup AmrGroup
 /// \brief Computes the desired refinement level of the Element with ElementId
 /// `id` given the desired amr::Flag%s `flags`
@@ -122,8 +122,8 @@ bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
 /// another
 ///
 /// \details If `flags` (the AMR decisions of an Element) contains both
-/// amr::domain::Flag::Split and  amr::domain::Flag::Join, then all change Join
-/// to amr::domain::Flag::DoNothing.
+/// amr::Flag::Split and  amr::Flag::Join, then all change Join
+/// to amr::Flag::DoNothing.
 ///
 /// \returns true if any flag is changed
 ///
@@ -133,4 +133,4 @@ bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 bool prevent_element_from_joining_while_splitting(
     gsl::not_null<std::array<Flag, VolumeDim>*> flags);
-}  // namespace amr::domain
+}  // namespace amr

@@ -25,8 +25,8 @@ namespace amr::Criteria {
  * refinement levels in each dimension and then oscillate about the target.
  *
  * \details If the grid is at neither target in a given dimension, the
- * flag chosen will be in the priority order Split,
- * IncreaseResolution, DecreaseResolution, Join.
+ * flag chosen will be in the priority order Split, IncreaseResolution,
+ * DecreaseResolution, Join.
  *
  * \note To remain at the target, set the OscillationAtTarget Flags to
  * DoNothing.
@@ -53,7 +53,7 @@ class DriveToTarget : public Criterion {
   /// The AMR flags chosen when the target number of grid points and refinement
   /// levels are reached
   struct OscillationAtTarget {
-    using type = std::array<domain::Flag, Dim>;
+    using type = std::array<Flag, Dim>;
     static constexpr Options::String help = {
         "The flags returned when at the target."};
   };
@@ -70,7 +70,7 @@ class DriveToTarget : public Criterion {
 
   DriveToTarget(const std::array<size_t, Dim>& target_number_of_grid_points,
                 const std::array<size_t, Dim>& target_refinement_levels,
-                const std::array<domain::Flag, Dim>& flags_at_target);
+                const std::array<Flag, Dim>& flags_at_target);
 
   /// \cond
   explicit DriveToTarget(CkMigrateMessage* msg);
@@ -90,12 +90,12 @@ class DriveToTarget : public Criterion {
   void pup(PUP::er& p) override;
 
  private:
-  std::array<domain::Flag, Dim> impl(const Mesh<Dim>& current_mesh,
-                                     const ElementId<Dim>& element_id) const;
+  std::array<Flag, Dim> impl(const Mesh<Dim>& current_mesh,
+                             const ElementId<Dim>& element_id) const;
 
   std::array<size_t, Dim> target_number_of_grid_points_{};
   std::array<size_t, Dim> target_refinement_levels_{};
-  std::array<domain::Flag, Dim> flags_at_target_{};
+  std::array<Flag, Dim> flags_at_target_{};
 };
 
 template <size_t Dim>

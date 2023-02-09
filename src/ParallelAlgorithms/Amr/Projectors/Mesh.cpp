@@ -20,12 +20,12 @@
 namespace amr::projectors {
 template <size_t Dim>
 Mesh<Dim> mesh(const Mesh<Dim>& old_mesh,
-               const std::array<amr::domain::Flag, Dim>& flags) {
+               const std::array<amr::Flag, Dim>& flags) {
   std::array<size_t, Dim> new_extents = old_mesh.extents().indices();
   for (size_t d = 0; d < Dim; ++d) {
-    if (gsl::at(flags, d) == amr::domain::Flag::IncreaseResolution) {
+    if (gsl::at(flags, d) == amr::Flag::IncreaseResolution) {
       ++gsl::at(new_extents, d);
-    } else if (gsl::at(flags, d) == amr::domain::Flag::DecreaseResolution) {
+    } else if (gsl::at(flags, d) == amr::Flag::DecreaseResolution) {
       --gsl::at(new_extents, d);
     }
   }
@@ -62,11 +62,11 @@ Mesh<Dim> parent_mesh(const std::vector<Mesh<Dim>>& children_meshes) {
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                  \
-  template Mesh<DIM(data)> mesh(                              \
-      const Mesh<DIM(data)>& old_mesh,                        \
-      const std::array<amr::domain::Flag, DIM(data)>& flags); \
-  template Mesh<DIM(data)> parent_mesh(                       \
+#define INSTANTIATE(_, data)                          \
+  template Mesh<DIM(data)> mesh(                      \
+      const Mesh<DIM(data)>& old_mesh,                \
+      const std::array<amr::Flag, DIM(data)>& flags); \
+  template Mesh<DIM(data)> parent_mesh(               \
       const std::vector<Mesh<DIM(data)>>& children_meshes);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

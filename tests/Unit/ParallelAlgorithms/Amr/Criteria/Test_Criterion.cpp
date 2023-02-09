@@ -72,9 +72,8 @@ class CriterionOne : public amr::Criterion {
   auto operator()(
       const double field_one, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
-    return field_one > critical_value_
-               ? std::array{amr::domain::Flag::Split}
-               : std::array{amr::domain::Flag::DoNothing};
+    return field_one > critical_value_ ? std::array{amr::Flag::Split}
+                                       : std::array{amr::Flag::DoNothing};
   }
 
   void pup(PUP::er& p) override {
@@ -116,10 +115,10 @@ class CriterionTwo : public amr::Criterion {
       const double constraint, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
     return std::abs(constraint) > target_value_
-               ? std::array{amr::domain::Flag::Split}
+               ? std::array{amr::Flag::Split}
                : (std::abs(constraint) < 0.1 * target_value_
-                      ? std::array{amr::domain::Flag::Join}
-                      : std::array{amr::domain::Flag::DoNothing});
+                      ? std::array{amr::Flag::Join}
+                      : std::array{amr::Flag::DoNothing});
   }
 
   void pup(PUP::er& p) override {
@@ -147,8 +146,7 @@ struct Metavariables {
 // [criterion_examples]
 
 void test_criterion(const amr::Criterion& criterion, const double field_one,
-                    const double field_two,
-                    const amr::domain::Flag expected_flag) {
+                    const double field_two, const amr::Flag expected_flag) {
   Parallel::GlobalCache<Metavariables> empty_cache{};
   using simple_tags = tmpl::list<FieldOne, FieldTwo>;
   const auto databox = db::create<simple_tags>(field_one, field_two);
@@ -166,28 +164,28 @@ void test_criterion(const amr::Criterion& criterion, const double field_one,
 void test() {
   Parallel::register_factory_classes_with_charm<Metavariables>();
   const CriterionOne one{1.0};
-  test_criterion(one, 2.0, 0.0, amr::domain::Flag::Split);
+  test_criterion(one, 2.0, 0.0, amr::Flag::Split);
 
   test_criterion(serialize_and_deserialize(one), 0.5, 0.0,
-                 amr::domain::Flag::DoNothing);
+                 amr::Flag::DoNothing);
   const auto one_option =
       TestHelpers::test_creation<std::unique_ptr<amr::Criterion>,
                                  Metavariables>(
           "CriterionOne:\n"
           "  CriticalValue: 3.0\n");
-  test_criterion(*one_option, 2.0, 0.0, amr::domain::Flag::DoNothing);
+  test_criterion(*one_option, 2.0, 0.0, amr::Flag::DoNothing);
   test_criterion(*serialize_and_deserialize(one_option), 2.0, 0.0,
-                 amr::domain::Flag::DoNothing);
+                 amr::Flag::DoNothing);
   const CriterionTwo two{1.e-6};
-  test_criterion(two, 4.e-6, 6.e-6, amr::domain::Flag::Split);
+  test_criterion(two, 4.e-6, 6.e-6, amr::Flag::Split);
   test_criterion(serialize_and_deserialize(two), 4.e-6, 4.5e-6,
-                 amr::domain::Flag::DoNothing);
+                 amr::Flag::DoNothing);
   const auto two_option =
       TestHelpers::test_creation<std::unique_ptr<amr::Criterion>,
                                  Metavariables>(
           "CriterionTwo:\n"
           "  TargetValue: 1.e-5\n");
-  test_criterion(*two_option, 4.e-7, 3.e-7, amr::domain::Flag::Join);
+  test_criterion(*two_option, 4.e-7, 3.e-7, amr::Flag::Join);
 }
 }  // namespace
 

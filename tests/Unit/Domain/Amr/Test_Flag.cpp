@@ -11,30 +11,25 @@
 #include "Utilities/MakeString.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Amr.Flag", "[Domain][Unit]") {
-  CHECK(get_output(amr::domain::Flag::Undefined) == "Undefined");
-  CHECK(get_output(amr::domain::Flag::Join) == "Join");
-  CHECK(get_output(amr::domain::Flag::DecreaseResolution) ==
-        "DecreaseResolution");
-  CHECK(get_output(amr::domain::Flag::DoNothing) == "DoNothing");
-  CHECK(get_output(amr::domain::Flag::IncreaseResolution) ==
-        "IncreaseResolution");
-  CHECK(get_output(amr::domain::Flag::Split) == "Split");
+  CHECK(get_output(amr::Flag::Undefined) == "Undefined");
+  CHECK(get_output(amr::Flag::Join) == "Join");
+  CHECK(get_output(amr::Flag::DecreaseResolution) == "DecreaseResolution");
+  CHECK(get_output(amr::Flag::DoNothing) == "DoNothing");
+  CHECK(get_output(amr::Flag::IncreaseResolution) == "IncreaseResolution");
+  CHECK(get_output(amr::Flag::Split) == "Split");
 
   const std::vector known_amr_flags{
-      amr::domain::Flag::Undefined,          amr::domain::Flag::Join,
-      amr::domain::Flag::DecreaseResolution, amr::domain::Flag::DoNothing,
-      amr::domain::Flag::IncreaseResolution, amr::domain::Flag::Split};
+      amr::Flag::Undefined,          amr::Flag::Join,
+      amr::Flag::DecreaseResolution, amr::Flag::DoNothing,
+      amr::Flag::IncreaseResolution, amr::Flag::Split};
 
   for (const auto flag : known_amr_flags) {
-    CHECK(flag ==
-          TestHelpers::test_creation<amr::domain::Flag>(get_output(flag)));
+    CHECK(flag == TestHelpers::test_creation<amr::Flag>(get_output(flag)));
   }
 
   CHECK_THROWS_WITH(
-      ([]() {
-        TestHelpers::test_creation<amr::domain::Flag>("Bad flag name");
-      }()),
+      ([]() { TestHelpers::test_creation<amr::Flag>("Bad flag name"); }()),
       Catch::Contains(MakeString{} << "Failed to convert \"Bad flag name\" to "
-                                      "amr::domain::Flag.\nMust be one of "
+                                      "amr::Flag.\nMust be one of "
                                    << known_amr_flags << "."));
 }

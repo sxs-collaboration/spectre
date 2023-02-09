@@ -4,7 +4,7 @@
 #pragma once
 
 /// \ingroup AmrGroup
-namespace amr::domain {
+namespace amr {
 /// \brief %Tags for adaptive mesh refinement
 namespace Tags {}
-}  // namespace amr::domain
+}  // namespace amr

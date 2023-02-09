@@ -15,12 +15,12 @@ template <size_t VolumeDim>
 class ElementId;
 /// \endcond
 
-namespace amr::domain::Tags {
-/// amr::domain::Flag%s for the neighbors of an Element.
+namespace amr::Tags {
+/// amr::Flag%s for the neighbors of an Element.
 template <size_t VolumeDim>
 struct NeighborFlags : db::SimpleTag {
   using type = std::unordered_map<ElementId<VolumeDim>,
-                                  std::array<amr::domain::Flag, VolumeDim>>;
+                                  std::array<amr::Flag, VolumeDim>>;
 };
 
-}  // namespace amr::domain::Tags
+}  // namespace amr::Tags

@@ -24,7 +24,7 @@ namespace amr {
 /// \details Each class derived from this class should (see the examples below):
 /// - Be option-creatable
 /// - Be serializable
-/// - Define a call operator that returns a std::array<amr::domain::Flag, Dim>
+/// - Define a call operator that returns a std::array<amr::Flag, Dim>
 ///   containing the recommended refinement choice in each logical dimension of
 ///   the Element.
 /// - Define the type aliases `argument_tags` and
@@ -73,7 +73,7 @@ class Criterion : public PUP::able {
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
     return call_with_dynamic_type<
-        std::array<amr::domain::Flag, Metavariables::volume_dim>,
+        std::array<amr::Flag, Metavariables::volume_dim>,
         tmpl::at<factory_classes, Criterion>>(
         this, [&box, &cache, &element_id](auto* const criterion) {
           return apply(*criterion, box, cache, element_id);

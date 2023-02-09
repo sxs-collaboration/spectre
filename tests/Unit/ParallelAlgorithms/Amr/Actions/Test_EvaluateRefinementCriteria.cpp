@@ -52,10 +52,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
-  using simple_tags = tmpl::list<domain::Tags::Element<volume_dim>,
-                                 domain::Tags::Mesh<volume_dim>,
-                                 amr::domain::Tags::Flags<volume_dim>,
-                                 amr::domain::Tags::NeighborFlags<volume_dim>>;
+  using simple_tags =
+      tmpl::list<domain::Tags::Element<volume_dim>,
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
+                 amr::Tags::NeighborFlags<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -76,7 +76,7 @@ struct Metavariables {
 
 // When AMR is run, the simple action EvaluateAmrCriteria is run on each
 // Element.  EvaluateAmrCriteria evaluates the criteria which set its own
-// amr::domain::Tags::Flags and then calls the simple action UpdateAmrDecision
+// amr::Tags::Flags and then calls the simple action UpdateAmrDecision
 // on each neighboring Element of the Element sending the Flags.
 // UpdateAmrDecision checks to see if an Elements Flags need to change based on
 // the received NeighborFlags (e.g. if and element wants to join, but its
@@ -89,7 +89,7 @@ struct Metavariables {
 // UpdateAmrDecision (triggered by a neighboring Element) prior to executing
 // EvaluateAmrCriteria
 void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
-                       const std::array<amr::domain::Flag, 1> expected_flags) {
+                       const std::array<amr::Flag, 1> expected_flags) {
   using my_component = Component<Metavariables<1>>;
 
   const ElementId<1> self_id(0, {{{1, 1}}});
@@ -98,7 +98,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   const Mesh<1> mesh{2_st, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
-  std::unordered_map<ElementId<1>, std::array<amr::domain::Flag, 1>>
+  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
       initial_neighbor_flags;
 
   ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
@@ -108,8 +108,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                                    {Direction<1>::upper_xi(), {{up_id}, {}}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
-      {self, mesh, std::array{amr::domain::Flag::Undefined},
-       initial_neighbor_flags});
+      {self, mesh, std::array{amr::Flag::Undefined}, initial_neighbor_flags});
 
   const auto emplace_neighbor =
       [&self_id, &mesh, &runner, &initial_neighbor_flags](
@@ -117,7 +116,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
         const Element<1> element(id, {{direction, {{self_id}, {}}}});
         ActionTesting::emplace_component_and_initialize<my_component>(
             &runner, id,
-            {element, mesh, std::array{amr::domain::Flag::Undefined},
+            {element, mesh, std::array{amr::Flag::Undefined},
              initial_neighbor_flags});
       };
 
@@ -127,11 +126,10 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   runner.set_phase(Parallel::Phase::Testing);
 
   for (const auto& id : {self_id, lo_id, up_id}) {
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<1>>(
+              runner, id) == std::array{amr::Flag::Undefined});
     CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::Flags<1>>(
-              runner, id) == std::array{amr::domain::Flag::Undefined});
-    CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::NeighborFlags<1>>(
+                                         amr::Tags::NeighborFlags<1>>(
               runner, id) == initial_neighbor_flags);
     CHECK(
         ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
@@ -143,13 +141,11 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
       make_not_null(&runner), self_id);
 
   for (const auto& id : {self_id, lo_id, up_id}) {
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<1>>(
+              runner, id) ==
+          (id == self_id ? expected_flags : std::array{amr::Flag::Undefined}));
     CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::Flags<1>>(
-              runner, id) == (id == self_id
-                                  ? expected_flags
-                                  : std::array{amr::domain::Flag::Undefined}));
-    CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::NeighborFlags<1>>(
+                                         amr::Tags::NeighborFlags<1>>(
               runner, id) == initial_neighbor_flags);
     CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
               runner, id) == (id == self_id ? 0 : 1));
@@ -161,13 +157,11 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
       make_not_null(&runner), lo_id);
 
   for (const auto& id : {self_id, lo_id, up_id}) {
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<1>>(
+              runner, id) ==
+          (id == up_id ? std::array{amr::Flag::Undefined} : expected_flags));
     CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::Flags<1>>(
-              runner, id) == (id == up_id
-                                  ? std::array{amr::domain::Flag::Undefined}
-                                  : expected_flags));
-    CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::NeighborFlags<1>>(
+                                         amr::Tags::NeighborFlags<1>>(
               runner, id) == initial_neighbor_flags);
     CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
               runner, id) == 1);
@@ -177,20 +171,17 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   ActionTesting::invoke_queued_simple_action<my_component>(
       make_not_null(&runner), up_id);
   for (const auto& id : {self_id, lo_id, up_id}) {
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<1>>(
+              runner, id) ==
+          (id == up_id ? std::array{amr::Flag::Undefined} : expected_flags));
     CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::Flags<1>>(
-              runner, id) == (id == up_id
-                                  ? std::array{amr::domain::Flag::Undefined}
-                                  : expected_flags));
-    CHECK(
-        ActionTesting::get_databox_tag<my_component,
-                                       amr::domain::Tags::NeighborFlags<1>>(
-            runner, id) ==
-        (id == up_id
-             ? std::unordered_map<ElementId<1>, std::array<amr::domain::Flag,
-                                                           1>>{{self_id,
-                                                                expected_flags}}
-             : initial_neighbor_flags));
+                                         amr::Tags::NeighborFlags<1>>(runner,
+                                                                      id) ==
+          (id == up_id
+               ? std::unordered_map<ElementId<1>,
+                                    std::array<amr::Flag, 1>>{{self_id,
+                                                               expected_flags}}
+               : initial_neighbor_flags));
     CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
               runner, id) == (id == up_id ? 0 : 1));
   }
@@ -201,18 +192,16 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
       make_not_null(&runner), up_id);
 
   for (const auto& id : {self_id, lo_id, up_id}) {
-    CHECK(ActionTesting::get_databox_tag<my_component,
-                                         amr::domain::Tags::Flags<1>>(
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<1>>(
               runner, id) == expected_flags);
-    CHECK(
-        ActionTesting::get_databox_tag<my_component,
-                                       amr::domain::Tags::NeighborFlags<1>>(
-            runner, id) ==
-        (id == up_id
-             ? std::unordered_map<ElementId<1>, std::array<amr::domain::Flag,
-                                                           1>>{{self_id,
-                                                                expected_flags}}
-             : initial_neighbor_flags));
+    CHECK(ActionTesting::get_databox_tag<my_component,
+                                         amr::Tags::NeighborFlags<1>>(runner,
+                                                                      id) ==
+          (id == up_id
+               ? std::unordered_map<ElementId<1>,
+                                    std::array<amr::Flag, 1>>{{self_id,
+                                                               expected_flags}}
+               : initial_neighbor_flags));
     CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
               runner, id) == (id == self_id ? 2 : (id == lo_id ? 1 : 0)));
   }
@@ -227,7 +216,7 @@ void check_split_while_join_is_avoided() {
   const ElementId<2> self_id(0, {{{0, 0}, {1, 1}}});
   const Mesh<2> mesh{2_st, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-  std::unordered_map<ElementId<2>, std::array<amr::domain::Flag, 2>>
+  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
       initial_neighbor_flags{};
 
   // the refinement criteria wants to drive self to levels (1, 0) so
@@ -235,7 +224,7 @@ void check_split_while_join_is_avoided() {
   std::vector<std::unique_ptr<amr::Criterion>> criteria;
   criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<2>>(
       std::array{2_st, 2_st}, std::array{1_st, 0_st},
-      std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing}));
+      std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
 
   Parallel::GlobalCache<Metavariables<2>> empty_cache{};
   const auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
@@ -243,8 +232,7 @@ void check_split_while_join_is_avoided() {
       box{databox};
   auto flags_from_criterion =
       criteria.front()->evaluate(box, empty_cache, self_id);
-  CHECK(flags_from_criterion ==
-        std::array{amr::domain::Flag::Split, amr::domain::Flag::Join});
+  CHECK(flags_from_criterion == std::array{amr::Flag::Split, amr::Flag::Join});
 
   // But we do not allow an Element to simultaneously split and join so the
   // action should change the flags to (DoNothing, Split)
@@ -254,19 +242,17 @@ void check_split_while_join_is_avoided() {
   const Element<2> self(self_id, {});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
-      {self, mesh,
-       std::array{amr::domain::Flag::Undefined, amr::domain::Flag::Undefined},
+      {self, mesh, std::array{amr::Flag::Undefined, amr::Flag::Undefined},
        initial_neighbor_flags});
 
   runner.set_phase(Parallel::Phase::Testing);
 
+  CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<2>>(
+            runner, self_id) ==
+        std::array{amr::Flag::Undefined, amr::Flag::Undefined});
   CHECK(
-      ActionTesting::get_databox_tag<my_component, amr::domain::Tags::Flags<2>>(
-          runner, self_id) ==
-      std::array{amr::domain::Flag::Undefined, amr::domain::Flag::Undefined});
-  CHECK(ActionTesting::get_databox_tag<my_component,
-                                       amr::domain::Tags::NeighborFlags<2>>(
-            runner, self_id) == initial_neighbor_flags);
+      ActionTesting::get_databox_tag<my_component, amr::Tags::NeighborFlags<2>>(
+          runner, self_id) == initial_neighbor_flags);
   CHECK(ActionTesting::is_simple_action_queue_empty<my_component>(runner,
                                                                   self_id));
 
@@ -275,13 +261,12 @@ void check_split_while_join_is_avoided() {
                                amr::Actions::EvaluateRefinementCriteria>(
       make_not_null(&runner), self_id);
 
+  CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<2>>(
+            runner, self_id) ==
+        std::array{amr::Flag::Split, amr::Flag::DoNothing});
   CHECK(
-      ActionTesting::get_databox_tag<my_component, amr::domain::Tags::Flags<2>>(
-          runner, self_id) ==
-      std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing});
-  CHECK(ActionTesting::get_databox_tag<my_component,
-                                       amr::domain::Tags::NeighborFlags<2>>(
-            runner, self_id) == initial_neighbor_flags);
+      ActionTesting::get_databox_tag<my_component, amr::Tags::NeighborFlags<2>>(
+          runner, self_id) == initial_neighbor_flags);
   CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
             runner, self_id) == 0);
 }
@@ -295,16 +280,14 @@ SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
   // decisions, and then once with two criteria, one of which always produces
   // flags of a higher priority than the other
   criteria.emplace_back(create_always_join(1));
-  evaluate_criteria(std::move(criteria), std::array{amr::domain::Flag::Join});
+  evaluate_criteria(std::move(criteria), std::array{amr::Flag::Join});
   criteria.clear();
   criteria.emplace_back(create_always_do_nothing());
   criteria.emplace_back(create_always_join(1));
-  evaluate_criteria(std::move(criteria),
-                    std::array{amr::domain::Flag::DoNothing});
+  evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
   criteria.clear();
   criteria.emplace_back(create_always_join(1));
   criteria.emplace_back(create_always_do_nothing());
-  evaluate_criteria(std::move(criteria),
-                    std::array{amr::domain::Flag::DoNothing});
+  evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
   check_split_while_join_is_avoided();
 }

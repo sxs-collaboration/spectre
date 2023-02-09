@@ -19,15 +19,14 @@
 namespace {
 template <size_t Dim>
 void test() {
-  auto box = db::create<db::AddSimpleTags<amr::domain::Tags::Flags<Dim>,
-                        amr::domain::Tags::NeighborFlags<Dim>>>(
-      std::array<amr::domain::Flag, Dim>{},
-      std::unordered_map<ElementId<Dim>,
-                         std::array<amr::domain::Flag, Dim>>{});
+  auto box = db::create<
+      db::AddSimpleTags<amr::Tags::Flags<Dim>, amr::Tags::NeighborFlags<Dim>>>(
+      std::array<amr::Flag, Dim>{},
+      std::unordered_map<ElementId<Dim>, std::array<amr::Flag, Dim>>{});
   db::mutate_apply<amr::Initialization::Initialize<Dim>>(make_not_null(&box));
-  CHECK(db::get<amr::domain::Tags::Flags<Dim>>(box) ==
-        make_array<Dim>(amr::domain::Flag::Undefined));
-  CHECK(db::get<amr::domain::Tags::NeighborFlags<Dim>>(box).empty());
+  CHECK(db::get<amr::Tags::Flags<Dim>>(box) ==
+        make_array<Dim>(amr::Flag::Undefined));
+  CHECK(db::get<amr::Tags::NeighborFlags<Dim>>(box).empty());
 }
 }  // namespace
 
