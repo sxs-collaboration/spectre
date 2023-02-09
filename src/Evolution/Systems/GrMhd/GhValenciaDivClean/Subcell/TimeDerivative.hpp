@@ -317,8 +317,14 @@ struct ComputeTimeDerivImpl<
         for (size_t i = 0; i < dt_var.size(); ++i) {
           if constexpr (not tmpl::list_contains_v<
                             tmpl::list<GrmhdSourceTags...>, GrmhdDtTags>) {
-            // Zero GRMHD tags that don't have sources.
-            dt_var[i] = 0.0;
+            // On the first iteration of the loop over `dim`, zero the GRMHD
+            // dt(u) for variables that do not have a source term . This is
+            // necessary to avoid `+=` to a `NaN` (debug mode) or random garbage
+            // (release mode). `add_cartesian_flux_divergence` does a `+=`
+            // internally.
+            if (dim == 0) {
+              dt_var[i] = 0.0;
+            }
           }
 
           evolution::dg::subcell::add_cartesian_flux_divergence(
