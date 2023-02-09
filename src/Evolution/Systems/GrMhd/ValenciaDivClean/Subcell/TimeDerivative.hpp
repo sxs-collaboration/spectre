@@ -99,7 +99,7 @@ struct TimeDerivative {
 
     const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
 
-    const bool element_is_interior = element.external_boundaries().size() == 0;
+    const bool element_is_interior = element.external_boundaries().empty();
     constexpr bool subcell_enabled_at_external_boundary =
         std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
@@ -120,7 +120,7 @@ struct TimeDerivative {
     // If the element has external boundaries and subcell is enabled for
     // boundary elements, compute FD ghost data with a given boundary condition.
     if constexpr (subcell_enabled_at_external_boundary) {
-      if (element.external_boundaries().size() != 0) {
+      if (not element.external_boundaries().empty()) {
         fd::BoundaryConditionGhostData::apply(box, element, recons);
       }
     }
