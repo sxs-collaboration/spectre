@@ -125,151 +125,148 @@ struct TimeDerivative {
       }
     }
 
-    tmpl::for_each<derived_boundary_corrections>([&](auto
-                                                         derived_correction_v) {
-      using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
-      if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
-        using dg_package_data_temporary_tags =
-            typename DerivedCorrection::dg_package_data_temporary_tags;
-        using dg_package_data_argument_tags = tmpl::append<
-            evolved_vars_tags, recons_prim_tags, fluxes_tags,
-            tmpl::remove_duplicates<tmpl::push_back<
-                dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
-                gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-                evolution::dg::Actions::detail::NormalVector<3>>>>;
-        // Computed prims and cons on face via reconstruction
-        auto package_data_argvars_lower_face = make_array<3>(
-            Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
-        auto package_data_argvars_upper_face = make_array<3>(
-            Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
-        // Copy over the face values of the metric quantities.
-        using spacetime_vars_to_copy = tmpl::list<
-            gr::Tags::Lapse<DataVector>,
-            gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-            gr::Tags::SpatialMetric<3>,
-            gr::Tags::SqrtDetSpatialMetric<DataVector>,
-            gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
-        tmpl::for_each<spacetime_vars_to_copy>([
-          &package_data_argvars_lower_face, &package_data_argvars_upper_face,
-          &spacetime_vars_on_face =
-              db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
-                  typename System::flux_spacetime_variables_tag, 3>>(*box)
-        ](auto tag_v) {
-          using tag = tmpl::type_from<decltype(tag_v)>;
-          for (size_t d = 0; d < 3; ++d) {
-            get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
-                get<tag>(gsl::at(spacetime_vars_on_face, d));
-            get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
-                get<tag>(gsl::at(spacetime_vars_on_face, d));
+    call_with_dynamic_type<void, derived_boundary_corrections>(
+        &boundary_correction, [&](const auto* derived_correction) {
+          using DerivedCorrection = std::decay_t<decltype(*derived_correction)>;
+          using dg_package_data_temporary_tags =
+              typename DerivedCorrection::dg_package_data_temporary_tags;
+          using dg_package_data_argument_tags = tmpl::append<
+              evolved_vars_tags, recons_prim_tags, fluxes_tags,
+              tmpl::remove_duplicates<tmpl::push_back<
+                  dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
+                  gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
+                                                 DataVector>,
+                  evolution::dg::Actions::detail::NormalVector<3>>>>;
+          // Computed prims and cons on face via reconstruction
+          auto package_data_argvars_lower_face = make_array<3>(
+              Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
+          auto package_data_argvars_upper_face = make_array<3>(
+              Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
+          // Copy over the face values of the metric quantities.
+          using spacetime_vars_to_copy = tmpl::list<
+              gr::Tags::Lapse<DataVector>,
+              gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+              gr::Tags::SpatialMetric<3>,
+              gr::Tags::SqrtDetSpatialMetric<DataVector>,
+              gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+          tmpl::for_each<spacetime_vars_to_copy>(
+              [&package_data_argvars_lower_face,
+               &package_data_argvars_upper_face,
+               &spacetime_vars_on_face =
+                   db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
+                       typename System::flux_spacetime_variables_tag, 3>>(
+                       *box)](auto tag_v) {
+                using tag = tmpl::type_from<decltype(tag_v)>;
+                for (size_t d = 0; d < 3; ++d) {
+                  get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
+                      get<tag>(gsl::at(spacetime_vars_on_face, d));
+                  get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
+                      get<tag>(gsl::at(spacetime_vars_on_face, d));
+                }
+              });
+
+          // Reconstruct data to the face
+          call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
+                                           Reconstructor::creatable_classes>(
+              &recons,
+              [&box, &package_data_argvars_lower_face,
+               &package_data_argvars_upper_face](const auto& reconstructor) {
+                db::apply<typename std::decay_t<
+                    decltype(*reconstructor)>::reconstruction_argument_tags>(
+                    [&package_data_argvars_lower_face,
+                     &package_data_argvars_upper_face,
+                     &reconstructor](const auto&... args) {
+                      reconstructor->reconstruct(
+                          make_not_null(&package_data_argvars_lower_face),
+                          make_not_null(&package_data_argvars_upper_face),
+                          args...);
+                    },
+                    *box);
+              });
+
+          using dg_package_field_tags =
+              typename DerivedCorrection::dg_package_field_tags;
+          // Allocated outside for loop to reduce allocations
+          Variables<dg_package_field_tags> upper_packaged_data{
+              reconstructed_num_pts};
+          Variables<dg_package_field_tags> lower_packaged_data{
+              reconstructed_num_pts};
+
+          // Compute fluxes on faces
+          for (size_t i = 0; i < 3; ++i) {
+            auto& vars_upper_face = gsl::at(package_data_argvars_upper_face, i);
+            auto& vars_lower_face = gsl::at(package_data_argvars_lower_face, i);
+            grmhd::ValenciaDivClean::subcell::compute_fluxes(
+                make_not_null(&vars_upper_face));
+            grmhd::ValenciaDivClean::subcell::compute_fluxes(
+                make_not_null(&vars_lower_face));
+
+            // Normal vectors in curved spacetime normalized by inverse
+            // spatial metric. Since we assume a Cartesian grid, this is
+            // relatively easy. Note that we use the sign convention on
+            // the normal vectors to be compatible with DG.
+            //
+            // Note that these normal vectors are on all faces inside the DG
+            // element since there are a bunch of subcells. We don't use the
+            // NormalCovectorAndMagnitude tag in the DataBox right now to avoid
+            // conflicts with the DG solver. We can explore in the future if
+            // it's possible to reuse that allocation.
+            const Scalar<DataVector> normalization{sqrt(
+                get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
+                                                   DataVector>>(vars_upper_face)
+                    .get(i, i))};
+
+            tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
+                reconstructed_num_pts, 0.0};
+            lower_outward_conormal.get(i) = 1.0 / get(normalization);
+
+            tnsr::i<DataVector, 3, Frame::Inertial> upper_outward_conormal{
+                reconstructed_num_pts, 0.0};
+            upper_outward_conormal.get(i) = -lower_outward_conormal.get(i);
+            // Note: we probably should compute the normal vector in addition to
+            // the co-vector. Not a huge issue since we'll get an FPE right now
+            // if it's used by a Riemann solver.
+
+            // Compute the packaged data
+            using dg_package_data_projected_tags = tmpl::append<
+                evolved_vars_tags, fluxes_tags, dg_package_data_temporary_tags,
+                typename DerivedCorrection::dg_package_data_primitive_tags>;
+            evolution::dg::Actions::detail::dg_package_data<System>(
+                make_not_null(&upper_packaged_data), *derived_correction,
+                vars_upper_face, upper_outward_conormal, {std::nullopt}, *box,
+                typename DerivedCorrection::dg_package_data_volume_tags{},
+                dg_package_data_projected_tags{});
+
+            evolution::dg::Actions::detail::dg_package_data<System>(
+                make_not_null(&lower_packaged_data), *derived_correction,
+                vars_lower_face, lower_outward_conormal, {std::nullopt}, *box,
+                typename DerivedCorrection::dg_package_data_volume_tags{},
+                dg_package_data_projected_tags{});
+
+            // Now need to check if any of our neighbors are doing DG,
+            // because if so then we need to use whatever boundary data
+            // they sent instead of what we computed locally.
+            //
+            // Note: We could check this beforehand to avoid the extra
+            // work of reconstruction and flux computations at the
+            // boundaries.
+            evolution::dg::subcell::correct_package_data<true>(
+                make_not_null(&lower_packaged_data),
+                make_not_null(&upper_packaged_data), i, element, subcell_mesh,
+                db::get<evolution::dg::Tags::MortarData<3>>(*box), 0);
+
+            // Compute the corrections on the faces. We only need to
+            // compute this once because we can just flip the normal
+            // vectors then
+            gsl::at(boundary_corrections, i).initialize(reconstructed_num_pts);
+            evolution::dg::subcell::compute_boundary_terms(
+                make_not_null(&gsl::at(boundary_corrections, i)),
+                *derived_correction, upper_packaged_data, lower_packaged_data);
+            // We need to multiply by the normal vector normalization
+            gsl::at(boundary_corrections, i) *= get(normalization);
           }
         });
-
-        // Reconstruct data to the face
-        call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
-                                         Reconstructor::creatable_classes>(
-            &recons,
-            [&box, &package_data_argvars_lower_face,
-             &package_data_argvars_upper_face](const auto& reconstructor) {
-              db::apply<typename std::decay_t<decltype(
-                  *reconstructor)>::reconstruction_argument_tags>(
-                  [&package_data_argvars_lower_face,
-                   &package_data_argvars_upper_face,
-                   &reconstructor](const auto&... args) {
-                    reconstructor->reconstruct(
-                        make_not_null(&package_data_argvars_lower_face),
-                        make_not_null(&package_data_argvars_upper_face),
-                        args...);
-                  },
-                  *box);
-            });
-
-        using dg_package_field_tags =
-            typename DerivedCorrection::dg_package_field_tags;
-        // Allocated outside for loop to reduce allocations
-        Variables<dg_package_field_tags> upper_packaged_data{
-            reconstructed_num_pts};
-        Variables<dg_package_field_tags> lower_packaged_data{
-            reconstructed_num_pts};
-
-        // Compute fluxes on faces
-        for (size_t i = 0; i < 3; ++i) {
-          auto& vars_upper_face = gsl::at(package_data_argvars_upper_face, i);
-          auto& vars_lower_face = gsl::at(package_data_argvars_lower_face, i);
-          grmhd::ValenciaDivClean::subcell::compute_fluxes(
-              make_not_null(&vars_upper_face));
-          grmhd::ValenciaDivClean::subcell::compute_fluxes(
-              make_not_null(&vars_lower_face));
-
-          // Normal vectors in curved spacetime normalized by inverse
-          // spatial metric. Since we assume a Cartesian grid, this is
-          // relatively easy. Note that we use the sign convention on
-          // the normal vectors to be compatible with DG.
-          //
-          // Note that these normal vectors are on all faces inside the DG
-          // element since there are a bunch of subcells. We don't use the
-          // NormalCovectorAndMagnitude tag in the DataBox right now to avoid
-          // conflicts with the DG solver. We can explore in the future if it's
-          // possible to reuse that allocation.
-          const Scalar<DataVector> normalization{sqrt(
-              get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataVector>>(vars_upper_face)
-                  .get(i, i))};
-
-          tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
-              reconstructed_num_pts, 0.0};
-          lower_outward_conormal.get(i) = 1.0 / get(normalization);
-
-          tnsr::i<DataVector, 3, Frame::Inertial> upper_outward_conormal{
-              reconstructed_num_pts, 0.0};
-          upper_outward_conormal.get(i) = -lower_outward_conormal.get(i);
-          // Note: we probably should compute the normal vector in addition to
-          // the co-vector. Not a huge issue since we'll get an FPE right now if
-          // it's used by a Riemann solver.
-
-          // Compute the packaged data
-          using dg_package_data_projected_tags = tmpl::append<
-              evolved_vars_tags, fluxes_tags, dg_package_data_temporary_tags,
-              typename DerivedCorrection::dg_package_data_primitive_tags>;
-          evolution::dg::Actions::detail::dg_package_data<System>(
-              make_not_null(&upper_packaged_data),
-              dynamic_cast<const DerivedCorrection&>(boundary_correction),
-              vars_upper_face, upper_outward_conormal, {std::nullopt}, *box,
-              typename DerivedCorrection::dg_package_data_volume_tags{},
-              dg_package_data_projected_tags{});
-
-          evolution::dg::Actions::detail::dg_package_data<System>(
-              make_not_null(&lower_packaged_data),
-              dynamic_cast<const DerivedCorrection&>(boundary_correction),
-              vars_lower_face, lower_outward_conormal, {std::nullopt}, *box,
-              typename DerivedCorrection::dg_package_data_volume_tags{},
-              dg_package_data_projected_tags{});
-
-          // Now need to check if any of our neighbors are doing DG,
-          // because if so then we need to use whatever boundary data
-          // they sent instead of what we computed locally.
-          //
-          // Note: We could check this beforehand to avoid the extra
-          // work of reconstruction and flux computations at the
-          // boundaries.
-          evolution::dg::subcell::correct_package_data<true>(
-              make_not_null(&lower_packaged_data),
-              make_not_null(&upper_packaged_data), i, element, subcell_mesh,
-              db::get<evolution::dg::Tags::MortarData<3>>(*box), 0);
-
-          // Compute the corrections on the faces. We only need to
-          // compute this once because we can just flip the normal
-          // vectors then
-          gsl::at(boundary_corrections, i).initialize(reconstructed_num_pts);
-          evolution::dg::subcell::compute_boundary_terms(
-              make_not_null(&gsl::at(boundary_corrections, i)),
-              dynamic_cast<const DerivedCorrection&>(boundary_correction),
-              upper_packaged_data, lower_packaged_data);
-          // We need to multiply by the normal vector normalization
-          gsl::at(boundary_corrections, i) *= get(normalization);
-        }
-      }
-    });
 
     // Now compute the actual time derivatives.
     using variables_tag = typename System::variables_tag;
