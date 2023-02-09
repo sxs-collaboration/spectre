@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  ElectricCurrentDensity.cpp
   Fluxes.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Characteristics.hpp
+  ElectricCurrentDensity.hpp
   Fluxes.hpp
   Sources.hpp
   System.hpp

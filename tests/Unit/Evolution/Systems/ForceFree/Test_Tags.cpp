@@ -30,8 +30,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Tags",
   TestHelpers::db::test_simple_tag<ForceFree::Tags::TildeQ>("TildeQ");
 
   // etc.
-  TestHelpers::db::test_simple_tag<ForceFree::Tags::SpatialCurrentDensity>(
-      "SpatialCurrentDensity");
+  TestHelpers::db::test_simple_tag<ForceFree::Tags::ElectricCurrentDensity>(
+      "ElectricCurrentDensity");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::KappaPsi>("KappaPsi");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::KappaPhi>("KappaPhi");
 }
