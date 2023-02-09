@@ -9,7 +9,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Measurements.hpp
+  BothHorizons.hpp
   )
 
 target_link_libraries(

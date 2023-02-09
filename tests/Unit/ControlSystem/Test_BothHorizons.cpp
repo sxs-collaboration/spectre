@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
+#include "ControlSystem/ApparentHorizons/BothHorizons.hpp"
 #include "Domain/ObjectLabel.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"

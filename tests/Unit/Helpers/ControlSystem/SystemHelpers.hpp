@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
+#include "ControlSystem/ApparentHorizons/BothHorizons.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"

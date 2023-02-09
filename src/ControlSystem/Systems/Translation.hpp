@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ApparentHorizons/Tags.hpp"
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
+#include "ControlSystem/ApparentHorizons/BothHorizons.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"

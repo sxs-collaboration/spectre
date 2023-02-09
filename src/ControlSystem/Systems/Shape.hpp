@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
+#include "ControlSystem/ApparentHorizons/BothHorizons.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
