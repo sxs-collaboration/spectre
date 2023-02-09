@@ -17,7 +17,6 @@ SPECTRE_VERSION = "@SPECTRE_VERSION@"
 class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
-            "apply-pointwise",
             "clean-output",
             "extract-dat",
             "extract-input",
@@ -28,14 +27,11 @@ class Cli(click.MultiCommand):
             "plot-power-monitors",
             "render-1d",
             "simplify-traces",
+            "transform-volume-data",
         ]
 
     def get_command(self, ctx, name):
-        if name == "apply-pointwise":
-            from spectre.Visualization.ApplyPointwise import (
-                apply_pointwise_command)
-            return apply_pointwise_command
-        elif name == "clean-output":
+        if name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
             return clean_output_command
         elif name == "delete-subfiles":
@@ -74,6 +70,10 @@ class Cli(click.MultiCommand):
             from spectre.tools.CharmSimplifyTraces import (
                 simplify_traces_command)
             return simplify_traces_command
+        elif name in ["transform-volume-data", "transform-vol"]:
+            from spectre.Visualization.TransformVolumeData import (
+                transform_volume_data_command)
+            return transform_volume_data_command
         raise NotImplementedError(f"The command '{name}' is not implemented.")
 
 
