@@ -10,8 +10,8 @@ set(LIBRARY_SOURCES
   Test_DataVectorHelpers.cpp
   Test_EventTriggerMetafunctions.cpp
   Test_ExpirationTimes.cpp
-  Test_Measurement.cpp
   Test_Metafunctions.cpp
+  Test_RunCallbacks.cpp
   Test_Tags.cpp
   Test_TimescaleTuner.cpp
   Test_Trigger.cpp
