@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -119,6 +120,7 @@ struct SendDataForReconstruction {
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "The SendDataForReconstruction action can only be called when "
            "Subcell is the active scheme.");
+    using flux_variables = typename Metavariables::system::flux_variables;
 
     db::mutate<Tags::NeighborDataForReconstruction<Dim>>(
         make_not_null(&box), [](const auto neighbor_data_ptr) {
@@ -145,9 +147,26 @@ struct SendDataForReconstruction {
     //
     // Note: RDMP size doesn't help here since we need to slice data after
     // anyway, so no way to save an allocation through that.
-    const DirectionMap<Dim, DataVector> all_sliced_data = slice_data(
-        db::mutate_apply(GhostDataMutator{}, make_not_null(&box), 0_st),
-        subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
+    const auto& cell_centered_flux =
+        db::get<Tags::CellCenteredFlux<flux_variables, Dim>>(box);
+    DataVector volume_data_to_slice = db::mutate_apply(
+        GhostDataMutator{}, make_not_null(&box),
+        cell_centered_flux.has_value() ? cell_centered_flux.value().size()
+                                       : 0_st);
+    if (cell_centered_flux.has_value()) {
+      std::copy(
+          cell_centered_flux.value().data(),
+          std::next(
+              cell_centered_flux.value().data(),
+              static_cast<std::ptrdiff_t>(cell_centered_flux.value().size())),
+          std::next(
+              volume_data_to_slice.data(),
+              static_cast<std::ptrdiff_t>(volume_data_to_slice.size() -
+                                          cell_centered_flux.value().size())));
+    }
+    const DirectionMap<Dim, DataVector> all_sliced_data =
+        slice_data(volume_data_to_slice, subcell_mesh.extents(),
+                   ghost_zone_size, directions_to_slice, 0);
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
