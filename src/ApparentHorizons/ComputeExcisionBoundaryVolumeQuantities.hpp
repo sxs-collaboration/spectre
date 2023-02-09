@@ -63,9 +63,15 @@ struct ComputeExcisionBoundaryVolumeQuantities
   static void apply(
       const gsl::not_null<Variables<DestTagList>*> target_vars,
       const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
-      const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
+      const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
+          jac_target_to_inertial,
+      const InverseJacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
+          invjac_target_to_inertial,
+      const Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
+          jac_logical_to_target,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
-          inverse_jacobian);
+          invjac_logical_to_target,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity);
 
   using allowed_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,

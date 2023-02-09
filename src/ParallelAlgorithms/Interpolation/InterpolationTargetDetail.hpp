@@ -654,17 +654,22 @@ void compute_dest_vars_from_source_vars(
     const auto& block = domain.blocks().at(element_id.block_id());
     ElementMap<3, ::Frame::Grid> map_logical_to_grid{
         element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+    const auto jac_logical_to_grid =
+        map_logical_to_grid.jacobian(logical_coordinates(mesh));
     const auto invjac_logical_to_grid =
         map_logical_to_grid.inv_jacobian(logical_coordinates(mesh));
-    const auto jac_grid_to_inertial =
-        block.moving_mesh_grid_to_inertial_map().jacobian(
-            map_logical_to_grid(logical_coordinates(mesh)),
-            InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-                temporal_id),
-            functions_of_time);
+    const auto[inertial_coords, invjac_grid_to_inertial, jac_grid_to_inertial,
+               inertial_mesh_velocity] =
+        block.moving_mesh_grid_to_inertial_map()
+            .coords_frame_velocity_jacobians(
+                map_logical_to_grid(logical_coordinates(mesh)),
+                InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
+                    temporal_id),
+                functions_of_time);
     InterpolationTargetTag::compute_vars_to_interpolate::apply(
         dest_vars, source_vars, mesh, jac_grid_to_inertial,
-        invjac_logical_to_grid);
+        invjac_grid_to_inertial, jac_logical_to_grid, invjac_logical_to_grid,
+        inertial_mesh_velocity);
   } else {
     // No frame transformations needed.
     InterpolationTargetTag::compute_vars_to_interpolate::apply(
