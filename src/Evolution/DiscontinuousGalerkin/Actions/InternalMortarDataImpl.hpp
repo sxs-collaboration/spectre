@@ -51,6 +51,7 @@ void internal_mortar_data_impl(
         evolution::dg::MortarData<Dim>,
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
         mortar_data_ptr,
+    const gsl::not_null<gsl::span<double>*> face_temporaries,
     const BoundaryCorrection& boundary_correction,
     const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_vars,
@@ -89,212 +90,197 @@ void internal_mortar_data_impl(
   using dg_package_data_projected_tags =
       tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
                    primitive_tags_for_face>;
-  Variables<tmpl::remove_duplicates<tmpl::push_back<
+  using FieldsOnFace = Variables<tmpl::remove_duplicates<tmpl::push_back<
       tmpl::append<dg_package_data_projected_tags,
                    detail::inverse_spatial_metric_tag<System>>,
-      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>
-      fields_on_face{};
+      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>;
+  FieldsOnFace fields_on_face{};
   std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     (void)neighbors_in_direction;  // unused variable
-    // In order to reduce memory allocations we handle both the upper and
-    // lower neighbors in each direction together since computing the
-    // contributions to the faces is guaranteed to require the same number of
-    // grid points.
-    if (direction.side() == Side::Upper and
-        element.neighbors().count(direction.opposite()) != 0) {
-      continue;
-    }
-
-    const auto internal_mortars = [&](const Mesh<Dim - 1>& face_mesh,
-                                      const Direction<Dim>& local_direction) {
-      // We may not need to bring the volume fluxes or temporaries to the
-      // boundary since that depends on the specific boundary correction we
-      // are using. Silence compilers warnings about them being unused.
-      (void)volume_fluxes;
-      (void)volume_temporaries;
-
-      // This helper does the following:
-      //
-      // 1. Use a helper function to get data onto the faces. Done either by
-      //    slicing (Gauss-Lobatto points) or interpolation (Gauss points).
-      //    This is done using the `project_contiguous_data_to_boundary` and
-      //    `project_tensors_to_boundary` functions.
-      //
-      // 2. Invoke the boundary correction to get the packaged data. Note
-      //    that this is done on the *face* and NOT the mortar.
-      //
-      // 3. Project the packaged data onto the DG mortars (these might need
-      //    re-projection onto subcell mortars later).
-
-      // Perform step 1
-      project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
-                                          volume_evolved_vars, volume_mesh,
-                                          local_direction);
-      if constexpr (tmpl::size<fluxes_tags>::value != 0) {
-        project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
-                                            volume_fluxes, volume_mesh,
-                                            local_direction);
-      }
-      if constexpr (tmpl::size<tmpl::append<
-                        temporary_tags_for_face,
-                        detail::inverse_spatial_metric_tag<System>>>::value !=
-                    0) {
-        project_tensors_to_boundary<
-            tmpl::append<temporary_tags_for_face,
-                         detail::inverse_spatial_metric_tag<System>>>(
-            make_not_null(&fields_on_face), volume_temporaries, volume_mesh,
-            local_direction);
-      }
-      if constexpr (System::has_primitive_and_conservative_vars and
-                    tmpl::size<primitive_tags_for_face>::value != 0) {
-        ASSERT(volume_primitive_variables != nullptr,
-               "The volume primitive variables are not set even though the "
-               "system has primitive variables.");
-        project_tensors_to_boundary<primitive_tags_for_face>(
-            make_not_null(&fields_on_face), *volume_primitive_variables,
-            volume_mesh, local_direction);
-      } else {
-        (void)volume_primitive_variables;
-      }
-      if (volume_mesh_velocity.has_value()) {
-        if (not face_mesh_velocity.has_value() or
-            (*face_mesh_velocity)[0].size() !=
-                face_mesh.number_of_grid_points()) {
-          face_mesh_velocity =
-              tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
-        }
-        project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
-                                   *volume_mesh_velocity, volume_mesh,
-                                   local_direction);
-      }
-
-      // Normalize the normal vectors. We cache the unit normal covector For
-      // flat geometry and static meshes.
-      const bool mesh_is_moving = not moving_mesh_map.is_identity();
-      if (auto& normal_covector_quantity =
-              normal_covector_and_magnitude_ptr->at(local_direction);
-          detail::has_inverse_spatial_metric_tag_v<System> or mesh_is_moving or
-          not normal_covector_quantity.has_value()) {
-        if (not normal_covector_quantity.has_value()) {
-          normal_covector_quantity =
-              Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
-                                   evolution::dg::Tags::NormalCovector<Dim>>>{
-                  fields_on_face.number_of_grid_points()};
-        }
-        tnsr::i<DataVector, Dim> volume_unnormalized_normal_covector{};
-
-        for (size_t inertial_index = 0; inertial_index < Dim;
-             ++inertial_index) {
-          volume_unnormalized_normal_covector.get(inertial_index)
-              .set_data_ref(
-                  const_cast<double*>(  // NOLINT
-                      volume_inverse_jacobian
-                          .get(local_direction.dimension(), inertial_index)
-                          .data()),
-                  volume_mesh.number_of_grid_points());
-        }
-        project_tensor_to_boundary(
-            make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
-                *normal_covector_quantity)),
-            volume_unnormalized_normal_covector, volume_mesh, local_direction);
-
-        if (local_direction.side() == Side::Lower) {
-          for (auto& normal_covector_component :
-               get<evolution::dg::Tags::NormalCovector<Dim>>(
-                   *normal_covector_quantity)) {
-            normal_covector_component *= -1.0;
-          }
-        }
-
-        detail::unit_normal_vector_and_covector_and_magnitude_impl<System>(
-            make_not_null(&get<evolution::dg::Tags::MagnitudeOfNormal>(
-                *normal_covector_quantity)),
-            make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
-                *normal_covector_quantity)),
-            make_not_null(&fields_on_face),
-            get<evolution::dg::Tags::NormalCovector<Dim>>(
-                *normal_covector_quantity));
-      }
-
-      // Perform step 2
-      ASSERT(normal_covector_and_magnitude_ptr->at(local_direction).has_value(),
-             "The magnitude of the normal vector and the unit normal "
-             "covector have not been computed, even though they should "
-             "have been. Direction: "
-                 << local_direction);
-
-      // We point the Variables inside the DataVector because the DataVector
-      // will be moved later on so we want it owning its data
-      DataVector packaged_data_buffer{
-          face_mesh.number_of_grid_points() *
-          Variables<mortar_tags_list>::number_of_independent_components};
-      Variables<mortar_tags_list> packaged_data{packaged_data_buffer.data(),
-                                                packaged_data_buffer.size()};
-
-      const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
-          make_not_null(&packaged_data), boundary_correction, fields_on_face,
-          get<evolution::dg::Tags::NormalCovector<Dim>>(
-              *normal_covector_and_magnitude_ptr->at(local_direction)),
-          face_mesh_velocity, dg_package_data_projected_tags{},
-          package_data_volume_args...);
-      (void)max_abs_char_speed_on_face;
-
-      // Perform step 3
-      const auto& neighbors_in_local_direction =
-          element.neighbors().at(local_direction);
-      for (const auto& neighbor : neighbors_in_local_direction) {
-        const auto mortar_id = std::make_pair(local_direction, neighbor);
-        const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-        const auto& mortar_size = mortar_sizes.at(mortar_id);
-
-        // Project the data from the face to the mortar if necessary.
-        // We can't move the data or modify it in-place when projecting, because
-        // in that case the face may touch two mortars so we need to keep the
-        // data around.
-        DataVector boundary_data_on_mortar{};
-        if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
-          boundary_data_on_mortar = DataVector{
-              mortar_mesh.number_of_grid_points() *
-              Variables<mortar_tags_list>::number_of_independent_components};
-          Variables<mortar_tags_list> projected_packaged_data{
-              boundary_data_on_mortar.data(), boundary_data_on_mortar.size()};
-          // Since projected_packaged_data is non-owning, if we tried to
-          // move-assign it with the result of ::dg::project_to_mortar, it would
-          // then become owning and the buffer it previously pointed to wouldn't
-          // be filled (and we want it to be filled). So instead force a
-          // copy-assign by having an intermediary, data_to_copy.
-          const auto data_to_copy = ::dg::project_to_mortar(
-              packaged_data, face_mesh, mortar_mesh, mortar_size);
-          projected_packaged_data = data_to_copy;
-
-        } else {
-          ASSERT(neighbors_in_local_direction.size() == 1,
-                 "Expected only 1 neighbor in the local direction but got "
-                     << neighbors_in_local_direction.size() << "instead");
-          boundary_data_on_mortar = std::move(packaged_data_buffer);
-        }
-
-        mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
-            temporal_id, face_mesh, std::move(boundary_data_on_mortar));
-      }
-    };
 
     const Mesh<Dim - 1> face_mesh =
         volume_mesh.slice_away(direction.dimension());
 
-    if (fields_on_face.number_of_grid_points() !=
-        face_mesh.number_of_grid_points()) {
-      fields_on_face.initialize(face_mesh.number_of_grid_points());
-    }
-    internal_mortars(face_mesh, direction);
+    // The face_temporaries buffer is guaranteed to be big enough because we
+    // allocated it in ComputeTimeDerivative with the max number of grid points
+    // over all faces. We still check anyways in Debug mode to be safe
+    ASSERT(face_temporaries->size() >=
+               FieldsOnFace::number_of_independent_components *
+                   face_mesh.number_of_grid_points(),
+           "The buffer for computing fields on faces which was allocated in "
+           "ComputeTimeDerivative is not large enough. It's size is "
+               << face_temporaries->size() << ", but needs to be at least "
+               << FieldsOnFace::number_of_independent_components *
+                      face_mesh.number_of_grid_points());
 
-    if (element.neighbors().count(direction.opposite()) != 0) {
-      if (fields_on_face.number_of_grid_points() !=
-          face_mesh.number_of_grid_points()) {
-        fields_on_face.initialize(face_mesh.number_of_grid_points());
+    fields_on_face.set_data_ref(face_temporaries->data(),
+                                FieldsOnFace::number_of_independent_components *
+                                    face_mesh.number_of_grid_points());
+
+    // We may not need to bring the volume fluxes or temporaries to the
+    // boundary since that depends on the specific boundary correction we
+    // are using. Silence compilers warnings about them being unused.
+    (void)volume_fluxes;
+    (void)volume_temporaries;
+
+    // This does the following:
+    //
+    // 1. Use a helper function to get data onto the faces. Done either by
+    //    slicing (Gauss-Lobatto points) or interpolation (Gauss points).
+    //    This is done using the `project_contiguous_data_to_boundary` and
+    //    `project_tensors_to_boundary` functions.
+    //
+    // 2. Invoke the boundary correction to get the packaged data. Note
+    //    that this is done on the *face* and NOT the mortar.
+    //
+    // 3. Project the packaged data onto the DG mortars (these might need
+    //    re-projection onto subcell mortars later).
+
+    // Perform step 1
+    project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
+                                        volume_evolved_vars, volume_mesh,
+                                        direction);
+    if constexpr (tmpl::size<fluxes_tags>::value != 0) {
+      project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
+                                          volume_fluxes, volume_mesh,
+                                          direction);
+    }
+    if constexpr (tmpl::size<tmpl::append<
+                      temporary_tags_for_face,
+                      detail::inverse_spatial_metric_tag<System>>>::value !=
+                  0) {
+      project_tensors_to_boundary<tmpl::append<
+          temporary_tags_for_face, detail::inverse_spatial_metric_tag<System>>>(
+          make_not_null(&fields_on_face), volume_temporaries, volume_mesh,
+          direction);
+    }
+    if constexpr (System::has_primitive_and_conservative_vars and
+                  tmpl::size<primitive_tags_for_face>::value != 0) {
+      ASSERT(volume_primitive_variables != nullptr,
+             "The volume primitive variables are not set even though the "
+             "system has primitive variables.");
+      project_tensors_to_boundary<primitive_tags_for_face>(
+          make_not_null(&fields_on_face), *volume_primitive_variables,
+          volume_mesh, direction);
+    } else {
+      (void)volume_primitive_variables;
+    }
+    if (volume_mesh_velocity.has_value()) {
+      if (not face_mesh_velocity.has_value() or
+          (*face_mesh_velocity)[0].size() !=
+              face_mesh.number_of_grid_points()) {
+        face_mesh_velocity =
+            tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
       }
-      internal_mortars(face_mesh, direction.opposite());
+      project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
+                                 *volume_mesh_velocity, volume_mesh, direction);
+    }
+
+    // Normalize the normal vectors. We cache the unit normal covector For
+    // flat geometry and static meshes.
+    const bool mesh_is_moving = not moving_mesh_map.is_identity();
+    if (auto& normal_covector_quantity =
+            normal_covector_and_magnitude_ptr->at(direction);
+        detail::has_inverse_spatial_metric_tag_v<System> or mesh_is_moving or
+        not normal_covector_quantity.has_value()) {
+      if (not normal_covector_quantity.has_value()) {
+        normal_covector_quantity =
+            Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                 evolution::dg::Tags::NormalCovector<Dim>>>{
+                fields_on_face.number_of_grid_points()};
+      }
+      tnsr::i<DataVector, Dim> volume_unnormalized_normal_covector{};
+
+      for (size_t inertial_index = 0; inertial_index < Dim; ++inertial_index) {
+        volume_unnormalized_normal_covector.get(inertial_index)
+            .set_data_ref(const_cast<double*>(  // NOLINT
+                              volume_inverse_jacobian
+                                  .get(direction.dimension(), inertial_index)
+                                  .data()),
+                          volume_mesh.number_of_grid_points());
+      }
+      project_tensor_to_boundary(
+          make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *normal_covector_quantity)),
+          volume_unnormalized_normal_covector, volume_mesh, direction);
+
+      if (direction.side() == Side::Lower) {
+        for (auto& normal_covector_component :
+             get<evolution::dg::Tags::NormalCovector<Dim>>(
+                 *normal_covector_quantity)) {
+          normal_covector_component *= -1.0;
+        }
+      }
+
+      detail::unit_normal_vector_and_covector_and_magnitude_impl<System>(
+          make_not_null(&get<evolution::dg::Tags::MagnitudeOfNormal>(
+              *normal_covector_quantity)),
+          make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *normal_covector_quantity)),
+          make_not_null(&fields_on_face),
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *normal_covector_quantity));
+    }
+
+    // Perform step 2
+    ASSERT(normal_covector_and_magnitude_ptr->at(direction).has_value(),
+           "The magnitude of the normal vector and the unit normal "
+           "covector have not been computed, even though they should "
+           "have been. Direction: "
+               << direction);
+
+    // We point the Variables inside the DataVector because the DataVector
+    // will be moved later on so we want it owning its data
+    DataVector packaged_data_buffer{
+        face_mesh.number_of_grid_points() *
+        Variables<mortar_tags_list>::number_of_independent_components};
+    Variables<mortar_tags_list> packaged_data{packaged_data_buffer.data(),
+                                              packaged_data_buffer.size()};
+
+    const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
+        make_not_null(&packaged_data), boundary_correction, fields_on_face,
+        get<evolution::dg::Tags::NormalCovector<Dim>>(
+            *normal_covector_and_magnitude_ptr->at(direction)),
+        face_mesh_velocity, dg_package_data_projected_tags{},
+        package_data_volume_args...);
+    (void)max_abs_char_speed_on_face;
+
+    // Perform step 3
+    for (const auto& neighbor : neighbors_in_direction) {
+      const auto mortar_id = std::make_pair(direction, neighbor);
+      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+      const auto& mortar_size = mortar_sizes.at(mortar_id);
+
+      // Project the data from the face to the mortar if necessary.
+      // We can't move the data or modify it in-place when projecting, because
+      // in that case the face may touch two mortars so we need to keep the
+      // data around.
+      DataVector boundary_data_on_mortar{};
+      if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+        boundary_data_on_mortar = DataVector{
+            mortar_mesh.number_of_grid_points() *
+            Variables<mortar_tags_list>::number_of_independent_components};
+        Variables<mortar_tags_list> projected_packaged_data{
+            boundary_data_on_mortar.data(), boundary_data_on_mortar.size()};
+        // Since projected_packaged_data is non-owning, if we tried to
+        // move-assign it with the result of ::dg::project_to_mortar, it would
+        // then become owning and the buffer it previously pointed to wouldn't
+        // be filled (and we want it to be filled). So instead force a
+        // copy-assign by having an intermediary, data_to_copy.
+        const auto data_to_copy = ::dg::project_to_mortar(
+            packaged_data, face_mesh, mortar_mesh, mortar_size);
+        projected_packaged_data = data_to_copy;
+
+      } else {
+        ASSERT(neighbors_in_direction.size() == 1,
+               "Expected only 1 neighbor in the local direction but got "
+                   << neighbors_in_direction.size() << "instead");
+        boundary_data_on_mortar = std::move(packaged_data_buffer);
+      }
+
+      mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
+          temporal_id, face_mesh, std::move(boundary_data_on_mortar));
     }
   }
 }
@@ -303,6 +289,7 @@ template <typename System, size_t Dim, typename BoundaryCorrection,
           typename DbTagsList, typename... PackageDataVolumeTags>
 void internal_mortar_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const gsl::not_null<gsl::span<double>*> face_temporaries,
     const BoundaryCorrection& boundary_correction,
     const Variables<typename System::variables_tag::tags_list>
         evolved_variables,
@@ -318,7 +305,7 @@ void internal_mortar_data(
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
              evolution::dg::Tags::MortarData<Dim>>(
       box,
-      [&boundary_correction,
+      [&boundary_correction, &face_temporaries,
        &element = db::get<domain::Tags::Element<Dim>>(*box), &evolved_variables,
        &logical_to_inertial_inverse_jacobian =
            db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
@@ -335,10 +322,11 @@ void internal_mortar_data(
           const auto mortar_data_ptr, const auto&... package_data_volume_args) {
         detail::internal_mortar_data_impl<System>(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
-            boundary_correction, evolved_variables, volume_fluxes, temporaries,
-            primitive_vars, element, mesh, mortar_meshes, mortar_sizes,
-            time_step_id, moving_mesh_map, mesh_velocity,
-            logical_to_inertial_inverse_jacobian, package_data_volume_args...);
+            face_temporaries, boundary_correction, evolved_variables,
+            volume_fluxes, temporaries, primitive_vars, element, mesh,
+            mortar_meshes, mortar_sizes, time_step_id, moving_mesh_map,
+            mesh_velocity, logical_to_inertial_inverse_jacobian,
+            package_data_volume_args...);
       },
       db::get<PackageDataVolumeTags>(*box)...);
 }
