@@ -372,13 +372,10 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       "each of the two compact objects A and B."};
 
   CylindricalBinaryCompactObject(
-      typename CenterA::type center_A, typename CenterB::type center_B,
-      typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-      typename IncludeInnerSphereA::type include_inner_sphere_A,
-      typename IncludeInnerSphereB::type include_inner_sphere_B,
-      typename IncludeOuterSphere::type include_outer_sphere,
-      typename OuterRadius::type outer_radius,
-      typename UseEquiangularMap::type use_equiangular_map,
+      std::array<double, 3> center_A, std::array<double, 3> center_B,
+      double radius_A, double radius_B, bool include_inner_sphere_A,
+      bool include_inner_sphere_B, bool include_outer_sphere,
+      double outer_radius, bool use_equiangular_map,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -390,13 +387,10 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   CylindricalBinaryCompactObject(
       double initial_time, ExpansionMapOptions expansion_map_options,
       std::array<double, 3> initial_angular_velocity,
-      typename CenterA::type center_A, typename CenterB::type center_B,
-      typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-      typename IncludeInnerSphereA::type include_inner_sphere_A,
-      typename IncludeInnerSphereB::type include_inner_sphere_B,
-      typename IncludeOuterSphere::type include_outer_sphere,
-      typename OuterRadius::type outer_radius,
-      typename UseEquiangularMap::type use_equiangular_map,
+      std::array<double, 3> center_A, std::array<double, 3> center_B,
+      double radius_A, double radius_B, bool include_inner_sphere_A,
+      bool include_inner_sphere_B, bool include_outer_sphere,
+      double outer_radius, bool use_equiangular_map,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -444,14 +438,14 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   // construct the map in a frame where the centers are offset in the
   // z direction.  At the end, there will be another rotation back to
   // the grid frame (where the centers are offset in the x direction).
-  typename CenterA::type center_A_{};
-  typename CenterB::type center_B_{};
-  typename RadiusA::type radius_A_{};
-  typename RadiusB::type radius_B_{};
-  typename IncludeInnerSphereA::type include_inner_sphere_A_{};
-  typename IncludeInnerSphereB::type include_inner_sphere_B_{};
-  typename IncludeOuterSphere::type include_outer_sphere_{};
-  typename OuterRadius::type outer_radius_{};
+  std::array<double, 3> center_A_{};
+  std::array<double, 3> center_B_{};
+  double radius_A_{};
+  double radius_B_{};
+  bool include_inner_sphere_A_{};
+  bool include_inner_sphere_B_{};
+  bool include_outer_sphere_{};
+  double outer_radius_{};
   bool use_equiangular_map_{false};
   typename std::vector<std::array<size_t, 3>> initial_refinement_{};
   typename std::vector<std::array<size_t, 3>> initial_grid_points_{};

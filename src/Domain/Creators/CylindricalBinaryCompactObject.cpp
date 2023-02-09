@@ -57,13 +57,10 @@ std::array<double, 3> flip_about_xy_plane(const std::array<double, 3> input) {
 
 namespace domain::creators {
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
-    typename CenterA::type center_A, typename CenterB::type center_B,
-    typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-    typename IncludeInnerSphereA::type include_inner_sphere_A,
-    typename IncludeInnerSphereB::type include_inner_sphere_B,
-    typename IncludeOuterSphere::type include_outer_sphere,
-    typename OuterRadius::type outer_radius,
-    typename UseEquiangularMap::type use_equiangular_map,
+    std::array<double, 3> center_A, std::array<double, 3> center_B,
+    double radius_A, double radius_B, bool include_inner_sphere_A,
+    bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
+    bool use_equiangular_map,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -368,13 +365,10 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     double initial_time, ExpansionMapOptions expansion_map_options,
     std::array<double, 3> initial_angular_velocity,
-    typename CenterA::type center_A, typename CenterB::type center_B,
-    typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-    typename IncludeInnerSphereA::type include_inner_sphere_A,
-    typename IncludeInnerSphereB::type include_inner_sphere_B,
-    typename IncludeOuterSphere::type include_outer_sphere,
-    typename OuterRadius::type outer_radius,
-    typename UseEquiangularMap::type use_equiangular_map,
+    std::array<double, 3> center_A, std::array<double, 3> center_B,
+    double radius_A, double radius_B, bool include_inner_sphere_A,
+    bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
+    bool use_equiangular_map,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
