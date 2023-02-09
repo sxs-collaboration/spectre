@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean {
@@ -31,41 +32,6 @@ void four_velocity_one_form(
         get(lorentz_factor) * spatial_velocity_one_form.get(i);
     get<0>(*four_velocity_one_form_result) +=
         shift.get(i) * four_velocity_one_form_result->get(i + 1);
-  }
-}
-
-// spatial components of the comoving magnetic field vector are:
-// b^i = B^i / W + B^j v^k \gamma_{j k} u^i
-//
-// time component is:
-// b^0 = W B^j v^k \gamma_{j k} / \alpha
-//
-// Using the spacetime metric, the corresponding down-index components are
-// b_i = B_i / W + B^j v^k \gamma_{j k} W v_i
-// and
-// b_0 = - \alpha W v^i B_i + \beta^i b_i
-//
-// and the square of the vector is:
-// b^2 = B^i B^j \gamma_{i j} / W^2 + (B^i v^j \gamma_{i j})^2
-void comoving_magnetic_field_one_form(
-    const gsl::not_null<tnsr::a<DataVector, 3>*>
-        comoving_magnetic_field_one_form_result,
-    const tnsr::i<DataVector, 3>& spatial_velocity_one_form,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& magnetic_field_one_form,
-    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
-    const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) {
-  get<0>(*comoving_magnetic_field_one_form_result) =
-      -get(lapse) * get(lorentz_factor) *
-      get(magnetic_field_dot_spatial_velocity);
-  for (size_t i = 0; i < 3; ++i) {
-    comoving_magnetic_field_one_form_result->get(i + 1) =
-        magnetic_field_one_form.get(i) / get(lorentz_factor) +
-        get(lorentz_factor) * get(magnetic_field_dot_spatial_velocity) *
-            spatial_velocity_one_form.get(i);
-    get<0>(*comoving_magnetic_field_one_form_result) +=
-        shift.get(i) * comoving_magnetic_field_one_form_result->get(i + 1);
   }
 }
 }  // namespace
@@ -111,7 +77,7 @@ void trace_reversed_stress_energy(
       square(get(magnetic_field_dot_spatial_velocity)) +
       get(magnetic_field_squared) * get(one_over_w_squared);
 
-  comoving_magnetic_field_one_form(
+  hydro::comoving_magnetic_field_one_form(
       comoving_magnetic_field_one_form_buffer, spatial_velocity_one_form,
       magnetic_field_one_form, magnetic_field_dot_spatial_velocity,
       lorentz_factor, shift, lapse);
