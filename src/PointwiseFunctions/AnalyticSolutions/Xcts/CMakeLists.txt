@@ -37,6 +37,7 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   GeneralRelativitySolutions
+  GrMhdAnalyticData
   InitialDataUtilities
   Options
   Parallel
