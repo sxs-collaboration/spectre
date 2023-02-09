@@ -25,6 +25,7 @@
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"  // IWYU pragma: keep
@@ -35,6 +36,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -255,6 +257,89 @@ tnsr::I<double, VolumeDim, Frame::BlockLogical> point_in_neighbor_frame(
   return get_corner_of_orthant(point_get_orthant);
 }
 
+// This tests whether a logical grid point on the face of the host Block
+// corresponds to the same logical grid point on the abutting face of the
+// neighbor Block (taking into account the discrete rotation of the
+// OrientationMap from the host Block to the neighbor Block).
+template <size_t VolumeDim>
+void check_block_face_grid_points_align(
+    const Block<VolumeDim>& host_block, const Block<VolumeDim>& neighbor_block,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {}) {
+  const auto direction = find_direction_to_neighbor(host_block, neighbor_block);
+  const auto orientation =
+      find_neighbor_orientation(host_block, neighbor_block);
+  // Set up a Mesh on the shared face. Corner points are already checked by
+  // physical_separation, so check on Gauss points
+  const Mesh<VolumeDim - 1> face_mesh{3_st, Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::Gauss};
+  // We want block logical coordinates on face_mesh on the host side and the
+  // neighbor. The following returns element logical coordinates in the host
+  // frame, which we then copy into tensors holding block logical coordinates,
+  // taking into account the OrientationMap between the host and neighbor
+  // blocks.
+  tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> xi =
+      interface_logical_coordinates(face_mesh, direction);
+  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical> xi_host{};
+  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical> xi_neighbor{};
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    // assume an Element covering the Block which maps element logical
+    // coordinates to block logical coordinates with the identity map
+    xi_host[d] = xi[d];
+    const auto dth_upper_direction_in_neighbor_frame =
+        orientation(Direction<VolumeDim>(d, Side::Upper));
+    // This takes into account the permutation of dimensions induced by the
+    // OrientationMap
+    xi_neighbor[dth_upper_direction_in_neighbor_frame.dimension()] = xi[d];
+    // There is a sign flip if this is the dimension of the direction to the
+    // neighbor as the logical coord is -1/+1 on the lower/upper side of the
+    // block.
+    // There is also a sign flip if the mapped upper direction becomes a lower
+    // direction
+    if (dth_upper_direction_in_neighbor_frame.side() == Side::Lower xor
+        d == direction.dimension()) {
+      xi_neighbor[dth_upper_direction_in_neighbor_frame.dimension()] *= -1.0;
+    }
+  }
+  if (host_block.is_time_dependent() != neighbor_block.is_time_dependent()) {
+    ERROR(
+        "Both host_block and neighbor_block must have the same time "
+        "dependence, but host_block has time-dependence status: "
+        << std::boolalpha << host_block.is_time_dependent()
+        << " and neighbor_block has: " << neighbor_block.is_time_dependent());
+  }
+  CAPTURE(xi_host);
+  CAPTURE(xi_neighbor);
+  // Check that each grid point on the face Mesh has the same grid and inertial
+  // coordinates when mapped from the logical coordinates of each Block.
+  if (host_block.is_time_dependent()) {
+    const auto& host_map_logical_to_grid =
+        host_block.moving_mesh_logical_to_grid_map();
+    const auto& host_map_grid_to_inertial =
+        host_block.moving_mesh_grid_to_inertial_map();
+    const auto& neighbor_map_logical_to_grid =
+        neighbor_block.moving_mesh_logical_to_grid_map();
+    const auto& neighbor_map_grid_to_inertial =
+        neighbor_block.moving_mesh_grid_to_inertial_map();
+    const auto x_grid_self = host_map_logical_to_grid(xi_host);
+    const auto x_grid_neighbor = neighbor_map_logical_to_grid(xi_neighbor);
+    CHECK_ITERABLE_APPROX(x_grid_self, x_grid_neighbor);
+    const auto x_inertial_self =
+        host_map_grid_to_inertial(x_grid_self, time, functions_of_time);
+    const auto x_inertial_neighbor =
+        neighbor_map_grid_to_inertial(x_grid_neighbor, time, functions_of_time);
+    CHECK_ITERABLE_APPROX(x_inertial_self, x_inertial_neighbor);
+  } else {
+    const auto& host_map = host_block.stationary_map();
+    const auto& neighbor_map = neighbor_block.stationary_map();
+    const auto x_self = host_map(xi_host);
+    const auto x_neighbor = neighbor_map(xi_neighbor);
+    CHECK_ITERABLE_APPROX(x_self, x_neighbor);
+  }
+}
+
 // Given two Blocks which are neighbors, computes the max separation between
 // the abutting faces of the Blocks in the Frame::Inertial frame using the
 // CoordinateMaps of each block.
@@ -422,6 +507,10 @@ void test_physical_separation(
         CAPTURE(j);
         CHECK(domain::physical_separation(blocks[i], blocks[j], time,
                                           functions_of_time) < tolerance);
+        if constexpr (VolumeDim > 1) {
+          domain::check_block_face_grid_points_align(blocks[i], blocks[j], time,
+                                                     functions_of_time);
+        }
       }
     }
   }

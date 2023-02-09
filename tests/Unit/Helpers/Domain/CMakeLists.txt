@@ -21,6 +21,7 @@ target_link_libraries(
   DomainCreators
   ErrorHandling
   Framework
+  Spectral
 
   PUBLIC
   DataStructures
