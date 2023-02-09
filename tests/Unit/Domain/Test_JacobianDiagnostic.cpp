@@ -15,6 +15,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/JacobianDiagnostic.hpp"
