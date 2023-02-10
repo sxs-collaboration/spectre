@@ -51,7 +51,8 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
                            const ApparentHorizon<FRAME(data)>& rhs); \
   template bool operator!=(const ApparentHorizon<FRAME(data)>& lhs,  \
                            const ApparentHorizon<FRAME(data)>& rhs);
-GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial, ::Frame::Grid))
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (::Frame::Grid, ::Frame::Distorted, ::Frame::Inertial))
 
 #undef FRAME
 #undef INSTANTIATE

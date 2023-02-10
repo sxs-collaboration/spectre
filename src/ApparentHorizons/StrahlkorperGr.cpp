@@ -1062,7 +1062,8 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
       const gsl::not_null<Scalar<DataVector>*> radial_distance,             \
       const Strahlkorper<FRAME(data)>& strahlkorper_a,                      \
       const Strahlkorper<FRAME(data)>& strahlkorper_b);
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME
 

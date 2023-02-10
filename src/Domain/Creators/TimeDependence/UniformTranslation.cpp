@@ -253,7 +253,11 @@ using Translation = CoordinateMaps::TimeDependent::Translation<MeshDim>;
 
 INSTANTIATE_MAPS_FUNCTIONS(((Translation<1>), (Translation<2>),
                             (Translation<3>)),
-                           (Frame::Grid), (Frame::Inertial),
+                           (Frame::Grid), (Frame::Distorted, Frame::Inertial),
+                           (double, DataVector))
+INSTANTIATE_MAPS_FUNCTIONS(((Translation<1>), (Translation<2>),
+                            (Translation<3>)),
+                           (Frame::Distorted), (Frame::Inertial),
                            (double, DataVector))
 
 }  // namespace domain

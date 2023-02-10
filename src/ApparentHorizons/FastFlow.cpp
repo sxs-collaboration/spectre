@@ -366,6 +366,7 @@ FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
       const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric,     \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,      \
       const tnsr::Ijj<DataVector, 3, FRAME(data)>& christoffel_2nd_kind);
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME

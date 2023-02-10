@@ -136,8 +136,9 @@ void trace(
                               change_index_up_lo<INDEX1(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial,
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial,
                          Frame::Spherical<Frame::Inertial>,
+                         Frame::Spherical<Frame::Distorted>,
                          Frame::Spherical<Frame::Grid>),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up),
                         (UpLo::Lo, UpLo::Up))
@@ -168,7 +169,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial),
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 
 #undef DIM
