@@ -70,8 +70,7 @@ std::unique_ptr<TimeDependence<3>> Shape::get_clone() const {
 
 std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
-Shape::block_maps_grid_to_inertial(
-    const size_t number_of_blocks) const {
+Shape::block_maps_grid_to_inertial(const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0,
          "Must have at least one block on which to create a map.");
 
@@ -87,9 +86,8 @@ Shape::block_maps_grid_to_inertial(
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-Shape::functions_of_time(
-    const std::unordered_map<std::string, double>& initial_expiration_times)
-    const {
+Shape::functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times) const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -110,12 +108,12 @@ Shape::functions_of_time(
                 inner_radius_;
   const auto radial_distortion_coefs = ylm.phys_to_spec(radial_distortion);
   const DataVector zeros =
-    make_with_value<DataVector>(radial_distortion_coefs, 0.0);
+      make_with_value<DataVector>(radial_distortion_coefs, 0.0);
   result[function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
           initial_time_,
-          std::array<DataVector, 4>{{
-            radial_distortion_coefs, zeros, zeros, zeros}},
+          std::array<DataVector, 4>{
+              {radial_distortion_coefs, zeros, zeros, zeros}},
           expiration_time);
   return result;
 }
@@ -126,8 +124,7 @@ auto Shape::grid_to_inertial_map() const -> GridToInertialMap {
                                     function_of_time_name_}};
 }
 
-bool operator==(const Shape& lhs,
-                const Shape& rhs) {
+bool operator==(const Shape& lhs, const Shape& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and lhs.l_max_ == rhs.l_max_ and
          lhs.mass_ == rhs.mass_ and lhs.spin_ == rhs.spin_ and
          lhs.center_ == rhs.center_ and
@@ -135,15 +132,12 @@ bool operator==(const Shape& lhs,
          lhs.outer_radius_ == rhs.outer_radius_;
 }
 
-bool operator!=(const Shape& lhs,
-                const Shape& rhs) {
-  return not(lhs == rhs);
-}
+bool operator!=(const Shape& lhs, const Shape& rhs) { return not(lhs == rhs); }
 }  // namespace creators::time_dependence
 
 using ShapeMap3d = CoordinateMaps::TimeDependent::Shape;
 
-INSTANTIATE_MAPS_FUNCTIONS(((ShapeMap3d)), (Frame::Grid),
-                           (Frame::Inertial), (double, DataVector))
+INSTANTIATE_MAPS_FUNCTIONS(((ShapeMap3d)), (Frame::Grid), (Frame::Inertial),
+                           (double, DataVector))
 
 }  // namespace domain

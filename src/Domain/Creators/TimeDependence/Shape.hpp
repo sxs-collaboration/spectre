@@ -56,13 +56,11 @@ namespace domain::creators::time_dependence {
  */
 class Shape final : public TimeDependence<3> {
  private:
-  using ShapeMap =
-      domain::CoordinateMaps::TimeDependent::Shape;
+  using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
 
  public:
   using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       ShapeMap>>;
+      tmpl::list<domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap>>;
 
   static constexpr size_t mesh_dim = 3;
 
@@ -81,10 +79,9 @@ class Shape final : public TimeDependence<3> {
   /// \brief The mass of the Kerr black hole.
   struct Mass {
     using type = double;
-    static constexpr Options::String help = {
-        "The mass of the Kerr BH."};
+    static constexpr Options::String help = {"The mass of the Kerr BH."};
   };
-   /// \brief The dimensionless spin of the Kerr black hole.
+  /// \brief The dimensionless spin of the Kerr black hole.
   struct Spin {
     using type = std::array<double, 3>;
     static constexpr Options::String help = {
@@ -93,8 +90,7 @@ class Shape final : public TimeDependence<3> {
   /// \brief Center for the Shape map
   struct Center {
     using type = std::array<double, 3>;
-    static constexpr Options::String help = {
-        "Center for the Shape map."};
+    static constexpr Options::String help = {"Center for the Shape map."};
   };
   /// \brief The inner radius of the Shape map, the radius at which
   /// to begin applying the map.
@@ -112,8 +108,8 @@ class Shape final : public TimeDependence<3> {
   };
 
   using GridToInertialMap =
-        detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
-                                          tmpl::list<ShapeMap>>;
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                        tmpl::list<ShapeMap>>;
 
   using options = tmpl::list<InitialTime, LMax, Mass, Spin, Center, InnerRadius,
                              OuterRadius>;
@@ -164,8 +160,7 @@ class Shape final : public TimeDependence<3> {
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Shape& lhs,
-                         const Shape& rhs);
+  friend bool operator==(const Shape& lhs, const Shape& rhs);
 
   using TransitionFunction = domain::CoordinateMaps::
       ShapeMapTransitionFunctions::ShapeMapTransitionFunction;
@@ -184,6 +179,5 @@ class Shape final : public TimeDependence<3> {
   std::unique_ptr<TransitionFunction> transition_func_;
 };
 
-bool operator!=(const Shape& lhs,
-                const Shape& rhs);
+bool operator!=(const Shape& lhs, const Shape& rhs);
 }  // namespace domain::creators::time_dependence
