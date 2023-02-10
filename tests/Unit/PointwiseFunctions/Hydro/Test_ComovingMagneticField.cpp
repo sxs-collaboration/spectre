@@ -28,6 +28,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
           &comoving_magnetic_field_one_form<DataVector>),
       "TestFunctions", "comoving_magnetic_field_one_form", {{{0.0, 1.0}}},
       used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataVector> (*)(const Scalar<DataVector>&,
+                                         const Scalar<DataVector>&,
+                                         const Scalar<DataVector>&)>(
+          &comoving_magnetic_field_squared<DataVector>),
+      "TestFunctions", "comoving_magnetic_field_squared", {{{0.0, 1.0}}},
+      used_for_size);
 }
 
 }  // namespace hydro

@@ -16,6 +16,13 @@ def comoving_magnetic_field_one_form(spatial_velocity_one_form,
     return np.concatenate([[b_0], b_i])
 
 
+def comoving_magnetic_field_squared(magnetic_field_squared,
+                                    magnetic_field_dot_spatial_velocity,
+                                    lorentz_factor):
+    return (magnetic_field_squared / lorentz_factor**2 +
+            magnetic_field_dot_spatial_velocity**2)
+
+
 # Functions for testing LorentzFactor.cpp
 
 

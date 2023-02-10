@@ -46,18 +46,46 @@ tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
   return result;
 }
 
+template <typename DataType>
+void comoving_magnetic_field_squared(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& magnetic_field_squared,
+    const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
+    const Scalar<DataType>& lorentz_factor) {
+  get(*result) = get(magnetic_field_squared) / square(get(lorentz_factor)) +
+                 square(get(magnetic_field_dot_spatial_velocity));
+}
+
+template <typename DataType>
+Scalar<DataType> comoving_magnetic_field_squared(
+    const Scalar<DataType>& magnetic_field_squared,
+    const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
+    const Scalar<DataType>& lorentz_factor) {
+  Scalar<DataType> result{};
+  comoving_magnetic_field_squared(
+      make_not_null(&result), magnetic_field_squared,
+      magnetic_field_dot_spatial_velocity, lorentz_factor);
+  return result;
+}
+
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(r, data)                                        \
-  template void comoving_magnetic_field_one_form(                     \
-      const gsl::not_null<tnsr::a<DTYPE(data), 3>*>                   \
-          comoving_magnetic_field_one_form_result,                    \
-      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&, \
-      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,         \
-      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);    \
-  template tnsr::a<DTYPE(data), 3> comoving_magnetic_field_one_form(  \
-      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&, \
-      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,         \
-      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);
+#define INSTANTIATION(r, data)                                               \
+  template void comoving_magnetic_field_one_form(                            \
+      const gsl::not_null<tnsr::a<DTYPE(data), 3>*>                          \
+          comoving_magnetic_field_one_form_result,                           \
+      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&,        \
+      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
+      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);           \
+  template tnsr::a<DTYPE(data), 3> comoving_magnetic_field_one_form(         \
+      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&,        \
+      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
+      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);           \
+  template void comoving_magnetic_field_squared(                             \
+      const gsl::not_null<Scalar<DTYPE(data)>*>, const Scalar<DTYPE(data)>&, \
+      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&);               \
+  template Scalar<DTYPE(data)> comoving_magnetic_field_squared(              \
+      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
+      const Scalar<DTYPE(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector))
 

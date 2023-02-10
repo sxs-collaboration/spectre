@@ -52,6 +52,19 @@ tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& lorentz_factor, const tnsr::I<DataType, 3>& shift,
     const Scalar<DataType>& lapse);
+
+template <typename DataType>
+void comoving_magnetic_field_squared(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& magnetic_field_squared,
+    const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
+    const Scalar<DataType>& lorentz_factor);
+
+template <typename DataType>
+Scalar<DataType> comoving_magnetic_field_squared(
+    const Scalar<DataType>& magnetic_field_squared,
+    const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
+    const Scalar<DataType>& lorentz_factor);
 /// @}
 
 }  // namespace hydro
