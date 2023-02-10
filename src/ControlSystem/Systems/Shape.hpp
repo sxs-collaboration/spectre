@@ -11,7 +11,7 @@
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
-#include "ControlSystem/Measurements/BothHorizons.hpp"
+#include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -80,7 +80,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     }
   }
 
-  using measurement = measurements::BothHorizons;
+  using measurement = measurements::SingleHorizon<Horizon>;
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
@@ -102,28 +102,19 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     using argument_tags =
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
 
-    template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
+    template <typename Metavariables>
     static void apply(
-        measurements::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
+        typename measurements::SingleHorizon<Horizon>::Submeasurement /*meta*/,
         const Strahlkorper<Frame::Grid>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
-      // The measurement event will call this for both horizons, but we only
-      // need one of the horizons. So if it is called for the wrong horizon,
-      // just do nothing.
-      if constexpr (MeasureHorizon == Horizon) {
-        auto& control_sys_proxy = Parallel::get_parallel_component<
-            ControlComponent<Metavariables, Shape<Horizon, DerivOrder>>>(cache);
+      auto& control_sys_proxy = Parallel::get_parallel_component<
+          ControlComponent<Metavariables, Shape<Horizon, DerivOrder>>>(cache);
 
-        Parallel::simple_action<::Actions::UpdateMessageQueue<
-            QueueTags::Strahlkorper<Frame::Grid>, MeasurementQueue,
-            UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
-                                         strahlkorper);
-      } else {
-        (void)strahlkorper;
-        (void)cache;
-        (void)measurement_id;
-      }
+      Parallel::simple_action<::Actions::UpdateMessageQueue<
+          QueueTags::Strahlkorper<Frame::Grid>, MeasurementQueue,
+          UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
+                                       strahlkorper);
     }
   };
 };

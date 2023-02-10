@@ -8,7 +8,6 @@
 #include <pup.h>
 #include <string>
 
-#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
