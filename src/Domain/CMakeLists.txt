@@ -23,6 +23,7 @@ spectre_target_sources(
   MinimumGridSpacing.cpp
   ObjectLabel.cpp
   SizeOfElement.cpp
+  SurfaceJacobian.cpp
   Tags.cpp
   TagsTimeDependent.cpp
 )
@@ -50,6 +51,7 @@ spectre_target_headers(
   ObjectLabel.hpp
   OptionTags.hpp
   SizeOfElement.hpp
+  SurfaceJacobian.hpp
   Tags.hpp
   TagsCharacteristicSpeeds.hpp
   TagsTimeDependent.hpp

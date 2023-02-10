@@ -28,6 +28,7 @@ set(LIBRARY_SOURCES
   Test_ObjectLabel.cpp
   Test_Protocols.cpp
   Test_SizeOfElement.cpp
+  Test_SurfaceJacobian.cpp
   Test_Tags.cpp
   Test_TagsCharacteristicSpeeds.cpp
   Test_TagsTimeDependent.cpp
@@ -53,5 +54,6 @@ target_link_libraries(
   DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
+  LinearOperators
   Utilities
   )
