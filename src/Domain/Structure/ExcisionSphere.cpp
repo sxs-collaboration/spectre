@@ -4,12 +4,15 @@
 #include "Domain/Structure/ExcisionSphere.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 #include <pup_stl.h>
 #include <unordered_map>
 
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -23,6 +26,25 @@ ExcisionSphere<VolumeDim>::ExcisionSphere(
       abutting_directions_(std::move(abutting_directions)) {
   ASSERT(radius_ > 0.0,
          "The ExcisionSphere must have a radius greater than zero.");
+}
+
+template <size_t VolumeDim>
+std::optional<Direction<VolumeDim>>
+ExcisionSphere<VolumeDim>::abutting_direction(
+    const ElementId<VolumeDim>& element_id) const {
+  const size_t block_id = element_id.block_id();
+  if (abutting_directions_.count(block_id)) {
+    const auto& direction = abutting_directions_.at(block_id);
+    const auto& segment_id = element_id.segment_id(direction.dimension());
+    const size_t abutting_index =
+        direction.side() == Side::Lower
+            ? 0
+            : two_to_the(segment_id.refinement_level()) - 1;
+    if (segment_id.index() == abutting_index) {
+      return direction;
+    }
+  }
+  return std::nullopt;
 }
 
 template <size_t VolumeDim>
