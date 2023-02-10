@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -53,14 +54,32 @@ namespace domain::creators::time_dependence {
  * by the value of `inner_radius`. If the user wants the inner surface of the
  * Shape to conform to a Kerr horizon for a given mass and spin, `inner_radius`
  * should be the Boyer-Lindquist radius of the outer horizon.
+ *
+ * The actual shape map that is applied will go from the Grid to the Distorted
+ * frame, and then an identity map will go from the Distorted to Inertial frame.
+ * The reasoning behind this is because in basically all use cases (BBH), the
+ * shape map will go to the Distorted frame only and other maps will go from the
+ * Distorted frame to the Inertial frame.
  */
 class Shape final : public TimeDependence<3> {
  private:
   using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
+  using Identity = domain::CoordinateMaps::Identity<3>;
+  using GridToInertialMap =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                        tmpl::list<ShapeMap>>;
+  using GridToDistortedMap =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Distorted,
+                                        tmpl::list<ShapeMap>>;
+  using DistortedToInertialMap =
+      detail::generate_coordinate_map_t<Frame::Distorted, Frame::Inertial,
+                                        tmpl::list<Identity>>;
 
  public:
-  using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap>>;
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap, Identity>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Identity>>;
 
   static constexpr size_t mesh_dim = 3;
 
@@ -107,10 +126,6 @@ class Shape final : public TimeDependence<3> {
         "The outer radius of the Shape map."};
   };
 
-  using GridToInertialMap =
-      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
-                                        tmpl::list<ShapeMap>>;
-
   using options = tmpl::list<InitialTime, LMax, Mass, Spin, Center, InnerRadius,
                              OuterRadius>;
 
@@ -138,19 +153,11 @@ class Shape final : public TimeDependence<3> {
 
   auto block_maps_grid_to_distorted(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Grid, Frame::Distorted, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Grid, Frame::Distorted, mesh_dim>>> override;
 
   auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Distorted, Frame::Inertial, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Distorted, Frame::Inertial, mesh_dim>>> override;
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -166,6 +173,9 @@ class Shape final : public TimeDependence<3> {
       ShapeMapTransitionFunctions::ShapeMapTransitionFunction;
 
   GridToInertialMap grid_to_inertial_map() const;
+  GridToDistortedMap grid_to_distorted_map() const;
+  static DistortedToInertialMap distorted_to_inertial_map();
+
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   size_t l_max_{2};
   double mass_{std::numeric_limits<double>::signaling_NaN()};

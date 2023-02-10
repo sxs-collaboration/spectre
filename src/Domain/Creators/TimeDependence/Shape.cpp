@@ -84,6 +84,39 @@ Shape::block_maps_grid_to_inertial(const size_t number_of_blocks) const {
   return result;
 }
 
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+Shape::block_maps_grid_to_distorted(const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0,
+         "Must have at least one block on which to create a map.");
+
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+      result{number_of_blocks};
+  result[0] = std::make_unique<GridToDistortedMap>(grid_to_distorted_map());
+  for (size_t i = 1; i < number_of_blocks; ++i) {
+    result[i] = result[0]->get_clone();
+  }
+  return result;
+}
+
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+Shape::block_maps_distorted_to_inertial(const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0,
+         "Must have at least one block on which to create a map.");
+
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+      result{number_of_blocks};
+  result[0] =
+      std::make_unique<DistortedToInertialMap>(distorted_to_inertial_map());
+  for (size_t i = 1; i < number_of_blocks; ++i) {
+    result[i] = result[0]->get_clone();
+  }
+  return result;
+}
+
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 Shape::functions_of_time(const std::unordered_map<std::string, double>&
@@ -124,6 +157,16 @@ auto Shape::grid_to_inertial_map() const -> GridToInertialMap {
                                     function_of_time_name_}};
 }
 
+auto Shape::grid_to_distorted_map() const -> GridToDistortedMap {
+  return GridToDistortedMap{ShapeMap{center_, l_max_, l_max_,
+                                     transition_func_->get_clone(),
+                                     function_of_time_name_}};
+}
+
+auto Shape::distorted_to_inertial_map() -> DistortedToInertialMap {
+  return DistortedToInertialMap{Identity{}};
+}
+
 bool operator==(const Shape& lhs, const Shape& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and lhs.l_max_ == rhs.l_max_ and
          lhs.mass_ == rhs.mass_ and lhs.spin_ == rhs.spin_ and
@@ -137,7 +180,10 @@ bool operator!=(const Shape& lhs, const Shape& rhs) { return not(lhs == rhs); }
 
 using ShapeMap3d = CoordinateMaps::TimeDependent::Shape;
 
-INSTANTIATE_MAPS_FUNCTIONS(((ShapeMap3d)), (Frame::Grid), (Frame::Inertial),
+INSTANTIATE_MAPS_FUNCTIONS(((ShapeMap3d)), (Frame::Grid),
+                           (Frame::Distorted, Frame::Inertial),
                            (double, DataVector))
+INSTANTIATE_MAPS_FUNCTIONS(((ShapeMap3d)), (Frame::Distorted),
+                           (Frame::Inertial), (double, DataVector))
 
 }  // namespace domain
