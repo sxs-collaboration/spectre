@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_MassFlux.cpp
   Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp
+  Test_StressEnergy.cpp
   Test_Tags.cpp
   Test_TestHelpers.cpp
   )

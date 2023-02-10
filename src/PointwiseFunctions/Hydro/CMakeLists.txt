@@ -13,6 +13,7 @@ spectre_target_sources(
   MassFlux.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
+  StressEnergy.cpp
   )
 
 spectre_target_headers(
@@ -24,6 +25,7 @@ spectre_target_headers(
   MassFlux.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
+  StressEnergy.hpp
   Tags.hpp
   TagsDeclarations.hpp
   Units.hpp
