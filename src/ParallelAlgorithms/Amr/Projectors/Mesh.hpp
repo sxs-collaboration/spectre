@@ -18,7 +18,7 @@ namespace amr::projectors {
 /// Given `old_mesh` returns a new Mesh based on the refinement `flags`
 template <size_t Dim>
 Mesh<Dim> mesh(const Mesh<Dim>& old_mesh,
-               const std::array<amr::domain::Flag, Dim>& flags);
+               const std::array<amr::Flag, Dim>& flags);
 
 /// Given the Mesh%es for a set of joining Element%s, returns the Mesh
 /// for the newly created parent Element.

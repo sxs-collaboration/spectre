@@ -20,7 +20,7 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace amr::domain {
+namespace amr {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
     const ElementId<VolumeDim>& id, const std::array<Flag, VolumeDim>& flags) {
@@ -95,7 +95,7 @@ ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> ids_of_children(
     const ElementId<VolumeDim>& element_id,
-    const std::array<amr::domain::Flag, VolumeDim>& flags) {
+    const std::array<amr::Flag, VolumeDim>& flags) {
   using ::operator<<;
   ASSERT(alg::count(flags, Flag::Split) > 0,
          "Element " << element_id << " has no children given flags " << flags);
@@ -187,12 +187,11 @@ template <size_t VolumeDim>
 bool prevent_element_from_joining_while_splitting(
     const gsl::not_null<std::array<Flag, VolumeDim>*> flags) {
   bool flags_changed = false;
-  if (alg::any_of(*flags, [](amr::domain::Flag flag) {
-        return flag == amr::domain::Flag::Split;
-      })) {
+  if (alg::any_of(*flags,
+                  [](amr::Flag flag) { return flag == amr::Flag::Split; })) {
     for (size_t d = 0; d < VolumeDim; ++d) {
-      if (gsl::at(*flags, d) == amr::domain::Flag::Join) {
-        gsl::at(*flags, d) = amr::domain::Flag::DoNothing;
+      if (gsl::at(*flags, d) == amr::Flag::Join) {
+        gsl::at(*flags, d) = amr::Flag::DoNothing;
         flags_changed = true;
       }
     }
@@ -215,10 +214,10 @@ bool prevent_element_from_joining_while_splitting(
                                       const Direction<DIM(data)>& direction);  \
   template ElementId<DIM(data)> id_of_parent(                                  \
       const ElementId<DIM(data)>& element_id,                                  \
-      const std::array<amr::domain::Flag, DIM(data)>& flags);                  \
+      const std::array<amr::Flag, DIM(data)>& flags);                          \
   template std::vector<ElementId<DIM(data)>> ids_of_children(                  \
       const ElementId<DIM(data)>& element_id,                                  \
-      const std::array<amr::domain::Flag, DIM(data)>& flags);                  \
+      const std::array<amr::Flag, DIM(data)>& flags);                          \
   template std::deque<ElementId<DIM(data)>> ids_of_joining_neighbors(          \
       const Element<DIM(data)>& element,                                       \
       const std::array<Flag, DIM(data)>& flags);                               \
@@ -232,4 +231,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-}  // namespace amr::domain
+}  // namespace amr

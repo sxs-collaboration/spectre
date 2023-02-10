@@ -27,8 +27,8 @@ namespace amr::Initialization {
  *
  * DataBox:
  * - Adds:
- *   - `amr::domain::Tags::Flags<Dim>`
- *   - `amr::domain::Tags::NeighborFlags<Dim>`
+ *   - `amr::Tags::Flags<Dim>`
+ *   - `amr::Tags::NeighborFlags<Dim>`
  * - Removes: nothing
  * - Modifies: nothing
  *
@@ -36,15 +36,14 @@ namespace amr::Initialization {
 template <size_t Dim>
 struct Initialize {
   using return_tags =
-    tmpl::list<amr::domain::Tags::Flags<Dim>,
-               amr::domain::Tags::NeighborFlags<Dim>>;
+      tmpl::list<amr::Tags::Flags<Dim>, amr::Tags::NeighborFlags<Dim>>;
   using argument_tags = tmpl::list<>;
 
   static void apply(
-      const gsl::not_null<std::array<amr::domain::Flag, Dim>*> amr_flags,
-      const gsl::not_null<std::unordered_map<ElementId<Dim>,
-          std::array<amr::domain::Flag, Dim>>*> /*neighbor_flags*/) {
-    *amr_flags = make_array<Dim>(amr::domain::Flag::Undefined);
+      const gsl::not_null<std::array<amr::Flag, Dim>*> amr_flags,
+      const gsl::not_null<std::unordered_map<
+          ElementId<Dim>, std::array<amr::Flag, Dim>>*> /*neighbor_flags*/) {
+    *amr_flags = make_array<Dim>(amr::Flag::Undefined);
     // default initialization of NeighborFlags is okay
   }
 };

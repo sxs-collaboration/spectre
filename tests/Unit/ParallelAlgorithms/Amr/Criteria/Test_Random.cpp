@@ -45,23 +45,20 @@ void test_criterion(const amr::Criterion& criterion) {
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK((flags[d] == amr::domain::Flag::Split or
-           flags[d] == amr::domain::Flag::DoNothing));
+    CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::DoNothing));
   }
   for (size_t level = 1; level < 5; ++level) {
     ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 1))};
     flags = criterion.evaluate(empty_box, empty_cache, id);
     for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK((flags[d] == amr::domain::Flag::Split or
-             flags[d] == amr::domain::Flag::DoNothing or
-             flags[d] == amr::domain::Flag::Join));
+      CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::DoNothing or
+             flags[d] == amr::Flag::Join));
     }
   }
   ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(5, 1))};
   flags = criterion.evaluate(empty_box, empty_cache, id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK((flags[d] == amr::domain::Flag::Join or
-           flags[d] == amr::domain::Flag::DoNothing));
+    CHECK((flags[d] == amr::Flag::Join or flags[d] == amr::Flag::DoNothing));
   }
 }
 
@@ -74,20 +71,19 @@ void test_always_change_refinement() {
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(flags[d] == amr::domain::Flag::Split);
+    CHECK(flags[d] == amr::Flag::Split);
   }
   for (size_t level = 1; level < 5; ++level) {
     ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 1))};
     flags = criterion.evaluate(empty_box, empty_cache, id);
     for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK((flags[d] == amr::domain::Flag::Split or
-             flags[d] == amr::domain::Flag::Join));
+      CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::Join));
     }
   }
   ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(5, 1))};
   flags = criterion.evaluate(empty_box, empty_cache, id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(flags[d] == amr::domain::Flag::Join);
+    CHECK(flags[d] == amr::Flag::Join);
   }
 }
 
@@ -102,7 +98,7 @@ void test_always_do_nothing() {
     ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 0))};
     auto flags = criterion.evaluate(empty_box, empty_cache, id);
     for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK(flags[d] == amr::domain::Flag::DoNothing);
+      CHECK(flags[d] == amr::Flag::DoNothing);
     }
   }
 }

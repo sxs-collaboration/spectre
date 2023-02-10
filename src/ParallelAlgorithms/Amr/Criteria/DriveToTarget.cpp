@@ -18,7 +18,7 @@ template <size_t Dim>
 DriveToTarget<Dim>::DriveToTarget(
     const std::array<size_t, Dim>& target_number_of_grid_points,
     const std::array<size_t, Dim>& target_refinement_levels,
-    const std::array<domain::Flag, Dim>& flags_at_target)
+    const std::array<Flag, Dim>& flags_at_target)
     : target_number_of_grid_points_(target_number_of_grid_points),
       target_refinement_levels_(target_refinement_levels),
       flags_at_target_(flags_at_target) {}
@@ -36,25 +36,25 @@ void DriveToTarget<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-std::array<domain::Flag, Dim> DriveToTarget<Dim>::impl(
+std::array<Flag, Dim> DriveToTarget<Dim>::impl(
     const Mesh<Dim>& current_mesh, const ElementId<Dim>& element_id) const {
-  auto result = make_array<Dim>(domain::Flag::DoNothing);
+  auto result = make_array<Dim>(Flag::DoNothing);
   const std::array<size_t, Dim> levels = element_id.refinement_levels();
   bool is_at_target = true;
   for (size_t d = 0; d < Dim; ++d) {
     if (gsl::at(levels, d) < gsl::at(target_refinement_levels_, d)) {
-      gsl::at(result, d) = domain::Flag::Split;
+      gsl::at(result, d) = Flag::Split;
       is_at_target = false;
     } else if (current_mesh.extents(d) <
                gsl::at(target_number_of_grid_points_, d)) {
-      gsl::at(result, d) = domain::Flag::IncreaseResolution;
+      gsl::at(result, d) = Flag::IncreaseResolution;
       is_at_target = false;
     } else if (current_mesh.extents(d) >
                gsl::at(target_number_of_grid_points_, d)) {
-      gsl::at(result, d) = domain::Flag::DecreaseResolution;
+      gsl::at(result, d) = Flag::DecreaseResolution;
       is_at_target = false;
     } else if (gsl::at(levels, d) > gsl::at(target_refinement_levels_, d)) {
-      gsl::at(result, d) = domain::Flag::Join;
+      gsl::at(result, d) = Flag::Join;
       is_at_target = false;
     }
   }

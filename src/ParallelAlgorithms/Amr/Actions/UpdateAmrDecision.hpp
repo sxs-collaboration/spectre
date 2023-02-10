@@ -33,32 +33,32 @@ namespace amr::Actions {
 /// - Uses:
 ///   * domain::Tags::Element<volume_dim>
 /// - Modifies:
-///   * amr::domain::Tags::NeighborFlags
-///   * amr::domain::Tags::Flags (if AMR decision is updated)
+///   * amr::Tags::NeighborFlags
+///   * amr::Tags::Flags (if AMR decision is updated)
 ///
 /// Invokes:
 /// - amr::Actions::UpdateAmrDecision on all neighboring Element%s (if AMR
 ///   decision is updated)
 ///
-/// \details This Element calls amr::domain::update_amr_decision to see if its
+/// \details This Element calls amr::update_amr_decision to see if its
 /// AMR decision needs to be updated.  If it does, the Element will call
 /// amr::Actions::UpdateAmrDecision on its neighbors.
 ///
 struct UpdateAmrDecision {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables>
-  static void apply(
-      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Metavariables::volume_dim>& /*element_id*/,
-      const ElementId<Metavariables::volume_dim>& neighbor_id,
-      const std::array<amr::domain::Flag, Metavariables::volume_dim>&
-          neighbor_amr_flags) {
+  static void apply(db::DataBox<DbTagList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ElementId<Metavariables::volume_dim>& /*element_id*/,
+                    const ElementId<Metavariables::volume_dim>& neighbor_id,
+                    const std::array<amr::Flag, Metavariables::volume_dim>&
+                        neighbor_amr_flags) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     auto& my_amr_flags =
-        db::get_mutable_reference<amr::domain::Tags::Flags<volume_dim>>(
+        db::get_mutable_reference<amr::Tags::Flags<volume_dim>>(
             make_not_null(&box));
     auto& my_neighbors_amr_flags =
-        db::get_mutable_reference<amr::domain::Tags::NeighborFlags<volume_dim>>(
+        db::get_mutable_reference<amr::Tags::NeighborFlags<volume_dim>>(
             make_not_null(&box));
 
     // Actions can be executed in any order.  Therefore we need to check:
@@ -81,16 +81,16 @@ struct UpdateAmrDecision {
 
     // Actions can be executed in any order.  Therefore we need to check:
     // - If we have evaluated our own AMR decision.  If not, return.
-    if (amr::domain::Flag::Undefined == my_amr_flags[0]) {
-      ASSERT(
-          volume_dim == alg::count(my_amr_flags, amr::domain::Flag::Undefined),
-          "Flags should be all Undefined, not " << my_amr_flags);
+    if (amr::Flag::Undefined == my_amr_flags[0]) {
+      using ::operator<<;
+      ASSERT(volume_dim == alg::count(my_amr_flags, amr::Flag::Undefined),
+             "Flags should be all Undefined, not " << my_amr_flags);
       return;
     }
 
     const auto& element = get<::domain::Tags::Element<volume_dim>>(box);
 
-    const bool my_amr_decision_changed = amr::domain::update_amr_decision(
+    const bool my_amr_decision_changed = amr::update_amr_decision(
         make_not_null(&my_amr_flags), element, neighbor_id, neighbor_amr_flags);
 
     if (my_amr_decision_changed) {

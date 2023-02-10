@@ -16,7 +16,7 @@ struct create_from_yaml;
 }  // namespace Options
 /// \endcond
 
-namespace amr::domain {
+namespace amr {
 
 /// \ingroup AmrGroup
 /// \brief Flags that represent decisions about mesh refinement
@@ -34,16 +34,16 @@ enum class Flag {
 
 /// Output operator for a Flag.
 std::ostream& operator<<(std::ostream& os, const Flag& flag);
-}  // namespace amr::domain
+}  // namespace amr
 
 template <>
-struct Options::create_from_yaml<amr::domain::Flag> {
+struct Options::create_from_yaml<amr::Flag> {
   template <typename Metavariables>
-  static amr::domain::Flag create(const Options::Option& options) {
+  static amr::Flag create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 
 template <>
-amr::domain::Flag Options::create_from_yaml<amr::domain::Flag>::create<void>(
+amr::Flag Options::create_from_yaml<amr::Flag>::create<void>(
     const Options::Option& options);

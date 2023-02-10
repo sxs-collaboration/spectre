@@ -22,8 +22,7 @@ void Random::pup(PUP::er& p) {
   p | maximum_refinement_level_;
 }
 
-amr::domain::Flag Random::random_flag(
-    const size_t current_refinement_level) const {
+amr::Flag Random::random_flag(const size_t current_refinement_level) const {
   static std::random_device r;
   static const auto seed = r();
   static std::mt19937 generator(seed);
@@ -31,14 +30,14 @@ amr::domain::Flag Random::random_flag(
 
   const double random_number = distribution(generator);
   if (random_number > do_something_fraction_) {
-    return amr::domain::Flag::DoNothing;
+    return amr::Flag::DoNothing;
   }
   const double join_fraction =
       current_refinement_level / static_cast<double>(maximum_refinement_level_);
   if (random_number < join_fraction * do_something_fraction_) {
-    return amr::domain::Flag::Join;
+    return amr::Flag::Join;
   }
-  return amr::domain::Flag::Split;
+  return amr::Flag::Split;
 }
 
 PUP::able::PUP_ID Random::my_PUP_ID = 0;  // NOLINT

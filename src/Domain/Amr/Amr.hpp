@@ -5,7 +5,4 @@
 
 /// \ingroup AmrGroup
 /// \brief Items for adaptive mesh refinement
-namespace amr {
-/// \brief Domain-dependent items for adaptive mesh refinement
-namespace domain {}  // namespace domain
-}  // namespace amr
+namespace amr {}  // namespace amr
