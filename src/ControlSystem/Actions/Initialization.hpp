@@ -19,6 +19,21 @@
 
 namespace control_system {
 namespace Actions {
+namespace detail {
+template <typename Objects>
+struct get_center_tags;
+
+template <domain::ObjectLabel... Object>
+struct get_center_tags<domain::object_list<Object...>> {
+  using type = tmpl::list<domain::Tags::ExcisionCenter<Object>...>;
+};
+
+template <>
+struct get_center_tags<domain::object_list<>> {
+  using type = tmpl::list<>;
+};
+}  // namespace detail
+
 /*!
  * \ingroup ControlSystemGroup
  * \ingroup InitializationGroup
@@ -60,10 +75,10 @@ struct Initialize {
       tmpl::push_back<typename ControlSystem::simple_tags,
                       control_system::Tags::CurrentNumberOfMeasurements>;
 
-  using const_global_cache_tags =
-      tmpl::list<control_system::Tags::MeasurementsPerUpdate,
-                 domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
-                 domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
+  using const_global_cache_tags = tmpl::flatten<tmpl::list<
+      control_system::Tags::MeasurementsPerUpdate,
+      typename detail::get_center_tags<
+          typename ControlSystem::control_error::object_centers>::type>>;
 
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
