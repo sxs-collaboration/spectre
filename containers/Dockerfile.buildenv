@@ -246,8 +246,8 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
-# - Set CHARM_ROOT so it's easy to find the Charm++ directory. Just use GCC
-#   since clang is GCC-compatible
+# - Set CHARM_ROOT so it's easy to find the Charm++ directory. Just use the
+#   multicore build.
 # - Symlink gfortran-9 to gfortran so it we can just specify gfortran in CMake
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
@@ -319,10 +319,17 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2
     && make install \
     && cd .. && rm -rf cmake*
 
-# We build both Clang and GCC versions of Charm++ so that all our tests can
-# use the same build environment.
+# Install OpenMPI 4.0.3
+RUN apt-get install -y openmpi-bin
+
+# We build an mpi version of charm (with clang) because many of our production
+# environments have charm built with mpi and we should test that.
 WORKDIR /work/charm_7_0_0
-RUN ./build LIBS multicore-linux-x86_64 clang \
+# This env variable was found to be necessary when building charm with OpenMPI
+# 4.0.3 which ships with Ubuntu 20.04. For more details see this issue:
+# https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
+ENV LDFLAGS="-lopen-pal"
+RUN ./build LIBS mpi-linux-x86_64-smp clang \
       ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
     && rm -rf /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 
