@@ -148,6 +148,20 @@ Shape::functions_of_time(const std::unordered_map<std::string, double>&
           std::array<DataVector, 4>{
               {radial_distortion_coefs, zeros, zeros, zeros}},
           expiration_time);
+  // This adds a size function of time that is the l=0 component of the radial
+  // distortion coefficients. We do this so that this time dependence can be
+  // used with the Shape control system. The control error for the shape control
+  // system requires there to be two functions of time in the cache: one for
+  // shape and one for size. This size function of time isn't controlling any
+  // maps so it never expires and is constant the entire time. If we want this
+  // time dependence to work with size control as well, we'll have to add in the
+  // size map as well.
+  const DataVector zeros_size{1, 0.0};
+  result["Size"] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+      initial_time_,
+      std::array<DataVector, 4>{
+          {{radial_distortion_coefs[0]}, zeros_size, zeros_size, zeros_size}},
+      std::numeric_limits<double>::infinity());
   return result;
 }
 

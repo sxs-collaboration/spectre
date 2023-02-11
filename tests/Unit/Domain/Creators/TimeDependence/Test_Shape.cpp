@@ -309,8 +309,9 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
   // Test functions of time without expiration times
   {
     const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
-    REQUIRE(functions_of_time.size() == 1);
+    REQUIRE(functions_of_time.size() == 2);
     CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.count("Size") == 1);
     CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
           std::numeric_limits<double>::infinity());
   }
@@ -321,8 +322,9 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
     init_expr_times[f_of_t_name] = init_expr_time;
     const auto functions_of_time =
         time_dep_unique_ptr->functions_of_time(init_expr_times);
-    REQUIRE(functions_of_time.size() == 1);
+    REQUIRE(functions_of_time.size() == 2);
     CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.count("Size") == 1);
     CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
           init_expr_time);
   }
