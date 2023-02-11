@@ -30,6 +30,7 @@ class MagnetizedFmDisk;
 class MagnetizedTovStar;
 class OrszagTangVortex;
 class RiemannProblem;
+class SlabJet;
 }  // namespace AnalyticData
 }  // namespace grmhd
 

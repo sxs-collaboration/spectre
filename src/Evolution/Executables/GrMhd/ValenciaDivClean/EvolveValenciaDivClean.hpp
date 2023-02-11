@@ -141,6 +141,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/OrszagTangVortex.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/RiemannProblem.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/SlabJet.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/AlfvenWave.hpp"

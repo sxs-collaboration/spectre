@@ -18,6 +18,7 @@ spectre_target_sources(
   MagnetizedTovStar.cpp
   OrszagTangVortex.cpp
   RiemannProblem.cpp
+  SlabJet.cpp
   )
 
 spectre_target_headers(
@@ -35,6 +36,7 @@ spectre_target_headers(
   MagnetizedTovStar.hpp
   OrszagTangVortex.hpp
   RiemannProblem.hpp
+  SlabJet.hpp
   )
 
 target_link_libraries(
