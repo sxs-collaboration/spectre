@@ -69,8 +69,11 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     const auto compact_index = iter.compact_index(i);
     if (compact_index.has_value()) {
       iter.set(compact_index.value());
-      return {"(l,m)=("s + get_output(iter.l()) + ","s + get_output(iter.m()) +
-              ")"s};
+      const int m =
+          iter.coefficient_array() == SpherepackIterator::CoefficientArray::a
+              ? static_cast<int>(iter.m())
+              : -static_cast<int>(iter.m());
+      return {"l"s + get_output(iter.l()) + "m"s + get_output(m)};
     } else {
       return std::nullopt;
     }

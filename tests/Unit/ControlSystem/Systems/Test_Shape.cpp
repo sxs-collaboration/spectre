@@ -460,7 +460,7 @@ void test_names() {
 
   CHECK(pretty_type::name<shape>() == "ShapeA");
 
-  const size_t l_max = 4;
+  const size_t l_max = 3;
   SpherepackIterator iter(l_max, l_max);
   const size_t size = iter.spherepack_array_size();
 
@@ -468,10 +468,23 @@ void test_names() {
   for (iter.reset(); iter; ++iter) {
     const auto component_name = shape::component_name(iter(), size);
     CHECK(component_name.has_value());
+    const int m = iter() < size / 2 ? static_cast<int>(iter.m())
+                                    : -static_cast<int>(iter.m());
     const std::string check_name =
-        "(l,m)=("s + get_output(iter.l()) + ","s + get_output(iter.m()) + ")"s;
+        "l"s + get_output(iter.l()) + "m"s + get_output(m);
     CHECK(*component_name == check_name);
   }
+
+  // We hard code the names for this specific ell so we know they are right. The
+  // (--) are just place holders for spherepack components that don't correspond
+  // to an l,m. They won't be checked (if everything is working properly)
+  const std::vector<std::string> expected_names{
+      "l0m0", "(--)",  "(--)",  "(--)", "l1m0", "l1m1",  "(--)",  "(--)",
+      "l2m0", "l2m1",  "l2m2",  "(--)", "l3m0", "l3m1",  "l3m2",  "l3m3",
+      "(--)", "(--)",  "(--)",  "(--)", "(--)", "l1m-1", "(--)",  "(--)",
+      "(--)", "l2m-1", "l2m-2", "(--)", "(--)", "l3m-1", "l3m-2", "l3m-3"};
+
+  CHECK(size == expected_names.size());
 
   // Check all indices
   iter.reset();
@@ -481,8 +494,7 @@ void test_names() {
     CHECK(compact_index.has_value() == component_name.has_value());
     if (component_name.has_value()) {
       CHECK(*compact_index == iter.current_compact_index());
-      const std::string check_name = "(l,m)=("s + get_output(iter.l()) + ","s +
-                                     get_output(iter.m()) + ")"s;
+      const std::string& check_name = expected_names[i];
       CHECK(*component_name == check_name);
       ++iter;
     }
