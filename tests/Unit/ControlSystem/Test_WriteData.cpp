@@ -112,12 +112,13 @@ template <typename ControlSystem, typename Metavariables>
 void check_written_data(
     const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
     const std::vector<double>& times, FoTPtr& fot,
-    const std::vector<std::array<DataVector, 2>>& q_and_derivs) {
+    const std::vector<std::array<DataVector, 2>>& q_and_derivs,
+    const std::vector<DataVector>& timescales) {
   std::array<DataVector, 3> func_and_2_derivs{};
   // This has to be the same as in control_system::write_components_to_disk
   const std::vector<std::string> compare_legend{
-      "Time",         "Lambda",         "dtLambda",     "d2tLambda",
-      "ControlError", "dtControlError", "ControlSignal"};
+      "Time",         "Lambda",         "dtLambda",        "d2tLambda",
+      "ControlError", "dtControlError", "DampingTimescale"};
 
   auto& read_file = ActionTesting::get_databox_tag<
       ::TestHelpers::observers::MockObserverWriter<Metavariables>,
@@ -173,6 +174,9 @@ void check_written_data(
               q_and_derivs[time_num][deriv_num][component_num]);
         ++offset;
       }
+
+      // check timescales are correct
+      CHECK(data(time_num, offset) == timescales[time_num][component_num]);
     }
   }
 }
@@ -233,10 +237,20 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
   const std::vector<double> times{0.0, 0.1, 0.2, 0.3, 0.4, 0.5};
   std::vector<std::array<DataVector, 2>> normal_q_and_derivs{times.size()};
   std::vector<std::array<DataVector, 2>> quat_q_and_derivs{times.size()};
+  std::vector<DataVector> normal_timescales{times.size(),
+                                            DataVector{total_components}};
+  std::vector<DataVector> quat_timescales{times.size(),
+                                          DataVector{total_components}};
 
   // write some data
   for (size_t i = 0; i < times.size(); i++) {
     const double time = times[i];
+    // Doesn't really matter if the timescales are negative. This is just
+    // testing printing
+    fill_with_random_values(make_not_null(&normal_timescales[i]),
+                            make_not_null(&gen), make_not_null(&dist));
+    fill_with_random_values(make_not_null(&quat_timescales[i]),
+                            make_not_null(&gen), make_not_null(&dist));
     for (size_t j = 0; j < 2; j++) {
       gsl::at(normal_q_and_derivs[i], j) = make_with_random_values<DataVector>(
           make_not_null(&gen), dist, DataVector{total_components, 0.0});
@@ -244,10 +258,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
           make_not_null(&gen), dist, DataVector{total_components, 0.0});
     }
 
-    write_components_to_disk<FakeControlSystem>(time, cache, normal_fot,
-                                                normal_q_and_derivs[i]);
-    write_components_to_disk<FakeQuatControlSystem>(time, cache, quat_fot,
-                                                    quat_q_and_derivs[i]);
+    write_components_to_disk<FakeControlSystem>(
+        time, cache, normal_fot, normal_q_and_derivs[i], normal_timescales[i]);
+    write_components_to_disk<FakeQuatControlSystem>(
+        time, cache, quat_fot, quat_q_and_derivs[i], quat_timescales[i]);
 
     // 3 for one control system, 2 for the other (because of the nullopt)
     size_t num_threaded_actions =
@@ -265,9 +279,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
   }
 
   check_written_data<FakeControlSystem>(runner, times, normal_fot,
-                                        normal_q_and_derivs);
+                                        normal_q_and_derivs, normal_timescales);
   check_written_data<FakeQuatControlSystem>(runner, times, quat_fot,
-                                            quat_q_and_derivs);
+                                            quat_q_and_derivs, quat_timescales);
 }
 }  // namespace
 }  // namespace control_system
