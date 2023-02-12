@@ -184,6 +184,16 @@ struct PointerToSumCompute : PointerToSum, db::ComputeTag {
   }
   using argument_tags = tmpl::list<PointerToCounter, PointerToCounterBase>;
 };
+
+struct Tag0Ref : db::SimpleTag {
+  using type = double;
+};
+
+struct Tag0Reference : Tag0Ref, db::ReferenceTag {
+  using base = Tag0Ref;
+  using argument_tags = tmpl::list<Tag0>;
+  static const double& get(const double& tag0_value) { return tag0_value; }
+};
 }  // namespace test_databox_tags
 
 void test_databox() {
@@ -2656,7 +2666,8 @@ void test_output() {
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
-                         test_databox_tags::Tag5Compute>>(
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::Tag0Reference>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   std::string output_types = box.print_types();
   std::string expected_types =
@@ -2666,13 +2677,16 @@ void test_output() {
       "namespace)::test_databox_tags::Tag1, (anonymous "
       "namespace)::test_databox_tags::Tag2, (anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using immutable_item_tags "
       "= brigand::list<(anonymous namespace)::test_databox_tags::Tag4Compute, "
-      "(anonymous namespace)::test_databox_tags::Tag5Compute>;\n"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using immutable_item_creation_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using mutable_item_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
       "namespace)::test_databox_tags::Tag1, (anonymous "
@@ -2681,6 +2695,8 @@ void test_output() {
       "using compute_item_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
       "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using reference_item_tags = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using edge_list = "
       "brigand::list<brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
@@ -2691,6 +2707,9 @@ void test_output() {
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
       "namespace)::test_databox_tags::Tag5Compute, "
+      "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
+      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference, "
       "brigand::integral_constant<int, 1> > >;\n";
   CHECK(output_types == expected_types);
 
@@ -2716,7 +2735,11 @@ void test_output() {
       "----------\n"
       "Name:  (anonymous namespace)::test_databox_tags::Tag5Compute\n"
       "Type:  std::string\n"
-      "Value: My Sample String6.28\n";
+      "Value: My Sample String6.28\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0Reference\n"
+      "Type:  double\n"
+      "Value: 3.14\n";
   CHECK(output_items == expected_items);
   std::ostringstream os;
   os << box;

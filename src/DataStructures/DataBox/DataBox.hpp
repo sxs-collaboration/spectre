@@ -214,6 +214,10 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   using compute_item_tags =
       tmpl::filter<immutable_item_tags, db::is_compute_tag<tmpl::_1>>;
 
+  /// A list of all the reference tags
+  using reference_item_tags =
+      tmpl::filter<immutable_item_tags, db::is_reference_tag<tmpl::_1>>;
+
   /// \cond HIDDEN_SYMBOLS
   /*!
    * \note the default constructor is only used for serialization
@@ -390,6 +394,8 @@ std::string DataBox<tmpl::list<Tags...>>::print_types() const {
      << pretty_type::get_name<mutable_subitem_tags>() << ";\n";
   os << "using compute_item_tags = "
      << pretty_type::get_name<compute_item_tags>() << ";\n";
+  os << "using reference_item_tags = "
+     << pretty_type::get_name<reference_item_tags>() << ";\n";
   os << "using edge_list = " << pretty_type::get_name<edge_list>() << ";\n";
   return os.str();
 }
