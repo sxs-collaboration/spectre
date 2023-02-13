@@ -34,10 +34,10 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   GeneralizedHarmonic
+  Hydro
   Utilities
   ValenciaDivClean
   INTERFACE
-  Hydro
   Options
   Parallel
   )

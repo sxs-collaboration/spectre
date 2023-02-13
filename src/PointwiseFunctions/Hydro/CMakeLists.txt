@@ -8,20 +8,24 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ComovingMagneticField.cpp
   LorentzFactor.cpp
   MassFlux.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
+  StressEnergy.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ComovingMagneticField.hpp
   LorentzFactor.hpp
   MassFlux.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
+  StressEnergy.hpp
   Tags.hpp
   TagsDeclarations.hpp
   Units.hpp
