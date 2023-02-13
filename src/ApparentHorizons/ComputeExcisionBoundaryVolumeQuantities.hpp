@@ -88,7 +88,8 @@ struct ComputeExcisionBoundaryVolumeQuantities
       tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial>>;
+                 gr::Tags::Shift<3, Frame::Inertial>,
+                 gr::Tags::Shift<3, Frame::Grid>>;
 
   template <typename TargetFrame>
   using allowed_dest_tags = tmpl::remove_duplicates<
