@@ -16,11 +16,23 @@ set(LIBRARY_SOURCES
   Test_MagnetizedTovStar.cpp
   Test_OrszagTangVortex.cpp
   Test_RiemannProblem.cpp
+  Test_SlabJet.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticData/GrMhd"
   "${LIBRARY_SOURCES}"
-  "GrMhdAnalyticData;Options;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  ErrorHandling
+  GrMhdAnalyticData
+  Hydro
+  Options
+  Utilities
+)

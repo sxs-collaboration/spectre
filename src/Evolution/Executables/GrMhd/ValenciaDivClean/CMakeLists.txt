@@ -140,3 +140,9 @@ add_grmhd_executable(
   RelativisticEuler::Solutions::RotatingStar
   "${LIBS_TO_LINK}"
   )
+
+add_grmhd_executable(
+  SlabJet
+  grmhd::AnalyticData::SlabJet
+  "${LIBS_TO_LINK}"
+  )
