@@ -4,18 +4,27 @@
 #pragma once
 
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <iterator>
 #include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/OptionalHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace fd {
@@ -333,4 +342,119 @@ void cartesian_high_order_fluxes_using_nodes(
   };
 }
 /// @}
+
+/*!
+ * \brief Fill the `flux_neighbor_data` with pointers into the
+ * `reconstruction_neighbor_data`.
+ *
+ * The `reconstruction_neighbor_data` is stored in the tag
+ * `evolution::dg::subcell::Tags::NeighborDataForReconstruction`, and the
+ * `ghost_zone_size` should come from the FD reconstructor.
+ */
+template <size_t Dim, typename FluxesTags>
+void set_cartesian_neighbor_cell_centered_fluxes(
+    const gsl::not_null<DirectionMap<Dim, Variables<FluxesTags>>*>
+        flux_neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        reconstruction_neighbor_data,
+    const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
+    const size_t number_of_rdmp_values_in_ghost_data) {
+  for (const auto& [direction_id, ghost_data] : reconstruction_neighbor_data) {
+    const size_t neighbor_flux_size =
+        subcell_mesh.number_of_grid_points() /
+        subcell_mesh.extents(direction_id.first.dimension()) * ghost_zone_size *
+        Variables<FluxesTags>::number_of_independent_components;
+    (*flux_neighbor_data)[direction_id.first].set_data_ref(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const_cast<double*>(std::next(
+            ghost_data.data(),
+            static_cast<std::ptrdiff_t>(ghost_data.size() -
+                                        number_of_rdmp_values_in_ghost_data -
+                                        neighbor_flux_size))),
+        neighbor_flux_size);
+  }
+}
+
+/*!
+ * \brief Computes the high-order Cartesian flux corrections if necessary.
+ *
+ * The `cell_centered_fluxes` is stored in the tag
+ * `evolution::dg::subcell::Tags::CellCenteredFlux`, `fd_derivative_order` is
+ * from `evolution::dg::subcell::Tags::SubcellOptions`
+ * (`.finite_difference_derivative_order()`), the `reconstruction_neighbor_data`
+ * is stored in the tag
+ * `evolution::dg::subcell::Tags::NeighborDataForReconstruction`, the
+ * `ghost_zone_size` should come from the FD reconstructor.
+ *
+ * By default we assume no RDMP data is in the `ghost_data` buffer. In the
+ * future we will want to update how we store the data in order to eliminate
+ * more memory allocations and copies, in which case that value will be
+ * non-zero.
+ *
+ * \note `high_order_corrections` must either not have a value or have all
+ * elements be of the same size as
+ * `second_order_boundary_corrections[0].number_of_grid_points()`, where we've
+ * assumed `second_order_boundary_corrections` is the same in all directions.
+ */
+template <size_t Dim, typename... EvolvedVarsTags,
+          typename FluxesTags = tmpl::list<::Tags::Flux<
+              EvolvedVarsTags, tmpl::size_t<Dim>, Frame::Inertial>...>>
+void cartesian_high_order_flux_corrections(
+    const gsl::not_null<std::optional<
+        std::array<Variables<tmpl::list<EvolvedVarsTags...>>, Dim>>*>
+        high_order_corrections,
+
+    const std::optional<Variables<FluxesTags>>& cell_centered_fluxes,
+    const std::array<Variables<tmpl::list<EvolvedVarsTags...>>, Dim>&
+        second_order_boundary_corrections,
+    const std::optional<size_t>& fd_derivative_order,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        reconstruction_neighbor_data,
+    const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
+    const size_t number_of_rdmp_values_in_ghost_data = 0) {
+  if (cell_centered_fluxes.has_value()) {
+    ASSERT(fd_derivative_order.has_value(),
+           "No finite difference order is set but we are trying to do "
+           "high-order FD.");
+    ASSERT(alg::all_of(
+               second_order_boundary_corrections,
+               [expected_size = second_order_boundary_corrections[0]
+                                    .number_of_grid_points()](const auto& e) {
+                 return e.number_of_grid_points() == expected_size;
+               }),
+           "All second-order boundary corrections must be of the same size, "
+               << second_order_boundary_corrections[0].number_of_grid_points());
+    if (fd_derivative_order.value_or(2) > 2) {
+      if (not high_order_corrections->has_value()) {
+        (*high_order_corrections) =
+            make_array<Dim>(Variables<tmpl::list<EvolvedVarsTags...>>{
+                second_order_boundary_corrections[0].number_of_grid_points()});
+      }
+      ASSERT(
+          high_order_corrections->has_value() and
+              alg::all_of(high_order_corrections->value(),
+                          [expected_size =
+                               second_order_boundary_corrections[0]
+                                   .number_of_grid_points()](const auto& e) {
+                            return e.number_of_grid_points() == expected_size;
+                          }),
+          "The high_order_corrections must all have size "
+              << second_order_boundary_corrections[0].number_of_grid_points());
+      DirectionMap<Dim, Variables<FluxesTags>> flux_neighbor_data{};
+      set_cartesian_neighbor_cell_centered_fluxes(
+          make_not_null(&flux_neighbor_data), reconstruction_neighbor_data,
+          subcell_mesh, ghost_zone_size, number_of_rdmp_values_in_ghost_data);
+
+      cartesian_high_order_fluxes_using_nodes(
+          make_not_null(&(high_order_corrections->value())),
+          second_order_boundary_corrections, cell_centered_fluxes.value(),
+          flux_neighbor_data, subcell_mesh, ghost_zone_size,
+          fd_derivative_order.value());
+    }
+  }
+}
 }  // namespace fd
