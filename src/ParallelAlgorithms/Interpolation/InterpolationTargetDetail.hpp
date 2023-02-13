@@ -71,9 +71,6 @@ namespace InterpolationTarget_detail {
 double get_temporal_id_value(double time);
 double get_temporal_id_value(const LinkedMessageId<double>& id);
 double get_temporal_id_value(const TimeStepId& time_id);
-double evaluate_temporal_id_for_expiration(double time);
-double evaluate_temporal_id_for_expiration(const LinkedMessageId<double>& id);
-double evaluate_temporal_id_for_expiration(const TimeStepId& time_id);
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
@@ -491,8 +488,7 @@ auto block_logical_coords(
       const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
       return ::block_logical_coordinates(
           domain, coords,
-          InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-              temporal_id),
+          InterpolationTarget_detail::get_temporal_id_value(temporal_id),
           functions_of_time);
     } else {
       // We error here because the maps are time-dependent, yet
@@ -657,8 +653,7 @@ void compute_dest_vars_from_source_vars(
         element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
     const auto logical_coords = logical_coordinates(mesh);
     const auto time =
-        InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-            temporal_id);
+        InterpolationTarget_detail::get_temporal_id_value(temporal_id);
     const auto jac_logical_to_grid =
         map_logical_to_grid.jacobian(logical_coords);
     const auto invjac_logical_to_grid =
@@ -688,8 +683,7 @@ void compute_dest_vars_from_source_vars(
         block.moving_mesh_grid_to_distorted_map().get_clone()};
     const auto logical_coords = logical_coordinates(mesh);
     const auto time =
-        InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-            temporal_id);
+        InterpolationTarget_detail::get_temporal_id_value(temporal_id);
     const auto [inertial_coords, invjac_distorted_to_inertial,
                 jac_distorted_to_inertial,
                 distorted_to_inertial_mesh_velocity] =
