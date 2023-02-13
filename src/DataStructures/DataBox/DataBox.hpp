@@ -904,13 +904,6 @@ SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
 
 /*!
  * \ingroup DataBoxGroup
- * \brief List of Tags to remove from the DataBox
- */
-template <typename... Tags>
-using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
-
-/*!
- * \ingroup DataBoxGroup
  * \brief List of Tags to add to the DataBox
  */
 template <typename... Tags>
