@@ -9,10 +9,12 @@
 #include <cstddef>
 #include <iosfwd>
 #include <limits>
+#include <optional>
 #include <unordered_map>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
 
 /// \cond
 namespace PUP {
@@ -65,6 +67,10 @@ class ExcisionSphere {
       const {
     return abutting_directions_;
   }
+  /// Checks whether an element abuts the excision sphere. If it does, returns
+  /// the corresponding direction. Else, `nullopt` is returned.
+  std::optional<Direction<VolumeDim>> abutting_direction(
+      const ElementId<VolumeDim>& element_id) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
