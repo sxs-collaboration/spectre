@@ -23,9 +23,9 @@ namespace amr::Criteria {
  * `MaximumRefinementLevel`, and \f$L_d\f$ be the current refinement level
  * of an Element in a particular dimension.  In each dimension, a random
  * number \f$r_d \in [0, 1]\f$ is generated.  If \f$r_d > f\f$ the refinement
- * flag is set to amr::Domain::Flags::DoNothing.  If \f$r_d < f L_d / L_{max}\f$
- * the refinement flag is set to amr::Domain::Flags::Join.  Otherwise the
- * refinement flag is set to amr::Domain::Flag::Split.
+ * flag is set to amr::Flags::DoNothing.  If \f$r_d < f L_d / L_{max}\f$
+ * the refinement flag is set to amr::Flags::Join.  Otherwise the
+ * refinement flag is set to amr::Flag::Split.
  *
  * \note This criterion is primarily useful for testing the mechanics of
  * h-refinement
