@@ -18,4 +18,8 @@ enum class ObjectLabel {
 std::string name(const ObjectLabel x);
 
 std::ostream& operator<<(std::ostream& s, const ObjectLabel x);
+
+/// \brief Similar to a `tmpl::list` but for `ObjectLabel`s.
+template <ObjectLabel... Objects>
+struct object_list {};
 }  // namespace domain
