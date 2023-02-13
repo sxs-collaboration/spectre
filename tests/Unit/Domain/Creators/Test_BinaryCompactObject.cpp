@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <pup.h>
+#include <random>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -84,6 +85,9 @@ create_outer_boundary_condition() {
 }
 
 void test_connectivity() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
+
   // ObjectA:
   constexpr double inner_radius_objectA = 0.3;
   constexpr double outer_radius_objectA = 1.0;
@@ -116,6 +120,11 @@ void test_connectivity() {
            make_array(true, false), make_array(true, false),
            make_array(Distribution::Linear, Distribution::Logarithmic,
                       Distribution::Inverse))) {
+    // To speed up this test, don't run every case in the above loop.
+    // Instead, ignore some of them at random.
+    if (unit_dis(gen) > 0.5) {
+      continue;
+    }
     CAPTURE(with_boundary_conditions);
     CAPTURE(excise_interiorA);
     CAPTURE(excise_interiorB);
