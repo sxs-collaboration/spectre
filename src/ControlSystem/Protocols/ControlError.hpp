@@ -24,6 +24,11 @@ namespace control_system::protocols {
 ///   the example shown here:
 /// - a `static constexpr size_t expected_number_of_excisions` which specifies
 ///   the number of excisions necessary in order to compute the control error.
+/// - a type alias `object_centers` to a `domain::object_list` of
+///   `domain::ObjectLabel`s. These are the objects that will require the
+///   `domain::Tags::ObjectCenter`s tags to be in the GlobalCache for this
+///   control system to work.
+///
 ///
 ///   \snippet Helpers/ControlSystem/Examples.hpp ControlError
 struct ControlError {
@@ -34,6 +39,8 @@ struct ControlError {
 
     static constexpr size_t expected_number_of_excisions =
         ConformingType::expected_number_of_excisions;
+
+    using object_centers = typename ConformingType::object_centers;
 
     static_assert(
         std::is_same_v<

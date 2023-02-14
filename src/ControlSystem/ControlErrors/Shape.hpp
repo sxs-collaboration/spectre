@@ -90,6 +90,9 @@ template <::domain::ObjectLabel Horizon>
 struct Shape : tt::ConformsTo<protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = 1;
 
+  // Shape doesn't need the center tags
+  using object_centers = domain::object_list<>;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for shape control. This should not take any "
