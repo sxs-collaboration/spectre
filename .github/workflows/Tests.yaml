@@ -407,6 +407,13 @@ jobs:
         # We hash the content of the compiler rather than the location and mtime
         # to make sure the cache works across the different machines
         CCACHE_COMPILERCHECK: content
+        # These vars are to allow running charm with MPI as root inside the
+        # container which arises from using the "--privileged" flag just below.
+        OMPI_ALLOW_RUN_AS_ROOT: 1
+        OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+      # See https://lists.cs.illinois.edu/lists/arc/charm/2018-10/msg00011.html
+      # for why we need this
+      options: --privileged
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3.0.1
