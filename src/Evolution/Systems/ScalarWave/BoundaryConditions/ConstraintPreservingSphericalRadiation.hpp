@@ -98,9 +98,7 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
  *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i
  *                  =\partial_t\Pi^{\mathrm{BC}}
  *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i, \\
- * \partial_{t}\Phi_i&\to\partial_{t}\Phi_i+
- *                     \lambda_0n^jP^k{}_i\mathcal{C}_{jk}
- *   = \partial_{t}\Phi_i+ \lambda_0n^j \mathcal{C}_{ji}.
+ * \partial_{t}\Phi_i&\to\partial_{t}\Phi_i+ 2 \lambda_0n^j \mathcal{C}_{ji}.
  * \f}
  *
  * Below we assume the normal vector \f$n^i\f$ is the radial unit normal vector.
