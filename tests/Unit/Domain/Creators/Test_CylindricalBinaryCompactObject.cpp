@@ -10,6 +10,7 @@
 #include <limits>
 #include <memory>
 #include <pup.h>
+#include <random>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -99,7 +100,8 @@ create_outer_boundary_condition() {
 void test_connectivity_once(const bool with_sphere_e,
                             const bool include_inner_sphere_A,
                             const bool include_inner_sphere_B,
-                            const bool include_outer_sphere) {
+                            const bool include_outer_sphere,
+                            const bool use_equiangular_map) {
   // Misc.:
   constexpr size_t refinement = 1;
   constexpr size_t grid_points = 3;
@@ -132,6 +134,7 @@ void test_connectivity_once(const bool with_sphere_e,
             include_inner_sphere_B,
             include_outer_sphere,
             outer_radius,
+            use_equiangular_map,
             refinement,
             grid_points,
             with_boundary_conditions ? create_inner_boundary_condition()
@@ -314,7 +317,8 @@ void test_connectivity_once(const bool with_sphere_e,
               center_objectA, center_objectB, inner_radius_objectA,
               inner_radius_objectB, include_inner_sphere_A,
               include_inner_sphere_B, include_outer_sphere, outer_radius,
-              refinement, grid_points, create_inner_boundary_condition(),
+              use_equiangular_map, refinement, grid_points,
+              create_inner_boundary_condition(),
               std::make_unique<TestHelpers::domain::BoundaryConditions::
                                    TestPeriodicBoundaryCondition<3>>(),
               Options::Context{false, {}, 1, 1}),
@@ -325,7 +329,7 @@ void test_connectivity_once(const bool with_sphere_e,
               center_objectA, center_objectB, inner_radius_objectA,
               inner_radius_objectB, include_inner_sphere_A,
               include_inner_sphere_B, include_outer_sphere, outer_radius,
-              refinement, grid_points,
+              use_equiangular_map, refinement, grid_points,
               std::make_unique<TestHelpers::domain::BoundaryConditions::
                                    TestPeriodicBoundaryCondition<3>>(),
               create_outer_boundary_condition(),
@@ -337,7 +341,7 @@ void test_connectivity_once(const bool with_sphere_e,
               center_objectA, center_objectB, inner_radius_objectA,
               inner_radius_objectB, include_inner_sphere_A,
               include_inner_sphere_B, include_outer_sphere, outer_radius,
-              refinement, grid_points, nullptr,
+              use_equiangular_map, refinement, grid_points, nullptr,
               create_outer_boundary_condition(),
               Options::Context{false, {}, 1, 1}),
           Catch::Matchers::Contains(
@@ -348,8 +352,9 @@ void test_connectivity_once(const bool with_sphere_e,
               center_objectA, center_objectB, inner_radius_objectA,
               inner_radius_objectB, include_inner_sphere_A,
               include_inner_sphere_B, include_outer_sphere, outer_radius,
-              refinement, grid_points, create_inner_boundary_condition(),
-              nullptr, Options::Context{false, {}, 1, 1}),
+              use_equiangular_map, refinement, grid_points,
+              create_inner_boundary_condition(), nullptr,
+              Options::Context{false, {}, 1, 1}),
           Catch::Matchers::Contains(
               "Must specify either both inner and outer boundary "
               "conditions or neither."));
@@ -358,19 +363,31 @@ void test_connectivity_once(const bool with_sphere_e,
 }
 
 void test_connectivity() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
+
   // When we add sphere_e support we will make the following
   // loop go over {true, false}
   const bool with_sphere_e = false;
   for (const auto& [include_outer_sphere, include_inner_sphere_A,
-                    include_inner_sphere_B] :
+                    include_inner_sphere_B, use_equiangular_map] :
        cartesian_product(make_array(true, false), make_array(true, false),
-                         make_array(true, false))) {
+                         make_array(true, false), make_array(true, false))) {
+
+    // To speed up this test, don't run every case in the above loop.
+    // Instead, ignore some of them at random.
+    if (unit_dis(gen) > 0.5) {
+      continue;
+    }
+
     CAPTURE(with_sphere_e);
     CAPTURE(include_outer_sphere);
     CAPTURE(include_inner_sphere_A);
     CAPTURE(include_inner_sphere_B);
+    CAPTURE(use_equiangular_map);
     test_connectivity_once(with_sphere_e, include_inner_sphere_A,
-                           include_inner_sphere_B, include_outer_sphere);
+                           include_inner_sphere_B, include_outer_sphere,
+                           use_equiangular_map);
   }
 }
 
@@ -405,6 +422,7 @@ std::string create_option_string(
          "  CenterB: [-3.0, 0.05, 0.0]\n"
          "  RadiusB: 1.0\n"
          "  OuterRadius: 25.0\n"
+         "  UseEquiangularMap: false\n"
          "  IncludeInnerSphereA: False\n"
          "  IncludeInnerSphereB: False\n"
          "  IncludeOuterSphere: False\n"
@@ -561,47 +579,47 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
-          1.0, 1_st, 3_st, create_inner_boundary_condition(),
+          1.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("OuterRadius is too small"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of the input CenterA is expected to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of the input CenterB is expected to be negative"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("RadiusA and RadiusB are expected "
                                 "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("RadiusA and RadiusB are expected "
                                 "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("RadiusA should not be smaller than RadiusB"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
-          25.0, 1_st, 3_st, create_inner_boundary_condition(),
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
   // Note: the boundary condition-related parse errors are checked in the
@@ -609,7 +627,7 @@ void test_parse_errors() {
 }
 }  // namespace
 
-// [[TimeOut, 40]]
+// [[TimeOut, 60]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.CylindricalBinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();

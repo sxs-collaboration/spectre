@@ -57,12 +57,10 @@ std::array<double, 3> flip_about_xy_plane(const std::array<double, 3> input) {
 
 namespace domain::creators {
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
-    typename CenterA::type center_A, typename CenterB::type center_B,
-    typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-    typename IncludeInnerSphereA::type include_inner_sphere_A,
-    typename IncludeInnerSphereB::type include_inner_sphere_B,
-    typename IncludeOuterSphere::type include_outer_sphere,
-    typename OuterRadius::type outer_radius,
+    std::array<double, 3> center_A, std::array<double, 3> center_B,
+    double radius_A, double radius_B, bool include_inner_sphere_A,
+    bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
+    bool use_equiangular_map,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -78,6 +76,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       include_inner_sphere_B_(include_inner_sphere_B),
       include_outer_sphere_(include_outer_sphere),
       outer_radius_(outer_radius),
+      use_equiangular_map_(use_equiangular_map),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   if (center_A_[2] <= 0.0) {
@@ -366,12 +365,10 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     double initial_time, ExpansionMapOptions expansion_map_options,
     std::array<double, 3> initial_angular_velocity,
-    typename CenterA::type center_A, typename CenterB::type center_B,
-    typename RadiusA::type radius_A, typename RadiusB::type radius_B,
-    typename IncludeInnerSphereA::type include_inner_sphere_A,
-    typename IncludeInnerSphereB::type include_inner_sphere_B,
-    typename IncludeOuterSphere::type include_outer_sphere,
-    typename OuterRadius::type outer_radius,
+    std::array<double, 3> center_A, std::array<double, 3> center_B,
+    double radius_A, double radius_B, bool include_inner_sphere_A,
+    bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
+    bool use_equiangular_map,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -382,7 +379,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     : CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
           include_inner_sphere_B, include_outer_sphere, outer_radius,
-          initial_refinement, initial_grid_points,
+          use_equiangular_map, initial_refinement, initial_grid_points,
           std::move(inner_boundary_condition),
           std::move(outer_boundary_condition), context) {
   is_time_dependent_ = true;
@@ -442,13 +439,13 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   const double cylinder_lower_bound_z = -1.0;
   const double cylinder_upper_bound_z = 1.0;
   const auto logical_to_cylinder_center_maps =
-      cyl_wedge_coord_map_center_blocks(cylinder_inner_radius,
-                                        cylinder_lower_bound_z,
-                                        cylinder_upper_bound_z, false);
+      cyl_wedge_coord_map_center_blocks(
+          cylinder_inner_radius, cylinder_lower_bound_z, cylinder_upper_bound_z,
+          use_equiangular_map_);
   const auto logical_to_cylinder_surrounding_maps =
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,
-          cylinder_upper_bound_z, false, 0.0);
+          cylinder_upper_bound_z, use_equiangular_map_, 0.0);
 
   // Lambda that takes a UniformCylindricalEndcap map and a
   // DiscreteRotation map, composes it with the logical-to-cylinder
@@ -526,7 +523,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       cyl_wedge_coord_map_surrounding_blocks(
           cylindrical_shell_inner_radius, cylindrical_shell_outer_radius,
           cylindrical_shell_lower_bound_z, cylindrical_shell_upper_bound_z,
-          false, 1.0);
+          use_equiangular_map_, 1.0);
 
   // Lambda that takes a UniformCylindricalSide map and a DiscreteRotation
   // map, composes it with the logical-to-cylinder maps, and adds it
