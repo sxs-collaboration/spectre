@@ -135,8 +135,7 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
   for (size_t i = 0; i < get(*dt_psi_correction).size(); ++i) {
     get(*dt_psi_correction)[i] *= std::min(0., gsl::at(char_speeds[0], i));
     for (size_t j = 0; j < Dim; ++j) {
-      dt_phi_correction->get(j)[i] *=
-          0.5 * std::min(0., gsl::at(char_speeds[1], i));
+      dt_phi_correction->get(j)[i] *= std::min(0., gsl::at(char_speeds[1], i));
     }
   }
 
