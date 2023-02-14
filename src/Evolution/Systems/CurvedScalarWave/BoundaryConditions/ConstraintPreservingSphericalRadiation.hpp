@@ -41,9 +41,8 @@ namespace CurvedScalarWave::BoundaryConditions {
  * are still likely to occur.
  *
  * The constraint-preserving part of the boundary conditions are set on the time
- * derivatives of the evolved fields according to \cite Holst2004wt . The
- * physical Bayliss-Turkel boundary conditions are additionally set onto the
- * time derivative of \f$\Pi\f$.
+ * derivatives of all evolved fields. The physical Bayliss-Turkel boundary
+ * conditions are additionally set onto the time derivative of \f$\Pi\f$.
  *
  * The constraints are defined as follows:
  *
@@ -51,25 +50,68 @@ namespace CurvedScalarWave::BoundaryConditions {
  *  \mathcal{C}_i&=\partial_i\Psi - \Phi_i=0, \\
  *  \mathcal{C}_{ij}&=\partial_{[i}\Phi_{j]}=0
  * \f}
+ * Inspection of the constraint evolution system (Eqs. 29-30 in
+ * \cite Holst2004wt) shows that the constraints themselves are characteristic
+ * fields. We can derive constraint boundary conditions the same way
+ * \cite Kidder2004rw does for the Einstein equations:
  *
- * The boundary conditions are then given by:
+ * We express the constraints in terms of (evolution) characeristic fields and
+ * demand that the normal component of the constraint has to be zero when
+ * flowing into the boundary i.e. there are no constraints flowing into our
+ * numerical domain:
  *
  * \f{align*}{
- * \partial_{t} \Psi&\to\partial_{t}\Psi +
- *                    \lambda_\Psi n^i \mathcal{C}_i, \\
- * \partial_{t}\Pi&\to\partial_{t}\Pi-\left(\partial_t\Pi
- *                  - \partial_t\Pi^{\mathrm{BC}}\right)
- *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i
- *                  =\partial_t\Pi^{\mathrm{BC}}
- *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i, \\
- * \partial_{t}\Phi_i&\to\partial_{t}\Phi_i+
- *                     \lambda_0n^jP^k{}_i\mathcal{C}_{jk}
- *   = \partial_{t}\Phi_i+ \lambda_0n^j \mathcal{C}_{ji}.
+ * 0 &= n^i \mathcal{C}_i &= n^i \partial_i w^\Psi - \frac{1}{2}(w^{+} - w^-) +
+ * n^i
+ * w_i^0 \\
+ * (n^i \partial_i w^\Psi)_{BC}  &= \frac{1}{2}(w^{+} - w^-) - n^i w_i^0
  * \f}
  *
- * These conditions are equivalent to equations (40) and (41) of
- * \cite Holst2004wt if the shift vector is parallel to the normal of the outer
- * boundary. The Bayliss-Turkel boundary conditions are given by:
+ * and
+ *
+ * \f{align*}{
+ * 0 &= 2 n^i \mathcal{C}_{ij} = n^i \partial_i w^0_j + \frac{1}{2}n^i n_j
+ * (\partial_i w^+ - \partial_i w^-) - \frac{1}{2}(\partial_j w^+ - \partial_j
+ * w^-) - n^i \partial_j w^0_i \\
+ * (n^i \partial_i w^0_j)_{BC} &= - \frac{1}{2}n^i
+ * n_j (\partial_i w^+ - \partial_i w^-) + \frac{1}{2}(\partial_j w^+ +
+ * \partial_j w^-) + n^i \partial_j w^0_i \f}
+ *
+ * This condition is applied to the time derivative using the Bjorhus condition
+ * \cite Bjorhus1995 :
+ * \f{align*}{
+ * \partial_t u^\alpha + A^{i \alpha}_\beta \partial_i u^\beta &= F^\alpha \\
+ *  e^{\hat{\alpha}}_\alpha (\partial_t u^\alpha + A^{i \alpha}_\beta
+ * \partial_i u^\beta) &= e^{\hat{\alpha}}_\alpha F^\alpha  \\
+ * d_t u^{\hat{\alpha}} + e^{\hat{\alpha}}_\alpha A^{i
+ * \alpha}_\beta(P^k_i + n^k n_i) \partial_k u^\beta &= e^{\hat{\alpha}}_\alpha
+ * F^\alpha  \\
+ * d_t u^{\hat{\alpha}} + \lambda_{(\hat{\alpha})} n^k \partial_k
+ * u^{\hat{\alpha}} + e^{\hat{\alpha}}_\alpha A^{i \alpha}_\beta P^k_i
+ * \partial_k u^\beta &= e^{\hat{\alpha}}_\alpha F^\alpha
+ * \f}
+ *
+ * Defining the volume time derivative of the characteristic fields as:
+ * \f{equation*}{
+ * D_t u^{\hat{\alpha}} \equiv e^{\hat{\alpha}}_\alpha (- A^{i \alpha}_\beta
+ * \partial_i u^\beta + F^\alpha)
+ * \f}
+ *
+ * The boundary conditions are now formulated as follows:
+ *
+ * \f{equation*}{
+ *  d_t u^{\hat{\alpha}} = D_t u^{\hat{\alpha}} + \lambda_{(\hat{\alpha})}
+ * (n^i\partial_i u^{\hat{\alpha}} - (n^i\partial_i u^{\hat{\alpha}})_{BC})
+ * \f}
+ *
+ * Using the condition that there are no incoming constraint fields, this gives:
+ *
+ * \f{align*}{
+ * d_t Z^1 &= D_t w^\Psi + \lambda_\Psi n^i \mathcal{C}_i \\
+ * d_t Z^2_i &= D_t w^0_i + 2 \lambda_0 n^i \mathcal{C}_{ij}
+ * \f}
+ *
+ * The Bayliss-Turkel boundary conditions are given by:
  *
  * \f{align*}{
  *  \prod_{l=1}^m\left(\partial_t + \partial_r + \frac{2l-1}{r}\right)\Psi=0,
@@ -98,6 +140,23 @@ namespace CurvedScalarWave::BoundaryConditions {
  *
  * - The outer boundary is spherical. It might be possible to generalize this
  * condition but we have not tried this.
+ *
+ *  * The boundary conditions to the time derivative of the evolved variables
+ * are then given by:
+ *
+ * The full boundary conditions, as applied to the time derivative of each
+ * evolved field are then given by:
+ * \f{align*}{ \partial_{t}
+ * \Psi&\to\partial_{t}\Psi +
+ *                    \lambda_\Psi n^i \mathcal{C}_i, \\
+ * \partial_{t}\Pi&\to\partial_{t}\Pi-\left(\partial_t\Pi
+ *                  - \partial_t\Pi^{\mathrm{BC}}\right)
+ *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i
+ *                  =\partial_t\Pi^{\mathrm{BC}}
+ *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i, \\
+ * \partial_{t}\Phi_i&\to\partial_{t}\Phi_i+ 2 \lambda_0 n^j \mathcal{C}_{ji}.
+ * \f}
+ *
  */
 template <size_t Dim>
 class ConstraintPreservingSphericalRadiation final
