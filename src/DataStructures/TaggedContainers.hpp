@@ -78,3 +78,50 @@ gsl::not_null<typename Tag::type*> get(
   }
 }
 /// @}
+
+namespace detail {
+template <typename Callable, typename T, typename... Args,
+          typename... ReturnTags, typename... ArgumentTags>
+auto apply_impl([[maybe_unused]] const gsl::not_null<T*> return_args,
+                tmpl::list<ReturnTags...> /*meta*/,
+                tmpl::list<ArgumentTags...> /*meta*/, Callable&& fn,
+                const Args&... args) {
+  return fn.apply(get<ReturnTags>(return_args)...,
+                  get<ArgumentTags>(args...)...);
+}
+
+template <typename Callable, typename T, typename... Args,
+          typename... ReturnTags, typename... ArgumentTags>
+auto invoke_impl([[maybe_unused]] const gsl::not_null<T*> return_args,
+                 tmpl::list<ReturnTags...> /*meta*/,
+                 tmpl::list<ArgumentTags...> /*meta*/, Callable&& fn,
+                 const Args&... args) {
+  return fn(get<ReturnTags>(return_args)..., get<ArgumentTags>(args...)...);
+}
+}  // namespace detail
+
+/*!
+ * \brief Call
+ * `fn.apply(get<Callable::return_tags>(return_args)...,
+ * get<Callable::argument_tags>(args...))`
+ */
+template <typename Callable, typename T, typename... Args>
+auto apply(const gsl::not_null<T*> return_args, Callable&& fn,
+           const Args&... args) {
+  return detail::apply_impl(return_args, typename Callable::return_tags{},
+                            typename Callable::argument_tags{},
+                            std::forward<Callable>(fn), args...);
+}
+
+/*!
+ * \brief Call
+ * `fn(get<Callable::return_tags>(return_args)...,
+ * get<Callable::argument_tags>(args...))`
+ */
+template <typename Callable, typename T, typename... Args>
+auto invoke(const gsl::not_null<T*> return_args, Callable&& fn,
+            const Args&... args) {
+  return detail::invoke_impl(return_args, typename Callable::return_tags{},
+                             typename Callable::argument_tags{},
+                             std::forward<Callable>(fn), args...);
+}
