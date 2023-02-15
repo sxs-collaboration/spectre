@@ -30,6 +30,8 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -37,31 +39,61 @@
 namespace domain {
 namespace {
 
-// Checks the euclidean surface element against the magnitude of the
+// Checks the euclidean and curved area element against the magnitude of the
 // unnormalized normal vector.
-template <typename TargetFrame>
 void test_area_element_against_normal_vector() {
+  using TargetFrame = Frame::Inertial;
+  using inv_spatial_metric_tag =
+      gr::Tags::InverseSpatialMetric<3, TargetFrame, DataVector>;
+  using sqrt_det_spatial_metric_tag =
+      gr::Tags::SqrtDetSpatialMetric<DataVector>;
   const auto element_map_3d = ElementMap<3, TargetFrame>(
       ElementId<3>(0),
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           CoordinateMaps::Wedge(1., 2., 1., 1., OrientationMap<3>{}, true)));
 
+  gr::Solutions::Minkowski<3> minkowski{};
+
   const Mesh<2> interface_mesh{8, Spectral::Basis::Legendre,
                                Spectral::Quadrature::GaussLobatto};
   const Direction<3> direction{};
-  const auto coords = interface_logical_coordinates(interface_mesh, direction);
-  const auto inverse_jacobian = element_map_3d.inv_jacobian(coords);
+  const auto logical_coords =
+      interface_logical_coordinates(interface_mesh, direction);
+  const auto inverse_jacobian = element_map_3d.inv_jacobian(logical_coords);
   const auto det_volume = determinant(inverse_jacobian);
-  const auto result_1 =
-      euclidean_area_element(inverse_jacobian, det_volume, direction);
-  const auto result_2 = euclidean_area_element(inverse_jacobian, direction);
   const auto face_normal =
       unnormalized_face_normal(interface_mesh, element_map_3d, direction);
-  const auto face_normal_mag = magnitude(face_normal);
-  const DataVector face_normal_mag_corrected =
-      get(face_normal_mag) / get(det_volume);
-  CHECK_ITERABLE_APPROX(get(result_1), get(result_2));
-  CHECK_ITERABLE_APPROX(face_normal_mag_corrected, get(result_1));
+  const auto inertial_coords = element_map_3d(logical_coords);
+
+  // test euclidean area element
+  const auto result_1_euclidean =
+      euclidean_area_element(inverse_jacobian, det_volume, direction);
+  const auto result_2_euclidean =
+      euclidean_area_element(inverse_jacobian, direction);
+  const auto face_normal_mag_euclidean = magnitude(face_normal);
+  const DataVector face_normal_mag_corrected_euclidean =
+      get(face_normal_mag_euclidean) / get(det_volume);
+  CHECK_ITERABLE_APPROX(get(result_1_euclidean), get(result_2_euclidean));
+  CHECK_ITERABLE_APPROX(face_normal_mag_corrected_euclidean,
+                        get(result_1_euclidean));
+
+  // test curved area element: Minkowski
+  const auto minkowski_vars = minkowski.variables(
+      inertial_coords, 0.,
+      tmpl::list<inv_spatial_metric_tag, sqrt_det_spatial_metric_tag>{});
+  const auto inv_spatial_metric_minkowski =
+      get<inv_spatial_metric_tag>(minkowski_vars);
+  const auto sqrt_det_spatial_metric =
+      get<sqrt_det_spatial_metric_tag>(minkowski_vars);
+  const auto result_1_minkowski =
+      area_element(inverse_jacobian, det_volume, direction,
+                   inv_spatial_metric_minkowski, sqrt_det_spatial_metric);
+  const auto result_2_minkowski =
+      area_element(inverse_jacobian, direction, inv_spatial_metric_minkowski,
+                   sqrt_det_spatial_metric);
+  CHECK_ITERABLE_APPROX(get(result_1_minkowski), get(result_2_minkowski));
+  CHECK_ITERABLE_APPROX(face_normal_mag_corrected_euclidean,
+                        get(result_1_minkowski));
 }
 
 // A test function sin^2(theta) * cos^2(phi) which evaluates to 4/3 * pi * R^2
@@ -122,7 +154,7 @@ void test_sphere_integral() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.AreaElement", "[Domain][Unit]") {
-  test_area_element_against_normal_vector<Frame::Inertial>();
+  test_area_element_against_normal_vector();
   test_sphere_integral();
 }
 
