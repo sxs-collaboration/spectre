@@ -145,6 +145,8 @@ class MortarData {
 
   const TimeStepId& time_step_id() const { return time_step_id_; }
 
+  TimeStepId& time_step_id() { return time_step_id_; }
+
   auto local_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
     return local_mortar_data_;
@@ -152,6 +154,16 @@ class MortarData {
 
   auto neighbor_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
+    return neighbor_mortar_data_;
+  }
+
+  auto local_mortar_data()
+      -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
+    return local_mortar_data_;
+  }
+
+  auto neighbor_mortar_data()
+      -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
     return neighbor_mortar_data_;
   }
 
