@@ -42,6 +42,8 @@ class Reconstructor : public PUP::able {
 
   virtual size_t ghost_zone_size() const = 0;
 
+  virtual bool supports_adaptive_order() const { return false; }
+
   void pup(PUP::er& p) override;
 };
 }  // namespace grmhd::ValenciaDivClean::fd
