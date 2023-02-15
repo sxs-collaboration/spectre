@@ -17,9 +17,11 @@
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -60,7 +62,12 @@ namespace domain::creators::time_dependence {
  * The reasoning behind this is because in basically all use cases (BBH), the
  * shape map will go to the Distorted frame only and other maps will go from the
  * Distorted frame to the Inertial frame.
+ *
+ * \note To use this time dependence with the `control_system::system::Shape`
+ * control system, you must choose the same \tparam Label that the control
+ * system is using.
  */
+template <domain::ObjectLabel Label>
 class Shape final : public TimeDependence<3> {
  private:
   using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
@@ -82,6 +89,8 @@ class Shape final : public TimeDependence<3> {
       domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Identity>>;
 
   static constexpr size_t mesh_dim = 3;
+
+  static std::string name() { return "Shape"s + get_output(Label); }
 
   /// \brief The initial time of the function of time.
   struct InitialTime {
@@ -166,8 +175,10 @@ class Shape final : public TimeDependence<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  template <domain::ObjectLabel OtherLabel>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Shape& lhs, const Shape& rhs);
+  friend bool operator==(const Shape<OtherLabel>& lhs,
+                         const Shape<OtherLabel>& rhs);
 
   using TransitionFunction = domain::CoordinateMaps::
       ShapeMapTransitionFunctions::ShapeMapTransitionFunction;
@@ -183,11 +194,13 @@ class Shape final : public TimeDependence<3> {
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   std::array<double, 3> center_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
-  inline static const std::string function_of_time_name_{"Shape"};
+  inline static const std::string function_of_time_name_{"Shape" +
+                                                         get_output(Label)};
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::unique_ptr<TransitionFunction> transition_func_;
 };
 
-bool operator!=(const Shape& lhs, const Shape& rhs);
+template <domain::ObjectLabel Label>
+bool operator!=(const Shape<Label>& lhs, const Shape<Label>& rhs);
 }  // namespace domain::creators::time_dependence

@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -32,6 +33,7 @@ template <size_t MeshDim>
 class None;
 template <size_t MeshDim>
 class ScalingAndZRotation;
+template <domain::ObjectLabel Label>
 class Shape;
 class SphericalCompression;
 template <size_t MeshDim>
@@ -60,8 +62,9 @@ struct TimeDependence {
   using creatable_classes_2d =
       tmpl::list<RotationAboutZAxis<2>, ScalingAndZRotation<2>>;
   using creatable_classes_3d =
-      tmpl::list<Shape, SphericalCompression, RotationAboutZAxis<3>,
-                 ScalingAndZRotation<3>>;
+      tmpl::list<Shape<domain::ObjectLabel::A>, Shape<domain::ObjectLabel::B>,
+                 Shape<domain::ObjectLabel::None>, SphericalCompression,
+                 RotationAboutZAxis<3>, ScalingAndZRotation<3>>;
   using creatable_classes_any_dim =
       tmpl::list<CubicScale<MeshDim>, None<MeshDim>,
                  UniformTranslation<MeshDim>>;

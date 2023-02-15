@@ -22,11 +22,13 @@
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/Creators/TimeDependence/Shape.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/Creators/TimeDependence/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,6 +36,8 @@
 namespace domain::creators::time_dependence {
 
 namespace {
+using Shape = Shape<domain::ObjectLabel::None>;
+
 using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
 using Identity = domain::CoordinateMaps::Identity<3>;
 

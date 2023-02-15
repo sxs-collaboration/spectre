@@ -39,6 +39,7 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  DomainStructure
   FunctionsOfTime
   Options
   Utilities
