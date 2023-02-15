@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
@@ -24,6 +23,7 @@
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
+#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
@@ -690,10 +690,10 @@ struct SystemHelper {
         // because the BothHorizons measurement will always send both regardless
         // of if both are needed.
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::domain::ObjectLabel::A>{},
+            measurements::BothHorizons::FindHorizon<::domain::ObjectLabel::A>{},
             horizon_a_, cache, measurement_id);
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::domain::ObjectLabel::B>{},
+            measurements::BothHorizons::FindHorizon<::domain::ObjectLabel::B>{},
             horizon_b_, cache, measurement_id);
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
                   runner, 0) == number_of_horizons);

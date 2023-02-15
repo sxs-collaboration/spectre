@@ -68,7 +68,7 @@ struct Metavariables {
 // This test tests control_system::Event and
 // control_system::RunCallbacks, and also does additional testing of
 // the protocol examples.
-SPECTRE_TEST_CASE("Unit.ControlSystem.Measurement", "[ControlSystem][Unit]") {
+SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using element_component = ElementComponent<Metavariables>;
   using control_system_component = MockControlSystemComponent<Metavariables>;

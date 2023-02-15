@@ -52,8 +52,8 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
-add_subdirectory(ApparentHorizons)
 add_subdirectory(ControlErrors)
+add_subdirectory(Measurements)
 add_subdirectory(Protocols)
 add_subdirectory(Systems)
 add_subdirectory(Tags)

@@ -9,9 +9,9 @@
 #include <optional>
 #include <string>
 
-#include "ControlSystem/ApparentHorizons/Measurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
+#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -49,7 +49,8 @@ namespace control_system::Systems {
  * - This control system requires that there be at least one excision surface in
  *   the simulation
  * - Currently this control system can only be used with the \link
- *   control_system::ah::BothHorizons BothHorizons \endlink measurement
+ *   control_system::measurements::BothHorizons BothHorizons \endlink
+ * measurement
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Shape Shape \endlink control error
  */
@@ -79,7 +80,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     }
   }
 
-  using measurement = ah::BothHorizons;
+  using measurement = measurements::BothHorizons;
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
@@ -102,10 +103,11 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
 
     template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
-    static void apply(ah::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
-                      const Strahlkorper<Frame::Grid>& strahlkorper,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const LinkedMessageId<double>& measurement_id) {
+    static void apply(
+        measurements::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
+        const Strahlkorper<Frame::Grid>& strahlkorper,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const LinkedMessageId<double>& measurement_id) {
       // The measurement event will call this for both horizons, but we only
       // need one of the horizons. So if it is called for the wrong horizon,
       // just do nothing.
