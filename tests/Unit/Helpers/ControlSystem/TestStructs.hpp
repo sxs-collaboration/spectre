@@ -12,6 +12,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -33,6 +34,7 @@ struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
 template <size_t NumExcisions>
 struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = NumExcisions;
+  using object_centers = domain::object_list<>;
   void pup(PUP::er& /*p*/) {}
 
   using options = tmpl::list<>;

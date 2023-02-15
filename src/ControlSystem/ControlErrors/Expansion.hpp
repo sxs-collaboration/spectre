@@ -63,6 +63,9 @@ namespace ControlErrors {
 struct Expansion : tt::ConformsTo<protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = 2;
 
+  using object_centers =
+      domain::object_list<domain::ObjectLabel::A, domain::ObjectLabel::B>;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for expansion control. This should not "

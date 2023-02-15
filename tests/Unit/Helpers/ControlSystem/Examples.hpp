@@ -17,6 +17,7 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
@@ -99,6 +100,8 @@ struct ExampleMeasurement
 struct ExampleControlError
     : tt::ConformsTo<control_system::protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = 1;
+
+  using object_centers = domain::object_list<domain::ObjectLabel::A>;
 
   void pup(PUP::er& /*p*/) {}
 
