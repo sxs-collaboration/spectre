@@ -117,12 +117,12 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
       jac_target_to_inertial,
     const InverseJacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
-      /*invjac_target_to_inertial*/,
+      invjac_target_to_inertial,
     const Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
       /*jac_logical_to_target*/,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
       /*invjac_logical_to_target*/,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& /*inertial_mesh_velocity*/) {
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity) {
 
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
@@ -155,6 +155,7 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   using spatial_metric_tag = gr::Tags::SpatialMetric<3, TargetFrame>;
   using inv_spatial_metric_tag = gr::Tags::InverseSpatialMetric<3, TargetFrame>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
+  using shift_tag = gr::Tags::Shift<3, TargetFrame>;
   using inertial_shift_tag = gr::Tags::Shift<3, Frame::Inertial>;
 
   // Additional temporary tags used for multiple frames
@@ -167,7 +168,7 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // in the target_variables (for now).
   using full_temp_tags_list =
       tmpl::list<spatial_metric_tag, inv_spatial_metric_tag,
-                 lapse_tag, inertial_shift_tag,
+                 lapse_tag, shift_tag, inertial_shift_tag,
                  inertial_spatial_metric_tag,
                  inertial_inv_spatial_metric_tag>;
 
@@ -179,6 +180,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // These may or may not be temporaries, depending on if they are asked for
   // in target_vars.
   auto& lapse = *(get<lapse_tag>(
+      target_vars, make_not_null(&buffer)));
+  auto& shift = *(get<shift_tag>(
       target_vars, make_not_null(&buffer)));
   auto& inertial_shift = *(get<inertial_shift_tag>(
       target_vars, make_not_null(&buffer)));
@@ -220,6 +223,19 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // We assume the lapse does note transform between the target and
   // inertial frames.
   gr::lapse(make_not_null(&lapse), inertial_shift, spacetime_metric);
+
+  // Transform the shift
+  const size_t VolumeDim = 3;
+  auto dest = &shift;
+  const auto& src = inertial_shift;
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    dest->get(i) = invjac_target_to_inertial.get(i, 0) *
+    (src.get(0) + inertial_mesh_velocity.get(0));
+    for (size_t j = 1; j < VolumeDim; ++j) {
+          dest->get(i) += invjac_target_to_inertial.get(i, j) *
+          (src.get(j) + inertial_mesh_velocity.get(j));
+    }
+  }
 }
 
 }  // namespace ah

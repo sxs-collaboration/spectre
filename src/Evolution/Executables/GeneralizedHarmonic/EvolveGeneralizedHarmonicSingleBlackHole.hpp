@@ -105,7 +105,9 @@ struct EvolutionMetavars
         gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, Frame::Inertial,
                                                     DataVector>,
         gr::Tags::ShiftCompute<volume_dim, Frame::Inertial, DataVector>,
-        gr::Tags::LapseCompute<volume_dim, Frame::Inertial, DataVector>>>;
+        gr::Tags::LapseCompute<volume_dim, Frame::Inertial, DataVector>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>>;
+
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
     using post_interpolation_callback =

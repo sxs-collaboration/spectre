@@ -88,7 +88,7 @@ void test_compute_excision_boundary_volume_quantities() {
       jacobian_logical_to_target{};
   InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
       inv_jacobian_logical_to_target{};
-  tnsr::I<DataVector, 3, Frame::Inertial> inertial_mesh_velocity{};
+  tnsr::I<DataVector, 3, Frame::Inertial> frame_velocity_grid_to_inertial{};
   if constexpr (IsTimeDependent::value) {
     ElementMap<3, Frame::Grid> map_logical_to_grid{
         element_ids[0],
@@ -208,8 +208,12 @@ void test_compute_excision_boundary_volume_quantities() {
         std::get<1>(coords_frame_velocity_jacobians);
     const auto& jacobian_grid_to_inertial =
         std::get<2>(coords_frame_velocity_jacobians);
-    const auto& frame_velocity_grid_to_inertial =
+    frame_velocity_grid_to_inertial =
         std::get<3>(coords_frame_velocity_jacobians);
+    inv_jacobian_target_to_inertial =
+        std::get<1>(coords_frame_velocity_jacobians);
+    jacobian_target_to_inertial =
+        std::get<2>(coords_frame_velocity_jacobians);
 
     // Now compute metric variables and transform them into the
     // inertial frame.  We transform lapse, shift, 3-metric.  Then we
@@ -250,7 +254,7 @@ void test_compute_excision_boundary_volume_quantities() {
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
-        inv_jacobian_logical_to_target, inertial_mesh_velocity);
+        inv_jacobian_logical_to_target, frame_velocity_grid_to_inertial);
   } else {
     // time-independent.
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
@@ -376,7 +380,8 @@ SPECTRE_TEST_CASE(
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial>>>();
+                 gr::Tags::Shift<3, Frame::Inertial>,
+                 gr::Tags::Shift<3, Frame::Grid>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
