@@ -212,6 +212,7 @@ struct BoundaryMessageInbox {
       FixedHashMap<maximum_number_of_neighbors(Dim),
                    std::pair<Direction<Dim>, ElementId<Dim>>, stored_type,
                    boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>;
+  using message_type = BoundaryMessage<Dim>;
 
   template <typename Inbox>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,

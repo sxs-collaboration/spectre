@@ -70,6 +70,9 @@ module AlgorithmArray {
 
     entry void start_phase(Parallel::Phase);
 
+    template <typename ReceiveTag, typename MessageType>
+    entry void receive_data(MessageType*);
+
     template <typename ReceiveTag, typename ReceiveData_t>
     entry [inline] void receive_data(typename ReceiveTag::temporal_id&,
                                      ReceiveData_t&,

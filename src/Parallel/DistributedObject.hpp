@@ -314,6 +314,9 @@ class DistributedObject<ParallelComponent,
   void receive_data(typename ReceiveTag::temporal_id instance,
                     ReceiveDataType&& t, bool enable_if_disabled = false);
 
+  template <typename ReceiveTag, typename MessageType>
+  void receive_data(MessageType* message);
+
   /// @{
   /// Start evaluating the algorithm until it is stopped by an action.
   void perform_algorithm();
@@ -838,8 +841,8 @@ void DistributedObject<ParallelComponent,
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) {
   try {
-    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
-                                                 ReceiveTag>::registrar;
+    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
+                                                 false>::registrar;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -851,6 +854,33 @@ void DistributedObject<ParallelComponent,
       ReceiveTag::insert_into_inbox(
           make_not_null(&tuples::get<ReceiveTag>(inboxes_)), instance,
           std::forward<ReceiveDataType>(t));
+    }
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
+  }
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename ReceiveTag, typename MessageType>
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
+    receive_data(MessageType* message) {
+  try {
+    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
+                                                 true>::registrar;
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
+      }
+      if (message->enable_if_disabled) {
+        set_terminate(false);
+      }
+      ReceiveTag::insert_into_inbox(
+          make_not_null(&tuples::get<ReceiveTag>(inboxes_)), message);
+      // Cannot use message after this call because a std::unique_ptr now owns
+      // it. Doing so would result in undefined behavior
     }
     perform_algorithm();
   } catch (const std::exception& exception) {

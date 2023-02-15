@@ -11,6 +11,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.decl.h"
@@ -29,6 +30,11 @@ namespace evolution::dg {
 template <size_t Dim>
 struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
   using base = CMessage_BoundaryMessage<Dim>;
+
+  // Needed for charm registration
+  static std::string name() {
+    return "BoundaryMessage<" + get_output(Dim) + ">";
+  };
 
   size_t subcell_ghost_data_size;
   size_t dg_flux_data_size;

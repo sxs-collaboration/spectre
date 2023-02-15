@@ -45,6 +45,38 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
   }
 }
 
+/*!
+ * \ingroup ParallelGroup
+ * \brief Send a pointer `message` to the algorithm running on `proxy`.
+ *
+ * Here, `message` should hold all the information you need as member variables
+ * of the object. This includes, temporal ID identifiers, the data itself, and
+ * any auxilary information that needs to be communicated. The `ReceiveTag`
+ * associated with this `message` should be able unpack the information that was
+ * sent.
+ *
+ * If the component associated with the `proxy` you are calling this on is
+ * running on the same charm-node, the exact pointer `message` is sent to the
+ * receiving component. No copies of data are done. If the receiving component
+ * is on a different charm-node, then the data pointed to by `message` is
+ * copied, sent through charm, and unpacked on the receiving component. The
+ * pointer that is passed to the algorithm on the receiving component then
+ * points to the copied data on the receiving component.
+ *
+ * \warning You cannot use the `message` pointer after you call this function.
+ * Doing so will result in undefined behavior because something else may be
+ * controlling the pointer.
+ */
+template <typename ReceiveTag, typename Proxy, typename MessageType>
+void receive_data(Proxy&& proxy, MessageType* message) {
+  static_assert(is_array_proxy<std::decay_t<Proxy>>::value or
+                    is_array_element_proxy<std::decay_t<Proxy>>::value,
+                "Charm++ messages can only be used with Array[Element] chares "
+                "at the moment. If you want to use them with other types of "
+                "components, you will need to implement it.");
+  proxy.template receive_data<ReceiveTag, std::decay_t<MessageType>>(message);
+}
+
 /// @{
 /*!
  * \ingroup ParallelGroup
