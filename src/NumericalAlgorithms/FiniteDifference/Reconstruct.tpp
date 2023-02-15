@@ -40,8 +40,8 @@ auto generate_upper_volume_index_for_u_to_reconstruct_impl(
 }
 
 template <Side UpperLower, size_t DimToReplace, size_t Dim,
-          size_t GhostOffset = 0,
-          size_t... VolumeIndices, size_t... GhostIndices>
+          size_t GhostOffset = 0, size_t... VolumeIndices,
+          size_t... GhostIndices>
 auto u_to_reconstruct_impl(const DataVector& volume_data,
                            const DataVector& neighbor_data,
                            const std::array<size_t, Dim>& indices,
@@ -76,15 +76,20 @@ auto u_to_reconstruct_impl(const DataVector& volume_data,
   }
 }
 
-template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
-void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
-                      const gsl::not_null<gsl::span<double>*> recons_lower,
-                      const gsl::span<const double>& volume_vars,
-                      const gsl::span<const double>& lower_ghost_data,
-                      const gsl::span<const double>& upper_ghost_data,
-                      const Index<Dim>& volume_extents,
-                      const size_t number_of_variables,
-                      const ArgsForReconstructor&... args_for_reconstructor) {
+template <bool ReturnReconstructionOrder, typename Reconstructor, size_t Dim,
+          typename... ArgsForReconstructor>
+void reconstruct_impl(
+    const gsl::not_null<gsl::span<double>*> recons_upper,
+    const gsl::not_null<gsl::span<double>*> recons_lower,
+    [[maybe_unused]] const gsl::not_null<gsl::span<std::uint8_t>*>
+        reconstruction_order,
+    const gsl::span<const double>& volume_vars,
+    const gsl::span<const double>& lower_ghost_data,
+    const gsl::span<const double>& upper_ghost_data,
+    const Index<Dim>& volume_extents, const size_t number_of_variables,
+    const ArgsForReconstructor&... args_for_reconstructor) {
+  using std::get;
+  using std::min;
   constexpr size_t stencil_width = Reconstructor::stencil_width();
   ASSERT(stencil_width % 2 == 1, "The stencil with should be odd but got "
                                      << stencil_width
@@ -94,8 +99,19 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
   // external data.
   const size_t ghost_pts_in_neighbor_data = ghost_zone_for_stencil + 1;
 
+  const size_t number_of_stripes_per_variable =
+      volume_extents.slice_away(0).product();
   const size_t number_of_stripes =
-      volume_extents.slice_away(0).product() * number_of_variables;
+      number_of_stripes_per_variable * number_of_variables;
+  [[maybe_unused]] size_t recons_order_slice_offset = 0;
+  if constexpr (ReturnReconstructionOrder) {
+    ASSERT(reconstruction_order->size() ==
+               (number_of_stripes_per_variable * (volume_extents[0] + 2)),
+           "Expected size "
+               << (number_of_stripes_per_variable * (volume_extents[0] + 2))
+               << " for reconstruction_order but got "
+               << reconstruction_order->size());
+  }
 
   std::array<double, stencil_width> q{};
   for (size_t slice = 0; slice < number_of_stripes; ++slice) {
@@ -103,6 +119,29 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
     const size_t vars_neighbor_slice_offset =
         slice * ghost_pts_in_neighbor_data;
     const size_t recons_slice_offset = (volume_extents[0] + 1) * slice;
+    // We use volume_extents + 2 because we need the order of the left and
+    // right cells for adjusting the correction at the interface. This means
+    // we include one neighbor on the upper and lower side.
+    recons_order_slice_offset =
+        slice % number_of_stripes_per_variable == 0
+            ? 0
+            : (recons_order_slice_offset + volume_extents[0] + 2);
+    [[maybe_unused]] size_t recons_order_index = 0;
+    const auto set_recons_order = [&reconstruction_order, &recons_order_index,
+                                   recons_order_slice_offset](
+                                      const auto& upper_lower_and_order) {
+      if constexpr (ReturnReconstructionOrder and
+                    std::tuple_size<
+                        std::decay_t<decltype(upper_lower_and_order)>>::value >
+                        2) {
+        (*reconstruction_order)[recons_order_slice_offset +
+                                recons_order_index] =
+            min(static_cast<std::uint8_t>(get<2>(upper_lower_and_order)),
+                (*reconstruction_order)[recons_order_slice_offset +
+                                        recons_order_index]);
+        ++recons_order_index;
+      }
+    };
 
     // Deal with lower ghost data.
     //
@@ -117,7 +156,8 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
     {
       const auto upper_lower_and_order = Reconstructor::pointwise(
           q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
-      (*recons_lower)[recons_slice_offset] = upper_lower_and_order[1];
+      (*recons_lower)[recons_slice_offset] = get<1>(upper_lower_and_order);
+      set_recons_order(upper_lower_and_order);
     }
 
     for (size_t i = 0; i < ghost_zone_for_stencil; ++i) {
@@ -135,8 +175,10 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
       }
       const auto upper_lower_and_order = Reconstructor::pointwise(
           q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
-      (*recons_upper)[recons_slice_offset + i] = upper_lower_and_order[0];
-      (*recons_lower)[recons_slice_offset + 1 + i] = upper_lower_and_order[1];
+      (*recons_upper)[recons_slice_offset + i] = get<0>(upper_lower_and_order);
+      (*recons_lower)[recons_slice_offset + 1 + i] =
+          get<1>(upper_lower_and_order);
+      set_recons_order(upper_lower_and_order);
     }
 
     // Reconstruct in the bulk
@@ -151,8 +193,10 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
       constexpr int stride = 1;
       const auto upper_lower_and_order = Reconstructor::pointwise(
           &volume_vars[vars_index], stride, args_for_reconstructor...);
-      (*recons_upper)[recons_slice_offset + i] = upper_lower_and_order[0];
-      (*recons_lower)[recons_slice_offset + 1 + i] = upper_lower_and_order[1];
+      (*recons_upper)[recons_slice_offset + i] = get<0>(upper_lower_and_order);
+      (*recons_lower)[recons_slice_offset + 1 + i] =
+          get<1>(upper_lower_and_order);
+      set_recons_order(upper_lower_and_order);
     }
 
     // Reconstruct using upper neighbor data
@@ -193,9 +237,10 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
       const auto upper_lower_and_order = Reconstructor::pointwise(
           q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
       (*recons_upper)[recons_slice_offset + slice_end + i] =
-          upper_lower_and_order[0];
+          get<0>(upper_lower_and_order);
       (*recons_lower)[recons_slice_offset + slice_end + i + 1] =
-          upper_lower_and_order[1];
+          get<1>(upper_lower_and_order);
+      set_recons_order(upper_lower_and_order);
     }
 
     // Reconstruct the upper side of the last face, this is what the
@@ -211,21 +256,29 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
     const auto upper_lower_and_order = Reconstructor::pointwise(
         q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
     (*recons_upper)[recons_slice_offset + volume_extents[0]] =
-        upper_lower_and_order[0];
+        get<0>(upper_lower_and_order);
+    set_recons_order(upper_lower_and_order);
 
   }  // for slices
 }
 
-template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
-void reconstruct(
+template <bool ReturnReconstructionOrder, typename Reconstructor, size_t Dim,
+          typename... ArgsForReconstructor>
+void reconstruct_impl(
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_upper_side_of_face_vars,
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_lower_side_of_face_vars,
+    const gsl::not_null<
+        std::optional<std::array<gsl::span<std::uint8_t>, Dim>>*>
+        reconstruction_order,
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Index<Dim>& volume_extents, const size_t number_of_variables,
     const ArgsForReconstructor&... args_for_reconstructor) {
+  ASSERT(not ReturnReconstructionOrder or reconstruction_order->has_value(),
+         "If ReturnReconstructionOrder is true then reconstruction_order must "
+         "have a value");
 #ifdef SPECTRE_DEBUG
   ASSERT(volume_extents == Index<Dim>(volume_extents[0]),
          "The extents must be isotropic, but got " << volume_extents);
@@ -256,10 +309,16 @@ void reconstruct(
          "Couldn't find lower ghost data in lower-xi");
   ASSERT(ghost_cell_vars.contains(Direction<Dim>::upper_xi()),
          "Couldn't find upper ghost data in upper-xi");
-  reconstruct_impl<Reconstructor>(
+  // Because std::optional.value_or returns by value we want to ensure that we
+  // don't copy any data.
+  gsl::span<std::uint8_t> empty_span{};
+  reconstruct_impl<ReturnReconstructionOrder, Reconstructor>(
       make_not_null(&(*reconstructed_upper_side_of_face_vars)[0]),
-      make_not_null(&(*reconstructed_lower_side_of_face_vars)[0]), volume_vars,
-      ghost_cell_vars.at(Direction<Dim>::lower_xi()),
+      make_not_null(&(*reconstructed_lower_side_of_face_vars)[0]),
+      make_not_null(&(ReturnReconstructionOrder
+                          ? reconstruction_order->value()[0]
+                          : empty_span)),
+      volume_vars, ghost_cell_vars.at(Direction<Dim>::lower_xi()),
       ghost_cell_vars.at(Direction<Dim>::upper_xi()), volume_extents,
       number_of_variables, args_for_reconstructor...);
 
@@ -292,8 +351,11 @@ void reconstruct(
         gsl::make_span(buffer.data() + recons_offset_in_buffer, recons_size);
     gsl::span<double> recons_lower_view = gsl::make_span(
         buffer.data() + recons_offset_in_buffer + recons_size, recons_size);
-    reconstruct_impl<Reconstructor>(
+    reconstruct_impl<ReturnReconstructionOrder, Reconstructor>(
         make_not_null(&recons_upper_view), make_not_null(&recons_lower_view),
+        make_not_null(&(ReturnReconstructionOrder
+                            ? reconstruction_order->value()[1]
+                            : empty_span)),
         gsl::make_span(&buffer[0], volume_vars.size()),
         gsl::make_span(buffer.data() + volume_vars.size(), lower_ghost.size()),
         gsl::make_span(buffer.data() + volume_vars.size() + lower_ghost.size(),
@@ -325,8 +387,11 @@ void reconstruct(
                     ghost_cell_vars.at(Direction<Dim>::upper_zeta()).data(),
                     chunk_size, number_of_neighbor_chunks);
 
-      reconstruct_impl<Reconstructor>(
+      reconstruct_impl<ReturnReconstructionOrder, Reconstructor>(
           make_not_null(&recons_upper_view), make_not_null(&recons_lower_view),
+          make_not_null(&(ReturnReconstructionOrder
+                              ? reconstruction_order->value()[2]
+                              : empty_span)),
           gsl::make_span(&buffer[0], volume_vars.size()),
           gsl::make_span(buffer.data() + volume_vars.size(),
                          lower_ghost.size()),
@@ -346,6 +411,54 @@ void reconstruct(
     }
   }
 }
+
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
+void reconstruct(
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_upper_side_of_face_vars,
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_lower_side_of_face_vars,
+    const gsl::not_null<
+        std::optional<std::array<gsl::span<std::uint8_t>, Dim>>*>
+        reconstruction_order,
+    const gsl::span<const double>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Index<Dim>& volume_extents, const size_t number_of_variables,
+    const ArgsForReconstructor&... args_for_reconstructor) {
+  if (reconstruction_order->has_value()) {
+    reconstruct_impl<true, Reconstructor>(
+        reconstructed_upper_side_of_face_vars,
+        reconstructed_lower_side_of_face_vars, reconstruction_order,
+        volume_vars, ghost_cell_vars, volume_extents, number_of_variables,
+        args_for_reconstructor...);
+  } else {
+    reconstruct_impl<false, Reconstructor>(
+        reconstructed_upper_side_of_face_vars,
+        reconstructed_lower_side_of_face_vars, reconstruction_order,
+        volume_vars, ghost_cell_vars, volume_extents, number_of_variables,
+        args_for_reconstructor...);
+  }
+}
+
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
+void reconstruct(
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_upper_side_of_face_vars,
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_lower_side_of_face_vars,
+    const gsl::span<const double>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Index<Dim>& volume_extents, const size_t number_of_variables,
+    const ArgsForReconstructor&... args_for_reconstructor) {
+  // Do not store reconstruction order.
+  std::optional<std::array<gsl::span<std::uint8_t>, Dim>> reconstruction_order{
+      std::nullopt};
+  reconstruct<Reconstructor>(reconstructed_upper_side_of_face_vars,
+                             reconstructed_lower_side_of_face_vars,
+                             make_not_null(&reconstruction_order), volume_vars,
+                             ghost_cell_vars, volume_extents,
+                             number_of_variables, args_for_reconstructor...);
+}
 }  // namespace detail
 
 template <Side LowerOrUpperSide, typename Reconstructor, bool UseExteriorCell,
@@ -357,6 +470,7 @@ void reconstruct_neighbor(
     const Index<Dim>& ghost_data_extents,
     const Direction<Dim>& direction_to_reconstruct,
     const ArgsForReconstructor&... args_for_reconstructor) {
+  using std::get;
   ASSERT(LowerOrUpperSide == direction_to_reconstruct.side(),
          "The template parameter LowerOrUpperSide ("
              << LowerOrUpperSide
@@ -412,7 +526,7 @@ void reconstruct_neighbor(
     const auto upper_lower_and_order = Reconstructor::pointwise(
         u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
         args_for_reconstructor...);
-    (*face_data)[0] = upper_lower_and_order[index_of_pointwise];
+    (*face_data)[0] = get<index_of_pointwise>(upper_lower_and_order);
   } else if constexpr (Dim == 2) {
     (void)ghost_data_extents;
     if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
@@ -428,7 +542,7 @@ void reconstruct_neighbor(
         const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...);
-        (*face_data)[j] = upper_lower_and_order[index_of_pointwise];
+        (*face_data)[j] = get<index_of_pointwise>(upper_lower_and_order);
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
       for (size_t j = 0; j < volume_extents[1]; ++j) {
@@ -436,13 +550,13 @@ void reconstruct_neighbor(
             volume_data, neighbor_data, {std::numeric_limits<size_t>::max(), j},
             volume_extents, ghost_data_extents,
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                           volume_index_offset>{},
+                                     volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                           ghost_index_offset>{});
+                                     ghost_index_offset>{});
         const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...);
-        (*face_data)[j] = upper_lower_and_order[index_of_pointwise];
+        (*face_data)[j] = get<index_of_pointwise>(upper_lower_and_order);
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
       for (size_t i = 0; i < volume_extents[0]; ++i) {
@@ -457,7 +571,7 @@ void reconstruct_neighbor(
         const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...);
-        (*face_data)[i] = upper_lower_and_order[index_of_pointwise];
+        (*face_data)[i] = get<index_of_pointwise>(upper_lower_and_order);
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
       for (size_t i = 0; i < volume_extents[0]; ++i) {
@@ -465,13 +579,13 @@ void reconstruct_neighbor(
             volume_data, neighbor_data, {i, std::numeric_limits<size_t>::max()},
             volume_extents, ghost_data_extents,
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                           volume_index_offset>{},
+                                     volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                           ghost_index_offset>{});
+                                     ghost_index_offset>{});
         const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...);
-        (*face_data)[i] = upper_lower_and_order[index_of_pointwise];
+        (*face_data)[i] = get<index_of_pointwise>(upper_lower_and_order);
       }
     }
   } else {  // if constexpr (Dim == 3) is true
@@ -492,7 +606,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
@@ -511,7 +625,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
@@ -531,7 +645,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
@@ -550,7 +664,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_zeta()) {
@@ -570,7 +684,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_zeta()) {
@@ -589,7 +703,7 @@ void reconstruct_neighbor(
               u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
               args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
-              upper_lower_and_order[index_of_pointwise];
+              get<index_of_pointwise>(upper_lower_and_order);
         }
       }
     }

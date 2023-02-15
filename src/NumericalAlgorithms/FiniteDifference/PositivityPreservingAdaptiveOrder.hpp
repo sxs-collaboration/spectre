@@ -6,6 +6,8 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <optional>
+#include <tuple>
 #include <utility>
 
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
@@ -32,18 +34,21 @@ namespace detail {
 template <typename LowOrderReconstructor, bool PositivityPreserving,
           bool Use9thOrder, bool Use7thOrder>
 struct PositivityPreservingAdaptiveOrderReconstructor {
-  SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
+  using ReturnType = std::tuple<double, double, std::uint8_t>;
+  SPECTRE_ALWAYS_INLINE static ReturnType pointwise(
       const double* const u, const int stride, const double four_to_the_alpha_5,
-      // GCC9 complains that six_to_the_alpha_7 and eight_to_the_alpha_9 are
-      // unused because if-constexpr
+      // GCC9 complains that six_to_the_alpha_7 and eight_to_the_alpha_9
+      // are unused because if-constexpr
       [[maybe_unused]] const double six_to_the_alpha_7,
       [[maybe_unused]] const double eight_to_the_alpha_9) {
+    using std::get;
     if constexpr (Use9thOrder) {
-      const std::array order_9_result =
-          UnlimitedReconstructor<8>::pointwise(u, stride);
+      const auto unlimited_9 = UnlimitedReconstructor<8>::pointwise(u, stride);
+      const ReturnType order_9_result{get<0>(unlimited_9), get<1>(unlimited_9),
+                                      9};
 
-      if (not PositivityPreserving or
-          LIKELY(order_9_result[0] > 0.0 and order_9_result[1] > 0.0)) {
+      if (not PositivityPreserving or LIKELY(get<0>(order_9_result) > 0.0 and
+                                             get<1>(order_9_result) > 0.0)) {
         const double order_9_norm_of_top_modal_coefficient = square(
             -1.593380762005595 * u[stride] +
             0.7966903810027975 * u[2 * stride] -
@@ -109,11 +114,12 @@ struct PositivityPreservingAdaptiveOrderReconstructor {
     }
 
     if constexpr (Use7thOrder) {
-      const std::array order_7_result =
-          UnlimitedReconstructor<6>::pointwise(u, stride);
+      const auto unlimited_7 = UnlimitedReconstructor<6>::pointwise(u, stride);
+      const ReturnType order_7_result{get<0>(unlimited_7), get<1>(unlimited_7),
+                                      7};
 
-      if (not PositivityPreserving or
-          LIKELY(order_7_result[0] > 0.0 and order_7_result[1] > 0.0)) {
+      if (not PositivityPreserving or LIKELY(get<0>(order_7_result) > 0.0 and
+                                             get<1>(order_7_result) > 0.0)) {
         const double order_7_norm_of_top_modal_coefficient =
             square(0.06936287633138594 * u[-3 * stride] -
                    0.4161772579883155 * u[-2 * stride] +
@@ -159,10 +165,11 @@ struct PositivityPreservingAdaptiveOrderReconstructor {
         }
       }
     }
-    const std::array order_5_result =
-        UnlimitedReconstructor<4>::pointwise(u, stride);
+    const auto unlimited_5 = UnlimitedReconstructor<4>::pointwise(u, stride);
+    const ReturnType order_5_result{get<0>(unlimited_5), get<1>(unlimited_5),
+                                    5};
     if (not PositivityPreserving or
-        LIKELY(order_5_result[0] > 0.0 and order_5_result[1] > 0.0)) {
+        LIKELY(get<0>(order_5_result) > 0.0 and get<1>(order_5_result) > 0.0)) {
       // The Persson sensor is 4^alpha L2(\hat{u}) <= L2(u)
       const double order_5_norm_of_top_modal_coefficient =
           0.2222222222222222 * square(-1.4880952380952381 * u[stride] +
@@ -204,13 +211,14 @@ struct PositivityPreservingAdaptiveOrderReconstructor {
       }
     }
     // Drop to low-order reconstructor
-    const auto low_order_result = LowOrderReconstructor::pointwise(u, stride);
-    if (not PositivityPreserving or
-        LIKELY(low_order_result[0] > 0.0 and low_order_result[1] > 0.0)) {
+    const auto low_order = LowOrderReconstructor::pointwise(u, stride);
+    const ReturnType low_order_result{get<0>(low_order), get<1>(low_order), 2};
+    if (not PositivityPreserving or LIKELY(get<0>(low_order_result) > 0.0 and
+                                           get<1>(low_order_result) > 0.0)) {
       return low_order_result;
     }
     // 1st-order reconstruction to guarantee positivity
-    return {{u[0], u[0]}};
+    return {u[0], u[0], 1};
   }
 
   SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() {
@@ -219,6 +227,7 @@ struct PositivityPreservingAdaptiveOrderReconstructor {
 };
 }  // namespace detail
 
+/// @{
 /*!
  * \ingroup FiniteDifferenceGroup
  * \brief Performs positivity-preserving adaptive-order FD reconstruction.
@@ -293,20 +302,58 @@ void positivity_preserving_adaptive_order(
       six_to_the_alpha_7, eight_to_the_alpha_9);
 }
 
+template <typename LowOrderReconstructor, bool PositivityPreserving,
+          bool Use9thOrder, bool Use7thOrder, size_t Dim>
+void positivity_preserving_adaptive_order(
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_upper_side_of_face_vars,
+    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_lower_side_of_face_vars,
+    const gsl::not_null<
+        std::optional<std::array<gsl::span<std::uint8_t>, Dim>>*>
+        reconstruction_order,
+    const gsl::span<const double>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Index<Dim>& volume_extents, const size_t number_of_variables,
+    const double four_to_the_alpha_5, const double six_to_the_alpha_7,
+    const double eight_to_the_alpha_9) {
+  detail::reconstruct<detail::PositivityPreservingAdaptiveOrderReconstructor<
+      LowOrderReconstructor, PositivityPreserving, Use9thOrder, Use7thOrder>>(
+      reconstructed_upper_side_of_face_vars,
+      reconstructed_lower_side_of_face_vars, reconstruction_order, volume_vars,
+      ghost_cell_vars, volume_extents, number_of_variables, four_to_the_alpha_5,
+      six_to_the_alpha_7, eight_to_the_alpha_9);
+}
+/// @}
+
+namespace detail {
+template <size_t Dim, bool ReturnReconstructionOrder>
+using ppao_recons_type = tmpl::conditional_t<
+    ReturnReconstructionOrder,
+    void (*)(
+        gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+        gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+        gsl::not_null<std::optional<std::array<gsl::span<std::uint8_t>, Dim>>*>,
+        const gsl::span<const double>&,
+        const DirectionMap<Dim, gsl::span<const double>>&, const Index<Dim>&,
+        size_t, double, double, double),
+    void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+             gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+             const gsl::span<const double>&,
+             const DirectionMap<Dim, gsl::span<const double>>&,
+             const Index<Dim>&, size_t, double, double, double)>;
+}
+
 /*!
  * \brief Returns function pointers to the
  * `positivity_preserving_adaptive_order` function, lower neighbor
  * reconstruction, and upper neighbor reconstruction.
  */
-template <size_t Dim>
+template <size_t Dim, bool ReturnReconstructionOrder>
 auto positivity_preserving_adaptive_order_function_pointers(
     bool positivity_preserving, bool use_9th_order, bool use_7th_order,
     FallbackReconstructorType fallback_recons)
-    -> std::tuple<void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-                           gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-                           const gsl::span<const double>&,
-                           const DirectionMap<Dim, gsl::span<const double>>&,
-                           const Index<Dim>&, size_t, double, double, double),
+    -> std::tuple<detail::ppao_recons_type<Dim, ReturnReconstructionOrder>,
                   void (*)(gsl::not_null<DataVector*>, const DataVector&,
                            const DataVector&, const Index<Dim>&,
                            const Index<Dim>&, const Direction<Dim>&,

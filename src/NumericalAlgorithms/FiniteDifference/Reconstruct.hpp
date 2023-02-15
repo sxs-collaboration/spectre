@@ -95,13 +95,27 @@ namespace reconstruction {
 namespace detail {
 template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
 void reconstruct(
-    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+    gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_upper_side_of_face_vars,
-    const gsl::not_null<std::array<gsl::span<double>, Dim>*>
+    gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_lower_side_of_face_vars,
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
-    const Index<Dim>& volume_extents, const size_t number_of_variables,
+    const Index<Dim>& volume_extents, size_t number_of_variables,
+    const ArgsForReconstructor&... args_for_reconstructor);
+
+// Overload used to get the reconstruction order used in each cell.
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
+void reconstruct(
+    gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_upper_side_of_face_vars,
+    gsl::not_null<std::array<gsl::span<double>, Dim>*>
+        reconstructed_lower_side_of_face_vars,
+    gsl::not_null<std::optional<std::array<gsl::span<std::uint8_t>, Dim>>*>
+        reconstruction_order,
+    const gsl::span<const double>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Index<Dim>& volume_extents, size_t number_of_variables,
     const ArgsForReconstructor&... args_for_reconstructor);
 }  // namespace detail
 
