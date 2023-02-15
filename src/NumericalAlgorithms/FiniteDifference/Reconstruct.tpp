@@ -114,8 +114,11 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
          ++j, ++k) {
       gsl::at(q, j) = volume_vars[vars_slice_offset + k];
     }
-    (*recons_lower)[recons_slice_offset] = Reconstructor::pointwise(
-        q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...)[1];
+    {
+      const auto upper_lower_and_order = Reconstructor::pointwise(
+          q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
+      (*recons_lower)[recons_slice_offset] = upper_lower_and_order[1];
+    }
 
     for (size_t i = 0; i < ghost_zone_for_stencil; ++i) {
       // offset comes from accounting for the 1 extra point in our ghost
@@ -130,11 +133,10 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
            ++j, ++k) {
         gsl::at(q, j) = volume_vars[vars_slice_offset + k];
       }
-      const auto [upper_side_of_face, lower_side_of_face] =
-          Reconstructor::pointwise(q.data() + ghost_zone_for_stencil, 1,
-                                   args_for_reconstructor...);
-      (*recons_upper)[recons_slice_offset + i] = upper_side_of_face;
-      (*recons_lower)[recons_slice_offset + 1 + i] = lower_side_of_face;
+      const auto upper_lower_and_order = Reconstructor::pointwise(
+          q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
+      (*recons_upper)[recons_slice_offset + i] = upper_lower_and_order[0];
+      (*recons_lower)[recons_slice_offset + 1 + i] = upper_lower_and_order[1];
     }
 
     // Reconstruct in the bulk
@@ -147,11 +149,10 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
       // cells where the reconstruction needs boundary data we copy into a
       // `std::array` buffer, which means we always have unit stride.
       constexpr int stride = 1;
-      const auto [upper_side_of_face, lower_side_of_face] =
-          Reconstructor::pointwise(&volume_vars[vars_index], stride,
-                                   args_for_reconstructor...);
-      (*recons_upper)[recons_slice_offset + i] = upper_side_of_face;
-      (*recons_lower)[recons_slice_offset + 1 + i] = lower_side_of_face;
+      const auto upper_lower_and_order = Reconstructor::pointwise(
+          &volume_vars[vars_index], stride, args_for_reconstructor...);
+      (*recons_upper)[recons_slice_offset + i] = upper_lower_and_order[0];
+      (*recons_lower)[recons_slice_offset + 1 + i] = upper_lower_and_order[1];
     }
 
     // Reconstruct using upper neighbor data
@@ -189,12 +190,12 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
         gsl::at(q, j) = upper_ghost_data[vars_neighbor_slice_offset + k];
       }
 
-      const auto [upper_side_of_face, lower_side_of_face] =
-          Reconstructor::pointwise(q.data() + ghost_zone_for_stencil, 1,
-                                   args_for_reconstructor...);
-      (*recons_upper)[recons_slice_offset + slice_end + i] = upper_side_of_face;
+      const auto upper_lower_and_order = Reconstructor::pointwise(
+          q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
+      (*recons_upper)[recons_slice_offset + slice_end + i] =
+          upper_lower_and_order[0];
       (*recons_lower)[recons_slice_offset + slice_end + i + 1] =
-          lower_side_of_face;
+          upper_lower_and_order[1];
     }
 
     // Reconstruct the upper side of the last face, this is what the
@@ -207,9 +208,11 @@ void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
          ++j, ++k) {
       gsl::at(q, j) = upper_ghost_data[vars_neighbor_slice_offset + k];
     }
+    const auto upper_lower_and_order = Reconstructor::pointwise(
+        q.data() + ghost_zone_for_stencil, 1, args_for_reconstructor...);
     (*recons_upper)[recons_slice_offset + volume_extents[0]] =
-        Reconstructor::pointwise(q.data() + ghost_zone_for_stencil, 1,
-                                 args_for_reconstructor...)[0];
+        upper_lower_and_order[0];
+
   }  // for slices
 }
 
@@ -406,9 +409,10 @@ void reconstruct_neighbor(
           std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                    ghost_index_offset>{});
     }
-    (*face_data)[0] = Reconstructor::pointwise(
+    const auto upper_lower_and_order = Reconstructor::pointwise(
         u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-        args_for_reconstructor...)[index_of_pointwise];
+        args_for_reconstructor...);
+    (*face_data)[0] = upper_lower_and_order[index_of_pointwise];
   } else if constexpr (Dim == 2) {
     (void)ghost_data_extents;
     if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
@@ -421,9 +425,10 @@ void reconstruct_neighbor(
                                      volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                      ghost_index_offset>{});
-        (*face_data)[j] = Reconstructor::pointwise(
+        const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-            args_for_reconstructor...)[index_of_pointwise];
+            args_for_reconstructor...);
+        (*face_data)[j] = upper_lower_and_order[index_of_pointwise];
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
       for (size_t j = 0; j < volume_extents[1]; ++j) {
@@ -434,9 +439,10 @@ void reconstruct_neighbor(
                                            volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                            ghost_index_offset>{});
-        (*face_data)[j] = Reconstructor::pointwise(
+        const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-            args_for_reconstructor...)[index_of_pointwise];
+            args_for_reconstructor...);
+        (*face_data)[j] = upper_lower_and_order[index_of_pointwise];
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
       for (size_t i = 0; i < volume_extents[0]; ++i) {
@@ -448,9 +454,10 @@ void reconstruct_neighbor(
                                      volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                      ghost_index_offset>{});
-        (*face_data)[i] = Reconstructor::pointwise(
+        const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-            args_for_reconstructor...)[index_of_pointwise];
+            args_for_reconstructor...);
+        (*face_data)[i] = upper_lower_and_order[index_of_pointwise];
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
       for (size_t i = 0; i < volume_extents[0]; ++i) {
@@ -461,9 +468,10 @@ void reconstruct_neighbor(
                                            volume_index_offset>{},
             std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                            ghost_index_offset>{});
-        (*face_data)[i] = Reconstructor::pointwise(
+        const auto upper_lower_and_order = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-            args_for_reconstructor...)[index_of_pointwise];
+            args_for_reconstructor...);
+        (*face_data)[i] = upper_lower_and_order[index_of_pointwise];
       }
     }
   } else {  // if constexpr (Dim == 3) is true
@@ -480,10 +488,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
@@ -498,10 +507,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
@@ -517,10 +527,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
@@ -535,10 +546,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_zeta()) {
@@ -554,10 +566,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     } else if (direction_to_reconstruct == Direction<Dim>::upper_zeta()) {
@@ -572,10 +585,11 @@ void reconstruct_neighbor(
                                        volume_index_offset>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
                                        ghost_index_offset>{});
+          const auto upper_lower_and_order = Reconstructor::pointwise(
+              u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+              args_for_reconstructor...);
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
-              Reconstructor::pointwise(
-                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
-                  args_for_reconstructor...)[index_of_pointwise];
+              upper_lower_and_order[index_of_pointwise];
         }
       }
     }
