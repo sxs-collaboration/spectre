@@ -11,9 +11,9 @@
 #include "Utilities/Gsl.hpp"
 
 /*!
- * \brief Compute the Euclidean surface element from the inverse jacobian.
+ * \brief Compute the Euclidean are element from the inverse jacobian.
  *
- * \details The Euclidean surface element of a surface \f$\Sigma\f$ with
+ * \details The Euclidean area element of a surface \f$\Sigma\f$ with
  * constant logical coordinate \f$\xi^i\f$ is given by:
  *
  * \f{equation}
@@ -25,7 +25,7 @@
  * x^j\f$. The determinant of the inverse Jacobian can be passed as an argument
  * as an overload, otherwise it will be calculated.
  *
- * \note The curved space surface element as well as time dependent maps are not
+ * \note The curved space area element as well as time dependent maps are not
  * implemented yet but can be added on demand.
  *
  * \param inverse_jacobian_face The inverse Jacobian from the ElementLogical
@@ -36,7 +36,7 @@
  * \param direction The direction of the surface in the element.
  * */
 template <size_t VolumeDim, typename TargetFrame>
-void euclidean_surface_jacobian(
+void euclidean_area_element(
     const gsl::not_null<Scalar<DataVector>*> result,
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inverse_jacobian_face,
@@ -44,21 +44,22 @@ void euclidean_surface_jacobian(
     const Direction<VolumeDim>& direction);
 
 template <size_t VolumeDim, typename TargetFrame>
-void euclidean_surface_jacobian(
+void euclidean_area_element(
     const gsl::not_null<Scalar<DataVector>*> result,
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inverse_jacobian_face,
     const Direction<VolumeDim>& direction);
 
 template <size_t VolumeDim, typename TargetFrame>
-Scalar<DataVector> euclidean_surface_jacobian(
+Scalar<DataVector> euclidean_area_element(
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inverse_jacobian_face,
     const Scalar<DataVector>& inverse_jacobian_determinant_face,
     const Direction<VolumeDim>& direction);
 
 template <size_t VolumeDim, typename TargetFrame>
-Scalar<DataVector> euclidean_surface_jacobian(
+Scalar<DataVector> euclidean_area_element(
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inverse_jacobian_face,
     const Direction<VolumeDim>& direction);
+

@@ -8,6 +8,7 @@ add_subdirectory(Tags)
 set(LIBRARY "Test_Domain")
 
 set(LIBRARY_SOURCES
+  Test_AreaElement.cpp
   Test_Block.cpp
   Test_BlockAndElementLogicalCoordinates.cpp
   Test_CoordinatesTag.cpp
@@ -28,7 +29,6 @@ set(LIBRARY_SOURCES
   Test_Protocols.cpp
   Test_RadiallyCompressedCoordinates.cpp
   Test_SizeOfElement.cpp
-  Test_SurfaceJacobian.cpp
   Test_Tags.cpp
   Test_TagsCharacteristicSpeeds.cpp
   Test_TagsTimeDependent.cpp

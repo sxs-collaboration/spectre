@@ -14,10 +14,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/AreaElement.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
-#include "Domain/SurfaceJacobian.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
@@ -116,8 +116,8 @@ struct SendToWorldtube {
       // re-use allocations
       Scalar<DataVector>& area_element =
           get<::Tags::TempScalar<0>>(vars_on_face);
-      euclidean_surface_jacobian(make_not_null(&area_element),
-                                 face_inv_jacobian, direction.value());
+      euclidean_area_element(make_not_null(&area_element), face_inv_jacobian,
+                             direction.value());
       // re-use allocations
       DataVector& psi_regular_times_det = get<0, 0>(face_inv_jacobian);
       DataVector& dt_psi_regular_times_det = get<0, 1>(face_inv_jacobian);

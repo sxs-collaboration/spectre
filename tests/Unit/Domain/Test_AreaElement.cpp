@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/AreaElement.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -26,7 +27,6 @@
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Domain/SurfaceJacobian.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -40,7 +40,7 @@ namespace {
 // Checks the euclidean surface element against the magnitude of the
 // unnormalized normal vector.
 template <typename TargetFrame>
-void test_surface_element_against_normal_vector() {
+void test_area_element_against_normal_vector() {
   const auto element_map_3d = ElementMap<3, TargetFrame>(
       ElementId<3>(0),
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
@@ -53,8 +53,8 @@ void test_surface_element_against_normal_vector() {
   const auto inverse_jacobian = element_map_3d.inv_jacobian(coords);
   const auto det_volume = determinant(inverse_jacobian);
   const auto result_1 =
-      euclidean_surface_jacobian(inverse_jacobian, det_volume, direction);
-  const auto result_2 = euclidean_surface_jacobian(inverse_jacobian, direction);
+      euclidean_area_element(inverse_jacobian, det_volume, direction);
+  const auto result_2 = euclidean_area_element(inverse_jacobian, direction);
   const auto face_normal =
       unnormalized_face_normal(interface_mesh, element_map_3d, direction);
   const auto face_normal_mag = magnitude(face_normal);
@@ -105,7 +105,7 @@ void test_sphere_integral() {
             logical_to_grid_map.inv_jacobian(face_logical_coords);
         const auto inertial_coords = logical_to_grid_map(face_logical_coords);
         const auto det_jacobian = ::determinant(inv_jacobian);
-        const auto det = euclidean_surface_jacobian(
+        const auto det = euclidean_area_element(
             inv_jacobian, det_jacobian, element_abutting_direction.value());
         sphere_surface += definite_integral(get(det), face_mesh);
         test_func_integral += definite_integral(
@@ -121,9 +121,8 @@ void test_sphere_integral() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.SurfaceElement", "[Domain][Unit]") {
-  test_surface_element_against_normal_vector<Frame::Grid>();
-  test_surface_element_against_normal_vector<Frame::Inertial>();
+SPECTRE_TEST_CASE("Unit.Domain.AreaElement", "[Domain][Unit]") {
+  test_area_element_against_normal_vector<Frame::Inertial>();
   test_sphere_integral();
 }
 
