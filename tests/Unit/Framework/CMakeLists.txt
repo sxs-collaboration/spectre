@@ -31,3 +31,15 @@ target_link_libraries(
   Python::Python
   Utilities
   )
+
+# Give SetupLocalPythonEnvironment access to installed Python packages.
+# The Python interpreter usually takes care of adding this directory to the path
+# at launch, but in SetupLocalPythonEnvironment we just link in Python. The
+# linked Python libs may reside in a different place than the Python interpreter
+# (in particular when the Python interpreter was symlinked to a venv). Thefore,
+# SetupLocalPythonEnvironment needs to add this directory to the path as well.
+target_compile_definitions(
+  ${LIBRARY}
+  PRIVATE
+  PYTHON_SITELIB="${Python_SITELIB}"
+)
