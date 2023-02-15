@@ -43,7 +43,16 @@ struct Mesh;
 /// \endcond
 
 namespace control_system::measurements {
+/*!
+ * \brief A `control_system::protocols::Measurement` that relies on two apparent
+ * horizons.
+ */
 struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
+  /*!
+   * \brief A `control_system::protocols::Submeasurement` that starts the
+   * interpolation to the interpolation target in order to find the apparent
+   * horizon given by the template parameter `Horizon`.
+   */
   template <::domain::ObjectLabel Horizon>
   struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
    private:
