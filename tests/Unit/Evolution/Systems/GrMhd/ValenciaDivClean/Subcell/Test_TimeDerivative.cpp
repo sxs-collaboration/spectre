@@ -5,13 +5,18 @@
 
 #include <array>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -29,6 +34,7 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -41,10 +47,13 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -114,11 +123,15 @@ auto face_centered_gr_tags(
   return face_centered_gr_vars;
 }
 
-std::array<double, 5> test(const size_t num_dg_pts) {
+std::array<double, 5> test(const size_t num_dg_pts,
+                           const std::optional<size_t> fd_derivative_order) {
+  using flux_tags =
+      db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
+                       tmpl::size_t<3>, Frame::Inertial>;
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  const Affine affine_map{-1.0, 1.0, 8.0, 9.0};
+  const Affine affine_map{-1.0, 1.0, 7.0, 10.0};
   const auto coordinate_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{affine_map, affine_map, affine_map});
@@ -130,6 +143,13 @@ std::array<double, 5> test(const size_t num_dg_pts) {
                0,
                {}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
+
+  const grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim
+      recons{
+          3.8, std::nullopt, 4.0,
+          ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral};
+  REQUIRE((not fd_derivative_order.has_value() or
+           (fd_derivative_order.value() / 2 <= recons.ghost_zone_size())));
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
@@ -176,14 +196,44 @@ std::array<double, 5> test(const size_t num_dg_pts) {
     const auto neighbor_prims =
         soln.variables(neighbor_coords, time,
                        typename System::primitive_variables_tag::tags_list{});
+    static constexpr size_t prim_components =
+        Variables<prims_to_reconstruct_tags>::number_of_independent_components;
+    DataVector volume_neighbor_data{
+        (prim_components +
+         ((fd_derivative_order.value_or(2) > 2)
+              ? Variables<flux_tags>::number_of_independent_components
+              : 0)) *
+            subcell_mesh.number_of_grid_points(),
+        0.0};
+    if (fd_derivative_order.value_or(2) > 2) {
+      Variables<typename System::spacetime_variables_tag::tags_list>
+          neighbor_cell_centered_spacetime_vars{
+              subcell_mesh.number_of_grid_points()};
+      neighbor_cell_centered_spacetime_vars.assign_subset(soln.variables(
+          neighbor_coords, time,
+          typename System::spacetime_variables_tag::tags_list{}));
+      Variables<typename System::variables_tag::tags_list> neighbor_cons{
+          subcell_mesh.number_of_grid_points()};
+      apply(make_not_null(&neighbor_cons),
+            grmhd::ValenciaDivClean::ConservativeFromPrimitive{},
+            neighbor_cell_centered_spacetime_vars, neighbor_prims);
+
+      Variables<flux_tags> neighbor_fluxes{
+          std::next(
+              volume_neighbor_data.data(),
+              static_cast<std::ptrdiff_t>(
+                  prim_components * subcell_mesh.number_of_grid_points())),
+          Variables<flux_tags>::number_of_independent_components *
+              subcell_mesh.number_of_grid_points()};
+      apply(make_not_null(&neighbor_fluxes),
+            grmhd::ValenciaDivClean::ComputeFluxes{},
+            neighbor_cell_centered_spacetime_vars, neighbor_prims,
+            neighbor_cons);
+    }
     Variables<prims_to_reconstruct_tags> prims_to_reconstruct{
-        subcell_mesh.number_of_grid_points()};
-    get<hydro::Tags::RestMassDensity<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::RestMassDensity<DataVector>>(neighbor_prims);
-    get<hydro::Tags::ElectronFraction<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::ElectronFraction<DataVector>>(neighbor_prims);
-    get<hydro::Tags::Pressure<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::Pressure<DataVector>>(neighbor_prims);
+        volume_neighbor_data.data(),
+        prim_components * subcell_mesh.number_of_grid_points()};
+    prims_to_reconstruct.assign_subset(neighbor_prims);
     get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
         prims_to_reconstruct) =
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(neighbor_prims);
@@ -193,21 +243,13 @@ std::array<double, 5> test(const size_t num_dg_pts) {
       component *=
           get(get<hydro::Tags::LorentzFactor<DataVector>>(neighbor_prims));
     }
-    get<hydro::Tags::MagneticField<DataVector, 3>>(prims_to_reconstruct) =
-        get<hydro::Tags::MagneticField<DataVector, 3>>(neighbor_prims);
-    get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-        prims_to_reconstruct) =
-        get<hydro::Tags::DivergenceCleaningField<DataVector>>(neighbor_prims);
-
     // Slice data so we can add it to the element's neighbor data
     DirectionMap<3, bool> directions_to_slice{};
     directions_to_slice[direction.opposite()] = true;
     DataVector neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
-            prims_to_reconstruct, subcell_mesh.extents(),
-            grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim{}
-                .ghost_zone_size(),
-            directions_to_slice, 0)
+            volume_neighbor_data, subcell_mesh.extents(),
+            recons.ghost_zone_size(), directions_to_slice, 0)
             .at(direction.opposite());
     neighbor_data[std::pair{direction,
                             *element.neighbors().at(direction).begin()}] =
@@ -228,6 +270,22 @@ std::array<double, 5> test(const size_t num_dg_pts) {
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       dummy_functions_of_time{};
 
+  using CellCenteredFluxesTag = evolution::dg::subcell::Tags::CellCenteredFlux<
+      typename System::flux_variables, 3>;
+  typename CellCenteredFluxesTag::type cell_centered_fluxes{};
+  if (fd_derivative_order.value_or(2) > 2) {
+    Variables<typename System::variables_tag::tags_list> cons{
+        subcell_mesh.number_of_grid_points()};
+    apply(make_not_null(&cons),
+          grmhd::ValenciaDivClean::ConservativeFromPrimitive{},
+          cell_centered_spacetime_vars, cell_centered_prim_vars);
+
+    cell_centered_fluxes =
+        Variables<flux_tags>{subcell_mesh.number_of_grid_points()};
+    apply(make_not_null(&(cell_centered_fluxes.value())),
+          grmhd::ValenciaDivClean::ComputeFluxes{},
+          cell_centered_spacetime_vars, cell_centered_prim_vars, cons);
+  }
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
@@ -248,13 +306,14 @@ std::array<double, 5> test(const size_t num_dg_pts) {
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
-          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>>,
+          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
+          CellCenteredFluxesTag,
+          evolution::dg::subcell::Tags::SubcellOptions<3>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
       element, subcell_mesh,
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
-          std::make_unique<
-              grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim>()},
+          std::make_unique<std::decay_t<decltype(recons)>>(recons)},
       std::unique_ptr<
           grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<
@@ -275,7 +334,12 @@ std::array<double, 5> test(const size_t num_dg_pts) {
       std::move(dummy_domain), dummy_volume_mesh_velocity,
       dummy_normal_covector_and_magnitude, dummy_time,
       clone_unique_ptrs(dummy_functions_of_time),
-      grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{});
+      grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
+      cell_centered_fluxes,
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-7, 1.0e-3, 1.0e-7, 1.0e-3, 4.0, 4.0, false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          std::nullopt, fd_derivative_order});
 
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
@@ -300,17 +364,35 @@ std::array<double, 5> test(const size_t num_dg_pts) {
            max(get(magnitude(get<::Tags::dt<Tags::TildeB<>>>(dt_vars))))}};
 }
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.ValenciaDivClean.Subcell.TimeDerivative",
     "[Unit][Evolution]") {
-  // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and verifies
-  // that the time derivative vanishes. Or, more specifically, that the time
-  // derivative decreases with increasing resolution.
-  const auto four_pts_data = test(4);
-  const auto eight_pts_data = test(8);
+  using sos = std::optional<size_t>;
+  std::optional<std::array<double, 5>> previous_error_5{};
+  std::optional<std::array<double, 5>> previous_error_6{};
+  for (const sos fd_do : {sos{}, sos{2}, sos{4}, sos{6}, sos{8}, sos{10}}) {
+    CAPTURE(fd_do);
+    // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
+    // verifies that the time derivative vanishes. Or, more specifically, that
+    // the time derivative decreases with increasing resolution.
+    const auto five_pts_data = test(5, fd_do);
+    const auto six_pts_data = test(6, fd_do);
 
-  for (size_t i = 0; i < four_pts_data.size(); ++i) {
-    CHECK(gsl::at(eight_pts_data, i) < gsl::at(four_pts_data, i));
+    for (size_t i = 0; i < five_pts_data.size(); ++i) {
+      CAPTURE(i);
+      CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
+      // Check that as we increase the order of the FD derivative the error
+      // decreases.
+      if (previous_error_5.has_value() and fd_do.value_or(2) > 2) {
+        CHECK(gsl::at(five_pts_data, i) < gsl::at(previous_error_5.value(), i));
+      }
+      if (previous_error_6.has_value() and fd_do.value_or(2) > 2) {
+        CHECK(gsl::at(six_pts_data, i) < gsl::at(previous_error_6.value(), i));
+      }
+    }
+    previous_error_5 = five_pts_data;
+    previous_error_6 = six_pts_data;
   }
 }
 }  // namespace
