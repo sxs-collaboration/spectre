@@ -838,7 +838,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     }
   }
   excision_spheres.emplace(
-      "ObjectAExcisionSphere",
+      "ExcisionSphereA",
       ExcisionSphere<3>{
           radius_A_,
           tnsr::I<double, 3, Frame::Grid>(rotate_from_z_to_x_axis(center_A_)),
@@ -868,7 +868,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     }
   }
   excision_spheres.emplace(
-      "ObjectBExcisionSphere",
+      "ExcisionSphereB",
       ExcisionSphere<3>{
           radius_B_,
           tnsr::I<double, 3, Frame::Grid>(rotate_from_z_to_x_axis(center_B_)),

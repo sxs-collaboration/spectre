@@ -108,10 +108,8 @@ void test_translation_control_system() {
   const std::string translation_name =
       system_helper.template name<translation_system>();
 
-  auto grid_center_A =
-      domain.excision_spheres().at("ObjectAExcisionSphere").center();
-  auto grid_center_B =
-      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+  auto grid_center_A = domain.excision_spheres().at("ExcisionSphereA").center();
+  auto grid_center_B = domain.excision_spheres().at("ExcisionSphereB").center();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

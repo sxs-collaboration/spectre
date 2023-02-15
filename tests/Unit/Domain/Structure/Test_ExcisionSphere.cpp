@@ -113,7 +113,7 @@ void test_abutting_direction_shell() {
       const auto& initial_ref_levels = shell.initial_refinement_levels();
       const auto element_ids = initial_element_ids(initial_ref_levels);
       const auto excision_sphere =
-          shell_domain.excision_spheres().at("CentralExcisionSphere");
+          shell_domain.excision_spheres().at("ExcisionSphere");
       const auto& abutting_directions = excision_sphere.abutting_directions();
       size_t num_excision_neighbors = 0;
       const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,

@@ -248,7 +248,7 @@ void test_connectivity() {
         expected_excision_spheres{};
     if (excise_interiorA) {
       expected_excision_spheres.emplace(
-          "ObjectAExcisionSphere",
+          "ExcisionSphereA",
           ExcisionSphere<3>{
               inner_radius_objectA,
               tnsr::I<double, 3, Frame::Grid>{{xcoord_objectA, 0.0, 0.0}},
@@ -261,7 +261,7 @@ void test_connectivity() {
     }
     if (excise_interiorB) {
       expected_excision_spheres.emplace(
-          "ObjectBExcisionSphere",
+          "ExcisionSphereB",
           ExcisionSphere<3>{
               inner_radius_objectB,
               tnsr::I<double, 3, Frame::Grid>{{xcoord_objectB, 0.0, 0.0}},

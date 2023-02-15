@@ -294,10 +294,10 @@ void test_connectivity_once(const bool with_sphere_e,
 
     CHECK(domain.excision_spheres().size() == 2);
     const auto& excision_sphere_a =
-        domain.excision_spheres().at("ObjectAExcisionSphere");
+        domain.excision_spheres().at("ExcisionSphereA");
     CHECK(excision_sphere_a.radius() == inner_radius_objectA);
     const auto& excision_sphere_b =
-        domain.excision_spheres().at("ObjectBExcisionSphere");
+        domain.excision_spheres().at("ExcisionSphereB");
     CHECK(excision_sphere_b.radius() == inner_radius_objectB);
     for (size_t i = 0; i < 3; ++i) {
       CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));

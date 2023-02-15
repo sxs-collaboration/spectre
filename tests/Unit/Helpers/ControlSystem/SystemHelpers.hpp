@@ -118,7 +118,7 @@ class FakeCreator : public DomainCreator<3> {
     std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
     if (number_of_excisions_ > 0) {
       excision_spheres.insert(
-          {"ObjectAExcisionSphere",
+          {"ExcisionSphereA",
            ExcisionSphere<3>{1.3,
                              tnsr::I<double, 3, Frame::Grid>{{+0.9, 0.0, 0.0}},
                              {{0, Direction<3>::lower_zeta()},
@@ -130,7 +130,7 @@ class FakeCreator : public DomainCreator<3> {
     }
     if (number_of_excisions_ > 1) {
       excision_spheres.insert(
-          {"ObjectBExcisionSphere",
+          {"ExcisionSphereB",
            ExcisionSphere<3>{0.8,
                              tnsr::I<double, 3, Frame::Grid>{{-1.1, 0.0, 0.0}},
                              {{0, Direction<3>::lower_zeta()},
@@ -601,7 +601,7 @@ struct SystemHelper {
     // have these specific names hard-coded into them.
     stored_excision_spheres_ =
         std::unordered_map<std::string, ExcisionSphere<3>>{
-            {"ObjectAExcisionSphere",
+            {"ExcisionSphereA",
              ExcisionSphere<3>{excision_radius,
                                tnsr::I<double, 3, Frame::Grid>{
                                    {+0.5 * initial_separation, 0.0, 0.0}},
@@ -611,7 +611,7 @@ struct SystemHelper {
                                 {3, Direction<3>::lower_zeta()},
                                 {4, Direction<3>::lower_zeta()},
                                 {5, Direction<3>::lower_zeta()}}}},
-            {"ObjectBExcisionSphere",
+            {"ExcisionSphereB",
              ExcisionSphere<3>{excision_radius,
                                tnsr::I<double, 3, Frame::Grid>{
                                    {-0.5 * initial_separation, 0.0, 0.0}},

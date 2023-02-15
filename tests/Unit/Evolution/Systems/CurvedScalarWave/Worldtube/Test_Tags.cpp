@@ -19,17 +19,17 @@ void test_excision_sphere_tag() {
       std::make_unique<domain::creators::Shell>(
           1., 2., 2, std::array<size_t, 2>{{4, 4}}, true);
   const auto shell_excision_sphere =
-      shell->create_domain().excision_spheres().at("CentralExcisionSphere");
+      shell->create_domain().excision_spheres().at("ExcisionSphere");
 
   CHECK(
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<3>::create_from_options(
-          shell, "CentralExcisionSphere") == shell_excision_sphere);
+          shell, "ExcisionSphere") == shell_excision_sphere);
   CHECK_THROWS_WITH(
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<3>::create_from_options(
           shell, "OtherExcisionSphere"),
       Catch::Matchers::Contains(
           "Specified excision sphere 'OtherExcisionSphere' not available. "
-          "Available excision spheres are: (CentralExcisionSphere)"));
+          "Available excision spheres are: (ExcisionSphere)"));
 }
 }  // namespace
 

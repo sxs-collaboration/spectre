@@ -75,10 +75,8 @@ void test_expansion_control_error() {
   const std::string expansion_name =
       system_helper.template name<expansion_system>();
 
-  auto grid_center_A =
-      domain.excision_spheres().at("ObjectAExcisionSphere").center();
-  auto grid_center_B =
-      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+  auto grid_center_A = domain.excision_spheres().at("ExcisionSphereA").center();
+  auto grid_center_B = domain.excision_spheres().at("ExcisionSphereB").center();
 
   // Setup runner and element component because it's the easiest way to get the
   // global cache

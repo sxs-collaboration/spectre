@@ -510,7 +510,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
   if (object_A_.is_excised()) {
     excision_spheres.emplace(
-        "ObjectAExcisionSphere",
+        "ExcisionSphereA",
         ExcisionSphere<3>{
             object_A_.inner_radius,
             tnsr::I<double, 3, Frame::Grid>{{object_A_.x_coord, 0.0, 0.0}},
@@ -523,7 +523,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
   if (object_B_.is_excised()) {
     excision_spheres.emplace(
-        "ObjectBExcisionSphere",
+        "ExcisionSphereB",
         ExcisionSphere<3>{
             object_B_.inner_radius,
             tnsr::I<double, 3, Frame::Grid>{{object_B_.x_coord, 0.0, 0.0}},
