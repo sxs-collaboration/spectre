@@ -88,7 +88,7 @@ void test_rotation_control_error() {
   // Setup runner and element component because it's the easiest way to get the
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
                             std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};

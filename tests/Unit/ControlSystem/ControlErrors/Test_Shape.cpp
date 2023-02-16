@@ -149,7 +149,7 @@ void test_shape_control_error() {
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   // Excision centers aren't used so their values can be anything
-  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain), 4,
+  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain), 4, false,
                             std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};

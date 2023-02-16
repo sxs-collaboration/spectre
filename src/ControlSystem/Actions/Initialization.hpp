@@ -42,6 +42,7 @@ struct get_center_tags<domain::object_list<>> {
  * GlobalCache:
  * - Uses:
  *   - `control_system::Tags::MeasurementTimescales`
+ *   - `control_system::Tags::WriteDataToDisk`
  *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::A>`
  *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::B>`
  *
@@ -52,7 +53,6 @@ struct get_center_tags<domain::object_list<>> {
  *   - `control_system::Tags::Controller<ControlSystem>`
  *   - `control_system::Tags::TimescaleTuner<ControlSystem>`
  *   - `control_system::Tags::ControlError<ControlSystem>`
- *   - `control_system::Tags::WriteDataToDisk`
  *   - `control_system::Tags::IsActive<ControlSystem>`
  * - Removes: Nothing
  * - Modifies:
@@ -64,8 +64,7 @@ struct Initialize {
   static constexpr size_t deriv_order = ControlSystem::deriv_order;
 
   using simple_tags_from_options =
-      tmpl::list<control_system::Tags::WriteDataToDisk,
-                 control_system::Tags::Averager<ControlSystem>,
+      tmpl::list<control_system::Tags::Averager<ControlSystem>,
                  control_system::Tags::Controller<ControlSystem>,
                  control_system::Tags::TimescaleTuner<ControlSystem>,
                  control_system::Tags::ControlError<ControlSystem>,
@@ -77,6 +76,7 @@ struct Initialize {
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       control_system::Tags::MeasurementsPerUpdate,
+      control_system::Tags::WriteDataToDisk,
       typename detail::get_center_tags<
           typename ControlSystem::control_error::object_centers>::type>>;
 
