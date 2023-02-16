@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -79,7 +80,9 @@ struct ComputeHorizonVolumeQuantities
       GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
       GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
       ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>>;
+                    tmpl::size_t<3>, Frame::Inertial>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+
   using required_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,

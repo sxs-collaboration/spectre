@@ -76,12 +76,14 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     gr::Tags::InverseSpatialMetric<3, Frame::Inertial>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
   using shift_tag = gr::Tags::Shift<3, Frame::Inertial>;
+  using constraint_gamma1_tag =
+    GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1;
 
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).
   using full_temp_tags_list =
       tmpl::list<spatial_metric_tag, inv_spatial_metric_tag,
-                 lapse_tag, shift_tag>;
+                 lapse_tag, shift_tag, constraint_gamma1_tag>;
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
@@ -97,6 +99,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
       target_vars, make_not_null(&buffer)));
   auto& inv_spatial_metric = *(get<inv_spatial_metric_tag>(
       target_vars, make_not_null(&buffer)));
+  auto& constraint_gamma1 = *(get<constraint_gamma1_tag>(
+      target_vars, make_not_null(&buffer)));
 
   // Actual computation starts here
 
@@ -107,6 +111,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
                           spatial_metric);
   gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
   gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
+  constraint_gamma1 =
+  get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(src_vars);
 }
 
 /// Dual frame case
@@ -123,7 +129,6 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
       /*invjac_logical_to_target*/,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity) {
-
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,
@@ -157,6 +162,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   using lapse_tag = gr::Tags::Lapse<DataVector>;
   using shift_tag = gr::Tags::Shift<3, TargetFrame>;
   using inertial_shift_tag = gr::Tags::Shift<3, Frame::Inertial>;
+  using constraint_gamma1_tag =
+    GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1;
 
   // Additional temporary tags used for multiple frames
   using inertial_spatial_metric_tag =
@@ -170,7 +177,7 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
       tmpl::list<spatial_metric_tag, inv_spatial_metric_tag,
                  lapse_tag, shift_tag, inertial_shift_tag,
                  inertial_spatial_metric_tag,
-                 inertial_inv_spatial_metric_tag>;
+                 inertial_inv_spatial_metric_tag, constraint_gamma1_tag>;
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
@@ -193,6 +200,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   auto& spatial_metric = *(get<spatial_metric_tag>(
       target_vars, make_not_null(&buffer)));
   auto& inv_spatial_metric = *(get<inv_spatial_metric_tag>(
+      target_vars, make_not_null(&buffer)));
+  auto& constraint_gamma1 = *(get<constraint_gamma1_tag>(
       target_vars, make_not_null(&buffer)));
 
   // Actual computation starts here
@@ -236,6 +245,8 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
           (src.get(j) + inertial_mesh_velocity.get(j));
     }
   }
+  constraint_gamma1 =
+  get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(src_vars);
 }
 
 }  // namespace ah

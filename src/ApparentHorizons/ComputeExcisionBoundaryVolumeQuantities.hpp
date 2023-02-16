@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -73,23 +74,25 @@ struct ComputeExcisionBoundaryVolumeQuantities
           invjac_logical_to_target,
       const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity);
 
-  using allowed_src_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                             tmpl::size_t<3>, Frame::Inertial>>;
+  using allowed_src_tags = tmpl::list<
+      gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+      GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+      Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
 
   using required_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>;
 
   template <typename TargetFrame>
-  using allowed_dest_tags_target_frame =
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>,
-                 gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial>,
-                 gr::Tags::Shift<3, Frame::Grid>>;
+  using allowed_dest_tags_target_frame = tmpl::list<
+      gr::Tags::SpatialMetric<3, Frame::Inertial>,
+      gr::Tags::SpatialMetric<3, Frame::Grid>,
+      gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Inertial>,
+      gr::Tags::Shift<3, Frame::Grid>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
 
   template <typename TargetFrame>
   using allowed_dest_tags = tmpl::remove_duplicates<
@@ -97,8 +100,7 @@ struct ComputeExcisionBoundaryVolumeQuantities
                    allowed_dest_tags_target_frame<Frame::Inertial>>>;
 
   template <typename TargetFrame>
-  using required_dest_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>;
+  using required_dest_tags = tmpl::list<>;
 };
 
 }  // namespace ah
