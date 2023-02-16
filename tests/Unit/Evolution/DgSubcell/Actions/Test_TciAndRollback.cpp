@@ -324,15 +324,29 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   get(get<PrimVar1>(prim_vars)) = get<0>(logical_coordinates(dg_mesh)) + 1000.0;
 
   constexpr size_t history_size = 5;
-  TimeSteppers::History<Variables<dt_evolved_vars_tags>> time_stepper_history{
+  constexpr size_t history_substeps = 3;
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{
       history_size};
-  for (size_t i = 0; i < history_size; ++i) {
-    Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
-    get(get<Tags::dt<Var1>>(dt_vars)) =
-        (i + 20.0) * get<0>(logical_coordinates(dg_mesh));
-    time_stepper_history.insert(
-        {false, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}},
-        dt_vars);
+  {
+    Time step_time{};
+    for (size_t i = 0; i < history_size; ++i) {
+      step_time = Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}};
+      Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
+      get(get<Tags::dt<Var1>>(dt_vars)) =
+          (i + 20.0) * get<0>(logical_coordinates(dg_mesh));
+      time_stepper_history.insert({false, 1, step_time}, i * evolved_vars,
+                                  dt_vars);
+    }
+    for (size_t i = 0; i < history_substeps; ++i) {
+      Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
+      get(get<Tags::dt<Var1>>(dt_vars)) =
+          (i + 40.0) * get<0>(logical_coordinates(dg_mesh));
+      time_stepper_history.insert({false, 1, step_time, i + 1, step_time},
+                                  -i * evolved_vars, dt_vars);
+    }
+    time_stepper_history.discard_value(time_stepper_history[2].time_step_id);
+    time_stepper_history.discard_value(
+        time_stepper_history.substeps()[1].time_step_id);
   }
   Variables<evolved_vars_tags> vars{dg_mesh.number_of_grid_points()};
   get(get<Var1>(vars)) =
@@ -406,26 +420,32 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
               comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
           initial_rdmp_tci_data);
 
-    CHECK(time_stepper_history_from_box.size() == history_size - 1);
+    CHECK(time_stepper_history_from_box.size() == history_size);
+    CHECK(time_stepper_history_from_box.substeps().size() ==
+          history_substeps - 1);
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
-    TimeSteppers::History<Variables<dt_evolved_vars_tags>>
-        time_stepper_history_subcells{time_stepper_history.integration_order()};
-    const auto end_it = std::prev(time_stepper_history.derivatives_end());
-    for (auto it = time_stepper_history.derivatives_begin(); it != end_it;
-         ++it) {
-      time_stepper_history_subcells.insert(
-          it.time_step_id(), evolution::dg::subcell::fd::project(
-                                 *it, dg_mesh, subcell_mesh.extents()));
-    }
-    REQUIRE(time_stepper_history_subcells.size() ==
-            time_stepper_history_from_box.size());
-    for (auto expected_it = time_stepper_history_subcells.derivatives_begin(),
-              it = time_stepper_history_from_box.derivatives_begin();
-         expected_it != time_stepper_history_subcells.derivatives_end();
-         ++it, ++expected_it) {
-      CHECK(it.time_step_id() == expected_it.time_step_id());
-      CHECK(*it == *expected_it);
+    {
+      const auto check_box_record = [&](const auto& original_record) {
+        const auto& record_from_box =
+            time_stepper_history_from_box[original_record.time_step_id];
+        CHECK(record_from_box.derivative ==
+              evolution::dg::subcell::fd::project(
+                  original_record.derivative, dg_mesh, subcell_mesh.extents()));
+        if (original_record.value.has_value()) {
+          CHECK(record_from_box.value ==
+                std::optional{evolution::dg::subcell::fd::project(
+                    *original_record.value, dg_mesh, subcell_mesh.extents())});
+        } else {
+          CHECK(not record_from_box.value.has_value());
+        }
+      };
+      for (const auto& original_record : time_stepper_history) {
+        check_box_record(original_record);
+      }
+      for (size_t i = 0; i < history_substeps - 1; ++i) {
+        check_box_record(time_stepper_history.substeps()[i]);
+      }
     }
 
     CHECK(active_vars_from_box == evolution::dg::subcell::fd::project(
@@ -481,15 +501,18 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
               comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
           expected_rdmp_data);
 
-    CHECK(time_stepper_history_from_box.size() == history_size);
+    CHECK(time_stepper_history_from_box.size() == time_stepper_history.size());
+    CHECK(time_stepper_history_from_box.substeps().size() ==
+          time_stepper_history.substeps().size());
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
-    for (auto expected_it = time_stepper_history.derivatives_begin(),
-              it = time_stepper_history_from_box.derivatives_begin();
-         expected_it != time_stepper_history.derivatives_end();
-         ++it, ++expected_it) {
-      CHECK(it.time_step_id() == expected_it.time_step_id());
-      CHECK(*it == *expected_it);
+    for (const auto& original_record : time_stepper_history) {
+      CHECK(time_stepper_history_from_box[original_record.time_step_id] ==
+            original_record);
+    }
+    for (const auto& original_record : time_stepper_history.substeps()) {
+      CHECK(time_stepper_history_from_box[original_record.time_step_id] ==
+            original_record);
     }
 
     CHECK(active_vars_from_box == evolved_vars);

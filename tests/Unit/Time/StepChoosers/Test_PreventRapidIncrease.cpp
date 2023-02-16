@@ -96,8 +96,8 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
     };
 
     for (size_t i = 1; i < times.size(); ++i) {
-      lts_history.insert_initial(make_time_id(i), 0.0);
-      gts_history.insert_initial(make_gts_time_id(i), 0.0);
+      lts_history.insert_initial(make_time_id(i), 0.0, 0.0);
+      gts_history.insert_initial(make_gts_time_id(i), 0.0, 0.0);
     }
 
     const auto check = [&expected](auto use, const auto& box,
@@ -105,8 +105,10 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       using Use = tmpl::type_from<decltype(use)>;
       const auto& history = db::get<history_tag>(box);
       const double current_step =
-          history.size() > 0 ? abs(current_time - history.back()).value()
-                             : std::numeric_limits<double>::infinity();
+          history.size() > 0
+              ? abs(current_time - history.back().time_step_id.step_time())
+                    .value()
+              : std::numeric_limits<double>::infinity();
 
       const StepChoosers::PreventRapidIncrease<Use> relax{};
       const std::unique_ptr<StepChooser<Use>> relax_base =
@@ -155,13 +157,13 @@ void check_substep_methods() {
   using history_tag = Tags::HistoryEvolvedVariables<Tag>;
   typename history_tag::type history{};
 
-  history.insert(TimeStepId(true, 0, slab.start()), 0.0);
+  history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
   history.insert(
       TimeStepId(true, 0, slab.start(), 1, slab.start() + slab.duration() / 3),
-      0.0);
+      0.0, 0.0);
   history.insert(
       TimeStepId(true, 0, slab.start(), 2, slab.start() + slab.duration() / 2),
-      0.0);
+      0.0, 0.0);
   const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
   CHECK(relax(history, 3.14) ==
         std::make_pair(std::numeric_limits<double>::infinity(), true));

@@ -69,8 +69,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
                              const Time& now) {
     const TimeSteppers::AdamsBashforth stepper(2);
     TimeSteppers::History<double> history(2);
-    history.insert(TimeStepId(true, 0, first), 0.);
-    history.insert(TimeStepId(true, 2, second), 0.);
+    history.insert(TimeStepId(true, 0, first), 0., 0.);
+    history.insert(TimeStepId(true, 2, second), 0., 0.);
     return stepper.can_change_step_size(TimeStepId(true, 4, now), history);
   };
   CHECK(can_change(start, mid, end));
@@ -136,8 +136,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Backwards",
                              const Time& now) {
     const TimeSteppers::AdamsBashforth stepper(2);
     TimeSteppers::History<double> history(2);
-    history.insert(TimeStepId(false, 0, first), 0.);
-    history.insert(TimeStepId(false, 2, second), 0.);
+    history.insert(TimeStepId(false, 0, first), 0., 0.);
+    history.insert(TimeStepId(false, 2, second), 0., 0.);
     return stepper.can_change_step_size(TimeStepId(false, 4, now), history);
   };
   CHECK_FALSE(can_change(start, mid, end));
@@ -396,9 +396,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Reversal",
   const auto df = [](const double t) { return 2. + t * (6. + t * 12.); };
 
   TimeSteppers::History<double> history{3};
-  const auto add_history = [&df, &history](const int64_t slab,
-                                           const Time& time) {
-    history.insert(TimeStepId(true, slab, time), df(time.value()));
+  const auto add_history = [&df, &f, &history](const int64_t slab,
+                                               const Time& time) {
+    history.insert(TimeStepId(true, slab, time), f(time.value()),
+                   df(time.value()));
   };
   const Slab slab(0., 1.);
   add_history(0, slab.start());

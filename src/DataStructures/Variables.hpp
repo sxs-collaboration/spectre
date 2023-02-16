@@ -1222,3 +1222,12 @@ struct tuple_element<I, Variables<tmpl::list<Tags...>>> {
   using type = typename tmpl::at_c<tmpl::list<Tags...>, I>::type;
 };
 }  // namespace std
+
+template <typename TagsList>
+bool contains_allocations(const Variables<TagsList>& value) {
+  return value.number_of_grid_points() > 1;
+}
+
+inline bool contains_allocations(const Variables<tmpl::list<>>& /*value*/) {
+  return false;
+}

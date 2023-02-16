@@ -41,7 +41,7 @@ void take_step(
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id, rhs(*y, time_id.substep_time().value()));
+    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
   }
@@ -59,7 +59,7 @@ void take_step_and_check_error(
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id, rhs(*y, time_id.substep_time().value()));
+    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
     bool error_updated = stepper.update_u(y, y_error, history, step_size);
     CAPTURE(substep);
     REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
@@ -111,7 +111,7 @@ void check_substep_properties(const TimeStepper& stepper) {
   TimeStepId id(true, 3, slab.start() + slab.duration() / 2);
   TimeSteppers::History<double> history{stepper.order()};
   CHECK(stepper.can_change_step_size(id, history));
-  history.insert(id, 0.0);
+  history.insert(id, 0.0, 0.0);
   id = stepper.next_time_id(id, slab.duration() / 2);
   if (id.substep() != 0) {
     CHECK(not stepper.can_change_step_size(id, history));
@@ -364,7 +364,8 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
       }
       history_time -= history_step_size;
       const TimeStepId history_id(forward, 0, history_time);
-      volume_history.insert_initial(history_id, 0.);
+      volume_history.insert_initial(history_id, analytic(history_time.value()),
+                                    0.);
       boundary_history.local_insert_initial(history_id, unused_local_deriv);
       boundary_history.remote_insert_initial(history_id,
                                              driver(history_time.value()));
@@ -375,7 +376,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
     for (uint64_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      volume_history.insert(time_id, 0.);
+      volume_history.insert(time_id, y, 0.);
       boundary_history.local_insert(time_id, unused_local_deriv);
       boundary_history.remote_insert(time_id,
                                      driver(time_id.substep_time().value()));
@@ -452,7 +453,7 @@ void check_dense_output(const TimeStepper& stepper,
           stepper.number_of_past_steps());
       auto step = step_size;
       for (;;) {
-        history.insert(time_id, y);
+        history.insert(time_id, y, y);
         if (not before((time_id.step_time() + step).value(), time)) {
           if (stepper.dense_update_u(make_not_null(&y), history, time)) {
             return y;

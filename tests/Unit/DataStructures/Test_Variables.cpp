@@ -80,6 +80,8 @@ void test_empty_variables() {
   CHECK(serialized_tuple_with_empty_vars == tuple_with_empty_vars);
 
   CHECK(get_output(tuple_with_empty_vars) == "(3,hello,{})");
+
+  CHECK(not contains_allocations(empty_vars));
 }
 
 template <typename VectorType>
@@ -1298,6 +1300,22 @@ void test_math_wrapper() {
   TestHelpers::MathWrapper::test_type(vars1, vars2, scalar);
 }
 
+template <typename VectorType>
+void test_contains_allocations() {
+  INFO(pretty_type::short_name<VectorType>());
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  CHECK(not contains_allocations(Vars{}));
+  CHECK(not contains_allocations(Vars{0}));
+  for (size_t size = 1; size < 5; ++size) {
+    CAPTURE(size);
+    Vars source{size};
+    const auto* const source_data = source.data();
+    const auto dest = std::move(source);
+    CHECK(contains_allocations(dest) == (source_data == dest.data()));
+  }
+}
+
 void test_asserts() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -1445,6 +1463,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_math_wrapper<ComplexModalVector>();
     test_math_wrapper<DataVector>();
     test_math_wrapper<ModalVector>();
+  }
+
+  {
+    INFO("Test contains_allocations");
+    test_contains_allocations<ComplexDataVector>();
+    test_contains_allocations<ComplexModalVector>();
+    test_contains_allocations<DataVector>();
+    test_contains_allocations<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");

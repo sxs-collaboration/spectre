@@ -97,9 +97,9 @@ std::pair<double, bool> get_suggestion(
     const Variables<EvolvedTags>& error,
     const Variables<EvolvedTags>& previous_error, const double previous_step,
     const size_t stepper_order) {
-  TimeSteppers::History<Variables<db::wrap_tags_in<::Tags::dt, EvolvedTags>>>
-      history{stepper_order};
-  history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, 0.1 * step_values);
+  TimeSteppers::History<Variables<EvolvedTags>> history{stepper_order};
+  history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, step_values,
+                 0.1 * step_values);
   auto box =
       db::create<db::AddSimpleTags<
                      Parallel::Tags::MetavariablesImpl<Metavariables<true>>,

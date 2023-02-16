@@ -31,6 +31,20 @@
 namespace TimeSteppers {
 
 namespace {
+template <typename Iter>
+struct TimeFromRecord {
+  Time operator()(typename std::iterator_traits<Iter>::reference record) const {
+    return record.time_step_id.step_time();
+  }
+};
+
+// This must be templated on the iterator type rather than the math
+// wrapper type because of quirks in the template deduction rules.
+template <typename Iter>
+auto history_time_iterator(const Iter& it) {
+  return boost::transform_iterator(it, TimeFromRecord<Iter>{});
+}
+
 // TimeDelta-like interface to a double used for dense output
 struct ApproximateTimeDelta {
   double delta = std::numeric_limits<double>::signaling_NaN();
@@ -174,6 +188,18 @@ OrderVector<double> get_coefficients(const Iterator& times_begin,
 
   return variable_coefficients(control_times);
 }
+
+template <typename T>
+void clean_history(const MutableUntypedHistory<T>& history) {
+  ASSERT(history.size() >= history.integration_order(),
+         "Insufficient data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
+  while (history.size() > history.integration_order()) {
+    history.pop_front();
+  }
+  history.discard_value(history.back().time_step_id);
+}
 }  // namespace
 
 AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
@@ -220,54 +246,39 @@ void AdamsBashforth::pup(PUP::er& p) {
 
 template <typename T>
 void AdamsBashforth::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<UntypedHistory<T>*> history,
+    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
     const TimeDelta& time_step) const {
-  ASSERT(history->size() >= history->integration_order(),
-         "Insufficient data to take an order-" << history->integration_order()
-         << " step.  Have " << history->size() << " times, need "
-         << history->integration_order());
-  history->mark_unneeded(
-      history->end() -
-      static_cast<typename decltype(history->end())::difference_type>(
-          history->integration_order()));
-  update_u_common(u, *history, time_step, history->integration_order());
+  clean_history(history);
+  update_u_common(u, history, time_step, history.integration_order());
 }
 
 template <typename T>
 bool AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const gsl::not_null<UntypedHistory<T>*> history,
-    const TimeDelta& time_step) const {
-  ASSERT(history->size() >= history->integration_order(),
-         "Insufficient data to take an order-" << history->integration_order()
-         << " step.  Have " << history->size() << " times, need "
-         << history->integration_order());
-  history->mark_unneeded(
-      history->end() -
-      static_cast<typename decltype(history->end())::difference_type>(
-          history->integration_order()));
+    const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
+  clean_history(history);
   *u_error = *u;
-  update_u_common(u, *history, time_step, history->integration_order());
+  update_u_common(u, history, time_step, history.integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
-  update_u_common(u_error, *history, time_step,
-                  history->integration_order() - 1);
+  update_u_common(u_error, history, time_step, history.integration_order() - 1);
   *u_error = *u - *u_error;
   return true;
 }
 
 template <typename T>
 bool AdamsBashforth::dense_update_u_impl(const gsl::not_null<T*> u,
-                                         const UntypedHistory<T>& history,
+                                         const ConstUntypedHistory<T>& history,
                                          const double time) const {
-  const ApproximateTimeDelta time_step{time - history.back().value()};
+  const ApproximateTimeDelta time_step{
+      time - history.back().time_step_id.step_time().value()};
   update_u_common(u, history, time_step, history.integration_order());
   return true;
 }
 
 template <typename T, typename Delta>
 void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
-                                     const UntypedHistory<T>& history,
+                                     const ConstUntypedHistory<T>& history,
                                      const Delta& time_step,
                                      const size_t order) const {
   ASSERT(
@@ -278,21 +289,22 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
 
   const auto history_start =
       history.end() -
-      static_cast<typename UntypedHistory<T>::difference_type>(order);
+      static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
   const auto coefficients =
-      get_coefficients(history_start, history.end(), time_step);
+      get_coefficients(history_time_iterator(history_start),
+                       history_time_iterator(history.end()), time_step);
 
   auto coefficient = coefficients.rbegin();
   for (auto history_entry = history_start;
        history_entry != history.end();
        ++history_entry, ++coefficient) {
-    *u += time_step.value() * *coefficient * *history_entry.derivative();
+    *u += time_step.value() * *coefficient * history_entry->derivative;
   }
 }
 
 template <typename T>
 bool AdamsBashforth::can_change_step_size_impl(
-    const TimeStepId& time_id, const UntypedHistory<T>& history) const {
+    const TimeStepId& time_id, const ConstUntypedHistory<T>& history) const {
   // We need to forbid local time-stepping before initialization is
   // complete.  The self-start procedure itself should never consider
   // changing the step size, but we need to wait during the main
@@ -301,8 +313,10 @@ bool AdamsBashforth::can_change_step_size_impl(
   const evolution_less<Time> less{time_id.time_runs_forward()};
   return not ::SelfStart::is_self_starting(time_id) and
          (history.size() == 0 or
-          (less(history.back(), time_id.step_time()) and
-           std::is_sorted(history.begin(), history.end(), less)));
+          (less(history.back().time_step_id.step_time(),
+                time_id.step_time()) and
+           std::is_sorted(history_time_iterator(history.begin()),
+                          history_time_iterator(history.end()), less)));
 }
 
 template <typename T>

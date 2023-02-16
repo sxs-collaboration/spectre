@@ -310,7 +310,7 @@ void test(const bool time_runs_forward) {
   using VarsType = typename variables_tag::type;
   using DtVarsType =
       typename db::add_tag_prefix<::Tags::dt, variables_tag>::type;
-  using History = TimeSteppers::History<DtVarsType>;
+  using History = TimeSteppers::History<VarsType>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,
@@ -334,7 +334,7 @@ void test(const bool time_runs_forward) {
                                        std::optional<double>, bool>>&
               triggers) {
         History history(1);
-        history.insert(time_step_id, deriv_vars);
+        history.insert(time_step_id, initial_vars, deriv_vars);
 
         evolution::EventsAndDenseTriggers::ConstructionType
             events_and_dense_triggers{};
@@ -454,16 +454,17 @@ void test(const bool time_runs_forward) {
           ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
           make_not_null(&box),
-          [&time_step_id](const gsl::not_null<History*> history,
-                          const TimeStepper& time_stepper) {
+          [&deriv_vars, &initial_vars, &time_step_id](
+              const gsl::not_null<History*> history,
+              const TimeStepper& time_stepper) {
             *history = History(3);
-            history->insert(time_step_id, {1, 1.0});
+            history->insert(time_step_id, initial_vars, deriv_vars);
             history->insert(
                 time_stepper.next_time_id(
                     time_step_id,
                     (time_step_id.time_runs_forward() ? 1 : -1) *
                         time_step_id.step_time().slab().duration() / 4),
-                {1, 1.0});
+                initial_vars, deriv_vars);
           },
           db::get<Tags::TimeStepper<>>(box));
     }

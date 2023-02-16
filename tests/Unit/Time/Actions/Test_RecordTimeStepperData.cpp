@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -109,9 +110,11 @@ template <bool UseRollback, template <typename> typename LocalComponent,
           typename VariablesTag, typename HistoryTag>
 void run_test() {
   const Slab slab(1., 3.);
+  const TimeStepId slab_start_id(true, 0, slab.start());
+  const TimeStepId slab_end_id(true, 0, slab.end());
 
   typename HistoryTag::type history{};
-  history.insert(TimeStepId(true, 0, slab.end()), 3.);
+  history.insert(slab_start_id, -3., 3.);
 
   using metavariables = Metavariables<UseRollback>;
   using component = LocalComponent<metavariables>;
@@ -121,7 +124,7 @@ void run_test() {
   const double initial_value = 4.;
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeStepId(true, 0, slab.start()), initial_value, 5., std::move(history),
+      {slab_end_id, initial_value, 5., std::move(history),
        typename Tags::RollbackValue<VariablesTag>::type{}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
@@ -129,10 +132,12 @@ void run_test() {
 
   const auto& new_history = db::get<HistoryTag>(box);
   CHECK(new_history.size() == 2);
-  CHECK(*new_history.begin() == slab.end());
-  CHECK(*new_history.begin().derivative() == 3.);
-  CHECK(*(new_history.begin() + 1) == slab.start());
-  CHECK(*(new_history.begin() + 1).derivative() == 5.);
+  CHECK(new_history[0].time_step_id == slab_start_id);
+  CHECK(new_history[0].value == std::optional{-3.});
+  CHECK(new_history[0].derivative == 3.);
+  CHECK(new_history[1].time_step_id == slab_end_id);
+  CHECK(new_history[1].value == std::optional{initial_value});
+  CHECK(new_history[1].derivative == 5.);
   if constexpr (UseRollback) {
     CHECK(db::get<Tags::RollbackValue<VariablesTag>>(box) == initial_value);
   }
