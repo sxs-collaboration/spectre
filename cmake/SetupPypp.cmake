@@ -8,8 +8,10 @@
 # variable set by the user.
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
-# We can't rely on CMake 3.14 quite yet so we backport the `Python::NumPy`
-# imported target that FindPython in CMake 3.14+ could also provide.
+# CMake's FindPython has trouble finding NumPy when it isn't installed in the
+# Python executable's directory, and can't be given hints either (as of CMake
+# version 3.25). So we find NumPy ourselves (which isn't much different to
+# what FindPython does internally anyway).
 find_package(NumPy 1.10 REQUIRED)
 
 message(STATUS "NumPy incl: " ${NUMPY_INCLUDE_DIRS})
