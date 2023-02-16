@@ -44,23 +44,23 @@ struct Mesh;
 
 namespace control_system::measurements {
 /*!
- * \brief A `control_system::protocols::Measurement` that relies on two apparent
- * horizons.
+ * \brief A `control_system::protocols::Measurement` that relies on only one
+ * apparent horizon; the template parameter `Horizon`.
  */
-struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
+template <::domain::ObjectLabel Horizon>
+struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
   /*!
    * \brief A `control_system::protocols::Submeasurement` that starts the
    * interpolation to the interpolation target in order to find the apparent
-   * horizon given by the template parameter `Horizon`.
+   * horizon.
    */
-  template <::domain::ObjectLabel Horizon>
-  struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
+  struct Submeasurement : tt::ConformsTo<protocols::Submeasurement> {
    private:
     template <typename ControlSystems>
     struct InterpolationTarget
         : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       static std::string name() {
-        return "ControlSystemAh" + ::domain::name(Horizon);
+        return "ControlSystemSingleAh" + ::domain::name(Horizon);
       }
 
       using temporal_id = ::Tags::TimeAndPrevious;
@@ -79,9 +79,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
                                                 ::Frame::Grid>;
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
-      using post_horizon_find_callbacks =
-          tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
-                     ::ah::callbacks::ObserveCenters<InterpolationTarget>>;
+      using post_horizon_find_callbacks = tmpl::list<
+          control_system::RunCallbacks<Submeasurement, ControlSystems>>;
     };
 
    public:
@@ -109,7 +108,6 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
     }
   };
 
-  using submeasurements = tmpl::list<FindHorizon<::domain::ObjectLabel::A>,
-                                     FindHorizon<::domain::ObjectLabel::B>>;
+  using submeasurements = tmpl::list<Submeasurement>;
 };
 }  // namespace control_system::measurements

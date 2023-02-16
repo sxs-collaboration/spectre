@@ -148,7 +148,7 @@ void test_rotation_control_system(const bool newtonian) {
 
   // Run the actual control system test.
   system_helper.run_control_system_test(runner, final_time, make_not_null(&gen),
-                                        horizon_function, 2);
+                                        horizon_function);
 
   // Grab results
   std::array<double, 3> grid_position_of_a;

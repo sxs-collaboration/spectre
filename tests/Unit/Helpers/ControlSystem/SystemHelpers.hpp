@@ -24,6 +24,7 @@
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
+#include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
@@ -648,7 +649,7 @@ struct SystemHelper {
   void run_control_system_test(
       ActionTesting::MockRuntimeSystem<Metavars>& runner,
       const double final_time, gsl::not_null<Generator*> generator,
-      const F horizon_function, const size_t number_of_horizons) {
+      const F horizon_function) {
     auto& cache = ActionTesting::cache<element_component>(runner, 0);
     const auto& measurement_timescales =
         Parallel::get<control_system::Tags::MeasurementTimescales>(cache);
@@ -681,24 +682,32 @@ struct SystemHelper {
 
       // Apply measurements
       tmpl::for_each<control_components>([this, &runner, &generator,
-                                          &measurement_id, &cache,
-                                          &number_of_horizons](
-                                             auto control_component) {
+                                          &measurement_id,
+                                          &cache](auto control_component) {
         using component = tmpl::type_from<decltype(control_component)>;
         using system = typename component::system;
-        // Even if we only have 1 horizon, we still apply both measurements
-        // because the BothHorizons measurement will always send both regardless
-        // of if both are needed.
-        system::process_measurement::apply(
-            measurements::BothHorizons::FindHorizon<::domain::ObjectLabel::A>{},
-            horizon_a_, cache, measurement_id);
-        system::process_measurement::apply(
-            measurements::BothHorizons::FindHorizon<::domain::ObjectLabel::B>{},
-            horizon_b_, cache, measurement_id);
+        constexpr bool is_shape =
+            std::is_same_v<system, typename Metavars::shape_system>;
+        // Depending on the measurement, apply the submeasurements
+        if constexpr (is_shape) {
+          system::process_measurement::apply(
+              measurements::SingleHorizon<
+                  ::domain::ObjectLabel::A>::Submeasurement{},
+              horizon_a_, cache, measurement_id);
+        } else {
+          system::process_measurement::apply(
+              measurements::BothHorizons::FindHorizon<
+                  ::domain::ObjectLabel::A>{},
+              horizon_a_, cache, measurement_id);
+          system::process_measurement::apply(
+              measurements::BothHorizons::FindHorizon<
+                  ::domain::ObjectLabel::B>{},
+              horizon_b_, cache, measurement_id);
+        }
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
-                  runner, 0) == number_of_horizons);
+                  runner, 0) == (is_shape ? 1 : 2));
 
-        if (number_of_horizons > 1) {
+        if constexpr (not is_shape) {
           // We invoke a random measurement because during a normal simulation
           // we don't know which measurement will reach the control system
           // first because of charm++ communication

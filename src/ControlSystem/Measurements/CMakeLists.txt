@@ -10,6 +10,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BothHorizons.hpp
+  SingleHorizon.hpp
   )
 
 target_link_libraries(

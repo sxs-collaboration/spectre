@@ -123,7 +123,7 @@ void test_shape_control(
 
   // Run the test, specifying that we are only using 1 horizon
   system_helper->run_control_system_test(runner, final_time, generator,
-                                         horizon_measurement, 1);
+                                         horizon_measurement);
 
   const auto& functions_of_time =
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
