@@ -46,6 +46,8 @@ void test_all_tags() {
   INFO("Test all tags");
   using write_tag = control_system::Tags::WriteDataToDisk;
   TestHelpers::db::test_simple_tag<write_tag>("WriteDataToDisk");
+  using observe_tag = control_system::Tags::ObserveCenters;
+  TestHelpers::db::test_simple_tag<observe_tag>("ObserveCenters");
   using averager_tag = control_system::Tags::Averager<system>;
   TestHelpers::db::test_simple_tag<averager_tag>("Averager");
   using timescaletuner_tag = control_system::Tags::TimescaleTuner<system>;
