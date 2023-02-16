@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Framework/TestingFramework.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -10,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -36,6 +35,30 @@ void test_definite_integral_1d(const Mesh<1>& mesh) {
     }
   }
 }
+
+// Test for finite difference methods using midpoint rule.
+void test_midpoint_integral_1d(const Mesh<1>& mesh) {
+  const DataVector& x = Spectral::collocation_points(mesh);
+  const size_t number_of_points = mesh.number_of_grid_points();
+  DataVector integrand(number_of_points);
+  for (size_t a = 0; a < 3; ++a) {
+    for (size_t s = 0; s < integrand.size(); ++s) {
+      integrand[s] = pow(x[s], a);
+    }
+    if (0 == a) {
+      CHECK(2.0 == approx(definite_integral(integrand, mesh)));
+    }
+    if (1 == a) {
+      CHECK(0.0 == approx(definite_integral(integrand, mesh)));
+    }
+    if (2 ==a) {
+      // Correct error should be \f$2/(3N^2)\f$ for N points in the mesh
+      CHECK(2.0/3.0*(1.0-1.0/(number_of_points*number_of_points)) ==
+            approx(definite_integral(integrand, mesh)));
+    }
+  }
+}
+
 
 void test_definite_integral_2d(const Mesh<2>& mesh) {
   const DataVector& x = Spectral::collocation_points(mesh.slice_through(0));
@@ -110,5 +133,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
                                           Spectral::Quadrature::GaussLobatto});
       }
     }
+  }
+
+  // Test finite difference integral
+  constexpr size_t min_extents_fd =
+      Spectral::minimum_number_of_points<Spectral::Basis::FiniteDifference,
+                                         Spectral::Quadrature::CellCentered>;
+  constexpr size_t max_extents_fd =
+    Spectral::maximum_number_of_points<Spectral::Basis::FiniteDifference>;
+  for (size_t n0 = min_extents_fd; n0 <= max_extents_fd; ++n0) {
+    test_midpoint_integral_1d(Mesh<1>{n0, Spectral::Basis::FiniteDifference,
+                                      Spectral::Quadrature::CellCentered});
   }
 }

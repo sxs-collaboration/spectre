@@ -64,8 +64,9 @@ namespace Spectral {
  * convenient choice in a lot of cases. For `FiniteDifference` we need to choose
  * the order of the scheme (and hence the weights, differentiation matrix,
  * integration weights, and interpolant) locally in space and time to handle
- * discontinuous solutions, hence none of those are defined for the
- * `FiniteDifference` basis.
+ * discontinuous solutions. Our current implementation of the weights is such
+ * that integration of a function uses the midpoint method, but the weights are
+ * ONLY useful to perform integration and no longer have any other meaning.
  */
 enum class Basis { Chebyshev, Legendre, FiniteDifference, SphericalHarmonic };
 
@@ -89,8 +90,8 @@ Basis to_basis(const std::string& basis);
  *
  * \warning `CellCentered` and `FaceCentered` are intended to be used with the
  * `FiniteDifference` basis (though in principle they could be used with any
- * basis), and thus do not implement differentiation matrices, integration
- * weights, and interpolation matrices.
+ * basis), and thus do not implement differentiation matrices and
+ * interpolation matrices.
  */
 enum class Quadrature {
   Gauss,
@@ -172,6 +173,8 @@ T compute_basis_function_value(size_t k, const T& x);
  * \brief Compute the inverse of the weight function \f$w(x)\f$ w.r.t. which
  * the basis functions are orthogonal. See the description of
  * `quadrature_weights(size_t)` for details.
+ * This is arbitrarily set to 1 for FiniteDifference basis, to integrate
+ * using the midpoint method (see `quadrature_weights (size_t)` for details).
  */
 template <Basis>
 DataVector compute_inverse_weight_function_values(const DataVector&);
@@ -193,7 +196,7 @@ double compute_basis_function_normalization_square(size_t k);
  * `quadrature_weights(size_t)`.
  *
  * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
- * quadratures only the collocation points are set, the weights are `NaN`.
+ * quadratures, the weights are defined to integrate with the midpoint method
  */
 template <Basis BasisType, Quadrature QuadratureType>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
@@ -231,8 +234,12 @@ const DataVector& collocation_points(const Mesh<1>& mesh);
  * Only for a unit weight function \f$w(x)=1\f$, i.e. a Legendre basis, is
  * \f$I[f]=Q[f]\f$ so this function returns the \f$w_k\f$ identically.
  *
- * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
- * quadratures the weights are `NaN`.
+ * For a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
+ * quadratures, the interpretation of the quadrature weights in term
+ * of an approximation to \f$I(q)\f$ remains correct, but its explanation
+ * in terms of orthonormal basis is not, i.e. we set \f$w_k\f$ to the grid
+ * spacing at each point, and the inverse weight \f$\frac{1}{w(\xi_k)}=1\f$ to
+ * recover the midpoint method for definite integrals.
  *
  * \param num_points The number of collocation points
  */
@@ -241,9 +248,6 @@ const DataVector& quadrature_weights(size_t num_points);
 
 /*!
  * \brief Quadrature weights for a one-dimensional mesh.
- *
- * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
- * quadratures the weights are `NaN`.
  *
  * \see quadrature_weights(size_t)
  */
