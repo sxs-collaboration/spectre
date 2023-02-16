@@ -263,14 +263,10 @@ void internal_mortar_data_impl(
             Variables<mortar_tags_list>::number_of_independent_components};
         Variables<mortar_tags_list> projected_packaged_data{
             boundary_data_on_mortar.data(), boundary_data_on_mortar.size()};
-        // Since projected_packaged_data is non-owning, if we tried to
-        // move-assign it with the result of ::dg::project_to_mortar, it would
-        // then become owning and the buffer it previously pointed to wouldn't
-        // be filled (and we want it to be filled). So instead force a
-        // copy-assign by having an intermediary, data_to_copy.
-        const auto data_to_copy = ::dg::project_to_mortar(
-            packaged_data, face_mesh, mortar_mesh, mortar_size);
-        projected_packaged_data = data_to_copy;
+
+        ::dg::project_to_mortar(make_not_null(&projected_packaged_data),
+                                packaged_data, face_mesh, mortar_mesh,
+                                mortar_size);
 
       } else {
         ASSERT(neighbors_in_direction.size() == 1,
