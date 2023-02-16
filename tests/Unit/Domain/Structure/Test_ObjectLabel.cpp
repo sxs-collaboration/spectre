@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "Domain/ObjectLabel.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.ObjectLabel", "[Domain][Unit]") {

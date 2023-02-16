@@ -18,6 +18,7 @@ spectre_target_sources(
   Hypercube.cpp
   InitialElementIds.cpp
   Neighbors.cpp
+  ObjectLabel.cpp
   OrientationMap.cpp
   OrientationMapHelpers.cpp
   SegmentId.cpp
@@ -42,6 +43,7 @@ spectre_target_headers(
   InitialElementIds.hpp
   MaxNumberOfNeighbors.hpp
   Neighbors.hpp
+  ObjectLabel.hpp
   OrientationMap.hpp
   OrientationMapHelpers.hpp
   SegmentId.hpp

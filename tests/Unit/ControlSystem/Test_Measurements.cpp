@@ -5,7 +5,7 @@
 
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
-#include "Domain/ObjectLabel.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

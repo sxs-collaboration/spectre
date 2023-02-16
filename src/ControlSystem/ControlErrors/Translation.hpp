@@ -14,7 +14,7 @@
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
-#include "Domain/ObjectLabel.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/Tags/ObjectCenter.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"

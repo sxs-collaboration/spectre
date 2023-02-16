@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
   Test_Neighbors.cpp
+  Test_ObjectLabel.cpp
   Test_OrientationMap.cpp
   Test_OrientationMapHelpers.cpp
   Test_SegmentId.cpp

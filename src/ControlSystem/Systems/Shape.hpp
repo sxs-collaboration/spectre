@@ -20,7 +20,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
-#include "Domain/ObjectLabel.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"

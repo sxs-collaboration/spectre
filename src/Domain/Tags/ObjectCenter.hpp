@@ -10,8 +10,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/ObjectLabel.hpp"
 #include "Domain/OptionTags.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
