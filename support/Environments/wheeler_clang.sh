@@ -29,7 +29,7 @@ spectre_unload_modules() {
     module unload charm/7.0.0-intelmpi-smp
     module unload python/miniconda-3.9.7
     module unload pybind11/2.6.1
-    module unload hdf5/1.12.0
+    module unload hdf5/1.12.2
 }
 
 spectre_load_modules() {
@@ -54,7 +54,7 @@ spectre_load_modules() {
     module load charm/7.0.0-intelmpi-smp
     module load python/miniconda-3.9.7
     module load pybind11/2.6.1
-    module load hdf5/1.12.0
+    module load hdf5/1.12.2
 }
 
 spectre_run_cmake() {
