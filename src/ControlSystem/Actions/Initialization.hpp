@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -43,6 +44,7 @@ struct get_center_tags<domain::object_list<>> {
  * - Uses:
  *   - `control_system::Tags::MeasurementTimescales`
  *   - `control_system::Tags::WriteDataToDisk`
+ *   - `control_system::Tags::ObserveCenters`
  *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::A>`
  *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::B>`
  *
@@ -77,6 +79,7 @@ struct Initialize {
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       control_system::Tags::MeasurementsPerUpdate,
       control_system::Tags::WriteDataToDisk,
+      control_system::Tags::ObserveCenters,
       typename detail::get_center_tags<
           typename ControlSystem::control_error::object_centers>::type>>;
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ApparentHorizons/ObserveCenters.hpp"
+#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -29,6 +30,7 @@ namespace {
 struct AhA {};
 
 struct TestMetavars {
+  using const_global_cache_tags = tmpl::list<ah::Tags::ObserveCenters>;
   using component_list =
       tmpl::list<TestHelpers::observers::MockObserverWriter<TestMetavars>>;
 };
@@ -43,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
   std::uniform_real_distribution<double> center_dist{-10.0, 10.0};
 
   // set up runner and stuff
-  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{true}};
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_nodegroup_component_and_initialize<observer_writer>(
       make_not_null(&runner), {});
