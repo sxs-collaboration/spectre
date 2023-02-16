@@ -12,16 +12,15 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/AreaElement.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/KerrHorizonConforming.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
@@ -151,11 +150,75 @@ void test_sphere_integral() {
           custom_approx(4. / 3. * M_PI * inner_radius * inner_radius));
   }
 }
-}  // namespace
+
+// checks that the integral over the horizon of a Kerr black hole
+// corresponds to the expected area
+void test_kerr_area() {
+  for (const auto& [ref_level, mass, spin] : cartesian_product(
+           std::array<size_t, 3>{{0, 1}}, make_array(0.001, 1., 100.),
+           std::array<std::array<double, 3>, 3>{{make_array(0., 0., 0.),
+                                                 make_array(0.1, 0.2, 0.3),
+                                                 make_array(0., 0., 0.99)}})) {
+    const double horizon_radius = mass * (1 + sqrt(1 - dot(spin, spin)));
+    domain::creators::Sphere shell{horizon_radius,
+                                   10. * horizon_radius,
+                                   domain::creators::Sphere::Excision{},
+                                   ref_level,
+                                   size_t(10),
+                                   true};
+    const auto shell_domain = shell.create_domain();
+    const auto& blocks = shell_domain.blocks();
+    const auto& initial_ref_levels = shell.initial_refinement_levels();
+    const auto element_ids = initial_element_ids(initial_ref_levels);
+    const auto excision_sphere =
+        shell_domain.excision_spheres().at("ExcisionSphere");
+    const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto};
+    // Shell does not distort to conform to the horizon in Kerr-Schild
+    // coordinates for spinning black holes, so we append the horizon
+    // conforming map
+    const auto kerr_conforming_map =
+        CoordinateMap<Frame::Grid, Frame::Inertial,
+                      domain::CoordinateMaps::KerrHorizonConforming>(
+            domain::CoordinateMaps::KerrHorizonConforming{mass, spin});
+    gr::Solutions::KerrSchild kerr_schild{mass, spin, {0., 0., 0.}};
+    double horizon_area = 0.;
+    for (const auto& element_id : element_ids) {
+      const auto& current_block = blocks.at(element_id.block_id());
+      const auto element_abutting_direction =
+          excision_sphere.abutting_direction(element_id);
+      if (element_abutting_direction.has_value()) {
+        const auto face_logical_coords = interface_logical_coordinates(
+            face_mesh, element_abutting_direction.value());
+        const domain::CoordinateMaps::Composition logical_to_inertial_map{
+            domain::element_to_block_logical_map(element_id),
+            current_block.stationary_map().get_to_grid_frame(),
+            kerr_conforming_map.get_clone()};
+        const auto inverse_jacobian =
+            logical_to_inertial_map.inv_jacobian(face_logical_coords);
+        const auto spacetime_vars = kerr_schild.variables(
+            logical_to_inertial_map(face_logical_coords), 0.,
+            tmpl::list<
+                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+                gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
+        const auto curved_area_element = area_element(
+            inverse_jacobian, element_abutting_direction.value(),
+            get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+                spacetime_vars),
+            get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(spacetime_vars));
+        horizon_area += definite_integral(get(curved_area_element), face_mesh);
+      }
+    }
+    auto custom_approx = Approx::custom().epsilon(1e-8);
+    CHECK(horizon_area == custom_approx(8. * M_PI * mass * horizon_radius));
+  }
+}
 
 SPECTRE_TEST_CASE("Unit.Domain.AreaElement", "[Domain][Unit]") {
   test_area_element_against_normal_vector();
   test_sphere_integral();
+  test_kerr_area();
 }
 
+}  // namespace
 }  // namespace domain
