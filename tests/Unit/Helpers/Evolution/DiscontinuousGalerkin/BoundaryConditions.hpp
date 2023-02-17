@@ -403,13 +403,13 @@ void test_boundary_condition_with_python_impl(
         typename ::evolution::dg::Actions::detail::get_primitive_vars<
             System::has_primitive_and_conservative_vars>::
             template f<BoundaryCorrection>;
-    using tags_on_exterior_face = tmpl::append<
+    using tags_on_exterior_face = tmpl::remove_duplicates<tmpl::append<
         variables_tags, fluxes_tags, correction_temp_tags, correction_prim_tags,
         inverse_spatial_metric_list,
         tmpl::list<
             ::evolution::dg::Actions::detail::OneOverNormalVectorMagnitude,
             ::evolution::dg::Actions::detail::NormalVector<FaceDim + 1>,
-            ::evolution::dg::Tags::NormalCovector<FaceDim + 1>>>;
+            ::evolution::dg::Tags::NormalCovector<FaceDim + 1>>>>;
     Variables<tags_on_exterior_face> exterior_face_fields{
         number_of_points_on_face};
     auto apply_bc = [&boundary_condition, &box_of_volume_data, epsilon,
