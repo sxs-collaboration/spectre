@@ -86,14 +86,24 @@ void test_interval() {
       std::make_unique<TestHelpers::domain::BoundaryConditions::
                            TestPeriodicBoundaryCondition<1>>();
 
+  const auto distributions =
+      make_array(CoordinateMaps::Distribution::Linear,
+                 CoordinateMaps::Distribution::Logarithmic);
+  const std::array<std::optional<double>, 2> singularities{{std::nullopt, -2.}};
+
   const std::array<double, 1> velocity{{2.5}};
   const auto time_dependence = std::make_unique<
       domain::creators::time_dependence::UniformTranslation<1>>(0., velocity);
   const std::vector<double> times{0., 1.5};
 
-  for (const auto& [is_periodic, time_dependent] :
-       cartesian_product(make_array(true, false), make_array(true, false))) {
+  for (const auto& [is_periodic, distribution_index, time_dependent] :
+       cartesian_product(make_array(true, false), make_array(0, 1),
+                         make_array(true, false))) {
     CAPTURE(is_periodic);
+    const auto& distribution = gsl::at(distributions, distribution_index);
+    const auto& singularity = gsl::at(singularities, distribution_index);
+    CAPTURE(distribution);
+    CAPTURE(singularity);
     CAPTURE(time_dependent);
 
     const creators::Interval interval{
@@ -102,6 +112,8 @@ void test_interval() {
         refinement_level[0],
         grid_points[0],
         {{is_periodic}},
+        distribution,
+        singularity,
         time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
         interval, false, is_periodic, lower_bound, upper_bound, times,
@@ -116,6 +128,8 @@ void test_interval() {
                     : lower_boundary_condition->get_clone(),
         is_periodic ? periodic_boundary_condition->get_clone()
                     : upper_boundary_condition->get_clone(),
+        distribution,
+        singularity,
         time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
         interval_with_bc, true, is_periodic, lower_bound, upper_bound, times,
@@ -158,6 +172,8 @@ void test_interval_factory() {
             "Interval:\n"
             "  LowerBound: [0]\n"
             "  UpperBound: [1]\n"
+            "  Distribution: Linear\n"
+            "  Singularity: None\n"
             "  InitialGridPoints: [3]\n"
             "  InitialRefinement: [2]\n" +
                 (time_dependent ? time_dep_options : no_time_dep_options) +
@@ -192,29 +208,34 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0], lower_boundary_condition->get_clone(),
-                         nullptr, nullptr, Options::Context{false, {}, 1, 1}),
+                         nullptr, CoordinateMaps::Distribution::Linear,
+                         std::nullopt, nullptr,
+                         Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Both upper and lower boundary conditions "
                                 "must be specified, or neither."));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0], nullptr,
-                         upper_boundary_condition->get_clone(), nullptr,
-                         Options::Context{false, {}, 1, 1}),
+                         upper_boundary_condition->get_clone(),
+                         CoordinateMaps::Distribution::Linear, std::nullopt,
+                         nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Both upper and lower boundary conditions "
                                 "must be specified, or neither."));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0], lower_boundary_condition->get_clone(),
-                         periodic_boundary_condition->get_clone(), nullptr,
-                         Options::Context{false, {}, 1, 1}),
+                         periodic_boundary_condition->get_clone(),
+                         CoordinateMaps::Distribution::Linear, std::nullopt,
+                         nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Both the upper and lower boundary condition "
                                 "must be set to periodic if"));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0],
                          periodic_boundary_condition->get_clone(),
-                         lower_boundary_condition->get_clone(), nullptr,
-                         Options::Context{false, {}, 1, 1}),
+                         lower_boundary_condition->get_clone(),
+                         CoordinateMaps::Distribution::Linear, std::nullopt,
+                         nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Both the upper and lower boundary condition "
                                 "must be set to periodic if"));
   CHECK_THROWS_WITH(
@@ -223,7 +244,8 @@ void test_parse_errors() {
           lower_boundary_condition->get_clone(),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
-          nullptr, Options::Context{false, {}, 1, 1}),
+          CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
@@ -232,7 +254,8 @@ void test_parse_errors() {
           lower_bound, upper_bound, refinement_level[0], grid_points[0],
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
-          lower_boundary_condition->get_clone(), nullptr,
+          lower_boundary_condition->get_clone(),
+          CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like an "

@@ -9,14 +9,20 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -24,7 +30,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
-class Affine;
+class Interval;
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -39,7 +45,7 @@ class Interval : public DomainCreator<1> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                                       CoordinateMaps::Affine>>;
+                                       CoordinateMaps::Interval>>;
 
   struct LowerBound {
     using type = std::array<double, 1>;
@@ -50,6 +56,22 @@ class Interval : public DomainCreator<1> {
     using type = std::array<double, 1>;
     static constexpr Options::String help = {
         "Sequence of [x] for upper bounds."};
+  };
+  struct Distribution {
+    using type = CoordinateMaps::Distribution;
+    static constexpr Options::String help = {"Distribution of grid points"};
+  };
+  struct Singularity {
+    using type = Options::Auto<double, Options::AutoLabel::None>;
+    static constexpr Options::String help = {
+        "Position of coordinate singularity. Must be outside the domain. "
+        "Required for 'Logarithmic' and 'Inverse' grid point distributions. "
+        "Set to 'None' otherwise. "
+        "A singularity position close to the lower or upper bound of the "
+        "interval leads to very small grid spacing near that end, and "
+        "placing the singularity further away from the domain increases the "
+        "grid spacing. See the documentation of "
+        "'domain::CoordinateMap::Distribution' for details."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 1>;
@@ -111,7 +133,7 @@ class Interval : public DomainCreator<1> {
               typename Metavariables::system>,
           options_boundary_conditions<typename Metavariables::system>,
           options_periodic>,
-      tmpl::list<TimeDependence>>;
+      tmpl::list<Distribution, Singularity, TimeDependence>>;
 
   static constexpr Options::String help = {"Creates a 1D interval."};
 
@@ -119,8 +141,12 @@ class Interval : public DomainCreator<1> {
            std::array<size_t, 1> initial_refinement_level_x,
            std::array<size_t, 1> initial_number_of_grid_points_in_x,
            std::array<bool, 1> is_periodic_in_x = {{false}},
+           CoordinateMaps::Distribution distribution =
+               CoordinateMaps::Distribution::Linear,
+           std::optional<double> singularity = std::nullopt,
            std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-               time_dependence = nullptr);
+               time_dependence = nullptr,
+           const Options::Context& context = {});
 
   Interval(std::array<double, 1> lower_x, std::array<double, 1> upper_x,
            std::array<size_t, 1> initial_refinement_level_x,
@@ -129,6 +155,9 @@ class Interval : public DomainCreator<1> {
                lower_boundary_condition,
            std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
                upper_boundary_condition,
+           CoordinateMaps::Distribution distribution =
+               CoordinateMaps::Distribution::Linear,
+           std::optional<double> singularity = std::nullopt,
            std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
                time_dependence = nullptr,
            const Options::Context& context = {});
@@ -161,6 +190,8 @@ class Interval : public DomainCreator<1> {
  private:
   typename LowerBound::type lower_x_{};
   typename UpperBound::type upper_x_{};
+  CoordinateMaps::Distribution distribution_{};
+  std::optional<double> singularity_{};
   typename IsPeriodicIn::type is_periodic_in_x_{};
   typename InitialRefinement::type initial_refinement_level_x_{};
   typename InitialGridPoints::type initial_number_of_grid_points_in_x_{};

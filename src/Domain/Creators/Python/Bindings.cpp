@@ -19,6 +19,7 @@ namespace domain::creators {
 
 PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   py::module_::import("spectre.Domain");
+  py::module_::import("spectre.Domain.CoordinateMaps");
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   // Order is important: The base class `DomainCreator` needs to have its

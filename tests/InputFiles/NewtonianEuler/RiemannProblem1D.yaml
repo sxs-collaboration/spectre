@@ -19,6 +19,8 @@ DomainCreator:
   Interval:
     LowerBound: [-0.25]
     UpperBound: [0.75]
+    Distribution: Linear
+    Singularity: None
     InitialRefinement: [1]
     InitialGridPoints: [2]
     TimeDependence: None

@@ -11,9 +11,9 @@
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -34,10 +34,15 @@ Interval::Interval(
     std::array<size_t, 1> initial_refinement_level_x,
     std::array<size_t, 1> initial_number_of_grid_points_in_x,
     std::array<bool, 1> is_periodic_in_x,
+    domain::CoordinateMaps::Distribution distribution,
+    std::optional<double> singularity,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-        time_dependence)
+        time_dependence,
+    const Options::Context& context)
     : lower_x_(lower_x),
       upper_x_(upper_x),
+      distribution_(distribution),
+      singularity_(singularity),
       is_periodic_in_x_(is_periodic_in_x),
       initial_refinement_level_x_(initial_refinement_level_x),
       initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
@@ -47,6 +52,25 @@ Interval::Interval(
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<1>>();
+  }
+  if (lower_x_[0] >= upper_x_[0]) {
+    PARSE_ERROR(context, "Lower bound ("
+                             << lower_x_[0]
+                             << ") must be strictly smaller than upper bound ("
+                             << upper_x_[0] << ").");
+  }
+  if ((distribution_ == CoordinateMaps::Distribution::Logarithmic or
+       distribution_ == CoordinateMaps::Distribution::Inverse) !=
+      singularity_.has_value()) {
+    PARSE_ERROR(context,
+                "Specify a 'Singularity' for 'Logarithmic' or 'Inverse' grid "
+                "point distributions, or 'None' otherwise.");
+  }
+  if (singularity_.has_value() and *singularity_ >= lower_x_[0] and
+      *singularity_ <= upper_x_[0]) {
+    PARSE_ERROR(context, "The 'Singularity' ("
+                             << *singularity_ << ") falls inside the domain ["
+                             << lower_x_[0] << ", " << upper_x_[0] << "].");
   }
 }
 
@@ -58,21 +82,16 @@ Interval::Interval(
         lower_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         upper_boundary_condition,
+    domain::CoordinateMaps::Distribution distribution,
+    std::optional<double> singularity,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
         time_dependence,
     const Options::Context& context)
-    : lower_x_(lower_x),
-      upper_x_(upper_x),
-      is_periodic_in_x_{{false}},
-      initial_refinement_level_x_(initial_refinement_level_x),
-      initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
-      lower_boundary_condition_(std::move(lower_boundary_condition)),
-      upper_boundary_condition_(std::move(upper_boundary_condition)),
-      time_dependence_(std::move(time_dependence)) {
-  if (time_dependence_ == nullptr) {
-    time_dependence_ =
-        std::make_unique<domain::creators::time_dependence::None<1>>();
-  }
+    : Interval(lower_x, upper_x, initial_refinement_level_x,
+               initial_number_of_grid_points_in_x, {{false}}, distribution,
+               singularity, std::move(time_dependence), context) {
+  lower_boundary_condition_ = std::move(lower_boundary_condition);
+  upper_boundary_condition_ = std::move(upper_boundary_condition);
   if ((lower_boundary_condition_ == nullptr) !=
       (upper_boundary_condition_ == nullptr)) {
     PARSE_ERROR(context,
@@ -103,7 +122,8 @@ Interval::Interval(
 Domain<1> Interval::create_domain() const {
   Domain<1> domain{
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
+          CoordinateMaps::Interval{-1., 1., lower_x_[0], upper_x_[0],
+                                   distribution_, singularity_}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}
                            : std::vector<PairOfFaces>{},

@@ -5,6 +5,8 @@ SourceDomainCreator:
   Interval:
     LowerBound: [0]
     UpperBound: [4]
+    Distribution: Linear
+    Singularity: None
     IsPeriodicIn: [False]
     InitialRefinement: [2]
     InitialGridPoints: [8]
@@ -15,6 +17,8 @@ TargetDomainCreator:
   Interval:
     LowerBound: [-1]
     UpperBound: [3]
+    Distribution: Linear
+    Singularity: None
     IsPeriodicIn: [False]
     InitialRefinement: [1]
     InitialGridPoints: [6]
