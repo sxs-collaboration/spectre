@@ -142,7 +142,7 @@ struct UpdateControlSystem {
       q_and_dtq[1] = (*opt_avg_values)[1];
     }
 
-    if (db::get<control_system::Tags::WriteDataToDisk>(*box)) {
+    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
       // LCOV_EXCL_START
       write_components_to_disk<ControlSystem>(time, cache, function_of_time,
                                               q_and_dtq);

@@ -57,6 +57,11 @@ namespace callbacks {
  */
 template <typename InterpolationTargetTag>
 struct ObserveCenters {
+  // Note that we don't add a const_global_cache_tags type alias here with
+  // ah::Tags::ObserveCenters because we want to use the base tag and so must be
+  // agnostic to how the tag was added to the cache. We do this so anything that
+  // uses ObserveCenters can control when it gets printed.
+
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
@@ -75,6 +80,11 @@ struct ObserveCenters {
         db::tag_is_retrievable_v<EuclideanAreaElementTag, db::DataBox<DbTags>>,
         "DataBox must contain "
         "StrahlkorperTags::EuclideanAreaElement<Frame::Grid>");
+
+    // Only print the centers if we want to.
+    if (not Parallel::get<ah::Tags::ObserveCentersBase>(cache)) {
+      return;
+    }
 
     const auto& grid_horizon = db::get<GridTag>(box);
     const std::array<double, 3> grid_center = grid_horizon.physical_center();

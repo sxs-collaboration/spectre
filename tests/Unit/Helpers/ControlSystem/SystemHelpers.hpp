@@ -85,7 +85,6 @@ using init_simple_tags =
                control_system::Tags::TimescaleTuner<ControlSystem>,
                control_system::Tags::Controller<ControlSystem>,
                control_system::Tags::ControlError<ControlSystem>,
-               control_system::Tags::WriteDataToDisk,
                control_system::Tags::IsActive<ControlSystem>,
                control_system::Tags::CurrentNumberOfMeasurements,
                typename ControlSystem::MeasurementQueue>;
@@ -204,6 +203,7 @@ struct MockControlComponent {
 
   using const_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementsPerUpdate,
+                 control_system::Tags::WriteDataToDisk,
                  domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
                  domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
 
@@ -790,7 +790,7 @@ struct SystemHelper {
               get<control_system::Tags::TimescaleTuner<system>>(created_tags),
               get<control_system::Tags::Controller<system>>(created_tags),
               get<control_system::Tags::ControlError<system>>(created_tags),
-              get<control_system::Tags::WriteDataToDisk>(created_tags), true, 0,
+              true, 0,
               // Just need an empty queue. It will get filled in as the control
               // system is updated
               LinkedMessageQueue<

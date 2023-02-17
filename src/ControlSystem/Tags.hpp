@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -135,6 +136,20 @@ namespace Tags {
 /// \ingroup ControlSystemGroup
 /// DataBox tag for writing control system data to disk
 struct WriteDataToDisk : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag for writing the centers of the horizons to disk.
+///
+/// This is controlled by the `control_system::OptionTags::WriteDataToDisk`
+/// option in the input file.
+struct ObserveCenters : ::ah::Tags::ObserveCentersBase, db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
 

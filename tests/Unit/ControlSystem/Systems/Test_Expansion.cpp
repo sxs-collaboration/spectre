@@ -103,7 +103,7 @@ void test_expansion_control_system() {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4,
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
                             std::move(grid_center_A), std::move(grid_center_B)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
