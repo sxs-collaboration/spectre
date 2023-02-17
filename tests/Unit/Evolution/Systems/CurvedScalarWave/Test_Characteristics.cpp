@@ -111,8 +111,9 @@ void test_characteristic_fields() {
 }  // namespace
 
 namespace {
+// uses the overload that returns variables
 template <typename Tag, size_t SpatialDim>
-typename Tag::type evolved_field_with_tag(
+typename Tag::type evolved_field_with_tag_variables(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& u_psi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& u_zero,
     const Scalar<DataVector>& u_plus, const Scalar<DataVector>& u_minus,
@@ -121,21 +122,57 @@ typename Tag::type evolved_field_with_tag(
       gamma_2, u_psi, u_zero, u_plus, u_minus, normal_one_form));
 }
 
+// uses the overload that returns tensors by reference
+template <typename Tag, size_t SpatialDim>
+typename Tag::type evolved_field_with_tag_tensor(
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& u_psi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& u_zero,
+    const Scalar<DataVector>& u_plus, const Scalar<DataVector>& u_minus,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& normal_one_form) {
+  Scalar<DataVector> psi{};
+  Scalar<DataVector> pi{};
+  tnsr::i<DataVector, SpatialDim, Frame::Inertial> phi{};
+  CurvedScalarWave::evolved_fields_from_characteristic_fields(
+      make_not_null(&psi), make_not_null(&pi), make_not_null(&phi), gamma_2,
+      u_psi, u_zero, u_plus, u_minus, normal_one_form);
+  Variables<tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                       CurvedScalarWave::Tags::Phi<SpatialDim>>>
+      vars(get(gamma_2).size());
+  get<CurvedScalarWave::Tags::Psi>(vars) = psi;
+  get<CurvedScalarWave::Tags::Pi>(vars) = pi;
+  get<CurvedScalarWave::Tags::Phi<SpatialDim>>(vars) = phi;
+  return get<Tag>(vars);
+}
+
 template <size_t SpatialDim>
 void test_evolved_from_characteristic_fields() {
   const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Tags::Psi, SpatialDim>,
+      evolved_field_with_tag_variables<CurvedScalarWave::Tags::Psi, SpatialDim>,
       "Characteristics", "evol_field_psi", {{{-2.0, 2.0}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Tags::Pi, SpatialDim>,
+      evolved_field_with_tag_variables<CurvedScalarWave::Tags::Pi, SpatialDim>,
       "Characteristics", "evol_field_pi", {{{-2.0, 2.0}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Tags::Phi<SpatialDim>,
-                             SpatialDim>,
+      evolved_field_with_tag_variables<CurvedScalarWave::Tags::Phi<SpatialDim>,
+                                       SpatialDim>,
+      "Characteristics", "evol_field_phi", {{{-2.0, 2.0}}}, used_for_size);
+
+  // Psi
+  pypp::check_with_random_values<1>(
+      evolved_field_with_tag_tensor<CurvedScalarWave::Tags::Psi, SpatialDim>,
+      "Characteristics", "evol_field_psi", {{{-2.0, 2.0}}}, used_for_size);
+  // Pi
+  pypp::check_with_random_values<1>(
+      evolved_field_with_tag_tensor<CurvedScalarWave::Tags::Pi, SpatialDim>,
+      "Characteristics", "evol_field_pi", {{{-2.0, 2.0}}}, used_for_size);
+  // Phi
+  pypp::check_with_random_values<1>(
+      evolved_field_with_tag_tensor<CurvedScalarWave::Tags::Phi<SpatialDim>,
+                                    SpatialDim>,
       "Characteristics", "evol_field_phi", {{{-2.0, 2.0}}}, used_for_size);
 }
 
