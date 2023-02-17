@@ -43,7 +43,7 @@ def dt_phi_constraint_preserving_spherical_radiation(
     char_speed_zero = char_speed_vzero(gamma1, lapse, shift, normal_covector)
     if face_mesh_velocity is not None:
         char_speed_zero -= np.dot(normal_covector, face_mesh_velocity)
-    return 0.5 * np.einsum("ij,j", d_phi.T - d_phi, normal_vector) * min(
+    return np.einsum("ij,j", d_phi.T - d_phi, normal_vector) * min(
         0, char_speed_zero)
 
 

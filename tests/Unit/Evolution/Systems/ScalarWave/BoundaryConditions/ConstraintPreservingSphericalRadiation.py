@@ -63,7 +63,7 @@ def dt_phi(face_mesh_velocity, outward_directed_normal_covector, psi, pi, phi,
         return 0.0 * d_psi
 
     return -np.dot(outward_directed_normal_covector,
-                   face_mesh_velocity) * 0.5 * np.einsum(
+                   face_mesh_velocity) * np.einsum(
                        "i, ij->j", outward_directed_normal_covector,
                        d_phi - np.transpose(d_phi))
 

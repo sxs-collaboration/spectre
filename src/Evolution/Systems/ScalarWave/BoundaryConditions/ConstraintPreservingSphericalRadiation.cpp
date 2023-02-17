@@ -164,7 +164,7 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
         dt_phi_correction->get(i) +=
             normal_covector.get(j) * (d_phi.get(j, i) - d_phi.get(i, j));
       }
-      dt_phi_correction->get(i) *= -0.5 * get(negative_lambda0);
+      dt_phi_correction->get(i) *= -get(negative_lambda0);
     }
     if (min(-get(negative_lambda0)) < 0.0) {
       return {
