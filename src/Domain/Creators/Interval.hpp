@@ -118,9 +118,9 @@ class Interval : public DomainCreator<1> {
   Interval(std::array<double, 1> lower_x, std::array<double, 1> upper_x,
            std::array<size_t, 1> initial_refinement_level_x,
            std::array<size_t, 1> initial_number_of_grid_points_in_x,
-           std::array<bool, 1> is_periodic_in_x,
+           std::array<bool, 1> is_periodic_in_x = {{false}},
            std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-               time_dependence);
+               time_dependence = nullptr);
 
   Interval(std::array<double, 1> lower_x, std::array<double, 1> upper_x,
            std::array<size_t, 1> initial_refinement_level_x,
@@ -130,7 +130,7 @@ class Interval : public DomainCreator<1> {
            std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
                upper_boundary_condition,
            std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-               time_dependence,
+               time_dependence = nullptr,
            const Options::Context& context = {});
 
   Interval() = default;

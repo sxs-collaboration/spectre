@@ -67,7 +67,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
+        {{-0.5}}, {{1.5}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
         SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,

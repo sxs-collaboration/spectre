@@ -65,8 +65,8 @@ void test_1d() {
           "Points: [[1.0], [0.3]]");
   CHECK(created_opts == points_opts);
 
-  const auto domain_creator = domain::creators::Interval(
-      {{-1.0}}, {{1.0}}, {{1}}, {{3}}, {{false}}, nullptr);
+  const auto domain_creator =
+      domain::creators::Interval({{-1.0}}, {{1.0}}, {{1}}, {{3}});
 
   const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 1, Frame::Inertial> points;

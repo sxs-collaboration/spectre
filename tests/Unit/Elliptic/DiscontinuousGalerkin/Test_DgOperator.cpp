@@ -445,8 +445,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              elliptic::BoundaryConditionType::Neumann),
-          nullptr};
+              elliptic::BoundaryConditionType::Neumann)};
       const ElementId<1> left_id{0, {{{2, 0}}}};
       const ElementId<1> midleft_id{0, {{{2, 1}}}};
       const ElementId<1> midright_id{0, {{{2, 2}}}};
@@ -527,8 +526,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              elliptic::BoundaryConditionType::Neumann),
-          nullptr};
+              elliptic::BoundaryConditionType::Neumann)};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI);
       Approx analytic_solution_operator_approx =
