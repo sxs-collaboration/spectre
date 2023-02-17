@@ -143,9 +143,9 @@ void test_shape_control_error() {
                            {5, Direction<3>::lower_zeta()}}}}}};
 
   auto grid_center_A =
-      fake_domain.excision_spheres().at("ObjectAExcisionSphere").center();
+      fake_domain.excision_spheres().at("ExcisionSphereA").center();
   auto grid_center_B =
-      fake_domain.excision_spheres().at("ObjectAExcisionSphere").center();
+      fake_domain.excision_spheres().at("ExcisionSphereA").center();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   // Excision centers aren't used so their values can be anything

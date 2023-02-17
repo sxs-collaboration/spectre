@@ -19,7 +19,7 @@ template <ObjectLabel Label>
 tnsr::I<double, 3, Frame::Grid> ExcisionCenter<Label>::create_from_options(
     const std::unique_ptr<::DomainCreator<3>>& domain_creator) {
   const auto domain = domain_creator->create_domain();
-  const std::string name = "Object"s + get_output(Label) + "ExcisionSphere"s;
+  const std::string name = "ExcisionSphere"s + get_output(Label);
   if (domain.excision_spheres().count(name) != 1) {
     ERROR(name << " is not in the domains excision spheres but is needed to "
                   "generate the ExcisionCenter<"

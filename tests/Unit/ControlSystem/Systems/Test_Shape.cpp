@@ -75,10 +75,8 @@ void test_shape_control(
   auto& initial_measurement_timescales =
       system_helper->initial_measurement_timescales();
 
-  auto grid_center_A =
-      domain.excision_spheres().at("ObjectAExcisionSphere").center();
-  auto grid_center_B =
-      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+  auto grid_center_A = domain.excision_spheres().at("ExcisionSphereA").center();
+  auto grid_center_B = domain.excision_spheres().at("ExcisionSphereB").center();
 
   const auto& init_shape_tuple = system_helper->template init_tuple<system>();
 

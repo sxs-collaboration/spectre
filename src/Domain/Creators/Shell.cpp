@@ -160,7 +160,7 @@ Domain<3> Shell::create_domain() const {
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres;
   if (which_wedges_ == ShellWedges::All) {
     excision_spheres.emplace(
-        "CentralExcisionSphere",
+        "ExcisionSphere",
         ExcisionSphere<3>{inner_radius_,
                           tnsr::I<double, 3, Frame::Grid>{0.0},
                           {{0, Direction<3>::lower_zeta()},

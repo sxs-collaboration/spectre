@@ -268,17 +268,17 @@ struct ControlError : db::SimpleTag {
         };
 
     if constexpr (expected_number_of_excisions == 1) {
-      if (excision_spheres.count("ObjectAExcisionSphere") != 1 and
-          excision_spheres.count("ObjectBExcisionSphere") != 1) {
-        print_error("ObjectAExcisionSphere' or 'ObjectBExcisionSphere");
+      if (excision_spheres.count("ExcisionSphereA") != 1 and
+          excision_spheres.count("ExcisionSphereB") != 1) {
+        print_error("ExcisionSphereA' or 'ExcisionSphereB");
       }
     }
     if constexpr (expected_number_of_excisions == 2) {
-      if (excision_spheres.count("ObjectAExcisionSphere") != 1) {
-        print_error("ObjectAExcisionSphere");
+      if (excision_spheres.count("ExcisionSphereA") != 1) {
+        print_error("ExcisionSphereA");
       }
-      if (excision_spheres.count("ObjectBExcisionSphere") != 1) {
-        print_error("ObjectBExcisionSphere");
+      if (excision_spheres.count("ExcisionSphereB") != 1) {
+        print_error("ExcisionSphereB");
       }
     }
 

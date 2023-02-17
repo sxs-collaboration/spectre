@@ -85,7 +85,7 @@ void test_sphere_integral() {
     const auto& initial_ref_levels = shell.initial_refinement_levels();
     const auto element_ids = initial_element_ids(initial_ref_levels);
     const auto excision_sphere =
-        shell_domain.excision_spheres().at("CentralExcisionSphere");
+        shell_domain.excision_spheres().at("ExcisionSphere");
     const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
     double sphere_surface = 0.;

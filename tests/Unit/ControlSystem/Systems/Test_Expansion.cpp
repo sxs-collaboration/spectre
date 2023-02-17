@@ -98,10 +98,8 @@ void test_expansion_control_system() {
   const auto& init_exp_tuple =
       system_helper.template init_tuple<expansion_system>();
 
-  auto grid_center_A =
-      domain.excision_spheres().at("ObjectAExcisionSphere").center();
-  auto grid_center_B =
-      domain.excision_spheres().at("ObjectBExcisionSphere").center();
+  auto grid_center_A = domain.excision_spheres().at("ExcisionSphereA").center();
+  auto grid_center_B = domain.excision_spheres().at("ExcisionSphereB").center();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

@@ -38,7 +38,7 @@ namespace ControlErrors {
 namespace detail {
 template <::domain::ObjectLabel Horizon>
 std::string excision_sphere_name() {
-  return "Object"s + ::domain::name(Horizon) + "ExcisionSphere"s;
+  return "ExcisionSphere"s + ::domain::name(Horizon);
 }
 
 template <::domain::ObjectLabel Horizon>

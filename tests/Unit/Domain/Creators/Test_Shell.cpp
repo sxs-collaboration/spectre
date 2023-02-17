@@ -345,7 +345,7 @@ void test_shell_construction(
   if (which_wedges == ShellWedges::All) {
     CHECK(domain.excision_spheres() ==
           std::unordered_map<std::string, ExcisionSphere<3>>{
-              {"CentralExcisionSphere",
+              {"ExcisionSphere",
                ExcisionSphere<3>{inner_radius,
                                  tnsr::I<double, 3, Frame::Grid>{0.},
                                  {{0, Direction<3>::lower_zeta()},
