@@ -49,6 +49,7 @@ void test_interval_construction(const creators::Interval& domain_creator,
   CHECK(domain.excision_spheres().empty());
 
   const auto& block = blocks[0];
+  CHECK(block.name() == "Interval");
   const auto& external_boundaries = block.external_boundaries();
   CHECK(external_boundaries.size() == (is_periodic ? 0 : 2));
 
