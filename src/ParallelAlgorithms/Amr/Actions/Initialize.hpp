@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <unordered_map>
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
@@ -14,37 +13,29 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t VolumeDim>
-class ElementId;
-/// \endcond
-
 namespace amr::Initialization {
-/*!
- * \brief %Mutator meant to be used with
- *  `Initialization::Actions::AddSimpleTags`to initialize flags used for
- * adaptive mesh refinement
- *
- * DataBox:
- * - Adds:
- *   - `amr::Tags::Flags<Dim>`
- *   - `amr::Tags::NeighborFlags<Dim>`
- * - Removes: nothing
- * - Modifies: nothing
- *
- */
+/// \ingroup InitializationGroup
+/// \brief Initialize items related to adaptive mesh refinement
+///
+/// \see InitializeItems
 template <size_t Dim>
 struct Initialize {
-  using return_tags =
-      tmpl::list<amr::Tags::Flags<Dim>, amr::Tags::NeighborFlags<Dim>>;
-  using argument_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 
+  using argument_tags = tmpl::list<>;
+  using return_tags = tmpl::list<amr::Tags::Flags<Dim>>;
+  using simple_tags =
+      tmpl::push_back<return_tags, amr::Tags::NeighborFlags<Dim>>;
+
+  using compute_tags = tmpl::list<>;
+
+  /// Given the items fetched from a DataBox by the argument_tags, mutate
+  /// the items in the DataBox corresponding to return_tags
   static void apply(
-      const gsl::not_null<std::array<amr::Flag, Dim>*> amr_flags,
-      const gsl::not_null<std::unordered_map<
-          ElementId<Dim>, std::array<amr::Flag, Dim>>*> /*neighbor_flags*/) {
+      const gsl::not_null<std::array<amr::Flag, Dim>*> amr_flags) {
     *amr_flags = make_array<Dim>(amr::Flag::Undefined);
-    // default initialization of NeighborFlags is okay
   }
 };
 }  // namespace amr::Initialization
