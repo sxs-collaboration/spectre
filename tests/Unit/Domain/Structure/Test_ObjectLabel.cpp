@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "Domain/ObjectLabel.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.ObjectLabel", "[Domain][Unit]") {
@@ -11,4 +11,6 @@ SPECTRE_TEST_CASE("Unit.Domain.ObjectLabel", "[Domain][Unit]") {
   CHECK(get_output(domain::ObjectLabel::A) == "A");
   CHECK(name(domain::ObjectLabel::B) == "B");
   CHECK(get_output(domain::ObjectLabel::B) == "B");
+  CHECK(name(domain::ObjectLabel::None) == "");
+  CHECK(get_output(domain::ObjectLabel::None) == "");
 }

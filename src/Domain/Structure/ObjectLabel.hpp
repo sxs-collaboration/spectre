@@ -12,7 +12,9 @@ enum class ObjectLabel {
   /// The object along the positive x-axis in the grid frame
   A,
   /// The object along the negative x-axis in the grid frame
-  B
+  B,
+  /// This object has no label
+  None
 };
 
 std::string name(const ObjectLabel x);

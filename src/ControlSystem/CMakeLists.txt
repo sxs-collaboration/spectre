@@ -45,6 +45,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   Domain
+  DomainStructure
   ErrorHandling
   FunctionsOfTime
   INTERFACE
