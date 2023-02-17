@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_UpwindPenalty.cpp
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
+  BoundaryConditions/Test_Worldtube.cpp
   Test_BackgroundSpacetime.cpp
   Test_CalculateGrVars.cpp
   Test_Constraints.cpp
