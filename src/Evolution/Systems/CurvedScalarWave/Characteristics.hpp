@@ -213,6 +213,17 @@ void evolved_fields_from_characteristic_fields(
         unit_normal_one_form);
 
 template <size_t SpatialDim>
+void evolved_fields_from_characteristic_fields(
+    gsl::not_null<Scalar<DataVector>*> psi,
+    gsl::not_null<Scalar<DataVector>*> pi,
+    gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*> phi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
+    const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form);
+
+template <size_t SpatialDim>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<SpatialDim>,
       db::ComputeTag {

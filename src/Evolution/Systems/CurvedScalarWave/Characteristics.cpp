@@ -128,6 +128,31 @@ characteristic_fields(
 
 template <size_t SpatialDim>
 void evolved_fields_from_characteristic_fields(
+    gsl::not_null<Scalar<DataVector>*> psi,
+    gsl::not_null<Scalar<DataVector>*> pi,
+    gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*> phi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
+    const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form) {
+  const size_t size = get(gamma_2).size();
+  destructive_resize_components(psi, size);
+  destructive_resize_components(pi, size);
+  destructive_resize_components(phi, size);
+  // Eq.(36) of Holst+ (2005) for Psi
+  *psi = v_psi;
+  // Eq.(37) - (38) of Holst+ (2004) for Pi and Phi
+  pi->get() = 0.5 * (get(v_plus) + get(v_minus)) + get(gamma_2) * get(v_psi);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    phi->get(i) =
+        0.5 * (get(v_plus) - get(v_minus)) * unit_normal_one_form.get(i) +
+        v_zero.get(i);
+  }
+}
+
+template <size_t SpatialDim>
+void evolved_fields_from_characteristic_fields(
     const gsl::not_null<
         Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>*>
         evolved_fields,
@@ -136,12 +161,7 @@ void evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  if (UNLIKELY(get_size(get(get<Tags::Psi>(*evolved_fields))) !=
-               get_size(get(gamma_2)))) {
-    *evolved_fields =
-        Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>(
-            get_size(get(gamma_2)));
-  }
+  evolved_fields->initialize(get_size(get(gamma_2)));
   // Eq.(36) of Holst+ (2005) for Psi
   get<Tags::Psi>(*evolved_fields) = v_psi;
 
@@ -249,6 +269,15 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,     \
                  CurvedScalarWave::Tags::Phi<DIM(data)>>>                     \
   CurvedScalarWave::evolved_fields_from_characteristic_fields(                \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,     \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,          \
+      const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,    \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_one_form);                                              \
+  template void CurvedScalarWave::evolved_fields_from_characteristic_fields(  \
+      gsl::not_null<Scalar<DataVector>*> psi,                                 \
+      gsl::not_null<Scalar<DataVector>*> pi,                                  \
+      gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*> phi,    \
       const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,     \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,          \
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,    \
