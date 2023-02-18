@@ -6,75 +6,66 @@
 #include <array>
 #include <cstddef>
 #include <memory>
-#include <pup.h>
-#include <unordered_set>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/OptionTags.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/TimeDependence/None.hpp"
-#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionMap.hpp"
-#include "Domain/Structure/OrientationMap.hpp"
-#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
-#include "Helpers/Domain/DomainTestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/MakeVector.hpp"
 
 namespace domain {
 namespace {
-template <typename... FuncsOfTime>
-void test_interval_construction(
-    const creators::Interval& interval,
-    const std::array<double, 1>& lower_bound,
-    const std::array<double, 1>& upper_bound,
-    const std::vector<std::array<size_t, 1>>& expected_extents,
-    const std::vector<std::array<size_t, 1>>& expected_refinement_level,
-    const std::vector<DirectionMap<1, BlockNeighbor<1>>>&
-        expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<1>>>&
-        expected_external_boundaries,
-    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
-        expected_functions_of_time,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 1>>>&
-        expected_grid_to_inertial_maps,
-    const bool expect_boundary_conditions = false,
-    const std::unordered_map<std::string, double>& initial_expiration_times =
-        {}) {
-  const std::vector<double> times{1.};
+void test_interval_construction(const creators::Interval& domain_creator,
+                                const bool expect_boundary_conditions,
+                                const bool is_periodic,
+                                const std::array<double, 1>& lower_bound,
+                                const std::array<double, 1>& upper_bound,
+                                const std::vector<double>& times = {0.},
+                                const std::array<double, 1>& velocity = {
+                                    {0.}}) {
+  // Generic tests
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      interval, expect_boundary_conditions, false, times);
+      domain_creator, expect_boundary_conditions, is_periodic, times);
+  TestHelpers::domain::BoundaryConditions::test_boundary_conditions(
+      domain_creator.external_boundary_conditions());
 
-  CHECK(interval.initial_extents() == expected_extents);
-  CHECK(interval.initial_refinement_levels() == expected_refinement_level);
+  // Interval-specific tests
+  CHECK(domain.block_groups().empty());
+  const auto& blocks = domain.blocks();
+  CHECK(blocks.size() == 1);
+  CHECK(domain.excision_spheres().empty());
 
-  test_domain_construction(
-      domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<
-                  Frame::BlockLogical,
-                  tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
-                                      Frame::Inertial, Frame::Grid>>(
-          CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]})),
-      10.0, interval.functions_of_time(), expected_grid_to_inertial_maps);
-  TestHelpers::domain::creators::test_functions_of_time(
-      interval, expected_functions_of_time, initial_expiration_times);
+  const auto& block = blocks[0];
+  const auto& external_boundaries = block.external_boundaries();
+  CHECK(external_boundaries.size() == (is_periodic ? 0 : 2));
+
+  // Check that the block boundaries have the expected coordinates
+  tnsr::I<DataVector, 1> expected_block_boundaries{2_st};
+  const auto functions_of_time = domain_creator.functions_of_time();
+  for (const double time : times) {
+    CAPTURE(time);
+    get<0>(expected_block_boundaries)[0] = lower_bound[0] + time * velocity[0];
+    get<0>(expected_block_boundaries)[1] = upper_bound[0] + time * velocity[0];
+    const auto block_logical_coords = block_logical_coordinates(
+        domain, expected_block_boundaries, time, functions_of_time);
+    CHECK(block_logical_coords[0]->id.get_index() == 0);
+    CHECK(get<0>(block_logical_coords[0]->data) == -1.);
+    CHECK(block_logical_coords[1]->id.get_index() == 0);
+    CHECK(get<0>(block_logical_coords[1]->data) == 1.);
+  }
 }
 
 void test_interval() {
@@ -83,332 +74,174 @@ void test_interval() {
   const std::vector<std::array<size_t, 1>> refinement_level{{{3}}};
   const std::array<double, 1> lower_bound{{-1.2}};
   const std::array<double, 1> upper_bound{{0.8}};
-  // default Orientation is aligned
-  const OrientationMap<1> aligned_orientation{};
 
-  {
-    INFO("No boundary condition");
-    const creators::Interval interval{lower_bound,
-                                      upper_bound,
-                                      refinement_level[0],
-                                      grid_points[0],
-                                      std::array<bool, 1>{{false}},
-                                      nullptr};
+  const auto lower_boundary_condition = std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
+      Direction<1>::lower_xi(), 0);
+  const auto upper_boundary_condition = std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
+      Direction<1>::upper_xi(), 0);
+  const auto periodic_boundary_condition =
+      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                           TestPeriodicBoundaryCondition<1>>();
 
-    // This domain creator doesn't support block names and groups yet, so they
-    // should be empty
-    CHECK(interval.block_names().empty());
-    CHECK(interval.block_groups().empty());
+  const std::array<double, 1> velocity{{2.5}};
+  const auto time_dependence = std::make_unique<
+      domain::creators::time_dependence::UniformTranslation<1>>(0., velocity);
+  const std::vector<double> times{0., 1.5};
 
-    test_interval_construction(
-        interval, lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{{}},
-        std::vector<std::unordered_set<Direction<1>>>{
-            {{Direction<1>::lower_xi()}, {Direction<1>::upper_xi()}}},
-        std::tuple<>{}, {});
+  for (const auto& [is_periodic, time_dependent] :
+       cartesian_product(make_array(true, false), make_array(true, false))) {
+    CAPTURE(is_periodic);
+    CAPTURE(time_dependent);
 
-    const creators::Interval periodic_interval{lower_bound,
-                                               upper_bound,
-                                               refinement_level[0],
-                                               grid_points[0],
-                                               std::array<bool, 1>{{true}},
-                                               nullptr};
-    test_interval_construction(
-        periodic_interval, lower_bound, upper_bound, grid_points,
-        refinement_level,
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
-            {{Direction<1>::lower_xi(), {0, aligned_orientation}},
-             {Direction<1>::upper_xi(), {0, aligned_orientation}}}},
-        std::vector<std::unordered_set<Direction<1>>>{{}}, std::tuple<>{}, {});
-  }
-  {
-    INFO("With boundary condition");
-    std::vector<DirectionMap<
-        1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        expected_boundary_conditions{1};
-    expected_boundary_conditions[0][Direction<1>::lower_xi()] =
-        std::make_unique<
-            TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
-            Direction<1>::lower_xi(), 0);
-    expected_boundary_conditions[0][Direction<1>::upper_xi()] =
-        std::make_unique<
-            TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
-            Direction<1>::upper_xi(), 0);
     const creators::Interval interval{
         lower_bound,
         upper_bound,
         refinement_level[0],
         grid_points[0],
-        expected_boundary_conditions[0][Direction<1>::lower_xi()]->get_clone(),
-        expected_boundary_conditions[0][Direction<1>::upper_xi()]->get_clone(),
-        nullptr};
+        {{is_periodic}},
+        time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
-        interval, lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{{}},
-        std::vector<std::unordered_set<Direction<1>>>{
-            {{Direction<1>::lower_xi()}, {Direction<1>::upper_xi()}}},
-        std::tuple<>{}, {}, true);
+        interval, false, is_periodic, lower_bound, upper_bound, times,
+        time_dependent ? velocity : std::array<double, 1>{{0.}});
 
-    const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        periodic = std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                        TestPeriodicBoundaryCondition<1>>();
-    const creators::Interval periodic_interval{
-        lower_bound,    upper_bound,           refinement_level[0],
-        grid_points[0], periodic->get_clone(), periodic->get_clone(),
-        nullptr};
+    const creators::Interval interval_with_bc{
+        lower_bound,
+        upper_bound,
+        refinement_level[0],
+        grid_points[0],
+        is_periodic ? periodic_boundary_condition->get_clone()
+                    : lower_boundary_condition->get_clone(),
+        is_periodic ? periodic_boundary_condition->get_clone()
+                    : upper_boundary_condition->get_clone(),
+        time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
-        periodic_interval, lower_bound, upper_bound, grid_points,
-        refinement_level,
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
-            {{Direction<1>::lower_xi(), {0, aligned_orientation}},
-             {Direction<1>::upper_xi(), {0, aligned_orientation}}}},
-        std::vector<std::unordered_set<Direction<1>>>{{}}, std::tuple<>{}, {},
-        true);
-
-    // Test parse error
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            expected_boundary_conditions[0][Direction<1>::lower_xi()]
-                ->get_clone(),
-            nullptr, nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Both upper and lower boundary conditions "
-                                  "must be specified, or neither."));
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            nullptr,
-            expected_boundary_conditions[0][Direction<1>::upper_xi()]
-                ->get_clone(),
-            nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Both upper and lower boundary conditions "
-                                  "must be specified, or neither."));
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            expected_boundary_conditions[0][Direction<1>::lower_xi()]
-                ->get_clone(),
-            periodic->get_clone(), nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                  "must be set to periodic if"));
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            periodic->get_clone(),
-            expected_boundary_conditions[0][Direction<1>::lower_xi()]
-                ->get_clone(),
-            nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                  "must be set to periodic if"));
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            expected_boundary_conditions[0][Direction<1>::lower_xi()]
-                ->get_clone(),
-            std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                 TestNoneBoundaryCondition<3>>(),
-            nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains(
-            "None boundary condition is not supported. If you would like an "
-            "outflow-type boundary condition, you must use that."));
-    CHECK_THROWS_WITH(
-        creators::Interval(
-            lower_bound, upper_bound, refinement_level[0], grid_points[0],
-            std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                 TestNoneBoundaryCondition<3>>(),
-            expected_boundary_conditions[0][Direction<1>::lower_xi()]
-                ->get_clone(),
-            nullptr, Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains(
-            "None boundary condition is not supported. If you would like an "
-            "outflow-type boundary condition, you must use that."));
+        interval_with_bc, true, is_periodic, lower_bound, upper_bound, times,
+        time_dependent ? velocity : std::array<double, 1>{{0.}});
   }
 }
 
 void test_interval_factory() {
-  // For non-periodic domains:
-  std::vector<DirectionMap<
-      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      expected_boundary_conditions{1};
-  expected_boundary_conditions[0][Direction<1>::lower_xi()] = std::make_unique<
-      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
-      Direction<1>::lower_xi(), 0);
-  expected_boundary_conditions[0][Direction<1>::upper_xi()] = std::make_unique<
-      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
-      Direction<1>::upper_xi(), 0);
-  const std::vector<std::unordered_set<Direction<1>>>
-      expected_external_boundaries{
-          {Direction<1>::lower_xi(), Direction<1>::upper_xi()}};
+  INFO("Test option creation");
 
-  // for periodic domains:
-  const std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_neighbors{
-      {{Direction<1>::lower_xi(), {0, {}}},
-       {Direction<1>::upper_xi(), {0, {}}}}};
-  {
-    INFO("Interval factory time independent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<1>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<
-                1, domain::creators::Interval>>(
-        "Interval:\n"
-        "  LowerBound: [0]\n"
-        "  UpperBound: [1]\n"
-        "  IsPeriodicIn: [True]\n"
-        "  InitialGridPoints: [3]\n"
-        "  InitialRefinement: [2]\n"
-        "  TimeDependence: None\n");
-    const auto* interval_creator =
-        dynamic_cast<const creators::Interval*>(domain_creator.get());
-    test_interval_construction(*interval_creator, {{0.}}, {{1.}}, {{{3}}},
-                               {{{2}}}, expected_neighbors, {{}}, {}, {});
-  }
-  {
-    INFO("Interval factory time independent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<1>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<1, domain::creators::Interval>>(
-        "Interval:\n"
-        "  LowerBound: [0]\n"
-        "  UpperBound: [1]\n"
-        "  InitialGridPoints: [3]\n"
-        "  InitialRefinement: [2]\n"
-        "  TimeDependence: None\n"
-        "  BoundaryConditions:\n"
-        "    LowerBoundary:\n"
-        "      TestBoundaryCondition:\n"
-        "        Direction: lower-xi\n"
-        "        BlockId: 0\n"
-        "    UpperBoundary:\n"
-        "      TestBoundaryCondition:\n"
-        "        Direction: upper-xi\n"
-        "        BlockId: 0\n");
-    const auto* interval_creator =
-        dynamic_cast<const creators::Interval*>(domain_creator.get());
-    test_interval_construction(*interval_creator, {{0.}}, {{1.}}, {{{3}}},
-                               {{{2}}}, {{}}, expected_external_boundaries, {},
-                               {}, true);
-  }
-  {
-    INFO("Interval factory time dependent, no boundary condition");
+  const std::string time_dep_options =
+      "  TimeDependence:\n"
+      "    UniformTranslation:\n"
+      "      InitialTime: 0.\n"
+      "      Velocity: [2.3]\n";
+  const std::string no_time_dep_options = "  TimeDependence: None\n";
+  const std::vector<double> times{0., 1.5};
+  const std::array<double, 1> velocity{{2.3}};
+
+  const std::string bc_options =
+      "  BoundaryConditions:\n"
+      "    LowerBoundary:\n"
+      "      TestBoundaryCondition:\n"
+      "        Direction: lower-xi\n"
+      "        BlockId: 0\n"
+      "    UpperBoundary:\n"
+      "      TestBoundaryCondition:\n"
+      "        Direction: upper-xi\n"
+      "        BlockId: 0\n";
+  const std::string no_bc_options = "  IsPeriodicIn: [True]\n";
+
+  for (const auto& [time_dependent, with_boundary_conditions] :
+       cartesian_product(make_array(true, false), make_array(true, false))) {
+    CAPTURE(time_dependent);
+    CAPTURE(with_boundary_conditions);
+    const bool is_periodic = not with_boundary_conditions;
     const auto domain_creator =
-        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<1>,
-                                     TestHelpers::domain::BoundaryConditions::
-                                         MetavariablesWithoutBoundaryConditions<
-                                             1, domain::creators::Interval>>(
+        TestHelpers::domain::BoundaryConditions::test_creation<
+            1, domain::creators::Interval>(
             "Interval:\n"
             "  LowerBound: [0]\n"
             "  UpperBound: [1]\n"
-            "  IsPeriodicIn: [True]\n"
             "  InitialGridPoints: [3]\n"
-            "  InitialRefinement: [2]\n"
-            "  TimeDependence:\n"
-            "    UniformTranslation:\n"
-            "      InitialTime: 1.0\n"
-            "      Velocity: [2.3]\n");
-    const auto* interval_creator =
-        dynamic_cast<const creators::Interval*>(domain_creator.get());
-    const double initial_time = 1.0;
-    const DataVector velocity{{2.3}};
-    // This name must match the hard coded one in UniformTranslation
-    const std::string f_of_t_name = "Translation";
-    std::unordered_map<std::string, double> initial_expiration_times{};
-    initial_expiration_times[f_of_t_name] = 10.0;
-    // without expiration times
+            "  InitialRefinement: [2]\n" +
+                (time_dependent ? time_dep_options : no_time_dep_options) +
+                (with_boundary_conditions ? bc_options : no_bc_options),
+            with_boundary_conditions);
+    const auto& interval =
+        dynamic_cast<const domain::creators::Interval&>(*domain_creator);
     test_interval_construction(
-        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, expected_neighbors,
-        std::vector<std::unordered_set<Direction<1>>>{{}},
-        std::make_tuple(
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                f_of_t_name,
-                {initial_time,
-                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
-                 std::numeric_limits<double>::infinity()}}),
-        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}));
-    // with expiration times
-    test_interval_construction(
-        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, expected_neighbors,
-        std::vector<std::unordered_set<Direction<1>>>{{}},
-        std::make_tuple(
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                f_of_t_name,
-                {initial_time,
-                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
-                 initial_expiration_times[f_of_t_name]}}),
-        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
-        false, initial_expiration_times);
+        interval, with_boundary_conditions, is_periodic, {{0.}}, {{1.}}, times,
+        time_dependent ? velocity : std::array<double, 1>{{0.}});
   }
-  {
-    INFO("Interval factory time dependent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<1>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<1, domain::creators::Interval>>(
-        "Interval:\n"
-        "  LowerBound: [0]\n"
-        "  UpperBound: [1]\n"
-        "  InitialGridPoints: [3]\n"
-        "  InitialRefinement: [2]\n"
-        "  TimeDependence:\n"
-        "    UniformTranslation:\n"
-        "      InitialTime: 1.0\n"
-        "      Velocity: [2.3]\n"
-        "  BoundaryConditions:\n"
-        "    LowerBoundary:\n"
-        "      TestBoundaryCondition:\n"
-        "        Direction: lower-xi\n"
-        "        BlockId: 0\n"
-        "    UpperBoundary:\n"
-        "      TestBoundaryCondition:\n"
-        "        Direction: upper-xi\n"
-        "        BlockId: 0\n");
-    const auto* interval_creator =
-        dynamic_cast<const creators::Interval*>(domain_creator.get());
-    const double initial_time = 1.0;
-    const DataVector velocity{{2.3}};
-    // This name must match the hard coded one in UniformTranslation
-    const std::string f_of_t_name = "Translation";
-    std::unordered_map<std::string, double> initial_expiration_times{};
-    initial_expiration_times[f_of_t_name] = 10.0;
-    // without expiration times
-    test_interval_construction(
-        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, {{}},
-        expected_external_boundaries,
-        std::make_tuple(
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                f_of_t_name,
-                {initial_time,
-                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
-                 std::numeric_limits<double>::infinity()}}),
-        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
-        true);
-    // with expiration times
-    test_interval_construction(
-        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, {{}},
-        expected_external_boundaries,
-        std::make_tuple(
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                f_of_t_name,
-                {initial_time,
-                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
-                 initial_expiration_times[f_of_t_name]}}),
-        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
-        true, initial_expiration_times);
-  }
+}
+
+void test_parse_errors() {
+  INFO("Test parse errors");
+
+  const std::array<double, 1> lower_bound{{-1.2}};
+  const std::array<double, 1> upper_bound{{0.8}};
+  const std::vector<std::array<size_t, 1>> refinement_level{{{3}}};
+  const std::vector<std::array<size_t, 1>> grid_points{{{4}}};
+
+  const auto lower_boundary_condition = std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
+      Direction<1>::lower_xi(), 0);
+  const auto upper_boundary_condition = std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<1>>(
+      Direction<1>::upper_xi(), 0);
+  const auto periodic_boundary_condition =
+      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                           TestPeriodicBoundaryCondition<1>>();
+
+  CHECK_THROWS_WITH(
+      creators::Interval(lower_bound, upper_bound, refinement_level[0],
+                         grid_points[0], lower_boundary_condition->get_clone(),
+                         nullptr, nullptr, Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Both upper and lower boundary conditions "
+                                "must be specified, or neither."));
+  CHECK_THROWS_WITH(
+      creators::Interval(lower_bound, upper_bound, refinement_level[0],
+                         grid_points[0], nullptr,
+                         upper_boundary_condition->get_clone(), nullptr,
+                         Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Both upper and lower boundary conditions "
+                                "must be specified, or neither."));
+  CHECK_THROWS_WITH(
+      creators::Interval(lower_bound, upper_bound, refinement_level[0],
+                         grid_points[0], lower_boundary_condition->get_clone(),
+                         periodic_boundary_condition->get_clone(), nullptr,
+                         Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Both the upper and lower boundary condition "
+                                "must be set to periodic if"));
+  CHECK_THROWS_WITH(
+      creators::Interval(lower_bound, upper_bound, refinement_level[0],
+                         grid_points[0],
+                         periodic_boundary_condition->get_clone(),
+                         lower_boundary_condition->get_clone(), nullptr,
+                         Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Both the upper and lower boundary condition "
+                                "must be set to periodic if"));
+  CHECK_THROWS_WITH(
+      creators::Interval(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          lower_boundary_condition->get_clone(),
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          nullptr, Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow-type boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      creators::Interval(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          lower_boundary_condition->get_clone(), nullptr,
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow-type boundary condition, you must use that."));
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
   test_interval();
   test_interval_factory();
+  test_parse_errors();
 }
 }  // namespace domain
