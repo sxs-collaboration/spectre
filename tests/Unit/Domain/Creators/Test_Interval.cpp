@@ -58,8 +58,9 @@ void test_interval_construction(
     const bool expect_boundary_conditions = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
+  const std::vector<double> times{1.};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      interval, expect_boundary_conditions);
+      interval, expect_boundary_conditions, false, times);
 
   CHECK(interval.initial_extents() == expected_extents);
   CHECK(interval.initial_refinement_levels() == expected_refinement_level);
