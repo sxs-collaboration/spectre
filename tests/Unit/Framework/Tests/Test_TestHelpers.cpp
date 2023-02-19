@@ -150,4 +150,16 @@ SPECTRE_TEST_CASE("Unit.TestHelpers.MAKE_GENERATOR", "[Unit]") {
 
   MAKE_GENERATOR(seeded_gen, 12345);
   CHECK(seeded_gen() == 3992670690);
+
+  const std::vector<double> vec{1., 2., 3.5};
+  {
+    const auto rnd =
+        random_sample(vec.begin(), vec.end(), make_not_null(&gen1));
+    CHECK((*rnd == 1. or *rnd == 2. or *rnd == 3.5));
+  }
+  {
+    for (const double rnd : random_sample<2>(vec, make_not_null(&gen1))) {
+      CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
+    }
+  }
 }
