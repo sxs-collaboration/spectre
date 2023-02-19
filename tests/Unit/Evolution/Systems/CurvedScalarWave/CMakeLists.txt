@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   Worldtube/Test_Tags.cpp
+  Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   )
 
 add_test_library(
