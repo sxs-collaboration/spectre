@@ -61,13 +61,11 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
-    EnvelopingCube:
+    Envelope:
       Radius: 100.0
       UseProjectiveMap: true
-      Sphericity: 0.0
     OuterShell:
-      InnerRadius: Auto
-      OuterRadius: 1493.0
+      Radius: 1493.0
       RadialDistribution: Logarithmic
       BoundaryCondition:
         ConstraintPreservingBjorhus:
@@ -78,8 +76,7 @@ DomainCreator:
       ObjectACube:    [2, 2, 1]
       ObjectBShell:   [3, 3, 4]
       ObjectBCube:    [2, 2, 1]
-      EnvelopingCube: [2, 2, 3]
-      CubedShell:     [2, 2, 2]
+      Envelope:       [2, 2, 3]
       OuterShell:     [2, 2, 5]
     InitialGridPoints: 5
     TimeDependentMaps:

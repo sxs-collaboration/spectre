@@ -60,46 +60,37 @@ bool BinaryCompactObject::Object::is_excised() const {
 
 // Time-independent constructor
 BinaryCompactObject::BinaryCompactObject(
-    Object object_A, Object object_B, const double radius_enveloping_cube,
-    const double outer_radius_domain,
+    Object object_A, Object object_B, const double envelope_radius,
+    const double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, const bool use_projective_map,
-    const double frustum_sphericity,
-    const std::optional<double>& radius_enveloping_sphere,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
     : object_A_(std::move(object_A)),
       object_B_(std::move(object_B)),
-      radius_enveloping_cube_(radius_enveloping_cube),
-      outer_radius_domain_(outer_radius_domain),
+      envelope_radius_(envelope_radius),
+      outer_radius_(outer_radius),
       use_equiangular_map_(use_equiangular_map),
       use_projective_map_(use_projective_map),
-      frustum_sphericity_(frustum_sphericity),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
   length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
-  length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
+  length_outer_cube_ = 2.0 * envelope_radius_ / sqrt(3.0);
   if (use_projective_map_) {
     projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
   } else {
     projective_scale_factor_ = 1.0;
   }
-  need_cube_to_sphere_transition_ =
-      frustum_sphericity != 1.0 or radius_enveloping_sphere.has_value();
 
   // Calculate number of blocks
-  // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
-  // for a total of 44, or 54 when the cube-to-sphere transition is needed.
+  // Object cubes and shells have 6 blocks each, for a total for 24 blocks.
+  // The envelope and outer shell have another 10 blocks each.
   number_of_blocks_ = 44;
-  if (need_cube_to_sphere_transition_) {
-    number_of_blocks_ += 10;
-  }
-
   // For each object whose interior is not excised, add 1 block
   if (not object_A_.is_excised()) {
     number_of_blocks_++;
@@ -162,6 +153,10 @@ BinaryCompactObject::BinaryCompactObject(
                 "Must specify either both inner and outer boundary conditions "
                 "or neither.");
   }
+  if (envelope_radius_ >= outer_radius_) {
+    PARSE_ERROR(context,
+                "The outer radius must be larger than the envelope radius.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(outer_boundary_condition_) or
       (object_A_.is_excised() and
@@ -216,10 +211,7 @@ BinaryCompactObject::BinaryCompactObject(
   add_object_region("ObjectA", "Cube");   // 6 blocks
   add_object_region("ObjectB", "Shell");  // 6 blocks
   add_object_region("ObjectB", "Cube");   // 6 blocks
-  add_outer_region("EnvelopingCube");     // 10 blocks
-  if (need_cube_to_sphere_transition_) {
-    add_outer_region("CubedShell");  // 10 blocks
-  }
+  add_outer_region("Envelope");           // 10 blocks
   add_outer_region("OuterShell");         // 10 blocks
   if (not object_A_.is_excised()) {
     add_object_interior("ObjectA");  // 1 block
@@ -246,53 +238,6 @@ BinaryCompactObject::BinaryCompactObject(
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
-
-  // Compute the inner radius of the outer spherical shell. The computation
-  // makes use of the refinement, so this can't be done earlier.
-  if (radius_enveloping_sphere.has_value()) {
-    radius_enveloping_sphere_ = radius_enveloping_sphere.value();
-    if (radius_enveloping_sphere_ <= radius_enveloping_cube_ or
-        radius_enveloping_sphere_ >= outer_radius_domain_) {
-      PARSE_ERROR(
-          context,
-          "The 'OuterShell.InnerRadius' must be within 'EnvelopingCube.Radius' "
-          "(" << radius_enveloping_cube_
-              << ") and 'OuterShell.OuterRadius' (" << outer_radius_domain_
-              << "), but is: " << radius_enveloping_sphere_
-              << ". Set it to 'Auto' so a reasonable value is chosen "
-                 "automatically.");
-    }
-  } else if (frustum_sphericity == 1.0) {
-    radius_enveloping_sphere_ = radius_enveloping_cube_;
-  } else {
-    // Adjust the outer boundary of the cubed sphere to conform to the spacing
-    // of the spherical shells after refinement, so the cubed sphere is the same
-    // size as the first radial division of the spherical shell (for linear
-    // mapping) or smaller by the same factor as adjacent radial divisions in
-    // the spherical shell (for logarithmic or inverse mapping).
-    const size_t addition_to_outer_layer_radial_refinement_level =
-        initial_refinement_[44][2] - initial_refinement_[34][2];
-    const size_t radial_divisions_in_outer_layers =
-        pow(2, addition_to_outer_layer_radial_refinement_level) + 1;
-    // Use the `Interval` class to divide the interval between
-    // `radius_enveloping_cube_` and `outer_radius_domain_` into
-    // `radial_divisions_in_outer_layers` pieces. Choose
-    // `radius_enveloping_sphere_` as the first of those pieces.
-    radius_enveloping_sphere_ =
-        domain::CoordinateMaps::Interval{// Source interval
-                                         0., 1.,
-                                         // Target interval
-                                         radius_enveloping_cube_,
-                                         outer_radius_domain_,
-                                         // Distribution in target interval
-                                         radial_distribution_outer_shell_,
-                                         // Position of the singularity for log
-                                         // and 1/r maps (in target interval)
-                                         0.}(std::array<double, 1>{
-            {// Inner radius in source interval that is mapped to target
-             // interval
-             1. / static_cast<double>(radial_divisions_in_outer_layers)}})[0];
-  }
 }
 
 // Time-dependent constructor, with additional options for specifying
@@ -306,22 +251,18 @@ BinaryCompactObject::BinaryCompactObject(
     std::array<double, 2> initial_size_map_values,
     std::array<double, 2> initial_size_map_velocities,
     std::array<double, 2> initial_size_map_accelerations, Object object_A,
-    Object object_B, double radius_enveloping_cube, double outer_radius_domain,
+    Object object_B, double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, bool use_projective_map,
-    double frustum_sphericity,
-    const std::optional<double>& radius_enveloping_sphere,
     CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
     : BinaryCompactObject(std::move(object_A), std::move(object_B),
-                          radius_enveloping_cube, outer_radius_domain,
-                          initial_refinement, initial_number_of_grid_points,
-                          use_equiangular_map, use_projective_map,
-                          frustum_sphericity, radius_enveloping_sphere,
-                          radial_distribution_outer_shell,
+                          envelope_radius, outer_radius, initial_refinement,
+                          initial_number_of_grid_points, use_equiangular_map,
+                          use_projective_map, radial_distribution_outer_shell,
                           std::move(outer_boundary_condition), context) {
   enable_time_dependence_ = true;
   initial_time_ = initial_time;
@@ -417,40 +358,25 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
   // --- Frustums enclosing both objects (10 blocks) ---
   //
-  // The two abutting cubes are enclosed by a layer of frustums that form a cube
-  // (if frustum_sphericity_ is 0) or a sphere (if frustum_sphericity_ is 1)
-  // surrounding both objects. While the two objects can be offset from the
-  // origin to account for their center of mass, the enclosing frustums are
+  // The two abutting cubes are enclosed by a layer of bulged frustums that form
+  // a sphere enveloping both objects. While the two objects can be offset from
+  // the origin to account for their center of mass, the enveloping frustums are
   // centered at the origin.
   Maps maps_frustums = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(
-      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
-                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
-                              projective_scale_factor_, frustum_sphericity_));
+      Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
+      length_inner_cube_, length_outer_cube_, use_equiangular_map_,
+      {{-translation_, 0.0, 0.0}}, projective_scale_factor_, 1.0));
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  // --- (Optional) transition from frustums to sphere (10 blocks) ---
-  //
-  // Another layer of wedges transitions from the surrounding frustums to a
-  // surrounding sphere. Not needed when the surrounding frustums are already
-  // spherical.
-  if (need_cube_to_sphere_transition_) {
-    Maps maps_first_outer_shell = domain::make_vector_coordinate_map_base<
-        Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
-        radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
-        1.0, use_equiangular_map_, true, {},
-        {domain::CoordinateMaps::Distribution::Linear}));
-    std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
-              std::back_inserter(maps));
-  }
-
   // --- Outer spherical shell (10 blocks) ---
-  Maps maps_second_outer_shell = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
-      radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
-      use_equiangular_map_, true, {}, {radial_distribution_outer_shell_}));
-  std::move(maps_second_outer_shell.begin(), maps_second_outer_shell.end(),
+  Maps maps_outer_shell =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(envelope_radius_, outer_radius_, 1.0, 1.0,
+                                    use_equiangular_map_, true, {},
+                                    {radial_distribution_outer_shell_}));
+  std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
             std::back_inserter(maps));
 
   // --- (Optional) object centers (0 to 2 blocks) ---
@@ -682,7 +608,7 @@ BinaryCompactObject::external_boundary_conditions() const {
     }
   }
   // Outer boundary
-  const size_t offset_outer_blocks = need_cube_to_sphere_transition_ ? 44 : 34;
+  const size_t offset_outer_blocks = 34;
   for (size_t i = 0; i < 10; ++i) {
     boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
         outer_boundary_condition_->get_clone();
