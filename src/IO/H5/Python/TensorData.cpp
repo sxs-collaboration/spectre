@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/TensorData.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -38,6 +40,12 @@ void bind_tensordata(py::module& m) {
                     std::vector<Spectral::Quadrature>>(),
            py::arg("element_name"), py::arg("components"), py::arg("extents"),
            py::arg("basis"), py::arg("quadrature"))
+      .def(py::init<ElementId<1>, std::vector<TensorComponent>, Mesh<1>>(),
+           py::arg("element_id"), py::arg("components"), py::arg("mesh"))
+      .def(py::init<ElementId<2>, std::vector<TensorComponent>, Mesh<2>>(),
+           py::arg("element_id"), py::arg("components"), py::arg("mesh"))
+      .def(py::init<ElementId<3>, std::vector<TensorComponent>, Mesh<3>>(),
+           py::arg("element_id"), py::arg("components"), py::arg("mesh"))
       .def_readwrite("element_name", &ElementVolumeData::element_name)
       .def_readwrite("tensor_components", &ElementVolumeData::tensor_components)
       .def_readwrite("extents", &ElementVolumeData::extents)
