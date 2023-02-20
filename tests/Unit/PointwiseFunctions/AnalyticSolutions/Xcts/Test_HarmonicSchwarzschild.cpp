@@ -31,8 +31,8 @@ void test_solution(const double mass, const std::array<double, 3>& center,
   const auto& solution = dynamic_cast<const HarmonicSchwarzschild&>(*created);
   {
     INFO("Properties");
-    CHECK(solution.mass() == mass);
-    CHECK(solution.center() == center);
+    CHECK(solution.gr_solution().mass() == mass);
+    CHECK(solution.gr_solution().center() == center);
   }
   {
     INFO("Semantics");

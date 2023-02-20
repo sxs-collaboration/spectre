@@ -188,7 +188,6 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   TovStar& operator=(TovStar&&) = default;
   ~TovStar() = default;
 
-  template <typename... OptionTypes>
   TovStar(double central_rest_mass_density,
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
               equation_of_state,

@@ -413,6 +413,10 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
+  double equatorial_radius() const {
+    return cst_solution_.equatorial_radius();
+  }
+
  protected:
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,

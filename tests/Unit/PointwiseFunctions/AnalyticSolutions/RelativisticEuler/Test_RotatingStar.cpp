@@ -59,6 +59,8 @@ SPECTRE_TEST_CASE(
                   100)
                   .get_clone())));
 
+  CHECK(solution.equatorial_radius() == approx(7.155891353887));
+
   // Near the center the finite difference derivatives cause "large" errors
   // (1e-8) and so the check fails.
   verify_solution(solution, {{1., 0., 0.}}, error_tolerance);
