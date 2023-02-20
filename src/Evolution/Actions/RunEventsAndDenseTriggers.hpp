@@ -207,13 +207,8 @@ struct RunEventsAndDenseTriggers {
         return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
 
-      // This can only be true the first time through the loop,
-      // because triggers are not allowed to reschedule for the time
-      // they just triggered at.  This check is primarily to avoid
-      // special-case bookkeeping for the initial simulation time.
-      const bool already_at_correct_time =
-          db::get<::Tags::Time>(box) == next_trigger;
-      if (not already_at_correct_time) {
+      // Avoid invalidating compute items unless necessary.
+      if (db::get<::Tags::Time>(box) != next_trigger) {
         time_restorer.save();
         db::mutate<::Tags::Time>(
             make_not_null(&box),
@@ -228,47 +223,46 @@ struct RunEventsAndDenseTriggers {
       switch (triggered) {
         case TriggeringState::NotReady:
           return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-        case TriggeringState::NeedsEvolvedVariables:
-          if (not already_at_correct_time) {
-            bool ready = true;
-            tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
-              using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
-              if (ready) {
-                if (not postprocessor::is_ready(make_not_null(&box),
-                                                make_not_null(&inboxes), cache,
-                                                array_index, component)) {
-                  ready = false;
-                }
+        case TriggeringState::NeedsEvolvedVariables: {
+          bool ready = true;
+          tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
+            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
+            if (ready) {
+              if (not postprocessor::is_ready(make_not_null(&box),
+                                              make_not_null(&inboxes), cache,
+                                              array_index, component)) {
+                ready = false;
               }
-            });
-            if (not ready) {
-              return {Parallel::AlgorithmExecution::Retry, std::nullopt};
             }
-
-            using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
-            bool dense_output_succeeded = false;
-            variables_restorer.save();
-            db::mutate<variables_tag>(
-                make_not_null(&box),
-                [&dense_output_succeeded, &next_trigger](
-                    gsl::not_null<typename variables_tag::type*> vars,
-                    const TimeStepper& stepper,
-                    const typename history_tag::type& history) {
-                  dense_output_succeeded =
-                      stepper.dense_update_u(vars, history, next_trigger);
-                },
-                db::get<::Tags::TimeStepper<>>(box), db::get<history_tag>(box));
-            if (not dense_output_succeeded) {
-              // Need to take another time step
-              return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-            }
-
-            postprocessor_restorer.save();
-            tmpl::for_each<Postprocessors>([&box](auto postprocessor_v) {
-              using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
-              db::mutate_apply<postprocessor>(make_not_null(&box));
-            });
+          });
+          if (not ready) {
+            return {Parallel::AlgorithmExecution::Retry, std::nullopt};
           }
+
+          using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
+          bool dense_output_succeeded = false;
+          variables_restorer.save();
+          db::mutate<variables_tag>(
+              make_not_null(&box),
+              [&dense_output_succeeded, &next_trigger](
+                  gsl::not_null<typename variables_tag::type*> vars,
+                  const TimeStepper& stepper,
+                  const typename history_tag::type& history) {
+                dense_output_succeeded =
+                    stepper.dense_update_u(vars, history, next_trigger);
+              },
+              db::get<::Tags::TimeStepper<>>(box), db::get<history_tag>(box));
+          if (not dense_output_succeeded) {
+            // Need to take another time step
+            return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+          }
+
+          postprocessor_restorer.save();
+          tmpl::for_each<Postprocessors>([&box](auto postprocessor_v) {
+            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
+            db::mutate_apply<postprocessor>(make_not_null(&box));
+          });
+        }
           [[fallthrough]];
         default:
           break;

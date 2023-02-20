@@ -366,6 +366,11 @@ void AdamsBashforth::boundary_dense_output_impl(
     const gsl::not_null<T*> result,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
+  if ((coupling.local_end() - 1)->value() == time) {
+    // Nothing to do.  The requested time is the start of the step,
+    // which is the input value of `result`.
+    return;
+  }
   return boundary_impl(result, coupling, ApproximateTime{time});
 }
 
