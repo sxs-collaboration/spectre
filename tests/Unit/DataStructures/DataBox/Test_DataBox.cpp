@@ -2995,4 +2995,216 @@ static_assert(std::is_same_v<db::creation_tag<VariablesTag, ComputeVarsBox>,
 static_assert(std::is_same_v<db::creation_tag<ScalarTag, ComputeVarsBox>,
                              ComputeVariables>);
 }  // namespace test_creation_tag
+
+namespace test_tag_depends_on {
+struct Simple : db::SimpleTag {
+  using type = int;
+};
+struct Simple2 : db::SimpleTag {
+  using type = int;
+};
+struct BaseProvider : db::BaseTag {};
+struct BaseProviderSimple : BaseProvider, db::SimpleTag {
+  using type = int;
+};
+struct BaseConsumer : db::BaseTag {};
+struct BaseConsumerSimple : BaseConsumer, db::SimpleTag {
+  using type = int;
+};
+struct BaseConsumerComputeFromSimple : BaseConsumerSimple, db::ComputeTag {
+  using base = BaseConsumerSimple;
+  using argument_tags = tmpl::list<BaseProviderSimple>;
+  static void function(gsl::not_null<int*>, int);
+};
+struct BaseConsumerComputeFromBase : BaseConsumerSimple, db::ComputeTag {
+  using base = BaseConsumerSimple;
+  using argument_tags = tmpl::list<BaseProvider>;
+  static void function(gsl::not_null<int*>, int);
+};
+struct ChainedConsumer : db::SimpleTag {
+  using type = int;
+};
+struct ChainedConsumerCompute : ChainedConsumer, db::ComputeTag {
+  using base = ChainedConsumer;
+  using argument_tags = tmpl::list<BaseConsumer>;
+  static void function(gsl::not_null<int*>, int);
+};
+
+using SimpleBox =
+    db::compute_databox_type<tmpl::list<Simple, Simple2, BaseProviderSimple,
+                                        BaseConsumerComputeFromSimple>>;
+static_assert(db::tag_depends_on_v<Simple, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<Simple2, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<BaseProviderSimple, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<BaseProvider, Simple, SimpleBox>);
+static_assert(
+    not db::tag_depends_on_v<BaseConsumerComputeFromSimple, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<BaseConsumerSimple, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<BaseConsumer, Simple, SimpleBox>);
+static_assert(db::tag_depends_on_v<BaseConsumerComputeFromSimple,
+                                   BaseProviderSimple, SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumerSimple, BaseProviderSimple, SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumer, BaseProviderSimple, SimpleBox>);
+static_assert(db::tag_depends_on_v<BaseConsumerComputeFromSimple, BaseProvider,
+                                   SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumerSimple, BaseProvider, SimpleBox>);
+static_assert(db::tag_depends_on_v<BaseConsumer, BaseProvider, SimpleBox>);
+static_assert(not db::tag_depends_on_v<BaseProvider, BaseConsumer, SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseProviderSimple, BaseProviderSimple, SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseProvider, BaseProviderSimple, SimpleBox>);
+static_assert(
+    db::tag_depends_on_v<BaseProviderSimple, BaseProvider, SimpleBox>);
+static_assert(db::tag_depends_on_v<BaseProvider, BaseProvider, SimpleBox>);
+
+using SimpleBox2 = db::compute_databox_type<
+    tmpl::list<BaseProviderSimple, BaseConsumerComputeFromBase>>;
+static_assert(db::tag_depends_on_v<BaseConsumerComputeFromBase,
+                                   BaseProviderSimple, SimpleBox2>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumerSimple, BaseProviderSimple, SimpleBox2>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumer, BaseProviderSimple, SimpleBox2>);
+static_assert(db::tag_depends_on_v<BaseConsumerComputeFromBase, BaseProvider,
+                                   SimpleBox2>);
+static_assert(
+    db::tag_depends_on_v<BaseConsumerSimple, BaseProvider, SimpleBox2>);
+static_assert(db::tag_depends_on_v<BaseConsumer, BaseProvider, SimpleBox2>);
+static_assert(not db::tag_depends_on_v<BaseProvider, BaseConsumer, SimpleBox2>);
+
+using ChainBox = db::compute_databox_type<tmpl::list<
+    BaseProviderSimple, BaseConsumerComputeFromBase, ChainedConsumerCompute>>;
+static_assert(
+    db::tag_depends_on_v<ChainedConsumerCompute, BaseProviderSimple, ChainBox>);
+static_assert(
+    db::tag_depends_on_v<ChainedConsumer, BaseProviderSimple, ChainBox>);
+static_assert(
+    db::tag_depends_on_v<ChainedConsumerCompute, BaseProvider, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, BaseProvider, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumerCompute,
+                                   BaseConsumerComputeFromBase, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, BaseConsumerComputeFromBase,
+                                   ChainBox>);
+static_assert(
+    db::tag_depends_on_v<ChainedConsumerCompute, BaseConsumerSimple, ChainBox>);
+static_assert(
+    db::tag_depends_on_v<ChainedConsumer, BaseConsumerSimple, ChainBox>);
+static_assert(
+    db::tag_depends_on_v<ChainedConsumerCompute, BaseConsumer, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, BaseConsumer, ChainBox>);
+
+struct TensorProvider : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct TensorConsumer : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+using VariablesProvider = ::Tags::Variables<tmpl::list<TensorProvider>>;
+using VariablesConsumer = ::Tags::Variables<tmpl::list<TensorConsumer>>;
+struct VariablesConsumerCompute : VariablesConsumer, db::ComputeTag {
+  using base = VariablesConsumer;
+  using argument_tags = tmpl::list<VariablesProvider>;
+  static void function(gsl::not_null<type*>, const VariablesProvider::type&);
+};
+struct ConsumerOfTensor : db::SimpleTag {
+  using type = int;
+};
+struct ConsumerOfTensorCompute : ConsumerOfTensor, db::ComputeTag {
+  using base = ConsumerOfTensor;
+  using argument_tags = tmpl::list<TensorConsumer>;
+  static void function(gsl::not_null<type*>, const TensorProvider::type&);
+};
+
+using VariablesBox = db::compute_databox_type<tmpl::list<
+    VariablesProvider, VariablesConsumerCompute, ConsumerOfTensorCompute>>;
+static_assert(
+    db::tag_depends_on_v<VariablesProvider, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorProvider, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<VariablesProvider, TensorProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorProvider, TensorProvider, VariablesBox>);
+
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, VariablesConsumer, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, VariablesConsumer, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, TensorConsumer, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, TensorConsumer, VariablesBox>);
+
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, TensorProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, TensorProvider, VariablesBox>);
+
+static_assert(not db::tag_depends_on_v<VariablesProvider, VariablesConsumer,
+                                       VariablesBox>);
+static_assert(
+    not db::tag_depends_on_v<TensorProvider, VariablesConsumer, VariablesBox>);
+static_assert(
+    not db::tag_depends_on_v<VariablesProvider, TensorConsumer, VariablesBox>);
+static_assert(
+    not db::tag_depends_on_v<TensorProvider, TensorConsumer, VariablesBox>);
+
+static_assert(
+    db::tag_depends_on_v<ConsumerOfTensor, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<ConsumerOfTensor, VariablesProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<ConsumerOfTensor, TensorProvider, VariablesBox>);
+static_assert(
+    db::tag_depends_on_v<ConsumerOfTensor, TensorProvider, VariablesBox>);
+
+// Having a compute tag depending on a subtag (ConsumerOfTensorCompute
+// above) changes the internal representation of the dependency graph,
+// so also test without it.
+using VariablesBox2 = db::compute_databox_type<
+    tmpl::list<VariablesProvider, VariablesConsumerCompute>>;
+static_assert(
+    db::tag_depends_on_v<VariablesProvider, VariablesProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorProvider, VariablesProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<VariablesProvider, TensorProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorProvider, TensorProvider, VariablesBox2>);
+
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, VariablesConsumer, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, VariablesConsumer, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, TensorConsumer, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, TensorConsumer, VariablesBox2>);
+
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, VariablesProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, VariablesProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<VariablesConsumer, TensorProvider, VariablesBox2>);
+static_assert(
+    db::tag_depends_on_v<TensorConsumer, TensorProvider, VariablesBox2>);
+
+static_assert(not db::tag_depends_on_v<VariablesProvider, VariablesConsumer,
+                                       VariablesBox2>);
+static_assert(
+    not db::tag_depends_on_v<TensorProvider, VariablesConsumer, VariablesBox2>);
+static_assert(
+    not db::tag_depends_on_v<VariablesProvider, TensorConsumer, VariablesBox2>);
+static_assert(
+    not db::tag_depends_on_v<TensorProvider, TensorConsumer, VariablesBox2>);
+}  // namespace test_tag_depends_on
 }  // namespace

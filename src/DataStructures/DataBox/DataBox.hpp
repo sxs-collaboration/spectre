@@ -290,6 +290,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   auto& get_mutable_reference();
 
+  /// Check whether a tags depends on another tag.  Should be called
+  /// through the metafunction db::tag_depends_on.
+  template <typename Consumer, typename Provider>
+  constexpr static bool tag_depends_on();
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
     // We do not send subitems for both simple items and compute items since
@@ -917,6 +922,55 @@ auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
   return get_item<item_tag>().mutate();
 }
 
+template <typename... Tags>
+template <typename Consumer, typename Provider>
+constexpr bool DataBox<tmpl::list<Tags...>>::tag_depends_on() {
+  // We need to check for things depending on the passed tag, any
+  // subitems, and the parent item if we were passed a subitem.  These
+  // dependencies are handled internally by the mutation functions and
+  // not encoded in the graph.
+  using provider_aliases =
+      tmpl::push_front<typename Subitems<Provider>::type,
+                       creation_tag<Provider, DataBox<tmpl::list<Tags...>>>>;
+
+  // We have to replace subitems with their parents here because
+  // subitems of compute tags sometimes get graph edges from their
+  // parents and sometimes do not, depending on if they have
+  // dependencies.
+  using consumer_tag_to_check =
+      creation_tag<Consumer, DataBox<tmpl::list<Tags...>>>;
+
+  // We cannot recursively call the function we are in, because we
+  // need to avoid the normalization done above.  Otherwise we could
+  // end up in a loop when destination of an edge normalizes to its
+  // source.
+  //
+  // Lambdas cannot capture themselves, but they can take themselves
+  // as an argument.
+  auto check_dependents = [](auto&& recurse,
+                             auto node_depending_on_provider_v) {
+    using node_depending_on_provider = decltype(node_depending_on_provider_v);
+    if (std::is_same_v<node_depending_on_provider, consumer_tag_to_check>) {
+      return true;
+    }
+
+    using next_nodes_to_check = tmpl::transform<
+        tmpl::filter<
+            edge_list,
+            tmpl::has_source<tmpl::_1, tmpl::pin<node_depending_on_provider>>>,
+        tmpl::get_destination<tmpl::_1>>;
+
+    return tmpl::as_pack<next_nodes_to_check>([&](auto... nodes) {
+      return (... or recurse(recurse, tmpl::type_from<decltype(nodes)>{}));
+    });
+  };
+
+  return tmpl::as_pack<provider_aliases>([&](auto... aliases) {
+    return (... or check_dependents(check_dependents,
+                                    tmpl::type_from<decltype(aliases)>{}));
+  });
+}
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Retrieve a mutable reference to the item with tag `Tag` from the
@@ -933,6 +987,26 @@ SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
     const gsl::not_null<DataBox<TagList>*> box) {
   return box->template get_mutable_reference<Tag>();
 }
+
+/// @{
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Check whether the tag \p Consumer depends on the tag \p
+ * Provider in a given \p Box.
+ *
+ * This is equivalent to the question of whether changing \p Provider
+ * (through `db::mutate`, updating one of its dependencies, etc.)
+ * could change the value of `db::get<Consumer>`.  Tags depend on
+ * themselves, and an item and its subitems all depend on one another.
+ */
+template <typename Consumer, typename Provider, typename Box>
+using tag_depends_on =
+    std::bool_constant<Box::template tag_depends_on<Consumer, Provider>()>;
+
+template <typename Consumer, typename Provider, typename Box>
+constexpr bool tag_depends_on_v =
+    tag_depends_on<Consumer, Provider, Box>::value;
+/// @}
 
 /*!
  * \ingroup DataBoxGroup
