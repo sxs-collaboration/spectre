@@ -5,6 +5,7 @@ set(LIBRARY "Test_PoissonSolutions")
 
 set(LIBRARY_SOURCES
   Test_Lorentzian.cpp
+  Test_MathFunction.cpp
   Test_Moustache.cpp
   Test_ProductOfSinusoids.cpp
   Test_Zero.cpp
@@ -14,6 +15,17 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Poisson/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;Poisson\
-;PoissonSolutions;Spectral;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  Domain
+  Poisson
+  PoissonSolutions
+  Spectral
+  Utilities
+)
