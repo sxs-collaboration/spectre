@@ -6,10 +6,14 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
@@ -83,21 +87,53 @@ class Sphere : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial refinement level in each dimension."};
+        "Initial refinement level. Specify one of: a single number, a "
+        "list representing [phi, theta, r], or such a list for every block "
+        "in the domain. The central cube always uses the value for 'theta' "
+        "in both y- and z-direction."};
   };
 
   struct InitialGridPoints {
-    using type = std::array<size_t, 2>;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial number of grid points in [r,angular]."};
+        "Initial number of grid points. Specify one of: a single number, a "
+        "list representing [phi, theta, r], or such a list for every block "
+        "in the domain. The central cube always uses the value for 'theta' "
+        "in both y- and z-direction."};
   };
 
   struct UseEquiangularMap {
     using type = bool;
     static constexpr Options::String help = {
-        "Use equiangular instead of equidistant coordinates."};
+        "Use equiangular instead of equidistant coordinates. Equiangular "
+        "coordinates give better gridpoint spacings in the angular "
+        "directions, while equidistant coordinates give better gridpoint "
+        "spacings in the center block."};
+  };
+
+  struct RadialPartitioning {
+    using type = std::vector<double>;
+    static constexpr Options::String help = {
+        "Radial coordinates of the boundaries splitting the spherical shell "
+        "between InnerRadius and OuterRadius."};
+  };
+
+  struct RadialDistribution {
+    using type = std::vector<domain::CoordinateMaps::Distribution>;
+    static constexpr Options::String help = {
+        "Select the radial distribution of grid points in each spherical "
+        "shell. The innermost shell must have a 'Linear' distribution because "
+        "it changes in sphericity. The 'RadialPartitioning' determines the "
+        "number of shells."};
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct TimeDependence {
@@ -118,7 +154,7 @@ class Sphere : public DomainCreator<3> {
   using basic_options =
       tmpl::list<InnerRadius, OuterRadius, InnerCubeSphericity,
                  InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 TimeDependence>;
+                 RadialPartitioning, RadialDistribution, TimeDependence>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -132,22 +168,16 @@ class Sphere : public DomainCreator<3> {
       basic_options>;
 
   static constexpr Options::String help{
-      "Creates a 3D Sphere with seven Blocks.\n"
-      "Only one refinement level for all dimensions is currently supported.\n"
-      "The number of gridpoints in the radial direction can be set\n"
-      "independently of the number of gridpoints in the angular directions.\n"
-      "The number of gridpoints along the dimensions of the cube is equal\n"
-      "to the number of gridpoints along the angular dimensions of the "
-      "wedges.\n"
-      "Equiangular coordinates give better gridpoint spacings in the angular\n"
-      "directions, while equidistant coordinates give better gridpoint\n"
-      "spacings in the center block."};
+      "A 3D cubed sphere. Six wedges surround a central cube. Additional "
+      "spherical shells, each composed of six wedges, can be added with the "
+      "'RadialPartitioning' option."};
 
-  Sphere(typename InnerRadius::type inner_radius,
-         typename OuterRadius::type outer_radius, double inner_cube_sphericity,
-         typename InitialRefinement::type initial_refinement,
-         typename InitialGridPoints::type initial_number_of_grid_points,
-         typename UseEquiangularMap::type use_equiangular_map,
+  Sphere(double inner_radius, double outer_radius, double inner_cube_sphericity,
+         const typename InitialRefinement::type& initial_refinement,
+         const typename InitialGridPoints::type& initial_number_of_grid_points,
+         bool use_equiangular_map, std::vector<double> radial_partitioning = {},
+         std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
+             {domain::CoordinateMaps::Distribution::Linear},
          std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
              time_dependence = nullptr,
          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -167,9 +197,21 @@ class Sphere : public DomainCreator<3> {
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override {
+    return initial_number_of_grid_points_;
+  }
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const override {
+    return initial_refinement_;
+  }
+
+  std::vector<std::string> block_names() const override { return block_names_; }
+
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+  block_groups() const override {
+    return block_groups_;
+  }
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -178,16 +220,21 @@ class Sphere : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  typename InnerRadius::type inner_radius_{};
-  typename OuterRadius::type outer_radius_{};
+  double inner_radius_{};
+  double outer_radius_{};
   double inner_cube_sphericity_{};
-  typename InitialRefinement::type initial_refinement_{};
-  typename InitialGridPoints::type initial_number_of_grid_points_{};
-  typename UseEquiangularMap::type use_equiangular_map_ = false;
+  std::vector<std::array<size_t, 3>> initial_refinement_{};
+  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
+  bool use_equiangular_map_ = false;
+  std::vector<double> radial_partitioning_{};
+  std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
+  std::vector<std::string> block_names_{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_{};
 };
 }  // namespace creators
 }  // namespace domain

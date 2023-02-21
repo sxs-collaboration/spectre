@@ -65,6 +65,20 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
         }
       }
     }
+    {
+      INFO(
+          "Test block neighbors are never in the same direction as external "
+          "boundaries")
+      for (size_t block_id = 0; block_id < block_names.size(); ++block_id) {
+        for (const auto& neighbor : blocks[block_id].neighbors()) {
+          // external and neighbor directions should never match
+          const auto& external_boundaries =
+              blocks[block_id].external_boundaries();
+          CHECK(external_boundaries.find(neighbor.first) ==
+                external_boundaries.end());
+        }
+      }
+    }
   }
 
   ::domain::creators::register_derived_with_charm();

@@ -608,9 +608,6 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const ShellWedges which_wedges) {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
-  ASSERT(radial_partitioning.empty() or inner_sphericity == outer_sphericity,
-         "If we are using more than one layer the inner and outer sphericities "
-         "must match.");
   ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
          "Specify a radial distribution for every spherical shell. You "
          "specified "
@@ -626,6 +623,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
   const size_t number_of_layers = 1 + radial_partitioning.size();
   double temp_inner_radius = inner_radius;
   double temp_outer_radius{};
+  double temp_inner_sphericity = inner_sphericity;
   for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
     const auto& radial_distribution_this_layer =
         radial_distribution.at(layer_i);
@@ -640,29 +638,29 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
       for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
            face_j++) {
         wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, face_j),
             use_equiangular_map, Halves::Both, radial_distribution_this_layer);
       }
     } else {
       for (size_t i = 0; i < 4; i++) {
         wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::LowerOnly,
             radial_distribution_this_layer);
         wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::UpperOnly,
             radial_distribution_this_layer);
       }
       wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, inner_sphericity,
+          temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
           Halves::Both, radial_distribution_this_layer);
       wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, inner_sphericity,
+          temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
           Halves::Both, radial_distribution_this_layer);
     }
@@ -672,6 +670,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 
     if (layer_i != radial_partitioning.size()) {
       temp_inner_radius = radial_partitioning.at(layer_i);
+      temp_inner_sphericity = outer_sphericity;
     }
   }
   return wedges_for_all_layers;
@@ -1422,7 +1421,6 @@ template class domain::CoordinateMaps::ProductOf3Maps<
     domain::CoordinateMaps::Affine>;
 template class domain::CoordinateMaps::ProductOf2Maps<
     domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular>;
-
 template class domain::CoordinateMaps::ProductOf3Maps<
     domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular,
     domain::CoordinateMaps::Equiangular>;

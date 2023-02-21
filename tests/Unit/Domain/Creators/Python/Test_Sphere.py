@@ -11,7 +11,7 @@ class TestSphere(unittest.TestCase):
                         outer_radius=2.,
                         inner_cube_sphericity=0.,
                         initial_refinement=1,
-                        initial_number_of_grid_points=[3, 3],
+                        initial_number_of_grid_points=[3, 3, 3],
                         use_equiangular_map=False)
         self.assertIsInstance(sphere, DomainCreator3D)
 

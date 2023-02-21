@@ -222,29 +222,6 @@ void test_wedge_errors() {
       }()),
       Catch::Contains("If we are using half wedges we must also be using "
                       "ShellWedges::All."));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        const double inner_radius = 0.5;
-        const double outer_radius = 2.0;
-        const double inner_sphericity = 0.9;
-        const double outer_sphericity = 1.0;
-        const bool use_equiangular_map = true;
-        const bool use_half_wedges = true;
-        std::vector<double> radial_partitioning{1., 1.5};
-        const std::vector<domain::CoordinateMaps::Distribution>
-            radial_distribution{
-                domain::CoordinateMaps::Distribution::Logarithmic,
-                domain::CoordinateMaps::Distribution::Logarithmic,
-                domain::CoordinateMaps::Distribution::Logarithmic};
-        const ShellWedges which_wedges = ShellWedges::All;
-        static_cast<void>(sph_wedge_coordinate_maps(
-            inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-            use_equiangular_map, use_half_wedges, radial_partitioning,
-            radial_distribution, which_wedges));
-      }()),
-      Catch::Contains("If we are using more than one layer the inner and outer "
-                      "sphericities must match."));
 #endif
 }
 
