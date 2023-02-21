@@ -66,6 +66,38 @@ constexpr bool tag_is_retrievable_v =
 /// @}
 
 namespace detail {
+template <typename TagsList, typename Tag>
+struct creation_tag_impl {
+  DEBUG_STATIC_ASSERT(
+      not has_no_matching_tag_v<TagsList, Tag>,
+      "Found no tags in the DataBox that match the tag being retrieved.");
+  DEBUG_STATIC_ASSERT(
+      has_unique_matching_tag_v<TagsList, Tag>,
+      "Found more than one tag in the DataBox that matches the tag "
+      "being retrieved. This happens because more than one tag with the same "
+      "base (class) tag was added to the DataBox.");
+  using normalized_tag = first_matching_tag<TagsList, Tag>;
+  // A list with 0 or 1 elements.  This uses `Tag` rather than
+  // `normalized_tag` because subitems of compute tags normalize to
+  // `Tags::Subitem<...>`, which is not what is in the `Subitems`
+  // list.
+  using parent_of_subitem =
+      tmpl::filter<TagsList, tmpl::bind<tmpl::list_contains, Subitems<tmpl::_1>,
+                                        tmpl::pin<Tag>>>;
+  using type = tmpl::front<tmpl::push_back<parent_of_subitem, normalized_tag>>;
+};
+}  // namespace detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief The tag added to \p Box referred to by \p Tag.  This
+ * resolves base tags and converts subitems to full items.
+ */
+template <typename Tag, typename Box>
+using creation_tag =
+    typename detail::creation_tag_impl<typename Box::tags_list, Tag>::type;
+
+namespace detail {
 template <typename Tag>
 using has_subitems =
     tmpl::not_<std::is_same<typename Subitems<Tag>::type, tmpl::list<>>>;

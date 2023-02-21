@@ -2946,4 +2946,53 @@ static_assert(
     not db::tag_is_retrievable_v<
         tags_types::DummyTag, db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
     "Failed testing tag_is_retrievable_v");
+
+namespace test_creation_tag {
+struct Base : db::BaseTag {};
+
+struct Simple : Base, db::SimpleTag {
+  using type = double;
+};
+
+struct Compute : Simple, db::ComputeTag {
+  using base = Simple;
+  using argument_tags = tmpl::list<>;
+  static void function(gsl::not_null<double*>);
+};
+
+struct ScalarTag : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+using VariablesTag = ::Tags::Variables<tmpl::list<ScalarTag>>;
+
+struct ComputeVariables : VariablesTag, db::ComputeTag {
+  using base = VariablesTag;
+  using argument_tags = tmpl::list<>;
+  static void function(gsl::not_null<type*>);
+};
+
+using SimpleBox = db::compute_databox_type<tmpl::list<Simple, ScalarTag>>;
+static_assert(std::is_same_v<db::creation_tag<Simple, SimpleBox>, Simple>);
+static_assert(
+    std::is_same_v<db::creation_tag<ScalarTag, SimpleBox>, ScalarTag>);
+static_assert(std::is_same_v<db::creation_tag<Base, SimpleBox>, Simple>);
+
+using ComplexBox = db::compute_databox_type<tmpl::list<Compute, VariablesTag>>;
+static_assert(std::is_same_v<db::creation_tag<Compute, ComplexBox>, Compute>);
+static_assert(std::is_same_v<db::creation_tag<Simple, ComplexBox>, Compute>);
+static_assert(std::is_same_v<db::creation_tag<Base, ComplexBox>, Compute>);
+static_assert(
+    std::is_same_v<db::creation_tag<VariablesTag, ComplexBox>, VariablesTag>);
+static_assert(
+    std::is_same_v<db::creation_tag<ScalarTag, ComplexBox>, VariablesTag>);
+
+using ComputeVarsBox = db::compute_databox_type<tmpl::list<ComputeVariables>>;
+static_assert(std::is_same_v<db::creation_tag<ComputeVariables, ComputeVarsBox>,
+                             ComputeVariables>);
+static_assert(std::is_same_v<db::creation_tag<VariablesTag, ComputeVarsBox>,
+                             ComputeVariables>);
+static_assert(std::is_same_v<db::creation_tag<ScalarTag, ComputeVarsBox>,
+                             ComputeVariables>);
+}  // namespace test_creation_tag
 }  // namespace
