@@ -51,16 +51,14 @@ struct ParentTag : ::db::SimpleTag {
 
 struct SimpleReference : Simple, ::db::ReferenceTag {
   using base = Simple;
-  using parent_tag = ParentTag;
-  static const auto& get(const typename parent_tag::type& /* parent_value */);
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<ParentTag>;
+  static const auto& get(const typename ParentTag::type& /* parent_value */);
 };
 
 struct SimpleWithBaseReference : SimpleWithBase, ::db::ReferenceTag {
   using base = SimpleWithBase;
-  using parent_tag = ParentTag;
-  static const auto& get(const typename parent_tag::type& /* parent_value */);
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<ParentTag>;
+  static const auto& get(const typename ParentTag::type& /* parent_value */);
 };
 
 template <typename Tag>

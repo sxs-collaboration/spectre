@@ -184,6 +184,16 @@ struct PointerToSumCompute : PointerToSum, db::ComputeTag {
   }
   using argument_tags = tmpl::list<PointerToCounter, PointerToCounterBase>;
 };
+
+struct Tag0Ref : db::SimpleTag {
+  using type = double;
+};
+
+struct Tag0Reference : Tag0Ref, db::ReferenceTag {
+  using base = Tag0Ref;
+  using argument_tags = tmpl::list<Tag0>;
+  static const double& get(const double& tag0_value) { return tag0_value; }
+};
 }  // namespace test_databox_tags
 
 void test_databox() {
@@ -2582,33 +2592,79 @@ struct TaggedTuple : db::SimpleTag {
 template <typename Tag, typename ParentTag>
 struct FromTaggedTuple : Tag, db::ReferenceTag {
   using base = Tag;
-  using parent_tag = ParentTag;
+  using argument_tags = tmpl::list<ParentTag>;
 
-  static const auto& get(const typename parent_tag::type& tagged_tuple) {
+  static const auto& get(const typename ParentTag::type& tagged_tuple) {
     return tuples::get<Tag>(tagged_tuple);
   }
-
-  using argument_tags = tmpl::list<parent_tag>;
 };
 // [databox_reference_tag_example]
+
+// The following is an overcomplicated tag setup to test the dependency
+// resolution of compute tags and reference tags. We shouldn't do this sort of
+// "tag programming" in source code. The test setup is this:
+struct SwitchTag : db::SimpleTag {
+  using type = bool;
+};
+
+struct Var0 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct Tag0OrVar0 : db::SimpleTag {
+  using type = double;
+};
+
+struct Tag0OrVar0Reference : Tag0OrVar0, db::ReferenceTag {
+  using base = Tag0OrVar0;
+  using argument_tags = tmpl::list<SwitchTag, Tag0, Var0>;
+
+  static const double& get(const bool& switch_value, const double& tag0_value,
+                           const Scalar<DataVector>& var0_value) {
+    if (switch_value) {
+      return tag0_value;
+    } else {
+      return ::get(var0_value)[0];
+    }
+  }
+};
+
+struct Tag0OrVar0TimesTwo : db::SimpleTag  {
+  using type = double;
+};
+
+struct Tag0OrVar0TimesTwoCompute : Tag0OrVar0TimesTwo,
+                                db::ComputeTag {
+  using base = Tag0OrVar0TimesTwo;
+  using return_type = double;
+  using argument_tags = tmpl::list<Tag0OrVar0>;
+  static constexpr auto function = multiply_by_two;
+};
+
 }  // namespace test_databox_tags
 
 void test_reference_item() {
   INFO("test reference item");
-  using tuple_tag = test_databox_tags::TaggedTuple<test_databox_tags::Tag0,
-                                                   test_databox_tags::Tag1,
-                                                   test_databox_tags::Tag2>;
-  auto box =
-      db::create<db::AddSimpleTags<tuple_tag>,
-                 db::AddComputeTags<test_databox_tags::FromTaggedTuple<
-                                        test_databox_tags::Tag0, tuple_tag>,
-                                    test_databox_tags::FromTaggedTuple<
-                                        test_databox_tags::Tag1, tuple_tag>,
-                                    test_databox_tags::FromTaggedTuple<
-                                        test_databox_tags::Tag2, tuple_tag>>>(
-          tuples::TaggedTuple<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                              test_databox_tags::Tag2>{
-              3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s});
+  using tuple_tag = test_databox_tags::TaggedTuple<
+      test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
+      test_databox_tags::Tag4>;
+  using vars_tag = Tags::Variables<tmpl::list<test_databox_tags::Var0>>;
+  auto box = db::create<
+      db::AddSimpleTags<tuple_tag, vars_tag, test_databox_tags::SwitchTag>,
+      db::AddComputeTags<test_databox_tags::FromTaggedTuple<
+                             test_databox_tags::Tag0, tuple_tag>,
+                         test_databox_tags::FromTaggedTuple<
+                             test_databox_tags::Tag1, tuple_tag>,
+                         test_databox_tags::FromTaggedTuple<
+                             test_databox_tags::Tag2, tuple_tag>,
+                         test_databox_tags::FromTaggedTuple<
+                             test_databox_tags::Tag4, tuple_tag>,
+                         test_databox_tags::Tag0OrVar0Reference,
+                         test_databox_tags::Tag0OrVar0TimesTwoCompute>>(
+      tuples::TaggedTuple<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2, test_databox_tags::Tag4>{
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 1.},
+      Variables<tmpl::list<test_databox_tags::Var0>>{1, 1.}, true);
   const auto& tagged_tuple = get<tuple_tag>(box);
   CHECK(get<test_databox_tags::Tag0>(tagged_tuple) == 3.14);
   CHECK(get<test_databox_tags::Tag1>(tagged_tuple) ==
@@ -2618,6 +2674,25 @@ void test_reference_item() {
   CHECK(get<test_databox_tags::Tag1>(box) ==
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+  // Checking dependency resolution of reference tags and compute tags
+  CHECK(get<test_databox_tags::SwitchTag>(box));
+  CHECK(get<test_databox_tags::Tag0OrVar0>(box) == 3.14);
+  CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 2. * 3.14);
+  db::mutate<tuple_tag>(make_not_null(&box), [](const auto tuple) {
+    get<test_databox_tags::Tag0>(*tuple) = 4.5;
+  });
+  CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 9.);
+  db::mutate<test_databox_tags::SwitchTag>(
+      make_not_null(&box),
+      [](const gsl::not_null<bool*> switch_value) { *switch_value = false; });
+  CHECK(get<test_databox_tags::Tag0OrVar0>(box) == 1.);
+  CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 2.);
+  db::mutate<test_databox_tags::Var0>(
+      make_not_null(&box),
+      [](const gsl::not_null<Scalar<DataVector>*> var0_value) {
+        get(*var0_value) = 0.5;
+      });
+  CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 1.);
 }
 
 void test_get_mutable_reference() {
@@ -2656,7 +2731,8 @@ void test_output() {
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
-                         test_databox_tags::Tag5Compute>>(
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::Tag0Reference>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   std::string output_types = box.print_types();
   std::string expected_types =
@@ -2666,13 +2742,16 @@ void test_output() {
       "namespace)::test_databox_tags::Tag1, (anonymous "
       "namespace)::test_databox_tags::Tag2, (anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using immutable_item_tags "
       "= brigand::list<(anonymous namespace)::test_databox_tags::Tag4Compute, "
-      "(anonymous namespace)::test_databox_tags::Tag5Compute>;\n"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using immutable_item_creation_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using mutable_item_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
       "namespace)::test_databox_tags::Tag1, (anonymous "
@@ -2681,6 +2760,8 @@ void test_output() {
       "using compute_item_tags = brigand::list<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
       "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using reference_item_tags = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag0Reference>;\n"
       "using edge_list = "
       "brigand::list<brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
@@ -2691,6 +2772,9 @@ void test_output() {
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
       "namespace)::test_databox_tags::Tag5Compute, "
+      "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
+      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag0Reference, "
       "brigand::integral_constant<int, 1> > >;\n";
   CHECK(output_types == expected_types);
 
@@ -2716,7 +2800,11 @@ void test_output() {
       "----------\n"
       "Name:  (anonymous namespace)::test_databox_tags::Tag5Compute\n"
       "Type:  std::string\n"
-      "Value: My Sample String6.28\n";
+      "Value: My Sample String6.28\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0Reference\n"
+      "Type:  double\n"
+      "Value: 3.14\n";
   CHECK(output_items == expected_items);
   std::ostringstream os;
   os << box;
