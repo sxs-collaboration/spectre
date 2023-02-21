@@ -21,6 +21,10 @@ Executables can checkpoint when:
      This reduces the disc space taken up by checkpoint files and stops using
      up the allocation's CPU-hours on work that would be redone anyway after the
      run is restarted.
+     The executable will return exit code 2 when it terminates from
+     `CheckpointAndExitAfterWallclock`, meaning it is incomplete and should
+     continue from the checkpoint. See `Parallel::ExitCode` for a definition of
+     all exit code.
    - using `VisitAndReturn(WriteCheckpoint)`. This is useful for writing more
      frequent checkpoint files, which could help when debugging a run by
      restarting it from just before the failure.

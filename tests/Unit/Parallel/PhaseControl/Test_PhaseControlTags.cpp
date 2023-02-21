@@ -14,6 +14,7 @@
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/ExitCode.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -123,10 +124,11 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
   CHECK(dynamic_cast<TestCreatable<2_st>*>(second_creatable.get())
             ->option_value_ == 2);
 
-  static_assert(std::is_same_v<
-                PhaseControl::get_phase_change_tags<Metavariables>,
-                tmpl::list<
-                    Tags::DummyDecisionTag2, Tags::DummyDecisionTag1,
-                    PhaseControl::TagsAndCombines::UsePhaseChangeArbitration>>);
+  static_assert(
+      std::is_same_v<
+          PhaseControl::get_phase_change_tags<Metavariables>,
+          tmpl::list<Tags::DummyDecisionTag2, Tags::DummyDecisionTag1,
+                     PhaseControl::TagsAndCombines::UsePhaseChangeArbitration,
+                     Parallel::Tags::ExitCode>>);
 }
 }  // namespace

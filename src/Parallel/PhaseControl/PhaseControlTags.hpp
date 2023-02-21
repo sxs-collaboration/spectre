@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
+#include "Parallel/ExitCode.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -121,5 +122,5 @@ using get_phase_change_tags = tmpl::push_back<
     tmpl::flatten<tmpl::transform<
         typename detail::phase_change_derived_classes<Metavariables>::type,
         detail::get_phase_change_tags_and_combines<tmpl::_1>>>,
-    TagsAndCombines::UsePhaseChangeArbitration>;
+    TagsAndCombines::UsePhaseChangeArbitration, Parallel::Tags::ExitCode>;
 }  // namespace PhaseControl

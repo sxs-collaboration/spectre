@@ -30,6 +30,7 @@ spectre_target_headers(
   CharmRegistration.hpp
   CreateFromOptions.hpp
   DistributedObject.hpp
+  ExitCode.hpp
   GetSection.hpp
   GlobalCache.hpp
   GlobalCacheDeclare.hpp
