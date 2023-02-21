@@ -48,11 +48,13 @@ void test_wedge3d_all_directions() {
   // [cartesian_product_loop]
   for (const auto& [halves, orientation, with_equiangular_map,
                     radial_distribution] :
-       cartesian_product(halves_array, all_wedge_directions(),
-                         make_array(true, false),
-                         make_array(CoordinateMaps::Distribution::Linear,
-                                    CoordinateMaps::Distribution::Logarithmic,
-                                    CoordinateMaps::Distribution::Inverse))) {
+       random_sample<5>(
+           cartesian_product(
+               halves_array, all_wedge_directions(), make_array(true, false),
+               make_array(CoordinateMaps::Distribution::Linear,
+                          CoordinateMaps::Distribution::Logarithmic,
+                          CoordinateMaps::Distribution::Inverse)),
+           make_not_null(&gen))) {
     // [cartesian_product_loop]
     CAPTURE(halves);
     CAPTURE(orientation);

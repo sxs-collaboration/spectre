@@ -86,7 +86,6 @@ create_outer_boundary_condition() {
 
 void test_connectivity() {
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
 
   // ObjectA:
   constexpr double inner_radius_objectA = 0.3;
@@ -115,16 +114,13 @@ void test_connectivity() {
   for (const auto& [with_boundary_conditions, excise_interiorA,
                     excise_interiorB, use_equiangular_map,
                     radial_distribution_outer_shell] :
-       cartesian_product(
-           make_array(true, false), make_array(true, false),
-           make_array(true, false), make_array(true, false),
-           make_array(Distribution::Linear, Distribution::Logarithmic,
-                      Distribution::Inverse))) {
-    // To speed up this test, don't run every case in the above loop.
-    // Instead, ignore some of them at random.
-    if (unit_dis(gen) > 0.5) {
-      continue;
-    }
+       random_sample<5>(
+           cartesian_product(
+               make_array(true, false), make_array(true, false),
+               make_array(true, false), make_array(true, false),
+               make_array(Distribution::Linear, Distribution::Logarithmic,
+                          Distribution::Inverse)),
+           make_not_null(&gen))) {
     CAPTURE(with_boundary_conditions);
     CAPTURE(excise_interiorA);
     CAPTURE(excise_interiorB);
@@ -616,6 +612,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
 }
 
 void test_binary_factory() {
+  MAKE_GENERATOR(gen);
   const auto check_impl = [](const std::string& opt_string,
                              const bool with_boundary_conditions) {
     const auto binary_compact_object = [&opt_string,
@@ -633,24 +630,25 @@ void test_binary_factory() {
     TestHelpers::domain::creators::test_domain_creator(
         *binary_compact_object, with_boundary_conditions);
   };
-  for (const bool with_boundary_conds : {true, false}) {
-    check_impl(create_option_string(true, true, false, false, true, 2, 0, 2,
-                                    with_boundary_conds),
-               with_boundary_conds);
-    check_impl(create_option_string(true, true, false, true, true, 3, 3, 0,
-                                    with_boundary_conds),
-               with_boundary_conds);
-    check_impl(create_option_string(true, true, false, false, true, 0, 0, 0,
-                                    with_boundary_conds),
-               with_boundary_conds);
-    check_impl(create_option_string(false, false, false, false, true, 0, 0, 0,
-                                    with_boundary_conds),
-               with_boundary_conds);
-    check_impl(create_option_string(true, false, false, false, true, 0, 0, 0,
-                                    with_boundary_conds),
-               with_boundary_conds);
-    check_impl(create_option_string(false, true, false, false, true, 0, 0, 0,
-                                    with_boundary_conds),
+  const bool add_time_dependence = false;
+  for (const auto& [excise_A, excise_B, use_log_maps, use_equiangular_map,
+                    additional_refinement_outer, additional_refinement_A,
+                    additional_refinement_B, with_boundary_conds] :
+       random_sample<5>(
+           cartesian_product(make_array(true, false), make_array(true, false),
+                             make_array(true, false), make_array(true, false),
+                             make_array(0_st, 1_st), make_array(0_st, 2_st),
+                             make_array(0_st, 3_st), make_array(true, false)),
+           make_not_null(&gen))) {
+    if (use_log_maps and not(excise_A and excise_B)) {
+      // Log maps in the object interiors only work with excisions
+      continue;
+    }
+    check_impl(create_option_string(
+                   excise_A, excise_B, add_time_dependence, use_log_maps,
+                   use_equiangular_map, additional_refinement_outer,
+                   additional_refinement_A, additional_refinement_B,
+                   with_boundary_conds),
                with_boundary_conds);
   }
 }

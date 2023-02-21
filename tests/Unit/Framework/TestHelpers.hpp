@@ -397,6 +397,47 @@ void test_throw_exception(const ThrowingFunctor& func,
 
 /*!
  * \ingroup TestingFrameworkGroup
+ * \brief A random element between `start` and `end`
+ */
+template <typename Iter>
+Iter random_sample(Iter start, Iter end,
+                   const gsl::not_null<std::mt19937*> generator) {
+  const auto length = std::distance(start, end);
+  if (length > 1) {
+    std::uniform_int_distribution<size_t> dist(0,
+                                               static_cast<size_t>(length) - 1);
+    std::advance(start, dist(*generator));
+  }
+  return start;
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief `NumSamples` random elements of the `container`
+ *
+ * This function is useful to iterate over a random subset of a container, like
+ * this:
+ *
+ * \snippet Test_Wedge3D.cpp cartesian_product_loop
+ *
+ * \note This implementation copies the random elements into a `std::array` that
+ * can be iterated over. This can be changed if we need to support noncopyable
+ * types.
+ */
+template <size_t NumSamples, typename Container,
+          typename ValueType = typename Container::value_type>
+std::array<ValueType, NumSamples> random_sample(
+    const Container& container, const gsl::not_null<std::mt19937*> generator) {
+  std::array<ValueType, NumSamples> result;
+  for (size_t i = 0; i < NumSamples; ++i) {
+    gsl::at(result, i) =
+        *random_sample(container.begin(), container.end(), generator);
+  }
+  return result;
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
  * \brief A wrapper around Catch's CHECK macro that checks approximate equality
  * of each entry in each tag within a variables.
  */

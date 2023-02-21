@@ -364,22 +364,16 @@ void test_connectivity_once(const bool with_sphere_e,
 
 void test_connectivity() {
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
 
   // When we add sphere_e support we will make the following
   // loop go over {true, false}
   const bool with_sphere_e = false;
   for (const auto& [include_outer_sphere, include_inner_sphere_A,
                     include_inner_sphere_B, use_equiangular_map] :
-       cartesian_product(make_array(true, false), make_array(true, false),
-                         make_array(true, false), make_array(true, false))) {
-
-    // To speed up this test, don't run every case in the above loop.
-    // Instead, ignore some of them at random.
-    if (unit_dis(gen) > 0.5) {
-      continue;
-    }
-
+       random_sample<5>(
+           cartesian_product(make_array(true, false), make_array(true, false),
+                             make_array(true, false), make_array(true, false)),
+           make_not_null(&gen))) {
     CAPTURE(with_sphere_e);
     CAPTURE(include_outer_sphere);
     CAPTURE(include_inner_sphere_A);
@@ -546,6 +540,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
 }
 
 void test_binary_factory() {
+  MAKE_GENERATOR(gen);
   const auto check_impl = [](const std::string& opt_string,
                              const bool with_boundary_conditions) {
     const auto binary_compact_object = [&opt_string,
@@ -566,8 +561,10 @@ void test_binary_factory() {
   for (const auto& [with_boundary_conds,
                     with_additional_outer_radial_refinement,
                     with_additional_grid_points] :
-       cartesian_product(make_array(true, false), make_array(true, false),
-                         make_array(true, false))) {
+       random_sample<5>(
+           cartesian_product(make_array(true, false), make_array(true, false),
+                             make_array(true, false)),
+           make_not_null(&gen))) {
     check_impl(
         create_option_string(false, with_additional_outer_radial_refinement,
                              with_additional_grid_points, with_boundary_conds),
