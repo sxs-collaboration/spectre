@@ -43,33 +43,23 @@ cd src
 
 Spectre depends on python and some python packages. There are different ways to
 install an arm64-native python stack. The following instructions show how
-to do this using [Miniforge](https://github.com/conda-forge/miniforge),
-which supports Apple Silicon natively.
+to do this using the Python 3 interpreter bundled with macOS.
 
-#### Miniforge
-Distribution Miniforge is a way to install an arm64-native python stack on Apple
-Silicon Macs. Download the
-[Miniforge3-MacOSX-arm64.sh](https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh)
-installation script, and then do the following:
-```
-# Install miniforge. Accept all default choices
-bash Miniforge3-MacOSX-arm64.sh
-# Activate conda base environment for current session
-eval "$(${HOME}/miniforge3/bin/conda shell.zsh hook)"
-# Activate conda at startup (to make sure you're always using native python)
-conda init zsh
-exit # close shell. conda will automatically load when new zsh shells start.
-```
+```sh
+cd $SPECTRE_HOME
 
-Open a new terminal window. Then, install the necessary python packages.
-```
-conda install --file support/Python/requirements.txt \
-  --file support/Python/dev_requirements.txt
-```
+# Create a Python environment
+python3 -m venv ./env --upgrade-deps
 
-You might also wish to install jupyter notebook support, using
-```
-conda install -c conda-forge jupyterlab
+# Activate the Python environment
+. ./env/bin/activate
+
+# Install Python packages
+pip install -r support/Python/requirements.txt \
+  -r support/Python/dev_requirements.txt
+
+# Optionally install additional packages you might want, like Jupyter
+pip install jupyterlab
 ```
 
 ### 3. Install dependencies with Homebrew
@@ -81,14 +71,17 @@ following the instructions on the [homebrew](https://brew.sh) homepage. Then,
 run the following to install a fortran compiler and other dependencies:
 ```
 brew install gcc
-brew install openblas boost gsl cmake doxygen
+brew install boost gsl cmake doxygen
 brew install ccache autoconf automake jemalloc hdf5 pybind11 yaml-cpp
 ```
 
 ### 4. Install remaining dependencies
 
 Here, install the remaining dependencies that cannot be installed
-with homebrew or miniforge.
+with homebrew or miniforge. You can install them from source manually, or use
+the [Spack](https://github.com/spack/spack) package manager.
+
+#### Install manually
 
 ```
 export SPECTRE_DEPS_ROOT=$HOME/apps
@@ -133,7 +126,6 @@ Next, clone, patch, and install charm++ v7.0.0.
 git clone https://github.com/UIUC-PPL/charm
 pushd charm
 git checkout v7.0.0
-git apply ${SPECTRE_HOME}/support/Charm/v7.0.0.patch
 ./build LIBS multicore-darwin-arm8 --with-production -g3 -j
 popd
 ```
@@ -148,40 +140,64 @@ git checkout v2.13.7
 popd
 ```
 
-### 5. Configure and build SpECTRE.
-Next, clone SpECTRE, make a build directory, and configure. In whatever
-directory you prefer, clone SpECTRE and make a build directory, e.g.
+#### Install with Spack
+
+```sh
+# Download spack
+cd ~
+git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+cd spack
+# Switch to latest release
+git checkout releases/latest
+# Load shell support
+. ./share/spack/setup-env.sh
+# Find some system packages so we don't have to install them all from source
+spack external find
+spack external find python
+# Install dependencies
+spack install \
+  blaze@3.8.2 \
+  brigand@master \
+  catch2@2.8:2 \
+  charmpp@7.0.0: backend=multicore \
+  libxsmm@main \
+  libsharp~mpi~openmp
+```
+
+### 5. Configure and build SpECTRE
+
+Create a build directory in a location of your choice, e.g.
 ```
 cd ${SPECTRE_HOME}
 mkdir build
 cd build
 ```
 
-Next, configure SpECTRE using the following `cmake command`.
+Next, configure SpECTRE using the following CMake command. If you installed
+dependencies with Spack, you can use `spack find -p` to retrieve the root
+directories of the packages and replace them in the command below.
 
 ```
-cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D \
-CMAKE_Fortran_COMPILER=gfortran -D BUILD_PYTHON_BINDINGS=ON \
+cmake \
+-D CMAKE_C_COMPILER=clang \
+-D CMAKE_CXX_COMPILER=clang++ \
+-D CMAKE_Fortran_COMPILER=gfortran \
+-D CMAKE_BUILD_TYPE=Debug \
+-D BUILD_SHARED_LIBS=OFF \
 -D MEMORY_ALLOCATOR=SYSTEM \
 -D CHARM_ROOT=${SPECTRE_DEPS_ROOT}/charm/multicore-darwin-arm8 \
--D BLAS_ROOT=$(brew --prefix openblas) -D CMAKE_BUILD_TYPE=Debug \
--D DEBUG_SYMBOLS=ON -D USE_PCH=ON \
 -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
 -D LIBXSMM_ROOT=${SPECTRE_DEPS_ROOT}/libxsmm/ \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
 -D BRIGAND_ROOT=${SPECTRE_DEPS_ROOT}/brigand/ \
 -D LIBSHARP_ROOT=${SPECTRE_DEPS_ROOT}/libsharp/ \
 -D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/single_include/catch2/ \
--D Boost_ROOT=$(brew --prefix boost)/ \
--D CLANG_TIDY_BIN=$(brew --prefix llvm)/bin/clang-tidy \
--D BUILD_SHARED_LIBS=OFF \
--DGSL_ROOT=$(brew --prefix gsl)/include \
--DGSL_LIBRARY=$(brew --prefix gsl)/lib/libgsl.a ..
+..
 ```
 
 Finally, build and test SpECTRE. E.g., on a Mac with 10 cores,
 ```
-make -j10
+make -j10 unit-tests
 make -j10 test-executables
 ctest --output-on-failure -j10
 ```
