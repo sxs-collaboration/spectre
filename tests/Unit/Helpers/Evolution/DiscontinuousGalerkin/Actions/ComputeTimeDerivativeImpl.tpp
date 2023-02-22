@@ -20,6 +20,7 @@
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"

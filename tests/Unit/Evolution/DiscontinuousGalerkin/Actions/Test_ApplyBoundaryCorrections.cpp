@@ -19,6 +19,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"

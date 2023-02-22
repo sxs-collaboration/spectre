@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"

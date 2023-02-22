@@ -21,6 +21,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"

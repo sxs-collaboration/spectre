@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Index.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"

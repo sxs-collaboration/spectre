@@ -50,20 +50,6 @@ namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The number of grid points per dimension for all elements in each block of
-/// the initial computational domain
-template <size_t Dim>
-struct InitialExtents : db::SimpleTag {
-  using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
-
-  static constexpr bool pass_metavariables = false;
-  static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator);
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
 /// The initial refinement level per dimension for all elements in each block of
 /// the initial computational domain
 template <size_t Dim>

@@ -15,6 +15,7 @@
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"

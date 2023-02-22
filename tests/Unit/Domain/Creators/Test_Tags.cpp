@@ -7,6 +7,7 @@
 #include <string>
 
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace domain {
@@ -14,6 +15,7 @@ namespace {
 template <size_t Dim>
 void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Tags::Domain<Dim>>("Domain");
+  TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Tags", "[Unit][Domain]") {

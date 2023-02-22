@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Parallel/AlgorithmExecution.hpp"

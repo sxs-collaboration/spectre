@@ -24,6 +24,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"

@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PUBLIC
   Domain.cpp
+  InitialExtents.cpp
   )
 
 spectre_target_headers(
@@ -12,4 +13,5 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Domain.hpp
+  InitialExtents.hpp
   )
