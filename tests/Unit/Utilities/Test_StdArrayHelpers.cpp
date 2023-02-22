@@ -53,6 +53,10 @@ void test_arithmetic() {
       {14.04, -3.06, -5.4}};
   const auto right_scaled_array = p1 * scale;
   const auto array_divided_by_double = p1 / (1 / scale);
+  auto in_place_scaled_array = p1;
+  in_place_scaled_array *= scale;
+  auto array_divided_in_place_by_double = p1;
+  array_divided_in_place_by_double /= 1.0 / scale;
 
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(gsl::at(left_scaled_array, i) ==
@@ -61,6 +65,10 @@ void test_arithmetic() {
           approx(gsl::at(right_scaled_array, i)));
     CHECK(gsl::at(left_scaled_array, i) ==
           approx(gsl::at(array_divided_by_double, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(in_place_scaled_array, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(array_divided_in_place_by_double, i)));
   }
 
   const auto neg_p1 = -p1;

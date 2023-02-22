@@ -58,12 +58,18 @@ inline auto operator-(const std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator*=(std::array<T, Dim>& lhs, const U& scale) {
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(lhs, i) *= scale;
+  }
+  return lhs;
+}
+
+template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
                                     const U& scale) {
-  std::array<T, Dim> result{};
-  for (size_t i = 0; i < Dim; ++i) {
-    gsl::at(result, i) = gsl::at(lhs, i) * scale;
-  }
+  std::array<T, Dim> result = lhs;
+  result *= scale;
   return result;
 }
 
@@ -74,12 +80,19 @@ inline std::array<T, Dim> operator*(const U& scale,
 }
 
 template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator/=(std::array<T, Dim>& lhs,
+                                      const U& scale) {
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(lhs, i) /= scale;
+  }
+  return lhs;
+}
+
+template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
                                     const U& scale) {
-  std::array<T, Dim> result{};
-  for (size_t i = 0; i < Dim; ++i) {
-    gsl::at(result, i) = gsl::at(lhs, i) / scale;
-  }
+  std::array<T, Dim> result = lhs;
+  result /= scale;
   return result;
 }
 
