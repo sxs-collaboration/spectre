@@ -11,7 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
-#include "Domain/Domain.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/H5/AccessType.hpp"

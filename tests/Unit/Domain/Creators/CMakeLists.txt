@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_ExpandOverBlocks.cpp
   Test_FrustalCloak.cpp
   Test_Interval.cpp
+  Test_Tags.cpp
   Test_Rectangle.cpp
   Test_RotatedBricks.cpp
   Test_RotatedIntervals.cpp

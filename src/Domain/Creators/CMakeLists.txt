@@ -45,6 +45,7 @@ spectre_target_headers(
   Factory3D.hpp
   FrustalCloak.hpp
   Interval.hpp
+  OptionTags.hpp
   Rectangle.hpp
   RegisterDerivedWithCharm.hpp
   RotatedBricks.hpp
@@ -61,13 +62,14 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  Domain
   DomainBoundaryConditions
   DomainTimeDependence
   INTERFACE
-  Domain
   ErrorHandling
   Options
   )
 
 add_subdirectory(Python)
+add_subdirectory(Tags)
 add_subdirectory(TimeDependence)

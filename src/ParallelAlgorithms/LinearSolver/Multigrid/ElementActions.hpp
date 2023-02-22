@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/Logging/Tags.hpp"

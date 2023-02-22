@@ -4,8 +4,6 @@
 set(LIBRARY "Test_DomainTags")
 
 set(LIBRARY_SOURCES
-  Test_BlockNamesAndGroups.cpp
-  Test_ExternalBoundaryConditions.cpp
   Test_Faces.cpp
   Test_SurfaceJacobian.cpp
   )

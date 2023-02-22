@@ -21,7 +21,6 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -36,8 +35,6 @@
 class DataVector;
 template <size_t VolumeDim>
 class Domain;
-template <size_t VolumeDim>
-class DomainCreator;
 template <size_t VolumeDim, typename Frame>
 class ElementMap;
 template <size_t VolumeDim>
@@ -48,47 +45,6 @@ namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// \brief %Tags for the domain.
 namespace Tags {
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The ::Domain.
-template <size_t VolumeDim>
-struct Domain : db::SimpleTag {
-  using type = ::Domain<VolumeDim>;
-  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<VolumeDim>>;
-
-  static constexpr bool pass_metavariables = false;
-  static ::Domain<VolumeDim> create_from_options(
-      const std::unique_ptr<::DomainCreator<VolumeDim>>& domain_creator);
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The number of grid points per dimension for all elements in each block of
-/// the initial computational domain
-template <size_t Dim>
-struct InitialExtents : db::SimpleTag {
-  using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
-
-  static constexpr bool pass_metavariables = false;
-  static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator);
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The initial refinement level per dimension for all elements in each block of
-/// the initial computational domain
-template <size_t Dim>
-struct InitialRefinementLevels : db::SimpleTag {
-  using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
-
-  static constexpr bool pass_metavariables = false;
-  static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator);
-};
-
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/OptionsGroup.hpp"

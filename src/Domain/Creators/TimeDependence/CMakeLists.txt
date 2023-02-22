@@ -39,12 +39,10 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  FunctionsOfTime
   Options
   Utilities
   PRIVATE
   GeneralRelativitySolutions
   ErrorHandling
-  INTERFACE
-  Domain
-  FunctionsOfTime
   )

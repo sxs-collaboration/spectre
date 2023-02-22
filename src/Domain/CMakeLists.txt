@@ -23,7 +23,6 @@ spectre_target_sources(
   MinimumGridSpacing.cpp
   SizeOfElement.cpp
   SurfaceJacobian.cpp
-  Tags.cpp
   TagsTimeDependent.cpp
 )
 
@@ -47,7 +46,6 @@ spectre_target_headers(
   InterfaceLogicalCoordinates.hpp
   JacobianDiagnostic.hpp
   MinimumGridSpacing.hpp
-  OptionTags.hpp
   SizeOfElement.hpp
   SurfaceJacobian.hpp
   Tags.hpp
@@ -72,7 +70,6 @@ target_link_libraries(
   INTERFACE
   FunctionsOfTime
   Time
-  DomainCreators
 )
 
 add_subdirectory(Amr)

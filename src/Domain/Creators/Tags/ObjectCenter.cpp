@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Tags/ObjectCenter.hpp"
+#include "Domain/Creators/Tags/ObjectCenter.hpp"
 
 #include <cstddef>
 #include <memory>
@@ -12,6 +12,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace domain::Tags {
@@ -29,8 +30,15 @@ tnsr::I<double, 3, Frame::Grid> ExcisionCenter<Label>::create_from_options(
   return domain.excision_spheres().at(name).center();
 }
 
-template struct ObjectCenter<ObjectLabel::A>;
-template struct ObjectCenter<ObjectLabel::B>;
-template struct ExcisionCenter<ObjectLabel::A>;
-template struct ExcisionCenter<ObjectLabel::B>;
+#define OBJECT(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                  \
+  template struct ObjectCenter<OBJECT(data)>; \
+  template struct ExcisionCenter<OBJECT(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (ObjectLabel::A, ObjectLabel::B, ObjectLabel::None))
+
+#undef INSTANTIATE
+#undef OBJECT
 }  // namespace domain::Tags

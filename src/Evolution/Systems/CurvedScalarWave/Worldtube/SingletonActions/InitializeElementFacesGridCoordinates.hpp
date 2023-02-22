@@ -11,6 +11,9 @@
 #include <vector>
 
 #include "Domain/Block.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
@@ -18,7 +21,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
-#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
