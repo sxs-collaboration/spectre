@@ -16,6 +16,7 @@ spectre_target_headers(
   HEADERS
   BlockNamesAndGroups.hpp
   Domain.hpp
+  ExternalBoundaryConditions.hpp
   InitialExtents.hpp
   InitialRefinementLevels.hpp
   ObjectCenter.hpp

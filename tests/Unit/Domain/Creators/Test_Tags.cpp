@@ -11,6 +11,7 @@
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Tags/BlockNamesAndGroups.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
@@ -26,6 +27,8 @@ void test_simple_tags() {
       "InitialRefinementLevels");
   TestHelpers::db::test_simple_tag<Tags::BlockNames<Dim>>("BlockNames");
   TestHelpers::db::test_simple_tag<Tags::BlockGroups<Dim>>("BlockGroups");
+  TestHelpers::db::test_simple_tag<Tags::ExternalBoundaryConditions<Dim>>(
+      "ExternalBoundaryConditions");
 }
 
 void test_center_tags() {
