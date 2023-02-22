@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ExitCode.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -49,27 +50,28 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
       " - - Always:\n"
       "   - - VisitAndReturn(Evolve):\n"
       "     - VisitAndReturn(Execute):");
-  using phase_change_decision_data_type = tuples::tagged_tuple_from_typelist<
+  using PhaseChangeDecisionData = tuples::tagged_tuple_from_typelist<
       PhaseControl::get_phase_change_tags<Metavariables>>;
 
-  phase_change_decision_data_type phase_change_decision_data{
-      Parallel::Phase::Solve, true, Parallel::Phase::Solve, true, true};
   const auto& first_phase_change = created_phase_changes[0].second[0];
   const auto& second_phase_change = created_phase_changes[0].second[1];
   {
     INFO("Test initialize phase change decision data");
+    PhaseChangeDecisionData phase_change_decision_data{
+        Parallel::Phase::Solve,      true, Parallel::Phase::Solve, true, true,
+        Parallel::ExitCode::Complete};
     first_phase_change->initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
     // extra parens in the check prevent Catch from trying to stream the tuple
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{
-               std::nullopt, false, Parallel::Phase::Solve, true, true}));
+           PhaseChangeDecisionData{std::nullopt, false, Parallel::Phase::Solve,
+                                   true, true, Parallel::ExitCode::Complete}));
 
     second_phase_change->initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{std::nullopt, false, std::nullopt,
-                                           false, true}));
+           PhaseChangeDecisionData{std::nullopt, false, std::nullopt, false,
+                                   true, Parallel::ExitCode::Complete}));
 
     using first_phase_change_tuple_type = tuples::TaggedTuple<
         PhaseControl::Tags::ReturnPhase<Parallel::Phase::Evolve>,
@@ -87,9 +89,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
     // In this test, we trace through the set of states that occur when
     // resolving two simultaneous phase requests. This is a superset of states
     // that occur in a single phase request
-    phase_change_decision_data = phase_change_decision_data_type{
-        std::nullopt, true, std::nullopt, true, true};
-    auto decision_result = first_phase_change->arbitrate_phase_change(
+    PhaseChangeDecisionData phase_change_decision_data{
+        std::nullopt, true, std::nullopt,
+        true,         true, Parallel::ExitCode::Complete};
+    const auto decision_result = first_phase_change->arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Execute,
         cache);
     // extra parens in the check prevent Catch from trying to stream the tuple
@@ -97,14 +100,18 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
            std::make_pair(
                Parallel::Phase::Evolve,
                PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
-    CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{Parallel::Phase::Execute, false,
-                                           std::nullopt, true, true}));
-
+    CHECK(
+        (phase_change_decision_data ==
+         PhaseChangeDecisionData{Parallel::Phase::Execute, false, std::nullopt,
+                                 true, true, Parallel::ExitCode::Complete}));
+  }
+  {
+    INFO("Multiple phase requests");
     // check a different starting phase
-    phase_change_decision_data = phase_change_decision_data_type{
-        std::nullopt, true, std::nullopt, true, true};
-    decision_result = first_phase_change->arbitrate_phase_change(
+    PhaseChangeDecisionData phase_change_decision_data{
+        std::nullopt, true, std::nullopt,
+        true,         true, Parallel::ExitCode::Complete};
+    auto decision_result = first_phase_change->arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Solve,
         cache);
     CHECK((decision_result ==
@@ -112,8 +119,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                Parallel::Phase::Evolve,
                PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{Parallel::Phase::Solve, false,
-                                           std::nullopt, true, true}));
+           PhaseChangeDecisionData{Parallel::Phase::Solve, false, std::nullopt,
+                                   true, true, Parallel::ExitCode::Complete}));
 
     decision_result = first_phase_change->arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Evolve,
@@ -123,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                Parallel::Phase::Solve,
                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{std::nullopt, false, std::nullopt,
-                                           true, true}));
+           PhaseChangeDecisionData{std::nullopt, false, std::nullopt, true,
+                                   true, Parallel::ExitCode::Complete}));
 
     decision_result = second_phase_change->arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Solve,
@@ -134,8 +141,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                Parallel::Phase::Execute,
                PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{
-               std::nullopt, false, Parallel::Phase::Solve, false, true}));
+           PhaseChangeDecisionData{std::nullopt, false, Parallel::Phase::Solve,
+                                   false, true, Parallel::ExitCode::Complete}));
 
     decision_result = PhaseControl::VisitAndReturn<Parallel::Phase::Execute>{}
                           .arbitrate_phase_change_impl(
@@ -146,15 +153,15 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                Parallel::Phase::Solve,
                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{std::nullopt, false, std::nullopt,
-                                           false, true}));
+           PhaseChangeDecisionData{std::nullopt, false, std::nullopt, false,
+                                   true, Parallel::ExitCode::Complete}));
 
     decision_result = second_phase_change->arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Solve,
         cache);
     CHECK((decision_result == std::nullopt));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{std::nullopt, false, std::nullopt,
-                                           false, true}));
+           PhaseChangeDecisionData{std::nullopt, false, std::nullopt, false,
+                                   true, Parallel::ExitCode::Complete}));
   }
 }

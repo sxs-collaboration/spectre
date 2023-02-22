@@ -22,6 +22,7 @@
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
+#include "Parallel/ExitCode.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -584,6 +585,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   global_cache_proxy_.set_parallel_components(the_parallel_components,
                                               callback);
 
+  get<Tags::ExitCode>(phase_change_decision_data_) =
+      Parallel::ExitCode::Complete;
   PhaseControl::initialize_phase_change_decision_data(
       make_not_null(&phase_change_decision_data_),
       *Parallel::local_branch(global_cache_proxy_));
@@ -921,7 +924,9 @@ void Main<Metavariables>::post_deadlock_analysis_termination() {
   if (not components_that_did_not_terminate_.empty()) {
     sys::abort("");
   } else {
-    sys::exit();
+    const Parallel::ExitCode exit_code =
+        get<Tags::ExitCode>(phase_change_decision_data_);
+    sys::exit(static_cast<int>(exit_code));
   }
 }
 

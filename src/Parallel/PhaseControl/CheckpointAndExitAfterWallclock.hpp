@@ -13,6 +13,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/ExitCode.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
@@ -204,6 +205,8 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
   auto& wallclock_hours_at_checkpoint =
       tuples::get<Tags::WallclockHoursAtCheckpoint>(
           *phase_change_decision_data);
+  auto& exit_code =
+      tuples::get<Parallel::Tags::ExitCode>(*phase_change_decision_data);
   if (restart_phase.has_value()) {
     ASSERT(wallclock_hours_at_checkpoint.has_value(),
            "Consistency error: Should have recorded the Wallclock time "
@@ -215,6 +218,7 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
     // - restart_phase, if the time is small
     if (elapsed_hours >= wallclock_hours_at_checkpoint.value()) {
       // Preserve restart_phase for use after restarting from the checkpoint
+      exit_code = Parallel::ExitCode::ContinueFromCheckpoint;
       return std::make_pair(Parallel::Phase::Exit,
                             ArbitrationStrategy::RunPhaseImmediately);
     } else {
