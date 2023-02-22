@@ -7,6 +7,7 @@ spectre_target_sources(
   Domain.cpp
   InitialExtents.cpp
   InitialRefinementLevels.cpp
+  ObjectCenter.cpp
   )
 
 spectre_target_headers(
@@ -17,4 +18,5 @@ spectre_target_headers(
   Domain.hpp
   InitialExtents.hpp
   InitialRefinementLevels.hpp
+  ObjectCenter.hpp
   )

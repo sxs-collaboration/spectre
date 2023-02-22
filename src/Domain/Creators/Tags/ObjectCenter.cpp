@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Tags/ObjectCenter.hpp"
+#include "Domain/Creators/Tags/ObjectCenter.hpp"
 
 #include <cstddef>
 #include <memory>
