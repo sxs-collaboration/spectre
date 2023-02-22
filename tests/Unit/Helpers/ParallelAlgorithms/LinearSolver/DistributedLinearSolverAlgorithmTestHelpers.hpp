@@ -26,6 +26,7 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"

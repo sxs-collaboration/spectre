@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"

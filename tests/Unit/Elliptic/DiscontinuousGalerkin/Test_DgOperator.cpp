@@ -18,6 +18,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags/ExternalBoundaryConditions.hpp"

@@ -8,6 +8,7 @@
 
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace domain {
@@ -16,6 +17,8 @@ template <size_t Dim>
 void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Tags::Domain<Dim>>("Domain");
   TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
+  TestHelpers::db::test_simple_tag<Tags::InitialRefinementLevels<Dim>>(
+      "InitialRefinementLevels");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Tags", "[Unit][Domain]") {

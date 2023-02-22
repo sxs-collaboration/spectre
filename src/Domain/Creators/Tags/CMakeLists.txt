@@ -6,6 +6,7 @@ spectre_target_sources(
   PUBLIC
   Domain.cpp
   InitialExtents.cpp
+  InitialRefinementLevels.cpp
   )
 
 spectre_target_headers(
@@ -14,4 +15,5 @@ spectre_target_headers(
   HEADERS
   Domain.hpp
   InitialExtents.hpp
+  InitialRefinementLevels.hpp
   )

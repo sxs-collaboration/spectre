@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
-#include "Domain/Tags.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/Gsl.hpp"

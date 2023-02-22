@@ -23,7 +23,6 @@ spectre_target_sources(
   MinimumGridSpacing.cpp
   SizeOfElement.cpp
   SurfaceJacobian.cpp
-  Tags.cpp
   TagsTimeDependent.cpp
 )
 
