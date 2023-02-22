@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "Domain/Creators/Tags/BlockNamesAndGroups.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
@@ -19,6 +20,8 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
   TestHelpers::db::test_simple_tag<Tags::InitialRefinementLevels<Dim>>(
       "InitialRefinementLevels");
+  TestHelpers::db::test_simple_tag<Tags::BlockNames<Dim>>("BlockNames");
+  TestHelpers::db::test_simple_tag<Tags::BlockGroups<Dim>>("BlockGroups");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Tags", "[Unit][Domain]") {
