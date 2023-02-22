@@ -11,7 +11,6 @@
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/OptionTags.hpp"
-#include "Domain/Creators/Tags/BlockNamesAndGroups.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
@@ -29,8 +28,6 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
   TestHelpers::db::test_simple_tag<Tags::InitialRefinementLevels<Dim>>(
       "InitialRefinementLevels");
-  TestHelpers::db::test_simple_tag<Tags::BlockNames<Dim>>("BlockNames");
-  TestHelpers::db::test_simple_tag<Tags::BlockGroups<Dim>>("BlockGroups");
   TestHelpers::db::test_simple_tag<Tags::ExternalBoundaryConditions<Dim>>(
       "ExternalBoundaryConditions");
 }
