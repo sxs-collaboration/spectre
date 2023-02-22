@@ -62,10 +62,10 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  Domain
   DomainBoundaryConditions
   DomainTimeDependence
   INTERFACE
-  Domain
   ErrorHandling
   Options
   )
