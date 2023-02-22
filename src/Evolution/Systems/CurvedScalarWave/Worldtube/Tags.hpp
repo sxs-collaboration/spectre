@@ -10,8 +10,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Options/Options.hpp"

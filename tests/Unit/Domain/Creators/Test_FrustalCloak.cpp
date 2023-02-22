@@ -16,8 +16,8 @@
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"

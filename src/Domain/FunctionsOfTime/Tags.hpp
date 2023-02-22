@@ -10,12 +10,12 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/ReadSpecPiecewisePolynomial.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"

@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/OptionTags.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 
 namespace domain::Tags {

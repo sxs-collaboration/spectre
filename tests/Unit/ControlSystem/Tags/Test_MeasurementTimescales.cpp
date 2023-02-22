@@ -20,6 +20,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Utilities/GetOutput.hpp"

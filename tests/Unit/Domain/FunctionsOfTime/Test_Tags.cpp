@@ -3,9 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

@@ -9,10 +9,10 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/DiagnosticInfo.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"

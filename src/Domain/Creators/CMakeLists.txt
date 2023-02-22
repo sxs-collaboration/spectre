@@ -45,6 +45,7 @@ spectre_target_headers(
   Factory3D.hpp
   FrustalCloak.hpp
   Interval.hpp
+  OptionTags.hpp
   Rectangle.hpp
   RegisterDerivedWithCharm.hpp
   RotatedBricks.hpp

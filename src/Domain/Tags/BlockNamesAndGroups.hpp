@@ -12,7 +12,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/OptionTags.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace domain::Tags {
