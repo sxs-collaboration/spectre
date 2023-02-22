@@ -18,7 +18,7 @@
 // IWYU pragma: no_forward_declare DiagonalModalOperator;
 // IWYU pragma: no_include <algorithm>
 
-// [[OutputRegex, Must copy into same size]]
+// [[OutputRegex, Must assign into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexDiagonalModalOperator.ExpressionAssignError",
     "[Unit][DataStructures]") {

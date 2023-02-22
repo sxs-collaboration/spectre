@@ -1327,14 +1327,14 @@ void test_asserts() {
         auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
         tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
       }()),
-      Catch::Contains("Must copy into same size, not 10 into 1"));
+      Catch::Contains("Must move into same size, not 10 into 1"));
   CHECK_THROWS_WITH(
       ([]() {
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
         get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
             Scalar<DataVector>{{{{0.}}}};
       }()),
-      Catch::Contains("Must copy into same size, not 1 into 0"));
+      Catch::Contains("Must move into same size, not 1 into 0"));
   CHECK_THROWS_WITH(
       ([]() {
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,

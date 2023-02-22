@@ -26,6 +26,75 @@
 namespace evolution::dg {
 namespace {
 template <size_t Dim>
+void assign_with_insert(const gsl::not_null<MortarData<Dim>*> mortar_data,
+                        TimeStepId time_step_id, Mesh<Dim - 1> local_mesh,
+                        std::optional<DataVector> local_data,
+                        Mesh<Dim - 1> neighbor_mesh,
+                        std::optional<DataVector> neighbor_data,
+                        const std::string& expected_output) {
+  if (local_data.has_value()) {
+    mortar_data->insert_local_mortar_data(time_step_id, local_mesh,
+                                          *local_data);
+
+    CHECK(mortar_data->local_mortar_data().has_value());
+    CHECK_FALSE(mortar_data->neighbor_mortar_data().has_value());
+  }
+
+  if (neighbor_data.has_value()) {
+    mortar_data->insert_neighbor_mortar_data(time_step_id, neighbor_mesh,
+                                             *neighbor_data);
+    CHECK(mortar_data->local_mortar_data().has_value());
+    CHECK(mortar_data->neighbor_mortar_data().has_value());
+  }
+
+  CHECK(get_output(*mortar_data) == expected_output);
+}
+
+template <size_t Dim>
+void assign_with_reference(const gsl::not_null<MortarData<Dim>*> mortar_data,
+                           TimeStepId time_step_id, Mesh<Dim - 1> local_mesh,
+                           std::optional<DataVector> local_data,
+                           Mesh<Dim - 1> neighbor_mesh,
+                           std::optional<DataVector> neighbor_data,
+                           const std::string& expected_output) {
+  mortar_data->time_step_id() = time_step_id;
+
+  if (local_data.has_value()) {
+    mortar_data->local_mortar_data() = std::pair{local_mesh, *local_data};
+
+    CHECK(mortar_data->local_mortar_data().has_value());
+    CHECK_FALSE(mortar_data->neighbor_mortar_data().has_value());
+  }
+
+  if (neighbor_data.has_value()) {
+    mortar_data->neighbor_mortar_data() =
+        std::pair{neighbor_mesh, *neighbor_data};
+    CHECK(mortar_data->local_mortar_data().has_value());
+    CHECK(mortar_data->neighbor_mortar_data().has_value());
+  }
+
+  CHECK(get_output(*mortar_data) == expected_output);
+}
+
+template <size_t Dim>
+void check_serialization(const gsl::not_null<MortarData<Dim>*> mortar_data) {
+  const auto deserialized_mortar_data = serialize_and_deserialize(*mortar_data);
+
+  CHECK(*mortar_data->local_mortar_data() ==
+        *deserialized_mortar_data.local_mortar_data());
+  CHECK(*mortar_data->neighbor_mortar_data() ==
+        *deserialized_mortar_data.neighbor_mortar_data());
+
+  CHECK(*mortar_data == deserialized_mortar_data);
+  CHECK_FALSE(*mortar_data != deserialized_mortar_data);
+
+  const auto extracted_data = mortar_data->extract();
+  CHECK(extracted_data.first == *deserialized_mortar_data.local_mortar_data());
+  CHECK(extracted_data.second ==
+        *deserialized_mortar_data.neighbor_mortar_data());
+}
+
+template <size_t Dim>
 void test_global_time_stepping_usage() {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
@@ -51,41 +120,32 @@ void test_global_time_stepping_usage() {
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  CHECK_FALSE(mortar_data.local_mortar_data().has_value());
-  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
-
-  mortar_data.insert_local_mortar_data(time_step_id, local_mesh, local_data);
-
-  CHECK(mortar_data.local_mortar_data().has_value());
-  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
-
-  mortar_data.insert_neighbor_mortar_data(time_step_id, neighbor_mesh,
-                                          neighbor_data);
-  CHECK(mortar_data.local_mortar_data().has_value());
-  CHECK(mortar_data.neighbor_mortar_data().has_value());
-
   std::string expected_output = MakeString{}
                                 << "TimeStepId: " << time_step_id << "\n"
                                 << "LocalMortarData: (" << local_mesh << ", "
                                 << local_data << ")\n"
                                 << "NeighborMortarData: (" << neighbor_mesh
                                 << ", " << neighbor_data << ")\n";
-  CHECK(get_output(mortar_data) == expected_output);
 
-  const auto deserialized_mortar_data = serialize_and_deserialize(mortar_data);
+  CHECK_FALSE(mortar_data.local_mortar_data().has_value());
+  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
 
-  CHECK(*mortar_data.local_mortar_data() ==
-        *deserialized_mortar_data.local_mortar_data());
-  CHECK(*mortar_data.neighbor_mortar_data() ==
-        *deserialized_mortar_data.neighbor_mortar_data());
+  // First use the insert functions
+  assign_with_insert(make_not_null(&mortar_data), time_step_id, local_mesh,
+                     std::optional{local_data}, neighbor_mesh,
+                     std::optional{neighbor_data}, expected_output);
 
-  CHECK(mortar_data == deserialized_mortar_data);
-  CHECK_FALSE(mortar_data != deserialized_mortar_data);
+  check_serialization(make_not_null(&mortar_data));
 
-  const auto extracted_data = mortar_data.extract();
-  CHECK(extracted_data.first == *deserialized_mortar_data.local_mortar_data());
-  CHECK(extracted_data.second ==
-        *deserialized_mortar_data.neighbor_mortar_data());
+  mortar_data = MortarData<Dim>{};
+
+  // Then assign things with the local_mortar_data() non-const reference
+  // functions
+  assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
+                        std::optional{local_data}, neighbor_mesh,
+                        std::optional{neighbor_data}, expected_output);
+
+  check_serialization(make_not_null(&mortar_data));
 }
 
 template <size_t Dim>
@@ -109,13 +169,21 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  CHECK_FALSE(mortar_data.local_mortar_data().has_value());
-  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
+  std::string expected_output = MakeString{}
+                                << "TimeStepId: " << time_step_id << "\n"
+                                << "LocalMortarData: (" << local_mesh << ", "
+                                << local_data << ")\n"
+                                << "NeighborMortarData: --\n";
 
-  mortar_data.insert_local_mortar_data(time_step_id, local_mesh, local_data);
+  assign_with_insert(make_not_null(&mortar_data), time_step_id, local_mesh,
+                     std::optional{local_data}, local_mesh, std::nullopt,
+                     expected_output);
 
-  CHECK(mortar_data.local_mortar_data().has_value());
-  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
+  mortar_data = MortarData<Dim>{};
+
+  assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
+                        std::optional{local_data}, local_mesh, std::nullopt,
+                        expected_output);
 
   const auto local_volume_det_inv_jacobian =
       make_with_random_values<Scalar<DataVector>>(
@@ -162,13 +230,8 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
 
   check_geometric_quantities(mortar_data);
 
-  std::string expected_output = MakeString{}
-                                << "TimeStepId: " << time_step_id << "\n"
-                                << "LocalMortarData: (" << local_mesh << ", "
-                                << local_data << ")\n"
-                                << "NeighborMortarData: --\n";
-  CHECK(get_output(mortar_data) == expected_output);
-
+  // We don't use the check_serialization function from above because we didn't
+  // insert neighbor data here
   const auto deserialized_mortar_data = serialize_and_deserialize(mortar_data);
 
   CHECK(*mortar_data.local_mortar_data() ==
@@ -186,7 +249,6 @@ void test() {
   test_local_time_stepping_usage<Dim>(true);
   test_local_time_stepping_usage<Dim>(false);
 }
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.MortarData", "[Unit][Evolution]") {

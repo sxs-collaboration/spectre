@@ -76,6 +76,10 @@ template <typename T>
 struct get_dg_package_temporary_tags {
   using type = typename T::dg_package_data_temporary_tags;
 };
+template <typename T>
+struct get_dg_package_field_tags {
+  using type = typename T::dg_package_field_tags;
+};
 template <typename System, typename T>
 struct get_primitive_tags_for_face {
   using type = typename get_primitive_vars<
@@ -420,6 +424,12 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
           tmpl::list<dg_package_data_projected_tags,
                      detail::inverse_spatial_metric_tag<EvolutionSystem>>,
           detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>;
+  // To avoid additional allocations in internal_mortar_data, we provide a
+  // buffer used to compute the packaged data before it has to be projected to
+  // the mortar. We get all mortar tags for similar reasons as described above
+  using all_mortar_tags = tmpl::remove_duplicates<tmpl::flatten<
+      tmpl::transform<derived_boundary_corrections,
+                      detail::get_dg_package_field_tags<tmpl::_1>>>>;
 
   // We also don't use the number of volume mesh grid points. We instead use the
   // max number of grid points from each face. That way, our allocation will be
@@ -458,6 +468,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       ::Tags::div, db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>>;
   using VarsFaceTemporaries = Variables<all_face_temporary_tags>;
+  using DgPackagedDataVarsOnFace = Variables<all_mortar_tags>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   auto buffer = cpp20::make_unique_for_overwrite<double[]>(
       (VarsTemporaries::number_of_independent_components +
@@ -467,7 +478,8 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
           number_of_grid_points +
       // Different number of grid points. See explanation above where
       // num_face_temporary_grid_points is defined
-      VarsFaceTemporaries::number_of_independent_components *
+      (VarsFaceTemporaries::number_of_independent_components +
+       DgPackagedDataVarsOnFace::number_of_independent_components) *
           num_face_temporary_grid_points);
   VarsTemporaries temporaries{
       &buffer[0], VarsTemporaries::number_of_independent_components *
@@ -499,6 +511,18 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       // Different number of grid points. See explanation above where
       // num_face_temporary_grid_points is defined
       VarsFaceTemporaries::number_of_independent_components *
+          num_face_temporary_grid_points);
+  gsl::span<double> packaged_data_buffer = gsl::make_span<double>(
+      &buffer[(VarsTemporaries::number_of_independent_components +
+               VarsFluxes::number_of_independent_components +
+               VarsPartialDerivatives::number_of_independent_components +
+               VarsDivFluxes::number_of_independent_components) *
+                  number_of_grid_points +
+              VarsFaceTemporaries::number_of_independent_components *
+                  num_face_temporary_grid_points],
+      // Different number of grid points. See explanation above where
+      // num_face_temporary_grid_points is defined
+      DgPackagedDataVarsOnFace::number_of_independent_components *
           num_face_temporary_grid_points);
 
   const Scalar<DataVector>* det_inverse_jacobian = nullptr;
@@ -549,7 +573,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       "final.");
   tmpl::for_each<derived_boundary_corrections>(
       [&boundary_correction, &box, &partial_derivs, &primitive_vars,
-       &temporaries, &volume_fluxes,
+       &temporaries, &volume_fluxes, &packaged_data_buffer,
        &face_temporaries](auto derived_correction_v) {
         using DerivedCorrection =
             tmpl::type_from<decltype(derived_correction_v)>;
@@ -562,6 +586,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
           //  - evolution::dg::Tags::MortarData<Dim>
           detail::internal_mortar_data<EvolutionSystem, Dim>(
               make_not_null(&box), make_not_null(&face_temporaries),
+              make_not_null(&packaged_data_buffer),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               db::get<variables_tag>(box), volume_fluxes, temporaries,
               primitive_vars,

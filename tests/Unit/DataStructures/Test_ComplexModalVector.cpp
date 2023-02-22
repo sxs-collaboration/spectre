@@ -18,7 +18,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
-// [[OutputRegex, Must copy into same size]]
+// [[OutputRegex, Must assign into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexModalVector.ExpressionAssignError",
     "[Unit][DataStructures]") {

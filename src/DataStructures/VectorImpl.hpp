@@ -392,7 +392,7 @@ VectorImpl<T, VectorType, StaticSize>::operator=(
       reset_pointer_vector(size());
       rhs.clear();
     } else {
-      ASSERT(rhs.size() == size(), "Must copy into same size, not "
+      ASSERT(rhs.size() == size(), "Must move into same size, not "
                                        << rhs.size() << " into " << size());
       if (LIKELY(data() != rhs.data())) {
         std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
@@ -432,7 +432,7 @@ VectorImpl<T, VectorType, StaticSize>::operator=(
     owned_data_ = heap_alloc_if_necessary((*expression).size());
     reset_pointer_vector((*expression).size());
   } else if (not owning_) {
-    ASSERT((*expression).size() == size(), "Must copy into same size, not "
+    ASSERT((*expression).size() == size(), "Must assign into same size, not "
                                                << (*expression).size()
                                                << " into " << size());
   }

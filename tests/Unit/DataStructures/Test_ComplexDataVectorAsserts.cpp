@@ -14,7 +14,7 @@
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-// [[OutputRegex, Must copy into same size]]
+// [[OutputRegex, Must assign into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexDataVector.ExpressionAssignError",
     "[Unit][DataStructures]") {

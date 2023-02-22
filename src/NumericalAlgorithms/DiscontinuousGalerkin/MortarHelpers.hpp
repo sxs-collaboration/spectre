@@ -67,20 +67,52 @@ MortarSize<Dim - 1> mortar_size(const ElementId<Dim>& self,
                                 size_t dimension,
                                 const OrientationMap<Dim>& orientation);
 
+/// @{
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
+template <typename Tags, size_t Dim>
+void project_to_mortar(const gsl::not_null<Variables<Tags>*> result,
+                       const Variables<Tags>& vars, const Mesh<Dim>& face_mesh,
+                       const Mesh<Dim>& mortar_mesh,
+                       const MortarSize<Dim>& mortar_size) {
+  const auto projection_matrices = Spectral::projection_matrix_parent_to_child(
+      face_mesh, mortar_mesh, mortar_size);
+  // We don't add an ASSERT about sizes here because there's already one in
+  // apply_matrices
+  apply_matrices(result, projection_matrices, vars, face_mesh.extents());
+}
+
 template <typename Tags, size_t Dim>
 Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
                                   const Mesh<Dim>& face_mesh,
                                   const Mesh<Dim>& mortar_mesh,
                                   const MortarSize<Dim>& mortar_size) {
-  const auto projection_matrices = Spectral::projection_matrix_parent_to_child(
-      face_mesh, mortar_mesh, mortar_size);
-  return apply_matrices(projection_matrices, vars, face_mesh.extents());
+  Variables<Tags> result{mortar_mesh.number_of_grid_points()};
+  project_to_mortar(make_not_null(&result), vars, face_mesh, mortar_mesh,
+                    mortar_size);
+  return result;
 }
+/// @}
 
+/// @{
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a mortar to a face.
+template <typename Tags, size_t Dim>
+void project_from_mortar(const gsl::not_null<Variables<Tags>*> result,
+                         const Variables<Tags>& vars,
+                         const Mesh<Dim>& face_mesh,
+                         const Mesh<Dim>& mortar_mesh,
+                         const MortarSize<Dim>& mortar_size) {
+  ASSERT(Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size),
+         "project_from_mortar should not be called if the interface mesh and "
+         "mortar mesh are identical. Please elide the copy instead.");
+  const auto projection_matrices = Spectral::projection_matrix_child_to_parent(
+      mortar_mesh, face_mesh, mortar_size);
+  // We don't add an ASSERT about sizes here because there's already one in
+  // apply_matrices
+  apply_matrices(result, projection_matrices, vars, mortar_mesh.extents());
+}
+
 template <typename Tags, size_t Dim>
 Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
                                     const Mesh<Dim>& face_mesh,
@@ -89,9 +121,10 @@ Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
   ASSERT(Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size),
          "project_from_mortar should not be called if the interface mesh and "
          "mortar mesh are identical. Please elide the copy instead.");
-  const auto projection_matrices = Spectral::projection_matrix_child_to_parent(
-      mortar_mesh, face_mesh, mortar_size);
-  return apply_matrices(projection_matrices, vars, mortar_mesh.extents());
+  Variables<Tags> result{face_mesh.number_of_grid_points()};
+  project_from_mortar(make_not_null(&result), vars, face_mesh, mortar_mesh,
+                      mortar_size);
+  return result;
 }
-
+/// @}
 }  // namespace dg

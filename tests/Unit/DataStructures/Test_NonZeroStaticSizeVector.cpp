@@ -69,7 +69,7 @@ void test_asserts() {
             CustomStaticSizeVector>(
             TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
       }()),
-      Catch::Contains("Must copy into same size"));
+      Catch::Contains("Must assign into same size"));
 
   CHECK_THROWS_WITH(([]() {
                       TestHelpers::VectorImpl::vector_ref_test_size_error<

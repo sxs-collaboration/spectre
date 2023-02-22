@@ -626,7 +626,7 @@ enum RefSizeErrorTestKind { Copy, ExpressionAssign, Move };
 /// appropriately generates an error.
 ///
 /// \details a calling function should be an `ASSERTION_TEST()` and check for
-/// the string "Must copy into same size".
+/// the string "Must copy/move/assign into same size".
 /// Three types of tests are provided and one must be provided as the first
 /// function argument:
 /// - `RefSizeErrorTestKind::Copy`: Checks that copy-assigning to a non-owning

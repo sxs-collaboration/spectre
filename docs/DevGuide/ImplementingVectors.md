@@ -282,17 +282,18 @@ of `std::move`.
 This function intentionally generates an error when assigning values from one
 vector to a differently sized, non-owning vector (made non-owning by use of
 `set_data_ref`). The assertion test which calls this function should search for
-the string "Must copy into same size". Three forms of the test are provided,
-which are switched between using a value from the enum `RefSizeErrorTestKind` in
-the first function argument:
+the string "Must copy/move/assign into same size". Three forms of the test are
+provided, which are switched between using a value from the enum
+`RefSizeErrorTestKind` in the first function argument:
 - `RefSizeErrorTestKind::Copy`: tests that the size error is appropriately
-  generated when copying to a non-owning vector of the wrong size.
+  generated when copying to a non-owning vector of the wrong size. This has
+  "copy" in the message.
 - `RefSizeErrorTestKind::ExpressionAssign`: tests that the size error is
   appropriately generated when assigning the result of a mathematical expression
-  to a non-owning vector of the wrong size.
+  to a non-owning vector of the wrong size. This has "assign" in the message.
 - `RefSizeErrorTestKind::Move`: tests that the size error is appropriately
   generated when a vector is `std::move`d into a non-owning vector of the wrong
-  size
+  size. This has "move" in the message.
 
 ## `TestHelpers::VectorImpl::test_functions_with_vector_arguments()`
 

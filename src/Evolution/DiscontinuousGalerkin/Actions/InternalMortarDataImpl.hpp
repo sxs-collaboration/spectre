@@ -52,6 +52,7 @@ void internal_mortar_data_impl(
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
         mortar_data_ptr,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
+    const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
     const BoundaryCorrection& boundary_correction,
     const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_vars,
@@ -97,8 +98,6 @@ void internal_mortar_data_impl(
   FieldsOnFace fields_on_face{};
   std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
-    (void)neighbors_in_direction;  // unused variable
-
     const Mesh<Dim - 1> face_mesh =
         volume_mesh.slice_away(direction.dimension());
 
@@ -230,57 +229,108 @@ void internal_mortar_data_impl(
            "have been. Direction: "
                << direction);
 
-    // We point the Variables inside the DataVector because the DataVector
-    // will be moved later on so we want it owning its data
-    DataVector packaged_data_buffer{
+    const size_t total_face_size =
         face_mesh.number_of_grid_points() *
-        Variables<mortar_tags_list>::number_of_independent_components};
-    Variables<mortar_tags_list> packaged_data{packaged_data_buffer.data(),
-                                              packaged_data_buffer.size()};
+        Variables<mortar_tags_list>::number_of_independent_components;
+    Variables<mortar_tags_list> packaged_data{};
 
-    const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
+    // This is the case where we only have one neighbor in this direction, so we
+    // may or may not have to do any projection. If we don't have to do
+    // projection, then we can use the local_mortar_data itself to calculate the
+    // dg_package_data. However, if we need to project, then we hae to use the
+    // packaged_data_buffer that was passed in.
+    if (neighbors_in_direction.size() == 1) {
+      const auto& neighbor = *neighbors_in_direction.begin();
+      const auto mortar_id = std::pair{direction, neighbor};
+      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+      const auto& mortar_size = mortar_sizes.at(mortar_id);
+
+      // Have to use packaged_data_buffer
+      if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+        // The face mesh will be assigned below along with ensuring the size of
+        // the mortar data is correct
+        packaged_data.set_data_ref(packaged_data_buffer->data(),
+                                   total_face_size);
+      } else {
+        // Can use the local_mortar_data
+        auto& local_mortar_data_opt =
+            mortar_data_ptr->at(mortar_id).local_mortar_data();
+        // If this isn't the first time, set the face mesh
+        if (LIKELY(local_mortar_data_opt.has_value())) {
+          local_mortar_data_opt->first = face_mesh;
+        } else {
+          // Otherwise we need to initialize the pair. If we don't do this, then
+          // the DataVector will be non-owning which we don't want
+          local_mortar_data_opt =
+              std::optional{std::pair{face_mesh, DataVector{}}};
+        }
+
+        // Always set the time step ID
+        mortar_data_ptr->at(mortar_id).time_step_id() = temporal_id;
+
+        DataVector& local_mortar_data = local_mortar_data_opt->second;
+
+        // Do a destructive resize to account for potential p-refinement
+        local_mortar_data.destructive_resize(total_face_size);
+
+        packaged_data.set_data_ref(local_mortar_data.data(),
+                                   local_mortar_data.size());
+      }
+    } else {
+      // In this case, we have multiple neighbors in this direction so all will
+      // need to project their data which means we use the
+      // packaged_data_buffer to calculate the dg_package_data
+      packaged_data.set_data_ref(packaged_data_buffer->data(), total_face_size);
+    }
+
+    detail::dg_package_data<System>(
         make_not_null(&packaged_data), boundary_correction, fields_on_face,
         get<evolution::dg::Tags::NormalCovector<Dim>>(
             *normal_covector_and_magnitude_ptr->at(direction)),
         face_mesh_velocity, dg_package_data_projected_tags{},
         package_data_volume_args...);
-    (void)max_abs_char_speed_on_face;
 
     // Perform step 3
+    // This will only do something if
+    //  a) we have multiple neighbors in this direction
+    // or
+    //  b) the one (and only) neighbor in this direction needed projection
     for (const auto& neighbor : neighbors_in_direction) {
       const auto mortar_id = std::make_pair(direction, neighbor);
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
       const auto& mortar_size = mortar_sizes.at(mortar_id);
 
-      // Project the data from the face to the mortar if necessary.
-      // We can't move the data or modify it in-place when projecting, because
-      // in that case the face may touch two mortars so we need to keep the
-      // data around.
-      DataVector boundary_data_on_mortar{};
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
-        boundary_data_on_mortar = DataVector{
+        auto& local_mortar_data_opt =
+            mortar_data_ptr->at(mortar_id).local_mortar_data();
+
+        // If this isn't the first time, set the face mesh
+        if (LIKELY(local_mortar_data_opt.has_value())) {
+          local_mortar_data_opt->first = face_mesh;
+        } else {
+          // If we don't do this, then the DataVector will be non-owning which
+          // we don't want
+          local_mortar_data_opt =
+              std::optional{std::pair{face_mesh, DataVector{}}};
+        }
+
+        // Set the time id since above we only set it for cases that didn't need
+        // projection
+        mortar_data_ptr->at(mortar_id).time_step_id() = temporal_id;
+
+        DataVector& local_mortar_data = local_mortar_data_opt->second;
+
+        // Do a destructive resize to account for potential p-refinement
+        local_mortar_data.destructive_resize(
             mortar_mesh.number_of_grid_points() *
-            Variables<mortar_tags_list>::number_of_independent_components};
+            Variables<mortar_tags_list>::number_of_independent_components);
+
         Variables<mortar_tags_list> projected_packaged_data{
-            boundary_data_on_mortar.data(), boundary_data_on_mortar.size()};
-        // Since projected_packaged_data is non-owning, if we tried to
-        // move-assign it with the result of ::dg::project_to_mortar, it would
-        // then become owning and the buffer it previously pointed to wouldn't
-        // be filled (and we want it to be filled). So instead force a
-        // copy-assign by having an intermediary, data_to_copy.
-        const auto data_to_copy = ::dg::project_to_mortar(
-            packaged_data, face_mesh, mortar_mesh, mortar_size);
-        projected_packaged_data = data_to_copy;
-
-      } else {
-        ASSERT(neighbors_in_direction.size() == 1,
-               "Expected only 1 neighbor in the local direction but got "
-                   << neighbors_in_direction.size() << "instead");
-        boundary_data_on_mortar = std::move(packaged_data_buffer);
+            local_mortar_data.data(), local_mortar_data.size()};
+        ::dg::project_to_mortar(make_not_null(&projected_packaged_data),
+                                packaged_data, face_mesh, mortar_mesh,
+                                mortar_size);
       }
-
-      mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
-          temporal_id, face_mesh, std::move(boundary_data_on_mortar));
     }
   }
 }
@@ -290,6 +340,7 @@ template <typename System, size_t Dim, typename BoundaryCorrection,
 void internal_mortar_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
+    const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
     const BoundaryCorrection& boundary_correction,
     const Variables<typename System::variables_tag::tags_list>
         evolved_variables,
@@ -305,7 +356,7 @@ void internal_mortar_data(
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
              evolution::dg::Tags::MortarData<Dim>>(
       box,
-      [&boundary_correction, &face_temporaries,
+      [&boundary_correction, &face_temporaries, &packaged_data_buffer,
        &element = db::get<domain::Tags::Element<Dim>>(*box), &evolved_variables,
        &logical_to_inertial_inverse_jacobian =
            db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
@@ -322,11 +373,11 @@ void internal_mortar_data(
           const auto mortar_data_ptr, const auto&... package_data_volume_args) {
         detail::internal_mortar_data_impl<System>(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
-            face_temporaries, boundary_correction, evolved_variables,
-            volume_fluxes, temporaries, primitive_vars, element, mesh,
-            mortar_meshes, mortar_sizes, time_step_id, moving_mesh_map,
-            mesh_velocity, logical_to_inertial_inverse_jacobian,
-            package_data_volume_args...);
+            face_temporaries, packaged_data_buffer, boundary_correction,
+            evolved_variables, volume_fluxes, temporaries, primitive_vars,
+            element, mesh, mortar_meshes, mortar_sizes, time_step_id,
+            moving_mesh_map, mesh_velocity,
+            logical_to_inertial_inverse_jacobian, package_data_volume_args...);
       },
       db::get<PackageDataVolumeTags>(*box)...);
 }
