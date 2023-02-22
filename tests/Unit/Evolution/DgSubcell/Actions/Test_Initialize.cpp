@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"

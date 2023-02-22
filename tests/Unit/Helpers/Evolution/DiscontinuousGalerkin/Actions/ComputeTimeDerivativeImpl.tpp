@@ -31,6 +31,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"

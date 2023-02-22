@@ -27,6 +27,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"

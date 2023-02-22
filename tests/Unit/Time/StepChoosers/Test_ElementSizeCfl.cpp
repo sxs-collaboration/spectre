@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"

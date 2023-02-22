@@ -5,16 +5,20 @@
 
 #include <cstddef>
 #include <string>
+#include <type_traits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/Tags/BlockNamesAndGroups.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
+#include "Domain/FunctionsOfTime/OptionTags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace domain {
@@ -69,12 +73,37 @@ void test_center_tags() {
                       "to generate the ExcisionCenter"));
 }
 
+template <bool Override>
+struct Metavariables {
+  static constexpr size_t volume_dim = 3;
+  static constexpr bool override_functions_of_time = Override;
+};
+
+void test_functions_of_time() {
+  TestHelpers::db::test_simple_tag<Tags::FunctionsOfTimeInitialize>(
+      "FunctionsOfTime");
+
+  CHECK(std::is_same_v<
+        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<true>>,
+        tmpl::list<
+            domain::OptionTags::DomainCreator<Metavariables<true>::volume_dim>,
+            domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
+            domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>>);
+
+  CHECK(std::is_same_v<
+        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<false>>,
+        tmpl::list<domain::OptionTags::DomainCreator<
+            Metavariables<false>::volume_dim>>>);
+}
+
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Tags", "[Unit][Domain]") {
   test_simple_tags<1>();
   test_simple_tags<2>();
   test_simple_tags<3>();
 
   test_center_tags();
+
+  test_functions_of_time();
 }
 }  // namespace
 }  // namespace domain
