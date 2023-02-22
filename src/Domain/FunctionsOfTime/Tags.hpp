@@ -49,7 +49,7 @@ struct OptionList<Metavariables, false> {
 }  // namespace detail
 
 namespace domain::Tags {
-/// Tag to retreive the FunctionsOfTime from the GlobalCache.
+/// Tag to retrieve the FunctionsOfTime from the GlobalCache.
 struct FunctionsOfTime : db::BaseTag {};
 
 /// \brief The FunctionsOfTime initialized from a DomainCreator or
