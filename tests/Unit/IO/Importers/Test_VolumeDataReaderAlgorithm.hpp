@@ -41,6 +41,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "IO/H5/AccessType.hpp"
