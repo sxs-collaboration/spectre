@@ -241,6 +241,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)
+- ENABLE_SPECTRE_DEBUG
+  - Defines `SPECTRE_DEBUG` macro to enable `ASSERT`s and other debug
+    checks so they can be used in Release builds. That is, you get sanity checks
+    and compiler optimizations. You cannot disable the checks in Debug builds,
+    so this option has no effect in Debug builds.
+    (default is `OFF` in release)
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
 - KEEP_FRAME_POINTER

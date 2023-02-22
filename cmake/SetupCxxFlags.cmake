@@ -5,6 +5,18 @@ option(DEBUG_SYMBOLS "Add -g to CMAKE_CXX_FLAGS if ON, -g0 if OFF." ON)
 
 option(OVERRIDE_ARCH "The architecture to use. Default is native." OFF)
 
+option(ENABLE_SPECTRE_DEBUG "Enable ASSERTs and other SPECTRE_DEBUG options"
+  OFF)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(ENABLE_SPECTRE_DEBUG ON)
+endif()
+
+if(${ENABLE_SPECTRE_DEBUG})
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_DEBUG)
+endif()
+
 if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
   # Because of a bug in macOS on Apple Silicon, executables larger than
   # 2GB in size cannot run. The -Oz flag minimizes executable size, to
