@@ -16,6 +16,7 @@
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags/ExternalBoundaryConditions.hpp"

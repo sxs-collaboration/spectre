@@ -7,6 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ElementId.hpp"

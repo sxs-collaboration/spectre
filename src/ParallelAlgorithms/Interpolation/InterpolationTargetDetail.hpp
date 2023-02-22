@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/Tags.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"

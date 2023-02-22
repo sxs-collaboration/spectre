@@ -50,19 +50,6 @@ namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The ::Domain.
-template <size_t VolumeDim>
-struct Domain : db::SimpleTag {
-  using type = ::Domain<VolumeDim>;
-  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<VolumeDim>>;
-
-  static constexpr bool pass_metavariables = false;
-  static ::Domain<VolumeDim> create_from_options(
-      const std::unique_ptr<::DomainCreator<VolumeDim>>& domain_creator);
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
 /// The number of grid points per dimension for all elements in each block of
 /// the initial computational domain
 template <size_t Dim>

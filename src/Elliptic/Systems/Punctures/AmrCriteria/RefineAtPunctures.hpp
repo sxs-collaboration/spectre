@@ -8,6 +8,7 @@
 #include <pup.h>
 
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"

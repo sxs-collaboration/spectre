@@ -39,6 +39,7 @@ target_link_libraries(
   Charmxx::pup
   DataStructures
   Domain
+  DomainCreators
   ErrorHandling
   H5
   Options

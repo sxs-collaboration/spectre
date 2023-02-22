@@ -14,6 +14,7 @@
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"

@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"

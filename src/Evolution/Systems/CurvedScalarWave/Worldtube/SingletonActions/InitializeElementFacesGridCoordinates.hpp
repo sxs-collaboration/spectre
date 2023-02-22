@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"

@@ -34,7 +34,6 @@ namespace domain {
 namespace {
 template <size_t Dim>
 void test_simple_tags() {
-  TestHelpers::db::test_simple_tag<Tags::Domain<Dim>>("Domain");
   TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
   TestHelpers::db::test_simple_tag<Tags::InitialRefinementLevels<Dim>>(
       "InitialRefinementLevels");

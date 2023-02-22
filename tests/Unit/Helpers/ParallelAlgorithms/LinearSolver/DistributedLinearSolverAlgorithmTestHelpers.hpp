@@ -24,6 +24,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"

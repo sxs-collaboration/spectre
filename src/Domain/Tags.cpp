@@ -10,12 +10,6 @@
 
 namespace domain {
 namespace Tags {
-template <size_t VolumeDim>
-::Domain<VolumeDim> Domain<VolumeDim>::create_from_options(
-    const std::unique_ptr<::DomainCreator<VolumeDim>>& domain_creator) {
-  return domain_creator->create_domain();
-}
-
 template <size_t Dim>
 std::vector<std::array<size_t, Dim>> InitialExtents<Dim>::create_from_options(
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) {
@@ -32,8 +26,6 @@ InitialRefinementLevels<Dim>::create_from_options(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                              \
-  template ::Domain<DIM(data)> Domain<DIM(data)>::create_from_options(    \
-      const std::unique_ptr<::DomainCreator<DIM(data)>>& domain_creator); \
   template std::vector<std::array<size_t, DIM(data)>>                     \
   InitialExtents<DIM(data)>::create_from_options(                         \
       const std::unique_ptr<::DomainCreator<DIM(data)>>& domain_creator); \
