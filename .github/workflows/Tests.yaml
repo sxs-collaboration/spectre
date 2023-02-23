@@ -319,9 +319,6 @@ jobs:
           - gcc-10
           - gcc-11
         build_type: [Debug, Release]
-        # Define `use_pch` in every matrix build because it is used in step
-        # logic and in cache keys
-        use_pch: [ON]
         include:
           # Configure ccache sizes. The cache becomes ineffective if it can't
           # hold at least one full build. The sizes for the build configurations
@@ -356,12 +353,10 @@ jobs:
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
             build_type: Release
-            use_pch: ON
             ccache_max_size: 400M
           # Test with ASAN
           - compiler: clang-11
             build_type: Debug
-            use_pch: ON
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/1890
@@ -376,7 +371,6 @@ jobs:
           # builds or clang Debug builds
           - compiler: clang-11
             build_type: Release
-            use_pch: ON
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
@@ -384,7 +378,6 @@ jobs:
           # mpi version of charm
           - compiler: clang-13
             build_type: Debug
-            use_pch: ON
             CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
@@ -437,7 +430,7 @@ jobs:
         uses: actions/cache@v3
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
-${{ matrix.build_type }}-pch-${{ matrix.use_pch }}"
+${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         with:
           path: /work/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.ref }}-\
@@ -501,7 +494,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
-          -D USE_PCH=${USE_PCH}
+          -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
@@ -524,12 +517,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         run: |
           ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
       - name: Build unit tests
-        if: matrix.use_pch == 'ON'
+        if: matrix.use_pch != 'OFF'
         working-directory: /work/build
         run: |
           make -j2 unit-tests
       - name: Run unit tests
-        if: matrix.use_pch == 'ON' && matrix.COVERAGE != 'ON'
+        if: matrix.use_pch != 'OFF' && matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
@@ -655,7 +648,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
-          -D USE_PCH=${USE_PCH}
+          -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_CCACHE=OFF
           -D BUILD_PYTHON_BINDINGS=OFF
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
