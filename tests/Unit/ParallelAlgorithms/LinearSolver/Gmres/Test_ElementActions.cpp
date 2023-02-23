@@ -223,7 +223,7 @@ void test_element_actions() {
         CHECK_ITERABLE_APPROX(get_tag(VectorTag{}),
                               blaze::DynamicVector<double>(3, 6.));
         CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) ==
-              3);
+              2);
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         // CompleteStep action

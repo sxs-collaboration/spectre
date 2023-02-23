@@ -197,11 +197,7 @@ struct NormalizeInitialOperand {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
-        constexpr size_t prepare_step_index =
-            tmpl::index_of<ActionList,
-                           PrepareStep<FieldsTag, OptionsGroup, Preconditioned,
-                                       Label, ArraySectionIdTag>>::value;
-        return {Parallel::AlgorithmExecution::Continue, prepare_step_index + 1};
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
     }
 
@@ -238,12 +234,24 @@ struct PrepareStep {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const size_t iteration_id =
-        db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> iteration_id) { ++(*iteration_id); });
+
+    if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
+      if (not db::get<Parallel::Tags::Section<ParallelComponent,
+                                              ArraySectionIdTag>>(box)
+                  .has_value()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
+    }
+
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s %s(%zu): Prepare step\n", get_output(array_index),
-                       pretty_type::name<OptionsGroup>(), iteration_id);
+      Parallel::printf(
+          "%s %s(%zu): Prepare step\n", get_output(array_index),
+          pretty_type::name<OptionsGroup>(),
+          db::get<Convergence::Tags::IterationId<OptionsGroup>>(box));
     }
 
     if constexpr (Preconditioned) {
@@ -431,7 +439,7 @@ struct OrthogonalizeOperand {
     const auto& next_orthogonalization_iteration_id =
         get<orthogonalization_iteration_id_tag>(box);
     const bool orthogonalization_complete =
-        next_orthogonalization_iteration_id == iteration_id + 1;
+        next_orthogonalization_iteration_id == iteration_id;
     const double local_orthogonalization =
         inner_product(orthogonalization_complete
                           ? get<operand_tag>(box)
@@ -504,14 +512,11 @@ struct NormalizeOperandAndUpdateField {
     const double normalization = get<0>(received_data);
     const auto& minres = get<1>(received_data);
     auto& has_converged = get<2>(received_data);
-    db::mutate<Convergence::Tags::HasConverged<OptionsGroup>,
-               Convergence::Tags::IterationId<OptionsGroup>>(
+    db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
-        [&has_converged](
-            const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const gsl::not_null<size_t*> local_iteration_id) {
+        [&has_converged](const gsl::not_null<Convergence::HasConverged*>
+                             local_has_converged) {
           *local_has_converged = std::move(has_converged);
-          ++(*local_iteration_id);
         });
 
     // Elements that are not part of the section jump directly to the
@@ -531,7 +536,7 @@ struct NormalizeOperandAndUpdateField {
         return {Parallel::AlgorithmExecution::Continue,
                 get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                     ? (complete_step_index + 1)
-                    : (prepare_step_index + 1)};
+                    : prepare_step_index};
       }
     }
 
