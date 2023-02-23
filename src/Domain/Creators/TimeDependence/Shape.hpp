@@ -13,12 +13,15 @@
 #include <vector>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -53,18 +56,41 @@ namespace domain::creators::time_dependence {
  * by the value of `inner_radius`. If the user wants the inner surface of the
  * Shape to conform to a Kerr horizon for a given mass and spin, `inner_radius`
  * should be the Boyer-Lindquist radius of the outer horizon.
+ *
+ * The actual shape map that is applied will go from the Grid to the Distorted
+ * frame, and then an identity map will go from the Distorted to Inertial frame.
+ * The reasoning behind this is because in basically all use cases (BBH), the
+ * shape map will go to the Distorted frame only and other maps will go from the
+ * Distorted frame to the Inertial frame.
+ *
+ * \note To use this time dependence with the `control_system::system::Shape`
+ * control system, you must choose the same \tparam Label that the control
+ * system is using.
  */
+template <domain::ObjectLabel Label>
 class Shape final : public TimeDependence<3> {
  private:
-  using ShapeMap =
-      domain::CoordinateMaps::TimeDependent::Shape;
+  using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
+  using Identity = domain::CoordinateMaps::Identity<3>;
+  using GridToInertialMap =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                        tmpl::list<ShapeMap>>;
+  using GridToDistortedMap =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Distorted,
+                                        tmpl::list<ShapeMap>>;
+  using DistortedToInertialMap =
+      detail::generate_coordinate_map_t<Frame::Distorted, Frame::Inertial,
+                                        tmpl::list<Identity>>;
 
  public:
-  using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       ShapeMap>>;
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap, Identity>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Identity>>;
 
   static constexpr size_t mesh_dim = 3;
+
+  static std::string name() { return "Shape"s + get_output(Label); }
 
   /// \brief The initial time of the function of time.
   struct InitialTime {
@@ -81,10 +107,9 @@ class Shape final : public TimeDependence<3> {
   /// \brief The mass of the Kerr black hole.
   struct Mass {
     using type = double;
-    static constexpr Options::String help = {
-        "The mass of the Kerr BH."};
+    static constexpr Options::String help = {"The mass of the Kerr BH."};
   };
-   /// \brief The dimensionless spin of the Kerr black hole.
+  /// \brief The dimensionless spin of the Kerr black hole.
   struct Spin {
     using type = std::array<double, 3>;
     static constexpr Options::String help = {
@@ -93,8 +118,7 @@ class Shape final : public TimeDependence<3> {
   /// \brief Center for the Shape map
   struct Center {
     using type = std::array<double, 3>;
-    static constexpr Options::String help = {
-        "Center for the Shape map."};
+    static constexpr Options::String help = {"Center for the Shape map."};
   };
   /// \brief The inner radius of the Shape map, the radius at which
   /// to begin applying the map.
@@ -110,10 +134,6 @@ class Shape final : public TimeDependence<3> {
     static constexpr Options::String help = {
         "The outer radius of the Shape map."};
   };
-
-  using GridToInertialMap =
-        detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
-                                          tmpl::list<ShapeMap>>;
 
   using options = tmpl::list<InitialTime, LMax, Mass, Spin, Center, InnerRadius,
                              OuterRadius>;
@@ -142,19 +162,11 @@ class Shape final : public TimeDependence<3> {
 
   auto block_maps_grid_to_distorted(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Grid, Frame::Distorted, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Grid, Frame::Distorted, mesh_dim>>> override;
 
   auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Distorted, Frame::Inertial, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Distorted, Frame::Inertial, mesh_dim>>> override;
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -163,14 +175,18 @@ class Shape final : public TimeDependence<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  template <domain::ObjectLabel OtherLabel>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Shape& lhs,
-                         const Shape& rhs);
+  friend bool operator==(const Shape<OtherLabel>& lhs,
+                         const Shape<OtherLabel>& rhs);
 
   using TransitionFunction = domain::CoordinateMaps::
       ShapeMapTransitionFunctions::ShapeMapTransitionFunction;
 
   GridToInertialMap grid_to_inertial_map() const;
+  GridToDistortedMap grid_to_distorted_map() const;
+  static DistortedToInertialMap distorted_to_inertial_map();
+
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   size_t l_max_{2};
   double mass_{std::numeric_limits<double>::signaling_NaN()};
@@ -178,12 +194,13 @@ class Shape final : public TimeDependence<3> {
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   std::array<double, 3> center_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
-  inline static const std::string function_of_time_name_{"Shape"};
+  inline static const std::string function_of_time_name_{"Shape" +
+                                                         get_output(Label)};
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::unique_ptr<TransitionFunction> transition_func_;
 };
 
-bool operator!=(const Shape& lhs,
-                const Shape& rhs);
+template <domain::ObjectLabel Label>
+bool operator!=(const Shape<Label>& lhs, const Shape<Label>& rhs);
 }  // namespace domain::creators::time_dependence
