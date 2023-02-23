@@ -86,6 +86,14 @@ namespace imex::protocols {
 ///
 /// All `Variables` in the DataBox, including the sources and source
 /// jacobian, will be initialized to zero with a single grid point.
+///
+/// \snippet Test_SolveImplicitSector.cpp ImplicitSector
+/// \snippet Test_SolveImplicitSector.cpp initial_guess
+///
+/// Examples of definitions of the implicit source and jacobian:
+///
+/// \snippet Test_SolveImplicitSector.cpp source
+/// \snippet Test_SolveImplicitSector.cpp jacobian
 struct ImplicitSector {
   template <typename ConformingType>
   struct test {

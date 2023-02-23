@@ -84,12 +84,14 @@ Checks: '*,
 # we are okay with lower case,
 -readability-uppercase-literal-suffix,'
 CheckOptions:
-  - key: performance-move-const-arg.CheckTriviallyCopyableMove
-    value: false
-  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+  - key: cppcoreguidelines-avoid-do-while.IgnoreMacros
     value: true
   - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
     value: true
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: false
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers

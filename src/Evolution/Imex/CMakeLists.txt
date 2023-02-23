@@ -19,6 +19,8 @@ spectre_target_headers(
   GuessResult.hpp
   Mode.hpp
   NamespaceDocs.hpp
+  SolveImplicitSector.hpp
+  SolveImplicitSector.tpp
   )
 
 target_link_libraries(
@@ -28,6 +30,8 @@ target_link_libraries(
   Options
   INTERFACE
   DataStructures
+  LinearSolver
+  RootFinding
   Time
   Utilities
   )
