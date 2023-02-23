@@ -1,0 +1,22 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: RandomAmr1D
+# Check: parse;execute
+
+DomainCreator:
+  Interval:
+    LowerBound: [-0.5]
+    UpperBound: [6.5]
+    InitialRefinement: [2]
+    InitialGridPoints: [2]
+    TimeDependence: None
+    IsPeriodicIn: [False]
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
