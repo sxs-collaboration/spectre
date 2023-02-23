@@ -32,7 +32,8 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnDgGrid<Dim>::apply(
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
-    const double persson_exponent) {
+    const double persson_exponent,
+    [[maybe_unused]] const bool element_stays_on_dg) {
   const Variables<tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>
       subcell_vars = evolution::dg::subcell::fd::project(
           dg_vars, dg_mesh, subcell_mesh.extents());
@@ -97,7 +98,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh,    \
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,          \
       const evolution::dg::subcell::SubcellOptions& subcell_options,          \
-      double persson_exponent);
+      double persson_exponent, const bool element_stays_on_dg);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

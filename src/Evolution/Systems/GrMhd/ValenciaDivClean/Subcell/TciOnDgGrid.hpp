@@ -164,6 +164,6 @@ class TciOnDgGrid {
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const TciOptions& tci_options,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      double persson_exponent);
+      double persson_exponent, bool element_stays_on_dg);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

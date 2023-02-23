@@ -46,6 +46,7 @@ struct TciOnDgGrid {
       const Mesh<Dim>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      const TciOptions& tci_options, double persson_exponent);
+      const TciOptions& tci_options, double persson_exponent,
+      bool element_stays_on_dg);
 };
 }  // namespace ScalarAdvection::subcell

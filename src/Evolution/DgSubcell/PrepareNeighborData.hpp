@@ -22,8 +22,10 @@
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -127,12 +129,35 @@ auto prepare_neighbor_data(
         projected_data, db::get<subcell::Tags::Mesh<Dim>>(*box).extents(),
         ghost_zone_size, directions_to_slice, rdmp_size);
 
+    const auto& subcell_options = db::get<Tags::SubcellOptions<Dim>>(*box);
+
+    const bool bordering_dg_block = alg::any_of(
+        element.neighbors(),
+        [&subcell_options](const auto& direction_and_neighbor) {
+          const size_t first_block_id =
+              direction_and_neighbor.second.ids().begin()->block_id();
+          return alg::found(subcell_options.only_dg_block_ids(),
+                            first_block_id);
+        });
+
+    // Subcell allowed if not in a DG only block, and not bordering
+    // a DG only block.
+    const bool subcell_allowed_in_element =
+        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
+                               subcell_options.only_dg_block_ids().end(),
+                               element.id().block_id()) and
+        not bordering_dg_block;
+
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
       // Note: this currently orients the data for _each_ neighbor. We can
       // instead just orient the data once for all in a particular direction.
-      ASSERT(neighbors.ids().size() == 1,
-             "Can only have one neighbor per direction right now.");
+
+      // Only subcell elements check for multiple neighbors
+      ASSERT(not subcell_allowed_in_element or neighbors.ids().size() == 1,
+             "Subcell elements can only have one neighbor per direction "
+             "right now.");
+
       if (not orientation.is_aligned()) {
         std::array<size_t, Dim> slice_extents{};
         for (size_t d = 0; d < Dim; ++d) {

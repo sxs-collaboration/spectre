@@ -142,9 +142,10 @@ void test(const TestThis test_this) {
         }
       });
 
+  const bool element_stays_on_dg = false;
   const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<NewtonianEuler::subcell::TciOnDgGrid<Dim>>(
-          make_not_null(&box), persson_exponent);
+          make_not_null(&box), persson_exponent, element_stays_on_dg);
 
   CHECK_ITERABLE_APPROX(get<1>(result).max_variables_values,
                         expected_rdmp_tci_data.max_variables_values);

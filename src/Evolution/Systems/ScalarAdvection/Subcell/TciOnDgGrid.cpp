@@ -20,7 +20,8 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnDgGrid<Dim>::apply(
     const Mesh<Dim>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
-    const TciOptions& tci_options, const double persson_exponent) {
+    const TciOptions& tci_options, const double persson_exponent,
+    [[maybe_unused]] const bool element_stays_on_dg) {
   // Don't use buffer since we have only one memory allocation right now (until
   // persson_tci can use a buffer)
   const Scalar<DataVector> subcell_u{::evolution::dg::subcell::fd::project(
