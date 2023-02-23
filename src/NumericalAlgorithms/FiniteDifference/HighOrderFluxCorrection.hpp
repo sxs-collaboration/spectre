@@ -321,37 +321,37 @@ void cartesian_high_order_fluxes_using_nodes(
                  EvolvedVarsTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>&
         ghost_cell_inertial_flux,
     const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_cells,
-    const size_t correction_order) {
-  switch (correction_order) {
-    case 2:
+    const DerivativeOrder derivative_order) {
+  switch (derivative_order) {
+    case DerivativeOrder::Two:
       cartesian_high_order_fluxes_using_nodes<DerivativeOrder::Two>(
           high_order_boundary_corrections_in_logical_direction,
           second_order_boundary_corrections_in_logical_direction,
           cell_centered_inertial_flux, ghost_cell_inertial_flux, subcell_mesh,
           number_of_ghost_cells);
       break;
-    case 4:
+    case DerivativeOrder::Four:
       cartesian_high_order_fluxes_using_nodes<DerivativeOrder::Four>(
           high_order_boundary_corrections_in_logical_direction,
           second_order_boundary_corrections_in_logical_direction,
           cell_centered_inertial_flux, ghost_cell_inertial_flux, subcell_mesh,
           number_of_ghost_cells);
       break;
-    case 6:
+    case DerivativeOrder::Six:
       cartesian_high_order_fluxes_using_nodes<DerivativeOrder::Six>(
           high_order_boundary_corrections_in_logical_direction,
           second_order_boundary_corrections_in_logical_direction,
           cell_centered_inertial_flux, ghost_cell_inertial_flux, subcell_mesh,
           number_of_ghost_cells);
       break;
-    case 8:
+    case DerivativeOrder::Eight:
       cartesian_high_order_fluxes_using_nodes<DerivativeOrder::Eight>(
           high_order_boundary_corrections_in_logical_direction,
           second_order_boundary_corrections_in_logical_direction,
           cell_centered_inertial_flux, ghost_cell_inertial_flux, subcell_mesh,
           number_of_ghost_cells);
       break;
-    case 10:
+    case DerivativeOrder::Ten:
       cartesian_high_order_fluxes_using_nodes<DerivativeOrder::Ten>(
           high_order_boundary_corrections_in_logical_direction,
           second_order_boundary_corrections_in_logical_direction,
@@ -359,8 +359,7 @@ void cartesian_high_order_fluxes_using_nodes(
           number_of_ghost_cells);
       break;
     default:
-      ERROR("Unsupported correction order " << correction_order
-                                            << ". Only know 2,4,6,8,10");
+      ERROR("Unsupported correction order " << derivative_order);
   };
 }
 /// @}
@@ -431,7 +430,7 @@ void cartesian_high_order_flux_corrections(
     const std::optional<Variables<FluxesTags>>& cell_centered_fluxes,
     const std::array<Variables<tmpl::list<EvolvedVarsTags...>>, Dim>&
         second_order_boundary_corrections,
-    const std::optional<size_t>& fd_derivative_order,
+    const fd::DerivativeOrder& fd_derivative_order,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
                        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
@@ -439,9 +438,6 @@ void cartesian_high_order_flux_corrections(
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     const size_t number_of_rdmp_values_in_ghost_data = 0) {
   if (cell_centered_fluxes.has_value()) {
-    ASSERT(fd_derivative_order.has_value(),
-           "No finite difference order is set but we are trying to do "
-           "high-order FD.");
     ASSERT(alg::all_of(
                second_order_boundary_corrections,
                [expected_size = second_order_boundary_corrections[0]
@@ -450,7 +446,7 @@ void cartesian_high_order_flux_corrections(
                }),
            "All second-order boundary corrections must be of the same size, "
                << second_order_boundary_corrections[0].number_of_grid_points());
-    if (fd_derivative_order.value_or(2) > 2) {
+    if (fd_derivative_order != DerivativeOrder::Two) {
       if (not high_order_corrections->has_value()) {
         (*high_order_corrections) =
             make_array<Dim>(Variables<tmpl::list<EvolvedVarsTags...>>{
@@ -475,7 +471,7 @@ void cartesian_high_order_flux_corrections(
           make_not_null(&(high_order_corrections->value())),
           second_order_boundary_corrections, cell_centered_fluxes.value(),
           flux_neighbor_data, subcell_mesh, ghost_zone_size,
-          fd_derivative_order.value());
+          fd_derivative_order);
     }
   }
 }

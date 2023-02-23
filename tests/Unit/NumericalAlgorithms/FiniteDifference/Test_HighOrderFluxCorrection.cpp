@@ -14,6 +14,7 @@
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/HighOrderFluxCorrection.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -30,13 +31,13 @@ struct Vector0 : db::SimpleTag {
 };
 
 template <size_t Dim>
-void test(const size_t correction_order) {
-  const size_t points_per_dimension = correction_order + 2;
+void test(const fd::DerivativeOrder correction_order) {
+  const size_t points_per_dimension = static_cast<size_t>(correction_order) + 2;
   CAPTURE(points_per_dimension);
   CAPTURE(correction_order);
   CAPTURE(Dim);
-  const size_t max_degree = correction_order;
-  const size_t stencil_width = correction_order + 1;
+  const size_t max_degree = static_cast<size_t>(correction_order);
+  const size_t stencil_width = static_cast<size_t>(correction_order) + 1;
   const size_t number_of_ghost_points = (stencil_width - 1) / 2 + 1;
 
   using FluxTags = tmpl::list<Scalar0, Vector0<Dim>>;
@@ -207,9 +208,8 @@ void test(const size_t correction_order) {
   ::fd::cartesian_high_order_flux_corrections(
       make_not_null(&high_order_corrections),
 
-      volume_vars, second_order_corrections,
-      std::optional<size_t>{correction_order}, reconstruction_neighbor_data,
-      mesh, number_of_ghost_points);
+      volume_vars, second_order_corrections, correction_order,
+      reconstruction_neighbor_data, mesh, number_of_ghost_points);
 
   // Now compute the Cartesian derivative of the high_order_corrections to
   // verify that it is computed sufficiently accurately.
@@ -245,7 +245,7 @@ void test(const size_t correction_order) {
 
   // Test assertions
 #ifdef SPECTRE_DEBUG
-  if (correction_order > 2) {
+  if (correction_order != fd::DerivativeOrder::Two) {
     std::optional<std::array<CorrectionVars, Dim>>
         high_order_corrections_assert = make_array<Dim>(CorrectionVars{
             second_order_corrections[0].number_of_grid_points()});
@@ -254,18 +254,11 @@ void test(const size_t correction_order) {
     CHECK_THROWS_WITH(
         ::fd::cartesian_high_order_flux_corrections(
             make_not_null(&high_order_corrections_assert), volume_vars,
-            second_order_corrections, std::optional<size_t>{correction_order},
+            second_order_corrections, correction_order,
             reconstruction_neighbor_data, mesh, number_of_ghost_points),
         Catch::Matchers::Contains(
             "The high_order_corrections must all have size"));
   }
-  CHECK_THROWS_WITH(
-      ::fd::cartesian_high_order_flux_corrections(
-          make_not_null(&high_order_corrections), volume_vars,
-          second_order_corrections, std::optional<size_t>{},
-          reconstruction_neighbor_data, mesh, number_of_ghost_points),
-      Catch::Matchers::Contains(
-          "No finite difference order is set but we are trying to do"));
   if constexpr (Dim > 1) {
     auto second_order_corrections_copy = second_order_corrections;
     second_order_corrections_copy[0].initialize(
@@ -273,8 +266,7 @@ void test(const size_t correction_order) {
     CHECK_THROWS_WITH(
         ::fd::cartesian_high_order_flux_corrections(
             make_not_null(&high_order_corrections), volume_vars,
-            second_order_corrections_copy,
-            std::optional<size_t>{correction_order},
+            second_order_corrections_copy, correction_order,
             reconstruction_neighbor_data, mesh, number_of_ghost_points),
         Catch::Matchers::Contains(
             "All second-order boundary corrections must be of the same size"));
@@ -284,7 +276,9 @@ void test(const size_t correction_order) {
 
 SPECTRE_TEST_CASE("Unit.FiniteDifference.CartesianHighOrderFluxCorrection",
                   "[Unit][NumericalAlgorithms]") {
-  for (const size_t correction_order : {2_st, 4_st, 6_st, 8_st, 10_st}) {
+  using DO = fd::DerivativeOrder;
+  for (const fd::DerivativeOrder correction_order :
+       {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten}) {
     test<1>(correction_order);
     test<2>(correction_order);
     test<3>(correction_order);
