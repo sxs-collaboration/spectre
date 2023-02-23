@@ -243,8 +243,6 @@ struct SendMessage {
       const ParallelComponent* const /*meta*/) {
     const int my_node = db::get<Tags::MyNode>(box);
     const int element_to_send_to = db::get<Tags::ElementToSendTo>(box);
-    const int node_of_element_to_send_to =
-        db::get<Tags::NodeOfElementToSendTo>(box);
 
     auto& proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
 
@@ -252,8 +250,7 @@ struct SendMessage {
     // that we are sending data to which will be the temporal id for the inbox
     // tag
     BoundaryMessage<3>* message = new BoundaryMessage<3>(
-        0, static_cast<size_t>(array_index + 1),
-        my_node != node_of_element_to_send_to, true,
+        0, static_cast<size_t>(array_index + 1), false, true,
         static_cast<size_t>(my_node), static_cast<size_t>(my_node),
         element_to_send_to, {}, {}, {}, {}, {}, {}, nullptr,
         const_cast<double*>(db::get<Tags::Vector0>(box).data()));
@@ -303,6 +300,16 @@ struct ReceiveMessage {
             vector_1->set_data_ref(boundary_message_ptr->dg_flux_data,
                                    boundary_message_ptr->dg_flux_data_size);
           });
+
+      const int my_node = db::get<Tags::MyNode>(box);
+      const int node_of_element_to_receive_from =
+          db::get<Tags::NodeOfElementToReceiveFrom>(box);
+
+      if (node_of_element_to_receive_from == my_node) {
+        SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message_ptr->sent_across_nodes);
+      } else {
+        SPECTRE_PARALLEL_REQUIRE(boundary_message_ptr->sent_across_nodes);
+      }
     }
 
     inbox.erase(array_index);

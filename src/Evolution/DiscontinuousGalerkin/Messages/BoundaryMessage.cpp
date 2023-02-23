@@ -54,6 +54,10 @@ void* BoundaryMessage<Dim>::pack(BoundaryMessage<Dim>* in_msg) {
 
   const size_t totalsize = total_bytes_with_data(subcell_size, dg_size);
 
+  // The fact that we call the pack() function means we are sending data across
+  // address boundaries (nodes).
+  in_msg->sent_across_nodes = true;
+
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   auto* out_msg = reinterpret_cast<BoundaryMessage<Dim>*>(
       CkAllocBuffer(in_msg, static_cast<int>(totalsize)));

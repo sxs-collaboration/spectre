@@ -37,7 +37,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   CHECK(total_size_with_data == sizeof(BoundaryMessage<Dim>) +
                                     (subcell_size + dg_size) * sizeof(double));
 
-  const bool sent_across_nodes = true;
+  const bool sent_across_nodes = false;
   const bool enable_if_disabled = false;
   const size_t sender_node = 2;
   const size_t sender_core = 15;
@@ -73,10 +73,12 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
       neighbor_direction, element_id, volume_mesh, interface_mesh,
       subcell_size != 0 ? subcell_data.data() : nullptr,
       dg_size != 0 ? dg_data.data() : nullptr);
+  // Since we expect the copied message to have sent_across_nodes = true because
+  // that's set in the pack() function, we set sent_across_nodes = true here
   BoundaryMessage<Dim>* copied_boundary_message = new BoundaryMessage<Dim>(
-      subcell_size, dg_size, sent_across_nodes, enable_if_disabled, sender_node,
-      sender_core, tci_status, current_time_id, next_time_id,
-      neighbor_direction, element_id, volume_mesh, interface_mesh,
+      subcell_size, dg_size, true, enable_if_disabled, sender_node, sender_core,
+      tci_status, current_time_id, next_time_id, neighbor_direction, element_id,
+      volume_mesh, interface_mesh,
       subcell_size != 0 ? copied_subcell_data.data() : nullptr,
       dg_size != 0 ? copied_dg_data.data() : nullptr);
 
@@ -88,6 +90,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   BoundaryMessage<Dim>* unpacked_message =
       BoundaryMessage<Dim>::unpack(packed_message);
 
+  CHECK(unpacked_message->sent_across_nodes);
   CHECK(*copied_boundary_message == *unpacked_message);
   CHECK_FALSE(*copied_boundary_message != *unpacked_message);
 }

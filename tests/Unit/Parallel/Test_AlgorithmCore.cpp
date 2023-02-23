@@ -483,7 +483,7 @@ struct add_vectors_to_box_and_send {
         });
 
     BoundaryMessage<3>* boundary_message = new BoundaryMessage<3>(
-        0, 4, true, true, Parallel::my_node<size_t>(cache),
+        0, 4, false, true, Parallel::my_node<size_t>(cache),
         Parallel::my_proc<size_t>(cache), -2, time_step_id, time_step_id, {},
         {}, {}, {}, nullptr, const_cast<double*>(db::get<Vector0>(box).data()));
 
@@ -571,6 +571,10 @@ struct set_vector1_from_receive {
           vector1_box->set_data_ref(boundary_message->dg_flux_data,
                                     boundary_message->dg_flux_data_size);
         });
+
+    // We shouldn't have gone through the boundary_message::pack() function, so
+    // this shouldn't be true
+    SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message->sent_across_nodes);
 
     // Only the boundary message gets destroyed, not the data it points to
     inbox.erase(db::get<TemporalId1>(box));
