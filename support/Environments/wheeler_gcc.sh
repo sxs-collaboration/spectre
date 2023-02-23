@@ -27,7 +27,7 @@ spectre_unload_modules() {
     module unload git/2.8.4
     module unload lcov/1.13
     module unload charm/7.0.0-intelmpi-smp
-    module unload python/miniconda-3.9.7
+    module unload envs/spectre-python
     module unload pybind11/2.6.1
     module unload hdf5/1.12.2
 }
@@ -52,7 +52,7 @@ spectre_load_modules() {
     module load git/2.8.4
     module load lcov/1.13
     module load charm/7.0.0-intelmpi-smp
-    module load python/miniconda-3.9.7
+    module load envs/spectre-python
     module load pybind11/2.6.1
     module load hdf5/1.12.2
 }
@@ -63,19 +63,11 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
-    # Notes:
-    # - Set CMAKE_PREFIX_PATH to pick up packages consistent with the anaconda
-    #   module, such as zlib. The anaconda module on Wheeler does not set this
-    #   automatically.
-    # - Bootstrap Python dependencies in the build directory so users don't have
-    #   to install them.
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=ON \
-          -D CMAKE_PREFIX_PATH="$PYTHON_HOME" \
-          -D BOOTSTRAP_PY_DEPS=ON \
           -D MACHINE=Wheeler \
           "$@" \
           $SPECTRE_HOME
