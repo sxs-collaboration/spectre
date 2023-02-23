@@ -50,7 +50,7 @@ class Domain {
   explicit Domain(std::vector<Block<VolumeDim>> blocks);
 
   /*!
-   * Create a Domain using CoordinateMaps to encode the Orientations.
+   * \brief Create a Domain using CoordinateMaps to encode the Orientations.
    * This constructor does not support periodic boundary conditions.
    *
    * \details A constructor that does not require the user to provide a corner
@@ -61,6 +61,14 @@ class Domain {
    * until all pairs of abutting Blocks have had their Orientations
    * determined. For more information on setting up domains, see the
    * [domain creation tutorial](\ref tutorial_domain_creation).
+   *
+   * \param maps The BlockLogical -> Inertial coordinate map for each block.
+   * \param excision_spheres Any ExcisionSphere%s in the domain.
+   * \param block_names A human-readable name for every block, or empty if no
+   * block names have been chosen (yet).
+   * \param block_groups Labels to refer to groups of blocks. The groups can
+   * overlap, and they don't have to cover all blocks in the domain. The groups
+   * can be used to refer to multiple blocks at once.
    */
   explicit Domain(
       std::vector<std::unique_ptr<domain::CoordinateMapBase<
@@ -73,21 +81,26 @@ class Domain {
           block_groups = {});
 
   /*!
-   * Create a Domain using a corner numbering scheme to encode the Orientations,
-   * with an optional parameter that encodes periodic boundary conditions.
+   * \brief Create a Domain using a corner numbering scheme to encode the
+   * Orientations
    *
-   * \details Each element of `corners_of_all_blocks` contains the corner
-   * numbering of that block's corners according to the global corner number
-   * scheme. The details of the corner numbering scheme are described in the
-   * [tutorial](@ref tutorial_orientations). `identifications` is for imposing
-   * periodic boundary conditions on the domain. To identify faces,
-   * `identifications` should contain the PairOfFaces containing the corners of
-   * each pair of faces that you wish to identify with one another. For more
-   * information on setting up domains, see the
-   * [domain creation tutorial](@ref tutorial_domain_creation).
+   * \see [domain creation tutorial](@ref tutorial_domain_creation)
    *
-   * \requires `maps.size() == corners_of_all_blocks.size()`, and
-   * `identifications.size()` is even.
+   * \param maps The BlockLogical -> Inertial coordinate map for each block.
+   * \param corners_of_all_blocks The corner numbering for each block's corners
+   * according to the global corner number scheme. The details of the corner
+   * numbering scheme are described in the
+   * [tutorial](@ref tutorial_orientations).
+   * \param identifications Used to impose periodic boundary conditions on the
+   * domain. To identify faces, `identifications` should contain the PairOfFaces
+   * containing the corners of each pair of faces that you wish to identify with
+   * one another. The number of `identifications` must be even.
+   * \param excision_spheres Any ExcisionSphere%s in the domain.
+   * \param block_names A human-readable name for every block, or empty if no
+   * block names have been chosen (yet).
+   * \param block_groups Labels to refer to groups of blocks. The groups can
+   * overlap, and they don't have to cover all blocks in the domain. The groups
+   * can be used to refer to multiple blocks at once.
    */
   Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
              Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
@@ -129,6 +142,9 @@ class Domain {
     return excision_spheres_;
   }
 
+  /// Labels to refer to groups of blocks. The groups can overlap, and they
+  /// don't have to cover all blocks in the domain. The groups can be used to
+  /// refer to multiple blocks at once.
   const std::unordered_map<std::string, std::unordered_set<std::string>>&
   block_groups() const {
     return block_groups_;

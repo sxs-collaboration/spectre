@@ -14,7 +14,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BlockNamesAndGroups.hpp
   Domain.hpp
   ExternalBoundaryConditions.hpp
   FunctionsOfTime.hpp
