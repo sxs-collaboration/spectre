@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <optional>
 #include <pup.h>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -528,6 +529,28 @@ class History : public stl_boilerplate::RandomAccessSequence<History<Vars>,
               const DerivVars& derivative);
   /// @}
 
+  /// Insert a new entry in the history by modifying the fields of the
+  /// record directly, instead of passing a value to copy.
+  ///
+  /// The (optional) \p value_inserter must be a functor callable with
+  /// single argument of type `gsl::not_null<Vars*>` and the \p
+  /// derivative_inserter must be callable with a single argument of
+  /// type `gsl::not_null<DerivVars*>`.  The passed objects will be
+  /// created from a cached memory allocation if one is available, and
+  /// will otherwise be default-constructed.
+  ///
+  /// All the restrictions on valid values \p time_step_id for the
+  /// `insert` method apply here as well.
+  /// @{
+  template <typename ValueFunc, typename DerivativeFunc>
+  void insert_in_place(const TimeStepId& time_step_id,
+                       ValueFunc&& value_inserter,
+                       DerivativeFunc&& derivative_inserter);
+  template <typename DerivativeFunc>
+  void insert_in_place(const TimeStepId& time_step_id, NoValue /*unused*/,
+                       DerivativeFunc&& derivative_inserter);
+  /// @}
+
   /// Insert data at the start of the history, similar to `push_front`
   /// on some STL containers.  This can be useful when initializing a
   /// multistep integrator.
@@ -637,9 +660,9 @@ class History : public stl_boilerplate::RandomAccessSequence<History<Vars>,
   void discard_value(gsl::not_null<std::optional<Vars>*> value);
   void cache_allocations(gsl::not_null<StepRecord<Vars>*> record);
 
-  template <typename InsertedVars>
-  void insert_impl(const TimeStepId& time_step_id, const InsertedVars& value,
-                   const DerivVars& derivative);
+  template <typename ValueFunc, typename DerivativeFunc>
+  void insert_impl(const TimeStepId& time_step_id, ValueFunc&& value_inserter,
+                   DerivativeFunc&& derivative_inserter);
 
   template <typename InsertedVars>
   void insert_initial_impl(TimeStepId time_step_id, InsertedVars value,
@@ -685,13 +708,39 @@ History<Vars>& History<Vars>::operator=(const History& other) {
 template <typename Vars>
 void History<Vars>::insert(const TimeStepId& time_step_id, const Vars& value,
                            const DerivVars& derivative) {
-  insert_impl(time_step_id, value, derivative);
+  insert_impl(
+      time_step_id,
+      [&](const gsl::not_null<Vars*> record_value) { *record_value = value; },
+      [&](const gsl::not_null<DerivVars*> record_derivative) {
+        *record_derivative = derivative;
+      });
 }
 
 template <typename Vars>
 void History<Vars>::insert(const TimeStepId& time_step_id, NoValue /*unused*/,
                            const DerivVars& derivative) {
-  insert_impl(time_step_id, NoValue{}, derivative);
+  insert_impl(time_step_id, NoValue{},
+              [&](const gsl::not_null<DerivVars*> record_derivative) {
+                *record_derivative = derivative;
+              });
+}
+
+template <typename Vars>
+template <typename ValueFunc, typename DerivativeFunc>
+void History<Vars>::insert_in_place(const TimeStepId& time_step_id,
+                                    ValueFunc&& value_inserter,
+                                    DerivativeFunc&& derivative_inserter) {
+  insert_impl(time_step_id, std::forward<ValueFunc>(value_inserter),
+              std::forward<DerivativeFunc>(derivative_inserter));
+}
+
+template <typename Vars>
+template <typename DerivativeFunc>
+void History<Vars>::insert_in_place(const TimeStepId& time_step_id,
+                                    NoValue /*unused*/,
+                                    DerivativeFunc&& derivative_inserter) {
+  insert_impl(time_step_id, NoValue{},
+              std::forward<DerivativeFunc>(derivative_inserter));
 }
 
 template <typename Vars>
@@ -846,10 +895,10 @@ void History<Vars>::cache_allocations(
 }
 
 template <typename Vars>
-template <typename InsertedVars>
+template <typename ValueFunc, typename DerivativeFunc>
 void History<Vars>::insert_impl(const TimeStepId& time_step_id,
-                                const InsertedVars& value,
-                                const DerivVars& derivative) {
+                                ValueFunc&& value_inserter,
+                                DerivativeFunc&& derivative_inserter) {
   ASSERT(this->empty() or time_step_id > this->back().time_step_id,
          "New entry at " << time_step_id
          << " must be later than previous entry at "
@@ -857,23 +906,21 @@ void History<Vars>::insert_impl(const TimeStepId& time_step_id,
   discard_value(&latest_value_if_discarded_);
   StepRecord<Vars> record{};
   record.time_step_id = time_step_id;
-  if constexpr (std::is_same_v<InsertedVars, Vars>) {
+  if constexpr (not std::is_same_v<ValueFunc, NoValue>) {
     if (vars_allocation_cache_.empty()) {
-      record.value.emplace(value);
+      record.value.emplace();
     } else {
       record.value.emplace(std::move(vars_allocation_cache_.back()));
       vars_allocation_cache_.pop_back();
-      *record.value = value;
     }
-  } else {
-    static_assert(std::is_same_v<InsertedVars, NoValue>);
-    (void)value;
+    std::forward<ValueFunc>(value_inserter)(make_not_null(&*record.value));
   }
   if (not deriv_vars_allocation_cache_.empty()) {
     record.derivative = std::move(deriv_vars_allocation_cache_.back());
     deriv_vars_allocation_cache_.pop_back();
   }
-  record.derivative = derivative;
+  std::forward<DerivativeFunc>(derivative_inserter)(
+      make_not_null(&record.derivative));
 
   const size_t substep = time_step_id.substep();
   if (substep == 0) {
