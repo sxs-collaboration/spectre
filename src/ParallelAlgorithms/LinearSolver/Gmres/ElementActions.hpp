@@ -47,6 +47,9 @@ struct PrepareStep;
 template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
           typename Label, typename ArraySectionIdTag>
 struct NormalizeOperandAndUpdateField;
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
+          typename Label, typename ArraySectionIdTag>
+struct CompleteStep;
 }  // namespace LinearSolver::gmres::detail
 /// \endcond
 
@@ -177,10 +180,10 @@ struct NormalizeInitialOperand {
         });
 
     // Skip steps entirely if the solve has already converged
-    constexpr size_t step_end_index = tmpl::index_of<
-        ActionList,
-        NormalizeOperandAndUpdateField<FieldsTag, OptionsGroup, Preconditioned,
-                                       Label, ArraySectionIdTag>>::value;
+    constexpr size_t step_end_index =
+        tmpl::index_of<ActionList,
+                       CompleteStep<FieldsTag, OptionsGroup, Preconditioned,
+                                    Label, ArraySectionIdTag>>::value;
     if (get<Convergence::Tags::HasConverged<OptionsGroup>>(box)) {
       return {Parallel::AlgorithmExecution::Continue, step_end_index + 1};
     }
@@ -513,26 +516,28 @@ struct NormalizeOperandAndUpdateField {
 
     // Elements that are not part of the section jump directly to the
     // `ApplyOperationActions` for the next step.
-    constexpr size_t this_action_index =
-        tmpl::index_of<ActionList, NormalizeOperandAndUpdateField>::value;
-    constexpr size_t prepare_step_index =
-        tmpl::index_of<ActionList,
-                       PrepareStep<FieldsTag, OptionsGroup, Preconditioned,
-                                   Label, ArraySectionIdTag>>::value;
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
+      constexpr size_t complete_step_index =
+          tmpl::index_of<ActionList,
+                         CompleteStep<FieldsTag, OptionsGroup, Preconditioned,
+                                      Label, ArraySectionIdTag>>::value;
+      constexpr size_t prepare_step_index =
+          tmpl::index_of<ActionList,
+                         PrepareStep<FieldsTag, OptionsGroup, Preconditioned,
+                                     Label, ArraySectionIdTag>>::value;
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
         return {Parallel::AlgorithmExecution::Continue,
                 get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
-                    ? (this_action_index + 1)
+                    ? (complete_step_index + 1)
                     : (prepare_step_index + 1)};
       }
     }
 
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s %s(%zu): Complete step\n", get_output(array_index),
+      Parallel::printf("%s %s(%zu): Update field\n", get_output(array_index),
                        pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
@@ -557,7 +562,44 @@ struct NormalizeOperandAndUpdateField {
         get<initial_fields_tag>(box),
         get<preconditioned_basis_history_tag>(box));
 
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+// Jump back to `PrepareStep` to continue iterating if the algorithm has not yet
+// converged, or complete the solve and proceed with the action list if it has
+// converged. This is a separate action because the user has the opportunity to
+// insert actions before the step completes, for example to do observations.
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
+          typename Label, typename ArraySectionIdTag>
+struct CompleteStep {
+  using const_global_cache_tags =
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
+                 ::Verbosity::Debug)) {
+      Parallel::printf(
+          "%s %s(%zu): Complete step\n", get_output(array_index),
+          pretty_type::name<OptionsGroup>(),
+          db::get<Convergence::Tags::IterationId<OptionsGroup>>(box));
+    }
+
     // Repeat steps until the solve has converged
+    constexpr size_t prepare_step_index =
+        tmpl::index_of<ActionList,
+                       PrepareStep<FieldsTag, OptionsGroup, Preconditioned,
+                                   Label, ArraySectionIdTag>>::value;
+    constexpr size_t this_action_index =
+        tmpl::index_of<ActionList, CompleteStep>::value;
     return {Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)

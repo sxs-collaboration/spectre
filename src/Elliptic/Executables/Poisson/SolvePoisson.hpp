@@ -246,15 +246,16 @@ struct Metavariables {
                                                 Label>;
 
   using solve_actions = tmpl::list<
-      typename linear_solver::template solve<tmpl::list<
-          Actions::RunEventsAndTriggers,
-          typename multigrid::template solve<
-              build_linear_operator_actions,
-              smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
-              smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
-          ::LinearSolver::Actions::make_identity_if_skipped<
-              multigrid, build_linear_operator_actions>>>,
-      Actions::RunEventsAndTriggers, Parallel::Actions::TerminatePhase>;
+      typename linear_solver::template solve<
+          tmpl::list<
+              typename multigrid::template solve<
+                  build_linear_operator_actions,
+                  smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
+                  smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
+              ::LinearSolver::Actions::make_identity_if_skipped<
+                  multigrid, build_linear_operator_actions>>,
+          Actions::RunEventsAndTriggers>,
+      Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,

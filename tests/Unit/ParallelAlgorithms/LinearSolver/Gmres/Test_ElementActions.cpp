@@ -74,6 +74,9 @@ struct ElementArray {
               LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
                   fields_tag, DummyOptionsGroup, Preconditioned,
                   DummyOptionsGroup, void>,
+              LinearSolver::gmres::detail::CompleteStep<
+                  fields_tag, DummyOptionsGroup, Preconditioned,
+                  DummyOptionsGroup, void>,
               Parallel::Actions::TerminatePhase>>>;
 };
 
@@ -171,7 +174,7 @@ void test_element_actions() {
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
-              (has_converged ? 3 : 1));
+              (has_converged ? 4 : 1));
       };
   SECTION("NormalizeInitialOperand (not yet converged: continue loop)") {
     test_normalize_initial_operand(Convergence::HasConverged{1, 0});
@@ -223,8 +226,10 @@ void test_element_actions() {
               3);
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
+        // CompleteStep action
+        ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
-              (has_converged ? 3 : 1));
+              (has_converged ? 4 : 1));
       };
   SECTION("NormalizeOperandAndUpdateField (not yet converged: continue loop)") {
     test_normalize_operand_and_update_field(Convergence::HasConverged{1, 0});

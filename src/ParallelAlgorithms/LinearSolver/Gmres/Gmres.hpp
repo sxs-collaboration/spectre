@@ -26,10 +26,11 @@ namespace LinearSolver::gmres {
  * the algorithm expects that \f$A(q)\f$ is computed and stored in the DataBox
  * as `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`.
  * To perform a solve, add the `solve` action list to an array parallel
- * component. Pass the actions that compute \f$A(q)\f$, as well as any further
- * actions you wish to run in each step of the algorithm, as the first template
- * parameter to `solve`. If you add the `solve` action list multiple times, use
- * the second template parameter to label each solve with a different type.
+ * component. Pass the actions that compute \f$A(q)\f$ as the first template
+ * parameter to `solve`. The second template parameter allows you to pass any
+ * further actions you wish to run in each step of the algorithm (such as
+ * observations). If you add the `solve` action list multiple times, use the
+ * third template parameter to label each solve with a different type.
  *
  * This linear solver supports preconditioning. Enable preconditioning by
  * setting the `Preconditioned` template parameter to `true`. If you do, run a
@@ -126,10 +127,13 @@ struct Gmres {
 
   using register_element = tmpl::list<>;
 
-  template <typename ApplyOperatorActions, typename Label = OptionsGroup>
+  template <typename ApplyOperatorActions,
+            typename ObserveActions = tmpl::list<>,
+            typename Label = OptionsGroup>
   using solve = tmpl::list<
       detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label,
                            SourceTag, ArraySectionIdTag>,
+      ObserveActions,
       detail::NormalizeInitialOperand<FieldsTag, OptionsGroup, Preconditioned,
                                       Label, ArraySectionIdTag>,
       detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned, Label,
@@ -140,7 +144,10 @@ struct Gmres {
       detail::OrthogonalizeOperand<FieldsTag, OptionsGroup, Preconditioned,
                                    Label, ArraySectionIdTag>,
       detail::NormalizeOperandAndUpdateField<
-          FieldsTag, OptionsGroup, Preconditioned, Label, ArraySectionIdTag>>;
+          FieldsTag, OptionsGroup, Preconditioned, Label, ArraySectionIdTag>,
+      ObserveActions,
+      detail::CompleteStep<FieldsTag, OptionsGroup, Preconditioned, Label,
+                           ArraySectionIdTag>>;
 };
 
 }  // namespace LinearSolver::gmres
