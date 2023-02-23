@@ -15,7 +15,7 @@ jobs:
     name: Notify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.0.1
+      - uses: actions/checkout@v3
       - name: Check PR author is new
         id: check_pr_author
         shell: python

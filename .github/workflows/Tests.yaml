@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Check commits
@@ -102,7 +102,7 @@ jobs:
       image: sxscollaboration/spectre:ci
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -168,7 +168,7 @@ jobs:
           python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: release-notes
           path: release_notes.md
@@ -196,7 +196,7 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -252,7 +252,7 @@ jobs:
       image: sxscollaboration/spectre:ci
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -288,7 +288,7 @@ jobs:
         run: |
           zip -qr docs-html.zip docs/html
       - name: Upload documentation
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docs-html
           path: /work/build/docs-html.zip
@@ -410,7 +410,7 @@ jobs:
       options: --privileged
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -701,7 +701,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       SPACK_COLOR: always
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -884,7 +884,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
     env:
       TZ: ${{ github.event.inputs.timezone }}
     steps:
-      - uses: actions/checkout@v3.0.1
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           # Using a personal access token with admin privileges here so this
@@ -939,7 +939,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
       - name: Download release notes
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         id: release-notes
         with:
           name: release-notes
@@ -1008,7 +1008,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         CXXFLAGS: "-Werror"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |

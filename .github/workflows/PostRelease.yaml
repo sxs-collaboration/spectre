@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Spack
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           repository: spack/spack
           fetch-depth: 0
