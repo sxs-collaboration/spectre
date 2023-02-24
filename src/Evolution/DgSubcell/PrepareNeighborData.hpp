@@ -57,13 +57,14 @@ namespace evolution::dg::subcell {
  * elide any slicing or projection cost in that direction.
  */
 template <typename Metavariables, typename DbTagsList, size_t Dim>
-auto prepare_neighbor_data(
+void prepare_neighbor_data(
+    const gsl::not_null<DirectionMap<Dim, DataVector>*>
+        all_neighbor_data_for_reconstruction,
     const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     [[maybe_unused]] const Variables<db::wrap_tags_in<
         ::Tags::Flux, typename Metavariables::system::flux_variables,
-        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes)
-    -> DirectionMap<Metavariables::volume_dim, DataVector> {
+        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes) {
   const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
   const Mesh<Dim>& subcell_mesh =
       db::get<::evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
@@ -84,7 +85,6 @@ auto prepare_neighbor_data(
   const size_t rdmp_size = rdmp_data.max_variables_values.size() +
                            rdmp_data.min_variables_values.size();
 
-  DirectionMap<Dim, DataVector> all_neighbor_data_for_reconstruction{};
   if (DataVector ghost_variables = db::mutate_apply(
           typename Metavariables::SubcellOptions::GhostVariables{}, box,
           rdmp_size);
@@ -107,11 +107,12 @@ auto prepare_neighbor_data(
         // allocation and copy.
         [[maybe_unused]] const auto insert_result =
             UNLIKELY(slice_count == total_to_slice)
-                ? all_neighbor_data_for_reconstruction.insert(
-                      std::pair{direction, std::move(ghost_variables)})
-                : all_neighbor_data_for_reconstruction.insert(
-                      std::pair{direction, ghost_variables});
-        ASSERT(insert_result.second,
+                ? all_neighbor_data_for_reconstruction->insert_or_assign(
+                      direction, std::move(ghost_variables))
+                : all_neighbor_data_for_reconstruction->insert_or_assign(
+                      direction, ghost_variables);
+        ASSERT(all_neighbor_data_for_reconstruction->size() == total_to_slice or
+                   insert_result.second,
                "Failed to insert the neighbor data in direction " << direction);
       }
     }
@@ -125,7 +126,7 @@ auto prepare_neighbor_data(
                     ghost_variables.size() - rdmp_size);
     const DataVector projected_data = evolution::dg::subcell::fd::project(
         data_to_project, dg_mesh, subcell_mesh.extents());
-    all_neighbor_data_for_reconstruction = subcell::slice_data(
+    *all_neighbor_data_for_reconstruction = subcell::slice_data(
         projected_data, db::get<subcell::Tags::Mesh<Dim>>(*box).extents(),
         ghost_zone_size, directions_to_slice, rdmp_size);
 
@@ -168,7 +169,7 @@ auto prepare_neighbor_data(
 
         // Only hash the direction once.
         auto& neighbor_data =
-            all_neighbor_data_for_reconstruction.at(direction);
+            all_neighbor_data_for_reconstruction->at(direction);
         // Make a copy of the local orientation data, then we can re-orient
         // directly into the send buffer.
         DataVector local_orientation_data(neighbor_data.size() - rdmp_size);
@@ -194,7 +195,7 @@ auto prepare_neighbor_data(
     // Note that this is added _after_ the reconstruction data has been
     // re-oriented (in the case where we have neighbors doing FD).
     DataVector& neighbor_data =
-        all_neighbor_data_for_reconstruction.at(direction);
+        all_neighbor_data_for_reconstruction->at(direction);
     std::copy(rdmp_data.max_variables_values.begin(),
               rdmp_data.max_variables_values.end(),
               std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)));
@@ -204,7 +205,5 @@ auto prepare_neighbor_data(
         std::prev(neighbor_data.end(),
                   static_cast<int>(rdmp_data.min_variables_values.size())));
   }
-
-  return all_neighbor_data_for_reconstruction;
 }
 }  // namespace evolution::dg::subcell
