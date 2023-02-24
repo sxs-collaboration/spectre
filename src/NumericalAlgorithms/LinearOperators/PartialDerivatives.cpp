@@ -262,7 +262,7 @@ auto partial_derivative(
                   inverse_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Inertial, Frame::Grid),
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (tnsr::a, tnsr::A, tnsr::i, tnsr::I, tnsr::ab, tnsr::Ab,
                          tnsr::aB, tnsr::AB, tnsr::ij, tnsr::iJ, tnsr::Ij,
                          tnsr::IJ, tnsr::iA, tnsr::ia, tnsr::aa, tnsr::AA,
@@ -314,7 +314,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
                             GET_FRAME(data)>& inverse_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR, (1, 2, 3),
-                        (Frame::Inertial, Frame::Grid))
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef INSTANTIATE_SCALAR
 #undef GET_FRAME

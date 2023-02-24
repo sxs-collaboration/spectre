@@ -761,7 +761,7 @@ KerrSchild::IntermediateVars<DataType, Frame>::get_var(
   template class KerrSchild::IntermediateVars<DTYPE(data), FRAME(data)>; \
   template class KerrSchild::IntermediateComputer<DTYPE(data), FRAME(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector, double),
-                        (::Frame::Inertial, ::Frame::Grid))
+                        (::Frame::Grid, ::Frame::Inertial, ::Frame::Distorted))
 #undef INSTANTIATE
 #undef DTYPE
 #undef FRAME

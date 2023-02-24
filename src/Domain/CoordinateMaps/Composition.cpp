@@ -364,6 +364,10 @@ bool Composition<Frames, Dim, std::index_sequence<Is...>>::is_equal_to(
       DIM(data)>;                                                              \
   template class Composition<                                                  \
       tmpl::list<Frame::ElementLogical, Frame::BlockLogical, Frame::Grid,      \
+                 Frame::Distorted>,                                            \
+      DIM(data)>;                                                              \
+  template class Composition<                                                  \
+      tmpl::list<Frame::ElementLogical, Frame::BlockLogical, Frame::Grid,      \
                  Frame::Distorted, Frame::Inertial>,                           \
       DIM(data)>;
 

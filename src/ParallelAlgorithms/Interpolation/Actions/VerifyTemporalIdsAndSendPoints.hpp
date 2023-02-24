@@ -101,9 +101,8 @@ void verify_temporal_ids_and_send_points_time_dependent(
                                  })
                     ->second->time_bounds()[1];
             for (const auto& pending_id : pending_temporal_ids) {
-              if (InterpolationTarget_detail::
-                      evaluate_temporal_id_for_expiration(pending_id) <=
-                  min_expiration_time) {
+              if (InterpolationTarget_detail::get_temporal_id_value(
+                      pending_id) <= min_expiration_time) {
                 // Success: at least one pending_temporal_id is ok.
                 return std::unique_ptr<Parallel::Callback>{};
               }
@@ -134,8 +133,8 @@ void verify_temporal_ids_and_send_points_time_dependent(
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
           const std::deque<TemporalId>& completed_ids) {
         for (auto it = pending_ids->begin(); it != pending_ids->end();) {
-          if (InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-                  *it) <= min_expiration_time and
+          if (InterpolationTarget_detail::get_temporal_id_value(*it) <=
+                  min_expiration_time and
               std::find(completed_ids.begin(), completed_ids.end(), *it) ==
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), *it) == ids->end()) {

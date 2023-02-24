@@ -71,7 +71,11 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
 
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>>;
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, TranslationMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, TranslationMap>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap,
+                            TranslationMap>>;
 
   static constexpr size_t mesh_dim = MeshDim;
 

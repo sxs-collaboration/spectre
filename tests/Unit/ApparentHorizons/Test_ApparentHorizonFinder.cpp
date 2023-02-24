@@ -335,7 +335,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         radial_partitioning, radial_distribution, ShellWedges::All,
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, std::array<double, 3>({{0.01, 0.02, 0.03}})));
+            0.0, std::array<double, 3>({{0.005, 0.01, 0.015}}),
+            std::array<double, 3>({{0.005, 0.01, 0.015}})));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>
@@ -454,17 +455,24 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         analytic_solution_coords =
             map_logical_to_grid(logical_coordinates(mesh));
       } else if constexpr (IsTimeDependent::value) {
-        // We don't have an Element ParallelComponent in this test, so
-        // get the cache from the target component.
         ElementMap<3, ::Frame::Grid> map_logical_to_grid{
             element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+        // We don't have an Element ParallelComponent in this test, so
+        // get the cache from the target component.
         const auto& cache =
             ActionTesting::cache<target_component>(runner, 0_st);
         const auto& functions_of_time =
             get<domain::Tags::FunctionsOfTime>(cache);
-        analytic_solution_coords = block.moving_mesh_grid_to_inertial_map()(
-            map_logical_to_grid(logical_coordinates(mesh)), temporal_id,
-            functions_of_time);
+        if constexpr (std::is_same_v<Frame, ::Frame::Distorted>) {
+          analytic_solution_coords = block.moving_mesh_grid_to_distorted_map()(
+              map_logical_to_grid(logical_coordinates(mesh)), temporal_id,
+              functions_of_time);
+        } else {
+          static_assert(std::is_same_v<Frame, ::Frame::Inertial>);
+          analytic_solution_coords = block.moving_mesh_grid_to_inertial_map()(
+              map_logical_to_grid(logical_coordinates(mesh)), temporal_id,
+              functions_of_time);
+        }
       } else {
         // Time-independent
         ElementMap<3, ::Frame::Inertial> map{
@@ -544,10 +552,21 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
         const auto& functions_of_time =
             get<domain::Tags::FunctionsOfTime>(cache);
-        const auto coords_frame_velocity_jacobians =
-            block.moving_mesh_grid_to_inertial_map()
+        const auto coords_frame_velocity_jacobians = [&block,
+                                                      &analytic_solution_coords,
+                                                      &temporal_id,
+                                                      &functions_of_time]() {
+          if constexpr (std::is_same_v<Frame, ::Frame::Grid>) {
+            return block.moving_mesh_grid_to_inertial_map()
                 .coords_frame_velocity_jacobians(
                     analytic_solution_coords, temporal_id, functions_of_time);
+          } else {
+            static_assert(std::is_same_v<Frame, ::Frame::Distorted>);
+            return block.moving_mesh_distorted_to_inertial_map()
+                .coords_frame_velocity_jacobians(
+                    analytic_solution_coords, temporal_id, functions_of_time);
+          }
+        }();
         const auto& inv_jacobian = std::get<1>(coords_frame_velocity_jacobians);
         const auto& jacobian = std::get<2>(coords_frame_velocity_jacobians);
         const auto& frame_velocity =
@@ -759,6 +778,16 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
       &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
   test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Grid>>,
                         std::true_type, Frame::Grid>(
+      &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
+
+  // Time-dependent tests in distorted frame.
+  test_schwarzschild_horizon_called = 0;
+  test_kerr_horizon_called = 0;
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Distorted>>,
+                        std::true_type, Frame::Distorted>(
+      &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
+  test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Distorted>>,
+                        std::true_type, Frame::Distorted>(
       &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
 
   test_schwarzschild_horizon_called = 0;

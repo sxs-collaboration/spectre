@@ -14,7 +14,9 @@
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -69,9 +71,6 @@ namespace InterpolationTarget_detail {
 double get_temporal_id_value(double time);
 double get_temporal_id_value(const LinkedMessageId<double>& id);
 double get_temporal_id_value(const TimeStepId& time_id);
-double evaluate_temporal_id_for_expiration(double time);
-double evaluate_temporal_id_for_expiration(const LinkedMessageId<double>& id);
-double evaluate_temporal_id_for_expiration(const TimeStepId& time_id);
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
@@ -489,8 +488,7 @@ auto block_logical_coords(
       const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
       return ::block_logical_coordinates(
           domain, coords,
-          InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-              temporal_id),
+          InterpolationTarget_detail::get_temporal_id_value(temporal_id),
           functions_of_time);
     } else {
       // We error here because the maps are time-dependent, yet
@@ -636,40 +634,72 @@ void compute_dest_vars_from_source_vars(
     const Mesh<Metavariables::volume_dim>& mesh, const ElementId& element_id,
     const Parallel::GlobalCache<Metavariables>& cache,
     const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
+  // The functions of time are always guaranteed to be
+  // up-to-date here.
+  // For interpolation without an Interpolator ParallelComponent,
+  // this is because the InterpWithoutInterpComponent event will be called
+  // after the Action that keeps functions of time up to date.
+  // For interpolation with an Interpolator ParallelCompoent,
+  // this is because the functions of time are made up to date before
+  // calling SendPointsToInterpolator.
   if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
                 any_index_in_frame_v<typename InterpolationTargetTag::
                                          vars_to_interpolate_to_target,
                                      Frame::Grid>) {
-    // Need to do frame transformations.
-
-    // The functions of time are always guaranteed to be
-    // up-to-date here.
-    // For interpolation without an Interpolator ParallelComponent,
-    // this is because the InterpWithoutInterpComponent event will be called
-    // after the Action that keeps functions of time up to date.
-    // For interpolation with an Interpolator ParallelCompoent,
-    // this is because the functions of time are made up to date before
-    // calling SendPointsToInterpolator.
+    // Need to do frame transformations to Grid frame.
     const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
     const auto& block = domain.blocks().at(element_id.block_id());
     ElementMap<3, ::Frame::Grid> map_logical_to_grid{
         element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto time =
+        InterpolationTarget_detail::get_temporal_id_value(temporal_id);
     const auto jac_logical_to_grid =
-        map_logical_to_grid.jacobian(logical_coordinates(mesh));
+        map_logical_to_grid.jacobian(logical_coords);
     const auto invjac_logical_to_grid =
-        map_logical_to_grid.inv_jacobian(logical_coordinates(mesh));
-    const auto[inertial_coords, invjac_grid_to_inertial, jac_grid_to_inertial,
-               inertial_mesh_velocity] =
+        map_logical_to_grid.inv_jacobian(logical_coords);
+    const auto [inertial_coords, invjac_grid_to_inertial, jac_grid_to_inertial,
+                inertial_mesh_velocity] =
         block.moving_mesh_grid_to_inertial_map()
             .coords_frame_velocity_jacobians(
-                map_logical_to_grid(logical_coordinates(mesh)),
-                InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
-                    temporal_id),
-                functions_of_time);
+                map_logical_to_grid(logical_coords), time, functions_of_time);
     InterpolationTargetTag::compute_vars_to_interpolate::apply(
         dest_vars, source_vars, mesh, jac_grid_to_inertial,
         invjac_grid_to_inertial, jac_logical_to_grid, invjac_logical_to_grid,
         inertial_mesh_velocity);
+  } else if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
+                       any_index_in_frame_v<typename InterpolationTargetTag::
+                                                vars_to_interpolate_to_target,
+                                            Frame::Distorted>) {
+    // Need to do frame transformations to Distorted frame.
+    const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+    const auto& block = domain.blocks().at(element_id.block_id());
+    ASSERT(block.has_distorted_frame(),
+           "Cannot interpolate to distorted frame in a block that does not "
+           "have a distorted frame");
+    const domain::CoordinateMaps::Composition element_logical_to_distorted_map{
+        domain::element_to_block_logical_map(element_id),
+        block.moving_mesh_logical_to_grid_map().get_clone(),
+        block.moving_mesh_grid_to_distorted_map().get_clone()};
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto time =
+        InterpolationTarget_detail::get_temporal_id_value(temporal_id);
+    const auto [inertial_coords, invjac_distorted_to_inertial,
+                jac_distorted_to_inertial,
+                distorted_to_inertial_mesh_velocity] =
+        block.moving_mesh_distorted_to_inertial_map()
+            .coords_frame_velocity_jacobians(
+                element_logical_to_distorted_map(logical_coords, time,
+                                                 functions_of_time),
+                time, functions_of_time);
+    InterpolationTargetTag::compute_vars_to_interpolate::apply(
+        dest_vars, source_vars, mesh, jac_distorted_to_inertial,
+        invjac_distorted_to_inertial,
+        element_logical_to_distorted_map.jacobian(logical_coords, time,
+                                                  functions_of_time),
+        element_logical_to_distorted_map.inv_jacobian(logical_coords, time,
+                                                      functions_of_time),
+        distorted_to_inertial_mesh_velocity);
   } else {
     // No frame transformations needed.
     InterpolationTargetTag::compute_vars_to_interpolate::apply(
