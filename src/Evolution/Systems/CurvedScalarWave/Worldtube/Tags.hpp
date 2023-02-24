@@ -14,6 +14,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -75,6 +76,18 @@ template <size_t Dim>
 struct ElementFacesGridCoordinates : db::SimpleTag {
   using type =
       std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>;
+};
+
+/*!
+ * \brief The solution inside the worldtube, evaluated at the face coordinates
+ * of an abutting element. This tag is used to provide boundary conditions to
+ * the element in \ref CurvedScalarWave::BoundaryConditions::Worldtube .
+ */
+template <size_t Dim>
+struct WorldtubeSolution : db::SimpleTag {
+  using type = Variables<
+      tmpl::list<::CurvedScalarWave::Tags::Psi, ::CurvedScalarWave::Tags::Pi,
+                 ::CurvedScalarWave::Tags::Phi<Dim>>>;
 };
 
 }  // namespace Tags

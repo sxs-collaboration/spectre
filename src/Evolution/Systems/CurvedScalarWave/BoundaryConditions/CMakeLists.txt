@@ -7,6 +7,7 @@ spectre_target_sources(
   ConstraintPreservingSphericalRadiation.cpp
   BoundaryCondition.cpp
   DemandOutgoingCharSpeeds.cpp
+  Worldtube.cpp
 )
 
 spectre_target_headers(
@@ -17,4 +18,5 @@ spectre_target_headers(
   BoundaryCondition.hpp
   DemandOutgoingCharSpeeds.hpp
   Factory.hpp
+  Worldtube.hpp
 )
