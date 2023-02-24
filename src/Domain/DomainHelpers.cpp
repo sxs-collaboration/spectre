@@ -581,6 +581,7 @@ std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
            Direction<3>::upper_eta()}}),
   }};
 }
+}  // namespace
 
 size_t which_wedge_index(const ShellWedges& which_wedges) {
   switch (which_wedges) {
@@ -596,7 +597,6 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
       // LCOV_EXCL_STOP
   }
 }
-}  // namespace
 
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,

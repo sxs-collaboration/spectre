@@ -33,14 +33,17 @@ DomainCreator:
   Sphere:
     InnerRadius: 0.2
     OuterRadius: 1.24984447898
-    InnerCubeSphericity: 0.
+    Interior:
+      FillWithSphericity: 0.
     InitialRefinement: 0
     InitialGridPoints: [5, 5, 5]
     RadialPartitioning: []
     RadialDistribution: [Linear]
     UseEquiangularMap: True
+    EquatorialCompression: None
+    WhichWedges: All
     TimeDependence: None
-    BoundaryCondition:
+    OuterBoundaryCondition:
       AnalyticSolution:
         ConformalFactor: Dirichlet
         LapseTimesConformalFactor: Dirichlet

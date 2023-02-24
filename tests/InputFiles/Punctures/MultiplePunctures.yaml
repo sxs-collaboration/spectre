@@ -26,14 +26,17 @@ DomainCreator:
   Sphere:
     InnerRadius: 2.
     OuterRadius: 10.
-    InnerCubeSphericity: 0.
+    Interior:
+      FillWithSphericity: 0.
     InitialRefinement: 0
     InitialGridPoints: 4
     RadialPartitioning: []
     RadialDistribution: [Linear]
     UseEquiangularMap: True
+    EquatorialCompression: None
+    WhichWedges: All
     TimeDependence: None
-    BoundaryCondition: Flatness
+    OuterBoundaryCondition: Flatness
 
 Discretization:
   DiscontinuousGalerkin:

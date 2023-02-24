@@ -133,6 +133,12 @@ enum class ShellWedges {
   OneAlongMinusX
 };
 
+/// \ingroup ComputationalDomainGroup
+/// The first index in the list "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX"
+/// "LowerX" that is included in `which_wedges`. It is 0 for `ShellWedges::All`,
+/// 2 for `ShellWedges::FourOnEquator`, and 5 for `ShellWedges::OneAlongMinusX`.
+size_t which_wedge_index(const ShellWedges& which_wedges);
+
 /*!
  * \ingroup ComputationalDomainGroup
  * These are the CoordinateMaps of the Wedge<3>s used in the Sphere, Shell, and

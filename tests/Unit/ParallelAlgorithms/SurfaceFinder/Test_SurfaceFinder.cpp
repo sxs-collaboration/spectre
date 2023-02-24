@@ -144,10 +144,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.SurfaceFinder.SurfaceFinder",
                   "[Unit][ParallelAlgorithms]") {
   // Build wedge for tests.
   static constexpr size_t dim = 3;
-  const std::array<size_t, 3> grid_points_angular_r{{12, 12, 12}};
-  const size_t initial_refinement = 0;
   const domain::creators::Sphere sphere{
-      1., 5., 0., initial_refinement, grid_points_angular_r, false};
+      1., 5., domain::creators::Sphere::InnerCube{0.}, 0_st, 12_st, false};
   const auto domain = sphere.create_domain();
   const auto refinement_levels = sphere.initial_refinement_levels();
   const auto extents = sphere.initial_extents();
