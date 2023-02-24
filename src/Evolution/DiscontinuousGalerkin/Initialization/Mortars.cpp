@@ -61,7 +61,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
     normal_covector_quantities[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
       const auto mortar_id = std::make_pair(direction, neighbor);
-      mortar_data[mortar_id];  // Default initialize data
+      mortar_data.emplace(mortar_id, MortarData<Dim>{1});
       mortar_meshes.emplace(
           mortar_id,
           ::dg::mortar_mesh(volume_mesh.slice_away(direction.dimension()),
