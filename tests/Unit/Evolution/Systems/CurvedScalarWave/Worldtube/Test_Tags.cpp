@@ -6,12 +6,22 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 
+#include "Domain/Block.hpp"
+#include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/CartesianProduct.hpp"
 
 namespace CurvedScalarWave::Worldtube {
 namespace {
@@ -31,6 +41,102 @@ void test_excision_sphere_tag() {
           "Specified excision sphere 'OtherExcisionSphere' not available. "
           "Available excision spheres are: (ExcisionSphere)"));
 }
+
+void test_compute_centered_face_coordinates() {
+  static constexpr size_t Dim = 3;
+  ::TestHelpers::db::test_compute_tag<
+      Tags::CenteredFaceCoordinatesCompute<Dim>>("CenteredFaceCoordinates");
+
+  for (const auto& [initial_refinement, quadrature] :
+       cartesian_product(std::array<size_t, 2>{{0, 1}},
+                         make_array(Spectral::Quadrature::Gauss,
+                                    Spectral::Quadrature::GaussLobatto))) {
+    CAPTURE(initial_refinement);
+    CAPTURE(quadrature);
+
+    // we create two shells with different resolutions
+    const size_t extents_1 = 5;
+    const size_t extents_2 = 7;
+    const domain::creators::Shell shell_1{
+        1.5, 3., initial_refinement, {extents_1, extents_1}};
+    const domain::creators::Shell shell_2{
+        1.5, 3., initial_refinement, {extents_2, extents_2}};
+    const auto& initial_extents_1 = shell_1.initial_extents();
+    const auto& initial_extents_2 = shell_2.initial_extents();
+
+    const auto domain = shell_1.create_domain();
+    const auto& blocks = domain.blocks();
+    const auto& excision_sphere =
+        domain.excision_spheres().at("ExcisionSphere");
+    const auto& initial_refinements = shell_1.initial_refinement_levels();
+    const auto element_ids = initial_element_ids(initial_refinements);
+
+    // this worldtube tag should hold the same coordinates of all elements in a
+    // map so we use it to check
+    std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
+        all_faces_grid_coords_1{};
+    std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
+        all_faces_grid_coords_2{};
+    Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
+        make_not_null(&all_faces_grid_coords_1), domain, initial_extents_1,
+        initial_refinements, quadrature, excision_sphere);
+    Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
+        make_not_null(&all_faces_grid_coords_2), domain, initial_extents_2,
+        initial_refinements, quadrature, excision_sphere);
+
+    for (const auto& element_id : element_ids) {
+      const auto& my_block = blocks.at(element_id.block_id());
+      const auto element = domain::Initialization::create_initial_element(
+          element_id, my_block, initial_refinements);
+      const ElementMap element_map(
+          element_id, my_block.stationary_map().get_to_grid_frame());
+      const auto mesh_1 = domain::Initialization::create_initial_mesh(
+          initial_extents_1, element_id, quadrature);
+      const auto grid_coords_1 = element_map(logical_coordinates(mesh_1));
+      const auto mesh_2 = domain::Initialization::create_initial_mesh(
+          initial_extents_2, element_id, quadrature);
+      const auto grid_coords_2 = element_map(logical_coordinates(mesh_2));
+
+      auto box = db::create<
+          db::AddSimpleTags<Tags::ExcisionSphere<Dim>,
+                            domain::Tags::Element<Dim>,
+                            domain::Tags::Coordinates<Dim, Frame::Grid>,
+                            domain::Tags::Mesh<Dim>>,
+          db::AddComputeTags<Tags::CenteredFaceCoordinatesCompute<Dim>>>(
+          excision_sphere, element, grid_coords_1, mesh_1);
+
+      const auto centered_face_coordinates_1 =
+          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+      if (all_faces_grid_coords_1.count(element_id)) {
+        CHECK(centered_face_coordinates_1.has_value());
+        CHECK_ITERABLE_APPROX(centered_face_coordinates_1.value(),
+                              all_faces_grid_coords_1.at(element_id));
+      } else {
+        CHECK(not centered_face_coordinates_1.has_value());
+      }
+
+      // we mutate to the differently refined grid, simulating p-refinement
+      ::Initialization::mutate_assign<
+          tmpl::list<domain::Tags::Mesh<Dim>,
+                     domain::Tags::Coordinates<Dim, Frame::Grid>>>(
+          make_not_null(&box), mesh_2, grid_coords_2);
+
+      const auto centered_face_coordinates_2 =
+          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+      if (all_faces_grid_coords_2.count(element_id)) {
+        // p-refinement should not change which elements are abutting i.e. have
+        // a value
+        CHECK(centered_face_coordinates_1.has_value());
+        CHECK(centered_face_coordinates_2.has_value());
+        CHECK_ITERABLE_APPROX(centered_face_coordinates_2.value(),
+                              all_faces_grid_coords_2.at(element_id));
+      } else {
+        CHECK(not centered_face_coordinates_1.has_value());
+        CHECK(not centered_face_coordinates_2.has_value());
+      }
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
@@ -43,5 +149,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::CenteredFaceCoordinates<3>>(
       "CenteredFaceCoordinates");
   test_excision_sphere_tag();
+  test_compute_centered_face_coordinates();
 }
 }  // namespace CurvedScalarWave::Worldtube

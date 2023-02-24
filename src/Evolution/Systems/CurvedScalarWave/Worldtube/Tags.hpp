@@ -5,17 +5,22 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube {
 /*!
@@ -77,6 +82,23 @@ struct ExcisionSphere : db::SimpleTag {
 template <size_t Dim>
 struct CenteredFaceCoordinates : db::SimpleTag {
   using type = std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>;
+};
+
+template <size_t Dim>
+struct CenteredFaceCoordinatesCompute : CenteredFaceCoordinates<Dim>,
+                                        db::ComputeTag {
+  using base = CenteredFaceCoordinates<Dim>;
+  using argument_tags =
+      tmpl::list<ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::Coordinates<Dim, Frame::Grid>,
+                 domain::Tags::Mesh<Dim>>;
+  using return_type = std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>;
+  static void function(
+      const gsl::not_null<std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>*>
+          res,
+      const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
+      const tnsr::I<DataVector, Dim, Frame::Grid>& grid_coords,
+      const Mesh<Dim>& mesh);
 };
 
 /*!
