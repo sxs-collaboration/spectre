@@ -43,7 +43,11 @@ namespace evolution::dg {
  */
 template <size_t Dim>
 class MortarData {
+  using MortarType = std::optional<std::pair<Mesh<Dim - 1>, DataVector>>;
+
  public:
+  MortarData(size_t number_of_buffers = 1);
+
   /*!
    * \brief Insert data onto the mortar.
    *
@@ -143,28 +147,40 @@ class MortarData {
   auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
                               std::pair<Mesh<Dim - 1>, DataVector>>;
 
-  const TimeStepId& time_step_id() const { return time_step_id_; }
+  /// Move to the next internal mortar buffer
+  void next_buffer();
 
-  TimeStepId& time_step_id() { return time_step_id_; }
+  /// Return the current internal mortar index
+  size_t current_buffer_index() const;
+
+  /// Return the total number of buffers that this MortarData was constructed
+  /// with
+  size_t total_number_of_buffers() const;
+
+  const TimeStepId& time_step_id() const {
+    return time_step_id_[mortar_index_];
+  }
+
+  TimeStepId& time_step_id() { return time_step_id_[mortar_index_]; }
 
   auto local_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_;
+    return local_mortar_data_[mortar_index_];
   }
 
   auto neighbor_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_;
+    return neighbor_mortar_data_[mortar_index_];
   }
 
   auto local_mortar_data()
       -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_;
+    return local_mortar_data_[mortar_index_];
   }
 
   auto neighbor_mortar_data()
       -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_;
+    return neighbor_mortar_data_[mortar_index_];
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -176,9 +192,11 @@ class MortarData {
   friend bool operator==(const MortarData<LocalDim>& lhs,
                          const MortarData<LocalDim>& rhs);
 
-  TimeStepId time_step_id_{};
-  std::optional<std::pair<Mesh<Dim - 1>, DataVector>> local_mortar_data_{};
-  std::optional<std::pair<Mesh<Dim - 1>, DataVector>> neighbor_mortar_data_{};
+  size_t number_of_buffers_{1};
+  std::vector<TimeStepId> time_step_id_{};
+  std::vector<MortarType> local_mortar_data_{};
+  std::vector<MortarType> neighbor_mortar_data_{};
+  size_t mortar_index_{0};
   DataVector local_geometric_quantities_{};
   bool using_volume_and_face_jacobians_{false};
   bool using_only_face_normal_magnitude_{false};

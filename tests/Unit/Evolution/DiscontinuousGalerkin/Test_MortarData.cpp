@@ -88,9 +88,9 @@ void check_serialization(const gsl::not_null<MortarData<Dim>*> mortar_data) {
   CHECK(*mortar_data == deserialized_mortar_data);
   CHECK_FALSE(*mortar_data != deserialized_mortar_data);
 
-  const auto extracted_data = mortar_data->extract();
-  CHECK(extracted_data.first == *deserialized_mortar_data.local_mortar_data());
-  CHECK(extracted_data.second ==
+  CHECK(*mortar_data->local_mortar_data() ==
+        *deserialized_mortar_data.local_mortar_data());
+  CHECK(*mortar_data->neighbor_mortar_data() ==
         *deserialized_mortar_data.neighbor_mortar_data());
 }
 
@@ -99,8 +99,10 @@ void test_global_time_stepping_usage() {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
+  const size_t number_of_buffers = 2;
 
-  MortarData<Dim> mortar_data{};
+  MortarData<Dim> mortar_data{number_of_buffers};
+  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
@@ -137,7 +139,9 @@ void test_global_time_stepping_usage() {
 
   check_serialization(make_not_null(&mortar_data));
 
-  mortar_data = MortarData<Dim>{};
+  CHECK(mortar_data.current_buffer_index() == 0);
+  mortar_data.next_buffer();
+  CHECK(mortar_data.current_buffer_index() == 1);
 
   // Then assign things with the local_mortar_data() non-const reference
   // functions
@@ -146,6 +150,12 @@ void test_global_time_stepping_usage() {
                         std::optional{neighbor_data}, expected_output);
 
   check_serialization(make_not_null(&mortar_data));
+
+  const auto second_index_mortar_data = mortar_data.extract();
+  mortar_data.next_buffer();
+  const auto first_index_mortar_data = mortar_data.extract();
+
+  CHECK(second_index_mortar_data == first_index_mortar_data);
 }
 
 template <size_t Dim>
@@ -155,8 +165,10 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
+  const size_t number_of_buffers = 1;
 
-  MortarData<Dim> mortar_data{};
+  MortarData<Dim> mortar_data{1};
+  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
@@ -179,7 +191,9 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
                      std::optional{local_data}, local_mesh, std::nullopt,
                      expected_output);
 
-  mortar_data = MortarData<Dim>{};
+  CHECK(mortar_data.current_buffer_index() == 0);
+  mortar_data.next_buffer();
+  CHECK(mortar_data.current_buffer_index() == 0);
 
   assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
                         std::optional{local_data}, local_mesh, std::nullopt,
