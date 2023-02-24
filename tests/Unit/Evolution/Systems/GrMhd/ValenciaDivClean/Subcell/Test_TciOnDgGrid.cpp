@@ -120,7 +120,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,
-      std::nullopt};
+      fd::DerivativeOrder::Two};
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<typename ConsVars::tags_list>,

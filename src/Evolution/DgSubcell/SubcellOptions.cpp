@@ -28,8 +28,7 @@ SubcellOptions::SubcellOptions(
     bool always_use_subcells, fd::ReconstructionMethod recons_method,
     bool use_halo,
     std::optional<std::vector<std::string>> only_dg_block_and_group_names,
-    std::optional<size_t> finite_difference_derivative_order,
-    const Options::Context& context)
+    ::fd::DerivativeOrder finite_difference_derivative_order)
     : initial_data_rdmp_delta0_(initial_data_rdmp_delta0),
       initial_data_rdmp_epsilon_(initial_data_rdmp_epsilon),
       rdmp_delta0_(rdmp_delta0),
@@ -43,14 +42,6 @@ SubcellOptions::SubcellOptions(
       finite_difference_derivative_order_(finite_difference_derivative_order) {
   if (not only_dg_block_and_group_names_.has_value()) {
     only_dg_block_ids_ = std::vector<size_t>{};
-  }
-  if (finite_difference_derivative_order_.has_value() and
-      not alg::found(std::array<size_t, 5>{{2, 4, 6, 8, 10}},
-                     finite_difference_derivative_order_.value())) {
-    PARSE_ERROR(context,
-                "The finite difference order must be Auto or one of "
-                "2,4,6,8,10, but got "
-                    << finite_difference_derivative_order_.value());
   }
 }
 

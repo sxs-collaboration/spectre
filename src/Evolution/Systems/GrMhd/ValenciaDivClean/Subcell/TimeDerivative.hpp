@@ -110,7 +110,7 @@ struct TimeDerivative {
         reconstruction_order_data{};
     std::optional<std::array<gsl::span<std::uint8_t>, 3>>
         reconstruction_order{};
-    if (not fd_derivative_order.has_value()) {
+    if (static_cast<int>(fd_derivative_order) < 0) {
       reconstruction_order_data = make_array<3>(std::vector<std::uint8_t>(
           (subcell_mesh.extents(0) + 2) * subcell_mesh.extents(1) *
               subcell_mesh.extents(2),
@@ -325,8 +325,7 @@ struct TimeDerivative {
 
         db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
             evolved_vars_tags, 3>>(*box),
-        boundary_corrections,
-        static_cast<::fd::DerivativeOrder>(fd_derivative_order.value_or(2)),
+        boundary_corrections, fd_derivative_order,
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
         subcell_mesh, recons.ghost_zone_size());

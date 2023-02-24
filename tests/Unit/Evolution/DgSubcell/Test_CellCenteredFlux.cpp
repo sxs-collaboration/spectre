@@ -55,7 +55,7 @@ struct Fluxes {
 };
 
 template <size_t Dim, bool ComputeOnlyOnRollback>
-void test(const size_t derivative_order, const bool did_rollback) {
+void test(const fd::DerivativeOrder derivative_order, const bool did_rollback) {
   CAPTURE(Dim);
   CAPTURE(ComputeOnlyOnRollback);
   CAPTURE(derivative_order);
@@ -75,16 +75,15 @@ void test(const size_t derivative_order, const bool did_rollback) {
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt,
-          derivative_order != 0 ? std::optional<size_t>{derivative_order}
-                                : std::optional<size_t>{}},
+          std::nullopt, derivative_order},
       mesh, typename CellCenteredFluxTag::type{},
       Variables<flux_variables>{mesh.number_of_grid_points(), 1.0});
 
   db::mutate_apply<evolution::dg::subcell::fd::CellCenteredFlux<
       TestSystem, Fluxes<Dim>, Dim, ComputeOnlyOnRollback>>(
       make_not_null(&box));
-  if (derivative_order > 2 and (not ComputeOnlyOnRollback or did_rollback)) {
+  if (derivative_order != fd::DerivativeOrder::Two and
+      (not ComputeOnlyOnRollback or did_rollback)) {
     REQUIRE(get<evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables,
                                                                Dim>>(box)
                 .has_value());
@@ -105,7 +104,10 @@ void test(const size_t derivative_order, const bool did_rollback) {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.CellCenteredFlux",
                   "[Evolution][Unit]") {
-  for (const size_t derivative_order : {0_st, 2_st, 4_st}) {
+  using DO = fd::DerivativeOrder;
+  for (const DO derivative_order :
+       {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten, DO::OneHigherThanRecons,
+        DO::OneHigherThanReconsButFiveToFour}) {
     for (const bool did_rollback : {true, false}) {
       test<1, false>(derivative_order, did_rollback);
       test<2, false>(derivative_order, did_rollback);

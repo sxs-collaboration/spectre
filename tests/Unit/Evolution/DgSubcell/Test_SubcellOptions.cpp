@@ -23,72 +23,76 @@ void test_impl(const std::vector<double>& expected_values,
   const fd::ReconstructionMethod recons_method =
       fd::ReconstructionMethod::AllDimsAtOnce;
 
-  CHECK(SubcellOptions(expected_values[0], expected_values[1],
-                       expected_values[2], expected_values[3],
-                       expected_values[4], expected_values[5], false,
-                       recons_method, false, std::nullopt, std::nullopt) !=
+  CHECK(SubcellOptions(
+            expected_values[0], expected_values[1], expected_values[2],
+            expected_values[3], expected_values[4], expected_values[5], false,
+            recons_method, false, std::nullopt, ::fd::DerivativeOrder::Two) !=
         SubcellOptions(values[0], values[1], values[2], values[3], values[4],
                        values[5], false, recons_method, false, std::nullopt,
-                       std::nullopt));
+                       ::fd::DerivativeOrder::Two));
+  CHECK_FALSE(SubcellOptions(expected_values[0], expected_values[1],
+                             expected_values[2], expected_values[3],
+                             expected_values[4], expected_values[5], false,
+                             recons_method, false, std::nullopt,
+                             ::fd::DerivativeOrder::Two) ==
+              SubcellOptions(values[0], values[1], values[2], values[3],
+                             values[4], values[5], false, recons_method, false,
+                             std::nullopt, ::fd::DerivativeOrder::Two));
+
+  CHECK(SubcellOptions(
+            expected_values[0], expected_values[1], expected_values[2],
+            expected_values[3], expected_values[4], expected_values[5], false,
+            recons_method, false, std::nullopt, ::fd::DerivativeOrder::Two) !=
+        SubcellOptions(
+            expected_values[0], expected_values[1], expected_values[2],
+            expected_values[3], expected_values[4], expected_values[5], true,
+            recons_method, false, std::nullopt, ::fd::DerivativeOrder::Two));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) ==
-      SubcellOptions(values[0], values[1], values[2], values[3], values[4],
-                     values[5], false, recons_method, false, std::nullopt,
-                     std::nullopt));
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two) ==
+      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
+                     expected_values[3], expected_values[4], expected_values[5],
+                     true, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two));
 
   CHECK(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) !=
-      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
-                     expected_values[3], expected_values[4], expected_values[5],
-                     true, recons_method, false, std::nullopt, std::nullopt));
-  CHECK_FALSE(
-      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
-                     expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) ==
-      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
-                     expected_values[3], expected_values[4], expected_values[5],
-                     true, recons_method, false, std::nullopt, std::nullopt));
-
-  CHECK(
-      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
-                     expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) !=
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two) !=
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
                      false, fd::ReconstructionMethod::DimByDim, false,
-                     std::nullopt, std::nullopt));
+                     std::nullopt, ::fd::DerivativeOrder::Two));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) ==
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two) ==
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
                      false, fd::ReconstructionMethod::DimByDim, false,
-                     std::nullopt, std::nullopt));
+                     std::nullopt, ::fd::DerivativeOrder::Two));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt) ==
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two) ==
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, true, std::nullopt, std::nullopt));
+                     false, recons_method, true, std::nullopt,
+                     ::fd::DerivativeOrder::Two));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, 6) ==
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Four) ==
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method, false, std::nullopt, std::nullopt));
-
-  CHECK_THROWS_WITH(
-      SubcellOptions(values[0], values[1], values[2], values[3], values[4],
-                     values[5], false, recons_method, false, std::nullopt, 5),
-      Catch::Matchers::Contains(
-          "The finite difference order must be Auto or one of"));
+                     false, recons_method, false, std::nullopt,
+                     ::fd::DerivativeOrder::Two));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
@@ -99,10 +103,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
     test_impl(expected_values, i);
   }
 
-  const SubcellOptions options(
-      expected_values[0], expected_values[1], expected_values[2],
-      expected_values[3], expected_values[4], expected_values[5], true,
-      fd::ReconstructionMethod::DimByDim, true, std::nullopt, 4);
+  const SubcellOptions options(expected_values[0], expected_values[1],
+                               expected_values[2], expected_values[3],
+                               expected_values[4], expected_values[5], true,
+                               fd::ReconstructionMethod::DimByDim, true,
+                               std::nullopt, ::fd::DerivativeOrder::Four);
   const SubcellOptions deserialized_options =
       serialize_and_deserialize(options);
   CHECK(options == deserialized_options);

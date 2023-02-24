@@ -240,7 +240,7 @@ void test_impl(
           test_block_id_assert
               ? std::optional{std::vector<std::string>{"Block0"}}
               : std::optional<std::vector<std::string>>{},
-          std::nullopt},
+          ::fd::DerivativeOrder::Two},
       TestCreator<Dim>{}}}};
 
   TimeStepId time_step_id{true, self_starting ? -1 : 1,

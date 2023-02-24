@@ -40,7 +40,8 @@ struct Reconstructor : db::SimpleTag {
   static type create_from_options(
       const type& reconstructor,
       const ::evolution::dg::subcell::SubcellOptions& subcell_options) {
-    if (not subcell_options.finite_difference_derivative_order().has_value() and
+    if (static_cast<int>(subcell_options.finite_difference_derivative_order()) <
+            0 and
         not reconstructor->supports_adaptive_order()) {
       ERROR_NO_TRACE(
           "Cannot use adaptive finite difference derivative order with "

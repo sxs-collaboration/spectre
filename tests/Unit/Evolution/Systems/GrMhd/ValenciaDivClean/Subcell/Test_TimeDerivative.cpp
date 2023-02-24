@@ -124,7 +124,7 @@ auto face_centered_gr_tags(
 }
 
 std::array<double, 5> test(const size_t num_dg_pts,
-                           const std::optional<size_t> fd_derivative_order) {
+                           const ::fd::DerivativeOrder fd_derivative_order) {
   using flux_tags =
       db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                        tmpl::size_t<3>, Frame::Inertial>;
@@ -148,8 +148,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
       recons{
           3.8, std::nullopt, 4.0,
           ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral};
-  REQUIRE((not fd_derivative_order.has_value() or
-           (fd_derivative_order.value() / 2 <= recons.ghost_zone_size())));
+  REQUIRE(static_cast<size_t>(fd_derivative_order) / 2 <=
+          recons.ghost_zone_size());
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
@@ -200,12 +200,12 @@ std::array<double, 5> test(const size_t num_dg_pts,
         Variables<prims_to_reconstruct_tags>::number_of_independent_components;
     DataVector volume_neighbor_data{
         (prim_components +
-         ((fd_derivative_order.value_or(2) > 2)
+         ((fd_derivative_order != ::fd::DerivativeOrder::Two)
               ? Variables<flux_tags>::number_of_independent_components
               : 0)) *
             subcell_mesh.number_of_grid_points(),
         0.0};
-    if (fd_derivative_order.value_or(2) > 2) {
+    if (fd_derivative_order != ::fd::DerivativeOrder::Two) {
       Variables<typename System::spacetime_variables_tag::tags_list>
           neighbor_cell_centered_spacetime_vars{
               subcell_mesh.number_of_grid_points()};
@@ -273,7 +273,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
   using CellCenteredFluxesTag = evolution::dg::subcell::Tags::CellCenteredFlux<
       typename System::flux_variables, 3>;
   typename CellCenteredFluxesTag::type cell_centered_fluxes{};
-  if (fd_derivative_order.value_or(2) > 2) {
+  if (fd_derivative_order != ::fd::DerivativeOrder::Two) {
     Variables<typename System::variables_tag::tags_list> cons{
         subcell_mesh.number_of_grid_points()};
     apply(make_not_null(&cons),
@@ -368,10 +368,10 @@ std::array<double, 5> test(const size_t num_dg_pts,
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.ValenciaDivClean.Subcell.TimeDerivative",
     "[Unit][Evolution]") {
-  using sos = std::optional<size_t>;
   std::optional<std::array<double, 5>> previous_error_5{};
   std::optional<std::array<double, 5>> previous_error_6{};
-  for (const sos fd_do : {sos{}, sos{2}, sos{4}, sos{6}, sos{8}, sos{10}}) {
+  using DO = ::fd::DerivativeOrder;
+  for (const DO fd_do : {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten}) {
     CAPTURE(fd_do);
     // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
     // verifies that the time derivative vanishes. Or, more specifically, that
@@ -384,10 +384,12 @@ SPECTRE_TEST_CASE(
       CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
       // Check that as we increase the order of the FD derivative the error
       // decreases.
-      if (previous_error_5.has_value() and fd_do.value_or(2) > 2) {
+      if (previous_error_5.has_value() and
+          fd_do != ::fd::DerivativeOrder::Two) {
         CHECK(gsl::at(five_pts_data, i) < gsl::at(previous_error_5.value(), i));
       }
-      if (previous_error_6.has_value() and fd_do.value_or(2) > 2) {
+      if (previous_error_6.has_value() and
+          fd_do != ::fd::DerivativeOrder::Two) {
         CHECK(gsl::at(six_pts_data, i) < gsl::at(previous_error_6.value(), i));
       }
     }

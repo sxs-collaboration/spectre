@@ -48,8 +48,8 @@ struct CellCenteredFlux {
       const subcell::SubcellOptions& subcell_options,
       const Mesh<Dim>& subcell_mesh, const bool did_rollback, Args&&... args) {
     if (did_rollback or not ComputeOnlyOnRollback) {
-      if (subcell_options.finite_difference_derivative_order().value_or(0) >
-          2) {
+      if (subcell_options.finite_difference_derivative_order() !=
+          ::fd::DerivativeOrder::Two) {
         if (not cell_centered_fluxes->has_value()) {
           (*cell_centered_fluxes) =
               Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,

@@ -47,7 +47,7 @@ SpatialDiscretization:
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: false
       OnlyDgBlocksAndGroups: None
-      FiniteDifferenceDerivativeOrder: Auto
+      FiniteDifferenceDerivativeOrder: 2
     TciOptions:
       UCutoff: 1.0e-10
   SubcellSolver:
