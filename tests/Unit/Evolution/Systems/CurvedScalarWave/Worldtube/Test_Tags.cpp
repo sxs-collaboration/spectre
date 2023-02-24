@@ -13,6 +13,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
+namespace CurvedScalarWave::Worldtube {
 namespace {
 void test_excision_sphere_tag() {
   const std::unique_ptr<DomainCreator<3>> shell =
@@ -21,12 +22,11 @@ void test_excision_sphere_tag() {
   const auto shell_excision_sphere =
       shell->create_domain().excision_spheres().at("ExcisionSphere");
 
-  CHECK(
-      CurvedScalarWave::Worldtube::Tags::ExcisionSphere<3>::create_from_options(
-          shell, "ExcisionSphere") == shell_excision_sphere);
+  CHECK(Tags::ExcisionSphere<3>::create_from_options(shell, "ExcisionSphere") ==
+        shell_excision_sphere);
   CHECK_THROWS_WITH(
-      CurvedScalarWave::Worldtube::Tags::ExcisionSphere<3>::create_from_options(
-          shell, "OtherExcisionSphere"),
+      Tags::ExcisionSphere<3>::create_from_options(shell,
+                                                   "OtherExcisionSphere"),
       Catch::Matchers::Contains(
           "Specified excision sphere 'OtherExcisionSphere' not available. "
           "Available excision spheres are: (ExcisionSphere)"));
@@ -35,13 +35,11 @@ void test_excision_sphere_tag() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
                   "[Unit][Evolution]") {
-  CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::ExcisionSphere>(
-            "Worldtube") == "Worldtube");
-  TestHelpers::db::test_simple_tag<
-      CurvedScalarWave::Worldtube::Tags::ExcisionSphere<3>>("ExcisionSphere");
-  TestHelpers::db::test_simple_tag<
-      CurvedScalarWave::Worldtube::Tags::ElementFacesGridCoordinates<3>>(
+  CHECK(TestHelpers::test_option_tag<OptionTags::ExcisionSphere>("Worldtube") ==
+        "Worldtube");
+  TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
+  TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
   test_excision_sphere_tag();
 }
+}  // namespace CurvedScalarWave::Worldtube
