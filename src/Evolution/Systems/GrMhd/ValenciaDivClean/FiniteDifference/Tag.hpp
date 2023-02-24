@@ -47,6 +47,21 @@ struct Reconstructor : db::SimpleTag {
           "Cannot use adaptive finite difference derivative order with "
           "specified reconstructor.");
     }
+    if ((static_cast<int>(
+             subcell_options.finite_difference_derivative_order()) /
+             2 -
+         1) > static_cast<int>(reconstructor->ghost_zone_size())) {
+      ERROR_NO_TRACE(
+          "The derivative order chosen ("
+          << subcell_options.finite_difference_derivative_order()
+          << ") requires more ghost zones ("
+          << (static_cast<int>(
+                  subcell_options.finite_difference_derivative_order()) /
+                  2 -
+              1)
+          << ") than the reconstructor sends, "
+          << reconstructor->ghost_zone_size());
+    }
     return reconstructor->get_clone();
   }
 };
