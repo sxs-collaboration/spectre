@@ -947,13 +947,13 @@ void test_impl(const Spectral::Quadrature quadrature,
       mortar_id_ptr = &mortar_id;
       compute_correction_coupling(mortar_data, mortar_data);
     }
-    tmpl::for_each<dt_variables_tags>([&expected_dt_variables_volume, &runner,
-                                       &self_id](auto tag_v) {
-      using tag = tmpl::type_from<decltype(tag_v)>;
-      CHECK_ITERABLE_APPROX(
-          get<tag>(get_tag<dt_variables_tag>(runner, self_id)),
-          get<tag>(expected_dt_variables_volume));
-    });
+    tmpl::for_each<dt_variables_tags>(
+        [&expected_dt_variables_volume, &runner, &self_id](auto tag_v) {
+          using tag = tmpl::type_from<decltype(tag_v)>;
+          CHECK_ITERABLE_APPROX(
+              get<tag>(get_tag<dt_variables_tag>(runner, self_id)),
+              get<tag>(expected_dt_variables_volume));
+        });
     CHECK(expected_evolved_variables ==
           get_tag<variables_tag>(runner, self_id));
   }

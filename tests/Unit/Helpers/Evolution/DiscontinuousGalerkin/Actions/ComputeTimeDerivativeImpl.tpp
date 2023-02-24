@@ -20,18 +20,18 @@
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -1316,7 +1316,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false, std::move(step_choosers),
+         false,
+         std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1347,7 +1348,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false, std::move(step_choosers),
+             false,
+             std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }
