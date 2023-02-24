@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <random>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -32,13 +33,19 @@ struct Vector0 : db::SimpleTag {
 
 template <size_t Dim>
 void test(const fd::DerivativeOrder correction_order) {
-  const size_t points_per_dimension = static_cast<size_t>(correction_order) + 2;
-  CAPTURE(points_per_dimension);
   CAPTURE(correction_order);
   CAPTURE(Dim);
-  const size_t max_degree = static_cast<size_t>(correction_order);
-  const size_t stencil_width = static_cast<size_t>(correction_order) + 1;
+  const size_t max_degree =
+      correction_order == fd::DerivativeOrder::OneHigherThanRecons
+          ? 6
+          : (correction_order ==
+                     fd::DerivativeOrder::OneHigherThanReconsButFiveToFour
+                 ? 4
+                 : static_cast<size_t>(correction_order));
+  const size_t points_per_dimension = static_cast<size_t>(max_degree) + 2;
+  const size_t stencil_width = max_degree + 1;
   const size_t number_of_ghost_points = (stencil_width - 1) / 2 + 1;
+  CAPTURE(points_per_dimension);
 
   using FluxTags = tmpl::list<Scalar0, Vector0<Dim>>;
   using Scalar0Flux = ::Tags::Flux<Scalar0, tmpl::size_t<Dim>, Frame::Inertial>;
@@ -204,12 +211,29 @@ void test(const fd::DerivativeOrder correction_order) {
     gsl::at(second_order_corrections, i) *= -1.0;
   }
 
+  std::array<std::vector<std::uint8_t>, Dim> reconstruction_order_storage{};
+  std::array<gsl::span<std::uint8_t>, Dim> reconstruction_order{};
+  if (correction_order == fd::DerivativeOrder::OneHigherThanRecons or
+      correction_order ==
+          fd::DerivativeOrder::OneHigherThanReconsButFiveToFour) {
+    Index<Dim> recons_extents = mesh.extents();
+    recons_extents[0] += 2;
+    for (size_t i = 0; i < Dim; ++i) {
+      gsl::at(reconstruction_order_storage, i) =
+          std::vector<std::uint8_t>(recons_extents.product(), 5);
+      gsl::at(reconstruction_order, i) =
+          gsl::span(gsl::at(reconstruction_order_storage, i).data(),
+                    gsl::at(reconstruction_order_storage, i).size());
+    }
+  }
+
   std::optional<std::array<CorrectionVars, Dim>> high_order_corrections{};
   ::fd::cartesian_high_order_flux_corrections(
       make_not_null(&high_order_corrections),
 
       volume_vars, second_order_corrections, correction_order,
-      reconstruction_neighbor_data, mesh, number_of_ghost_points);
+      reconstruction_neighbor_data, mesh, number_of_ghost_points,
+      reconstruction_order);
 
   // Now compute the Cartesian derivative of the high_order_corrections to
   // verify that it is computed sufficiently accurately.
@@ -278,7 +302,8 @@ SPECTRE_TEST_CASE("Unit.FiniteDifference.CartesianHighOrderFluxCorrection",
                   "[Unit][NumericalAlgorithms]") {
   using DO = fd::DerivativeOrder;
   for (const fd::DerivativeOrder correction_order :
-       {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten}) {
+       {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten, DO::OneHigherThanRecons,
+        DO::OneHigherThanReconsButFiveToFour}) {
     test<1>(correction_order);
     test<2>(correction_order);
     test<3>(correction_order);
