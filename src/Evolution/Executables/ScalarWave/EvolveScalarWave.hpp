@@ -24,6 +24,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
+#include "Evolution/Executables/ScalarWave/Projector.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -58,6 +59,11 @@
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -121,7 +127,7 @@ struct EvolutionMetavars {
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = true;
+  static constexpr bool local_time_stepping = false;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -155,6 +161,8 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<amr::Criterion,
+                   tmpl::list<amr::Criteria::DriveToTarget<volume_dim>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event,
@@ -172,10 +180,15 @@ struct EvolutionMetavars {
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  Parallel::Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<
+                PhaseControl::VisitAndReturn<
+                    Parallel::Phase::EvaluateAmrCriteria>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::LoadBalancing>,
+                PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             ScalarWave::BoundaryConditions::standard_boundary_conditions<
@@ -233,7 +246,8 @@ struct EvolutionMetavars {
           tmpl::list<>>>>;
 
   using const_global_cache_tags =
-      tmpl::list<evolution::initial_data::Tags::InitialData>;
+      tmpl::list<amr::Criteria::Tags::Criteria,
+                 evolution::initial_data::Tags::InitialData>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -241,7 +255,8 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<volume_dim>>,
+          evolution::dg::Initialization::Domain<volume_dim>,
+          amr::Initialization::Initialize<volume_dim>>,
       Initialization::Actions::NonconservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
@@ -272,7 +287,12 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>;
+                         PhaseControl::Actions::ExecutePhaseChange>>,
+
+          Parallel::PhaseActions<
+              Parallel::Phase::CheckDomain,
+              tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                         Parallel::Actions::TerminatePhase>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -281,19 +301,21 @@ struct EvolutionMetavars {
                            dg_registration_list, tmpl::list<>>;
   };
 
-  using component_list =
-      tmpl::list<observers::Observer<EvolutionMetavars>,
-                 observers::ObserverWriter<EvolutionMetavars>,
-                 dg_element_array>;
+  using component_list = tmpl::list<
+      amr::Component<EvolutionMetavars>, observers::Observer<EvolutionMetavars>,
+      observers::ObserverWriter<EvolutionMetavars>, dg_element_array>;
 
   static constexpr Options::String help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
-      {Parallel::Phase::Initialization,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+  static constexpr auto default_phase_order =
+      std::array{Parallel::Phase::Initialization,
+                 Parallel::Phase::InitializeTimeStepperHistory,
+                 Parallel::Phase::Register,
+                 Parallel::Phase::CheckDomain,
+                 Parallel::Phase::Evolve,
+                 Parallel::Phase::Exit};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

@@ -2,6 +2,9 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Amr
+  AmrCriteria
+  AmrProjectors
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators

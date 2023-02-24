@@ -8,6 +8,7 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 InitialData:
   PlaneWave:
@@ -19,17 +20,16 @@ InitialData:
         Wavenumber: 1.0
         Phase: 0.0
 
+Criteria:
+
 PhaseChangeAndTriggers:
 
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.001
-  InitialSlabSize: 0.01
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  StepChoosers:
-    - Constant: 0.001
 
 DomainCreator:
   Interval:
