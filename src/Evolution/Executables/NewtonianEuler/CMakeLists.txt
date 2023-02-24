@@ -25,6 +25,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Evolution
+  FiniteDifference
   NewtonianEuler
   NewtonianEulerAnalyticData
   NewtonianEulerSolutions
@@ -39,6 +40,7 @@ set(LIBS_TO_LINK
   EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
+  FiniteDifference
   Hydro
   Informer
   Limiters
