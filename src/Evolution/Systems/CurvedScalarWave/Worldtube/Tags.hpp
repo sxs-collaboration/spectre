@@ -69,6 +69,17 @@ struct ExcisionSphere : db::SimpleTag {
 };
 
 /*!
+ * \brief An optional that holds the grid coordinates, centered on the
+ * worldtube, of an element face abutting the worldtube excision sphere. If the
+ * element does not abut the worldtube, this holds std::nullopt. This tag should
+ * be in the databox of element chares.
+ */
+template <size_t Dim>
+struct CenteredFaceCoordinates : db::SimpleTag {
+  using type = std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>;
+};
+
+/*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
  * all element faces abutting the worldtube with the corresponding ElementIds.
  */
