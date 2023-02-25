@@ -327,15 +327,15 @@ jobs:
           # remain below 80% of the size configured here. Configurations further
           # down in the `include` list can override these default settings.
           - build_type: Debug
-            ccache_max_size: 900M
+            ccache_max_size: 1.3G
           - build_type: Release
-            ccache_max_size: 400M
+            ccache_max_size: 500M
           # Generate code coverage report for a single build
           - compiler: gcc-9
             build_type: Debug
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
-            ccache_max_size: 2.3G
+            ccache_max_size: 2G
           # Test with Python 3.7 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
@@ -349,11 +349,11 @@ jobs:
           - compiler: clang-10
             build_type: Debug
             use_pch: OFF
-            ccache_max_size: 400M
+            ccache_max_size: 600M
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
             build_type: Release
-            ccache_max_size: 400M
+            ccache_max_size: 700M
           # Test with ASAN
           - compiler: clang-11
             build_type: Debug
@@ -365,7 +365,7 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-            ccache_max_size: 1.3G
+            ccache_max_size: 2G
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -374,6 +374,7 @@ jobs:
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
+            ccache_max_size: 650M
           # Test compatibility with oldest supported CMake version and using an
           # mpi version of charm
           - compiler: clang-13
@@ -382,6 +383,7 @@ jobs:
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
+            ccache_max_size: 1.4G
 
     container:
       image: sxscollaboration/spectre:ci
