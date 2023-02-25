@@ -148,6 +148,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "ElementFacesGridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::CenteredFaceCoordinates<3>>(
       "CenteredFaceCoordinates");
+  TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
+      "InertialParticlePosition");
+
   test_excision_sphere_tag();
   test_compute_centered_face_coordinates();
 }

@@ -73,6 +73,22 @@ struct ExcisionSphere : db::SimpleTag {
   }
 };
 
+/// @{
+/*!
+ * \brief The position of the scalar charge particle orbiting a central black
+ * hole given in inertial coordinates. We currently assume a circular orbit in
+ * the xy-plane with radius \f$R\f$ and angular velocity \f$\omega =
+ * R^{-3/2}\f$, where grid and inertial coordinates are equal at t = 0.
+ *
+ * Coordinate maps are only saved in Blocks at the moment. More generic
+ * orbits will probably require injecting the grid-to-inertial coordinate map
+ * into the ExcisionSpheres as well.
+ */
+template <size_t Dim>
+struct InertialParticlePosition : db::SimpleTag {
+  using type = tnsr::I<double, Dim, Frame::Inertial>;
+};
+
 /*!
  * \brief An optional that holds the grid coordinates, centered on the
  * worldtube, of an element face abutting the worldtube excision sphere. If the
