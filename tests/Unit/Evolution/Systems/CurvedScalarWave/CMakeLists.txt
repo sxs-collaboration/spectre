@@ -39,7 +39,7 @@ target_link_libraries(
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   MathFunctions
-  GeneralRelativitySolutions
+  ScalarWaveWorldtube
   Utilities
   WaveEquationSolutions
 )
