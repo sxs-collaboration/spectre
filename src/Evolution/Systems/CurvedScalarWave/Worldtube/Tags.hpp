@@ -20,6 +20,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -88,6 +89,18 @@ template <size_t Dim>
 struct InertialParticlePosition : db::SimpleTag {
   using type = tnsr::I<double, Dim, Frame::Inertial>;
 };
+
+template <size_t Dim>
+struct InertialParticlePositionCompute : InertialParticlePosition<Dim>,
+                                         db::ComputeTag {
+  using base = InertialParticlePosition<Dim>;
+  using return_type = tnsr::I<double, Dim, Frame::Inertial>;
+  using argument_tags = tmpl::list<ExcisionSphere<Dim>, ::Tags::Time>;
+  static void function(
+      gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> position,
+      const ::ExcisionSphere<Dim>& excision_sphere, const double time);
+};
+/// @}
 
 /*!
  * \brief An optional that holds the grid coordinates, centered on the
