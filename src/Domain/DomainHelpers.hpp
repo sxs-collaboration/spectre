@@ -123,7 +123,7 @@ auto corners_for_rectilinear_domains(
     -> std::vector<std::array<size_t, two_to_the(VolumeDim)>>;
 
 /// \ingroup ComputationalDomainGroup
-/// The number of wedges to include in the Shell domain.
+/// The number of wedges to include in the Sphere domain.
 enum class ShellWedges {
   /// Use the entire shell
   All,
@@ -141,9 +141,9 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
 
 /*!
  * \ingroup ComputationalDomainGroup
- * These are the CoordinateMaps of the Wedge<3>s used in the Sphere, Shell, and
+ * These are the CoordinateMaps of the Wedge<3>s used in the Sphere and
  * binary compact object DomainCreators. This function can also be used to
- * wrap the Sphere or Shell in a cube made of six Wedge<3>s.
+ * wrap the Sphere in a cube made of six Wedge<3>s.
  *
  * \param inner_radius Radius of the inner boundary of the shell, or the
  * radius circumscribing the inner cube of a sphere.
@@ -193,14 +193,16 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
 /// \brief The corners for a domain with radial layers.
 ///
 /// Generates the corners for a Domain which is made of one or more layers
-/// of Blocks fully enveloping an interior volume, e.g. Shell or Sphere. The
-/// `number_of_layers` specifies how many of these layers of Blocks to have
+/// of Blocks fully enveloping an interior volume, e.g. Sphere.
+///
+/// \param number_of_layers specifies how many layers of Blocks to have
 /// in the final domain.
-/// `include_central_block` is set to `true` in Sphere, where the interior
-/// volume is filled with a central Block, and `false` in Shell, where the
+/// \param include_central_block set to `true` where the interior
+/// volume is filled with a central Block, and `false` where the
 /// interior volume is left empty.
-/// The `central_block_corners` are used as seed values to generate the corners
+/// \param central_block_corners are used as seed values to generate the corners
 /// for the surrounding Blocks.
+/// \param which_wedges can be used to exclude a subset of the wedges.
 std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
     size_t number_of_layers, bool include_central_block,
     const std::array<size_t, 8>& central_block_corners = {{1, 2, 3, 4, 5, 6, 7,

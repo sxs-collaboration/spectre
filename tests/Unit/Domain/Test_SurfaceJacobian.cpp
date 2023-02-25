@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
@@ -79,7 +79,9 @@ DataVector test_function(const tnsr::I<DataVector, 3>& inertial_coords) {
 void test_sphere_integral() {
   for (const auto& [inner_radius, ref_level] : cartesian_product(
            make_array(1e-4, 1e-2, 1.4), std::array<size_t, 3>{{0, 1, 2}})) {
-    domain::creators::Shell shell{inner_radius, 3., ref_level, {10, 10}, true};
+    domain::creators::Sphere shell{
+        inner_radius, 3.,    domain::creators::Sphere::Excision{},
+        ref_level,    10_st, true};
     const auto shell_domain = shell.create_domain();
     const auto& blocks = shell_domain.blocks();
     const auto& initial_ref_levels = shell.initial_refinement_levels();

@@ -24,7 +24,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -347,13 +347,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
           std::array<double, 3>({{0.005, 0.01, 0.015}}));
     }
 
-    domain_creator = std::make_unique<domain::creators::Shell>(
-        1.9, 2.9, 1,
-        std::array<size_t, 2>{grid_points_each_dimension,
-                              grid_points_each_dimension},
-        false, domain::creators::Shell::EquatorialCompressionOptions{1.0, 2},
-        radial_partitioning, radial_distribution, ShellWedges::All,
-        std::move(time_dependence));
+    domain_creator = std::make_unique<domain::creators::Sphere>(
+        1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+        grid_points_each_dimension, false, std::nullopt, radial_partitioning,
+        radial_distribution, ShellWedges::All, std::move(time_dependence));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>
@@ -363,11 +360,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         std::move(tuple_of_opts), domain_creator->functions_of_time(),
         std::vector<size_t>{3, 2});
   } else {
-    domain_creator = std::make_unique<domain::creators::Shell>(
-        1.9, 2.9, 1,
-        std::array<size_t, 2>{grid_points_each_dimension,
-                              grid_points_each_dimension},
-        false);
+    domain_creator = std::make_unique<domain::creators::Sphere>(
+        1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+        grid_points_each_dimension, false);
 
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,

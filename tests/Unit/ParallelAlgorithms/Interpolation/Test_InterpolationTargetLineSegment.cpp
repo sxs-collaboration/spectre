@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -66,8 +66,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
           "NumberOfPoints: 15");
   CHECK(created_opts == line_segment_opts);
 
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   const auto expected_block_coord_holders = [&domain_creator]() {
     const size_t n_pts = 15;

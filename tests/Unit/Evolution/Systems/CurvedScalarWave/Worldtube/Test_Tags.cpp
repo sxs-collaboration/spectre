@@ -18,7 +18,7 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
@@ -44,8 +44,8 @@ namespace CurvedScalarWave::Worldtube {
 namespace {
 void test_excision_sphere_tag() {
   const std::unique_ptr<DomainCreator<3>> shell =
-      std::make_unique<domain::creators::Shell>(
-          1., 2., 2, std::array<size_t, 2>{{4, 4}}, true);
+      std::make_unique<domain::creators::Sphere>(
+          1., 2., domain::creators::Sphere::Excision{}, 2_st, 4_st, true);
   const auto shell_excision_sphere =
       shell->create_domain().excision_spheres().at("ExcisionSphere");
 
@@ -78,10 +78,18 @@ void test_compute_face_coordinates_grid() {
     // we create two shells with different resolutions
     const size_t extents_1 = 5;
     const size_t extents_2 = 7;
-    const domain::creators::Shell shell_1{
-        1.5, 3., initial_refinement, {extents_1, extents_1}};
-    const domain::creators::Shell shell_2{
-        1.5, 3., initial_refinement, {extents_2, extents_2}};
+    const domain::creators::Sphere shell_1{1.5,
+                                           3.,
+                                           domain::creators::Sphere::Excision{},
+                                           initial_refinement,
+                                           extents_1,
+                                           true};
+    const domain::creators::Sphere shell_2{1.5,
+                                           3.,
+                                           domain::creators::Sphere::Excision{},
+                                           initial_refinement,
+                                           extents_2,
+                                           true};
     const auto& initial_extents_1 = shell_1.initial_extents();
     const auto& initial_extents_2 = shell_2.initial_extents();
 

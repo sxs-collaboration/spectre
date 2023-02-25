@@ -21,7 +21,6 @@ set(LIBRARY_SOURCES
   Test_RotatedBricks.cpp
   Test_RotatedIntervals.cpp
   Test_RotatedRectangles.cpp
-  Test_Shell.cpp
   Test_Sphere.cpp
   )
 

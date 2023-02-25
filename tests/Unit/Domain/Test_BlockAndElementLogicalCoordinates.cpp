@@ -21,7 +21,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
@@ -325,8 +325,8 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const size_t n_pts) {
-  const auto shell =
-      domain::creators::Shell(1.5, 2.5, 2, {{1, 1}}, true, {{1.0, 2}});
+  const auto shell = domain::creators::Sphere(
+      1.5, 2.5, domain::creators::Sphere::Excision{}, 2_st, 1_st, true);
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
@@ -703,7 +703,8 @@ void test_element_ids_are_uniquely_determined() {
 }
 
 void test_block_logical_coordinates_with_roundoff_error() {
-  const auto shell = domain::creators::Shell(1., 3., 0, {{3, 3}});
+  const auto shell = domain::creators::Sphere(
+      1., 3., domain::creators::Sphere::Excision{}, 0_st, 3_st, true);
   const auto domain = shell.create_domain();
 
   // Use this as roundoff error
@@ -714,7 +715,8 @@ void test_block_logical_coordinates_with_roundoff_error() {
   std::vector<std::array<double, 3>> points{};
   std::vector<size_t> expected_block_ids{};
   // Block piercing z has ID 0, block piercing x has ID 4. Phi=0, Theta=Pi/4 is
-  // on their shared boundary. See also WedgeOrientations.png in the Shell docs.
+  // on their shared boundary. See also WedgeOrientations.png in the Sphere
+  // docs.
   // - Safely in block 0
   points.push_back({{2., M_PI_4 - 0.01, 0.}});
   expected_block_ids.push_back(0);
@@ -754,7 +756,7 @@ void test_block_logical_coordinates_with_roundoff_error() {
     REQUIRE(result.has_value());
     CHECK(result->id.get_index() == expected_block_ids[i]);
   }
-  // See also WedgeOrientations.png in the Shell docs.
+  // See also WedgeOrientations.png in the Sphere docs.
   CHECK(get<0>(block_logical_coords[0]->data) < 1.0);
   CHECK(get<1>(block_logical_coords[1]->data) < 1.0);
   CHECK(get<0>(block_logical_coords[2]->data) == 1.0);

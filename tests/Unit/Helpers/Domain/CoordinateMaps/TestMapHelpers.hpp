@@ -721,7 +721,7 @@ class OrientationMapIterator {
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Wedge OrientationMap in each of the six directions used in the
- * Shell and Sphere domain creators.
+ * Sphere domain creator.
  */
 inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
   const OrientationMap<3> upper_zeta_rotation{};

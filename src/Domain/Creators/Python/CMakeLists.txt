@@ -14,7 +14,6 @@ spectre_python_add_module(
   DomainCreator.cpp
   Interval.cpp
   Rectangle.cpp
-  Shell.cpp
   Sphere.cpp
   PYTHON_FILES
   __init__.py
@@ -29,7 +28,6 @@ spectre_python_headers(
   DomainCreator.hpp
   Interval.hpp
   Rectangle.hpp
-  Shell.hpp
   Sphere.hpp
   )
 

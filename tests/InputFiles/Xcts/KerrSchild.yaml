@@ -27,28 +27,28 @@ Background:
 InitialGuess: Flatness
 
 DomainCreator:
-  Shell:
+  Sphere:
     InnerRadius: 1.9
     OuterRadius: 10.
+    Interior:
+      ExciseWithBoundaryCondition:
+        AnalyticSolution:
+          ConformalFactor: Dirichlet
+          LapseTimesConformalFactor: Dirichlet
+          ShiftExcess: Dirichlet
     InitialRefinement: 0
-    InitialGridPoints: [4, 4]
+    InitialGridPoints: 4
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
     TimeDependence: None
-    BoundaryConditions:
-      InnerBoundary:
-        AnalyticSolution:
-          ConformalFactor: Dirichlet
-          LapseTimesConformalFactor: Dirichlet
-          ShiftExcess: Dirichlet
-      OuterBoundary:
-        AnalyticSolution:
-          ConformalFactor: Dirichlet
-          LapseTimesConformalFactor: Dirichlet
-          ShiftExcess: Dirichlet
+    OuterBoundaryCondition:
+      AnalyticSolution:
+        ConformalFactor: Dirichlet
+        LapseTimesConformalFactor: Dirichlet
+        ShiftExcess: Dirichlet
 
 Discretization:
   DiscontinuousGalerkin:

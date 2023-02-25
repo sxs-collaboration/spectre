@@ -17,7 +17,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -117,10 +117,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
   // elements sends data
   for (const auto& [initial_refinement, worldtube_radius] : cartesian_product(
            std::array<size_t, 3>{0, 1, 2}, make_array(0.07, 1., 2.8))) {
-    const domain::creators::Shell shell{worldtube_radius,
-                                        3.,
-                                        initial_refinement,
-                                        {initial_extent, initial_extent}};
+    const domain::creators::Sphere shell{worldtube_radius,
+                                         3.,
+                                         domain::creators::Sphere::Excision{},
+                                         initial_refinement,
+                                         initial_extent,
+                                         true};
     const auto shell_domain = shell.create_domain();
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");

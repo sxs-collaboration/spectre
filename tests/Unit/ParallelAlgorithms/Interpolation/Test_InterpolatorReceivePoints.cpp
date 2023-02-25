@@ -16,7 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockId.hpp"
@@ -174,8 +174,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{7, 7}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};

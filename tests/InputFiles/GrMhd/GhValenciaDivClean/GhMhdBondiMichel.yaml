@@ -38,28 +38,28 @@ AnalyticSolution: &InitialData
     MagFieldStrength: 1.0e-2
 
 DomainCreator:
-  Shell:
+  Sphere:
     InnerRadius: 1.9
     OuterRadius: 20.0
+    Interior:
+      ExciseWithBoundaryCondition:
+        ProductDirichletAnalyticAndDirichletAnalytic:
+          GeneralizedHarmonicDirichletAnalytic:
+            AnalyticPrescription: *InitialData
+          ValenciaDirichletAnalytic:
     InitialRefinement: 1
-    InitialGridPoints: [2, 2]
+    InitialGridPoints: 2
     UseEquiangularMap: true
     EquatorialCompression: None
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
     TimeDependence: None
-    BoundaryConditions:
-      InnerBoundary:
-        ProductDirichletAnalyticAndDirichletAnalytic:
-          GeneralizedHarmonicDirichletAnalytic:
-            AnalyticPrescription: *InitialData
-          ValenciaDirichletAnalytic:
-      OuterBoundary:
-        ProductDirichletAnalyticAndDirichletAnalytic:
-          GeneralizedHarmonicDirichletAnalytic:
-            AnalyticPrescription: *InitialData
-          ValenciaDirichletAnalytic:
+    OuterBoundaryCondition:
+      ProductDirichletAnalyticAndDirichletAnalytic:
+        GeneralizedHarmonicDirichletAnalytic:
+          AnalyticPrescription: *InitialData
+        ValenciaDirichletAnalytic:
 
 VariableFixing:
   FixConservatives:

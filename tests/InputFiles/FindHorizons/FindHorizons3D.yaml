@@ -12,11 +12,12 @@ ResourceInfo:
       Exclusive: true
 
 DomainCreator:
-  Shell:
+  Sphere:
     InnerRadius: 1.9
     OuterRadius: 10.
+    Interior: Excise
     InitialRefinement: 0
-    InitialGridPoints: [8, 8]
+    InitialGridPoints: 8
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All

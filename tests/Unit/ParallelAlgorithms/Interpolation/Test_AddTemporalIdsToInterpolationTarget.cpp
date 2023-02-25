@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -150,8 +150,8 @@ void test_add_temporal_ids() {
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
 
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};

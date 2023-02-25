@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -166,8 +166,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   Slab slab(0.0, 1.0);
   const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
   const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   // Type alias for better readability below.
   using vars_type = Variables<

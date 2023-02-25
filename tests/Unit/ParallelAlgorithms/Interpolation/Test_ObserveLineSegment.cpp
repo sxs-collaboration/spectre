@@ -24,7 +24,7 @@
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -487,7 +487,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ObserveLineSegment",
   const auto interval =
       domain::creators::Interval({{0.}}, {{4.}}, {{1}}, {{12}}, {{true}});
   const auto disk = domain::creators::Disk(0.9, 4.9, 1, {{12, 12}}, false);
-  const auto shell = domain::creators::Shell(0.9, 4.9, 1, {{12, 12}}, false);
+  const auto shell = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 12_st, false);
 
   intrp::OptionHolders::LineSegment<1> line_segment_opts_A_1d({{0.0}}, {{1.0}},
                                                               10);
