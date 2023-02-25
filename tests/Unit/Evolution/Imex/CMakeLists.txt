@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_SolveImplicitSector.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Tags)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
