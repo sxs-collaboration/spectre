@@ -7,4 +7,5 @@ spectre_target_headers(
   HEADERS
   DoImplicitStep.hpp
   NamespaceDocs.hpp
+  RecordTimeStepperData.hpp
   )
