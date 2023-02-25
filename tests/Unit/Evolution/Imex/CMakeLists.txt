@@ -5,6 +5,7 @@ set(LIBRARY "Test_Imex")
 
 set(LIBRARY_SOURCES
   Test_GuessResult.cpp
+  Test_Initialize.cpp
   Test_Mode.cpp
   Test_SolveImplicitSector.cpp
   )
