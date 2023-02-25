@@ -26,3 +26,5 @@ target_link_libraries(
   INTERFACE
   Utilities
   )
+
+add_subdirectory(Protocols)
