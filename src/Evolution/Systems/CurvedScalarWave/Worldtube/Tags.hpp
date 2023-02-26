@@ -20,6 +20,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -73,6 +74,35 @@ struct ExcisionSphere : db::SimpleTag {
   }
 };
 
+/// @{
+/*!
+ * \brief The position of the scalar charge particle orbiting a central black
+ * hole given in inertial coordinates. We currently assume a circular orbit in
+ * the xy-plane with radius \f$R\f$ and angular velocity \f$\omega =
+ * R^{-3/2}\f$, where grid and inertial coordinates are equal at t = 0.
+ *
+ * Coordinate maps are only saved in Blocks at the moment. More generic
+ * orbits will probably require injecting the grid-to-inertial coordinate map
+ * into the ExcisionSpheres as well.
+ */
+template <size_t Dim>
+struct InertialParticlePosition : db::SimpleTag {
+  using type = tnsr::I<double, Dim, Frame::Inertial>;
+};
+
+template <size_t Dim>
+struct InertialParticlePositionCompute : InertialParticlePosition<Dim>,
+                                         db::ComputeTag {
+  using base = InertialParticlePosition<Dim>;
+  using return_type = tnsr::I<double, Dim, Frame::Inertial>;
+  using argument_tags = tmpl::list<ExcisionSphere<Dim>, ::Tags::Time>;
+  static void function(
+      gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> position,
+      const ::ExcisionSphere<Dim>& excision_sphere, const double time);
+};
+/// @}
+
+/// @{
 /*!
  * \brief An optional that holds the grid coordinates, centered on the
  * worldtube, of an element face abutting the worldtube excision sphere. If the
@@ -100,6 +130,7 @@ struct CenteredFaceCoordinatesCompute : CenteredFaceCoordinates<Dim>,
       const tnsr::I<DataVector, Dim, Frame::Grid>& grid_coords,
       const Mesh<Dim>& mesh);
 };
+/// @}
 
 /*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
