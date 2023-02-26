@@ -34,6 +34,7 @@ namespace OptionTags {
 struct Worldtube {
   static constexpr Options::String help = {"Options for the Worldtube"};
 };
+
 /*!
  * \brief Name of the excision sphere designated to act as a worldtube
  */
@@ -44,6 +45,17 @@ struct ExcisionSphere {
   using group = Worldtube;
 };
 
+/*!
+ * \brief The internal expansion order of the worldtube solution.
+ */
+struct ExpansionOrder {
+  using type = size_t;
+  static constexpr Options::String help{
+      "The internal expansion order of the worldtube solution. Currently only "
+      "order 0 is implemented"};
+  static size_t upper_bound() { return 0; }
+  using group = Worldtube;
+};
 }  // namespace OptionTags
 
 /*!
@@ -131,6 +143,15 @@ struct CenteredFaceCoordinatesCompute : CenteredFaceCoordinates<Dim>,
       const Mesh<Dim>& mesh);
 };
 /// @}
+
+/*!
+ * \brief The internal expansion order of the worldtube solution.
+ */
+struct ExpansionOrder : db::SimpleTag {
+  using type = size_t;
+  using options_tag = tmpl::list<OptionTags::ExpansionOrder>;
+  static size_t create_from_options(const size_t order) { return order; }
+};
 
 /*!
  * \brief A map that holds the grid coordinates centered on the worldtube of

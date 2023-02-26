@@ -178,7 +178,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
                   "[Unit][Evolution]") {
   CHECK(TestHelpers::test_option_tag<OptionTags::ExcisionSphere>("Worldtube") ==
         "Worldtube");
+  CHECK(TestHelpers::test_option_tag<
+            CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
   TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::CenteredFaceCoordinates<3>>(
