@@ -102,6 +102,7 @@ struct InertialParticlePositionCompute : InertialParticlePosition<Dim>,
 };
 /// @}
 
+/// @{
 /*!
  * \brief An optional that holds the grid coordinates, centered on the
  * worldtube, of an element face abutting the worldtube excision sphere. If the
@@ -129,6 +130,7 @@ struct CenteredFaceCoordinatesCompute : CenteredFaceCoordinates<Dim>,
       const tnsr::I<DataVector, Dim, Frame::Grid>& grid_coords,
       const Mesh<Dim>& mesh);
 };
+/// @}
 
 /*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
