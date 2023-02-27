@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Check commits
@@ -102,7 +102,7 @@ jobs:
       image: sxscollaboration/spectre:ci
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -168,7 +168,7 @@ jobs:
           python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: release-notes
           path: release_notes.md
@@ -196,7 +196,7 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -252,7 +252,7 @@ jobs:
       image: sxscollaboration/spectre:ci
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -288,7 +288,7 @@ jobs:
         run: |
           zip -qr docs-html.zip docs/html
       - name: Upload documentation
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docs-html
           path: /work/build/docs-html.zip
@@ -319,8 +319,6 @@ jobs:
           - gcc-10
           - gcc-11
         build_type: [Debug, Release]
-        use_pch: [ON]
-        use_xsimd: [ON]
         include:
           # Configure ccache sizes. The cache becomes ineffective if it can't
           # hold at least one full build. The sizes for the build configurations
@@ -329,15 +327,15 @@ jobs:
           # remain below 80% of the size configured here. Configurations further
           # down in the `include` list can override these default settings.
           - build_type: Debug
-            ccache_max_size: 900M
+            ccache_max_size: 1.3G
           - build_type: Release
-            ccache_max_size: 400M
+            ccache_max_size: 500M
           # Generate code coverage report for a single build
           - compiler: gcc-9
             build_type: Debug
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
-            ccache_max_size: 2.3G
+            ccache_max_size: 2G
           # Test with Python 3.7 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
@@ -351,16 +349,14 @@ jobs:
           - compiler: clang-10
             build_type: Debug
             use_pch: OFF
-            ccache_max_size: 400M
+            ccache_max_size: 600M
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
-            use_pch: ON
             build_type: Release
-            ccache_max_size: 400M
+            ccache_max_size: 700M
           # Test with ASAN
           - compiler: clang-11
             build_type: Debug
-            use_pch: ON
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/1890
@@ -369,25 +365,25 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-            ccache_max_size: 1.3G
+            ccache_max_size: 2G
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
           - compiler: clang-11
-            use_pch: ON
             build_type: Release
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
+            ccache_max_size: 650M
           # Test compatibility with oldest supported CMake version and using an
           # mpi version of charm
           - compiler: clang-13
-            use_pch: ON
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
+            ccache_max_size: 1.4G
 
     container:
       image: sxscollaboration/spectre:ci
@@ -416,7 +412,7 @@ jobs:
       options: --privileged
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -436,7 +432,7 @@ jobs:
         uses: actions/cache@v3
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
-${{ matrix.build_type }}-pch-${{ matrix.use_pch }}"
+${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         with:
           path: /work/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.ref }}-\
@@ -500,8 +496,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
-          -D USE_PCH=${USE_PCH}
-          -D USE_XSIMD=${USE_XSIMD}
+          -D USE_PCH=${USE_PCH:-'ON'}
+          -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
@@ -523,12 +519,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         run: |
           ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
       - name: Build unit tests
-        if: matrix.use_pch == 'ON'
+        if: matrix.use_pch != 'OFF'
         working-directory: /work/build
         run: |
           make -j2 unit-tests
       - name: Run unit tests
-        if: matrix.use_pch == 'ON' && matrix.COVERAGE != 'ON'
+        if: matrix.use_pch != 'OFF' && matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
@@ -543,6 +539,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         working-directory: /work/build
         run: |
           make unit-test-coverage
+          rm -r docs/html/unit-test-coverage
       - name: Upload coverage report to codecov.io
         if: matrix.COVERAGE == 'ON'
         uses: codecov/codecov-action@v2
@@ -560,6 +557,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
+        if: matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           make test-executables
@@ -577,18 +575,21 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         run: |
           ccache -s
       - name: Run non-unit tests
+        if: matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
           # it is a random timeout or systematic
           ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
       - name: Install
+        if: matrix.COVERAGE != 'ON'
         working-directory: /work/build
         # Make sure the `install` target runs without error. We could add some
         # basic smoke tests here to make sure the installation worked.
         run: |
           make install
       - name: Print size of install directory
+        if: matrix.COVERAGE != 'ON'
         working-directory: /work/spectre_install
         # Remove files post-install to reduce disk space for later on.
         run: |
@@ -654,7 +655,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
-          -D USE_PCH=${USE_PCH}
+          -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_CCACHE=OFF
           -D BUILD_PYTHON_BINDINGS=OFF
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
@@ -707,7 +708,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       SPACK_COLOR: always
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -890,7 +891,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
     env:
       TZ: ${{ github.event.inputs.timezone }}
     steps:
-      - uses: actions/checkout@v3.0.1
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           # Using a personal access token with admin privileges here so this
@@ -945,7 +946,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
       - name: Download release notes
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         id: release-notes
         with:
           name: release-notes
@@ -1014,7 +1015,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         CXXFLAGS: "-Werror"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.1
+        uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
