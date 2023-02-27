@@ -148,8 +148,9 @@ std::array<double, 5> test(const size_t num_dg_pts,
       recons{
           3.8, std::nullopt, 4.0,
           ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral};
-  REQUIRE(static_cast<size_t>(fd_derivative_order) / 2 <=
-          recons.ghost_zone_size());
+  REQUIRE((static_cast<int>(fd_derivative_order) < 0 or
+          (static_cast<size_t>(fd_derivative_order) / 2 <=
+           recons.ghost_zone_size())));
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
@@ -370,6 +371,8 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   std::optional<std::array<double, 5>> previous_error_5{};
   std::optional<std::array<double, 5>> previous_error_6{};
+  std::array<double, 5> second_order_error_5{};
+  std::array<double, 5> second_order_error_6{};
   using DO = ::fd::DerivativeOrder;
   for (const DO fd_do : {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten}) {
     CAPTURE(fd_do);
@@ -378,23 +381,39 @@ SPECTRE_TEST_CASE(
     // the time derivative decreases with increasing resolution.
     const auto five_pts_data = test(5, fd_do);
     const auto six_pts_data = test(6, fd_do);
+    if (fd_do == DO::Two) {
+      second_order_error_5 = five_pts_data;
+      second_order_error_6 = six_pts_data;
+    }
 
     for (size_t i = 0; i < five_pts_data.size(); ++i) {
       CAPTURE(i);
       CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
       // Check that as we increase the order of the FD derivative the error
       // decreases.
-      if (previous_error_5.has_value() and
-          fd_do != ::fd::DerivativeOrder::Two) {
+      if (previous_error_5.has_value()) {
         CHECK(gsl::at(five_pts_data, i) < gsl::at(previous_error_5.value(), i));
       }
-      if (previous_error_6.has_value() and
-          fd_do != ::fd::DerivativeOrder::Two) {
+      if (previous_error_6.has_value()) {
         CHECK(gsl::at(six_pts_data, i) < gsl::at(previous_error_6.value(), i));
       }
     }
     previous_error_5 = five_pts_data;
     previous_error_6 = six_pts_data;
+  }
+
+  // Check the adaptive correction order works.
+  for (const auto& recon_order : make_array(
+           DO::OneHigherThanRecons, DO::OneHigherThanReconsButFiveToFour)) {
+    CAPTURE(recon_order);
+    const auto five_pts_data = test(5, recon_order);
+    const auto six_pts_data = test(6, recon_order);
+    for (size_t i = 0; i < five_pts_data.size(); ++i) {
+      CAPTURE(i);
+      CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
+      CHECK(gsl::at(five_pts_data, i) < gsl::at(second_order_error_5, i));
+      CHECK(gsl::at(six_pts_data, i) < gsl::at(second_order_error_6, i));
+    }
   }
 }
 }  // namespace

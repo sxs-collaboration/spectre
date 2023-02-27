@@ -328,7 +328,9 @@ struct TimeDerivative {
         boundary_corrections, fd_derivative_order,
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
-        subcell_mesh, recons.ghost_zone_size());
+        subcell_mesh, recons.ghost_zone_size(),
+        reconstruction_order.value_or(
+            std::array<gsl::span<std::uint8_t>, 3>{}));
 
     for (size_t dim = 0; dim < 3; ++dim) {
       const auto& boundary_correction_in_axis =
