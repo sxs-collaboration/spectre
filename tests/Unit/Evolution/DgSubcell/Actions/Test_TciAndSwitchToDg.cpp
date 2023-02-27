@@ -35,6 +35,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -69,6 +70,7 @@ template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<Var1>>;
+  using flux_variables = tmpl::list<Var1>;
 };
 
 template <size_t Dim, typename Metavariables>
@@ -90,7 +92,9 @@ struct component {
       Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
       Tags::TimeStepper<TimeStepper>,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-      domain::Tags::Element<Dim>>;
+      domain::Tags::Element<Dim>,
+      evolution::dg::subcell::Tags::CellCenteredFlux<
+          typename metavariables::system::flux_variables, Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -235,7 +239,8 @@ void test_impl(
           recons_method, use_halo,
           test_block_id_assert
               ? std::optional{std::vector<std::string>{"Block0"}}
-              : std::optional<std::vector<std::string>>{}},
+              : std::optional<std::vector<std::string>>{},
+          std::nullopt},
       TestCreator<Dim>{}}}};
 
   TimeStepId time_step_id{true, self_starting ? -1 : 1,
@@ -320,7 +325,10 @@ void test_impl(
        neighbor_data, tci_decision, rdmp_tci_data, tci_grid_history,
        evolved_vars, time_stepper_history,
        make_time_stepper(multistep_time_stepper), neighbor_decisions,
-       Element<Dim>{ElementId<Dim>{0}, {}}});
+       Element<Dim>{ElementId<Dim>{0}, {}},
+       typename evolution::dg::subcell::Tags::CellCenteredFlux<
+           typename metavars::system::flux_variables, Dim>::type::value_type{
+           subcell_mesh.number_of_grid_points()}});
 
   // Invoke the TciAndSwitchToDg action on the runner
   if (test_block_id_assert) {
@@ -343,6 +351,9 @@ void test_impl(
           runner, 0);
   const auto& tci_grid_history_from_box = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0);
+  const auto& cell_centered_flux_from_box = ActionTesting::get_databox_tag<
+      comp, evolution::dg::subcell::Tags::CellCenteredFlux<
+                typename metavars::system::flux_variables, Dim>>(runner, 0);
 
   // true if the TCI wasn't invoked at all because we are always using subcell,
   // doing self-start, took a substep, or already did rollback from DG to FD.
@@ -363,8 +374,10 @@ void test_impl(
   if (avoid_switch_to_dg or rdmp_fails or tci_fails or
       (use_halo and neighbor_is_troubled)) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
+    CHECK(cell_centered_flux_from_box.has_value());
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
+    CHECK(not cell_centered_flux_from_box.has_value());
   }
 
   if (not avoid_switch_to_dg) {

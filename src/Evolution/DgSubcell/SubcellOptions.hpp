@@ -138,11 +138,25 @@ class SubcellOptions {
         "Set to 'None' to not restrict where FD can be used."};
   };
 
+  /// \brief The order of the FD derivative used.
+  ///
+  /// Must be one of 2, 4, 6, 8, or 10. If `Auto` then the derivative order is
+  /// determined for you, typically the next-lowest even order compared with
+  /// the reconstruction scheme order. E.g. for a 5th-order reconstruction we
+  /// would use 4th order derivatives.
+  struct FiniteDifferenceDerivativeOrder {
+    using type = Options::Auto<size_t, Options::AutoLabel::Auto>;
+    static constexpr Options::String help = {
+        "The finite difference derivative order to use. Must be one of 2, 4, "
+        "6, 8, or 10. If Auto, then the derivative order will be determined "
+        "for you."};
+  };
+
   using options =
       tmpl::list<InitialDataRdmpDelta0, InitialDataRdmpEpsilon, RdmpDelta0,
                  RdmpEpsilon, InitialDataPerssonExponent, PerssonExponent,
                  AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo,
-                 OnlyDgBlocksAndGroups>;
+                 OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -154,7 +168,9 @@ class SubcellOptions {
       double initial_data_persson_exponent, double persson_exponent,
       bool always_use_subcells, fd::ReconstructionMethod recons_method,
       bool use_halo,
-      std::optional<std::vector<std::string>> only_dg_block_and_group_names);
+      std::optional<std::vector<std::string>> only_dg_block_and_group_names,
+      std::optional<size_t> finite_difference_derivative_order,
+      const Options::Context& context = {});
 
   /// \brief Given an existing SubcellOptions that was created from block and
   /// group names, create one that stores block IDs.
@@ -203,6 +219,10 @@ class SubcellOptions {
     return only_dg_block_ids_.value();
   }
 
+  const std::optional<size_t>& finite_difference_derivative_order() const {
+    return finite_difference_derivative_order_;
+  }
+
  private:
   friend bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
@@ -221,6 +241,7 @@ class SubcellOptions {
   bool use_halo_{false};
   std::optional<std::vector<std::string>> only_dg_block_and_group_names_{};
   std::optional<std::vector<size_t>> only_dg_block_ids_{};
+  std::optional<size_t> finite_difference_derivative_order_{};
 };
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);

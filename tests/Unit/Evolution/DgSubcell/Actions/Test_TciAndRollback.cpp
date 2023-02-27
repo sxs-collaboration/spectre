@@ -259,7 +259,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, use_halo,
           disable_subcell_in_block
               ? std::optional{std::vector<std::string>{"Block0"}}
-              : std::optional<std::vector<std::string>>{}},
+              : std::optional<std::vector<std::string>>{},
+          std::nullopt},
       TestCreator<Dim>{}}}};
 
   const TimeStepId time_step_id{true, self_starting ? -1 : 1,

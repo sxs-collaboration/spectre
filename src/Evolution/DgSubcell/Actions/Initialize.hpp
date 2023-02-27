@@ -16,6 +16,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
@@ -93,14 +94,14 @@ template <size_t Dim, typename System, typename TciMutator>
 struct Initialize {
   using const_global_cache_tags = tmpl::list<Tags::SubcellOptions<Dim>>;
 
-  using simple_tags =
-      tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
-                 ::Tags::RollbackValue<typename System::variables_tag>,
-                 Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
-                 Tags::TciDecision, Tags::NeighborTciDecisions<Dim>,
-                 Tags::DataForRdmpTci,
-                 fd::Tags::InverseJacobianLogicalToGrid<Dim>,
-                 fd::Tags::DetInverseJacobianLogicalToGrid>;
+  using simple_tags = tmpl::list<
+      Tags::ActiveGrid, Tags::DidRollback,
+      ::Tags::RollbackValue<typename System::variables_tag>,
+      Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
+      Tags::TciDecision, Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
+      fd::Tags::InverseJacobianLogicalToGrid<Dim>,
+      fd::Tags::DetInverseJacobianLogicalToGrid,
+      subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>>;
   using compute_tags =
       tmpl::list<Tags::MeshCompute<Dim>, Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<

@@ -25,6 +25,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -151,6 +152,7 @@ struct TciAndSwitchToDg {
         "of a phase.");
 
     using variables_tag = typename Metavariables::system::variables_tag;
+    using flux_variables = typename Metavariables::system::flux_variables;
 
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "Must be using subcells when calling TciAndSwitchToDg action.");
@@ -250,10 +252,11 @@ struct TciAndSwitchToDg {
           alg::all_of(tci_history, [](const ActiveGrid tci_grid_decision) {
             return tci_grid_decision == ActiveGrid::Dg;
           })))) {
-      db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
-                 Tags::ActiveGrid,
-                 subcell::Tags::NeighborDataForReconstruction<Dim>,
-                 evolution::dg::subcell::Tags::TciGridHistory>(
+      db::mutate<
+          variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
+          Tags::ActiveGrid, subcell::Tags::NeighborDataForReconstruction<Dim>,
+          evolution::dg::subcell::Tags::TciGridHistory,
+          evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>>(
           make_not_null(&box),
           [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto active_history_ptr,
@@ -261,7 +264,8 @@ struct TciAndSwitchToDg {
               const auto subcell_neighbor_data_ptr,
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
-                  tci_grid_history_ptr) {
+                  tci_grid_history_ptr,
+              const auto subcell_cell_centered_fluxes) {
             // Note: strictly speaking, to be conservative this should
             // reconstruct uJ instead of u.
             *active_vars_ptr = fd::reconstruct(
@@ -285,6 +289,9 @@ struct TciAndSwitchToDg {
             // Clear the TCI grid history since we don't need to use it when on
             // the DG grid.
             tci_grid_history_ptr->clear();
+
+            // Clear the allocation for the cell-centered fluxes.
+            *subcell_cell_centered_fluxes = std::nullopt;
           });
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }

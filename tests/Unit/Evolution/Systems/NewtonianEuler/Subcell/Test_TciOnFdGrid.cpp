@@ -72,6 +72,7 @@ void test(const TestThis test_this) {
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
+      std::nullopt,
       std::nullopt};
 
   if (test_this == TestThis::PerssonEnergyDensity) {

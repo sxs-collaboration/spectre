@@ -34,6 +34,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
@@ -85,6 +86,7 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<Var1>>;
+  using flux_variables = tmpl::list<Var1>;
 };
 
 template <size_t Dim, typename Metavariables>
@@ -213,7 +215,8 @@ void test(const bool always_use_subcell, const bool interior_element,
                false,
                allow_subcell_in_block
                    ? std::optional<std::vector<std::string>>{}
-                   : std::optional{std::vector<std::string>{"Block0"}}},
+                   : std::optional{std::vector<std::string>{"Block0"}},
+               std::nullopt},
            TestCreator<Dim>{}}}};
   Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
@@ -344,6 +347,11 @@ void test(const bool always_use_subcell, const bool interior_element,
   for (size_t d = 0; d < Dim; ++d) {
     CHECK(subcell_inertial_coords[d] == subcell_logical_coords[d]);
   }
+  CHECK(not ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::CellCenteredFlux<
+                          typename metavars::system::flux_variables, Dim>>(
+                runner, 0)
+                .has_value());
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",

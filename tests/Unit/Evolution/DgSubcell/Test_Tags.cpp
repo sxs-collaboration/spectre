@@ -19,6 +19,7 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
@@ -83,6 +84,11 @@ void test(const bool moving_mesh) {
       "InertialCoordinates");
   TestHelpers::db::test_simple_tag<
       ::Events::Tags::ObserverCoordinates<Dim, Frame::Grid>>("GridCoordinates");
+  TestHelpers::db::test_simple_tag<
+      subcell::Tags::CellCenteredFlux<tmpl::list<Var1, Var2>, Dim>>(
+      "CellCenteredFlux");
+  TestHelpers::db::test_simple_tag<subcell::Tags::CellCenteredFlux<
+      tmpl::list<Var1, Var2>, Dim, Frame::Grid>>("CellCenteredFlux");
 
   TestHelpers::db::test_compute_tag<
       subcell::Tags::LogicalCoordinatesCompute<Dim>>(
