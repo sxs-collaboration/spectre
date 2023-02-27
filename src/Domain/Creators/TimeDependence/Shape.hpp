@@ -84,7 +84,7 @@ class Shape final : public TimeDependence<3> {
 
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap, Identity>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap>,
       domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeMap>,
       domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Identity>>;
 
