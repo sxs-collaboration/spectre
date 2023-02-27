@@ -110,11 +110,13 @@ class TestTrigger : public DenseTrigger {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/,
       const double time) const {
-    if (time == init_time_) {
+    if (time == trigger_time_) {
+      return is_triggered_;
+    } else {
+      // First initialization call.
+      CHECK(time == init_time_);
       return false;
     }
-    CHECK(time == trigger_time_);
-    return is_triggered_;
   }
 
   using next_check_time_argument_tags = tmpl::list<Tags::Time>;
@@ -123,11 +125,13 @@ class TestTrigger : public DenseTrigger {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/,
       const double time) const {
-    if (time == init_time_) {
+    if (time == trigger_time_) {
+      return next_trigger_;
+    } else {
+      // First initialization call.
+      CHECK(time == init_time_);
       return trigger_time_;
     }
-    CHECK(time == trigger_time_);
-    return next_trigger_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -323,11 +327,12 @@ void test(const bool time_runs_forward) {
   const double done_time = (time_runs_forward ? 1.0 : -1.0) *
                            std::numeric_limits<double>::infinity();
   const VarsType initial_vars{1, 8.0};
+  const VarsType stored_vars{1, 123.0};
   const DtVarsType deriv_vars{1, 1.0};
   const VarsType center_vars = initial_vars + 0.5 * step_size * deriv_vars;
 
   const auto set_up_component =
-      [&deriv_vars, &exact_step_size, &initial_vars, &start_time,
+      [&deriv_vars, &exact_step_size, &initial_vars, &start_time, &stored_vars,
        &time_step_id](
           const gsl::not_null<MockRuntimeSystem*> runner,
           const std::vector<std::tuple<double, std::optional<bool>,
@@ -352,7 +357,7 @@ void test(const bool time_runs_forward) {
           ActionTesting::emplace_array_component<component>(
               runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
               0, time_step_id, exact_step_size, start_time,
-              std::optional<double>{}, initial_vars, std::move(history),
+              std::optional<double>{}, stored_vars, std::move(history),
               evolution::EventsAndDenseTriggers(
                   std::move(events_and_dense_triggers)),
               typename evolution::dg::Tags::NeighborMesh<1>::type{},
@@ -427,10 +432,23 @@ void test(const bool time_runs_forward) {
         reschedule ? std::optional{done_time} : std::nullopt;
     set_up_component(&runner, {{step_center, true, next_check, false}});
     CHECK(run_if_ready(make_not_null(&runner)) == reschedule);
-    TestEvent::check_calls({{step_center, initial_vars}});
+    TestEvent::check_calls({{step_center, stored_vars}});
   };
   check_not_needed(true);
   check_not_needed(false);
+
+  // Variables not needed at initial time
+  const auto check_not_needed_initial = [&](const bool reschedule) {
+    MockRuntimeSystem runner{
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
+    const auto next_check =
+        reschedule ? std::optional{done_time} : std::nullopt;
+    set_up_component(&runner, {{start_time, true, next_check, false}});
+    CHECK(run_if_ready(make_not_null(&runner)) == reschedule);
+    TestEvent::check_calls({{start_time, stored_vars}});
+  };
+  check_not_needed_initial(true);
+  check_not_needed_initial(false);
 
   // Variables needed
   const auto check_needed = [&](const bool reschedule) {
@@ -443,6 +461,18 @@ void test(const bool time_runs_forward) {
   };
   check_needed(true);
   check_needed(false);
+
+  // Variables needed at initial time
+  const auto check_needed_initial = [&](const bool reschedule) {
+    MockRuntimeSystem runner{
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
+    const auto next_check =
+        reschedule ? std::optional{done_time} : std::nullopt;
+    set_up_component(&runner, {{start_time, true, next_check, true}});
+    TestCase::check_dense(&runner, reschedule, {{start_time, initial_vars}});
+  };
+  check_needed_initial(true);
+  check_needed_initial(false);
 
   // Missing dense output data
   const auto check_missing_dense_data = [&](const bool data_needed) {
@@ -473,7 +503,7 @@ void test(const bool time_runs_forward) {
     } else {
       // If we don't need the data, it shouldn't matter whether it is missing.
       CHECK(run_if_ready(make_not_null(&runner)));
-      TestEvent::check_calls({{step_center, initial_vars}});
+      TestEvent::check_calls({{step_center, stored_vars}});
     }
   };
   check_missing_dense_data(true);

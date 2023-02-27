@@ -110,9 +110,11 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
     if (history.size() > 1) {
       history.pop_front();
     }
-    history.discard_value(history.back().time_step_id);
+  } else if (history.substeps().size() == 1) {
+    history.discard_value(history.front().time_step_id);
   } else {
-    history.discard_value(history.substeps().back().time_step_id);
+    history.discard_value(
+        history.substeps()[history.substeps().size() - 2].time_step_id);
   }
   ASSERT(history.size() == 1, "Have more than one step after cleanup.");
 
@@ -125,12 +127,15 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
   if (substep == 0) {
     ASSERT(tableau.substep_coefficients[0].size() == 1,
            "First substep should use one derivative.");
-    *u += tableau.substep_coefficients[0][0] * dt * history.front().derivative;
+    *u = *history.front().value +
+         tableau.substep_coefficients[0][0] * dt * history.front().derivative;
   } else if (substep == number_of_substeps - 1) {
+    *u = *history.substeps().back().value;
     update_between_substeps(u, history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.result_coefficients);
   } else if (substep < number_of_substeps - 1) {
+    *u = *history.substeps().back().value;
     update_between_substeps(u, history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.substep_coefficients[substep]);
@@ -192,6 +197,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
+    *u = *history.back().value;
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -206,6 +212,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
   const auto& tableau = butcher_tableau();
 
+  *u = *history.back().value;
   // The Butcher dense output coefficients are given in terms of the
   // start of the step, but we are passed the value at the end of the
   // step, so we have to undo the step first.
