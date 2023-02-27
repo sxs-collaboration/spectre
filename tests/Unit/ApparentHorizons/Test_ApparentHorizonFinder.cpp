@@ -28,11 +28,14 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/Shape.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -286,7 +289,7 @@ struct MockMetavariables {
 };
 
 template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
-          typename Frame = ::Frame::Inertial,
+          typename Frame = ::Frame::Inertial, bool UseShapeMap = false,
           bool MakeHorizonFinderFailOnPurpose = false>
 void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const size_t l_max,
@@ -327,16 +330,30 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
         domain::CoordinateMaps::Distribution::Linear};
 
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence;
+
+    if constexpr (UseShapeMap) {
+      // Chose a non-unity mass and non-zero spin for the map parameters so the
+      // excision is still inside the horizon but isn't spherical
+      time_dependence = std::make_unique<
+          domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
+          0.0, l_max, mass, dimensionless_spin, std::array{0.0, 0.0, 0.0}, 1.9,
+          2.9);
+    } else {
+      time_dependence = std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array<double, 3>({{0.005, 0.01, 0.015}}),
+          std::array<double, 3>({{0.005, 0.01, 0.015}}));
+    }
+
     domain_creator = std::make_unique<domain::creators::Shell>(
         1.9, 2.9, 1,
         std::array<size_t, 2>{grid_points_each_dimension,
                               grid_points_each_dimension},
         false, domain::creators::Shell::EquatorialCompressionOptions{1.0, 2},
         radial_partitioning, radial_distribution, ShellWedges::All,
-        std::make_unique<
-            domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, std::array<double, 3>({{0.005, 0.01, 0.015}}),
-            std::array<double, 3>({{0.005, 0.01, 0.015}})));
+        std::move(time_dependence));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>
@@ -739,7 +756,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 // Already the resolution used for the tests is very low
 // (lmax=3, num_pts_per_dim=3 to 7) and the error
 // tolerance Approx::custom().epsilon() is pretty large (1e-2 and 1e-3).
-// [[TimeOut, 20]]
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
@@ -780,30 +797,37 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                         std::true_type, Frame::Grid>(
       &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
 
-  // Time-dependent tests in distorted frame.
-  test_schwarzschild_horizon_called = 0;
-  test_kerr_horizon_called = 0;
-  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Distorted>>,
-                        std::true_type, Frame::Distorted>(
-      &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Distorted>>,
-                        std::true_type, Frame::Distorted>(
-      &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
+  // Time-dependent tests in distorted frame using both translation and shape
+  // maps.
+  tmpl::for_each<tmpl::list<std::true_type, std::false_type>>(
+      [](auto use_shape_map) {
+        constexpr bool UseShapeMap =
+            tmpl::type_from<std::decay_t<decltype(use_shape_map)>>::value;
+        test_schwarzschild_horizon_called = 0;
+        test_kerr_horizon_called = 0;
+        test_apparent_horizon<
+            tmpl::list<TestSchwarzschildHorizon<Frame::Distorted>>,
+            std::true_type, Frame::Distorted, UseShapeMap>(
+            &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
+        test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Distorted>>,
+                              std::true_type, Frame::Distorted, UseShapeMap>(
+            &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
+      });
 
   test_schwarzschild_horizon_called = 0;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
-          Frame::Inertial, true>(&test_schwarzschild_horizon_called, 3, 4, 1.0,
-                                 {{0.0, 0.0, 0.0}})),
+          Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
+                                        4, 1.0, {{0.0, 0.0, 0.0}})),
       Catch::Contains("Cannot interpolate onto surface"));
 
   test_schwarzschild_horizon_called = 0;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
-          Frame::Inertial, true>(&test_schwarzschild_horizon_called, 3, 4, 1.0,
-                                 {{0.0, 0.0, 0.0}}, 1)),
+          Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
+                                        4, 1.0, {{0.0, 0.0, 0.0}}, 1)),
       Catch::Contains("Cannot interpolate onto surface"));
 }
 }  // namespace
