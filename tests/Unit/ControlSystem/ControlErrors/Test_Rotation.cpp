@@ -116,7 +116,7 @@ void test_rotation_control_error() {
   const DataVector expected_control_error =
       DataVector{{0.0, -15.0, 105.0}} / 75.0;
 
-  CHECK(control_error == expected_control_error);
+  CHECK_ITERABLE_APPROX(control_error, expected_control_error);
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Rotation",
