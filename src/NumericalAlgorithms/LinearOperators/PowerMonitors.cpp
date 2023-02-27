@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -19,10 +20,9 @@ namespace PowerMonitors {
 
 template <size_t Dim>
 void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
-                const DataVector& input_data_vector, const Mesh<Dim>& mesh) {
+                    const DataVector& u, const Mesh<Dim>& mesh) {
   // Get modal coefficients
-  const ModalVector modal_coefficients =
-      to_modal_coefficients(input_data_vector, mesh);
+  const ModalVector modal_coefficients = to_modal_coefficients(u, mesh);
 
   double slice_sum = 0.0;
   size_t n_slice = 0;
@@ -47,10 +47,71 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
 }
 
 template <size_t Dim>
-std::array<DataVector, Dim> power_monitors(
-    const DataVector& input_data_vector, const Mesh<Dim>& mesh) {
+std::array<DataVector, Dim> power_monitors(const DataVector& u,
+                                           const Mesh<Dim>& mesh) {
   std::array<DataVector, Dim> result{};
-  power_monitors(make_not_null(&result), input_data_vector, mesh);
+  power_monitors(make_not_null(&result), u, mesh);
+  return result;
+}
+
+// The power_monitor argument should be made of type ModalVector
+// when pybindings for ModalVector are enabled
+double relative_truncation_error(const DataVector& power_monitor,
+                                 const size_t num_modes_to_use) {
+  ASSERT(
+      num_modes_to_use <= power_monitor.size(),
+      "Number of modes needs less or equal than the number of power monitors");
+  ASSERT(2_st <= num_modes_to_use,
+         "Number of modes needs to be larger or equal than 2.");
+  // Compute weighted average and total sum in the current dimension
+  double weighted_average = 0.0;
+  double weight_sum = 0.0;
+  double weight_value = 0.0;
+  const size_t last_index = num_modes_to_use - 1;
+  for (size_t index = 0; index <= last_index; ++index) {
+    // Compute current weight
+    weight_value =
+        exp(-square(index - static_cast<double>(last_index) + 0.5));
+    // Add weighted power monitor
+    const double mode = power_monitor[index];
+    ASSERT(not(mode == 0.0),
+           "A power monitor is zero bitwise. If this is one of "
+           "the highest modes, reduce the number of power monitors used to "
+           "estimate the relative truncation error.");
+    weighted_average += weight_value * log10(mode);
+    // Add term to weighted sum
+    weight_sum += weight_value;
+  }
+  weighted_average /= weight_sum;
+
+  // Maximum between the first two power monitors
+  double leading_term = std::max(power_monitor[0], power_monitor[1]);
+  ASSERT(not(leading_term == 0.0),
+         "The leading power monitor term is zero bitwise.");
+  leading_term = log10(leading_term);
+
+  // Compute relative truncation error
+  double result = leading_term - weighted_average;
+  return result;
+}
+
+template <size_t Dim>
+std::array<double, Dim> truncation_error(
+    const std::array<DataVector, Dim>& power_monitors_of_u,
+    const DataVector& u) {
+  std::array<double, Dim> result{};
+  // Use infinity norm to estimate the order of magnitude of the variable
+  const double umax = max(abs(u));
+  double relative_truncation_error_in_d = 0.0;
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto& modes = gsl::at(power_monitors_of_u, d);
+    // Compute relative truncation error
+    relative_truncation_error_in_d =
+        relative_truncation_error(modes, modes.size());
+    // Compute absolute truncation error estimate
+    gsl::at(result, d) =
+        umax * pow(10.0, -1.0 * relative_truncation_error_in_d);
+  }
   return result;
 }
 
@@ -60,11 +121,14 @@ std::array<DataVector, Dim> power_monitors(
 
 #define INSTANTIATE(_, data)                                                   \
   template std::array<DataVector, DIM(data)>                                   \
-  PowerMonitors::power_monitors(const DataVector& input_data_vector,           \
+  PowerMonitors::power_monitors(const DataVector& u,                           \
                                      const Mesh<DIM(data)>& mesh);             \
   template void PowerMonitors::power_monitors(                                 \
     const gsl::not_null<std::array<DataVector, DIM(data)>*> result,            \
-    const DataVector& input_data_vector, const Mesh<DIM(data)>& mesh);
+    const DataVector& u, const Mesh<DIM(data)>& mesh);                         \
+  template std::array<double, DIM(data)> PowerMonitors::truncation_error(      \
+    const std::array<DataVector, DIM(data)>& power_monitors_of_u,              \
+    const DataVector& u);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
