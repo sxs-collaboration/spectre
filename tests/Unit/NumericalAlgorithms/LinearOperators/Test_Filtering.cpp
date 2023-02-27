@@ -15,6 +15,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"

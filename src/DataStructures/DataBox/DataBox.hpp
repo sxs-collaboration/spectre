@@ -32,6 +32,7 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"

@@ -1,29 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines classes SimpleTag, PrefixTag, ComputeTag and several
-/// functions for retrieving tag info
-
 #pragma once
 
-#include <cstddef>
-#include <ostream>
-#include <string>
+#include <memory>
+#include <type_traits>
 
-#include "DataStructures/DataBox/Subitems.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
-#include "DataStructures/VariablesTag.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/NoSuchType.hpp"
-#include "Utilities/PrettyType.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "Utilities/TypeTraits/CreateIsCallable.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Tags {
 /*!
