@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -168,6 +170,38 @@ struct ExpansionOrder : db::SimpleTag {
   using options_tag = tmpl::list<OptionTags::ExpansionOrder>;
   static size_t create_from_options(const size_t order) { return order; }
 };
+
+/// @{
+/*!
+ * Computes the puncture field on an element face abutting the worldtube.
+ * If the current element does not abut the worldtube this holds a std::nullopt.
+ */
+template <size_t Dim>
+struct PunctureField : db::SimpleTag {
+  using type = std::optional<Variables<tmpl::list<
+      CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+      ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                    Frame::Inertial>>>>;
+};
+
+template <size_t Dim>
+struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
+  using base = PunctureField<Dim>;
+  using argument_tags =
+      tmpl::list<FaceCoordinates<Dim, Frame::Inertial, false>,
+                 ExcisionSphere<Dim>, ::Tags::Time, ExpansionOrder>;
+  using return_type = std::optional<Variables<tmpl::list<
+      CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+      ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                    Frame::Inertial>>>>;
+  static void function(
+      const gsl::not_null<return_type*> result,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          inertial_face_coords,
+      const ::ExcisionSphere<Dim>& excision_sphere, const double time,
+      const size_t expansion_order);
+};
+/// @}
 
 /*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
