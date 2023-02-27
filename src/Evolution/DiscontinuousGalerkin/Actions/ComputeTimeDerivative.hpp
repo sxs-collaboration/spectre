@@ -58,8 +58,12 @@ namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <typename Metavariables, typename DbTagsList, size_t Dim>
-auto prepare_neighbor_data(gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
-                           gsl::not_null<db::DataBox<DbTagsList>*> box)
+auto prepare_neighbor_data(
+    gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    [[maybe_unused]] const Variables<db::wrap_tags_in<
+        ::Tags::Flux, typename Metavariables::system::flux_variables,
+        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes)
     -> DirectionMap<Metavariables::volume_dim, DataVector>;
 template <typename DbTagsList>
 int get_tci_decision(const db::DataBox<DbTagsList>& box);
@@ -353,7 +357,10 @@ struct ComputeTimeDerivative {
             typename Metavariables>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      gsl::not_null<db::DataBox<DbTagsList>*> box);
+      gsl::not_null<db::DataBox<DbTagsList>*> box,
+      [[maybe_unused]] const Variables<db::wrap_tags_in<
+          ::Tags::Flux, typename EvolutionSystem::flux_variables,
+          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes);
 };
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
@@ -606,7 +613,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
-                                          make_not_null(&box));
+                                          make_not_null(&box), volume_fluxes);
   return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 }
 
@@ -618,7 +625,10 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                            LocalTimeStepping>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-        const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+        const gsl::not_null<db::DataBox<DbTagsList>*> box,
+        [[maybe_unused]] const Variables<db::wrap_tags_in<
+            ::Tags::Flux, typename EvolutionSystem::flux_variables,
+            tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes) {
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
@@ -637,7 +647,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   if constexpr (using_subcell_v<Metavariables>) {
     all_neighbor_data_for_reconstruction =
         evolution::dg::subcell::prepare_neighbor_data<Metavariables>(
-            make_not_null(&ghost_data_mesh), box);
+            make_not_null(&ghost_data_mesh), box, volume_fluxes);
     tci_decision = evolution::dg::subcell::get_tci_decision(*box);
   }
 

@@ -47,6 +47,7 @@ struct Metavariables {
 
   struct system {
     using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
+    using flux_variables = tmpl::list<Var1>;
   };
 
   struct SubcellOptions {
@@ -149,6 +150,12 @@ void test(const bool all_neighbors_are_doing_dg) {
 
   Variables<tmpl::list<Var1>> vars{dg_mesh.number_of_grid_points(), 0.0};
   get(get<Var1>(vars)) = get<0>(logical_coordinates(dg_mesh));
+  using flux_tag = ::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>;
+  Variables<tmpl::list<flux_tag>> volume_fluxes{dg_mesh.number_of_grid_points(),
+                                                0.0};
+  for (size_t i = 0; i < Dim; ++i) {
+    get<flux_tag>(volume_fluxes).get(i) = logical_coordinates(dg_mesh).get(i);
+  }
 
   const size_t ghost_zone_size = 2;
   auto box = db::create<tmpl::list<GhostZoneSize, domain::Tags::Mesh<Dim>,
@@ -162,7 +169,7 @@ void test(const bool all_neighbors_are_doing_dg) {
   Mesh<Dim> ghost_data_mesh{};
   const auto data_for_neighbors =
       evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
-          make_not_null(&ghost_data_mesh), make_not_null(&box));
+          make_not_null(&ghost_data_mesh), make_not_null(&box), volume_fluxes);
 
   CHECK(ghost_data_mesh ==
         (all_neighbors_are_doing_dg ? dg_mesh : subcell_mesh));
