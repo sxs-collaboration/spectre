@@ -542,17 +542,14 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           rm -r docs/html/unit-test-coverage
       - name: Upload coverage report to codecov.io
         if: matrix.COVERAGE == 'ON'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
-          file: /work/build/tmp/coverage.info
-      - name: Upload coverage report to coveralls.io
-        if: matrix.COVERAGE == 'ON'
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: /work/build/tmp/coverage.info
-        # We don't actively use coveralls currently, so it's ok when the upload
-        # fails (they had some outages)
+          files: /work/build/tmp/coverage.info
+          # Display the job as failed if upload fails (defaults to false for
+          # some reason)
+          fail_ci_if_error: true
+        # We currently don't require codecov in our guidelines, so don't fail
+        # the CI build if codecov fails to upload
         continue-on-error: true
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
