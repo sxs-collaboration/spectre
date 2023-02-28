@@ -28,6 +28,7 @@ spectre_target_headers(
   FallbackReconstructorType.hpp
   Filter.hpp
   FiniteDifference.hpp
+  HighOrderFluxCorrection.hpp
   Minmod.hpp
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
