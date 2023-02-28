@@ -13,5 +13,5 @@
 #ifdef SPECTRE_DEBUG
 #define DEBUG_STATIC_ASSERT(...) static_assert(__VA_ARGS__)
 #else  // ifdef  SPECTRE_DEBUG
-#define DEBUG_STATIC_ASSERT(...)
+#define DEBUG_STATIC_ASSERT(...) static_assert(true)
 #endif  // ifdef  SPECTRE_DEBUG
