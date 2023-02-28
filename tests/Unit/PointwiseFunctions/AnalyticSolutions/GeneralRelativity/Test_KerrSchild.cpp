@@ -60,7 +60,7 @@ void test_schwarzschild(const DataType& used_for_size) {
   // l_mu                 = (1,x/r,y/r,z/r)
   // lapse                = (1+2M/r)^{-1/2}
   // d_i lapse            = (1+2M/r)^{-3/2}(Mx^i/r^3)
-  // shift^i              = (2Mx^i/r^2) / lapse^2
+  // shift^i              = (2Mx^i/r^2) * lapse^2
   // g_{ij}               = delta_{ij} + 2 M x_i x_j/r^3
   // d_i H                = -Mx_i/r^3
   // d_i l_j              = delta_{ij}/r - x^i x^j/r^3
