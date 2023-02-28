@@ -386,22 +386,32 @@ std::string create_option_string(
          "  CenterB: [-3.0, 0.05, 0.0]\n"
          "  RadiusB: 1.0\n"
          "  OuterRadius: 25.0\n"
-         "  UseEquiangularMap: false\n"
-         "  IncludeInnerSphereA: False\n"
-         "  IncludeInnerSphereB: False\n"
+         "  UseEquiangularMap: false\n" +
+         (add_time_dependence ? std::string("  IncludeInnerSphereA: True\n"
+                                            "  IncludeInnerSphereB: True\n")
+                              : std::string("  IncludeInnerSphereA: False\n"
+                                            "  IncludeInnerSphereB: False\n")) +
          "  IncludeOuterSphere: False\n"
          "  InitialRefinement:" +
          (with_additional_outer_radial_refinement
               ? std::string(" 1\n")
-              : std::string("\n    Outer: [2, 1, 1]"
-                            "\n    InnerA: [1, 1, 1]"
-                            "\n    InnerB: [2, 1, 1]\n")) +
+              : (add_time_dependence
+                     ? std::string("\n    InnerSphereA: [1, 1, 1]"
+                                   "\n    InnerSphereB: [1, 1, 1]")
+                     : "") +
+                    std::string("\n    Outer: [2, 1, 1]"
+                                "\n    InnerA: [1, 1, 1]"
+                                "\n    InnerB: [2, 1, 1]\n")) +
          "  InitialGridPoints:" +
          (with_additional_grid_points
               ? std::string(" 3\n")
-              : std::string("\n    Outer: [4, 3, 3]"
-                            "\n    InnerA: [3, 3, 3]"
-                            "\n    InnerB: [5, 3, 3]\n")) +
+              : (add_time_dependence
+                     ? std::string("\n    InnerSphereA: [3, 3, 3]"
+                                   "\n    InnerSphereB: [3, 3, 3]")
+                     : "") +
+                    std::string("\n    Outer: [4, 3, 3]"
+                                "\n    InnerA: [3, 3, 3]"
+                                "\n    InnerB: [5, 3, 3]\n")) +
          time_dependence + boundary_conditions;
 }
 
@@ -567,6 +577,17 @@ void test_parse_errors() {
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          0.0,
+          domain::creators::CylindricalBinaryCompactObject::ExpansionMapOptions{
+              std::array{0.0, 0.0}, 0.0, 1.0},
+          std::array{0.0, 0.0, 0.0}, {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0,
+          1.0, false, false, false, 25.0, false, 1_st, 3_st,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "To use the CylindricalBBH domain with time-dependent maps"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }

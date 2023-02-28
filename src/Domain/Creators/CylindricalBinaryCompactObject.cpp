@@ -382,6 +382,17 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
           use_equiangular_map, initial_refinement, initial_grid_points,
           std::move(inner_boundary_condition),
           std::move(outer_boundary_condition), context) {
+  // The size map, which is applied from the grid to distorted frame, currently
+  // needs to start and stop at certain radii around each excision. If the inner
+  // spheres aren't included, the outer radii would have to be in the middle of
+  // a block. With the inner spheres, the outer radii can be at block
+  // boundaries.
+  if (not (include_inner_sphere_A and include_inner_sphere_B)) {
+    PARSE_ERROR(context,
+                "To use the CylindricalBBH domain with time-dependent maps, "
+                "you must include the inner spheres for both objects. "
+                "Currently, one or both objects is missing the inner spheres.");
+  }
   is_time_dependent_ = true;
   initial_time_ = initial_time;
   expansion_map_options_ = expansion_map_options;
