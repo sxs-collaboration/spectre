@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalEndcap.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalSide.hpp"
@@ -365,6 +366,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     double initial_time, ExpansionMapOptions expansion_map_options,
     std::array<double, 3> initial_angular_velocity,
+    std::array<double, 3> initial_size_map_values_A,
+    std::array<double, 3> initial_size_map_values_B,
     std::array<double, 3> center_A, std::array<double, 3> center_B,
     double radius_A, double radius_B, bool include_inner_sphere_A,
     bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
@@ -397,6 +400,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   initial_time_ = initial_time;
   expansion_map_options_ = expansion_map_options;
   initial_angular_velocity_ = initial_angular_velocity;
+  initial_size_map_values_[0] = initial_size_map_values_A;
+  initial_size_map_values_[1] = initial_size_map_values_B;
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain() const {
@@ -889,33 +894,114 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                    block_names_, block_groups_};
 
   if (is_time_dependent_) {
-    // Same map for all the blocks for now.
-    // When size, shape, cutx, skew are added then we will have different
-    // maps for some blocks.
-    using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
-    using CubicScaleMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>;
+    ASSERT(include_inner_sphere_A_ and include_inner_sphere_B_,
+           "When using time dependent maps for the CylindricalBBH domain, you "
+           "must include both inner spheres.");
+    // Default initialize everything to nullptr so that we only need to set the
+    // appropriate block maps for the specific frames
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
+        grid_to_inertial_block_maps{number_of_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+        grid_to_distorted_block_maps{number_of_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+        distorted_to_inertial_block_maps{number_of_blocks_};
 
-    using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-    using RotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap3D>;
+    CubicScaleMap expansion_map{
+        outer_radius_, expansion_function_of_time_name_,
+        expansion_function_of_time_name_ + "OuterBoundary"s};
+    RotationMap3D rotation_map{rotation_function_of_time_name_};
+    CompressionMap size_A_map{size_map_function_of_time_names_[0], radius_A_,
+                              outer_radius_A,
+                              rotate_from_z_to_x_axis(center_A_)};
+    CompressionMap size_B_map{size_map_function_of_time_names_[1], radius_B_,
+                              outer_radius_B,
+                              rotate_from_z_to_x_axis(center_B_)};
 
-    using CubicScaleAndRotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                              RotationMap3D>;
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>
-        full_map = std::make_unique<CubicScaleAndRotationMapForComposition>(
-            domain::push_back(
-                CubicScaleMapForComposition{CubicScaleMap{
-                    outer_radius_, expansion_function_of_time_name_,
-                    expansion_function_of_time_name_ + "OuterBoundary"s}},
-                RotationMapForComposition{
-                    RotationMap3D{rotation_function_of_time_name_}}));
+    const auto expansion_rotation = [&expansion_map, &rotation_map](
+                                        const auto source_frame,
+                                        const auto target_frame) {
+      using SourceFrame = std::decay_t<decltype(source_frame)>;
+      using TargetFrame = std::decay_t<decltype(target_frame)>;
+      return std::make_unique<
+          CubicScaleAndRotationMapForComposition<SourceFrame, TargetFrame>>(
+          domain::push_back(
+              CubicScaleMapForComposition<SourceFrame, TargetFrame>{
+                  expansion_map},
+              RotationMapForComposition<SourceFrame, TargetFrame>{
+                  rotation_map}));
+    };
+
+    const auto size_expansion_rotation =
+        [&expansion_map, &rotation_map](const CompressionMap& size_map) {
+          return std::make_unique<
+              CompressionAndCubicScaleAndRotationMapForComposition>(
+              domain::push_back(
+                  CompressionMapForComposition<Frame::Grid, Frame::Inertial>{
+                      size_map},
+                  domain::push_back(
+                      CubicScaleMapForComposition<Frame::Grid, Frame::Inertial>{
+                          expansion_map},
+                      RotationMapForComposition<Frame::Grid, Frame::Inertial>{
+                          rotation_map})));
+        };
+
+    // The 0th block always exists and will only need an expansion + rotation
+    // map from the grid to inertial frame. No maps to the distorted frame
+    grid_to_inertial_block_maps[0] =
+        expansion_rotation(Frame::Grid{}, Frame::Inertial{});
+
+    // Because we require that both objects have inner shells, object A
+    // corresponds to blocks 46-59 and object B corresponds to blocks 60-73. If
+    // we have extra outer shells, those will have the same maps as
+    // block 0, and will start at block 74
+    grid_to_inertial_block_maps[46] = size_expansion_rotation(size_A_map);
+    grid_to_distorted_block_maps[46] = std::make_unique<
+        CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
+        size_A_map);
+    distorted_to_inertial_block_maps[46] =
+        expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
+
+    grid_to_inertial_block_maps[60] = size_expansion_rotation(size_B_map);
+    grid_to_distorted_block_maps[60] = std::make_unique<
+        CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
+        size_B_map);
+    distorted_to_inertial_block_maps[60] =
+        expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
+
+    for (size_t block = 1; block < number_of_blocks_; ++block) {
+      if (block == 46 or block == 60) {
+        continue;  // Already initialized
+      } else if (block > 46 and block < 60) {
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[46]->get_clone();
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[46]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[46]->get_clone();
+      } else if (block > 60 and block < 74) {
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[60]->get_clone();
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[60]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[60]->get_clone();
+      } else {
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[0]->get_clone();
+      }
+    }
 
     for (size_t block = 0; block < number_of_blocks_; ++block) {
-      domain.inject_time_dependent_map_for_block(block, full_map->get_clone());
+      domain.inject_time_dependent_map_for_block(
+          block, std::move(grid_to_inertial_block_maps[block]),
+          std::move(grid_to_distorted_block_maps[block]),
+          std::move(distorted_to_inertial_block_maps[block]));
     }
   }
+
   return domain;
 }
 
@@ -1057,6 +1143,10 @@ CylindricalBinaryCompactObject::functions_of_time(
       {expansion_function_of_time_name_,
        std::numeric_limits<double>::infinity()},
       {rotation_function_of_time_name_,
+       std::numeric_limits<double>::infinity()},
+      {size_map_function_of_time_names_[0],
+       std::numeric_limits<double>::infinity()},
+      {size_map_function_of_time_names_[1],
        std::numeric_limits<double>::infinity()}};
 
   // If we have control systems, overwrite these expiration times with the ones
@@ -1070,8 +1160,8 @@ CylindricalBinaryCompactObject::functions_of_time(
   result[expansion_function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{{expansion_map_options_.initial_data[0]},
-                                     {expansion_map_options_.initial_data[1]},
+          std::array<DataVector, 3>{{{expansion_map_options_.initial_values[0]},
+                                     {expansion_map_options_.initial_values[1]},
                                      {0.0}}},
           expiration_times.at(expansion_function_of_time_name_));
 
@@ -1090,7 +1180,7 @@ CylindricalBinaryCompactObject::functions_of_time(
   // axis.  The initial rotation angles don't matter as we never
   // actually use the angles themselves. We only use their derivatives
   // (omega) to determine map parameters. In theory we could determine
-  // each initital angle from the input axis-angle representation, but
+  // each initial angle from the input axis-angle representation, but
   // we don't need to.
   result[rotation_function_of_time_name_] =
       std::make_unique<FunctionsOfTime::QuaternionFunctionOfTime<3>>(
@@ -1103,6 +1193,20 @@ CylindricalBinaryCompactObject::functions_of_time(
                {3, 0.0},
                {3, 0.0}}},
           expiration_times.at(rotation_function_of_time_name_));
+
+  // CompressionMap FunctionOfTime for objects A and B
+  for (size_t i = 0; i < size_map_function_of_time_names_.size(); i++) {
+    result[gsl::at(size_map_function_of_time_names_, i)] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time_,
+            std::array<DataVector, 4>{
+                {{gsl::at(gsl::at(initial_size_map_values_, i), 0)},
+                 {gsl::at(gsl::at(initial_size_map_values_, i), 1)},
+                 {gsl::at(gsl::at(initial_size_map_values_, i), 2)},
+                 {0.0}}},
+            expiration_times.at(gsl::at(size_map_function_of_time_names_, i)));
+  }
+
   return result;
 }
 }  // namespace domain::creators
