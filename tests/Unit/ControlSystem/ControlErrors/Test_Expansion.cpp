@@ -122,7 +122,7 @@ void test_expansion_control_error() {
   const DataVector expected_control_error{exp_factor *
                                           (pos_diff / grid_diff - 1.0)};
 
-  CHECK(control_error == expected_control_error);
+  CHECK_ITERABLE_APPROX(control_error, expected_control_error);
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Expansion",

@@ -191,7 +191,7 @@ void test_shape_control_error() {
     }
   }
 
-  CHECK(control_error == expected_control_error);
+  CHECK_ITERABLE_APPROX(control_error, expected_control_error);
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Shape",
