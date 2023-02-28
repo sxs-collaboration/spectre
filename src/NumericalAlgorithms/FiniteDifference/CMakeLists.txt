@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AoWeno.cpp
+  DerivativeOrder.cpp
   FallbackReconstructorType.cpp
   Filter.cpp
   Minmod.cpp
@@ -25,6 +26,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AoWeno.hpp
+  DerivativeOrder.hpp
   FallbackReconstructorType.hpp
   Filter.hpp
   FiniteDifference.hpp
