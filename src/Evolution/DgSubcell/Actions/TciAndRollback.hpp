@@ -191,7 +191,6 @@ struct TciAndRollback {
                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
                 neighbor_data_ptr,
-            const typename variables_tag::type& rollback_value,
             const FixedHashMap<
                 maximum_number_of_neighbors(Dim),
                 std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
@@ -206,8 +205,8 @@ struct TciAndRollback {
           //
           // Note: strictly speaking, to be conservative this should project
           // uJ instead of u.
-          *active_vars_ptr =
-              fd::project(rollback_value, dg_mesh, subcell_mesh.extents());
+          *active_vars_ptr = fd::project(active_history_ptr->latest_value(),
+                                         dg_mesh, subcell_mesh.extents());
 
           // Project the time stepper history to the subcells, excluding the
           // most recent inadmissible history.
@@ -235,7 +234,6 @@ struct TciAndRollback {
           // method, since we need to lift G+D instead of the ingredients
           // that go into G+D, which is what we would be projecting here.
         },
-        db::get<::Tags::RollbackValue<variables_tag>>(box),
         db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),
         Metavariables::SubcellOptions::ghost_zone_size(box));
 

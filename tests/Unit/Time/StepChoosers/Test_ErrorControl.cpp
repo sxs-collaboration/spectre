@@ -100,17 +100,17 @@ std::pair<double, bool> get_suggestion(
   TimeSteppers::History<Variables<EvolvedTags>> history{stepper_order};
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, step_values,
                  0.1 * step_values);
+  history.discard_value(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}});
   auto box =
       db::create<db::AddSimpleTags<
                      Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
                      Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
-                     Tags::RollbackValue<EvolvedVariablesTag>,
                      Tags::StepperError<EvolvedVariablesTag>,
                      Tags::PreviousStepperError<EvolvedVariablesTag>,
                      Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>>,
                  db::AddComputeTags<>>(
-          Metavariables<true>{}, std::move(history), step_values, error,
-          previous_error, false,
+          Metavariables<true>{}, history, error, previous_error,
+          false,
           std::unique_ptr<TimeStepper>{
               std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
 
@@ -121,7 +121,7 @@ std::pair<double, bool> get_suggestion(
   // check that when the error is not declared updated, the step is accepted and
   // the step is infinity.
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control(step_values, error, previous_error, false, time_stepper,
+        error_control(history, error, previous_error, false, time_stepper,
                       previous_step));
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
         error_control_base->desired_step(previous_step, box));
@@ -131,10 +131,10 @@ std::pair<double, bool> get_suggestion(
         *stepper_updated = true;
       });
   const std::pair<double, bool> result = error_control(
-      step_values, error, previous_error, true, time_stepper, previous_step);
+      history, error, previous_error, true, time_stepper, previous_step);
   CHECK(error_control_base->desired_step(previous_step, box) == result);
   CHECK(serialize_and_deserialize(error_control)(
-            step_values, error, previous_error, true, time_stepper,
+            history, error, previous_error, true, time_stepper,
             previous_step) == result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(previous_step, box) == result);

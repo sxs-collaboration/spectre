@@ -905,8 +905,7 @@ struct component {
       ::Tags::IsUsingTimeSteppingErrorControl,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<LtsTimeStepper>,
-                     ::Tags::RollbackValue<variables_tag>>,
+          tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<LtsTimeStepper>>,
           tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
@@ -1319,8 +1318,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::CoordinateMaps::Identity<Dim>{})},
          false, std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforth>(5)),
-         typename ::Tags::RollbackValue<variables_tag>::type{}});
+             std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
@@ -1351,8 +1349,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                      domain::CoordinateMaps::Identity<Dim>{})},
              false, std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforth>(5)),
-             typename ::Tags::RollbackValue<variables_tag>::type{}});
+                 std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }
     }
   } else {

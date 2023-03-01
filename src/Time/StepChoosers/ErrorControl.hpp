@@ -176,8 +176,7 @@ class ErrorControl : public StepChooser<StepChooserUse>,
         safety_factor_{safety_factor} {}
 
   using simple_tags =
-      tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
-                 ::Tags::StepperError<EvolvedVariableTag>,
+      tmpl::list<::Tags::StepperError<EvolvedVariableTag>,
                  ::Tags::PreviousStepperError<EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated>;
 
@@ -185,13 +184,13 @@ class ErrorControl : public StepChooser<StepChooserUse>,
       std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
 
   using argument_tags =
-      tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
+      tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
                  ::Tags::StepperError<EvolvedVariableTag>,
                  ::Tags::PreviousStepperError<EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
   std::pair<double, bool> operator()(
-      const evolved_variable_type& rollback_value,
+      const TimeSteppers::History<evolved_variable_type>& history,
       const error_variable_type& error,
       const error_variable_type& previous_error,
       const bool& stepper_error_updated, const TimeStepper& stepper,
@@ -201,10 +200,10 @@ class ErrorControl : public StepChooser<StepChooserUse>,
     if (not stepper_error_updated) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const double l_inf_error = error_calc_impl(rollback_value, error);
+    const double l_inf_error = error_calc_impl(history.latest_value(), error);
     double new_step;
     if (previous_error.number_of_grid_points() !=
-        rollback_value.number_of_grid_points()) {
+        history.latest_value().number_of_grid_points()) {
       new_step = previous_step *
                  std::clamp(safety_factor_ *
                                 pow(1.0 / std::max(l_inf_error, 1e-14),
@@ -212,7 +211,7 @@ class ErrorControl : public StepChooser<StepChooserUse>,
                             min_factor_, max_factor_);
     } else {
       const double previous_l_inf_error =
-          error_calc_impl(rollback_value, previous_error);
+          error_calc_impl(history.latest_value(), previous_error);
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       const double alpha_factor = 0.7 / (stepper.error_estimate_order() + 1);
