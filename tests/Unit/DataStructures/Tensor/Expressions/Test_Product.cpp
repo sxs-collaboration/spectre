@@ -105,8 +105,8 @@ void test_outer_product_double(const gsl::not_null<Generator*> generator,
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
-      CHECK(Lij_from_R_Sij.get(i, j) == 5.6 * S.get(i, j));
-      CHECK(Lij_from_Sij_R.get(i, j) == S.get(i, j) * -8.1);
+      CHECK_ITERABLE_APPROX(Lij_from_R_Sij.get(i, j), 5.6 * S.get(i, j));
+      CHECK_ITERABLE_APPROX(Lij_from_Sij_R.get(i, j), S.get(i, j) * -8.1);
       CHECK_ITERABLE_APPROX(Lij_from_R_Sij_T.get(i, j),
                             -1.7 * S.get(i, j) * 0.6);
     }
@@ -136,9 +136,10 @@ void test_outer_product_rank_0_operand(
       generator, distribution, used_for_size);
 
   // \f$L = R * R\f$
-  CHECK(tenex::evaluate(R() * R()).get() == R.get() * R.get());
+  CHECK_ITERABLE_APPROX(tenex::evaluate(R() * R()).get(), R.get() * R.get());
   // \f$L = R * R * R\f$
-  CHECK(tenex::evaluate(R() * R() * R()).get() == R.get() * R.get() * R.get());
+  CHECK_ITERABLE_APPROX(tenex::evaluate(R() * R() * R()).get(),
+                        R.get() * R.get() * R.get());
 
   const auto Su =
       make_with_random_values<tnsr::A<DataType, 3, Frame::Inertial>>(
@@ -152,8 +153,8 @@ void test_outer_product_rank_0_operand(
   const decltype(Su) LA_from_SA_R = tenex::evaluate<ti::A>(Su(ti::A) * R());
 
   for (size_t a = 0; a < 4; a++) {
-    CHECK(LA_from_R_SA.get(a) == R.get() * Su.get(a));
-    CHECK(LA_from_SA_R.get(a) == Su.get(a) * R.get());
+    CHECK_ITERABLE_APPROX(LA_from_R_SA.get(a), R.get() * Su.get(a));
+    CHECK_ITERABLE_APPROX(LA_from_SA_R.get(a), Su.get(a) * R.get());
   }
 
   const auto Tll = make_with_random_values<
@@ -186,12 +187,12 @@ void test_outer_product_rank_0_operand(
   for (size_t a = 0; a < 3; a++) {
     for (size_t i = 0; i < 3; i++) {
       const DataType expected_R_Tai_product = R.get() * Tll.get(a, i);
-      CHECK(Lai_from_R_Tai.get(a, i) == expected_R_Tai_product);
-      CHECK(Lia_from_R_Tai.get(i, a) == expected_R_Tai_product);
+      CHECK_ITERABLE_APPROX(Lai_from_R_Tai.get(a, i), expected_R_Tai_product);
+      CHECK_ITERABLE_APPROX(Lia_from_R_Tai.get(i, a), expected_R_Tai_product);
 
       const DataType expected_Tai_R_product = Tll.get(a, i) * R.get();
-      CHECK(Lai_from_Tai_R.get(a, i) == expected_Tai_R_product);
-      CHECK(Lia_from_Tai_R.get(i, a) == expected_Tai_R_product);
+      CHECK_ITERABLE_APPROX(Lai_from_Tai_R.get(a, i), expected_Tai_R_product);
+      CHECK_ITERABLE_APPROX(Lia_from_Tai_R.get(i, a), expected_Tai_R_product);
     }
   }
 }
@@ -231,7 +232,7 @@ void test_outer_product_rank_1_operand(
 
   for (size_t i = 0; i < 3; i++) {
     for (size_t a = 0; a < 4; a++) {
-      CHECK(LAi_from_Ri_SA.get(a, i) == Rl.get(i) * Su.get(a));
+      CHECK_ITERABLE_APPROX(LAi_from_Ri_SA.get(a, i), Rl.get(i) * Su.get(a));
     }
   }
 
@@ -279,8 +280,10 @@ void test_outer_product_rank_1_operand(
   for (size_t k = 0; k < 3; k++) {
     for (size_t c = 0; c < 4; c++) {
       for (size_t d = 0; d < 3; d++) {
-        CHECK(LkCd_from_SC_Gdk.get(k, c, d) == Su.get(c) * Gll.get(d, k));
-        CHECK(LCdk_from_Gdk_SC.get(c, d, k) == Gll.get(d, k) * Su.get(c));
+        CHECK_ITERABLE_APPROX(LkCd_from_SC_Gdk.get(k, c, d),
+                              Su.get(c) * Gll.get(d, k));
+        CHECK_ITERABLE_APPROX(LCdk_from_Gdk_SC.get(c, d, k),
+                              Gll.get(d, k) * Su.get(c));
       }
     }
   }
@@ -415,33 +418,57 @@ void test_outer_product_rank_2x2_operands(
     for (size_t b = 0; b < R_index::dim; b++) {
       for (size_t i = 0; i < S_first_index::dim; i++) {
         for (size_t c = 0; c < S_second_index::dim; c++) {
-          CHECK(L_abIc.get(a, b, i, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_abcI.get(a, b, c, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_aIbc.get(a, i, b, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_aIcb.get(a, i, c, b) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_acbI.get(a, c, b, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_acIb.get(a, c, i, b) == Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_abIc.get(a, b, i, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_abcI.get(a, b, c, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_aIbc.get(a, i, b, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_aIcb.get(a, i, c, b),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_acbI.get(a, c, b, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_acIb.get(a, c, i, b),
+                                Rll.get(a, b) * Sul.get(i, c));
 
-          CHECK(L_baIc.get(b, a, i, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_bacI.get(b, a, c, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_bIac.get(b, i, a, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_bIca.get(b, i, c, a) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_bcaI.get(b, c, a, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_bcIa.get(b, c, i, a) == Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_baIc.get(b, a, i, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_bacI.get(b, a, c, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_bIac.get(b, i, a, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_bIca.get(b, i, c, a),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_bcaI.get(b, c, a, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_bcIa.get(b, c, i, a),
+                                Rll.get(a, b) * Sul.get(i, c));
 
-          CHECK(L_Iabc.get(i, a, b, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_Iacb.get(i, a, c, b) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_Ibac.get(i, b, a, c) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_Ibca.get(i, b, c, a) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_Icab.get(i, c, a, b) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_Icba.get(i, c, b, a) == Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Iabc.get(i, a, b, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Iacb.get(i, a, c, b),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Ibac.get(i, b, a, c),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Ibca.get(i, b, c, a),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Icab.get(i, c, a, b),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_Icba.get(i, c, b, a),
+                                Rll.get(a, b) * Sul.get(i, c));
 
-          CHECK(L_cabI.get(c, a, b, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_caIb.get(c, a, i, b) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_cbaI.get(c, b, a, i) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_cbIa.get(c, b, i, a) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_cIab.get(c, i, a, b) == Rll.get(a, b) * Sul.get(i, c));
-          CHECK(L_cIba.get(c, i, b, a) == Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_cabI.get(c, a, b, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_caIb.get(c, a, i, b),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_cbaI.get(c, b, a, i),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_cbIa.get(c, b, i, a),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_cIab.get(c, i, a, b),
+                                Rll.get(a, b) * Sul.get(i, c));
+          CHECK_ITERABLE_APPROX(L_cIba.get(c, i, b, a),
+                                Rll.get(a, b) * Sul.get(i, c));
         }
       }
     }
