@@ -15,6 +15,7 @@ spectre_target_sources(
   OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
+  Stringize.cpp
   WrapText.cpp
   )
 
@@ -68,6 +69,7 @@ spectre_target_headers(
   StdHelpers.hpp
   StlBoilerplate.hpp
   StlStreamDeclarations.hpp
+  Stringize.hpp
   TMPL.hpp
   TaggedTuple.hpp
   TmplDebugging.hpp
