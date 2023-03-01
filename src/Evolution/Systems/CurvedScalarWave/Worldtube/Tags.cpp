@@ -3,30 +3,40 @@
 
 #include <cstddef>
 #include <optional>
+#include <type_traits>
 
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "Domain/Structure/IndexToSliceAt.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube::Tags {
-template <size_t Dim>
-void CenteredFaceCoordinatesCompute<Dim>::function(
-    const gsl::not_null<std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>*>
-        result,
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__)
+template <size_t Dim, typename Frame, bool Centered>
+void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
+    const gsl::not_null<std::optional<tnsr::I<DataVector, Dim, Frame>>*> result,
     const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
-    const tnsr::I<DataVector, Dim, Frame::Grid>& grid_coords,
-    const Mesh<Dim>& mesh) {
+    const tnsr::I<DataVector, Dim, Frame>& coords, const Mesh<Dim>& mesh) {
   const auto direction = excision_sphere.abutting_direction(element.id());
   if (direction.has_value()) {
+    ASSERT(
+        mesh.quadrature(direction.value().dimension()) ==
+            Spectral::Quadrature::GaussLobatto,
+        "Expected GaussLobatto quadrature. Other quadratures are disabled "
+        "because interpolating the coordinates incurs an unnecessary error.");
     const size_t grid_size =
         mesh.slice_away(direction->dimension()).number_of_grid_points();
     if (result->has_value()) {
@@ -35,17 +45,61 @@ void CenteredFaceCoordinatesCompute<Dim>::function(
     } else {
       result->emplace(grid_size);
     }
-    evolution::dg::project_tensor_to_boundary(make_not_null(&(result->value())),
-                                              grid_coords, mesh,
-                                              direction.value());
-    for (size_t i = 0; i < Dim; ++i) {
-      result->value().get(i) -= excision_sphere.center().get(i);
+    data_on_slice(make_not_null(&(result->value())), coords, mesh.extents(),
+                  direction.value().dimension(),
+                  index_to_slice_at(mesh.extents(), direction.value()));
+    if constexpr (Centered) {
+      if constexpr (not std::is_same_v<Frame, ::Frame::Grid>) {
+        ERROR("Should be grid frame");
+      }
+      for (size_t i = 0; i < Dim; ++i) {
+        result->value().get(i) -= excision_sphere.center().get(i);
+      }
     }
-
   } else {
     result->reset();
   }
 }
+
+template <size_t Dim, typename Frame, bool Centered>
+void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
+    const gsl::not_null<
+        std::optional<tnsr::I<DataVector, Dim, ::Frame::Inertial>>*>
+        result,
+    const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
+    const tnsr::I<DataVector, Dim, ::Frame::Inertial>& inertial_coords,
+    const Mesh<Dim>& mesh, const tnsr::I<double, Dim>& particle_position) {
+  if constexpr (not(Centered and std::is_same_v<Frame, ::Frame::Inertial>)) {
+    ERROR("Should be centered in inertial frame");
+  }
+  const auto direction = excision_sphere.abutting_direction(element.id());
+  if (direction.has_value()) {
+    ASSERT(
+        mesh.quadrature(direction.value().dimension()) ==
+            Spectral::Quadrature::GaussLobatto,
+        "Expected GaussLobatto quadrature. Other quadratures are disabled "
+        "because interpolating the coordinates incurs an unnecessary error.");
+    const size_t grid_size =
+        mesh.slice_away(direction->dimension()).number_of_grid_points();
+    if (result->has_value()) {
+      destructive_resize_components(make_not_null(&(result->value())),
+                                    grid_size);
+    } else {
+      result->emplace(grid_size);
+    }
+    data_on_slice(make_not_null(&(result->value())), inertial_coords,
+                  mesh.extents(), direction.value().dimension(),
+                  index_to_slice_at(mesh.extents(), direction.value()));
+    for (size_t i = 0; i < Dim; ++i) {
+      result->value().get(i) -= particle_position.get(i);
+    }
+  } else {
+    result->reset();
+  }
+}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__)
 
 template <size_t Dim>
 void InertialParticlePositionCompute<Dim>::function(
@@ -64,6 +118,11 @@ void InertialParticlePositionCompute<Dim>::function(
   inertial_position->get(2) = grid_position.get(2);
 }
 
-template struct CenteredFaceCoordinatesCompute<3>;
 template struct InertialParticlePositionCompute<3>;
+
+template struct FaceCoordinatesCompute<3, Frame::Grid, true>;
+template struct FaceCoordinatesCompute<3, Frame::Grid, false>;
+template struct FaceCoordinatesCompute<3, Frame::Inertial, true>;
+template struct FaceCoordinatesCompute<3, Frame::Inertial, false>;
+
 }  // namespace CurvedScalarWave::Worldtube::Tags

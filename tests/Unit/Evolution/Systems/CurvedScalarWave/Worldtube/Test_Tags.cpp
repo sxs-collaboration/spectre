@@ -49,18 +49,22 @@ void test_excision_sphere_tag() {
           "Available excision spheres are: (ExcisionSphere)"));
 }
 
-void test_compute_centered_face_coordinates() {
+void test_compute_face_coordinates_grid() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<
-      Tags::CenteredFaceCoordinatesCompute<Dim>>("CenteredFaceCoordinates");
+      Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>("FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Grid, false>>("FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>>(
+      "FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, false>>(
+      "FaceCoordinates");
 
-  for (const auto& [initial_refinement, quadrature] :
-       cartesian_product(std::array<size_t, 2>{{0, 1}},
-                         make_array(Spectral::Quadrature::Gauss,
-                                    Spectral::Quadrature::GaussLobatto))) {
+  for (const auto& initial_refinement : std::array<size_t, 2>{{0, 1}}) {
     CAPTURE(initial_refinement);
-    CAPTURE(quadrature);
-
+    const auto quadrature = Spectral::Quadrature::GaussLobatto;
     // we create two shells with different resolutions
     const size_t extents_1 = 5;
     const size_t extents_2 = 7;
@@ -104,16 +108,17 @@ void test_compute_centered_face_coordinates() {
           initial_extents_2, element_id, quadrature);
       const auto grid_coords_2 = element_map(logical_coordinates(mesh_2));
 
-      auto box = db::create<
-          db::AddSimpleTags<Tags::ExcisionSphere<Dim>,
-                            domain::Tags::Element<Dim>,
+      auto box =
+          db::create<db::AddSimpleTags<
+                         Tags::ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
                             domain::Tags::Coordinates<Dim, Frame::Grid>,
                             domain::Tags::Mesh<Dim>>,
-          db::AddComputeTags<Tags::CenteredFaceCoordinatesCompute<Dim>>>(
+                     db::AddComputeTags<
+                         Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>>(
           excision_sphere, element, grid_coords_1, mesh_1);
 
       const auto centered_face_coordinates_1 =
-          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+          db::get<Tags::FaceCoordinates<Dim, Frame::Grid, true>>(box);
       if (all_faces_grid_coords_1.count(element_id)) {
         CHECK(centered_face_coordinates_1.has_value());
         CHECK_ITERABLE_APPROX(centered_face_coordinates_1.value(),
@@ -129,7 +134,7 @@ void test_compute_centered_face_coordinates() {
           make_not_null(&box), mesh_2, grid_coords_2);
 
       const auto centered_face_coordinates_2 =
-          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+          db::get<Tags::FaceCoordinates<Dim, Frame::Grid, true>>(box);
       if (all_faces_grid_coords_2.count(element_id)) {
         // p-refinement should not change which elements are abutting i.e. have
         // a value
@@ -185,13 +190,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
-  TestHelpers::db::test_simple_tag<Tags::CenteredFaceCoordinates<3>>(
-      "CenteredFaceCoordinates");
+  TestHelpers::db::test_simple_tag<Tags::FaceCoordinates<3, Frame::Grid, true>>(
+      "FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Grid, false>>("FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Inertial, true>>("FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Inertial, false>>("FaceCoordinates");
   TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
       "InertialParticlePosition");
 
   test_excision_sphere_tag();
-  test_compute_centered_face_coordinates();
+  test_compute_face_coordinates_grid();
   test_inertial_particle_position_compute();
 }
 }  // namespace CurvedScalarWave::Worldtube
