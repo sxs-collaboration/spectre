@@ -75,6 +75,102 @@ Interior copy_interior(const Interior& interior,
   }
 }
 
+std::string stringize(const bool t) { return t ? "true" : "false"; }
+
+template <typename T>
+std::string stringize(const std::vector<T>& t) {
+  std::string result = "[";
+  bool first = true;
+  for (const auto& item : t) {
+    if (not first) {
+      result += ", ";
+    }
+    result += get_output(item);
+    first = false;
+  }
+  result += "]";
+  return result;
+}
+
+std::string option_string(
+    const double inner_radius, const double outer_radius,
+    const Interior& interior, const size_t initial_refinement,
+    const std::array<size_t, 3> initial_extents, const bool equiangular,
+    const std::optional<creators::Sphere::EquatorialCompressionOptions>&
+        equatorial_compression,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<CoordinateMaps::Distribution>& radial_distribution,
+    const ShellWedges which_wedges, const bool time_dependent,
+    const bool with_boundary_conditions) {
+  const std::string interior_option =
+      [&interior, &with_boundary_conditions]() -> std::string {
+    if (std::holds_alternative<creators::Sphere::Excision>(interior)) {
+      if (with_boundary_conditions) {
+        return "  Interior:\n"
+               "    ExciseWithBoundaryCondition:\n"
+               "      TestBoundaryCondition:\n"
+               "        Direction: lower-zeta\n"
+               "        BlockId: 50\n";
+      } else {
+        return "  Interior: Excise\n";
+      }
+    } else {
+      const double sphericity =
+          std::get<creators::Sphere::InnerCube>(interior).sphericity;
+      return "  Interior:\n"
+             "    FillWithSphericity: " +
+             std::to_string(sphericity) + "\n";
+    }
+  }();
+  const std::string equatorial_compression_option =
+      equatorial_compression.has_value()
+          ? "  EquatorialCompression:\n"
+            "    AspectRatio: " +
+                std::to_string(equatorial_compression->aspect_ratio) +
+                "\n"
+                "    IndexPolarAxis: " +
+                std::to_string(equatorial_compression->index_polar_axis) + "\n"
+          : "  EquatorialCompression: None\n";
+  const std::string time_dependence_option =
+      time_dependent ? "  TimeDependence:\n"
+                       "    UniformTranslation:\n"
+                       "      InitialTime: 1.0\n"
+                       "      Velocity: [2.3, -0.3, 0.5]\n"
+                     : "  TimeDependence: None\n";
+  const std::string outer_bc_option = with_boundary_conditions
+                                          ? "  OuterBoundaryCondition:\n"
+                                            "    TestBoundaryCondition:\n"
+                                            "      Direction: upper-zeta\n"
+                                            "      BlockId: 50\n"
+                                          : "";
+  return "Sphere:\n"
+         "  InnerRadius: " +
+         std::to_string(inner_radius) +
+         "\n"
+         "  OuterRadius: " +
+         std::to_string(outer_radius) + "\n" + interior_option +
+         "  InitialRefinement: " + std::to_string(initial_refinement) +
+         "\n"
+         "  InitialGridPoints: [" +
+         std::to_string(initial_extents[0]) + ", " +
+         std::to_string(initial_extents[1]) + ", " +
+         std::to_string(initial_extents[2]) +
+         "]\n"
+         "  UseEquiangularMap: " +
+         stringize(equiangular) +
+         "\n"
+         "  EquatorialCompression: None\n"
+         "  WhichWedges: " +
+         get_output(which_wedges) +
+         "\n"
+         "  RadialPartitioning: " +
+         stringize(radial_partitioning) +
+         "\n"
+         "  RadialDistribution: " +
+         stringize(radial_distribution) + "\n" + time_dependence_option +
+         outer_bc_option;
+}
+
 // Calculate block logical coordinates of points residing on corners of the
 // inner cube or on radial block faces of wedges. The radial direction in 3D
 // wedges is the positive zeta direction. These coordinates will be used to
@@ -411,15 +507,19 @@ void test_sphere() {
            {domain::CoordinateMaps::Distribution::Linear,
             domain::CoordinateMaps::Distribution::Logarithmic}}};
 
+  const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
+  const std::vector<double> times{1., 10.};
+
   for (const auto& [interior_index, equiangular, equatorial_compression,
-                    array_index, which_wedges, with_boundary_conditions] :
+                    array_index, which_wedges, time_dependent,
+                    with_boundary_conditions] :
        random_sample<5>(
            cartesian_product(
                make_array(0_st, 1_st, 2_st), make_array(false, true),
                equatorial_compressions, make_array(0.0, 1.0),
                make_array(ShellWedges::All, ShellWedges::FourOnEquator,
                           ShellWedges::OneAlongMinusX),
-               make_array(true, false)),
+               make_array(true, false), make_array(true, false)),
            make_not_null(&gen))) {
     const auto& interior = interiors[interior_index];
     const bool fill_interior =
@@ -429,6 +529,7 @@ void test_sphere() {
     CAPTURE(radial_partitioning[array_index]);
     CAPTURE(radial_distribution[array_index]);
     CAPTURE(which_wedges);
+    CAPTURE(time_dependent);
     CAPTURE(with_boundary_conditions);
 
     if (which_wedges != ShellWedges::All and with_boundary_conditions) {
@@ -446,51 +547,28 @@ void test_sphere() {
         radial_partitioning[array_index],
         radial_distribution[array_index],
         which_wedges,
-        nullptr,
+        time_dependent
+            ? std::make_unique<
+                  domain::creators::time_dependence::UniformTranslation<3, 0>>(
+                  1., velocity)
+            : nullptr,
         with_boundary_conditions ? create_boundary_condition(true) : nullptr};
-    test_sphere_construction(sphere, inner_radius, outer_radius, fill_interior,
-                             radial_partitioning[array_index], which_wedges,
-                             with_boundary_conditions);
+    test_sphere_construction(
+        sphere, inner_radius, outer_radius, fill_interior,
+        radial_partitioning[array_index], which_wedges,
+        with_boundary_conditions,
+        time_dependent ? times : std::vector<double>{0.},
+        time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}});
+    TestHelpers::domain::creators::test_creation(
+        option_string(inner_radius, outer_radius, interior, initial_refinement,
+                      initial_extents, equiangular, equatorial_compression,
+                      radial_partitioning[array_index],
+                      radial_distribution[array_index], which_wedges,
+                      time_dependent, with_boundary_conditions),
+        sphere, with_boundary_conditions);
   }
 }
 
-// Check wedge neighbors have consistent directions & orientations, with time
-// dependence
-void test_sphere_factory_time_dependent() {
-  INFO("Sphere factory time dependent");
-  const auto domain_creator = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3, domain::creators::Sphere>>(
-      "Sphere:\n"
-      "  InnerRadius: 1\n"
-      "  OuterRadius: 3\n"
-      "  Interior:\n"
-      "    FillWithSphericity: 0.0\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [3, 3, 4]\n"
-      "  UseEquiangularMap: false\n"
-      "  EquatorialCompression: None\n"
-      "  WhichWedges: All\n"
-      "  RadialPartitioning: []\n"
-      "  RadialDistribution: [Linear]\n"
-      "  TimeDependence:\n"
-      "    UniformTranslation:\n"
-      "      InitialTime: 1.0\n"
-      "      Velocity: [2.3, -0.3, 0.5]\n");
-  const auto* sphere =
-      dynamic_cast<const creators::Sphere*>(domain_creator.get());
-
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const std::vector<double> radial_partitioning = {};
-  const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
-  const std::vector<double> times{1., 10.};
-
-  test_sphere_construction(*sphere, inner_radius, outer_radius, true,
-                           radial_partitioning, ShellWedges::All, false, times,
-                           velocity);
-}
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -498,6 +576,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere", "[Domain][Unit]") {
   domain::creators::time_dependence::register_derived_with_charm();
   test_parse_errors();
   test_sphere();
-  test_sphere_factory_time_dependent();
 }
 }  // namespace domain
