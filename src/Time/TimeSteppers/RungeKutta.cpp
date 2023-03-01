@@ -76,24 +76,16 @@ TimeStepId RungeKutta::next_time_id_for_error(
 
 namespace {
 template <typename T>
-void update_between_substeps(const gsl::not_null<T*> u,
-                             const ConstUntypedHistory<T>& history,
-                             const double dt,
-                             const std::vector<double>& coeffs_last,
-                             const std::vector<double>& coeffs_this) {
-  const size_t number_of_substeps =
-      std::max(coeffs_last.size(), coeffs_this.size());
-  for (size_t i = 0; i < number_of_substeps; ++i) {
-    double coef = 0.0;
-    if (i < coeffs_this.size()) {
-      coef += coeffs_this[i];
-    }
-    if (i < coeffs_last.size()) {
-      coef -= coeffs_last[i];
-    }
-    if (coef != 0.0) {
-      *u += coef * dt *
-            (i == 0 ? history.front() : history.substeps()[i - 1]).derivative;
+void compute_substep(const gsl::not_null<T*> u,
+                     const ConstUntypedHistory<T>& history, const double dt,
+                     const std::vector<double>& substep_coefficients) {
+  *u = *history.front().value;
+  if (substep_coefficients[0] != 0.0) {
+    *u += substep_coefficients[0] * dt * history.front().derivative;
+  }
+  for (size_t i = 1; i < substep_coefficients.size(); ++i) {
+    if (substep_coefficients[i] != 0.0) {
+      *u += substep_coefficients[i] * dt * history.substeps()[i - 1].derivative;
     }
   }
 }
@@ -110,35 +102,18 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
     if (history.size() > 1) {
       history.pop_front();
     }
-  } else if (history.substeps().size() == 1) {
-    history.discard_value(history.front().time_step_id);
   } else {
-    history.discard_value(
-        history.substeps()[history.substeps().size() - 2].time_step_id);
+    history.discard_value(history.substeps().back().time_step_id);
   }
   ASSERT(history.size() == 1, "Have more than one step after cleanup.");
 
   const double dt = time_step.value();
 
-  ASSERT(number_of_substeps > 1,
-         "Implementing Euler's method is not supported by RungeKutta.");
-
   const auto substep = history.substeps().size();
-  if (substep == 0) {
-    ASSERT(tableau.substep_coefficients[0].size() == 1,
-           "First substep should use one derivative.");
-    *u = *history.front().value +
-         tableau.substep_coefficients[0][0] * dt * history.front().derivative;
-  } else if (substep == number_of_substeps - 1) {
-    *u = *history.substeps().back().value;
-    update_between_substeps(u, history, dt,
-                            tableau.substep_coefficients[substep - 1],
-                            tableau.result_coefficients);
+  if (substep == number_of_substeps - 1) {
+    compute_substep(u, history, dt, tableau.result_coefficients);
   } else if (substep < number_of_substeps - 1) {
-    *u = *history.substeps().back().value;
-    update_between_substeps(u, history, dt,
-                            tableau.substep_coefficients[substep - 1],
-                            tableau.substep_coefficients[substep]);
+    compute_substep(u, history, dt, tableau.substep_coefficients[substep]);
   } else {
     ERROR("Substep should be less than " << number_of_substeps << ", not "
                                          << substep);
@@ -178,9 +153,8 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   }
 
   const double dt = time_step.value();
-  *u_error = 0.0;
-  update_between_substeps(u_error, history, dt, tableau.error_coefficients,
-                          tableau.result_coefficients);
+  compute_substep(u_error, history, dt, tableau.error_coefficients);
+  *u_error = *u - *u_error;
 
   return true;
 }
@@ -212,18 +186,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
   const auto& tableau = butcher_tableau();
 
-  *u = *history.back().value;
-  // The Butcher dense output coefficients are given in terms of the
-  // start of the step, but we are passed the value at the end of the
-  // step, so we have to undo the step first.
-  for (size_t i = 0; i < tableau.result_coefficients.size(); ++i) {
-    const double coef = tableau.result_coefficients[i];
-    if (coef != 0.0) {
-      *u -= coef * step_size *
-            (i == 0 ? history.front() : history.substeps()[i - 1]).derivative;
-    }
-  }
-
+  *u = *history.front().value;
   const auto number_of_dense_coefficients = tableau.dense_coefficients.size();
   const size_t number_of_substep_terms = std::min(
       tableau.result_coefficients.size(), number_of_dense_coefficients);
