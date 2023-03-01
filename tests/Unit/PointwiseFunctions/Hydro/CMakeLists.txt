@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ComovingMagneticField.cpp
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
+  Test_MassWeightedFluidItems.cpp
   Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp
   Test_StressEnergy.cpp

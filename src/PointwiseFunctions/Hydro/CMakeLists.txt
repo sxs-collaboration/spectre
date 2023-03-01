@@ -11,6 +11,7 @@ spectre_target_sources(
   ComovingMagneticField.cpp
   LorentzFactor.cpp
   MassFlux.cpp
+  MassWeightedFluidItems.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   StressEnergy.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   ComovingMagneticField.hpp
   LorentzFactor.hpp
   MassFlux.hpp
+  MassWeightedFluidItems.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
   StressEnergy.hpp
