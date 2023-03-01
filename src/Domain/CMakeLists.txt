@@ -21,6 +21,7 @@ spectre_target_sources(
   InterfaceLogicalCoordinates.cpp
   JacobianDiagnostic.cpp
   MinimumGridSpacing.cpp
+  RadiallyCompressedCoordinates.cpp
   SizeOfElement.cpp
   SurfaceJacobian.cpp
   TagsTimeDependent.cpp
@@ -46,6 +47,7 @@ spectre_target_headers(
   InterfaceLogicalCoordinates.hpp
   JacobianDiagnostic.hpp
   MinimumGridSpacing.hpp
+  RadiallyCompressedCoordinates.hpp
   SizeOfElement.hpp
   SurfaceJacobian.hpp
   Tags.hpp
