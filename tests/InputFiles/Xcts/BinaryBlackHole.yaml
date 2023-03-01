@@ -54,13 +54,11 @@ DomainCreator:
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
-    EnvelopingCube:
+    Envelope:
       Radius: 60.
       UseProjectiveMap: True
-      Sphericity: 1.
     OuterShell:
-      InnerRadius: Auto
-      OuterRadius: 300.
+      Radius: 300.
       RadialDistribution: Inverse
       BoundaryCondition: Flatness
     UseEquiangularMap: True
@@ -72,16 +70,16 @@ DomainCreator:
       ObjectBShell:               [1, 1, 1]
       ObjectACube:                [1, 1, 1]
       ObjectBCube:                [1, 1, 1]
-      EnvelopingCubeUpperZLeft:   [1, 1, 1]
-      EnvelopingCubeLowerZLeft:   [1, 1, 1]
-      EnvelopingCubeUpperYLeft:   [1, 1, 1]
-      EnvelopingCubeLowerYLeft:   [1, 1, 1]
-      EnvelopingCubeLowerX:       [1, 1, 1]
-      EnvelopingCubeUpperZRight:  [1, 1, 1]
-      EnvelopingCubeLowerZRight:  [1, 1, 1]
-      EnvelopingCubeUpperYRight:  [1, 1, 1]
-      EnvelopingCubeLowerYRight:  [1, 1, 1]
-      EnvelopingCubeUpperX:       [1, 1, 1]
+      EnvelopeUpperZLeft:         [1, 1, 1]
+      EnvelopeLowerZLeft:         [1, 1, 1]
+      EnvelopeUpperYLeft:         [1, 1, 1]
+      EnvelopeLowerYLeft:         [1, 1, 1]
+      EnvelopeLowerX:             [1, 1, 1]
+      EnvelopeUpperZRight:        [1, 1, 1]
+      EnvelopeLowerZRight:        [1, 1, 1]
+      EnvelopeUpperYRight:        [1, 1, 1]
+      EnvelopeLowerYRight:        [1, 1, 1]
+      EnvelopeUpperX:             [1, 1, 1]
       OuterShellUpperZLeft:       [0, 1, 0]
       OuterShellLowerZLeft:       [0, 1, 0]
       OuterShellUpperYLeft:       [0, 1, 0]
@@ -99,7 +97,7 @@ DomainCreator:
       ObjectBShell:   [6, 6, 10]
       ObjectACube:    [6, 6, 7]
       ObjectBCube:    [6, 6, 7]
-      EnvelopingCube: [6, 6, 6]
+      Envelope:       [6, 6, 6]
       OuterShell:     [6, 6, 6]
 
 Discretization:

@@ -29,13 +29,11 @@ DomainCreator:
       XCoord: -7.683
       ExciseInterior: true
       UseLogarithmicMap: true
-    EnvelopingCube:
+    Envelope:
       Radius: 100.0
       UseProjectiveMap: false
-      Sphericity: 1.0
     OuterShell:
-      InnerRadius: Auto
-      OuterRadius: 300.0
+      Radius: 300.0
       RadialDistribution: Linear
     UseEquiangularMap: True
     InitialRefinement:
@@ -43,7 +41,7 @@ DomainCreator:
       ObjectBShell:   [1, 1, 1]
       ObjectACube:    [1, 1, 0]
       ObjectBCube:    [1, 1, 0]
-      EnvelopingCube: [1, 1, 1]
+      Envelope: [1, 1, 1]
       OuterShell:     [1, 1, 1]
     InitialGridPoints: 3
     TimeDependentMaps:

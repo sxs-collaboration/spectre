@@ -15,13 +15,11 @@ SourceDomainCreator:
       XCoord: &x_left -7.683
       ExciseInterior: True
       UseLogarithmicMap: True
-    EnvelopingCube:
+    Envelope:
       Radius: 60.
       UseProjectiveMap: True
-      Sphericity: 1.
     OuterShell:
-      InnerRadius: Auto
-      OuterRadius: 350.
+      Radius: 350.
       RadialDistribution: Inverse
     UseEquiangularMap: True
     InitialRefinement: 1
@@ -41,13 +39,11 @@ TargetDomainCreator:
       XCoord: *x_left
       ExciseInterior: True
       UseLogarithmicMap: true
-    EnvelopingCube:
+    Envelope:
       Radius: 100.
       UseProjectiveMap: true
-      Sphericity: 1.
     OuterShell:
-      InnerRadius: Auto
-      OuterRadius: 300.
+      Radius: 300.
       RadialDistribution: Linear
     UseEquiangularMap: True
     InitialRefinement: 0
