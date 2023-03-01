@@ -17,6 +17,7 @@ class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "clean-output",
+            "delete-subfiles",
             "extract-dat",
             "extract-input",
             "generate-xdmf",
