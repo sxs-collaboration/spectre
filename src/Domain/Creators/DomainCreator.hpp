@@ -36,6 +36,8 @@ namespace creators {}
 template <size_t VolumeDim>
 class DomainCreator {
  public:
+  static constexpr size_t volume_dim = VolumeDim;
+
   DomainCreator() = default;
   DomainCreator(const DomainCreator<VolumeDim>&) = delete;
   DomainCreator(DomainCreator<VolumeDim>&&) = default;
