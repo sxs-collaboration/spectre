@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -116,31 +117,46 @@ struct InertialParticlePositionCompute : InertialParticlePosition<Dim>,
 
 /// @{
 /*!
- * \brief An optional that holds the grid coordinates, centered on the
- * worldtube, of an element face abutting the worldtube excision sphere. If the
- * element does not abut the worldtube, this holds std::nullopt. This tag should
- * be in the databox of element chares.
+ * \brief An optional that holds the coordinates of an element face abutting the
+ * worldtube excision sphere. If the element does not abut the worldtube, this
+ * holds std::nullopt. This tag should be in the databox of element chares. The
+ * available frames are Grid and Inertial. The Centered template tag can be
+ * turned on to center the coordinates around the position of the scalar
+ * charge.
  */
-template <size_t Dim>
-struct CenteredFaceCoordinates : db::SimpleTag {
-  using type = std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>;
+template <size_t Dim, typename Frame, bool Centered>
+struct FaceCoordinates : db::SimpleTag {
+  using type = std::optional<tnsr::I<DataVector, Dim, Frame>>;
 };
 
-template <size_t Dim>
-struct CenteredFaceCoordinatesCompute : CenteredFaceCoordinates<Dim>,
-                                        db::ComputeTag {
-  using base = CenteredFaceCoordinates<Dim>;
-  using argument_tags =
+template <size_t Dim, typename Frame, bool Centered>
+struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
+                                db::ComputeTag {
+  using base = FaceCoordinates<Dim, Frame, Centered>;
+  static constexpr bool needs_inertial_wt_coords =
+      (Centered and std::is_same_v<Frame, ::Frame::Inertial>);
+  using argument_tags = tmpl::flatten<
       tmpl::list<ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
-                 domain::Tags::Coordinates<Dim, Frame::Grid>,
-                 domain::Tags::Mesh<Dim>>;
-  using return_type = std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>;
+                 domain::Tags::Coordinates<Dim, Frame>, domain::Tags::Mesh<Dim>,
+                 tmpl::conditional_t<needs_inertial_wt_coords,
+                                     tmpl::list<InertialParticlePosition<Dim>>,
+                                     tmpl::list<>>>>;
+
+  using return_type = std::optional<tnsr::I<DataVector, Dim, Frame>>;
   static void function(
-      const gsl::not_null<std::optional<tnsr::I<DataVector, Dim, Frame::Grid>>*>
-          res,
+      const gsl::not_null<std::optional<tnsr::I<DataVector, Dim, Frame>>*>
+          result,
       const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
-      const tnsr::I<DataVector, Dim, Frame::Grid>& grid_coords,
-      const Mesh<Dim>& mesh);
+      const tnsr::I<DataVector, Dim, Frame>& coords, const Mesh<Dim>& mesh);
+
+  static void function(
+      const gsl::not_null<
+          std::optional<tnsr::I<DataVector, Dim, ::Frame::Inertial>>*>
+          result,
+      const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
+      const tnsr::I<DataVector, Dim, ::Frame::Inertial>& coords,
+      const Mesh<Dim>& mesh,
+      const tnsr::I<double, Dim, ::Frame::Inertial>& particle_position);
 };
 /// @}
 

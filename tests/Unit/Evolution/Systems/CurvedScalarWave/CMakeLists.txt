@@ -36,6 +36,8 @@ target_link_libraries(
   CurvedWaveEquationAnalyticData
   CurvedScalarWaveHelpers
   DataStructures
+  DomainBoundaryConditions
+  DomainBoundaryConditionsHelpers
   DomainCreators
   GeneralRelativityHelpers
   GeneralRelativitySolutions

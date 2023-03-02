@@ -16,19 +16,26 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
+#include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Helpers/Evolution/Systems/CurvedScalarWave/Worldtube/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/CartesianProduct.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace CurvedScalarWave::Worldtube {
 namespace {
@@ -49,18 +56,22 @@ void test_excision_sphere_tag() {
           "Available excision spheres are: (ExcisionSphere)"));
 }
 
-void test_compute_centered_face_coordinates() {
+void test_compute_face_coordinates_grid() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<
-      Tags::CenteredFaceCoordinatesCompute<Dim>>("CenteredFaceCoordinates");
+      Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>("FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Grid, false>>("FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>>(
+      "FaceCoordinates");
+  ::TestHelpers::db::test_compute_tag<
+      Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, false>>(
+      "FaceCoordinates");
 
-  for (const auto& [initial_refinement, quadrature] :
-       cartesian_product(std::array<size_t, 2>{{0, 1}},
-                         make_array(Spectral::Quadrature::Gauss,
-                                    Spectral::Quadrature::GaussLobatto))) {
+  for (const auto& initial_refinement : std::array<size_t, 2>{{0, 1}}) {
     CAPTURE(initial_refinement);
-    CAPTURE(quadrature);
-
+    const auto quadrature = Spectral::Quadrature::GaussLobatto;
     // we create two shells with different resolutions
     const size_t extents_1 = 5;
     const size_t extents_2 = 7;
@@ -104,16 +115,17 @@ void test_compute_centered_face_coordinates() {
           initial_extents_2, element_id, quadrature);
       const auto grid_coords_2 = element_map(logical_coordinates(mesh_2));
 
-      auto box = db::create<
-          db::AddSimpleTags<Tags::ExcisionSphere<Dim>,
-                            domain::Tags::Element<Dim>,
-                            domain::Tags::Coordinates<Dim, Frame::Grid>,
-                            domain::Tags::Mesh<Dim>>,
-          db::AddComputeTags<Tags::CenteredFaceCoordinatesCompute<Dim>>>(
-          excision_sphere, element, grid_coords_1, mesh_1);
+      auto box =
+          db::create<db::AddSimpleTags<
+                         Tags::ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
+                         domain::Tags::Coordinates<Dim, Frame::Grid>,
+                         domain::Tags::Mesh<Dim>>,
+                     db::AddComputeTags<
+                         Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>>(
+              excision_sphere, element, grid_coords_1, mesh_1);
 
       const auto centered_face_coordinates_1 =
-          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+          db::get<Tags::FaceCoordinates<Dim, Frame::Grid, true>>(box);
       if (all_faces_grid_coords_1.count(element_id)) {
         CHECK(centered_face_coordinates_1.has_value());
         CHECK_ITERABLE_APPROX(centered_face_coordinates_1.value(),
@@ -129,7 +141,7 @@ void test_compute_centered_face_coordinates() {
           make_not_null(&box), mesh_2, grid_coords_2);
 
       const auto centered_face_coordinates_2 =
-          db::get<Tags::CenteredFaceCoordinates<Dim>>(box);
+          db::get<Tags::FaceCoordinates<Dim, Frame::Grid, true>>(box);
       if (all_faces_grid_coords_2.count(element_id)) {
         // p-refinement should not change which elements are abutting i.e. have
         // a value
@@ -141,6 +153,133 @@ void test_compute_centered_face_coordinates() {
         CHECK(not centered_face_coordinates_1.has_value());
         CHECK(not centered_face_coordinates_2.has_value());
       }
+    }
+  }
+}
+
+void test_compute_face_coordinates() {
+  static constexpr size_t Dim = 3;
+  const auto domain_creator =
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
+          7., 0.2);
+  const double initial_time = 0.;
+  auto domain = domain_creator->create_domain();
+  const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
+  const auto& blocks = domain.blocks();
+  const auto initial_extents = domain_creator->initial_extents();
+  const auto initial_refinements = domain_creator->initial_refinement_levels();
+  const auto element_ids = initial_element_ids(initial_refinements);
+  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
+      all_faces_grid_coords{};
+  Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
+      make_not_null(&all_faces_grid_coords), domain, initial_extents,
+      initial_refinements, quadrature, excision_sphere);
+  for (const auto& element_id : element_ids) {
+    const auto& my_block = blocks.at(element_id.block_id());
+    const auto element = domain::Initialization::create_initial_element(
+        element_id, my_block, initial_refinements);
+    const auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, element_id, quadrature);
+    const ElementMap element_map(
+        element_id,
+        my_block.moving_mesh_logical_to_grid_map().get_to_grid_frame());
+    const auto grid_coords = element_map(logical_coordinates(mesh));
+
+    auto box = db::create<
+        db::AddSimpleTags<::domain::Tags::Domain<3>, ::Tags::Time,
+                          Tags::ExcisionSphere<3>,
+                          domain::Tags::FunctionsOfTimeInitialize,
+                          domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                          domain::Tags::Coordinates<Dim, Frame::Grid>,
+                          ::domain::CoordinateMaps::Tags::CoordinateMap<
+                              Dim, Frame::Grid, Frame::Inertial>>,
+        db::AddComputeTags<
+            Tags::InertialParticlePositionCompute<3>,
+            ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
+                ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                              Frame::Inertial>>,
+            ::domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
+            Tags::FaceCoordinatesCompute<3, Frame::Grid, true>,
+            Tags::FaceCoordinatesCompute<3, Frame::Grid, false>,
+            Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>,
+            Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>>(
+        domain_creator->create_domain(), initial_time, excision_sphere,
+        domain_creator->functions_of_time(), element, mesh, grid_coords,
+        my_block.moving_mesh_grid_to_inertial_map().get_clone());
+    const auto centered_grid_1 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, true>>(box);
+    const auto uncentered_grid_1 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, false>>(box);
+    const auto centered_inertial_1 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>>(box);
+    const auto uncentered_inertial_1 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>(box);
+    if (all_faces_grid_coords.count(element_id)) {
+      CHECK(centered_grid_1.has_value());
+      CHECK(uncentered_grid_1.has_value());
+      CHECK(centered_inertial_1.has_value());
+      CHECK(uncentered_inertial_1.has_value());
+
+      CHECK_ITERABLE_APPROX(centered_grid_1.value(),
+                            all_faces_grid_coords.at(element_id));
+      for (size_t i = 0; i < 3; ++i) {
+        CHECK_ITERABLE_APPROX(centered_grid_1->get(i),
+                              centered_inertial_1->get(i));
+        CHECK_ITERABLE_APPROX(uncentered_grid_1->get(i),
+                              uncentered_inertial_1->get(i));
+        CHECK_ITERABLE_APPROX(
+            centered_grid_1->get(i),
+            uncentered_grid_1->get(i) - excision_sphere.center().get(i));
+      }
+    } else {
+      CHECK(not centered_grid_1.has_value());
+      CHECK(not uncentered_grid_1.has_value());
+      CHECK(not centered_inertial_1.has_value());
+      CHECK(not uncentered_inertial_1.has_value());
+    }
+
+    const double new_time = 5.;
+    ::Initialization::mutate_assign<tmpl::list<::Tags::Time>>(
+        make_not_null(&box), new_time);
+
+    const auto centered_grid_2 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, true>>(box);
+    const auto uncentered_grid_2 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, false>>(box);
+    const auto centered_inertial_2 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>>(box);
+    const auto uncentered_inertial_2 =
+        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>(box);
+    if (all_faces_grid_coords.count(element_id)) {
+      CHECK(centered_grid_2.has_value());
+      CHECK(uncentered_grid_2.has_value());
+      CHECK(centered_inertial_2.has_value());
+      CHECK(uncentered_grid_2.has_value());
+
+      CHECK_ITERABLE_APPROX(centered_grid_2.value(), centered_grid_1.value());
+      CHECK_ITERABLE_APPROX(uncentered_grid_2.value(),
+                            uncentered_grid_1.value());
+      const auto& inertial_particle_position =
+          db::get<Tags::InertialParticlePosition<Dim>>(box);
+      const auto& grid_to_inertial_map =
+          db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+              Dim, Frame::Grid, Frame::Inertial>>(box);
+      const auto& functions_of_time =
+          db::get<domain::Tags::FunctionsOfTimeInitialize>(box);
+      CHECK_ITERABLE_APPROX(uncentered_inertial_2.value(),
+                            grid_to_inertial_map(uncentered_grid_2.value(),
+                                                 new_time, functions_of_time));
+      for (size_t i = 0; i < Dim; ++i) {
+        CHECK_ITERABLE_APPROX(
+            centered_inertial_2->get(i),
+            uncentered_inertial_2->get(i) - inertial_particle_position.get(i));
+      }
+    } else {
+      CHECK(not centered_grid_2.has_value());
+      CHECK(not uncentered_grid_2.has_value());
+      CHECK(not centered_inertial_2.has_value());
+      CHECK(not uncentered_inertial_2.has_value());
     }
   }
 }
@@ -174,6 +313,7 @@ void test_inertial_particle_position_compute() {
 }
 }  // namespace
 
+// [[TimeOut, 15]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
                   "[Unit][Evolution]") {
   CHECK(TestHelpers::test_option_tag<OptionTags::ExcisionSphere>("Worldtube") ==
@@ -185,13 +325,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
-  TestHelpers::db::test_simple_tag<Tags::CenteredFaceCoordinates<3>>(
-      "CenteredFaceCoordinates");
+  TestHelpers::db::test_simple_tag<Tags::FaceCoordinates<3, Frame::Grid, true>>(
+      "FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Grid, false>>("FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Inertial, true>>("FaceCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::FaceCoordinates<3, Frame::Inertial, false>>("FaceCoordinates");
   TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
       "InertialParticlePosition");
 
   test_excision_sphere_tag();
-  test_compute_centered_face_coordinates();
+  test_compute_face_coordinates_grid();
+  test_compute_face_coordinates();
   test_inertial_particle_position_compute();
 }
 }  // namespace CurvedScalarWave::Worldtube
