@@ -11,6 +11,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import spectre.IO.H5 as spectre_h5
+from spectre.Spectral import Basis
 from spectre.DataStructures import DataVector
 from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5.IterElements import iter_elements
@@ -67,6 +68,11 @@ def plot_power_monitors(volfiles: Union[spectre_h5.H5Vol,
 
     for element, tensor_data in iter_elements(volfiles, obs_id,
                                               tensor_components):
+        # Skip FD elements because we can't compute power monitors for them
+        if any(basis == Basis.FiniteDifference
+               for basis in element.mesh.basis()):
+            continue
+
         # Find the subplot for this element's block, or skip the element if its
         # block wasn't selected
         subplot_index = find_block_or_group(element.id.block_id,
