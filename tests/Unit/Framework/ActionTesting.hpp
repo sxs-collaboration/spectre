@@ -476,6 +476,12 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
                                 id, std::forward<Data>(data));
   }
 
+  template <typename InboxTag, typename MessageType>
+  void receive_data(MessageType* message) {
+    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(inbox_)),
+                                message);
+  }
+
   template <typename Action, typename... Args>
   void simple_action(std::tuple<Args...> args) {
     mock_distributed_object_.template simple_action<Action>(std::move(args));

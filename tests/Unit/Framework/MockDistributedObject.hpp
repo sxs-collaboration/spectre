@@ -595,6 +595,12 @@ class MockDistributedObject {
         std::forward<Data>(data));
   }
 
+  template <typename InboxTag, typename MessageType>
+  void receive_data(MessageType* message) {
+    InboxTag::insert_into_inbox(
+        make_not_null(&tuples::get<InboxTag>(*inboxes_)), message);
+  }
+
   Parallel::GlobalCache<typename Component::metavariables>& cache() {
     return *global_cache_;
   }
