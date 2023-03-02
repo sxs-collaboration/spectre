@@ -37,6 +37,7 @@ target_link_libraries(
   PRIVATE
   ApparentHorizons
   ControlSystem
+  ControlSystemMeasurements
   EventsAndDenseTriggers
   FunctionsOfTime
   H5

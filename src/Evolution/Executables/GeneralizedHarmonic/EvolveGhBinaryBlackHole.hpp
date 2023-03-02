@@ -15,6 +15,7 @@
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
+#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Trigger.hpp"
@@ -238,8 +239,11 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>>;
   };
 
-  using control_systems = tmpl::list<control_system::Systems::Rotation<3>,
-                                     control_system::Systems::Expansion<2>>;
+  using control_systems =
+      tmpl::list<control_system::Systems::Rotation<
+                     3, control_system::measurements::BothHorizons>,
+                 control_system::Systems::Expansion<
+                     2, control_system::measurements::BothHorizons>>;
 
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;

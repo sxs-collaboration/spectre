@@ -3,19 +3,26 @@
 
 set(LIBRARY ControlSystemMeasurements)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  BNSCenterOfMass.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BNSCenterOfMass.hpp
   BothHorizons.hpp
   SingleHorizon.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PUBLIC
   ApparentHorizons
   ControlSystem
   DataStructures

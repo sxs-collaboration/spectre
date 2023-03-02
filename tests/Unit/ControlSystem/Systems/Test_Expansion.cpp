@@ -185,7 +185,8 @@ void test_expansion_control_system() {
 }
 
 void test_names() {
-  using expansion = control_system::Systems::Expansion<2>;
+  using expansion = control_system::Systems::Expansion<
+      2, control_system::measurements::BothHorizons>;
 
   CHECK(pretty_type::name<expansion>() == "Expansion");
   CHECK(*expansion::component_name(0, 1) == "Expansion");

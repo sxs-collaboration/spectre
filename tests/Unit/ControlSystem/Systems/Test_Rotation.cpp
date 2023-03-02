@@ -28,6 +28,10 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
+namespace control_system::measurements {
+struct BothHorizons;
+}  // namespace control_system::measurements
+
 namespace control_system {
 namespace {
 using RotationMap = domain::CoordinateMaps::TimeDependent::Rotation<3>;
@@ -189,7 +193,8 @@ void test_rotation_control_system(const bool newtonian) {
 }
 
 void test_names() {
-  using rotation = control_system::Systems::Rotation<2>;
+  using rotation = control_system::Systems::Rotation<
+      2, control_system::measurements::BothHorizons>;
 
   CHECK(pretty_type::name<rotation>() == "Rotation");
   CHECK(*rotation::component_name(0, 3) == "x");

@@ -11,6 +11,7 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
+#include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -52,12 +53,12 @@ namespace control_system::Systems {
  *   control_system::ControlErrors::Translation Translation \endlink control
  *   error
  */
-template <size_t DerivOrder>
+template <size_t DerivOrder, typename Measurement>
 struct Translation : tt::ConformsTo<protocols::ControlSystem> {
   static constexpr size_t deriv_order = DerivOrder;
 
   static std::string name() {
-    return pretty_type::short_name<Translation<DerivOrder>>();
+    return pretty_type::short_name<Translation<DerivOrder, Measurement>>();
   }
 
   static std::optional<std::string> component_name(
@@ -68,7 +69,7 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
     return component == 0 ? "x" : component == 1 ? "y" : "z";
   }
 
-  using measurement = measurements::BothHorizons;
+  using measurement = Measurement;
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
@@ -87,16 +88,22 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
 
   struct process_measurement {
     template <typename Submeasurement>
-    using argument_tags =
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
+    using argument_tags = tmpl::conditional_t<
+        std::is_same_v<Submeasurement,
+                       measurements::BothNSCenters::FindTwoCenters>,
+        tmpl::list<
+            measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::A>,
+            measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::B>>,
+        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>>;
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(measurements::BothHorizons::FindHorizon<Horizon> /*meta*/,
                       const Strahlkorper<Frame::Grid>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const LinkedMessageId<double>& measurement_id) {
-      auto& control_sys_proxy = Parallel::get_parallel_component<
-          ControlComponent<Metavariables, Translation<DerivOrder>>>(cache);
+      auto& control_sys_proxy =
+          Parallel::get_parallel_component<ControlComponent<
+              Metavariables, Translation<DerivOrder, Measurement>>>(cache);
 
       const DataVector center =
           array_to_datavector(strahlkorper.physical_center());
@@ -105,6 +112,28 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::Center<Horizon>, MeasurementQueue,
           UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
                                              center);
+    }
+
+    template <typename Metavariables>
+    static void apply(measurements::BothNSCenters::FindTwoCenters /*meta*/,
+                      const std::array<double, 3> center_a,
+                      const std::array<double, 3> center_b,
+                      Parallel::GlobalCache<Metavariables>& cache,
+                      const LinkedMessageId<double>& measurement_id) {
+      auto& control_sys_proxy =
+          Parallel::get_parallel_component<ControlComponent<
+              Metavariables, Translation<DerivOrder, Measurement>>>(cache);
+
+      const DataVector center_a_dv = array_to_datavector(center_a);
+      Parallel::simple_action<::Actions::UpdateMessageQueue<
+          QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,
+          UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
+                                             center_a_dv);
+      const DataVector center_b_dv = array_to_datavector(center_b);
+      Parallel::simple_action<::Actions::UpdateMessageQueue<
+          QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
+          UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
+                                             center_b_dv);
     }
   };
 };
