@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_TimeDerivative.cpp
   Worldtube/Test_PunctureField.cpp
   Worldtube/Test_Tags.cpp
+  Worldtube/ElementActions/Test_SendToWorldtube.cpp
   Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   )
 
