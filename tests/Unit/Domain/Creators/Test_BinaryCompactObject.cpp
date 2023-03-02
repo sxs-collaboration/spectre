@@ -41,6 +41,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Stringize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace domain::FunctionsOfTime {
@@ -340,8 +341,6 @@ void test_connectivity() {
     }
   }
 }
-
-std::string stringize(const bool t) { return t ? "true" : "false"; }
 
 std::string create_option_string(const bool excise_A, const bool excise_B,
                                  const bool add_time_dependence,

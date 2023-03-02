@@ -39,6 +39,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Stringize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -279,7 +280,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
             "ObserveTimeStep:\n"
             "  SubfileName: time_step_subfile\n"
             "  PrintTimeToTerminal: " +
-            std::string(print_to_terminal ? "true" : "false") +
+            stringize(print_to_terminal) +
             "\n"
             "  ObservePerCore: False");
     test_observe(*event, false);
