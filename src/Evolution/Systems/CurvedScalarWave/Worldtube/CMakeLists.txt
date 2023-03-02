@@ -17,6 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Inboxes.hpp
+  SingletonChare.hpp
   Tags.hpp
   PunctureField.hpp
   Worldtube.hpp
