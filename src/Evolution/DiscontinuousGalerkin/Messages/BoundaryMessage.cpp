@@ -49,6 +49,13 @@ size_t BoundaryMessage<Dim>::total_bytes_with_data(const size_t subcell_size,
 
 template <size_t Dim>
 void* BoundaryMessage<Dim>::pack(BoundaryMessage<Dim>* in_msg) {
+  // If this is the case, then in_msg is already in the correct memory layout
+  // with the data appended to one contiguous buffer (aka owning) so we can just
+  // return the message itself
+  if (in_msg->owning) {
+    return static_cast<void*>(in_msg);
+  }
+
   const size_t subcell_size = in_msg->subcell_ghost_data_size;
   const size_t dg_size = in_msg->dg_flux_data_size;
 

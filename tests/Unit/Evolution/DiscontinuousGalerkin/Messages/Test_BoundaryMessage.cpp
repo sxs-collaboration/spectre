@@ -93,6 +93,17 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   CHECK(unpacked_message->owning);
   CHECK(*copied_boundary_message == *unpacked_message);
   CHECK_FALSE(*copied_boundary_message != *unpacked_message);
+
+  BoundaryMessage<Dim>* repacked_unpacked_message =
+      BoundaryMessage<Dim>::unpack(
+          BoundaryMessage<Dim>::pack(unpacked_message));
+
+  // Technically unpacked_message is now invalidated because we went through
+  // pack/unpack, but we are only concerned that the pointers are the same. We
+  // aren't using any data. These should be the same because packing an owning
+  // message doesn't do any new allocations, and the unpack function also
+  // doesn't do any new allocations, so the data shouldn't have moved
+  CHECK(unpacked_message == repacked_unpacked_message);
 }
 
 void test_output() {
