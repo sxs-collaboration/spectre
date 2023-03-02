@@ -3,17 +3,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.IO.H5.IterElements import iter_elements
-
-import spectre.IO.H5 as spectre_h5
-import numpy as np
-import numpy.testing as npt
 import os
 import unittest
 from dataclasses import FrozenInstanceError
-from spectre.Informer import unit_test_src_path
+
+import numpy as np
+import numpy.testing as npt
+import spectre.IO.H5 as spectre_h5
 from spectre.Domain import ElementId, deserialize_functions_of_time
-from spectre.Spectral import Mesh, Basis, Quadrature, logical_coordinates
+from spectre.Informer import unit_test_src_path
+from spectre.IO.H5.IterElements import iter_elements
+from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
 
 
 class TestIterElements(unittest.TestCase):
@@ -25,12 +25,13 @@ class TestIterElements(unittest.TestCase):
     def test_iter_elements(self):
         with spectre_h5.H5File(self.volfile_name, "r") as open_h5_file:
             volfile = open_h5_file.get_vol(self.subfile_name)
-            obs_id = volfile.list_observation_ids()[0]
+            all_obs_ids = volfile.list_observation_ids()
+            obs_id = all_obs_ids[0]
             time = volfile.get_observation_value(obs_id)
             functions_of_time = deserialize_functions_of_time(
                 volfile.get_functions_of_time(obs_id))
 
-            elements = list(iter_elements(volfile, obs_id=obs_id))
+            elements = list(iter_elements(volfile, obs_id))
             self.assertEqual(len(elements), 2)
             self.assertEqual(elements[0].dim, 3)
             self.assertEqual(elements[0].id,
@@ -49,7 +50,7 @@ class TestIterElements(unittest.TestCase):
                 elements[0].time = 2.
 
             # Test fetching data, enumerating in a loop, determinism of
-            # iteration order, list of volfiles
+            # iteration order, list of volfiles, all obs IDs
             tensor_components = [
                 "InertialCoordinates_x",
                 "InertialCoordinates_y",
@@ -59,7 +60,7 @@ class TestIterElements(unittest.TestCase):
             ]
             for i, (element, data) in enumerate(
                     iter_elements([volfile],
-                                  obs_id=obs_id,
+                                  obs_ids=all_obs_ids,
                                   tensor_components=tensor_components)):
                 self.assertEqual(element.id, elements[i].id)
                 self.assertEqual(element.mesh, elements[i].mesh)
