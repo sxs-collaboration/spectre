@@ -37,7 +37,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   CHECK(total_size_with_data == sizeof(BoundaryMessage<Dim>) +
                                     (subcell_size + dg_size) * sizeof(double));
 
-  const bool sent_across_nodes = false;
+  const bool owning = false;
   const bool enable_if_disabled = false;
   const size_t sender_node = 2;
   const size_t sender_core = 15;
@@ -68,13 +68,13 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   DataVector copied_dg_data = dg_data;
 
   BoundaryMessage<Dim>* boundary_message = new BoundaryMessage<Dim>(
-      subcell_size, dg_size, sent_across_nodes, enable_if_disabled, sender_node,
+      subcell_size, dg_size, owning, enable_if_disabled, sender_node,
       sender_core, tci_status, current_time_id, next_time_id,
       neighbor_direction, element_id, volume_mesh, interface_mesh,
       subcell_size != 0 ? subcell_data.data() : nullptr,
       dg_size != 0 ? dg_data.data() : nullptr);
-  // Since we expect the copied message to have sent_across_nodes = true because
-  // that's set in the pack() function, we set sent_across_nodes = true here
+  // Since we expect the copied message to have owning = true because that's set
+  // in the pack() function, we set owning = true here
   BoundaryMessage<Dim>* copied_boundary_message = new BoundaryMessage<Dim>(
       subcell_size, dg_size, true, enable_if_disabled, sender_node, sender_core,
       tci_status, current_time_id, next_time_id, neighbor_direction, element_id,
@@ -90,7 +90,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   BoundaryMessage<Dim>* unpacked_message =
       BoundaryMessage<Dim>::unpack(packed_message);
 
-  CHECK(unpacked_message->sent_across_nodes);
+  CHECK(unpacked_message->owning);
   CHECK(*copied_boundary_message == *unpacked_message);
   CHECK_FALSE(*copied_boundary_message != *unpacked_message);
 }
@@ -99,7 +99,7 @@ void test_output() {
   const size_t subcell_size = 4;
   const size_t dg_size = 3;
 
-  const bool sent_across_nodes = true;
+  const bool owning = true;
   const bool enable_if_disabled = false;
   const size_t sender_node = 2;
   const size_t sender_core = 15;
@@ -122,13 +122,13 @@ void test_output() {
   DataVector subcell_data{0.1, 0.2, 0.3, 0.4};
   DataVector dg_data{-0.3, -0.2, -0.1};
 
-  BoundaryMessage<2> message{subcell_size,      dg_size,
-                             sent_across_nodes, enable_if_disabled,
-                             sender_node,       sender_core,
-                             tci_status,        current_time_id,
-                             next_time_id,      neighbor_direction,
-                             element_id,        volume_mesh,
-                             interface_mesh,    subcell_data.data(),
+  BoundaryMessage<2> message{subcell_size,   dg_size,
+                             owning,         enable_if_disabled,
+                             sender_node,    sender_core,
+                             tci_status,     current_time_id,
+                             next_time_id,   neighbor_direction,
+                             element_id,     volume_mesh,
+                             interface_mesh, subcell_data.data(),
                              dg_data.data()};
 
   const std::string message_str = get_output(message);
@@ -136,7 +136,7 @@ void test_output() {
   std::stringstream ss;
   ss << "subcell_ghost_data_size = 4\n"
      << "dg_flux_data_size = 3\n"
-     << "sent_across_nodes = true\n"
+     << "owning = true\n"
      << "enable_if_disabled = false\n"
      << "sender_node = 2\n"
      << "sender_core = 15\n"

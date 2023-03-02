@@ -574,7 +574,7 @@ struct set_vector1_from_receive {
 
     // We shouldn't have gone through the boundary_message::pack() function, so
     // this shouldn't be true
-    SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message->sent_across_nodes);
+    SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message->owning);
 
     // Only the boundary message gets destroyed, not the data it points to
     inbox.erase(db::get<TemporalId1>(box));

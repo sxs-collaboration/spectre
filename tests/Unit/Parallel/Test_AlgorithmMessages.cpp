@@ -306,9 +306,9 @@ struct ReceiveMessage {
           db::get<Tags::NodeOfElementToReceiveFrom>(box);
 
       if (node_of_element_to_receive_from == my_node) {
-        SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message_ptr->sent_across_nodes);
+        SPECTRE_PARALLEL_REQUIRE_FALSE(boundary_message_ptr->owning);
       } else {
-        SPECTRE_PARALLEL_REQUIRE(boundary_message_ptr->sent_across_nodes);
+        SPECTRE_PARALLEL_REQUIRE(boundary_message_ptr->owning);
       }
     }
 

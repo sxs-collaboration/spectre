@@ -38,7 +38,9 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
 
   size_t subcell_ghost_data_size;
   size_t dg_flux_data_size;
-  bool sent_across_nodes;
+  // Whether or not this BoundaryMessage owns the data that the subcell and dg
+  // pointers point to
+  bool owning;
   bool enable_if_disabled;
   size_t sender_node;
   size_t sender_core;
@@ -57,8 +59,7 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
   BoundaryMessage() = default;
 
   BoundaryMessage(const size_t subcell_ghost_data_size_in,
-                  const size_t dg_flux_data_size_in,
-                  const bool sent_across_nodes_in,
+                  const size_t dg_flux_data_size_in, const bool owning_in,
                   const bool enable_if_disabled_in, const size_t sender_node_in,
                   const size_t sender_core_in, const int tci_status_in,
                   const ::TimeStepId& current_time_step_id_in,
