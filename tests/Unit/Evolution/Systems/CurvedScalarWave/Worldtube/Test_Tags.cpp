@@ -24,14 +24,17 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/Evolution/Systems/CurvedScalarWave/Worldtube/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/CartesianProduct.hpp"
@@ -311,6 +314,54 @@ void test_inertial_particle_position_compute() {
     CHECK_ITERABLE_APPROX(inertial_pos, coordinate_map(grid_coords_center));
   }
 }
+
+void test_puncture_field() {
+  static constexpr size_t Dim = 3;
+  ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
+      "PunctureField");
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  tnsr::I<double, Dim, Frame::Grid> charge_pos{{7.1, 0., 0.}};
+  const ::ExcisionSphere excision_sphere{1., charge_pos, {}};
+  const double orbital_radius = get(magnitude(charge_pos));
+  auto random_points =
+      make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+          make_not_null(&gen), dist, DataVector(50));
+  random_points.get(0) += charge_pos.get(0);
+
+  const double time = 1.;
+  const size_t order = 0;
+  const auto box_abutting = db::create<
+      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, false>,
+                        Tags::ExcisionSphere<Dim>, ::Tags::Time,
+                        Tags::ExpansionOrder>,
+      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
+      std::make_optional<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+          random_points),
+      excision_sphere, time, order);
+  const auto singular_field = get<Tags::PunctureField<Dim>>(box_abutting);
+
+  CHECK(singular_field.has_value());
+  Variables<tmpl::list<CurvedScalarWave::Tags::Psi,
+                       ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+                       ::Tags::deriv<CurvedScalarWave::Tags::Psi,
+                                     tmpl::size_t<3>, Frame::Inertial>>>
+      expected{};
+  puncture_field(make_not_null(&expected), random_points, time, orbital_radius,
+                 time, order);
+  CHECK_VARIABLES_APPROX(singular_field.value(), expected);
+  std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> nullopt{};
+  const auto box_not_abutting = db::create<
+      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, false>,
+                        Tags::ExcisionSphere<Dim>, ::Tags::Time,
+                        Tags::ExpansionOrder>,
+      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
+      nullopt, excision_sphere, time, order);
+  const auto puncture_field_nullopt =
+      get<Tags::PunctureField<Dim>>(box_not_abutting);
+  CHECK(not puncture_field_nullopt.has_value());
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -335,10 +386,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       Tags::FaceCoordinates<3, Frame::Inertial, false>>("FaceCoordinates");
   TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
       "InertialParticlePosition");
+  TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
 
   test_excision_sphere_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
   test_inertial_particle_position_compute();
+  test_puncture_field();
 }
 }  // namespace CurvedScalarWave::Worldtube

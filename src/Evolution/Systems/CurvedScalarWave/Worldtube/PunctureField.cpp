@@ -17,8 +17,9 @@ namespace CurvedScalarWave::Worldtube {
 
 void puncture_field(
     gsl::not_null<Variables<tmpl::list<
-        Tags::Psi, ::Tags::dt<Tags::Psi>,
-        ::Tags::deriv<Tags::Psi, tmpl::size_t<3>, Frame::Inertial>>>*>
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                      Frame::Inertial>>>*>
         result,
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
     const double orbital_radius, const double bh_mass, const size_t order) {
@@ -34,8 +35,9 @@ void puncture_field(
 
 void puncture_field_0(
     gsl::not_null<Variables<tmpl::list<
-        Tags::Psi, ::Tags::dt<Tags::Psi>,
-        ::Tags::deriv<Tags::Psi, tmpl::size_t<3>, Frame::Inertial>>>*>
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                      Frame::Inertial>>>*>
         result,
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
     const double orbital_radius, const double BH_mass) {

@@ -11,9 +11,11 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -102,6 +104,25 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 
 template <size_t Dim>
+void PunctureFieldCompute<Dim>::function(
+    const gsl::not_null<return_type*> result,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        inertial_face_coords,
+    const ::ExcisionSphere<Dim>& excision_sphere, const double time,
+    const size_t expansion_order) {
+  if (inertial_face_coords.has_value()) {
+    if (not result->has_value()) {
+      result->emplace(get<0>(inertial_face_coords.value()).size());
+    }
+    puncture_field(
+        make_not_null(&(result->value())), inertial_face_coords.value(), time,
+        get(magnitude(excision_sphere.center())), 1., expansion_order);
+  } else {
+    result->reset();
+  }
+}
+
+template <size_t Dim>
 void InertialParticlePositionCompute<Dim>::function(
     gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> inertial_position,
     const ::ExcisionSphere<Dim>& excision_sphere, const double time) {
@@ -119,6 +140,7 @@ void InertialParticlePositionCompute<Dim>::function(
 }
 
 template struct InertialParticlePositionCompute<3>;
+template struct PunctureFieldCompute<3>;
 
 template struct FaceCoordinatesCompute<3, Frame::Grid, true>;
 template struct FaceCoordinatesCompute<3, Frame::Grid, false>;
