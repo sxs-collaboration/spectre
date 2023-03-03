@@ -296,6 +296,46 @@ void test_boundary_history() {
   check_iterator(copy.local_begin() + 1);
   check_iterator(copy.remote_begin() + 2);
   CHECK(copy.integration_order() == 2);
+
+  {
+    BoundaryHistoryType mapping_history{3};
+    mapping_history.local_insert(make_time_id(0.), "X");
+    mapping_history.local_insert(make_time_id(1.), "XX");
+    mapping_history.remote_insert(make_time_id(0.), std::vector{3});
+    mapping_history.remote_insert(make_time_id(1.), std::vector{4});
+
+    struct MappingTestCoupling {
+      double operator()(const std::string& local,
+                        const std::vector<int>& remote) const {
+        return static_cast<double>(local.length()) +
+               static_cast<double>(remote[0]);
+      }
+    };
+    CHECK(*mapping_history.evaluator(MappingTestCoupling{})(
+              mapping_history.local_begin(), mapping_history.remote_begin()) ==
+          4.0);
+    mapping_history.map_entries(
+        [](const gsl::not_null<std::string*> local) { *local += "YY"; },
+        [](const gsl::not_null<std::vector<int>*> remote) {
+          (*remote)[0] *= 2;
+        });
+    CHECK(*mapping_history.evaluator(MappingTestCoupling{})(
+              mapping_history.local_begin(), mapping_history.remote_begin()) ==
+          9.0);
+    mapping_history.map_entries([](auto v) {
+      if constexpr (std::is_same_v<tmpl::front<decltype(v)>, std::string*>) {
+        *v += "ZZZ";
+      } else {
+        (*v)[0] *= 3;
+      }
+    });
+    CHECK(*mapping_history.evaluator(MappingTestCoupling{})(
+              mapping_history.local_begin(), mapping_history.remote_begin()) ==
+          24.0);
+    CHECK(*mapping_history.evaluator(MappingTestCoupling{})(
+              mapping_history.local_begin() + 1,
+              mapping_history.remote_begin() + 1) == 31.0);
+  }
 }
 }  // namespace
 
