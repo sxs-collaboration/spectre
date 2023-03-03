@@ -16,6 +16,7 @@
 #include "DataStructures/MathWrapper.hpp"
 #include "Time/Time.hpp"  // IWYU pragma: keep
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -177,6 +178,20 @@ class BoundaryHistory {
   /// Look up the stored local data at the `time_id`. It is an error to request
   /// data at a `time_id` that has not been inserted yet.
   const LocalVars& local_data(const TimeStepId& time_id) const;
+
+  /// Apply \p local_func and \p remote_func to `make_not_null(&e)`
+  /// for `e` every local and remote value in the history,
+  /// respectively.  Invalidates all cached values.
+  ///
+  /// A convenience overload using the same value for the two
+  /// functions is also provided.
+  /// @{
+  template <typename LocalFunc, typename RemoteFunc>
+  void map_entries(LocalFunc&& local_func, RemoteFunc&& remote_func);
+
+  template <typename Func>
+  void map_entries(Func&& func);
+  /// @}
 
  private:
   template <typename Coupling>
@@ -342,6 +357,24 @@ BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::local_data(
     }
   }
   ERROR("No local data was found at time " << time << ".");
+}
+
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+template <typename LocalFunc, typename RemoteFunc>
+void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::map_entries(
+    LocalFunc&& local_func, RemoteFunc&& remote_func) {
+  coupling_cache_.clear();
+  alg::for_each(local_data_.second,
+                [&](LocalVars& v) { local_func(make_not_null(&v)); });
+  alg::for_each(remote_data_.second,
+                [&](RemoteVars& v) { remote_func(make_not_null(&v)); });
+}
+
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+template <typename Func>
+void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::map_entries(
+    Func&& func) {
+  map_entries(func, func);
 }
 
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
