@@ -18,7 +18,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3HesthavenSsp", "[Unit][Time]") {
   CHECK(stepper.error_estimate_order() == 2);
   CHECK(stepper.number_of_substeps() == 3);
   CHECK(stepper.number_of_substeps_for_error() == 3);
-  TestHelpers::RungeKutta::check_tableau(stepper);
 
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, 1., 1e-9);
@@ -33,6 +32,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3HesthavenSsp", "[Unit][Time]") {
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_convergence_order(stepper, {10, 50});
   TimeStepperTestUtils::check_dense_output(stepper, 3_st);
+
+  TimeStepperTestUtils::check_strong_stability_preservation(stepper, 1.0);
 
   TestHelpers::test_factory_creation<TimeStepper,
                                      TimeSteppers::Rk3HesthavenSsp>(
