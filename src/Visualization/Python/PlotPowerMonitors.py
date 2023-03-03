@@ -14,7 +14,7 @@ import spectre.IO.H5 as spectre_h5
 from spectre.Spectral import Basis
 from spectre.DataStructures import DataVector
 from spectre.Domain import Domain, deserialize_domain
-from spectre.IO.H5.IterElements import iter_elements
+from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,8 @@ def plot_power_monitors(volfiles: Union[spectre_h5.H5Vol,
                                         Iterable[spectre_h5.H5Vol]],
                         obs_id: int, tensor_components: Sequence[str],
                         block_or_group_names: Sequence[str],
-                        domain: Union[Domain[1], Domain[2], Domain[3]]):
+                        domain: Union[Domain[1], Domain[2], Domain[3]],
+                        element_patterns: Optional[Sequence[str]] = None):
     # One subplot per block or group
     num_plots = len(block_or_group_names)
     fig, axes = plt.subplots(nrows=1,
@@ -66,8 +67,9 @@ def plot_power_monitors(volfiles: Union[spectre_h5.H5Vol,
     num_elements = np.zeros(num_plots, dtype=int)
     max_error = np.zeros((num_plots, domain.dim))
 
-    for element, tensor_data in iter_elements(volfiles, obs_id,
-                                              tensor_components):
+    for element, tensor_data in iter_elements(
+            volfiles, obs_id, tensor_components,
+            element_patterns=element_patterns):
         # Skip FD elements because we can't compute power monitors for them
         if any(basis == Basis.FiniteDifference
                for basis in element.mesh.basis()):
@@ -177,6 +179,19 @@ def parse_step(ctx, param, value):
               multiple=True,
               help=("Names of blocks or block groups to analyze. "
                     "Can be specified multiple times."))
+@click.option("--elements",
+              "-e",
+              "element_patterns",
+              multiple=True,
+              help=("Include only elements that match the specified glob "
+                    "pattern, like 'B*,(L1I*,L0I0,L0I0)'. "
+                    "Can be specified multiple times, in which case elements "
+                    "are included that match _any_ of the specified "
+                    "patterns."))
+@click.option("--list-elements",
+              is_flag=True,
+              help=("List all elements in the specified blocks subject to "
+                    "'--elements' / '-e' patterns."))
 @click.option("--list-vars",
               "-l",
               is_flag=True,
@@ -206,7 +221,8 @@ def parse_step(ctx, param, value):
           "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
           "environment variable."))
 def plot_power_monitors_command(h5_files, subfile_name, step, time,
-                                list_blocks, block_or_group_names, list_vars,
+                                list_blocks, block_or_group_names,
+                                list_elements, element_patterns, list_vars,
                                 vars_patterns, output, stylesheet):
     """Plot power monitors from volume data
 
@@ -278,6 +294,28 @@ def plot_power_monitors_command(h5_files, subfile_name, step, time,
                 f"'{name}' matches no block or group name. "
                 f"Available names are: {all_block_groups + all_block_names}")
 
+    # Print available elements IDs
+    if not element_patterns:
+        # Don't apply any filters when no element patterns were specified
+        element_patterns = None
+    if list_elements:
+        all_element_ids = sorted(
+            set(element.id for element in iter_elements(
+                volfiles, obs_id, element_patterns=element_patterns)))
+        # Print grouped by block
+        import rich.console
+        console = rich.console.Console()
+        for i, block_name in enumerate(block_or_group_names):
+            element_ids = [
+                stripped_element_name(element_id)
+                for element_id in all_element_ids if find_block_or_group(
+                    element_id.block_id, block_or_group_names, domain) == i
+            ]
+            console.rule(
+                f"[bold]{block_name}[/bold] ({len(element_ids)} elements)")
+            console.print(rich.columns.Columns(element_ids))
+        return
+
     # Print available variables and exit
     all_vars = volfiles[0].list_tensor_components(obs_id)
     if list_vars or not vars_patterns:
@@ -331,7 +369,8 @@ def plot_power_monitors_command(h5_files, subfile_name, step, time,
                             obs_id=obs_id,
                             tensor_components=vars,
                             domain=domain,
-                            block_or_group_names=block_or_group_names)
+                            block_or_group_names=block_or_group_names,
+                            element_patterns=element_patterns)
         progress.update(task_id, completed=len(volfiles))
 
     if output:

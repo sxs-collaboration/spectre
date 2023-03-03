@@ -51,6 +51,8 @@ class TestPlotPowerMonitors(unittest.TestCase):
             "-1",
             "-b",
             "Brick",
+            "-e",
+            "B*",
             "-y",
             "Psi",
             "-o",
