@@ -32,4 +32,21 @@ struct SphericalHarmonicsInbox
       std::map<temporal_id,
                std::unordered_map<ElementId<Dim>, Variables<tags_list>>>;
 };
+
+/*!
+ * \brief Inbox of the element chares that contains the regular field $\Psi^R$
+ * as well as its time and spatial derivative evaluated at the grid points of
+ * abutting element faces.
+ */
+template <size_t Dim>
+struct RegularFieldInbox
+    : Parallel::InboxInserters::Value<RegularFieldInbox<Dim>> {
+  using tags_to_send =
+      tmpl::list<CurvedScalarWave::Tags::Psi,
+                 ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+                 ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<Dim>,
+                               Frame::Grid>>;
+  using temporal_id = TimeStepId;
+  using type = std::map<temporal_id, Variables<tags_to_send>>;
+};
 }  // namespace CurvedScalarWave::Worldtube::Tags
