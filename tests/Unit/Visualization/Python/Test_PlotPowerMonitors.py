@@ -43,6 +43,7 @@ class TestPlotPowerMonitors(unittest.TestCase):
 
     def test_cli(self):
         runner = CliRunner()
+        # Test plotting a single step
         result = runner.invoke(plot_power_monitors_command, [
             self.h5_filename,
             "-d",
@@ -62,6 +63,27 @@ class TestPlotPowerMonitors(unittest.TestCase):
         self.assertEqual(result.exit_code, 0, result.output)
         # Can't easily test the plot itself, so just check that it was created
         self.assertTrue(os.path.exists(self.plot_filename))
+        os.remove(self.plot_filename)
+
+        # Test plotting over time
+        result = runner.invoke(plot_power_monitors_command, [
+            self.h5_filename,
+            "-d",
+            "element_data",
+            "-b",
+            "Brick",
+            "-e",
+            "B*",
+            "-y",
+            "Psi",
+            "-o",
+            self.plot_filename,
+        ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0, result.output)
+        # Can't easily test the plot itself, so just check that it was created
+        self.assertTrue(os.path.exists(self.plot_filename))
+        os.remove(self.plot_filename)
 
 
 if __name__ == '__main__':
