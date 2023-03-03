@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import fnmatch
 from dataclasses import dataclass
 from typing import Dict, Iterable, Optional, Sequence, Union
 
@@ -63,10 +64,38 @@ class Element:
         return determinant(self.jacobian)
 
 
+def stripped_element_name(
+    element_id: Union[str, ElementId[1], ElementId[2], ElementId[3]]
+) -> bool:
+    """The element name without the leading and trailing square bracket
+
+    Square brackets have special meaning in glob patterns, so it's easier to
+    strip them away when dealing with element names on the command line.
+    """
+    return str(element_id).strip("[]")
+
+
+def include_element(element_id: Union[str, ElementId[1], ElementId[2],
+                                      ElementId[3]],
+                    element_patterns: Optional[Sequence[str]]) -> bool:
+    """Whether or not the 'element_id' matches any of the 'element_patterns'
+
+    The 'element_patterns' are interpreted as glob patterns.
+    If 'element_patterns' is None, every element is included. If
+    'element_patterns' is an empty list, no element is included.
+    """
+    if element_patterns is None:
+        return True
+    return any(
+        fnmatch.fnmatch(stripped_element_name(element_id), element_pattern)
+        for element_pattern in element_patterns)
+
+
 def iter_elements(volfiles: Union[spectre_h5.H5Vol,
                                   Iterable[spectre_h5.H5Vol]],
                   obs_ids: Optional[Union[int, Sequence[int]]],
-                  tensor_components: Optional[Iterable[str]] = None):
+                  tensor_components: Optional[Iterable[str]] = None,
+                  element_patterns: Optional[Sequence[str]] = None):
     """Return volume data by element
 
     Arguments:
@@ -75,6 +104,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
       obs_id: An observation ID, a list of observation IDs, or None to iterate
         over all observation IDs.
       tensor_components: Tensor components to retrieve. Can be empty.
+      element_patterns: If specified, include only elements that match any of
+        these glob patterns. See 'IterElements.include_element' for details.
 
     Returns: Iterator over all elements in all 'volfiles'. Yields either just
       the 'Element' with structural information if 'tensor_components' is
@@ -108,13 +139,24 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             else:
                 functions_of_time = None
             all_grid_names = volfile.get_grid_names(obs_id)
-            all_element_ids = [ElementId[dim](name) for name in all_grid_names]
+            if element_patterns is not None:
+                grid_names = [
+                    grid_name for grid_name in all_grid_names
+                    if include_element(grid_name, element_patterns)
+                ]
+            else:
+                grid_names = all_grid_names
+            if not grid_names:
+                continue
+            element_ids = [ElementId[dim](name) for name in grid_names]
             all_extents = volfile.get_extents(obs_id)
             all_bases = volfile.get_bases(obs_id)
             all_quadratures = volfile.get_quadratures(obs_id)
-            all_meshes = [
-                Mesh[dim](*mesh_args)
-                for mesh_args in zip(all_extents, all_bases, all_quadratures)
+            meshes = [
+                Mesh[dim](extents, bases, quadratures)
+                for grid_name, extents, bases, quadratures in zip(
+                    all_grid_names, all_extents, all_bases, all_quadratures)
+                if grid_name in grid_names
             ]
             # Pre-load the tensor data because it's stored contiguously for all
             # grids in the file
@@ -124,9 +166,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
                     for component in tensor_components
                 ])
             # Iterate elements in this file
-            for grid_name, element_id, mesh in zip(all_grid_names,
-                                                   all_element_ids,
-                                                   all_meshes):
+            for grid_name, element_id, mesh in zip(grid_names, element_ids,
+                                                   meshes):
                 offset, length = spectre_h5.offset_and_length_for_grid(
                     grid_name, all_grid_names, all_extents)
                 data_slice = slice(offset, offset + length)

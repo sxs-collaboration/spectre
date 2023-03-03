@@ -12,7 +12,8 @@ import numpy.testing as npt
 import spectre.IO.H5 as spectre_h5
 from spectre.Domain import ElementId, deserialize_functions_of_time
 from spectre.Informer import unit_test_src_path
-from spectre.IO.H5.IterElements import iter_elements
+from spectre.IO.H5.IterElements import (include_element, iter_elements,
+                                        stripped_element_name)
 from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
 
 
@@ -21,6 +22,34 @@ class TestIterElements(unittest.TestCase):
         self.volfile_name = os.path.join(
             unit_test_src_path(), "Visualization/Python/VolTestData0.h5")
         self.subfile_name = "/element_data"
+
+    def test_stripped_element_name(self):
+        self.assertEqual(stripped_element_name("[B0,(L0I0,L1I0)]"),
+                         "B0,(L0I0,L1I0)")
+        self.assertEqual(stripped_element_name("B0,(L0I0,L1I0)"),
+                         "B0,(L0I0,L1I0)")
+        self.assertEqual(stripped_element_name(ElementId[1](0)), "B0,(L0I0)")
+        self.assertEqual(
+            stripped_element_name(ElementId[2]("[B34,(L0I0,L1I0)]")),
+            "B34,(L0I0,L1I0)")
+        self.assertEqual(
+            stripped_element_name(ElementId[3]("[B12,(L2I1,L1I0,L0I0)]")),
+            "B12,(L2I1,L1I0,L0I0)")
+
+    def test_include_element(self):
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]", None))
+        self.assertFalse(include_element("[B0,(L0I0,L1I0)]", []))
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]",
+                                        ["B*,(L0I0,L1I0)"]))
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]", ["*"]))
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]", ["B0,*"]))
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]",
+                                        ["B0,(L0I0,L1I0)"]))
+        self.assertFalse(include_element("[B0,(L0I0,L1I0)]", ["B1,*"]))
+        self.assertTrue(include_element("[B0,(L0I0,L1I0)]", ["B0,*", "B1,*"]))
+        self.assertTrue(
+            include_element(ElementId[2]("[B0,(L0I0,L1I0)]"),
+                            ["B0,*", "B1,*"]))
 
     def test_iter_elements(self):
         with spectre_h5.H5File(self.volfile_name, "r") as open_h5_file:
@@ -85,6 +114,26 @@ class TestIterElements(unittest.TestCase):
                         npt.assert_allclose(element.inv_jacobian.get(j, k),
                                             0.,
                                             atol=1e-14)
+
+            # Test filtering elements
+            self.assertEqual(
+                len(list(iter_elements(volfile, obs_id,
+                                       element_patterns=None))), 2)
+            self.assertFalse(
+                list(iter_elements(volfile, obs_id,
+                                   element_patterns=["B1,*"])))
+            self.assertEqual(
+                len(
+                    list(
+                        iter_elements(volfile,
+                                      obs_id,
+                                      element_patterns=["B0,*"]))), 2)
+            self.assertEqual(
+                len(
+                    list(
+                        iter_elements(volfile,
+                                      obs_id,
+                                      element_patterns=["B0,(L1I1*)"]))), 1)
 
 
 if __name__ == '__main__':
