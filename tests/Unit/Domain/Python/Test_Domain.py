@@ -1,20 +1,31 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import deserialize_domain, deserialize_functions_of_time
+import os
+import unittest
 
 import numpy as np
 import numpy.testing as npt
-import os
 import spectre.IO.H5 as spectre_h5
-import unittest
-from spectre.Informer import unit_test_src_path
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Frame, tnsr
+from spectre.Domain import (deserialize_domain, deserialize_functions_of_time,
+                            serialize_domain)
+from spectre.Domain.Creators import Interval
+from spectre.Informer import unit_test_src_path
 
 
 class TestDomain(unittest.TestCase):
-    def test_deserialize(self):
+    def test_serialize_and_deserialize(self):
+        domain = Interval(lower_x=[0.],
+                          upper_x=[1.],
+                          initial_refinement_level_x=[1],
+                          initial_number_of_grid_points_in_x=[4],
+                          is_periodic_in_x=[False]).create_domain()
+        self.assertEqual(deserialize_domain[1](serialize_domain(domain)),
+                         domain)
+
+    def test_deserialize_from_file(self):
         volfile_name = os.path.join(unit_test_src_path(),
                                     "Visualization/Python/VolTestData0.h5")
         with spectre_h5.H5File(volfile_name, "r") as open_h5_file:

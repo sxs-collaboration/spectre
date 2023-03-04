@@ -1,12 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import DataVector
-from spectre.IO.H5 import TensorComponent, ElementVolumeData
-from spectre.Spectral import Basis, Quadrature
 import unittest
+
 import numpy as np
 import numpy.testing as npt
+from spectre.DataStructures import DataVector
+from spectre.Domain import ElementId
+from spectre.IO.H5 import ElementVolumeData, TensorComponent
+from spectre.Spectral import Basis, Mesh, Quadrature
 
 
 class TestTensorData(unittest.TestCase):
@@ -45,13 +47,20 @@ class TestTensorData(unittest.TestCase):
             extents=[3, 4],
             basis=2 * [basis],
             quadrature=2 * [quad])
+        element_data_2 = ElementVolumeData(
+            ElementId[2]("[B0,(L1I0,L0I0)]"),
+            components=[tensor_component_1, tensor_component_2],
+            mesh=Mesh[2]([3, 4], basis, quad))
 
         # Test extents
         self.assertEqual(element_data.extents, [3, 4])
+        self.assertEqual(element_data_2.extents, [3, 4])
         element_data.extents = [5, 6]
         self.assertEqual(element_data.extents, [5, 6])
         # Test tensor components
         self.assertEqual(element_data.tensor_components,
+                         [tensor_component_1, tensor_component_2])
+        self.assertEqual(element_data_2.tensor_components,
                          [tensor_component_1, tensor_component_2])
         element_data.tensor_components = [
             tensor_component_1, tensor_component_1
@@ -62,6 +71,9 @@ class TestTensorData(unittest.TestCase):
         self.assertEqual(element_data.basis, [basis, basis])
         self.assertEqual(element_data.quadrature, [quad, quad])
         self.assertEqual(element_data.element_name, "grid_name")
+        self.assertEqual(element_data_2.basis, [basis, basis])
+        self.assertEqual(element_data_2.quadrature, [quad, quad])
+        self.assertEqual(element_data_2.element_name, "[B0,(L1I0,L0I0)]")
 
 
 if __name__ == '__main__':

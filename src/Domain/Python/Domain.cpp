@@ -4,6 +4,7 @@
 #include "Domain/Python/Domain.hpp"
 
 #include <cstddef>
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <string>
@@ -27,7 +28,12 @@ void bind_domain_impl(py::module& m) {  // NOLINT
           "dim", [](const py::object& /*self */) { return Dim; })
       .def("is_time_dependent", &Domain<Dim>::is_time_dependent)
       .def_property_readonly("blocks", &Domain<Dim>::blocks)
-      .def_property_readonly("block_groups", &Domain<Dim>::block_groups);
+      .def_property_readonly("block_groups", &Domain<Dim>::block_groups)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self == py::self)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self != py::self);
+  m.def("serialize_domain", &serialize<Domain<Dim>>);
   m.def(("deserialize_domain_" + get_output(Dim) + "d").c_str(),
         [](const std::vector<char>& serialized_domain) {
           return deserialize<Domain<Dim>>(serialized_domain.data());
