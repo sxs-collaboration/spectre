@@ -76,7 +76,7 @@ template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars
     : public GeneralizedHarmonicTemplateBase<
           EvolutionMetavars<VolumeDim, UseNumericalInitialData>>,
-          public CharacteristicExtractDefaults<false> {
+      public CharacteristicExtractDefaults<false> {
   using gh_base = GeneralizedHarmonicTemplateBase<
       EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
@@ -87,10 +87,10 @@ struct EvolutionMetavars
   template <bool DuringSelfStart>
   struct CceWorldtubeTarget;
 
-  using interpolator_source_vars = tmpl::list<
-      ::gr::Tags::SpacetimeMetric<VolumeDim, Frame::Inertial>,
-      ::GeneralizedHarmonic::Tags::Phi<VolumeDim, Frame::Inertial>,
-      ::GeneralizedHarmonic::Tags::Pi<VolumeDim, Frame::Inertial>>;
+  using interpolator_source_vars =
+      tmpl::list<::gr::Tags::SpacetimeMetric<VolumeDim, Frame::Inertial>,
+                 ::GeneralizedHarmonic::Tags::Phi<VolumeDim, Frame::Inertial>,
+                 ::GeneralizedHarmonic::Tags::Pi<VolumeDim, Frame::Inertial>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,
@@ -249,11 +249,11 @@ struct EvolutionMetavars
       "formulation\n"
       "with a coupled CCE evolution for asymptotic wave data output.\n"
       "The system shouldn't have black holes."};
-
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
