@@ -140,9 +140,9 @@ struct EvolutionMetavars
   // initialization actions are the same as the default, with the single
   // addition of initializing the interpolation points (second-to-last action).
   using initialization_actions = tmpl::list<
-      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-      evolution::dg::Initialization::Domain<VolumeDim,
-                                            override_functions_of_time>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          evolution::dg::Initialization::Domain<VolumeDim>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           UseNumericalInitialData, tmpl::list<>,
