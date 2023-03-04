@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+#include <memory>
 
 // We wish to explicitly test implicit type conversion when adding std::arrays
 // of different fundamentals, so we supress -Wsign-conversion.
@@ -18,8 +19,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
-                  "[DataStructures][Unit]") {
+namespace {
+void test_arithmetic() {
   const size_t Dim = 3;
 
   std::array<double, Dim> p1{{2.3, -1.4, 0.2}};
@@ -53,6 +54,10 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
       {14.04, -3.06, -5.4}};
   const auto right_scaled_array = p1 * scale;
   const auto array_divided_by_double = p1 / (1 / scale);
+  auto in_place_scaled_array = p1;
+  in_place_scaled_array *= scale;
+  auto array_divided_in_place_by_double = p1;
+  array_divided_in_place_by_double /= 1.0 / scale;
 
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(gsl::at(left_scaled_array, i) ==
@@ -61,6 +66,10 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
           approx(gsl::at(right_scaled_array, i)));
     CHECK(gsl::at(left_scaled_array, i) ==
           approx(gsl::at(array_divided_by_double, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(in_place_scaled_array, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(array_divided_in_place_by_double, i)));
   }
 
   const auto neg_p1 = -p1;
@@ -87,8 +96,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
   CHECK(size_array - int_array == size_minus_int);
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Magnitude",
-                  "[DataStructures][Unit]") {
+void test_magnitude() {
   std::array<double, 1> p1{{-2.5}};
   CHECK(2.5 == magnitude(p1));
   const std::array<double, 2> p2{{3., -4.}};
@@ -97,8 +105,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Magnitude",
   CHECK(magnitude(p3) == approx(15.));
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Dot",
-                  "[DataStructures][Unit]") {
+void test_dot() {
   {
     INFO("Testing 1D");
     const std::array<double, 1> double_1{{-2.}};
@@ -141,8 +148,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Dot",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.AllButSpecifiedElementOf",
-                  "[DataStructures][Unit]") {
+void test_all_but_specified_element_of() {
   const std::array<size_t, 3> a3{{5, 2, 3}};
   const std::array<size_t, 2> a2{{2, 3}};
   const std::array<size_t, 1> a1{{3}};
@@ -159,8 +165,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.AllButSpecifiedElementOf",
   CHECK(a0 == all_but_specified_element_of(b1, 0));
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.InsertElement",
-                  "[DataStructures][Unit]") {
+void test_insert_element() {
   const std::array<int, 0> a0{{}};
   const std::array<int, 1> a1{{3}};
   const std::array<int, 2> a2{{2, 3}};
@@ -170,8 +175,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.InsertElement",
   CHECK(insert_element(a2, 1, 4) == a3);
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Prepend",
-                  "[Utilities][Unit]") {
+void test_prepend() {
   const std::array<size_t, 3> a3{{5, 2, 3}};
   const std::array<size_t, 2> a2{{2, 3}};
   const std::array<size_t, 1> a1{{3}};
@@ -184,8 +188,26 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Prepend",
   CHECK(p3 == a3);
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.map_array",
-                  "[Utilities][Unit]") {
+void test_concatenate() {
+  static_assert(concatenate(std::array{1, 2}, std::array{3, 4, 5})[3] == 4);
+  auto two_empty = concatenate(std::array<std::unique_ptr<int>, 0>{},
+                               std::array<std::unique_ptr<int>, 0>{});
+  CHECK(two_empty.empty());
+  std::array<std::unique_ptr<size_t>, 2> two{};
+  two[0] = std::make_unique<size_t>(1);
+  two[1] = std::make_unique<size_t>(2);
+  std::array<std::unique_ptr<size_t>, 3> three{};
+  three[0] = std::make_unique<size_t>(3);
+  three[1] = std::make_unique<size_t>(4);
+  three[2] = std::make_unique<size_t>(5);
+  auto concatenated = concatenate(std::move(two), std::move(three));
+  REQUIRE(concatenated.size() == 5);
+  for (size_t i = 0; i < concatenated.size(); ++i) {
+    CHECK(*gsl::at(concatenated, i) == i + 1);
+  }
+}
+
+void test_map_array() {
   const auto func = [](const int x) { return 2. * x; };
   CHECK(map_array(std::array<int, 3>{{4, 3, 2}}, func) ==
         std::array<double, 3>{{8, 6, 4}});
@@ -198,15 +220,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.map_array",
         }) == std::array<int, 1>{{4}});
 }
 
-namespace {
 DEFINE_STD_ARRAY_BINOP(int, int, int, operator+, std::plus<>())
 DEFINE_STD_ARRAY_BINOP(double, double, double, f, std::multiplies<>())
 
 DEFINE_STD_ARRAY_INPLACE_BINOP(int, int, operator+=, std::plus<>())
 DEFINE_STD_ARRAY_INPLACE_BINOP(double, double, g, std::multiplies<>())
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.define_std_array_binop",
-                  "[Utilities][Unit]") {
+void test_define_std_array_binop() {
   // tests DEFINE_STD_ARRAY_BINOP
   CHECK(std::array<int, 2>{{1, 2}} + std::array<int, 2>{{2, 3}} ==
         std::array<int, 2>{{3, 5}});
@@ -224,3 +244,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.define_std_array_binop",
   CHECK(b == std::array<double, 2>{{2.0, 6.0}});
 }
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers", "[DataStructures][Unit]") {
+  test_arithmetic();
+  test_magnitude();
+  test_dot();
+  test_all_but_specified_element_of();
+  test_insert_element();
+  test_prepend();
+  test_concatenate();
+  test_map_array();
+  test_define_std_array_binop();
+}

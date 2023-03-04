@@ -58,12 +58,18 @@ inline auto operator-(const std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator*=(std::array<T, Dim>& lhs, const U& scale) {
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(lhs, i) *= scale;
+  }
+  return lhs;
+}
+
+template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
                                     const U& scale) {
-  std::array<T, Dim> result{};
-  for (size_t i = 0; i < Dim; ++i) {
-    gsl::at(result, i) = gsl::at(lhs, i) * scale;
-  }
+  std::array<T, Dim> result = lhs;
+  result *= scale;
   return result;
 }
 
@@ -74,12 +80,19 @@ inline std::array<T, Dim> operator*(const U& scale,
 }
 
 template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator/=(std::array<T, Dim>& lhs,
+                                      const U& scale) {
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(lhs, i) /= scale;
+  }
+  return lhs;
+}
+
+template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
                                     const U& scale) {
-  std::array<T, Dim> result{};
-  for (size_t i = 0; i < Dim; ++i) {
-    gsl::at(result, i) = gsl::at(lhs, i) / scale;
-  }
+  std::array<T, Dim> result = lhs;
+  result /= scale;
   return result;
 }
 
@@ -135,6 +148,21 @@ inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
   gsl::at(result, 0) = std::move(value);
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i + 1) = gsl::at(a, i);
+  }
+  return result;
+}
+
+/// \ingroup UtilitiesGroup
+/// \brief Construct an array from the contents of two other arrays.
+template <typename T, size_t Dim1, size_t Dim2>
+constexpr std::array<T, Dim1 + Dim2> concatenate(std::array<T, Dim1> a,
+                                                 std::array<T, Dim2> b) {
+  std::array<T, Dim1 + Dim2> result{};
+  for (size_t i = 0; i < Dim1; ++i) {
+    gsl::at(result, i) = std::move(gsl::at(a, i));
+  }
+  for (size_t i = 0; i < Dim2; ++i) {
+    gsl::at(result, i + Dim1) = std::move(gsl::at(b, i));
   }
   return result;
 }
