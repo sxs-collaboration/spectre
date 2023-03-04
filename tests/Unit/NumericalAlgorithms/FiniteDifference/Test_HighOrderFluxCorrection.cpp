@@ -29,14 +29,14 @@ struct Vector0 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame::Inertial>;
 };
 
-template <size_t Dim, size_t CorrectionOrder>
-void test() {
-  const size_t points_per_dimension = CorrectionOrder + 2;
+template <size_t Dim>
+void test(const size_t correction_order) {
+  const size_t points_per_dimension = correction_order + 2;
   CAPTURE(points_per_dimension);
-  CAPTURE(CorrectionOrder);
+  CAPTURE(correction_order);
   CAPTURE(Dim);
-  const size_t max_degree = CorrectionOrder;
-  const size_t stencil_width = CorrectionOrder + 1;
+  const size_t max_degree = correction_order;
+  const size_t stencil_width = correction_order + 1;
   const size_t number_of_ghost_points = (stencil_width - 1) / 2 + 1;
 
   using FluxTags = tmpl::list<Scalar0, Vector0<Dim>>;
@@ -132,8 +132,8 @@ void test() {
           }
         }
       };
-  FluxVars volume_vars(mesh.number_of_grid_points());
-  set_polynomial(&volume_vars, logical_coords);
+  std::optional<FluxVars> volume_vars(mesh.number_of_grid_points());
+  set_polynomial(&(volume_vars.value()), logical_coords);
 
   CorrectionVars expected_divergence(mesh.number_of_grid_points());
   set_polynomial_divergence(&expected_divergence, logical_coords);
@@ -144,6 +144,11 @@ void test() {
   // We do this by computing the solution in our entire neighbor, then using
   // slice_data to get the subset of points that are needed.
   DirectionMap<Dim, FluxVars> neighbor_data{};
+  FixedHashMap<maximum_number_of_neighbors(Dim),
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+      reconstruction_neighbor_data{};
+
   for (const auto& direction : Direction<Dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coords;
     neighbor_logical_coords.get(direction.dimension()) +=
@@ -168,6 +173,13 @@ void test() {
     std::copy(sliced_data.at(direction.opposite()).begin(),
               sliced_data.at(direction.opposite()).end(),
               neighbor_data[direction].data());
+
+    const std::pair mortar_id{direction, ElementId<Dim>{0}};
+    reconstruction_neighbor_data[mortar_id] =
+        DataVector{sliced_data.at(direction.opposite()).size()};
+    std::copy(sliced_data.at(direction.opposite()).begin(),
+              sliced_data.at(direction.opposite()).end(),
+              reconstruction_neighbor_data[mortar_id].data());
   }
 
   std::array<CorrectionVars, Dim> second_order_corrections{};
@@ -191,30 +203,34 @@ void test() {
     gsl::at(second_order_corrections, i) *= -1.0;
   }
 
-  std::array<CorrectionVars, Dim> high_order_corrections = make_array<Dim>(
-      CorrectionVars{second_order_corrections[0].number_of_grid_points()});
-  fd::cartesian_high_order_fluxes_using_nodes<CorrectionOrder>(
-      make_not_null(&high_order_corrections), second_order_corrections,
-      volume_vars, neighbor_data, mesh, number_of_ghost_points);
+  std::optional<std::array<CorrectionVars, Dim>> high_order_corrections{};
+  ::fd::cartesian_high_order_flux_corrections(
+      make_not_null(&high_order_corrections),
+
+      volume_vars, second_order_corrections,
+      std::optional<size_t>{correction_order}, reconstruction_neighbor_data,
+      mesh, number_of_ghost_points);
 
   // Now compute the Cartesian derivative of the high_order_corrections to
   // verify that it is computed sufficiently accurately.
   const DataVector inv_jacobian{mesh.number_of_grid_points(), 1.0};
   CorrectionVars flux_divergence{mesh.number_of_grid_points(), 0.0};
   for (size_t d = 0; d < Dim; ++d) {
+    const auto& corrections_in_dim =
+        high_order_corrections.has_value()
+            ? gsl::at(high_order_corrections.value(), d)
+            : gsl::at(second_order_corrections, d);
     // Note: assumes isotropic mesh
     const double one_over_delta_xi =
         -1.0 / (logical_coords.get(0)[1] - logical_coords.get(0)[0]);
     evolution::dg::subcell::add_cartesian_flux_divergence(
         make_not_null(&get(get<Scalar0>(flux_divergence))), one_over_delta_xi,
-        inv_jacobian, get(get<Scalar0>(gsl::at(high_order_corrections, d))),
-        mesh.extents(), d);
+        inv_jacobian, get(get<Scalar0>(corrections_in_dim)), mesh.extents(), d);
     for (size_t i = 0; i < Dim; ++i) {
       evolution::dg::subcell::add_cartesian_flux_divergence(
           make_not_null(&get<Vector0<Dim>>(flux_divergence).get(i)),
           one_over_delta_xi, inv_jacobian,
-          get<Vector0<Dim>>(gsl::at(high_order_corrections, d)).get(i),
-          mesh.extents(), d);
+          get<Vector0<Dim>>(corrections_in_dim).get(i), mesh.extents(), d);
     }
   }
 
@@ -226,26 +242,52 @@ void test() {
   CHECK_ITERABLE_CUSTOM_APPROX(get<Vector0<Dim>>(flux_divergence),
                                get<Vector0<Dim>>(expected_divergence),
                                custom_approx);
+
+  // Test assertions
+#ifdef SPECTRE_DEBUG
+  if (correction_order > 2) {
+    std::optional<std::array<CorrectionVars, Dim>>
+        high_order_corrections_assert = make_array<Dim>(CorrectionVars{
+            second_order_corrections[0].number_of_grid_points()});
+    high_order_corrections_assert.value()[0].initialize(
+        second_order_corrections[0].number_of_grid_points() * 2);
+    CHECK_THROWS_WITH(
+        ::fd::cartesian_high_order_flux_corrections(
+            make_not_null(&high_order_corrections_assert), volume_vars,
+            second_order_corrections, std::optional<size_t>{correction_order},
+            reconstruction_neighbor_data, mesh, number_of_ghost_points),
+        Catch::Matchers::Contains(
+            "The high_order_corrections must all have size"));
+  }
+  CHECK_THROWS_WITH(
+      ::fd::cartesian_high_order_flux_corrections(
+          make_not_null(&high_order_corrections), volume_vars,
+          second_order_corrections, std::optional<size_t>{},
+          reconstruction_neighbor_data, mesh, number_of_ghost_points),
+      Catch::Matchers::Contains(
+          "No finite difference order is set but we are trying to do"));
+  if constexpr (Dim > 1) {
+    auto second_order_corrections_copy = second_order_corrections;
+    second_order_corrections_copy[0].initialize(
+        second_order_corrections_copy[0].number_of_grid_points() * 2);
+    CHECK_THROWS_WITH(
+        ::fd::cartesian_high_order_flux_corrections(
+            make_not_null(&high_order_corrections), volume_vars,
+            second_order_corrections_copy,
+            std::optional<size_t>{correction_order},
+            reconstruction_neighbor_data, mesh, number_of_ghost_points),
+        Catch::Matchers::Contains(
+            "All second-order boundary corrections must be of the same size"));
+  }
+#endif  // SPECTRE_DEBUG
 }
 
 SPECTRE_TEST_CASE("Unit.FiniteDifference.CartesianHighOrderFluxCorrection",
                   "[Unit][NumericalAlgorithms]") {
-  test<1, 2>();
-  test<1, 4>();
-  test<1, 6>();
-  test<1, 8>();
-  test<1, 10>();
-
-  test<2, 2>();
-  test<2, 4>();
-  test<2, 6>();
-  test<2, 8>();
-  test<2, 10>();
-
-  test<3, 2>();
-  test<3, 4>();
-  test<3, 6>();
-  test<3, 8>();
-  test<3, 10>();
+  for (const size_t correction_order : {2_st, 4_st, 6_st, 8_st, 10_st}) {
+    test<1>(correction_order);
+    test<2>(correction_order);
+    test<3>(correction_order);
+  }
 }
 }  // namespace
