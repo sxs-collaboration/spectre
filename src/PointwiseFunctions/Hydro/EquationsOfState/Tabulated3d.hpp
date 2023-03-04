@@ -14,6 +14,8 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "IO/H5/EosTable.hpp"
+#include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/Interpolation/MultiLinearSpanInterpolation.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -51,6 +53,19 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
       "are tabulated as a function of density, electron_fraction and "
       "temperature."};
 
+  struct TableFilename {
+    using type = std::string;
+    static constexpr Options::String help{"File name of the EOS table"};
+  };
+
+  struct TableSubFilename {
+    using type = std::string;
+    static constexpr Options::String help{
+        "Subfile name of the EOS table, e.g., 'dd2'."};
+  };
+
+  using options = tmpl::list<TableFilename, TableSubFilename>;
+
   /// Fields stored in the table
   enum : size_t { Epsilon = 0, Pressure, CsSquared, DeltaMu,  NumberOfVars };
 
@@ -61,13 +76,16 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   Tabulated3D& operator=(Tabulated3D&&) = default;
   ~Tabulated3D() override = default;
 
-  //  explicit Tabulated3D(std::string filename);
+  explicit Tabulated3D(const std::string& filename,
+                       const std::string& subfilename);
 
   explicit Tabulated3D(std::vector<double> electron_fraction,
                        std::vector<double> log_density,
                        std::vector<double> log_temperature,
                        std::vector<double> table_data, double energy_shift,
                        double enthalpy_minimum);
+
+  explicit Tabulated3D(const h5::EosTable& spectre_eos);
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Tabulated3D, 3)
 
@@ -101,6 +119,8 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
                   std::vector<double> log_temperature,
                   std::vector<double> table_data, double energy_shift,
                   double enthalpy_minimum);
+
+  void initialize(const h5::EosTable& spectre_eos);
 
   bool is_equal(const EquationOfState<IsRelativistic, 3>& rhs) const override;
 

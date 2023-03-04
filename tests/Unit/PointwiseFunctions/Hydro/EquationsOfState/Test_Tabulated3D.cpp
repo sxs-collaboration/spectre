@@ -12,6 +12,18 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "IO/Connectivity.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/CheckH5.hpp"
+#include "IO/H5/EosTable.hpp"
+#include "IO/H5/File.hpp"
+#include "IO/H5/Header.hpp"
+#include "IO/H5/Helpers.hpp"
+#include "IO/H5/OpenGroup.hpp"
+#include "IO/H5/SourceArchive.hpp"
+#include "IO/H5/Version.hpp"
+#include "IO/H5/Wrappers.hpp"
+#include "Informer/InfoFromBuild.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
@@ -146,7 +158,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
         1.e-12);
 
   // Construct a test state
-  std::array<double, 3> pure_state{{1., 1.e-2, 0.3}};
+  std::array<double, 3> pure_state{{1., 1.e-3, 0.3}};
 
   std::array<Scalar<double>, 3> state{};
   std::array<Scalar<DataVector>, 3> vector_state{};
@@ -202,4 +214,27 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                  get(eos.temperature_from_density_and_energy(
                      vector_state[1], eps_interp_vector, vector_state[2]))[0]) <
         1.e-12);
+
+  // Test against reference values
+
+  std::string h5_file_name{
+      unit_test_src_path() +
+      "PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5"};
+
+  h5::H5File<h5::AccessType::ReadOnly> eos_file{h5_file_name};
+  const auto& compose_eos = eos_file.get<h5::EosTable>("/dd2");
+
+  eos.initialize(compose_eos);
+
+  get(state[1]) = 1.e-4;
+
+  CHECK(std::abs(0.302085884022446 -
+                 get(eos.specific_internal_energy_from_density_and_temperature(
+                     state[1], state[0], state[2]))) < 1.e-12);
+  CHECK(std::abs((1.10346262693259e-05) -
+                 get(eos.pressure_from_density_and_temperature(
+                     state[1], state[0], state[2]))) < 1.e-12);
+  CHECK(std::abs(0.416718905610434 -
+                 get(eos.sound_speed_squared_from_density_and_temperature(
+                     state[1], state[0], state[2]))) < 1.e-12);
 }

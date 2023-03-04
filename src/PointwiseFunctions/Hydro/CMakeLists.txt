@@ -37,6 +37,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
+  H5
   Options
   )
 
