@@ -5,6 +5,5 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  InitializeElementFacesGridCoordinates.hpp
-  ReceiveElementData.hpp
+  SendToWorldtube.hpp
 )

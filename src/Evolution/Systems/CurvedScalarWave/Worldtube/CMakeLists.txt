@@ -16,6 +16,8 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Inboxes.hpp
+  SingletonChare.hpp
   Tags.hpp
   PunctureField.hpp
   Worldtube.hpp
@@ -30,3 +32,4 @@ target_link_libraries(
   )
 
 add_subdirectory(SingletonActions)
+add_subdirectory(ElementActions)

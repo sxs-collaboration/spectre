@@ -225,5 +225,15 @@ struct WorldtubeSolution : db::SimpleTag {
                  ::CurvedScalarWave::Tags::Phi<Dim>>>;
 };
 
+/*!
+ * \brief Holds the constant value of the regular field inside the worldtube.
+ *
+ * \warning This tag will be removed once higher expansion orders of the
+ * worldtube scheme are implemented.
+ */
+struct Psi0 : db::SimpleTag {
+  using type = double;
+};
+
 }  // namespace Tags
 }  // namespace CurvedScalarWave::Worldtube
