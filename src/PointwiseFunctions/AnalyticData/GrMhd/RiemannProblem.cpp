@@ -236,13 +236,12 @@ bool operator!=(const RiemannProblem& lhs, const RiemannProblem& rhs) {
                                 tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
           const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector),
-                        (hydro::Tags::RestMassDensity,
-                         hydro::Tags::SpecificInternalEnergy,
-                         hydro::Tags::Pressure,
-                         hydro::Tags::DivergenceCleaningField,
-                         hydro::Tags::LorentzFactor,
-                         hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE_SCALARS, (double, DataVector),
+    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
+     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
+     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy,
+     hydro::Tags::ElectronFraction, gr::Tags::Lapse))
 
 #define INSTANTIATE_VECTORS(_, data)                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
