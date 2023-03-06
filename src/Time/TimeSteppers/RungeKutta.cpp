@@ -28,26 +28,11 @@ size_t RungeKutta::number_of_past_steps() const { return 0; }
 namespace {
 TimeStepId next_time_id_from_substeps(
     const TimeStepId& current_id, const TimeDelta& time_step,
-    const std::vector<Rational>& substep_times,
+    const std::vector<double>& substep_times,
     const size_t number_of_substeps) {
   ASSERT(substep_times.size() + 1 >= number_of_substeps,
          "More result coefficients than substeps");
   const auto substep = current_id.substep();
-  const auto step_time = current_id.step_time();
-  const auto substep_time = current_id.substep_time();
-
-  if (substep == 0) {
-    ASSERT(substep_time == step_time,
-           "The first substep time should equal the step time "
-               << step_time << ", not " << substep_time);
-  } else {
-    ASSERT(substep_time == step_time + substep_times[substep - 1] * time_step,
-           "The time for substep "
-               << substep << " with step time " << step_time
-               << " and time step " << time_step << " should be "
-               << step_time + substep_times[substep - 1] * time_step
-               << ", not " << substep_time);
-  }
 
   if (substep >= number_of_substeps) {
     ERROR("In substep should be less than the number of steps, not "

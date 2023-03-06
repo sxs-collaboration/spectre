@@ -39,13 +39,13 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
 
   for (size_t substep = 1; substep < max_substeps; ++substep) {
     const auto& time = substep_times[substep - 1];
-    CHECK(time >= 0);
-    CHECK(time <= 1);
+    CHECK(time >= 0.0);
+    CHECK(time <= 1.0);
     const auto& coefficients = substep_coefficients[substep - 1];
     // Substep is explicit
     CHECK(coefficients.size() <= substep);
     // Substep is order 1
-    CHECK(alg::accumulate(coefficients, 0.0) == approx(time.value()));
+    CHECK(alg::accumulate(coefficients, 0.0) == approx(time));
   }
 
   for (size_t substep = 0; substep < result_coefficients.size(); ++substep) {
@@ -79,7 +79,7 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
           double integral = 0.0;
           for (size_t substep = 1; substep < coefficients.size(); ++substep) {
             integral += coefficients[substep] *
-                        std::pow(substep_times[substep - 1].value(), order);
+                        std::pow(substep_times[substep - 1], order);
           }
           CHECK(integral == approx(1.0 / (order + 1.0)));
         }

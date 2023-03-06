@@ -29,7 +29,7 @@ struct VarTag : db::SimpleTag {
 void test_untyped_step_record() {
   const Slab slab(0.0, 1.0);
   const TimeStepId time_a(true, 0, slab.start());
-  const TimeStepId time_b(true, 0, slab.start(), 1, slab.start());
+  const TimeStepId time_b(true, 0, slab.start(), 1, slab.start().value());
   const TimeSteppers::UntypedStepRecord<double> a{time_a, std::optional{5.0},
                                                   6.0};
   auto b = a;
@@ -58,7 +58,7 @@ void test_step_record() {
 
   const Slab slab(0.0, 1.0);
   const TimeStepId time_a(true, 0, slab.start());
-  const TimeStepId time_b(true, 0, slab.start(), 1, slab.start());
+  const TimeStepId time_b(true, 0, slab.start(), 1, slab.start().value());
 
   const Record a{time_a, std::optional{make_with_value<Vars>(num_points, 2.0)},
                  make_with_value<Derivs>(num_points, 3.0)};
@@ -257,9 +257,9 @@ void test_history() {
   CHECK(as_const(history.substeps()).empty());
 
   const auto step_time = const_history.back().time_step_id.step_time();
-  history.insert(
-      TimeStepId(true, 0, step_time, 1, step_time + slab.duration() / 4),
-      make_value(4.0), make_deriv(40.0));
+  history.insert(TimeStepId(true, 0, step_time, 1,
+                            (step_time + slab.duration() / 4).value()),
+                 make_value(4.0), make_deriv(40.0));
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40)]
   CHECK(const_history.back().derivative == make_deriv(20.0));
   CHECK(as_const(const_history.substeps()).size() == 1);
@@ -279,13 +279,13 @@ void test_history() {
   CHECK(static_cast<const ConstUntyped&>(const_history.untyped())
             .at_step_start());
 
-  history.insert(
-      TimeStepId(true, 0, step_time, 1, step_time + slab.duration() / 4),
-      make_value(4.0), make_deriv(40.0));
+  history.insert(TimeStepId(true, 0, step_time, 1,
+                            (step_time + slab.duration() / 4).value()),
+                 make_value(4.0), make_deriv(40.0));
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40)]
-  history.insert(
-      TimeStepId(true, 0, step_time, 2, step_time + slab.duration() / 4),
-      make_value(5.0), make_deriv(50.0));
+  history.insert(TimeStepId(true, 0, step_time, 2,
+                            (step_time + slab.duration() / 4).value()),
+                 make_value(5.0), make_deriv(50.0));
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40), (2, 5, 50)]
 
   {
@@ -343,13 +343,13 @@ void test_history() {
   CHECK(static_cast<const ConstUntyped&>(const_history.untyped())
             .at_step_start());
 
-  history.insert(
-      TimeStepId(true, 0, step_time, 1, step_time + slab.duration() / 4),
-      make_value(4.0), make_deriv(40.0));
+  history.insert(TimeStepId(true, 0, step_time, 1,
+                            (step_time + slab.duration() / 4).value()),
+                 make_value(4.0), make_deriv(40.0));
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40)]
-  history.insert(
-      TimeStepId(true, 0, step_time, 2, step_time + slab.duration() / 4),
-      make_value(5.0), make_deriv(50.0));
+  history.insert(TimeStepId(true, 0, step_time, 2,
+                            (step_time + slab.duration() / 4).value()),
+                 make_value(5.0), make_deriv(50.0));
   // [(1/4, X, 10), (1/2, 2, 20)] [(1, 4, 40), (2, 5, 50)]
   history.insert(TimeStepId(true, 1, slab.end()), make_value(6.0),
                  make_deriv(60.0));
@@ -384,7 +384,7 @@ void test_history() {
   CHECK(static_cast<const ConstUntyped&>(const_history.untyped())
             .at_step_start());
 
-  history.insert(TimeStepId(true, 1, step_time2, 1, slab.end()),
+  history.insert(TimeStepId(true, 1, step_time2, 1, slab.end().value()),
                  make_value(7.0), make_deriv(70.0));
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, 7, 70)]
 
@@ -400,10 +400,10 @@ void test_history() {
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] []
   CHECK(const_history.size() == 3);
   CHECK(as_const(const_history.substeps()).empty());
-  history.insert(TimeStepId(true, 1, step_time2, 1, slab.end()),
+  history.insert(TimeStepId(true, 1, step_time2, 1, slab.end().value()),
                  History::no_value, make_deriv(70.0));
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70)]
-  history.insert(TimeStepId(true, 1, step_time2, 2, slab.end()),
+  history.insert(TimeStepId(true, 1, step_time2, 2, slab.end().value()),
                  make_value(8.0), make_deriv(80.0));
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70), (1, 8, 80)]
 
@@ -421,7 +421,7 @@ void test_history() {
   [[maybe_unused]] const auto created_value = make_value(0.0);
   [[maybe_unused]] const auto created_deriv = make_deriv(0.0);
 
-  history.insert(TimeStepId(true, 1, step_time2, 2, slab.end()),
+  history.insert(TimeStepId(true, 1, step_time2, 2, slab.end().value()),
                  make_value(8.0), make_deriv(80.0));
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70), (1, 8, 80)]
 
@@ -503,23 +503,25 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(
-        history.insert(TimeStepId(true, 0, slab.start(), 1, slab.start()), 0.0,
-                       0.0),
+        history.insert(
+            TimeStepId(true, 0, slab.start(), 1, slab.start().value()), 0.0,
+            0.0),
         Catch::Contains("Cannot insert substep into empty history"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(
-        history.insert(TimeStepId(true, 0, slab.start(), 2, slab.start()), 0.0,
-                       0.0),
-        Catch::Contains("Cannot insert substep 2 following 0"));
+    CHECK_THROWS_WITH(history.insert(TimeStepId(true, 0, slab.start(), 2,
+                                                slab.start().value()),
+                                     0.0, 0.0),
+                      Catch::Contains("Cannot insert substep 2 following 0"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(
-        history.insert(TimeStepId(true, 0, slab_half, 1, slab.end()), 0.0, 0.0),
+        history.insert(TimeStepId(true, 0, slab_half, 1, slab.end().value()),
+                       0.0, 0.0),
         Catch::Contains("Cannot insert substep ") and
             Catch::Contains(" of different step "));
   }
@@ -528,20 +530,21 @@ void test_history_assertions() {
     history.insert_initial(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(
         history.insert_initial(
-            TimeStepId(true, 0, slab.start(), 2, slab.start()), 0.0, 0.0),
+            TimeStepId(true, 0, slab.start(), 2, slab.start().value()), 0.0,
+            0.0),
         Catch::Contains("Cannot use insert_initial for substeps"));
   }
   {
     TimeSteppers::History<double> history(1);
     // +1 because 0 isn't a substep.
     for (size_t i = 0; i < history.substeps().max_size() + 1; ++i) {
-      history.insert(TimeStepId(true, 0, slab.start(), i, slab.start()), 0.0,
-                     0.0);
+      history.insert(TimeStepId(true, 0, slab.start(), i, slab.start().value()),
+                     0.0, 0.0);
     }
     CHECK_THROWS_WITH(
         history.insert(
             TimeStepId(true, 0, slab.start(), history.substeps().max_size() + 1,
-                       slab.start()),
+                       slab.start().value()),
             0.0, 0.0),
         Catch::Contains(
             "Cannot insert new substep because the History is full"));
@@ -563,24 +566,25 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(
-        std::as_const(
-            history)[TimeStepId(true, 0, slab.start(), 1, slab.start())],
-        Catch::Contains("not present"));
-  }
-  {
-    TimeSteppers::History<double> history(1);
-    history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(
-        history[TimeStepId(true, 0, slab.start(), 1, slab.start())],
-        Catch::Contains("not present"));
-  }
-  {
-    TimeSteppers::History<double> history(1);
-    history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.end()), 0.0, 0.0);
-    CHECK_THROWS_WITH(history[TimeStepId(true, 0, slab_half, 1, slab.end())],
+    CHECK_THROWS_WITH(std::as_const(history)[TimeStepId(
+                          true, 0, slab.start(), 1, slab.start().value())],
                       Catch::Contains("not present"));
+  }
+  {
+    TimeSteppers::History<double> history(1);
+    history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
+    CHECK_THROWS_WITH(
+        history[TimeStepId(true, 0, slab.start(), 1, slab.start().value())],
+        Catch::Contains("not present"));
+  }
+  {
+    TimeSteppers::History<double> history(1);
+    history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
+    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.end().value()),
+                   0.0, 0.0);
+    CHECK_THROWS_WITH(
+        history[TimeStepId(true, 0, slab_half, 1, slab.end().value())],
+        Catch::Contains("not present"));
   }
   {
     const TimeSteppers::History<double> history(1);
@@ -613,16 +617,18 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(
-        history.untyped()[TimeStepId(true, 0, slab.start(), 1, slab.start())],
-        Catch::Contains("not present"));
+    CHECK_THROWS_WITH(history.untyped()[TimeStepId(true, 0, slab.start(), 1,
+                                                   slab.start().value())],
+                      Catch::Contains("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.end()), 0.0, 0.0);
+    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.end().value()),
+                   0.0, 0.0);
     CHECK_THROWS_WITH(
-        history.untyped()[TimeStepId(true, 0, slab_half, 1, slab.end())],
+        history
+            .untyped()[TimeStepId(true, 0, slab_half, 1, slab.end().value())],
         Catch::Contains("not present"));
   }
   {
@@ -644,8 +650,8 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.start()), 0.0,
-                   0.0);
+    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.start().value()),
+                   0.0, 0.0);
     CHECK_THROWS_WITH(history.pop_front(),
                       Catch::Contains("Cannot remove a step with substeps.  "
                                       "Call clear_substeps() first"));
@@ -661,8 +667,8 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(history.discard_value(
-                          TimeStepId(true, 0, slab.start(), 1, slab.start())),
+    CHECK_THROWS_WITH(history.discard_value(TimeStepId(true, 0, slab.start(), 1,
+                                                       slab.start().value())),
                       Catch::Contains("not present"));
   }
 
@@ -677,8 +683,8 @@ void test_history_assertions() {
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(history.untyped().discard_value(
-                          TimeStepId(true, 0, slab.start(), 1, slab.start())),
+    CHECK_THROWS_WITH(history.untyped().discard_value(TimeStepId(
+                          true, 0, slab.start(), 1, slab.start().value())),
                       Catch::Contains("not present"));
   }
 

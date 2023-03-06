@@ -197,12 +197,12 @@ SPECTRE_TEST_CASE(
   // the tags inserted in the `EvolutionTags` step
   const auto& time_step_id =
       ActionTesting::get_databox_tag<component, ::Tags::TimeStepId>(runner, 0);
-  CHECK(time_step_id.substep_time().value() == start_time);
+  CHECK(time_step_id.substep_time() == start_time);
   const auto& next_time_step_id =
       ActionTesting::get_databox_tag<component,
                                      ::Tags::Next<::Tags::TimeStepId>>(runner,
                                                                        0);
-  CHECK(next_time_step_id.substep_time().value() ==
+  CHECK(next_time_step_id.substep_time() ==
         approx(start_time + target_step_size * 0.75));
   const auto& time_step =
       ActionTesting::get_databox_tag<component, ::Tags::TimeStep>(runner, 0);

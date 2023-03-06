@@ -60,7 +60,7 @@ struct TestCallWriteNews {
                     const ArrayIndex& /*array_index*/) {
     db::get<Tags::AnalyticBoundaryDataManager>(box)
         .template write_news<ParallelComponent>(
-            cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
+            cache, db::get<::Tags::TimeStepId>(box).substep_time());
   }
 };
 

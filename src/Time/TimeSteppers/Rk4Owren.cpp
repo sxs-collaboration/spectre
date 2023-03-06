@@ -23,7 +23,7 @@ double Rk4Owren::stable_step() const { return 1.4367588951002057; }
 const RungeKutta::ButcherTableau& Rk4Owren::butcher_tableau() const {
   static const ButcherTableau tableau{
       // Substep times
-      {{1, 6}, {11, 37}, {11, 17}, {13, 15}},
+      {1.0 / 6.0, 11.0 / 37.0, 11.0 / 17.0, 13.0 / 15.0},
       // Substep coefficients
       {{1.0 / 6.0},
        {44.0 / 1369.0, 363.0 / 1369.0},

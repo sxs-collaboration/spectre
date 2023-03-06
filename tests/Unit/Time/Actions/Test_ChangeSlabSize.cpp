@@ -212,7 +212,9 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           [](const gsl::not_null<TimeStepId*> id,
              const gsl::not_null<TimeStepId*> next_id, const TimeDelta& step,
              const TimeStepper& stepper) {
-            while (not id->substep_time().is_at_slab_boundary()) {
+            const auto local_slab = id->step_time().slab();
+            while (id->substep_time() != local_slab.start().value() and
+                   id->substep_time() != local_slab.end().value()) {
               *id = *next_id;
               REQUIRE(id->substep() != 0);
               *next_id = stepper.next_time_id(*id, step);

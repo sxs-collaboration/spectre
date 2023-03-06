@@ -131,7 +131,7 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()
   if (requests_.empty()) {
     return std::nullopt;
   }
-  const double first_request = requests_.begin()->substep_time().value();
+  const double first_request = requests_.begin()->substep_time();
   if (gh_data_.size() >=
           interpolator_->required_number_of_points_before_and_after() * 2 and
       gh_data_.rbegin()->first.id > first_request) {
@@ -163,7 +163,7 @@ void GhLocalTimeStepping::clean_up_gh_data() {
   size_t number_of_points_before_first_request =
       static_cast<size_t>(std::distance(
           gh_data_.begin(),
-          gh_data_.upper_bound(requests_.begin()->substep_time().value())));
+          gh_data_.upper_bound(requests_.begin()->substep_time())));
   const size_t number_of_points_to_remove = std::min(
       max_to_remove, std::max(number_of_points_before_first_request, 1_st) - 1);
   for (size_t i = 0; i < number_of_points_to_remove; ++i) {

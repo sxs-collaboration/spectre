@@ -33,9 +33,9 @@ TimeStepId Rk3HesthavenSsp::next_time_id(const TimeStepId& current_id,
                                          const TimeDelta& time_step) const {
   switch (current_id.substep()) {
     case 0:
-      return current_id.next_substep(time_step, 1);
+      return current_id.next_substep(time_step, 1.0);
     case 1:
-      return current_id.next_substep(time_step, {1, 2});
+      return current_id.next_substep(time_step, 0.5);
     case 2:
       return current_id.next_step(time_step);
     default:

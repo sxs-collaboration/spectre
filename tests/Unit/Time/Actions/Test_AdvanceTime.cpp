@@ -74,20 +74,21 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
        substeps.size() == 1
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
            : TimeStepId(time_step.is_positive(), 8, start, 1,
-                        start + substep_offsets[1]),
+                        (start + substep_offsets[1]).value()),
        time_step, time_step, start.value(), using_error_control});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < substep_offsets.size(); ++substep) {
       const auto& box = ActionTesting::get_databox<component>(runner, 0);
-      const Time substep_time = step_start + gsl::at(substep_offsets, substep);
+      const double substep_time =
+          (step_start + gsl::at(substep_offsets, substep)).value();
       CHECK(db::get<Tags::TimeStepId>(box) ==
             TimeStepId(time_step.is_positive(), 8, step_start, substep,
                        substep_time));
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
       CHECK(db::get<Tags::Time>(box) ==
-            db::get<Tags::TimeStepId>(box).substep_time().value());
+            db::get<Tags::TimeStepId>(box).substep_time());
       runner.next_action<component>(0);
     }
   }
@@ -98,7 +99,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
   CHECK(final_time_id.step_time().slab() == expected_slab);
   CHECK(final_time_id ==
         TimeStepId(time_step.is_positive(), 8, start + 2 * time_step));
-  CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time().value());
+  CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time());
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
 }
 }  // namespace

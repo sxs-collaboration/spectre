@@ -133,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
       double,
       std::unordered_map<ElementId<3>, intrp::Tags::VolumeVarsInfo<
                                            metavars, ::Tags::Time>::Info>>
-      volume_vars_info_ad{{temporal_id.substep_time().value(), {}}};
+      volume_vars_info_ad{{temporal_id.substep_time(), {}}};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
@@ -187,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   runner.simple_action<
       mock_interpolator<metavars>,
       intrp::Actions::CleanUpInterpolator<metavars::InterpolationTagA>>(
-      0, temporal_id.substep_time().value());
+      0, temporal_id.substep_time());
 
   // There should still be one temporal_id in VolumeVarsInfo for B and C.
   CHECK(ActionTesting::get_databox_tag<
@@ -211,7 +211,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           .temporal_ids_when_data_has_been_interpolated.size() == 1);
   CHECK(temporal_ids_when_data_has_been_interpolated_contains<
         interp_component, metavars::InterpolationTagA>(
-      runner, temporal_id.substep_time().value()));
+      runner, temporal_id.substep_time()));
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagB, metavars>>(
           ActionTesting::get_databox_tag<
@@ -258,7 +258,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           .temporal_ids_when_data_has_been_interpolated.size() == 1);
   CHECK(temporal_ids_when_data_has_been_interpolated_contains<
         interp_component, metavars::InterpolationTagA>(
-      runner, temporal_id.substep_time().value()));
+      runner, temporal_id.substep_time()));
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagC, metavars>>(
           ActionTesting::get_databox_tag<
@@ -308,7 +308,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           .temporal_ids_when_data_has_been_interpolated.size() == 1);
   CHECK(temporal_ids_when_data_has_been_interpolated_contains<
         interp_component, metavars::InterpolationTagA>(
-      runner, temporal_id.substep_time().value()));
+      runner, temporal_id.substep_time()));
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagB, metavars>>(
           ActionTesting::get_databox_tag<
@@ -349,7 +349,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
     runner.simple_action<
         mock_interpolator<metavars>,
         intrp::Actions::CleanUpInterpolator<metavars::InterpolationTagA>>(
-        0, temporal_id.substep_time().value());
+        0, temporal_id.substep_time());
   }
   // There should be exactly 1000 entries, even though it was called
   // more than 1000 times.

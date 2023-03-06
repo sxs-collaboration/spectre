@@ -137,12 +137,12 @@ class BoundaryHistory {
   /// @{
   void local_insert(const TimeStepId& time_id, LocalVars vars) {
     ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    local_data_.first.emplace_back(time_id.substep_time());
+    local_data_.first.emplace_back(time_id.step_time());
     local_data_.second.emplace_back(std::move(vars));
   }
   void remote_insert(const TimeStepId& time_id, RemoteVars vars) {
     ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    remote_data_.first.emplace_back(time_id.substep_time());
+    remote_data_.first.emplace_back(time_id.step_time());
     remote_data_.second.emplace_back(std::move(vars));
   }
   /// @}
@@ -152,12 +152,12 @@ class BoundaryHistory {
   /// @{
   void local_insert_initial(const TimeStepId& time_id, LocalVars vars) {
     ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    local_data_.first.emplace_front(time_id.substep_time());
+    local_data_.first.emplace_front(time_id.step_time());
     local_data_.second.emplace_front(std::move(vars));
   }
   void remote_insert_initial(const TimeStepId& time_id, RemoteVars vars) {
     ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    remote_data_.first.emplace_front(time_id.substep_time());
+    remote_data_.first.emplace_front(time_id.step_time());
     remote_data_.second.emplace_front(std::move(vars));
   }
   /// @}
@@ -330,7 +330,7 @@ template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 const LocalVars&
 BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::local_data(
     const TimeStepId& time_id) const {
-  const Time& time = time_id.substep_time();
+  const Time& time = time_id.step_time();
   // Look up the data for this time, starting at the end of the `std::deque`,
   // i.e. the most-recently inserted data.
   auto value_it = local_data_.second.rbegin();

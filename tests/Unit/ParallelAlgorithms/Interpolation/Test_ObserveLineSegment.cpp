@@ -327,7 +327,7 @@ void run_test(gsl::not_null<Generator*> generator,
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               typename metavars::LineA>>(
       make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time().value()});
+      std::vector<double>{temporal_id.substep_time()});
   ActionTesting::simple_action<
       target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               typename metavars::LineB>>(
@@ -368,7 +368,7 @@ void run_test(gsl::not_null<Generator*> generator,
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::LineA::temporal_id>>(
         make_not_null(&runner), mock_core_for_each_element.at(element_id),
-        temporal_id.substep_time().value(), element_id, mesh, output_vars);
+        temporal_id.substep_time(), element_id, mesh, output_vars);
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::LineB::temporal_id>>(

@@ -194,7 +194,7 @@ void test_interpolation_target(
     ActionTesting::simple_action<target_component,
                                  intrp::Actions::SendPointsToInterpolator<
                                      typename metavars::InterpolationTargetA>>(
-        make_not_null(&runner), 0, temporal_id.substep_time().value());
+        make_not_null(&runner), 0, temporal_id.substep_time());
   } else if constexpr (std::is_same_v<temporal_id_type, TimeStepId>) {
     ActionTesting::simple_action<target_component,
                                  intrp::Actions::SendPointsToInterpolator<

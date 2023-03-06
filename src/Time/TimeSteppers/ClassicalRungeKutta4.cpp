@@ -28,7 +28,7 @@ const RungeKutta::ButcherTableau& ClassicalRungeKutta4::butcher_tableau()
   // See (17.1.3) of Numerical Recipes 3rd Edition
   static const ButcherTableau tableau{
       // Substep times
-      {{1, 2}, {1, 2}, {1}, {3, 4}},
+      {1.0 / 2.0, 1.0 / 2.0, 1.0, 3.0 / 4.0},
       // Substep coefficients
       {{1.0 / 2.0},
        {0.0, 1.0 / 2.0},

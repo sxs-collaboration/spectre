@@ -12,6 +12,7 @@ spectre_target_sources(
   Rk3Owren.cpp
   Rk4Owren.cpp
   Rk5Owren.cpp
+  Rk5Tsitouras.cpp
   RungeKutta.cpp
   )
 
@@ -29,6 +30,7 @@ spectre_target_headers(
   Rk3Owren.hpp
   Rk4Owren.hpp
   Rk5Owren.hpp
+  Rk5Tsitouras.hpp
   RungeKutta.hpp
   TimeStepper.hpp
   )

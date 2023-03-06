@@ -25,7 +25,7 @@ const RungeKutta::ButcherTableau& DormandPrince5::butcher_tableau() const {
   // (e.g. Sec. 7.2 of \cite NumericalRecipes).
   static const ButcherTableau tableau{
       // Substep times
-      {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1}, {1}},
+      {1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0},
       // Substep coefficients
       {{1.0 / 5.0},
        {3.0 / 40.0, 9.0 / 40.0},

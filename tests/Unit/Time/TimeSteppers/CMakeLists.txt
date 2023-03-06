@@ -11,4 +11,5 @@ set(LIBRARY_SOURCES
   TimeSteppers/Test_Rk3Owren.cpp
   TimeSteppers/Test_Rk4Owren.cpp
   TimeSteppers/Test_Rk5Owren.cpp
+  TimeSteppers/Test_Rk5Tsitouras.cpp
   PARENT_SCOPE)

@@ -110,8 +110,8 @@ void test_gts() {
                                         db::get<EvolvedVariable>(box));
   take_step<typename Metavariables::system, false>(make_not_null(&box));
   // check that the state is as expected
-  CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
-  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
+  CHECK(db::get<Tags::TimeStepId>(box).substep_time() == 0.0);
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time() ==
         approx(0.25));
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == TimeDelta{slab, {1, 4}});
   CHECK_ITERABLE_APPROX(db::get<EvolvedVariable>(box),
@@ -179,8 +179,8 @@ void test_lts() {
                                          db::get<EvolvedVariable>(box));
   take_step<typename Metavariables::system, true>(make_not_null(&box));
   // check that the state is as expected
-  CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
-  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
+  CHECK(db::get<Tags::TimeStepId>(box).substep_time() == 0.0);
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time() ==
         approx(0.25));
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == TimeDelta{slab, {1, 4}});
   CHECK_ITERABLE_APPROX(db::get<EvolvedVariable>(box),
@@ -217,7 +217,7 @@ void test_lts() {
       });
   take_step<typename Metavariables::system, true>(make_not_null(&box));
   // check that the state is as expected
-  CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == approx(0.25));
+  CHECK(db::get<Tags::TimeStepId>(box).substep_time() == approx(0.25));
   CHECK(db::get<Tags::TimeStep>(box) == TimeDelta{slab, {1, 8}});
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == TimeDelta{slab, {1, 8}});
   CHECK_ITERABLE_APPROX(db::get<EvolvedVariable>(box),

@@ -88,7 +88,7 @@ struct AdvanceTime {
           }
           *next_time_step =
               time_step->with_slab(next_time_id->step_time().slab());
-          *time = time_id->substep_time().value();
+          *time = time_id->substep_time();
         },
         db::get<Tags::TimeStepper<>>(box), is_using_error_control);
 
