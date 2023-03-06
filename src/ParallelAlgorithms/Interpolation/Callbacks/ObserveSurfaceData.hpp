@@ -90,11 +90,12 @@ struct ObserveSurfaceData
     // points on the surface).
     tmpl::for_each<TagsToObserve>([&box, &tensor_components](auto tag_v) {
       using Tag = tmpl::type_from<decltype(tag_v)>;
-      static_assert(std::is_same_v<typename Tag::type, Scalar<DataVector>>,
-                    "Each tag in TagsToObserve must be a Scalar<DataVector>. "
-                    "This could be generalized if needed; see the code comment "
-                    "above the static_assert.");
-      tensor_components.push_back({db::tag_name<Tag>(), get(get<Tag>(box))});
+      const auto tag_name = db::tag_name<Tag>();
+      const auto& tensor = get<Tag>(box);
+      for (size_t i = 0; i < tensor.size(); ++i) {
+        tensor_components.emplace_back(tag_name + tensor.component_suffix(i),
+                                       tensor[i]);
+      }
     });
 
     const std::string& surface_name =
