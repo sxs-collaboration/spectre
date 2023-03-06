@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "DataStructures/Tensor/Python/Tensor.hpp"
 
 #include <memory>
@@ -212,37 +214,33 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
 }
 }  // namespace
 
+template <size_t Dim>
 void bind_tensor(py::module& m) {
-  bind_tensor_impl<Scalar<DataVector>, TensorKind::Scalar>(m, "Scalar");
-  bind_tensor_impl<Scalar<double>, TensorKind::Scalar>(m, "Scalar");
-
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
-#define TENSOR(data) BOOST_PP_TUPLE_ELEM(3, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define TENSOR(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_TNSR(_, data)                                             \
-  bind_tensor_impl<tnsr::TENSOR(data) < DTYPE(data), DIM(data), FRAME(data)>, \
+#define INSTANTIATE_TNSR(_, data)                                       \
+  bind_tensor_impl<tnsr::TENSOR(data) < DTYPE(data), Dim, FRAME(data)>, \
       TensorKind::Tnsr > (m, BOOST_PP_STRINGIZE(TENSOR(data)));
-#define INSTANTIATE_JAC(_, data)                                            \
-  bind_tensor_impl<                                                         \
-      Jacobian<DTYPE(data), DIM(data), Frame::ElementLogical, FRAME(data)>, \
-      TensorKind::Jacobian>(m, "Jacobian");                                 \
-  bind_tensor_impl<InverseJacobian<DTYPE(data), DIM(data),                  \
-                                   Frame::ElementLogical, FRAME(data)>,     \
-                   TensorKind::Jacobian>(m, "Jacobian");
+#define INSTANTIATE_JAC(_, data)                                             \
+  bind_tensor_impl<                                                          \
+      Jacobian<DTYPE(data), Dim, Frame::ElementLogical, FRAME(data)>,        \
+      TensorKind::Jacobian>(m, "Jacobian");                                  \
+  bind_tensor_impl<                                                          \
+      InverseJacobian<DTYPE(data), Dim, Frame::ElementLogical, FRAME(data)>, \
+      TensorKind::Jacobian>(m, "Jacobian");
 
-  GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector), (1, 2, 3),
+  GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector),
                           (Frame::ElementLogical, Frame::BlockLogical,
                            Frame::Grid, Frame::Distorted, Frame::Inertial),
                           (i, I, ij, iJ, Ij, ii, II, ijj))
-  GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector), (1, 2, 3),
+  GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector),
                           (Frame::Grid, Frame::Inertial))
 
 #undef INSTANTIATE_TNSR
 #undef INSTANTIATE_JAC
 #undef DTYPE
-#undef DIM
 #undef FRAME
 #undef TENSOR
 }

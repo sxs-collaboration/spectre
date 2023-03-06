@@ -9,7 +9,12 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
-  Tensor.cpp
+  # Tensor instantiations are split into multiple files so they can be compiled
+  # in parallel and use less memory
+  InstantiateScalar.cpp
+  InstantiateTensor1d.cpp
+  InstantiateTensor2d.cpp
+  InstantiateTensor3d.cpp
   PYTHON_FILES
   __init__.py
   Frame.py
