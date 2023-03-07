@@ -45,6 +45,10 @@ using common_tags = tmpl::push_back<
     Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<DataType>,
     Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataType>>;
 
+/// Tags for hydro variables that are typically retrieved from a hydro solution
+template <typename DataType>
+using hydro_tags = AnalyticData::hydro_tags<DataType>;
+
 /// Implementations for variables that solutions can share
 template <typename DataType, typename Cache>
 struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {

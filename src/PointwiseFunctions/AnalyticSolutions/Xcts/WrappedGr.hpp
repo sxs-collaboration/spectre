@@ -18,6 +18,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -43,15 +44,6 @@ using gr_solution_vars = tmpl::list<
     ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
                   tmpl::size_t<Dim>, Frame::Inertial>,
     gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>;
-
-template <typename DataType, size_t Dim>
-using hydro_solution_vars =
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-               hydro::Tags::SpecificEnthalpy<DataType>,
-               hydro::Tags::Pressure<DataType>,
-               hydro::Tags::SpatialVelocity<DataType, Dim>,
-               hydro::Tags::LorentzFactor<DataType>,
-               hydro::Tags::MagneticField<DataType, Dim>>;
 
 template <typename DataType>
 using WrappedGrVariablesCache =
@@ -80,8 +72,8 @@ struct WrappedGrVariables
       const tnsr::I<DataType, 3>& local_x,
       const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
           local_gr_solution,
-      const tuples::tagged_tuple_from_typelist<
-          hydro_solution_vars<DataType, Dim>>& local_hydro_solution)
+      const tuples::tagged_tuple_from_typelist<hydro_tags<DataType>>&
+          local_hydro_solution)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         gr_solution(local_gr_solution),
@@ -90,7 +82,7 @@ struct WrappedGrVariables
   const tnsr::I<DataType, Dim>& x;
   const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
       gr_solution;
-  const tuples::tagged_tuple_from_typelist<hydro_solution_vars<DataType, Dim>>&
+  const tuples::tagged_tuple_from_typelist<hydro_tags<DataType>>&
       hydro_solution;
 
   void operator()(
@@ -341,24 +333,39 @@ class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
       gr_solution =
           gr_solution_.variables(x, detail::gr_solution_vars<DataType, Dim>{});
     }
-    tuples::tagged_tuple_from_typelist<
-        detail::hydro_solution_vars<DataType, Dim>>
-        hydro_solution;
+    tuples::tagged_tuple_from_typelist<hydro_tags<DataType>> hydro_solution;
     if constexpr (HasMhd) {
       if constexpr (is_analytic_solution_v<GrSolution>) {
         hydro_solution = gr_solution_.variables(
             x, std::numeric_limits<double>::signaling_NaN(),
-            detail::hydro_solution_vars<DataType, Dim>{});
+            hydro_tags<DataType>{});
       } else {
-        hydro_solution = gr_solution_.variables(
-            x, detail::hydro_solution_vars<DataType, Dim>{});
+        hydro_solution = gr_solution_.variables(x, hydro_tags<DataType>{});
       }
     }
     using VarsComputer = detail::WrappedGrVariables<DataType, HasMhd>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
     VarsComputer computer{mesh, inv_jacobian, x, gr_solution, hydro_solution};
-    return {cache.get_var(computer, RequestedTags{})...};
+    const auto get_var = [&cache, &computer, &hydro_solution, &x](auto tag_v) {
+      using tag = std::decay_t<decltype(tag_v)>;
+      if constexpr (tmpl::list_contains_v<hydro_tags<DataType>, tag>) {
+        (void)cache;
+        (void)computer;
+        if constexpr (HasMhd) {
+          (void)x;
+          return get<tag>(hydro_solution);
+        } else {
+          (void)hydro_solution;
+          return get<tag>(Flatness{}.variables(x, tmpl::list<tag>{}));
+        }
+      } else {
+        (void)hydro_solution;
+        (void)x;
+        return cache.get_var(computer, tag{});
+      }
+    };
+    return {get_var(RequestedTags{})...};
   }
 
   friend bool operator==(const WrappedGr<GrSolution, HasMhd>& lhs,

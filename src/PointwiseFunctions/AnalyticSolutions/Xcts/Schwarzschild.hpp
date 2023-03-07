@@ -17,6 +17,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
@@ -442,7 +443,18 @@ class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
     typename VarsComputer::Cache cache{get_size(*x.begin())};
     const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
                                 mass_, coordinate_system_};
-    return {cache.get_var(computer, RequestedTags{})...};
+    const auto get_var = [&cache, &computer, &x](auto tag_v) {
+      using tag = std::decay_t<decltype(tag_v)>;
+      if constexpr (tmpl::list_contains_v<hydro_tags<DataType>, tag>) {
+        (void)cache;
+        (void)computer;
+        return get<tag>(Flatness{}.variables(x, tmpl::list<tag>{}));
+      } else {
+        (void)x;
+        return cache.get_var(computer, tag{});
+      }
+    };
+    return {get_var(RequestedTags{})...};
   }
 };
 

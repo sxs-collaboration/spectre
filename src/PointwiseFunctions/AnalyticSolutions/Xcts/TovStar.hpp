@@ -255,7 +255,29 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
     const DataType radius = get(magnitude(x));
     const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
                                 radius, tov_star};
-    return {cache.get_var(computer, RequestedTags{})...};
+    using unrequested_hydro_tags =
+        tmpl::list_difference<hydro_tags<DataType>,
+                              tmpl::list<RequestedTags...>>;
+    using requested_hydro_tags =
+        tmpl::list_difference<hydro_tags<DataType>, unrequested_hydro_tags>;
+    tuples::tagged_tuple_from_typelist<requested_hydro_tags> hydro_vars;
+    if constexpr (not std::is_same_v<requested_hydro_tags, tmpl::list<>>) {
+      hydro_vars =
+          tov_star.variables(x, std::numeric_limits<double>::signaling_NaN(),
+                             requested_hydro_tags{});
+    }
+    const auto get_var = [&cache, &computer, &hydro_vars](auto tag_v) {
+      using tag = std::decay_t<decltype(tag_v)>;
+      if constexpr (tmpl::list_contains_v<hydro_tags<DataType>, tag>) {
+        (void)cache;
+        (void)computer;
+        return get<tag>(hydro_vars);
+      } else {
+        (void)hydro_vars;
+        return cache.get_var(computer, tag{});
+      }
+    };
+    return {get_var(RequestedTags{})...};
   }
 
   friend bool operator==(const TovStar& lhs, const TovStar& rhs) {

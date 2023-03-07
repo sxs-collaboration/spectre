@@ -193,6 +193,10 @@ EventsAndTriggers:
             - MomentumConstraint
             - Conformal(EnergyDensity)
             - Conformal(StressTrace)
+            - RestMassDensity
+            - SpatialVelocity
+            - LorentzFactor
+            - MagneticField
             - RadiallyCompressedCoordinates
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double

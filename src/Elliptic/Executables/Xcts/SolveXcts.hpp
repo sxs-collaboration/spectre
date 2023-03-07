@@ -17,6 +17,7 @@
 #include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Xcts/HydroQuantities.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -41,6 +42,7 @@
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -73,11 +75,19 @@ struct Metavariables {
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
+  using hydro_quantities_compute = Xcts::Tags::HydroQuantitiesCompute<
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>>>;
   using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::append<
       analytic_solution_fields, typename system::background_fields,
-      typename spacetime_quantities_compute::tags_list, error_tags,
+      typename spacetime_quantities_compute::tags_list,
+      typename hydro_quantities_compute::tags_list, error_tags,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
                      volume_dim, Frame::Inertial>,
@@ -86,7 +96,8 @@ struct Metavariables {
                      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 spacetime_quantities_compute, error_compute>;
+                 spacetime_quantities_compute, hydro_quantities_compute,
+                 error_compute>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =

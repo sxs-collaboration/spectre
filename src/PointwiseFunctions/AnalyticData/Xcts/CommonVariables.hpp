@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts::AnalyticData {
@@ -49,6 +50,15 @@ using common_tags = tmpl::list<
                   Frame::Inertial>,
     ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
         DataType, 3, Frame::Inertial>>>;
+
+/// Tags for hydro variables that are typically retrieved from a hydro solution
+template <typename DataType>
+using hydro_tags = tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                              hydro::Tags::SpecificEnthalpy<DataType>,
+                              hydro::Tags::Pressure<DataType>,
+                              hydro::Tags::SpatialVelocity<DataType, 3>,
+                              hydro::Tags::LorentzFactor<DataType>,
+                              hydro::Tags::MagneticField<DataType, 3>>;
 
 /*!
  * \brief Implementations for variables that analytic-data classes can share

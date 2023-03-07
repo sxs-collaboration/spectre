@@ -20,6 +20,7 @@ spectre_target_headers(
   FirstOrderSystem.hpp
   FluxesAndSources.hpp
   Geometry.hpp
+  HydroQuantities.hpp
   Tags.hpp
   Xcts.hpp
   )

@@ -40,9 +40,9 @@ namespace Xcts::AnalyticData {
 namespace detail {
 
 template <typename DataType>
-using BinaryVariablesCache = cached_temp_buffer_from_typelist<
-    tmpl::push_front<
-        common_tags<DataType>,
+using BinaryVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
+    common_tags<DataType>,
+    tmpl::list<
         ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
@@ -52,7 +52,8 @@ using BinaryVariablesCache = cached_temp_buffer_from_typelist<
         // For initial guesses
         Tags::ConformalFactor<DataType>,
         Tags::LapseTimesConformalFactor<DataType>,
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
+        Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
+    hydro_tags<DataType>>>;
 
 template <typename DataType>
 struct BinaryVariables
@@ -62,19 +63,21 @@ struct BinaryVariables
   using Base = CommonVariables<DataType, BinaryVariablesCache<DataType>>;
   using Base::operator();
 
-  using superposed_tags = tmpl::list<
-      Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
-      ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::TraceExtrinsicCurvature<DataType>,
-      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
-      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-      gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-      gr::Tags::Conformal<
-          gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>,
-      Tags::ConformalFactor<DataType>,
-      Tags::LapseTimesConformalFactor<DataType>,
-      Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>;
+  using superposed_tags = tmpl::append<
+      tmpl::list<
+          Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+          ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          gr::Tags::TraceExtrinsicCurvature<DataType>,
+          ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
+          gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+          gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+          gr::Tags::Conformal<
+              gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>,
+          Tags::ConformalFactor<DataType>,
+          Tags::LapseTimesConformalFactor<DataType>,
+          Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>,
+      hydro_tags<DataType>>;
 
   BinaryVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
@@ -209,6 +212,36 @@ struct BinaryVariables
       const gsl::not_null<Cache*> cache,
       Tags::ShiftExcess<DataType, Dim, Frame::Inertial> meta) const {
     superposition(shift_excess, cache, meta);
+  }
+  void operator()(const gsl::not_null<Scalar<DataType>*> rest_mass_density,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::RestMassDensity<DataType> meta) const {
+    superposition<false>(rest_mass_density, cache, meta);
+  }
+  void operator()(const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::SpecificEnthalpy<DataType> meta) const {
+    superposition<false>(specific_enthalpy, cache, meta);
+  }
+  void operator()(const gsl::not_null<Scalar<DataType>*> pressure,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::Pressure<DataType> meta) const {
+    superposition<false>(pressure, cache, meta);
+  }
+  void operator()(const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::SpatialVelocity<DataType, 3> meta) const {
+    superposition<false>(spatial_velocity, cache, meta);
+  }
+  void operator()(const gsl::not_null<Scalar<DataType>*> lorentz_factor,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::LorentzFactor<DataType> meta) const {
+    superposition<false>(lorentz_factor, cache, meta);
+  }
+  void operator()(const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+                  const gsl::not_null<Cache*> cache,
+                  hydro::Tags::MagneticField<DataType, 3> meta) const {
+    superposition<false>(magnetic_field, cache, meta);
   }
 
  private:
