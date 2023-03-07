@@ -37,8 +37,8 @@ struct TestMetavars {
 
 using FoTPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
-                  "[Unit][ApparentHorizons]") {
+template <typename Frame>
+void test() {
   using observer_writer =
       TestHelpers::observers::MockObserverWriter<TestMetavars>;
   MAKE_GENERATOR(gen);
@@ -62,9 +62,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
   std::vector<std::array<double, 3>> grid_centers{};
   std::vector<std::array<double, 3>> inertial_centers{};
 
-  db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>,
-                         StrahlkorperTags::CartesianCoords<Frame::Inertial>,
-                         StrahlkorperTags::EuclideanAreaElement<Frame::Grid>>>
+  db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
+                         StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
+                         StrahlkorperTags::EuclideanAreaElement<Frame>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
@@ -75,16 +75,16 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
     grid_centers.push_back(grid_center);
     inertial_centers.push_back(inertial_center);
 
-    db::mutate<StrahlkorperTags::Strahlkorper<Frame::Grid>,
-               StrahlkorperTags::CartesianCoords<Frame::Inertial>,
-               StrahlkorperTags::EuclideanAreaElement<Frame::Grid>>(
+    db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
+               StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
+               StrahlkorperTags::EuclideanAreaElement<Frame>>(
         make_not_null(&box),
         [&grid_center, &inertial_center](
-            gsl::not_null<Strahlkorper<Frame::Grid>*> box_grid_horizon,
-            gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+            gsl::not_null<Strahlkorper<Frame>*> box_grid_horizon,
+            gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
                 box_inertial_coords,
             gsl::not_null<Scalar<DataVector>*> box_area_element) {
-          *box_grid_horizon = Strahlkorper<Frame::Grid>{10, 1.0, grid_center};
+          *box_grid_horizon = Strahlkorper<Frame>{10, 1.0, grid_center};
           const auto theta_phi =
               StrahlkorperFunctions::theta_phi(*box_grid_horizon);
           const auto radius = StrahlkorperFunctions::radius(*box_grid_horizon);
@@ -118,7 +118,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
   for (size_t i = 0; i < times.size(); i++) {
     update_stored_centers();
 
-    ah::callbacks::ObserveCenters<AhA>::apply(box, cache, times[i]);
+    ah::callbacks::ObserveCenters<AhA, Frame>::apply(box, cache, times[i]);
 
     size_t num_threaded_actions =
         ActionTesting::number_of_queued_threaded_actions<observer_writer>(
@@ -162,5 +162,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
       CHECK(data(i, j + 4) == approx(gsl::at(inertial_center, j)));
     }
   }
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
+                  "[Unit][ApparentHorizons]") {
+  test<::Frame::Grid>();
+  test<::Frame::Distorted>();
 }
 }  // namespace

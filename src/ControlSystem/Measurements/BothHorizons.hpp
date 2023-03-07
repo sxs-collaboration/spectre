@@ -79,9 +79,9 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
                                                 ::Frame::Grid>;
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
-      using post_horizon_find_callbacks =
-          tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
-                     ::ah::callbacks::ObserveCenters<InterpolationTarget>>;
+      using post_horizon_find_callbacks = tmpl::list<
+          control_system::RunCallbacks<FindHorizon, ControlSystems>,
+          ::ah::callbacks::ObserveCenters<InterpolationTarget, ::Frame::Grid>>;
     };
 
    public:
