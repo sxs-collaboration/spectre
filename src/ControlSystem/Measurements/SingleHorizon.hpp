@@ -8,7 +8,6 @@
 
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/ObserveCenters.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
