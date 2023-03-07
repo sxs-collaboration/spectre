@@ -394,24 +394,24 @@ std::string create_option_string(
          "  IncludeOuterSphere: False\n"
          "  InitialRefinement:" +
          (with_additional_outer_radial_refinement
-              ? std::string(" 1\n")
-              : (add_time_dependence
+              ? (add_time_dependence
                      ? std::string("\n    InnerSphereA: [1, 1, 1]"
                                    "\n    InnerSphereB: [1, 1, 1]")
                      : "") +
                     std::string("\n    Outer: [2, 1, 1]"
                                 "\n    InnerA: [1, 1, 1]"
-                                "\n    InnerB: [2, 1, 1]\n")) +
+                                "\n    InnerB: [2, 1, 1]\n")
+              : std::string(" 1\n")) +
          "  InitialGridPoints:" +
          (with_additional_grid_points
-              ? std::string(" 3\n")
-              : (add_time_dependence
+              ? (add_time_dependence
                      ? std::string("\n    InnerSphereA: [3, 3, 3]"
                                    "\n    InnerSphereB: [3, 3, 3]")
                      : "") +
                     std::string("\n    Outer: [4, 3, 3]"
                                 "\n    InnerA: [3, 3, 3]"
-                                "\n    InnerB: [5, 3, 3]\n")) +
+                                "\n    InnerB: [5, 3, 3]\n")
+              : std::string(" 3\n")) +
          time_dependence + boundary_conditions;
 }
 
