@@ -73,6 +73,8 @@ LinearSolver:
     SubdomainSolver: ExplicitInverse
     ObservePerCoreReductions: False
 
+RadiallyCompressedCoordinates: None
+
 EventsAndTriggers:
   - - HasConverged
     - - ObserveNorms:

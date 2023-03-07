@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -78,6 +79,8 @@ struct Metavariables {
       analytic_solution_fields, typename system::background_fields,
       typename spacetime_quantities_compute::tags_list, error_tags,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 domain::Tags::RadiallyCompressedCoordinatesCompute<
+                     volume_dim, Frame::Inertial>,
                  ::Tags::NonEuclideanMagnitude<
                      Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
                      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>>;
@@ -86,7 +89,8 @@ struct Metavariables {
                  spacetime_quantities_compute, error_compute>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::RadiallyCompressedCoordinatesOptions>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

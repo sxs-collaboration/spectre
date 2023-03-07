@@ -16,6 +16,7 @@ spectre_python_add_module(
   ElementMap.cpp
   FunctionsOfTime.cpp
   JacobianDiagnostic.cpp
+  RadiallyCompressedCoordinates.cpp
   SegmentId.cpp
   PYTHON_FILES
   __init__.py
@@ -33,6 +34,7 @@ spectre_python_headers(
   ElementMap.hpp
   FunctionsOfTime.hpp
   JacobianDiagnostic.hpp
+  RadiallyCompressedCoordinates.hpp
   SegmentId.hpp
 )
 

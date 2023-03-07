@@ -10,6 +10,7 @@
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
@@ -155,13 +156,17 @@ struct Metavariables {
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::append<
       analytic_solution_fields, error_tags,
-      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 domain::Tags::RadiallyCompressedCoordinatesCompute<
+                     volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  error_compute>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tags = tmpl::list<background_tag, initial_guess_tag>;
+  using const_global_cache_tags =
+      tmpl::list<background_tag, initial_guess_tag,
+                 domain::Tags::RadiallyCompressedCoordinatesOptions>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

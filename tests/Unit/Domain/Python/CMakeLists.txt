@@ -38,6 +38,12 @@ spectre_add_python_bindings_test(
   PyDomain)
 
 spectre_add_python_bindings_test(
+  "Unit.Domain.Python.RadiallyCompressedCoordinates"
+  Test_RadiallyCompressedCoordinates.py
+  "Unit;Domain"
+  PyDomain)
+
+spectre_add_python_bindings_test(
   "Unit.Domain.Python.SegmentId"
   Test_SegmentId.py
   "Unit;Domain"

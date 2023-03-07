@@ -45,11 +45,11 @@ DomainCreator:
       Interior: Auto
       UseLogarithmicMap: False
     Envelope:
-      Radius: 120.
+      Radius: &outer_shell_inner_radius 120.
       UseProjectiveMap: True
     OuterShell:
-      Radius: 600.
-      RadialDistribution: Inverse
+      Radius: &outer_radius 600.
+      RadialDistribution: &outer_shell_distribution Inverse
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     # This h-refinement is set up so spherical wedges have equal angular size.
@@ -149,6 +149,11 @@ LinearSolver:
     SkipResets: True
     ObservePerCoreReductions: False
 
+RadiallyCompressedCoordinates:
+  InnerRadius: *outer_shell_inner_radius
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
+
 EventsAndTriggers:
   - - HasConverged
     - - ObserveNorms:
@@ -188,6 +193,7 @@ EventsAndTriggers:
             - MomentumConstraint
             - Conformal(EnergyDensity)
             - Conformal(StressTrace)
+            - RadiallyCompressedCoordinates
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]

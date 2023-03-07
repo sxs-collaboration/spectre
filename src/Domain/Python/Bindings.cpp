@@ -11,6 +11,7 @@
 #include "Domain/Python/ElementMap.hpp"
 #include "Domain/Python/FunctionsOfTime.hpp"
 #include "Domain/Python/JacobianDiagnostic.hpp"
+#include "Domain/Python/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Python/SegmentId.hpp"
 
 namespace py = pybind11;
@@ -29,6 +30,7 @@ PYBIND11_MODULE(_PyDomain, m) {  // NOLINT
   py_bindings::bind_element_map(m);
   py_bindings::bind_functions_of_time(m);
   py_bindings::bind_jacobian_diagnostic(m);
+  py_bindings::bind_radially_compressed_coordinates(m);
   py_bindings::bind_segment_id(m);
 }
 
