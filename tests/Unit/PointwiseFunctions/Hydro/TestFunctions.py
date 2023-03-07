@@ -3,6 +3,26 @@
 
 import numpy as np
 
+# Functions testing the MassWeightedFluidItems
+
+
+def mass_weighted_internal_energy(tilde_d, specific_internal_energy):
+    return tilde_d * specific_internal_energy
+
+
+def mass_weighted_kinetic_energy(tilde_d, lorentz_factor):
+    return tilde_d * (lorentz_factor - 1.0)
+
+
+def tilde_d_unbound_ut_criterion(tilde_d, lorentz_factor,
+                                 spatial_velocity_one_form, lapse, shift):
+    shift_dot_velocity = np.dot(spatial_velocity_one_form, shift)
+    u_t = lorentz_factor * (-lapse + shift_dot_velocity)
+    return tilde_d * (u_t < -1.0)
+
+
+# Functions testing the MassWeightedFluidItems
+
 
 def comoving_magnetic_field_one_form(spatial_velocity_one_form,
                                      magnetic_field_one_form,
