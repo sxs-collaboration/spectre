@@ -3,7 +3,7 @@
 
 set(LIBRARY "DomainBoundaryConditionsHelpers")
 
-add_spectre_library(${LIBRARY})
+add_spectre_library(${LIBRARY} ${SPECTRE_TEST_LIBS_TYPE})
 
 spectre_target_sources(
   ${LIBRARY}
@@ -21,9 +21,13 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Domain
   DomainBoundaryConditions
+  DomainCreators
   DomainStructure
   Options
   Parallel
   Utilities
+  PRIVATE
+  Framework
   )

@@ -108,8 +108,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
   Parallel::register_factory_classes_with_charm<Metavariables>();
   // Which element we work with does not matter for this test
   const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-  const domain::creators::Interval domain_creator{{{-0.5}}, {{1.5}},   {{2}},
-                                                  {{4}},    {{false}}, nullptr};
+  const domain::creators::Interval domain_creator{
+      {{-0.5}}, {{1.5}}, {{2}}, {{4}}};
 
   using element_array = ElementArray<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<

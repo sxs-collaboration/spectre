@@ -484,8 +484,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ObserveLineSegment",
   domain::creators::register_derived_with_charm();
   MAKE_GENERATOR(generator);
 
-  const auto interval = domain::creators::Interval({{0.}}, {{4.}}, {{1}},
-                                                   {{12}}, {{true}}, nullptr);
+  const auto interval =
+      domain::creators::Interval({{0.}}, {{4.}}, {{1}}, {{12}}, {{true}});
   const auto disk = domain::creators::Disk(0.9, 4.9, 1, {{12, 12}}, false);
   const auto shell = domain::creators::Shell(0.9, 4.9, 1, {{12, 12}}, false);
 

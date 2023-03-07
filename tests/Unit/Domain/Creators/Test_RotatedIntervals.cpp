@@ -59,8 +59,9 @@ void test_rotated_intervals_construction(
     const bool is_periodic = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
+  const std::vector<double> times{1.};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      rotated_intervals, expect_boundary_conditions, is_periodic);
+      rotated_intervals, expect_boundary_conditions, is_periodic, times);
 
   CHECK(rotated_intervals.initial_extents() == expected_extents);
   CHECK(rotated_intervals.initial_refinement_levels() ==

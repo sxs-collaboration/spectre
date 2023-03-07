@@ -7,12 +7,16 @@
 #include <memory>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -148,6 +152,34 @@ struct MetavariablesWithoutBoundaryConditions {
         tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>>;
   };
 };
+
+/// Assuming `all_boundary_conditions` are of type `TestBoundaryCondition`,
+/// check their direction and block ID
+template <size_t Dim>
+void test_boundary_conditions(
+    const std::vector<DirectionMap<
+        Dim, std::unique_ptr<::domain::BoundaryConditions::BoundaryCondition>>>&
+        all_boundary_conditions);
+
+/// Helper function to factory-create a domain creator in tests with or without
+/// boundary conditions
+template <size_t Dim, typename Creator>
+std::unique_ptr<::DomainCreator<Dim>> test_creation(
+    const std::string& option_string, const bool with_boundary_conditions) {
+  auto created = [&option_string, &with_boundary_conditions]() {
+    if (with_boundary_conditions) {
+      return TestHelpers::test_option_tag<
+          ::domain::OptionTags::DomainCreator<Dim>,
+          MetavariablesWithBoundaryConditions<Dim, Creator>>(option_string);
+    } else {
+      return TestHelpers::test_option_tag<
+          ::domain::OptionTags::DomainCreator<Dim>,
+          MetavariablesWithoutBoundaryConditions<Dim, Creator>>(option_string);
+    }
+  }();
+  REQUIRE(dynamic_cast<const Creator*>(created.get()) != nullptr);
+  return created;
+}
 
 void register_derived_with_charm();
 }  // namespace TestHelpers::domain::BoundaryConditions

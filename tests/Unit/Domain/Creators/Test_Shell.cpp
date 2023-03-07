@@ -98,8 +98,9 @@ void test_shell_construction(
     const bool expect_boundary_conditions = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
+  const std::vector<double> times{1.};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      shell, expect_boundary_conditions);
+      shell, expect_boundary_conditions, false, times);
   TestHelpers::domain::creators::test_functions_of_time(
       shell, expected_functions_of_time, initial_expiration_times);
 

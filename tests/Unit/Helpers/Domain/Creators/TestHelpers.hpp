@@ -25,7 +25,10 @@ namespace TestHelpers::domain::creators {
 template <size_t Dim>
 Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
                                 const bool expect_boundary_conditions,
-                                const bool is_periodic = false) {
+                                const bool is_periodic = false,
+                                const std::vector<double>& times = {
+                                    // quiet NaN so CAPTURE(time) works
+                                    std::numeric_limits<double>::quiet_NaN()}) {
   INFO("Test domain creator consistency");
   CAPTURE(Dim);
   auto domain = domain_creator.create_domain();
@@ -86,13 +89,15 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
   test_serialization(domain);
 
   test_initial_domain(domain, initial_refinement_levels);
-  if (not domain.is_time_dependent()) {
+  const auto functions_of_time = domain_creator.functions_of_time();
+  for (const double time : times) {
+    CAPTURE(time);
     if (not is_periodic) {
-      test_physical_separation(domain.blocks());
+      test_physical_separation(domain.blocks(), time, functions_of_time);
     }
     // The 1D RotatedIntervals domain creator violates this condition
     if constexpr (Dim != 1) {
-      test_det_jac_positive(domain.blocks());
+      test_det_jac_positive(domain.blocks(), time, functions_of_time);
     }
   }
 

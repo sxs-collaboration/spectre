@@ -689,8 +689,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           make_boundary_condition<system>(
               elliptic::BoundaryConditionType::Dirichlet),
           make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Neumann),
-          nullptr};
+              elliptic::BoundaryConditionType::Neumann)};
       for (const bool use_massive_dg_operator : {false, true}) {
         test_subdomain_operator<system>(domain_creator,
                                         use_massive_dg_operator);

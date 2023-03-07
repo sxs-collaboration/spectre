@@ -90,7 +90,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   const auto interval = domain::creators::Interval(
       lower_x, upper_x, refinement_level_x, number_of_grid_points_in_x,
       std::make_unique<BoundaryConditionType>(boundary_condition),
-      std::make_unique<BoundaryConditionType>(boundary_condition), nullptr);
+      std::make_unique<BoundaryConditionType>(boundary_condition));
   auto domain = interval.create_domain();
   auto boundary_conditions = interval.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(

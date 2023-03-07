@@ -116,22 +116,27 @@ tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
       {{xi_logical_coord, eta_logical_coord, zeta_logical_coord}}};
 }
 
-template <typename... FuncsOfTime>
 void test_sphere_construction(
     const creators::Sphere& sphere, const double inner_radius,
-    const double outer_radius,
-    const std::vector<double> radial_partitioning = {},
-    const bool expect_boundary_conditions = true,
-    const double current_time = 1.0,
-    const std::array<double, 3> velocity = {}) {
+    const double outer_radius, const std::vector<double>& radial_partitioning,
+    const bool expect_boundary_conditions,
+    const std::vector<double>& times = {0.},
+    const std::array<double, 3>& velocity = {{0., 0., 0.}}) {
   // check consistency of domain
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      sphere, expect_boundary_conditions);
+      sphere, expect_boundary_conditions, false, times);
 
   const auto& blocks = domain.blocks();
   const auto block_names = sphere.block_names();
   const size_t num_blocks = blocks.size();
   const auto all_boundary_conditions = sphere.external_boundary_conditions();
+  const auto functions_of_time = sphere.functions_of_time();
+
+  // construct vector of inner radius, outer radius, and refinements levels
+  // where inertial block corners have to be located
+  std::vector<double> expected_corner_radii = radial_partitioning;
+  expected_corner_radii.insert(expected_corner_radii.begin(), inner_radius);
+  expected_corner_radii.emplace_back(outer_radius);
 
   MAKE_GENERATOR(generator);
 
@@ -142,56 +147,53 @@ void test_sphere_construction(
       };
 
   for (size_t block_id = 0; block_id < num_blocks; ++block_id) {
+    CAPTURE(block_id);
     const auto& block = blocks[block_id];
     const auto& boundary_conditions = all_boundary_conditions[block_id];
 
-    // This section tests if the logical coordinates of corners from all blocks
-    // (and points on upper wedge faces) lie on spherical shells specified
-    // by inner radius, radial partitions, or outer radius
-    const auto coords_on_spherical_partition =
-        logical_coords(make_not_null(&generator), num_blocks, block_id,
-                       alg::any_of(block.neighbors(), abuts_inner_block));
-
-    const double corner_distance_from_origin =
-        [&block, &coords_on_spherical_partition, &current_time, &sphere,
-         &velocity]() -> double {
-      // use stationary map if independent of time
-      if (not block.is_time_dependent()) {
-        auto location_time_indep =
-            block.stationary_map()(coords_on_spherical_partition);
-        return get(magnitude(location_time_indep));
-      } else {
-        // go from logical to grid coords, then grid to inertial coords
-        auto inertial_location_time_dep =
-            block.moving_mesh_grid_to_inertial_map()(
-                block.moving_mesh_logical_to_grid_map()(
-                    coords_on_spherical_partition, current_time,
-                    sphere.functions_of_time()),
-                current_time, sphere.functions_of_time());
-
-        // origin in inertial frame (need to shift inertial
-        // coord by velocity * (final_time - initial_time))
-        return sqrt(square(get<0>(inertial_location_time_dep) -
-                           velocity[0] * (current_time - 1.0)) +
-                    square(get<1>(inertial_location_time_dep) -
-                           velocity[1] * (current_time - 1.0)) +
-                    square(get<2>(inertial_location_time_dep) -
-                           velocity[2] * (current_time - 1.0)));
-      }   // end time-dependent if/else
-    }();  // end lambda
-
-    // construct vector of inner radius, outer radius, and refinements levels
-    // where inertial block corners have to be located
-    std::vector<double> expected_corner_radii = radial_partitioning;
-    expected_corner_radii.insert(expected_corner_radii.begin(), inner_radius);
-    expected_corner_radii.emplace_back(outer_radius);
-
-    const auto match_demarcation =
-        [&corner_distance_from_origin](const double radius) {
-          return corner_distance_from_origin == approx(radius);
-        };
-
-    CHECK(alg::any_of(expected_corner_radii, match_demarcation));
+    {
+      INFO("Block boundaries are spherical");
+      // This section tests if the logical coordinates of corners from all
+      // blocks (and points on upper wedge faces) lie on spherical shells
+      // specified by inner radius, radial partitions, or outer radius
+      const auto coords_on_spherical_partition =
+          logical_coords(make_not_null(&generator), num_blocks, block_id,
+                         alg::any_of(block.neighbors(), abuts_inner_block));
+      for (const double current_time : times) {
+        CAPTURE(current_time);
+        const double corner_distance_from_origin =
+            [&block, &coords_on_spherical_partition, &current_time,
+             &functions_of_time, &velocity]() -> double {
+          // use stationary map if independent of time
+          if (not block.is_time_dependent()) {
+            return get(magnitude(
+                block.stationary_map()(coords_on_spherical_partition)));
+          } else {
+            // go from logical to grid coords, then grid to inertial coords
+            const auto inertial_location_time_dep =
+                block.moving_mesh_grid_to_inertial_map()(
+                    block.moving_mesh_logical_to_grid_map()(
+                        coords_on_spherical_partition, current_time,
+                        functions_of_time),
+                    current_time, functions_of_time);
+            // origin in inertial frame (need to shift inertial
+            // coord by velocity * (final_time - initial_time))
+            return sqrt(square(get<0>(inertial_location_time_dep) -
+                               velocity[0] * (current_time - 1.0)) +
+                        square(get<1>(inertial_location_time_dep) -
+                               velocity[1] * (current_time - 1.0)) +
+                        square(get<2>(inertial_location_time_dep) -
+                               velocity[2] * (current_time - 1.0)));
+          }   // end time-dependent if/else
+        }();  // end lambda
+        CAPTURE(corner_distance_from_origin);
+        const auto match_demarcation =
+            [&corner_distance_from_origin](const double radius) {
+              return corner_distance_from_origin == approx(radius);
+            };
+        CHECK(alg::any_of(expected_corner_radii, match_demarcation));
+      }
+    }
 
     // if block has 5 neighbors, 1 face should be external, and that direction
     // should be upper_zeta, for the sphere
@@ -234,11 +236,6 @@ void test_sphere_construction(
       CHECK(block_does_not_have_correct_number_of_neighbors);
     }
   }  // block loop
-
-  // verify there are no gaps between blocks
-  test_physical_separation(domain.blocks(), current_time,
-                           sphere.functions_of_time());
-
 }  // test_sphere_construction()
 
 // ensure CHECK_THROWS_WITH calls are properly captured
@@ -456,12 +453,10 @@ void test_sphere_factory_time_dependent() {
   const double outer_radius = 3.0;
   const std::vector<double> radial_partitioning = {};
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
+  const std::vector<double> times{1., 10.};
 
-  for (const auto& expiration_time : make_array(1.0, 10.0)) {
-    test_sphere_construction(*sphere, inner_radius, outer_radius,
-                             radial_partitioning, false, expiration_time,
-                             velocity);
-  }
+  test_sphere_construction(*sphere, inner_radius, outer_radius,
+                           radial_partitioning, false, times, velocity);
 }
 }  // namespace
 

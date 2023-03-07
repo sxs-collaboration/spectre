@@ -452,9 +452,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                                with_boundary_conditions));
     }
   }();
-  const std::array<double, 3> times_to_check{{0.0, 0.7, 1.6}};
 
-  constexpr double initial_time = 0.0;
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
   constexpr double expected_initial_function_value =
       1.0;  // hard-coded in BinaryCompactObject.cpp
@@ -523,37 +521,12 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
               rotation_name,
               {expected_time, quaternion_coefs, rotation_angle_coefs,
                initial_expiration_times[rotation_name]}});
-  std::unordered_map<std::string,
-                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-      functions_of_time{};
-  functions_of_time[expansion_name] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, expansion_factor_coefs,
-          initial_expiration_times[expansion_name]);
-  functions_of_time["ExpansionOuterBoundary"] =
-      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-          expected_initial_function_value, initial_time,
-          expected_asymptotic_velocity_outer_boundary,
-          expected_decay_timescale_outer_boundary_velocity);
-  functions_of_time[rotation_name] =
-      std::make_unique<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>(
-          initial_time, quaternion_coefs, rotation_angle_coefs,
-          initial_expiration_times[rotation_name]);
-  functions_of_time[size_a_name] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time, lambda_factor_a0_coefs,
-          initial_expiration_times[size_a_name]);
-  functions_of_time[size_b_name] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time, lambda_factor_b0_coefs,
-          initial_expiration_times[size_b_name]);
 
+  const std::vector<double> times_to_check{{1., 10.}};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      *binary_compact_object, with_boundary_conditions);
+      *binary_compact_object, with_boundary_conditions, false, times_to_check);
   for (const double time : times_to_check) {
     CAPTURE(time);
-    test_det_jac_positive(domain.blocks(), time, functions_of_time);
-    test_physical_separation(domain.blocks(), time, functions_of_time);
     TestHelpers::domain::creators::test_functions_of_time(
         *binary_compact_object, expected_functions_of_time,
         with_control_systems ? initial_expiration_times : ExpirationTimeMap{});

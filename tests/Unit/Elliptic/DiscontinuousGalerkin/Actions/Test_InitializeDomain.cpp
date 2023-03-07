@@ -16,6 +16,7 @@
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
@@ -67,11 +68,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
+        {{-0.5}}, {{1.5}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
-    PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                                         domain::CoordinateMaps::Affine>));
+    domain::creators::register_derived_with_charm();
 
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;

@@ -272,8 +272,7 @@ Domain<2> create_domain<2>(const double length,
 template <>
 Domain<1> create_domain<1>(const double length,
                            const std::array<size_t, 1>& extents) {
-  const domain::creators::Interval creator{{{0.0}}, {{length}}, {{0}},
-                                           extents, {{false}},  nullptr};
+  const domain::creators::Interval creator{{{0.0}}, {{length}}, {{0}}, extents};
   return creator.create_domain();
 }
 
