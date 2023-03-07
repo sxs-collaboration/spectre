@@ -103,6 +103,34 @@ void test_characteristic_speeds() {
       "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
+template <size_t Dim, typename Frame>
+void test_characteristic_speeds_on_strahlkorper() {
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorper<Frame>>(
+      "CharacteristicSpeedsOnStrahlkorper");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<Dim,
+                                                                     Frame>>(
+      "CharacteristicSpeedsOnStrahlkorper");
+  const DataVector used_for_size(5);
+  pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
+                                    "TestFunctions", "char_speed_upsi",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index<1, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uzero",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index<3, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uminus",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index<2, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uplus",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+
+  pypp::check_with_random_values<1>(
+      char_speed_upsi_with_moving_mesh<Dim, Frame>, "TestFunctions",
+      "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+}
+
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
 template <typename Solution>
 void test_characteristic_speeds_analytic(
@@ -173,6 +201,24 @@ void test_characteristic_speeds_analytic(
   CHECK_ITERABLE_APPROX(uzero_speed, uzero_speed_from_func);
   CHECK_ITERABLE_APPROX(uplus_speed, uplus_speed_from_func);
   CHECK_ITERABLE_APPROX(uminus_speed, uminus_speed_from_func);
+
+  // Check that locally computed fields on Strahlkorper match returned ones
+  // Note that CharacteristicSpeedsOnStrahlkorperCompute has a different
+  // return type than CharacteristicSpeedsCompute.
+  tnsr::a<DataVector, 3, Frame::Inertial> char_speeds_from_strahlkorper{};
+  GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
+      spatial_dim,
+      Frame::Inertial>::function(make_not_null(&char_speeds_from_strahlkorper),
+                                 gamma_1, lapse, shift, unit_normal_one_form);
+  const auto& upsi_speed_from_strahlkorper = char_speeds_from_strahlkorper[0];
+  const auto& uzero_speed_from_strahlkorper = char_speeds_from_strahlkorper[1];
+  const auto& uplus_speed_from_strahlkorper = char_speeds_from_strahlkorper[2];
+  const auto& uminus_speed_from_strahlkorper = char_speeds_from_strahlkorper[3];
+
+  CHECK_ITERABLE_APPROX(upsi_speed, upsi_speed_from_strahlkorper);
+  CHECK_ITERABLE_APPROX(uzero_speed, uzero_speed_from_strahlkorper);
+  CHECK_ITERABLE_APPROX(uplus_speed, uplus_speed_from_strahlkorper);
+  CHECK_ITERABLE_APPROX(uminus_speed, uminus_speed_from_strahlkorper);
 }
 }  // namespace
 
@@ -535,6 +581,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   test_characteristic_speeds<1, Frame::Inertial>();
   test_characteristic_speeds<2, Frame::Inertial>();
   test_characteristic_speeds<3, Frame::Inertial>();
+
+  test_characteristic_speeds_on_strahlkorper<1, Frame::Grid>();
+  test_characteristic_speeds_on_strahlkorper<2, Frame::Grid>();
+  test_characteristic_speeds_on_strahlkorper<3, Frame::Grid>();
+  test_characteristic_speeds_on_strahlkorper<1, Frame::Inertial>();
+  test_characteristic_speeds_on_strahlkorper<2, Frame::Inertial>();
+  test_characteristic_speeds_on_strahlkorper<3, Frame::Inertial>();
 
   // Test GH characteristic speeds against Kerr Schild
   const double mass = 2.;

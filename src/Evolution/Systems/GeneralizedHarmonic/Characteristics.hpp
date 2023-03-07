@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <optional>
 
+#include "ApparentHorizons/HorizonAliases.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -97,6 +98,42 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
                           mesh_velocity);
   };
 };
+
+// Simple tag used when observing the characteristic speeds on a Strahlkorper
+template <typename Frame>
+struct CharacteristicSpeedsOnStrahlkorper : db::SimpleTag {
+  using type = tnsr::a<DataVector, 3, Frame>;
+};
+
+// Compute tag used when computing the characteristic speeds on a Strahlkorper
+// from gamma1, the lapse, shift, and the unit normal one form.
+template <size_t Dim, typename Frame>
+struct CharacteristicSpeedsOnStrahlkorperCompute
+    : CharacteristicSpeedsOnStrahlkorper<Frame>,
+      db::ComputeTag {
+  using base = CharacteristicSpeedsOnStrahlkorper<Frame>;
+  using type = typename base::type;
+  using argument_tags = tmpl::list<
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
+      ::StrahlkorperTags::UnitNormalOneForm<Frame>>;
+
+  using return_type = typename base::type;
+
+  static void function(
+      const gsl::not_null<return_type*> result,
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, Dim, Frame>& shift,
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) {
+    auto array_char_speeds = make_array<4>(DataVector(get(lapse).size(), 0.0));
+    characteristic_speeds(make_not_null(&array_char_speeds), gamma_1, lapse,
+                          shift, unit_normal_one_form, {});
+    for (size_t i = 0; i < 4; ++i) {
+      (*result)[i] = array_char_speeds[i];
+    }
+  }
+};
+
 /// @}
 
 /// @{

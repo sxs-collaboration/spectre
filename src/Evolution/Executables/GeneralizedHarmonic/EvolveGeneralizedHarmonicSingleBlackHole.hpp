@@ -46,6 +46,7 @@
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -94,20 +95,23 @@ struct EvolutionMetavars
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using tags_to_observe = tmpl::list<
-        gr::Tags::LapseCompute<volume_dim, ::Frame::Inertial, DataVector>>;
+        gr::Tags::Lapse<DataVector>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorper<Frame::Grid>>;
     using compute_vars_to_interpolate =
         ah::ComputeExcisionBoundaryVolumeQuantities;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>>;
+    using vars_to_interpolate_to_target = tmpl::list<
+        gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
+        gr::Tags::SpatialMetric<3, Frame::Grid>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
     using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::append<tmpl::list<
-        gr::Tags::SpatialMetricCompute<volume_dim, Frame::Inertial, DataVector>,
-        gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, Frame::Inertial,
-                                                    DataVector>,
-        gr::Tags::ShiftCompute<volume_dim, Frame::Inertial, DataVector>,
-        gr::Tags::LapseCompute<volume_dim, Frame::Inertial, DataVector>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>>;
-
+        gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Grid, DataVector>,
+        StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, Frame::Grid,
+                                                         DataVector>,
+        StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
+        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
+            3, Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
     using post_interpolation_callback =
@@ -119,21 +123,29 @@ struct EvolutionMetavars
   };
 
   using interpolation_target_tags = tmpl::list<AhA, ExcisionBoundaryA>;
-  using interpolator_source_vars = ::ah::source_vars<volume_dim>;
-  using interpolator_source_vars_excision_boundary =
-      tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>>;
+  using interpolator_source_vars_excision_boundary = tmpl::list<
+      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+  using interpolator_source_vars = tmpl::remove_duplicates<
+      tmpl::append<interpolator_source_vars_excision_boundary,
+                   ::ah::source_vars<volume_dim>>>;
 
+  // The interpolator_source_vars need to be the same in both the Interpolate
+  // event and the InterpolateWithoutInterpComponent event.  The Interpolate
+  // event interpolates to the horizon, and the
+  // InterpolateWithoutInterpComponent event interpolates to the excision
+  // boundary. Every Target gets the same interpolator_source_vars, so they need
+  // to be made the same. Otherwise a static assert is triggered.
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
         typename gh_base::factory_creation::factory_classes,
-        tmpl::pair<
-            Event,
-            tmpl::list<
-                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, ExcisionBoundaryA, EvolutionMetavars,
-                    interpolator_source_vars_excision_boundary>>>>;
+        tmpl::pair<Event,
+                   tmpl::list<intrp::Events::Interpolate<
+                                  3, AhA, interpolator_source_vars>,
+                              intrp::Events::InterpolateWithoutInterpComponent<
+                                  3, ExcisionBoundaryA, EvolutionMetavars,
+                                  interpolator_source_vars>>>>;
   };
 
   using typename gh_base::const_global_cache_tags;

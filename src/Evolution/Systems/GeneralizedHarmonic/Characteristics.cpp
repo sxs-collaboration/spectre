@@ -214,6 +214,8 @@ void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
           mesh_velocity);                                                      \
   template struct GeneralizedHarmonic::CharacteristicSpeedsCompute<            \
       DIM(data), FRAME(data)>;                                                 \
+  template struct GeneralizedHarmonic::                                        \
+      CharacteristicSpeedsOnStrahlkorperCompute<DIM(data), FRAME(data)>;       \
   template void GeneralizedHarmonic::characteristic_fields(                    \
       const gsl::not_null<                                                     \
           typename GeneralizedHarmonic::Tags::CharacteristicFields<            \

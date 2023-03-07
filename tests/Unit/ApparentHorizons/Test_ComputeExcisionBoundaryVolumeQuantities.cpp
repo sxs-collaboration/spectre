@@ -339,11 +339,13 @@ SPECTRE_TEST_CASE(
     // All possible tags.
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                             tmpl::size_t<3>, Frame::Inertial>>,
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::Lapse<DataVector>,
@@ -352,18 +354,22 @@ SPECTRE_TEST_CASE(
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::Lapse<DataVector>>>();
 
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::Shift<3, Frame::Inertial>>>();
@@ -372,11 +378,13 @@ SPECTRE_TEST_CASE(
   // All possible tags.
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                             tmpl::size_t<3>, Frame::Inertial>>,
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::Lapse<DataVector>,
@@ -386,9 +394,11 @@ SPECTRE_TEST_CASE(
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>>();
 }
