@@ -110,7 +110,7 @@ struct EvolutionMetavars
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, EvolutionMetavars, true>>>,
+                             local_time_stepping, system, VolumeDim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, VolumeDim>>,
           tmpl::list<
