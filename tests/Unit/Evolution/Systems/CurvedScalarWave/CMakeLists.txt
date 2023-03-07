@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Worldtube/Test_PunctureField.cpp
   Worldtube/Test_Tags.cpp
   Worldtube/ElementActions/Test_SendToWorldtube.cpp
+  Worldtube/ElementActions/Test_ReceiveWorldtubeData.cpp
   Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   )
 

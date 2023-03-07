@@ -7,4 +7,5 @@ spectre_target_headers(
   HEADERS
   InitializeElementFacesGridCoordinates.hpp
   ReceiveElementData.hpp
+  SendToElements.hpp
 )
