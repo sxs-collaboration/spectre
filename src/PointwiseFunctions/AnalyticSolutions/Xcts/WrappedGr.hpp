@@ -75,7 +75,7 @@ struct WrappedGrVariables
   WrappedGrVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x,
       const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
@@ -303,35 +303,8 @@ class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    tuples::tagged_tuple_from_typelist<detail::gr_solution_vars<DataType, Dim>>
-        gr_solution;
-    if constexpr (is_analytic_solution_v<GrSolution>) {
-      gr_solution = gr_solution_.variables(
-          x, std::numeric_limits<double>::signaling_NaN(),
-          detail::gr_solution_vars<DataType, Dim>{});
-    } else {
-      gr_solution =
-          gr_solution_.variables(x, detail::gr_solution_vars<DataType, Dim>{});
-    }
-    tuples::tagged_tuple_from_typelist<
-        detail::hydro_solution_vars<DataType, Dim>>
-        hydro_solution;
-    if constexpr (HasMhd) {
-      if constexpr (is_analytic_solution_v<GrSolution>) {
-        hydro_solution = gr_solution_.variables(
-            x, std::numeric_limits<double>::signaling_NaN(),
-            detail::hydro_solution_vars<DataType, Dim>{});
-      } else {
-        hydro_solution = gr_solution_.variables(
-            x, detail::hydro_solution_vars<DataType, Dim>{});
-      }
-    }
-    using VarsComputer = detail::WrappedGrVariables<DataType, HasMhd>;
-    const size_t num_points = get_size(*x.begin());
-    typename VarsComputer::Cache cache{num_points};
-    const VarsComputer computer{std::nullopt, std::nullopt, x, gr_solution,
-                                hydro_solution};
-    return {cache.get_var(computer, RequestedTags{})...};
+    return variables_impl<DataType>(x, std::nullopt, std::nullopt,
+                                    tmpl::list<RequestedTags...>{});
   }
 
   template <typename DataType, typename... RequestedTags>
@@ -339,6 +312,24 @@ class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
       const tnsr::I<DataType, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
+      tmpl::list<RequestedTags...> /*meta*/) const {
+    return variables_impl<DataVector>(x, mesh, inv_jacobian,
+                                      tmpl::list<RequestedTags...>{});
+  }
+
+  void pup(PUP::er& p) override {
+    elliptic::analytic_data::AnalyticSolution::pup(p);
+    p | gr_solution_;
+  }
+
+ private:
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables_impl(
+      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
+          inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
     tuples::tagged_tuple_from_typelist<detail::gr_solution_vars<DataType, Dim>>
         gr_solution;
@@ -370,12 +361,6 @@ class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
     return {cache.get_var(computer, RequestedTags{})...};
   }
 
-  void pup(PUP::er& p) override {
-    elliptic::analytic_data::AnalyticSolution::pup(p);
-    p | gr_solution_;
-  }
-
- private:
   friend bool operator==(const WrappedGr<GrSolution, HasMhd>& lhs,
                          const WrappedGr<GrSolution, HasMhd>& rhs) {
     return lhs.gr_solution_ == rhs.gr_solution_;

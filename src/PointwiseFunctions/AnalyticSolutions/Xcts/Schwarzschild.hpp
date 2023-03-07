@@ -259,7 +259,7 @@ struct SchwarzschildVariables
   SchwarzschildVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x, const double local_mass,
       const SchwarzschildCoordinates local_coordinate_system)
@@ -410,11 +410,8 @@ class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::SchwarzschildVariables<DataType>;
-    typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const VarsComputer computer{std::nullopt, std::nullopt, x, mass_,
-                                coordinate_system_};
-    return {cache.get_var(computer, RequestedTags{})...};
+    return variables_impl<DataType>(x, std::nullopt, std::nullopt,
+                                    tmpl::list<RequestedTags...>{});
   }
 
   template <typename... RequestedTags>
@@ -423,16 +420,29 @@ class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::SchwarzschildVariables<DataVector>;
-    typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const VarsComputer computer{mesh, inv_jacobian, x, mass_,
-                                coordinate_system_};
-    return {cache.get_var(computer, RequestedTags{})...};
+    return variables_impl<DataVector>(x, mesh, inv_jacobian,
+                                      tmpl::list<RequestedTags...>{});
   }
 
   void pup(PUP::er& p) override {
     elliptic::analytic_data::AnalyticSolution::pup(p);
     detail::SchwarzschildImpl::pup(p);
+  }
+
+ private:
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables_impl(
+      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
+          inv_jacobian,
+      tmpl::list<RequestedTags...> /*meta*/) const {
+    using VarsComputer = detail::SchwarzschildVariables<DataType>;
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
+                                mass_, coordinate_system_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 };
 

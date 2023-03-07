@@ -58,7 +58,7 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
   TovVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x, const DataType& local_radius,
       const RelativisticEuler::Solutions::TovStar& local_tov_star)
@@ -221,12 +221,8 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = tov_detail::TovVariables<DataType>;
-    typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const DataType radius = get(magnitude(x));
-    const VarsComputer computer{std::nullopt, std::nullopt, x, radius,
-                                tov_star};
-    return {cache.get_var(computer, RequestedTags{})...};
+    return variables_impl<DataType>(x, std::nullopt, std::nullopt,
+                                    tmpl::list<RequestedTags...>{});
   }
 
   template <typename... RequestedTags>
@@ -235,11 +231,8 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = tov_detail::TovVariables<DataVector>;
-    typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const DataVector radius = get(magnitude(x));
-    const VarsComputer computer{mesh, inv_jacobian, x, radius, tov_star};
-    return {cache.get_var(computer, RequestedTags{})...};
+    return variables_impl<DataVector>(x, mesh, inv_jacobian,
+                                      tmpl::list<RequestedTags...>{});
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -249,6 +242,22 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   }
 
  private:
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables_impl(
+      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
+          inv_jacobian,
+      tmpl::list<RequestedTags...> /*meta*/) const {
+    using VarsComputer = tov_detail::TovVariables<DataType>;
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const DataType radius = get(magnitude(x));
+    const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
+                                radius, tov_star};
+    return {cache.get_var(computer, RequestedTags{})...};
+  }
+
   friend bool operator==(const TovStar& lhs, const TovStar& rhs) {
     return lhs.tov_star == rhs.tov_star;
   }
