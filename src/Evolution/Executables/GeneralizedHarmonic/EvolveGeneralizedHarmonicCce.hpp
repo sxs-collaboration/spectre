@@ -98,6 +98,10 @@ struct EvolutionMetavars
 
   using typename gh_base::system;
 
+  using dg_step_choosers = tmpl::flatten<tmpl::list<
+      StepChoosers::standard_step_choosers<system>,
+      StepChoosers::standard_slab_choosers<system, local_time_stepping>>>;
+
   template <bool DuringSelfStart>
   using step_actions = tmpl::list<
       tmpl::conditional_t<
@@ -105,7 +109,7 @@ struct EvolutionMetavars
           Cce::Actions::SendGhVarsToCce<CceWorldtubeTarget<true>>,
           Cce::Actions::SendGhVarsToCce<CceWorldtubeTarget<false>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
-          VolumeDim, system, AllStepChoosers, local_time_stepping>,
+          VolumeDim, system, dg_step_choosers, local_time_stepping>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
