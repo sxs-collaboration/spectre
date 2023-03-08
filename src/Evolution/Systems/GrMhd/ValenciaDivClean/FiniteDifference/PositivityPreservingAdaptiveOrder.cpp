@@ -57,14 +57,16 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
   }
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
            reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<3>(
-          false, eight_to_the_alpha_9_.has_value(),
-          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+      positivity_preserving_adaptive_order_function_pointers<
+          3, use_adaptive_order>(false, eight_to_the_alpha_9_.has_value(),
+                                 six_to_the_alpha_7_.has_value(),
+                                 low_order_reconstructor_);
   std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
            pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<3>(
-          true, eight_to_the_alpha_9_.has_value(),
-          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+      positivity_preserving_adaptive_order_function_pointers<
+          3, use_adaptive_order>(true, eight_to_the_alpha_9_.has_value(),
+                                 six_to_the_alpha_7_.has_value(),
+                                 low_order_reconstructor_);
 }
 
 PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
@@ -85,14 +87,16 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   if (p.isUnpacking()) {
     std::tie(reconstruct_, reconstruct_lower_neighbor_,
              reconstruct_upper_neighbor_) = ::fd::reconstruction::
-        positivity_preserving_adaptive_order_function_pointers<3>(
-            false, eight_to_the_alpha_9_.has_value(),
-            six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+        positivity_preserving_adaptive_order_function_pointers<
+            3, use_adaptive_order>(false, eight_to_the_alpha_9_.has_value(),
+                                   six_to_the_alpha_7_.has_value(),
+                                   low_order_reconstructor_);
     std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
              pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
-        positivity_preserving_adaptive_order_function_pointers<3>(
-            true, eight_to_the_alpha_9_.has_value(),
-            six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+        positivity_preserving_adaptive_order_function_pointers<
+            3, use_adaptive_order>(true, eight_to_the_alpha_9_.has_value(),
+                                   six_to_the_alpha_7_.has_value(),
+                                   low_order_reconstructor_);
   }
 }
 

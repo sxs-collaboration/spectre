@@ -23,13 +23,9 @@
 namespace fd::reconstruction {
 namespace {
 // use type alias for the function pointer return type for brevity
-template <size_t Dim>
+template <size_t Dim, bool ReturnReconstructionOrder>
 using pointer_return_type = std::tuple<
-    void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             const gsl::span<const double>&,
-             const DirectionMap<Dim, gsl::span<const double>>&,
-             const Index<Dim>&, size_t, double, double, double),
+    detail::ppao_recons_type<Dim, ReturnReconstructionOrder>,
     void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
              const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
              const double&, const double&, const double&),
@@ -38,40 +34,44 @@ using pointer_return_type = std::tuple<
              const double&, const double&, const double&)>;
 
 template <typename LowOrderReconstructor, bool PositivityPreserving,
-          bool Use9thOrder, bool Use7thOrder, size_t Dim>
-pointer_return_type<Dim> function_pointer() {
-  return {&positivity_preserving_adaptive_order<LowOrderReconstructor,
+          bool Use9thOrder, bool Use7thOrder, size_t Dim,
+          bool ReturnReconstructionOrder>
+pointer_return_type<Dim, ReturnReconstructionOrder> function_pointer() {
+  return {
+      static_cast<detail::ppao_recons_type<Dim, ReturnReconstructionOrder>>(
+          &positivity_preserving_adaptive_order<LowOrderReconstructor,
                                                 PositivityPreserving,
-                                                Use9thOrder, Use7thOrder, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Lower,
-              ::fd::reconstruction::detail::
-                  PositivityPreservingAdaptiveOrderReconstructor<
-                      LowOrderReconstructor, PositivityPreserving, Use9thOrder,
-                      Use7thOrder>,
-              true, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Upper,
-              ::fd::reconstruction::detail::
-                  PositivityPreservingAdaptiveOrderReconstructor<
-                      LowOrderReconstructor, PositivityPreserving, Use9thOrder,
-                      Use7thOrder>,
-              true, Dim>};
+                                                Use9thOrder, Use7thOrder, Dim>),
+      &::fd::reconstruction::reconstruct_neighbor<
+          Side::Lower,
+          ::fd::reconstruction::detail::
+              PositivityPreservingAdaptiveOrderReconstructor<
+                  LowOrderReconstructor, PositivityPreserving, Use9thOrder,
+                  Use7thOrder>,
+          true, Dim>,
+      &::fd::reconstruction::reconstruct_neighbor<
+          Side::Upper,
+          ::fd::reconstruction::detail::
+              PositivityPreservingAdaptiveOrderReconstructor<
+                  LowOrderReconstructor, PositivityPreserving, Use9thOrder,
+                  Use7thOrder>,
+          true, Dim>};
 }
 
 template <bool PositivityPreserving, bool Use9thOrder, bool Use7thOrder,
-          size_t Dim>
-pointer_return_type<Dim>
+          size_t Dim, bool ReturnReconstructionOrder>
+pointer_return_type<Dim, ReturnReconstructionOrder>
 positivity_preserving_adaptive_order_function_pointers_select_recons(
     const FallbackReconstructorType fallback_recons) {
   switch (fallback_recons) {
     case FallbackReconstructorType::Minmod:
       return function_pointer<detail::MinmodReconstructor, PositivityPreserving,
-                              Use9thOrder, Use7thOrder, Dim>();
+                              Use9thOrder, Use7thOrder, Dim,
+                              ReturnReconstructionOrder>();
     case FallbackReconstructorType::MonotonisedCentral:
       return function_pointer<detail::MonotonisedCentralReconstructor,
                               PositivityPreserving, Use9thOrder, Use7thOrder,
-                              Dim>();
+                              Dim, ReturnReconstructionOrder>();
     case FallbackReconstructorType::None:
       ERROR(
           "Can't have None as the low-order reconstructor in "
@@ -84,57 +84,64 @@ positivity_preserving_adaptive_order_function_pointers_select_recons(
   }
 }
 
-template <size_t Dim, bool Use9thOrder, bool Use7thOrder>
-pointer_return_type<Dim>
-positivity_preserving_adaptive_order_function_pointers_select_positivity(
+template <size_t Dim, bool ReturnReconstructionOrder, bool Use9thOrder,
+          bool Use7thOrder>
+pointer_return_type<Dim, ReturnReconstructionOrder>
+ppao_function_pointers_select_positivity(
     const bool positivity_preserving,
     const FallbackReconstructorType fallback_recons) {
   if (positivity_preserving) {
     return positivity_preserving_adaptive_order_function_pointers_select_recons<
-        true, Use9thOrder, Use7thOrder, Dim>(fallback_recons);
+        true, Use9thOrder, Use7thOrder, Dim, ReturnReconstructionOrder>(
+        fallback_recons);
   }
   return positivity_preserving_adaptive_order_function_pointers_select_recons<
-      false, Use9thOrder, Use7thOrder, Dim>(fallback_recons);
+      false, Use9thOrder, Use7thOrder, Dim, ReturnReconstructionOrder>(
+      fallback_recons);
 }
 }  // namespace
 
-template <size_t Dim>
-pointer_return_type<Dim> positivity_preserving_adaptive_order_function_pointers(
+template <size_t Dim, bool ReturnReconstructionOrder>
+pointer_return_type<Dim, ReturnReconstructionOrder>
+positivity_preserving_adaptive_order_function_pointers(
     const bool positivity_preserving, const bool use_9th_order,
     const bool use_7th_order, const FallbackReconstructorType fallback_recons) {
   if (use_7th_order) {
     if (use_9th_order) {
-      return
-       positivity_preserving_adaptive_order_function_pointers_select_positivity<
-         Dim, true, true>(positivity_preserving, fallback_recons);
+      return ppao_function_pointers_select_positivity<
+          Dim, ReturnReconstructionOrder, true, true>(positivity_preserving,
+                                                      fallback_recons);
     } else {
-      return
-       positivity_preserving_adaptive_order_function_pointers_select_positivity<
-         Dim, false, true>(positivity_preserving, fallback_recons);
+      return ppao_function_pointers_select_positivity<
+          Dim, ReturnReconstructionOrder, false, true>(positivity_preserving,
+                                                       fallback_recons);
     }
   } else {
     if (use_9th_order) {
-      return
-       positivity_preserving_adaptive_order_function_pointers_select_positivity<
-         Dim, true, false>(positivity_preserving, fallback_recons);
+      return ppao_function_pointers_select_positivity<
+          Dim, ReturnReconstructionOrder, true, false>(positivity_preserving,
+                                                       fallback_recons);
     } else {
-      return
-       positivity_preserving_adaptive_order_function_pointers_select_positivity<
-         Dim, false, false>(positivity_preserving, fallback_recons);
+      return ppao_function_pointers_select_positivity<
+          Dim, ReturnReconstructionOrder, false, false>(positivity_preserving,
+                                                        fallback_recons);
     }
   }
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define RETURN_RECONS_ORDER(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATION(r, data)                                            \
-  template pointer_return_type<DIM(data)>                                 \
-  positivity_preserving_adaptive_order_function_pointers(                 \
+  template pointer_return_type<DIM(data), RETURN_RECONS_ORDER(data)>      \
+  positivity_preserving_adaptive_order_function_pointers<                 \
+      DIM(data), RETURN_RECONS_ORDER(data)>(                              \
       bool positivity_preserving, bool use_9th_order, bool use_7th_order, \
       FallbackReconstructorType fallback_recons);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 
+#undef RETURN_RECONS_ORDER
 #undef INSTANTIATION
 
 #define POSITIVITY_PRESERVING(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -150,6 +157,21 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           reconstructed_upper_side_of_face_vars,                               \
       gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>                 \
           reconstructed_lower_side_of_face_vars,                               \
+      const gsl::span<const double>& volume_vars,                              \
+      const DirectionMap<DIM(data), gsl::span<const double>>& ghost_cell_vars, \
+      const Index<DIM(data)>& volume_extents,                                  \
+      const size_t number_of_variables, const double& four_to_the_alpha_5,     \
+      const double& six_to_the_alpha_7, const double& eight_to_the_alpha_9);   \
+  template void reconstruct<PositivityPreservingAdaptiveOrderReconstructor<    \
+      FALLBACK_RECONSTRUCTOR(data), POSITIVITY_PRESERVING(data),               \
+      USE_9TH_ORDER(data), USE_7TH_ORDER(data)>>(                              \
+      gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>                 \
+          reconstructed_upper_side_of_face_vars,                               \
+      gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>                 \
+          reconstructed_lower_side_of_face_vars,                               \
+      gsl::not_null<                                                           \
+          std::optional<std::array<gsl::span<std::uint8_t>, DIM(data)>>*>      \
+          reconstruction_order,                                                \
       const gsl::span<const double>& volume_vars,                              \
       const DirectionMap<DIM(data), gsl::span<const double>>& ghost_cell_vars, \
       const Index<DIM(data)>& volume_extents,                                  \
