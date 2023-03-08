@@ -101,7 +101,8 @@ void test_connectivity_once(const bool with_sphere_e,
                             const bool include_inner_sphere_A,
                             const bool include_inner_sphere_B,
                             const bool include_outer_sphere,
-                            const bool use_equiangular_map) {
+                            const bool use_equiangular_map,
+                            const bool with_boundary_conditions) {
   // Misc.:
   constexpr size_t refinement = 1;
   constexpr size_t grid_points = 3;
@@ -122,243 +123,206 @@ void test_connectivity_once(const bool with_sphere_e,
   const double inner_radius_objectA = 2.0 * mass_ratio / (1.0 + mass_ratio);
   const double inner_radius_objectB = 2.0 / (1.0 + mass_ratio);
 
-  for (const bool with_boundary_conditions : {true, false}) {
-    CAPTURE(with_boundary_conditions);
-    const domain::creators::CylindricalBinaryCompactObject
-        binary_compact_object{
-            center_objectA,
-            center_objectB,
-            inner_radius_objectA,
-            inner_radius_objectB,
-            include_inner_sphere_A,
-            include_inner_sphere_B,
-            include_outer_sphere,
-            outer_radius,
-            use_equiangular_map,
-            refinement,
-            grid_points,
-            with_boundary_conditions ? create_inner_boundary_condition()
-                                     : nullptr,
-            with_boundary_conditions ? create_outer_boundary_condition()
-                                     : nullptr};
+  const domain::creators::CylindricalBinaryCompactObject binary_compact_object{
+      center_objectA,
+      center_objectB,
+      inner_radius_objectA,
+      inner_radius_objectB,
+      include_inner_sphere_A,
+      include_inner_sphere_B,
+      include_outer_sphere,
+      outer_radius,
+      use_equiangular_map,
+      refinement,
+      grid_points,
+      with_boundary_conditions ? create_inner_boundary_condition() : nullptr,
+      with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
 
-    std::vector<std::string> block_names{
-        "CAFilledCylinderCenter", "CAFilledCylinderEast",
-        "CAFilledCylinderNorth",  "CAFilledCylinderWest",
-        "CAFilledCylinderSouth",  "CACylinderEast",
-        "CACylinderNorth",        "CACylinderWest",
-        "CACylinderSouth",        "EAFilledCylinderCenter",
-        "EAFilledCylinderEast",   "EAFilledCylinderNorth",
-        "EAFilledCylinderWest",   "EAFilledCylinderSouth",
-        "EACylinderEast",         "EACylinderNorth",
-        "EACylinderWest",         "EACylinderSouth",
-        "EBFilledCylinderCenter", "EBFilledCylinderEast",
-        "EBFilledCylinderNorth",  "EBFilledCylinderWest",
-        "EBFilledCylinderSouth",  "EBCylinderEast",
-        "EBCylinderNorth",        "EBCylinderWest",
-        "EBCylinderSouth",        "MAFilledCylinderCenter",
-        "MAFilledCylinderEast",   "MAFilledCylinderNorth",
-        "MAFilledCylinderWest",   "MAFilledCylinderSouth",
-        "MBFilledCylinderCenter", "MBFilledCylinderEast",
-        "MBFilledCylinderNorth",  "MBFilledCylinderWest",
-        "MBFilledCylinderSouth",  "CBFilledCylinderCenter",
-        "CBFilledCylinderEast",   "CBFilledCylinderNorth",
-        "CBFilledCylinderWest",   "CBFilledCylinderSouth",
-        "CBCylinderEast",         "CBCylinderNorth",
-        "CBCylinderWest",         "CBCylinderSouth"};
-    std::unordered_map<std::string, std::unordered_set<std::string>>
-        block_groups{
-            {"Outer",
-             {{"CAFilledCylinderCenter", "CBCylinderEast",
-               "CAFilledCylinderEast", "CAFilledCylinderNorth",
-               "CBFilledCylinderNorth", "CACylinderEast",
-               "CBFilledCylinderEast", "CAFilledCylinderSouth",
-               "CACylinderNorth", "CAFilledCylinderWest", "CACylinderWest",
-               "CACylinderSouth", "CBFilledCylinderCenter",
-               "CBFilledCylinderWest", "CBFilledCylinderSouth",
-               "CBCylinderNorth", "CBCylinderWest", "CBCylinderSouth"}}},
-            {"InnerA",
-             {"EAFilledCylinderCenter", "MAFilledCylinderNorth",
-              "EACylinderSouth", "EAFilledCylinderSouth", "EACylinderNorth",
-              "EACylinderWest", "MAFilledCylinderCenter",
-              "EAFilledCylinderNorth", "EAFilledCylinderWest",
-              "MAFilledCylinderSouth", "EACylinderEast", "MAFilledCylinderEast",
-              "EAFilledCylinderEast", "MAFilledCylinderWest"}},
-            {"InnerB",
-             {"EBFilledCylinderEast", "MBFilledCylinderEast",
-              "EBFilledCylinderSouth", "EBFilledCylinderNorth",
-              "EBFilledCylinderWest", "EBCylinderEast", "MBFilledCylinderWest",
-              "EBCylinderNorth", "EBCylinderSouth", "EBCylinderWest",
-              "MBFilledCylinderCenter", "EBFilledCylinderCenter",
-              "MBFilledCylinderNorth", "MBFilledCylinderSouth"}}};
+  std::vector<std::string> block_names{
+      "CAFilledCylinderCenter", "CAFilledCylinderEast",
+      "CAFilledCylinderNorth",  "CAFilledCylinderWest",
+      "CAFilledCylinderSouth",  "CACylinderEast",
+      "CACylinderNorth",        "CACylinderWest",
+      "CACylinderSouth",        "EAFilledCylinderCenter",
+      "EAFilledCylinderEast",   "EAFilledCylinderNorth",
+      "EAFilledCylinderWest",   "EAFilledCylinderSouth",
+      "EACylinderEast",         "EACylinderNorth",
+      "EACylinderWest",         "EACylinderSouth",
+      "EBFilledCylinderCenter", "EBFilledCylinderEast",
+      "EBFilledCylinderNorth",  "EBFilledCylinderWest",
+      "EBFilledCylinderSouth",  "EBCylinderEast",
+      "EBCylinderNorth",        "EBCylinderWest",
+      "EBCylinderSouth",        "MAFilledCylinderCenter",
+      "MAFilledCylinderEast",   "MAFilledCylinderNorth",
+      "MAFilledCylinderWest",   "MAFilledCylinderSouth",
+      "MBFilledCylinderCenter", "MBFilledCylinderEast",
+      "MBFilledCylinderNorth",  "MBFilledCylinderWest",
+      "MBFilledCylinderSouth",  "CBFilledCylinderCenter",
+      "CBFilledCylinderEast",   "CBFilledCylinderNorth",
+      "CBFilledCylinderWest",   "CBFilledCylinderSouth",
+      "CBCylinderEast",         "CBCylinderNorth",
+      "CBCylinderWest",         "CBCylinderSouth"};
+  std::unordered_map<std::string, std::unordered_set<std::string>> block_groups{
+      {"Outer",
+       {{"CAFilledCylinderCenter", "CBCylinderEast", "CAFilledCylinderEast",
+         "CAFilledCylinderNorth", "CBFilledCylinderNorth", "CACylinderEast",
+         "CBFilledCylinderEast", "CAFilledCylinderSouth", "CACylinderNorth",
+         "CAFilledCylinderWest", "CACylinderWest", "CACylinderSouth",
+         "CBFilledCylinderCenter", "CBFilledCylinderWest",
+         "CBFilledCylinderSouth", "CBCylinderNorth", "CBCylinderWest",
+         "CBCylinderSouth"}}},
+      {"InnerA",
+       {"EAFilledCylinderCenter", "MAFilledCylinderNorth", "EACylinderSouth",
+        "EAFilledCylinderSouth", "EACylinderNorth", "EACylinderWest",
+        "MAFilledCylinderCenter", "EAFilledCylinderNorth",
+        "EAFilledCylinderWest", "MAFilledCylinderSouth", "EACylinderEast",
+        "MAFilledCylinderEast", "EAFilledCylinderEast",
+        "MAFilledCylinderWest"}},
+      {"InnerB",
+       {"EBFilledCylinderEast", "MBFilledCylinderEast", "EBFilledCylinderSouth",
+        "EBFilledCylinderNorth", "EBFilledCylinderWest", "EBCylinderEast",
+        "MBFilledCylinderWest", "EBCylinderNorth", "EBCylinderSouth",
+        "EBCylinderWest", "MBFilledCylinderCenter", "EBFilledCylinderCenter",
+        "MBFilledCylinderNorth", "MBFilledCylinderSouth"}}};
 
-    if (include_inner_sphere_A) {
-      block_names.insert(
-          block_names.end(),
-          {"InnerSphereEAFilledCylinderCenter",
-           "InnerSphereEAFilledCylinderEast",
-           "InnerSphereEAFilledCylinderNorth",
-           "InnerSphereEAFilledCylinderWest",
-           "InnerSphereEAFilledCylinderSouth",
-           "InnerSphereMAFilledCylinderCenter",
-           "InnerSphereMAFilledCylinderEast",
-           "InnerSphereMAFilledCylinderNorth",
-           "InnerSphereMAFilledCylinderWest",
-           "InnerSphereMAFilledCylinderSouth", "InnerSphereEACylinderEast",
-           "InnerSphereEACylinderNorth", "InnerSphereEACylinderWest",
-           "InnerSphereEACylinderSouth"});
-      block_groups.insert(
-          {"InnerSphereA",
-           {"InnerSphereEAFilledCylinderCenter",
-            "InnerSphereEAFilledCylinderEast",
-            "InnerSphereEAFilledCylinderNorth",
-            "InnerSphereEAFilledCylinderWest",
-            "InnerSphereEAFilledCylinderSouth",
-            "InnerSphereMAFilledCylinderCenter",
-            "InnerSphereMAFilledCylinderEast",
-            "InnerSphereMAFilledCylinderNorth",
-            "InnerSphereMAFilledCylinderWest",
-            "InnerSphereMAFilledCylinderSouth", "InnerSphereEACylinderEast",
-            "InnerSphereEACylinderNorth", "InnerSphereEACylinderWest",
-            "InnerSphereEACylinderSouth"}});
-    }
-    if (include_inner_sphere_B) {
-      block_names.insert(
-          block_names.end(),
-          {"InnerSphereEBFilledCylinderCenter",
-           "InnerSphereEBFilledCylinderEast",
-           "InnerSphereEBFilledCylinderNorth",
-           "InnerSphereEBFilledCylinderWest",
-           "InnerSphereEBFilledCylinderSouth",
-           "InnerSphereMBFilledCylinderCenter",
-           "InnerSphereMBFilledCylinderEast",
-           "InnerSphereMBFilledCylinderNorth",
-           "InnerSphereMBFilledCylinderWest",
-           "InnerSphereMBFilledCylinderSouth", "InnerSphereEBCylinderEast",
-           "InnerSphereEBCylinderNorth", "InnerSphereEBCylinderWest",
-           "InnerSphereEBCylinderSouth"});
-      block_groups.insert(
-          {"InnerSphereB",
-           {"InnerSphereEBFilledCylinderCenter",
-            "InnerSphereEBFilledCylinderEast",
-            "InnerSphereEBFilledCylinderNorth",
-            "InnerSphereEBFilledCylinderWest",
-            "InnerSphereEBFilledCylinderSouth",
-            "InnerSphereMBFilledCylinderCenter",
-            "InnerSphereMBFilledCylinderEast",
-            "InnerSphereMBFilledCylinderNorth",
-            "InnerSphereMBFilledCylinderWest",
-            "InnerSphereMBFilledCylinderSouth", "InnerSphereEBCylinderEast",
-            "InnerSphereEBCylinderNorth", "InnerSphereEBCylinderWest",
-            "InnerSphereEBCylinderSouth"}});
-    }
-    if (include_outer_sphere) {
-      block_names.insert(
-          block_names.end(),
-          {"OuterSphereCAFilledCylinderCenter",
-           "OuterSphereCAFilledCylinderEast",
-           "OuterSphereCAFilledCylinderNorth",
-           "OuterSphereCAFilledCylinderWest",
-           "OuterSphereCAFilledCylinderSouth",
-           "OuterSphereCBFilledCylinderCenter",
-           "OuterSphereCBFilledCylinderEast",
-           "OuterSphereCBFilledCylinderNorth",
-           "OuterSphereCBFilledCylinderWest",
-           "OuterSphereCBFilledCylinderSouth", "OuterSphereCACylinderEast",
-           "OuterSphereCACylinderNorth", "OuterSphereCACylinderWest",
-           "OuterSphereCACylinderSouth", "OuterSphereCBCylinderEast",
-           "OuterSphereCBCylinderNorth", "OuterSphereCBCylinderWest",
-           "OuterSphereCBCylinderSouth"});
-      block_groups.insert(
-          {"OuterSphere",
-           {"OuterSphereCAFilledCylinderCenter",
-            "OuterSphereCAFilledCylinderEast",
-            "OuterSphereCAFilledCylinderNorth",
-            "OuterSphereCAFilledCylinderWest",
-            "OuterSphereCAFilledCylinderSouth",
-            "OuterSphereCBFilledCylinderCenter",
-            "OuterSphereCBFilledCylinderEast",
-            "OuterSphereCBFilledCylinderNorth",
-            "OuterSphereCBFilledCylinderWest",
-            "OuterSphereCBFilledCylinderSouth", "OuterSphereCACylinderEast",
-            "OuterSphereCACylinderNorth", "OuterSphereCACylinderWest",
-            "OuterSphereCACylinderSouth", "OuterSphereCBCylinderEast",
-            "OuterSphereCBCylinderNorth", "OuterSphereCBCylinderWest",
-            "OuterSphereCBCylinderSouth"}});
-    }
-    CHECK(binary_compact_object.block_names() == block_names);
-    CHECK(binary_compact_object.block_groups() == block_groups);
+  if (include_inner_sphere_A) {
+    block_names.insert(
+        block_names.end(),
+        {"InnerSphereEAFilledCylinderCenter", "InnerSphereEAFilledCylinderEast",
+         "InnerSphereEAFilledCylinderNorth", "InnerSphereEAFilledCylinderWest",
+         "InnerSphereEAFilledCylinderSouth",
+         "InnerSphereMAFilledCylinderCenter", "InnerSphereMAFilledCylinderEast",
+         "InnerSphereMAFilledCylinderNorth", "InnerSphereMAFilledCylinderWest",
+         "InnerSphereMAFilledCylinderSouth", "InnerSphereEACylinderEast",
+         "InnerSphereEACylinderNorth", "InnerSphereEACylinderWest",
+         "InnerSphereEACylinderSouth"});
+    block_groups.insert(
+        {"InnerSphereA",
+         {"InnerSphereEAFilledCylinderCenter",
+          "InnerSphereEAFilledCylinderEast", "InnerSphereEAFilledCylinderNorth",
+          "InnerSphereEAFilledCylinderWest", "InnerSphereEAFilledCylinderSouth",
+          "InnerSphereMAFilledCylinderCenter",
+          "InnerSphereMAFilledCylinderEast", "InnerSphereMAFilledCylinderNorth",
+          "InnerSphereMAFilledCylinderWest", "InnerSphereMAFilledCylinderSouth",
+          "InnerSphereEACylinderEast", "InnerSphereEACylinderNorth",
+          "InnerSphereEACylinderWest", "InnerSphereEACylinderSouth"}});
+  }
+  if (include_inner_sphere_B) {
+    block_names.insert(
+        block_names.end(),
+        {"InnerSphereEBFilledCylinderCenter", "InnerSphereEBFilledCylinderEast",
+         "InnerSphereEBFilledCylinderNorth", "InnerSphereEBFilledCylinderWest",
+         "InnerSphereEBFilledCylinderSouth",
+         "InnerSphereMBFilledCylinderCenter", "InnerSphereMBFilledCylinderEast",
+         "InnerSphereMBFilledCylinderNorth", "InnerSphereMBFilledCylinderWest",
+         "InnerSphereMBFilledCylinderSouth", "InnerSphereEBCylinderEast",
+         "InnerSphereEBCylinderNorth", "InnerSphereEBCylinderWest",
+         "InnerSphereEBCylinderSouth"});
+    block_groups.insert(
+        {"InnerSphereB",
+         {"InnerSphereEBFilledCylinderCenter",
+          "InnerSphereEBFilledCylinderEast", "InnerSphereEBFilledCylinderNorth",
+          "InnerSphereEBFilledCylinderWest", "InnerSphereEBFilledCylinderSouth",
+          "InnerSphereMBFilledCylinderCenter",
+          "InnerSphereMBFilledCylinderEast", "InnerSphereMBFilledCylinderNorth",
+          "InnerSphereMBFilledCylinderWest", "InnerSphereMBFilledCylinderSouth",
+          "InnerSphereEBCylinderEast", "InnerSphereEBCylinderNorth",
+          "InnerSphereEBCylinderWest", "InnerSphereEBCylinderSouth"}});
+  }
+  if (include_outer_sphere) {
+    block_names.insert(
+        block_names.end(),
+        {"OuterSphereCAFilledCylinderCenter", "OuterSphereCAFilledCylinderEast",
+         "OuterSphereCAFilledCylinderNorth", "OuterSphereCAFilledCylinderWest",
+         "OuterSphereCAFilledCylinderSouth",
+         "OuterSphereCBFilledCylinderCenter", "OuterSphereCBFilledCylinderEast",
+         "OuterSphereCBFilledCylinderNorth", "OuterSphereCBFilledCylinderWest",
+         "OuterSphereCBFilledCylinderSouth", "OuterSphereCACylinderEast",
+         "OuterSphereCACylinderNorth", "OuterSphereCACylinderWest",
+         "OuterSphereCACylinderSouth", "OuterSphereCBCylinderEast",
+         "OuterSphereCBCylinderNorth", "OuterSphereCBCylinderWest",
+         "OuterSphereCBCylinderSouth"});
+    block_groups.insert(
+        {"OuterSphere",
+         {"OuterSphereCAFilledCylinderCenter",
+          "OuterSphereCAFilledCylinderEast", "OuterSphereCAFilledCylinderNorth",
+          "OuterSphereCAFilledCylinderWest", "OuterSphereCAFilledCylinderSouth",
+          "OuterSphereCBFilledCylinderCenter",
+          "OuterSphereCBFilledCylinderEast", "OuterSphereCBFilledCylinderNorth",
+          "OuterSphereCBFilledCylinderWest", "OuterSphereCBFilledCylinderSouth",
+          "OuterSphereCACylinderEast", "OuterSphereCACylinderNorth",
+          "OuterSphereCACylinderWest", "OuterSphereCACylinderSouth",
+          "OuterSphereCBCylinderEast", "OuterSphereCBCylinderNorth",
+          "OuterSphereCBCylinderWest", "OuterSphereCBCylinderSouth"}});
+  }
+  CHECK(binary_compact_object.block_names() == block_names);
+  CHECK(binary_compact_object.block_groups() == block_groups);
 
-    const auto domain = TestHelpers::domain::creators::test_domain_creator(
-        binary_compact_object, with_boundary_conditions);
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      binary_compact_object, with_boundary_conditions);
 
-    CHECK(domain.excision_spheres().size() == 2);
-    const auto& excision_sphere_a =
-        domain.excision_spheres().at("ExcisionSphereA");
-    CHECK(excision_sphere_a.radius() == inner_radius_objectA);
-    const auto& excision_sphere_b =
-        domain.excision_spheres().at("ExcisionSphereB");
-    CHECK(excision_sphere_b.radius() == inner_radius_objectB);
-    for (size_t i = 0; i < 3; ++i) {
-      CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
-      CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
-    }
+  CHECK(domain.excision_spheres().size() == 2);
+  const auto& excision_sphere_a =
+      domain.excision_spheres().at("ExcisionSphereA");
+  CHECK(excision_sphere_a.radius() == inner_radius_objectA);
+  const auto& excision_sphere_b =
+      domain.excision_spheres().at("ExcisionSphereB");
+  CHECK(excision_sphere_b.radius() == inner_radius_objectB);
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
+    CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
+  }
 
-    // The Domain has no functions of time above, so make sure
-    // that the functions_of_time function returns an empty map.
-    CHECK(binary_compact_object.functions_of_time() ==
-          std::unordered_map<
-              std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{});
+  // The Domain has no functions of time above, so make sure
+  // that the functions_of_time function returns an empty map.
+  CHECK(binary_compact_object.functions_of_time().empty());
 
-    if (with_boundary_conditions) {
-      CHECK_THROWS_WITH(
-          domain::creators::CylindricalBinaryCompactObject(
-              center_objectA, center_objectB, inner_radius_objectA,
-              inner_radius_objectB, include_inner_sphere_A,
-              include_inner_sphere_B, include_outer_sphere, outer_radius,
-              use_equiangular_map, refinement, grid_points,
-              create_inner_boundary_condition(),
-              std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                   TestPeriodicBoundaryCondition<3>>(),
-              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains("Cannot have periodic boundary "
-                                    "conditions with a binary domain"));
-      CHECK_THROWS_WITH(
-          domain::creators::CylindricalBinaryCompactObject(
-              center_objectA, center_objectB, inner_radius_objectA,
-              inner_radius_objectB, include_inner_sphere_A,
-              include_inner_sphere_B, include_outer_sphere, outer_radius,
-              use_equiangular_map, refinement, grid_points,
-              std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                   TestPeriodicBoundaryCondition<3>>(),
-              create_outer_boundary_condition(),
-              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains("Cannot have periodic boundary "
-                                    "conditions with a binary domain"));
-      CHECK_THROWS_WITH(
-          domain::creators::CylindricalBinaryCompactObject(
-              center_objectA, center_objectB, inner_radius_objectA,
-              inner_radius_objectB, include_inner_sphere_A,
-              include_inner_sphere_B, include_outer_sphere, outer_radius,
-              use_equiangular_map, refinement, grid_points, nullptr,
-              create_outer_boundary_condition(),
-              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
-              "Must specify either both inner and outer boundary "
-              "conditions or neither."));
-      CHECK_THROWS_WITH(
-          domain::creators::CylindricalBinaryCompactObject(
-              center_objectA, center_objectB, inner_radius_objectA,
-              inner_radius_objectB, include_inner_sphere_A,
-              include_inner_sphere_B, include_outer_sphere, outer_radius,
-              use_equiangular_map, refinement, grid_points,
-              create_inner_boundary_condition(), nullptr,
-              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
-              "Must specify either both inner and outer boundary "
-              "conditions or neither."));
-    }
+  if (with_boundary_conditions) {
+    CHECK_THROWS_WITH(
+        domain::creators::CylindricalBinaryCompactObject(
+            center_objectA, center_objectB, inner_radius_objectA,
+            inner_radius_objectB, include_inner_sphere_A,
+            include_inner_sphere_B, include_outer_sphere, outer_radius,
+            use_equiangular_map, refinement, grid_points,
+            create_inner_boundary_condition(),
+            std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                 TestPeriodicBoundaryCondition<3>>(),
+            Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::Contains("Cannot have periodic boundary "
+                                  "conditions with a binary domain"));
+    CHECK_THROWS_WITH(
+        domain::creators::CylindricalBinaryCompactObject(
+            center_objectA, center_objectB, inner_radius_objectA,
+            inner_radius_objectB, include_inner_sphere_A,
+            include_inner_sphere_B, include_outer_sphere, outer_radius,
+            use_equiangular_map, refinement, grid_points,
+            std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                 TestPeriodicBoundaryCondition<3>>(),
+            create_outer_boundary_condition(),
+            Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::Contains("Cannot have periodic boundary "
+                                  "conditions with a binary domain"));
+    CHECK_THROWS_WITH(
+        domain::creators::CylindricalBinaryCompactObject(
+            center_objectA, center_objectB, inner_radius_objectA,
+            inner_radius_objectB, include_inner_sphere_A,
+            include_inner_sphere_B, include_outer_sphere, outer_radius,
+            use_equiangular_map, refinement, grid_points, nullptr,
+            create_outer_boundary_condition(),
+            Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::Contains(
+            "Must specify either both inner and outer boundary "
+            "conditions or neither."));
+    CHECK_THROWS_WITH(domain::creators::CylindricalBinaryCompactObject(
+                          center_objectA, center_objectB, inner_radius_objectA,
+                          inner_radius_objectB, include_inner_sphere_A,
+                          include_inner_sphere_B, include_outer_sphere,
+                          outer_radius, use_equiangular_map, refinement,
+                          grid_points, create_inner_boundary_condition(),
+                          nullptr, Options::Context{false, {}, 1, 1}),
+                      Catch::Matchers::Contains(
+                          "Must specify either both inner and outer boundary "
+                          "conditions or neither."));
   }
 }
 
@@ -369,19 +333,22 @@ void test_connectivity() {
   // loop go over {true, false}
   const bool with_sphere_e = false;
   for (const auto& [include_outer_sphere, include_inner_sphere_A,
-                    include_inner_sphere_B, use_equiangular_map] :
+                    include_inner_sphere_B, use_equiangular_map,
+                    with_boundary_conditions] :
        random_sample<5>(
            cartesian_product(make_array(true, false), make_array(true, false),
-                             make_array(true, false), make_array(true, false)),
+                             make_array(true, false), make_array(true, false),
+                             make_array(true, false)),
            make_not_null(&gen))) {
     CAPTURE(with_sphere_e);
     CAPTURE(include_outer_sphere);
     CAPTURE(include_inner_sphere_A);
     CAPTURE(include_inner_sphere_B);
     CAPTURE(use_equiangular_map);
+    CAPTURE(with_boundary_conditions);
     test_connectivity_once(with_sphere_e, include_inner_sphere_A,
                            include_inner_sphere_B, include_outer_sphere,
-                           use_equiangular_map);
+                           use_equiangular_map, with_boundary_conditions);
   }
 }
 
@@ -393,11 +360,15 @@ std::string create_option_string(
       add_time_dependence ? "  TimeDependentMaps:\n"
                             "    InitialTime: 1.0\n"
                             "    ExpansionMap:\n"
-                            "      InitialData: [1.0, -0.1]\n"
+                            "      InitialValues: [1.0, -0.1]\n"
                             "      AsymptoticVelocityOuterBoundary: -0.1\n"
                             "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
                             "    RotationMap:\n"
                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+                            "    SizeMapA:\n"
+                            "      InitialValues: [1.1, 0.0, 0.0]\n"
+                            "    SizeMapB:\n"
+                            "      InitialValues: [1.2, 0.0, 0.0]\n"
                           : ""};
   const std::string boundary_conditions{
       add_boundary_condition ? std::string{"  BoundaryConditions:\n"
@@ -416,22 +387,32 @@ std::string create_option_string(
          "  CenterB: [-3.0, 0.05, 0.0]\n"
          "  RadiusB: 1.0\n"
          "  OuterRadius: 25.0\n"
-         "  UseEquiangularMap: false\n"
-         "  IncludeInnerSphereA: False\n"
-         "  IncludeInnerSphereB: False\n"
+         "  UseEquiangularMap: false\n" +
+         (add_time_dependence ? std::string("  IncludeInnerSphereA: True\n"
+                                            "  IncludeInnerSphereB: True\n")
+                              : std::string("  IncludeInnerSphereA: False\n"
+                                            "  IncludeInnerSphereB: False\n")) +
          "  IncludeOuterSphere: False\n"
          "  InitialRefinement:" +
          (with_additional_outer_radial_refinement
-              ? std::string(" 1\n")
-              : std::string("\n    Outer: [2, 1, 1]"
-                            "\n    InnerA: [1, 1, 1]"
-                            "\n    InnerB: [2, 1, 1]\n")) +
+              ? (add_time_dependence
+                     ? std::string("\n    InnerSphereA: [1, 1, 1]"
+                                   "\n    InnerSphereB: [1, 1, 1]")
+                     : "") +
+                    std::string("\n    Outer: [2, 1, 1]"
+                                "\n    InnerA: [1, 1, 1]"
+                                "\n    InnerB: [2, 1, 1]\n")
+              : std::string(" 1\n")) +
          "  InitialGridPoints:" +
          (with_additional_grid_points
-              ? std::string(" 3\n")
-              : std::string("\n    Outer: [4, 3, 3]"
-                            "\n    InnerA: [3, 3, 3]"
-                            "\n    InnerB: [5, 3, 3]\n")) +
+              ? (add_time_dependence
+                     ? std::string("\n    InnerSphereA: [3, 3, 3]"
+                                   "\n    InnerSphereB: [3, 3, 3]")
+                     : "") +
+                    std::string("\n    Outer: [4, 3, 3]"
+                                "\n    InnerA: [3, 3, 3]"
+                                "\n    InnerB: [5, 3, 3]\n")
+              : std::string(" 3\n")) +
          time_dependence + boundary_conditions;
 }
 
@@ -461,7 +442,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   constexpr double expected_decay_timescale_outer_boundary_velocity =
       5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
 
-  // Matches ExpansionMap:InitialData above
+  // Matches ExpansionMap:InitialValues above
   std::array<DataVector, 3> initial_expansion_factor_coefs{
       {{1.0}, {-0.1}, {0.0}}};
   // Matches RotationMap:InitialAngularVelocity above
@@ -475,14 +456,24 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   std::array<DataVector, 4> initial_rotation_angle_coefs{
       {{3, 0.0}, initial_angular_velocity, {3, 0.0}, {3, 0.0}}};
 
+  // Matches SizeMap{A,B}::InitialValues above
+  std::array<DataVector, 4> initial_size_A_coefs{{{1.1}, {0.0}, {0.0}, {0.0}}};
+  std::array<DataVector, 4> initial_size_B_coefs{{{1.2}, {0.0}, {0.0}, {0.0}}};
+
   // Hardcoded in CylindricalBinaryCompactObject.hpp
   const std::string expansion_name = "Expansion";
   const std::string rotation_name = "Rotation";
+  const std::string size_A_name = "SizeA";
+  const std::string size_B_name = "SizeB";
 
   ExpirationTimeMap initial_expiration_times{};
   initial_expiration_times[expansion_name] =
       with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
   initial_expiration_times[rotation_name] =
+      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
+  initial_expiration_times[size_A_name] =
+      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
+  initial_expiration_times[size_B_name] =
       with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
 
   // Functions of time evaluated at expected_time.
@@ -490,7 +481,9 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
       std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
       std::pair<std::string,
-                domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>>
+                domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>,
+      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
+      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>>
       expected_functions_of_time = std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
@@ -507,7 +500,17 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
               rotation_name,
               {expected_time, initial_quaternion_coefs,
                initial_rotation_angle_coefs,
-               initial_expiration_times[rotation_name]}});
+               initial_expiration_times[rotation_name]}},
+          std::pair<std::string,
+                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
+              size_A_name,
+              {expected_time, initial_size_A_coefs,
+               initial_expiration_times[size_A_name]}},
+          std::pair<std::string,
+                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
+              size_B_name,
+              {expected_time, initial_size_B_coefs,
+               initial_expiration_times[size_B_name]}});
 
   for (const double time : times_to_check) {
     CAPTURE(time);
@@ -597,6 +600,18 @@ void test_parse_errors() {
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          0.0,
+          domain::creators::CylindricalBinaryCompactObject::ExpansionMapOptions{
+              std::array{0.0, 0.0}, 0.0, 1.0},
+          std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
+          std::array{0.0, 0.0, 0.0}, {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0,
+          1.0, false, false, false, 25.0, false, 1_st, 3_st,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "To use the CylindricalBBH domain with time-dependent maps"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }

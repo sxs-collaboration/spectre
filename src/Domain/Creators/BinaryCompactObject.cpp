@@ -467,118 +467,135 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {
-    // Note on frames: Because the relevant maps will all be composed before
-    // they are used, all maps here go from Frame::Grid (the frame after the
-    // final time-independent map is applied) to Frame::Inertial
-    // (the frame after the final time-dependent map is applied).
-    using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
-    using CubicScaleMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>;
-
-    using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-    using RotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap3D>;
-
-    using CubicScaleAndRotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                              RotationMap3D>;
-
-    using CompressionMap =
-        domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
-    using CompressionMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap>;
-
-    using CompressionAndCubicScaleAndRotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                              CubicScaleMap, RotationMap3D>;
-
+    // Default initialize everything to nullptr so that we only need to set the
+    // appropriate block maps for the specific frames
     std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
-        block_maps{number_of_blocks_};
+        grid_to_inertial_block_maps{number_of_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+        grid_to_distorted_block_maps{number_of_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+        distorted_to_inertial_block_maps{number_of_blocks_};
+
+    CubicScaleMap expansion_map{
+        expansion_map_outer_boundary_, expansion_function_of_time_name_,
+        expansion_function_of_time_name_ + "OuterBoundary"s};
+    RotationMap3D rotation_map{rotation_function_of_time_name_};
+    CompressionMap size_A_map{size_map_function_of_time_names_[0],
+                              object_A_.inner_radius,
+                              object_A_.outer_radius,
+                              {{object_A_.x_coord, 0.0, 0.0}}};
+    CompressionMap size_B_map{size_map_function_of_time_names_[1],
+                              object_B_.inner_radius,
+                              object_B_.outer_radius,
+                              {{object_B_.x_coord, 0.0, 0.0}}};
+
+    const auto expansion_rotation = [&expansion_map, &rotation_map](
+                                        const auto source_frame,
+                                        const auto target_frame) {
+      using SourceFrame = std::decay_t<decltype(source_frame)>;
+      using TargetFrame = std::decay_t<decltype(target_frame)>;
+      return std::make_unique<
+          CubicScaleAndRotationMapForComposition<SourceFrame, TargetFrame>>(
+          domain::push_back(
+              CubicScaleMapForComposition<SourceFrame, TargetFrame>{
+                  expansion_map},
+              RotationMapForComposition<SourceFrame, TargetFrame>{
+                  rotation_map}));
+    };
+
+    const auto size_expansion_rotation =
+        [&expansion_map, &rotation_map](const CompressionMap& size_map) {
+          return std::make_unique<
+              CompressionAndCubicScaleAndRotationMapForComposition>(
+              domain::push_back(
+                  CompressionMapForComposition<Frame::Grid, Frame::Inertial>{
+                      size_map},
+                  domain::push_back(
+                      CubicScaleMapForComposition<Frame::Grid, Frame::Inertial>{
+                          expansion_map},
+                      RotationMapForComposition<Frame::Grid, Frame::Inertial>{
+                          rotation_map})));
+        };
 
     // Some maps (e.g. expansion, rotation) are applied to all blocks,
-    // while other maps (e.g. size) are only applied to some blocks. So
-    // there are several different distinct combinations of time-dependent
-    // maps that will be applied.
-    // Here, set the time-dependent maps for each distinct combination in
-    // a single block. Then, set the maps of the other blocks by cloning
-    // the maps from the appropriate block.
+    // while other maps (e.g. size) are only applied to some blocks. Also, some
+    // maps are applied from the Grid to the Inertial frame, while others are
+    // applied to/from the Distorted frame. So there are several different
+    // distinct combinations of time-dependent maps that will be applied. Here,
+    // set the time-dependent maps for each distinct combination in a single
+    // block. Then, set the maps of the other blocks by cloning the maps from
+    // the appropriate block.
 
-    // All blocks except possibly blocks 0-5 and 12-17 get the same map, so
-    // initialize the final block with the "base" map (here a composition of an
-    // expansion and a rotation).
-    block_maps[number_of_blocks_ - 1] =
-        std::make_unique<CubicScaleAndRotationMapForComposition>(
-            domain::push_back(
-                CubicScaleMapForComposition{CubicScaleMap{
-                    expansion_map_outer_boundary_,
-                    expansion_function_of_time_name_,
-                    expansion_function_of_time_name_ + "OuterBoundary"s}},
-                RotationMapForComposition{
-                    RotationMap3D{rotation_function_of_time_name_}}));
+    // All blocks except possibly blocks 0-5 and 12-17 get the same map from the
+    // Grid to the Inertial frame, so initialize the final block with the "base"
+    // map (here a composition of an expansion and a rotation).
+    grid_to_inertial_block_maps[number_of_blocks_ - 1] =
+        expansion_rotation(Frame::Grid{}, Frame::Inertial{});
 
     // Initialize the first block of the layer 1 blocks for each object
     // (specifically, initialize block 0 and block 12). If excising interior
-    // A or B, the block maps for the coresponding layer 1 blocks (blocks 0-5
-    // for object A, blocks 12-17 for object B) should also include a size map.
-    // If not excising interior A or B, the layer 1 blocks for that object
-    // will have the same map as the final block.
+    // A or B, the block maps for the corrsponding layer 1 blocks (blocks 0-5
+    // for object A, blocks 12-17 for object B) should also include a size map
+    // from the Grid to the Distorted frame, and then the combination expansion
+    // + rotation from the Distorted to Inertial frame. If not excising interior
+    // A or B, the layer 1 blocks for that object will have the same map as the
+    // final block from the Grid to Inertial frame.
     if (object_A_.is_excised()) {
-      block_maps[0] = std::make_unique<
-          CompressionAndCubicScaleAndRotationMapForComposition>(
-          domain::push_back(
-              CompressionMapForComposition{
-                  CompressionMap{size_map_function_of_time_names_[0],
-                                 object_A_.inner_radius,
-                                 object_A_.outer_radius,
-                                 {{object_A_.x_coord, 0.0, 0.0}}}},
-              domain::push_back(
-                  CubicScaleMapForComposition{CubicScaleMap{
-                      expansion_map_outer_boundary_,
-                      expansion_function_of_time_name_,
-                      expansion_function_of_time_name_ + "OuterBoundary"s}},
-                  RotationMapForComposition{
-                      RotationMap3D{rotation_function_of_time_name_}})));
+      grid_to_inertial_block_maps[0] = size_expansion_rotation(size_A_map);
+      grid_to_distorted_block_maps[0] = std::make_unique<
+          CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
+          size_A_map);
+      distorted_to_inertial_block_maps[0] =
+          expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
     } else {
-      block_maps[0] = block_maps[number_of_blocks_ - 1]->get_clone();
+      grid_to_inertial_block_maps[0] =
+          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
     }
     if (object_B_.is_excised()) {
-      block_maps[12] = std::make_unique<
-          CompressionAndCubicScaleAndRotationMapForComposition>(
-          domain::push_back(
-              CompressionMapForComposition{
-                  CompressionMap{size_map_function_of_time_names_[1],
-                                 object_B_.inner_radius,
-                                 object_B_.outer_radius,
-                                 {{object_B_.x_coord, 0.0, 0.0}}}},
-              domain::push_back(
-                  CubicScaleMapForComposition{CubicScaleMap{
-                      expansion_map_outer_boundary_,
-                      expansion_function_of_time_name_,
-                      expansion_function_of_time_name_ + "OuterBoundary"}},
-                  RotationMapForComposition{
-                      RotationMap3D{rotation_function_of_time_name_}})));
+      grid_to_inertial_block_maps[12] = size_expansion_rotation(size_B_map);
+      grid_to_distorted_block_maps[12] = std::make_unique<
+          CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
+          size_B_map);
+      distorted_to_inertial_block_maps[12] =
+          expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
     } else {
-      block_maps[12] = block_maps[number_of_blocks_ - 1]->get_clone();
+      grid_to_inertial_block_maps[12] =
+          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
     }
 
     // Fill in the rest of the block maps by cloning the relevant maps
     for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
       if (block < 6) {
-        block_maps[block] = block_maps[0]->get_clone();
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[0]->get_clone();
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[0]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[0]->get_clone();
       } else if (block == 12) {
         continue;  // block 12 already initialized
       } else if (block > 12 and block < 18) {
-        block_maps[block] = block_maps[12]->get_clone();
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[12]->get_clone();
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[12]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[12]->get_clone();
       } else {
-        block_maps[block] = block_maps[number_of_blocks_ - 1]->get_clone();
+        grid_to_inertial_block_maps[block] =
+            grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
       }
     }
 
     // Finally, inject the time dependent maps into the corresponding blocks
     for (size_t block = 0; block < number_of_blocks_; ++block) {
-      domain.inject_time_dependent_map_for_block(block,
-                                                 std::move(block_maps[block]));
+      domain.inject_time_dependent_map_for_block(
+          block, std::move(grid_to_inertial_block_maps[block]),
+          std::move(grid_to_distorted_block_maps[block]),
+          std::move(distorted_to_inertial_block_maps[block]));
     }
   }
 

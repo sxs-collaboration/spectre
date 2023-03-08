@@ -19,7 +19,9 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -42,6 +44,8 @@ template <size_t VolumeDim>
 class CubicScale;
 template <size_t VolumeDim>
 class Rotation;
+template <bool InteriorMap>
+class SphericalCompression;
 }  // namespace TimeDependent
 }  // namespace CoordinateMaps
 
@@ -54,6 +58,8 @@ class FunctionOfTime;
 }  // namespace domain
 
 namespace Frame {
+struct Grid;
+struct Distorted;
 struct Inertial;
 struct BlockLogical;
 }  // namespace Frame
@@ -140,44 +146,70 @@ namespace domain::creators {
  *
  */
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
+  // Time-dependent maps
+  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
+  using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
+  using CompressionMap =
+      domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
+
+  template <typename SourceFrame, typename TargetFrame>
+  using CubicScaleMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap>;
+  template <typename SourceFrame, typename TargetFrame>
+  using RotationMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, RotationMap3D>;
+  template <typename SourceFrame, typename TargetFrame>
+  using CubicScaleAndRotationMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
+                            RotationMap3D>;
+  template <typename SourceFrame, typename TargetFrame>
+  using CompressionMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CompressionMap>;
+  using CompressionAndCubicScaleAndRotationMapForComposition =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+                            CubicScaleMap, RotationMap3D>;
+
  public:
-  using maps_list =
-      tmpl::list<domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
-                                                    CoordinateMaps::Interval,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::UniformCylindricalEndcap,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::UniformCylindricalEndcap,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
-                                                    CoordinateMaps::Interval,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::UniformCylindricalFlatEndcap,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::UniformCylindricalFlatEndcap,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::UniformCylindricalSide,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::Grid, Frame::Inertial,
-                     domain::CoordinateMaps::TimeDependent::CubicScale<3>,
-                     domain::CoordinateMaps::TimeDependent::Rotation<3>>>;
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                         CoordinateMaps::Interval,
+                                         CoordinateMaps::Interval>,
+          CoordinateMaps::UniformCylindricalEndcap,
+          CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                         CoordinateMaps::Interval>,
+          CoordinateMaps::UniformCylindricalEndcap,
+          CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                         CoordinateMaps::Interval,
+                                         CoordinateMaps::Interval>,
+          CoordinateMaps::UniformCylindricalFlatEndcap,
+          CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                         CoordinateMaps::Interval>,
+          CoordinateMaps::UniformCylindricalFlatEndcap,
+          CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                         CoordinateMaps::Interval>,
+          CoordinateMaps::UniformCylindricalSide,
+          CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
+                            RotationMap3D>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, CubicScaleMap,
+                            RotationMap3D>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+                            CubicScaleMap, RotationMap3D>>;
 
   struct CenterA {
     using type = std::array<double, 3>;
@@ -290,7 +322,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   /// here to set the outer boundary radius.
   struct ExpansionMapOptions {
     static constexpr Options::String help = {"Options for the expansion map."};
-    struct InitialData {
+    struct InitialValues {
       using type = std::array<double, 2>;
       static constexpr Options::String help = {
           "Initial value and deriv of expansion."};
@@ -306,17 +338,16 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
           "The timescale for how fast the outer boundary velocity approaches "
           "its asymptotic value."};
     };
-    using options = tmpl::list<InitialData,
-                               AsymptoticVelocityOuterBoundary,
+    using options = tmpl::list<InitialValues, AsymptoticVelocityOuterBoundary,
                                DecayTimescaleOuterBoundaryVelocity>;
     ExpansionMapOptions() = default;
-    ExpansionMapOptions(std::array<double, 2> local_initial_data,
+    ExpansionMapOptions(std::array<double, 2> local_initial_values,
                         double local_outer_boundary_velocity,
                         double local_outer_boundary_decay_time)
-        : initial_data(std::move(local_initial_data)),
+        : initial_values(std::move(local_initial_values)),
           outer_boundary_velocity(local_outer_boundary_velocity),
           outer_boundary_decay_time(local_outer_boundary_decay_time) {}
-    std::array<double, 2> initial_data;
+    std::array<double, 2> initial_values;
     double outer_boundary_velocity, outer_boundary_decay_time;
   };
 
@@ -337,13 +368,31 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     using group = RotationMap;
   };
 
+  template <domain::ObjectLabel Object>
+  struct SizeMap {
+    static std::string name() { return "SizeMap" + get_output(Object); }
+    static constexpr Options::String help = {
+        "Options for a time-dependent size map about the specified object."};
+    using group = TimeDependentMaps;
+  };
+
+  template <domain::ObjectLabel Object>
+  struct SizeMapInitialValues {
+    static std::string name() { return "InitialValues"; }
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "Initial value and two derivatives of the size map."};
+    using group = SizeMap<Object>;
+  };
+
   using time_independent_options =
       tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
                  IncludeInnerSphereB, IncludeOuterSphere, OuterRadius,
-                 UseEquiangularMap,
-                 InitialRefinement, InitialGridPoints>;
+                 UseEquiangularMap, InitialRefinement, InitialGridPoints>;
   using time_dependent_options =
-      tmpl::list<InitialTime, ExpansionMap, InitialAngularVelocity>;
+      tmpl::list<InitialTime, ExpansionMap, InitialAngularVelocity,
+                 SizeMapInitialValues<domain::ObjectLabel::A>,
+                 SizeMapInitialValues<domain::ObjectLabel::B>>;
 
   template <typename Metavariables>
   using basic_options = tmpl::conditional_t<
@@ -387,6 +436,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   CylindricalBinaryCompactObject(
       double initial_time, ExpansionMapOptions expansion_map_options,
       std::array<double, 3> initial_angular_velocity,
+      std::array<double, 3> initial_size_map_values_A,
+      std::array<double, 3> initial_size_map_values_B,
       std::array<double, 3> center_A, std::array<double, 3> center_B,
       double radius_A, double radius_B, bool include_inner_sphere_A,
       bool include_inner_sphere_B, bool include_outer_sphere,
@@ -469,6 +520,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   // FunctionsOfTime options
   inline static const std::string expansion_function_of_time_name_{"Expansion"};
   inline static const std::string rotation_function_of_time_name_{"Rotation"};
+  inline static const std::array<std::string, 2>
+      size_map_function_of_time_names_{{"SizeA", "SizeB"}};
   bool is_time_dependent_{false};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   ExpansionMapOptions expansion_map_options_{};
@@ -476,5 +529,6 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN()};
+  std::array<std::array<double, 3>, 2> initial_size_map_values_{};
 };
 }  // namespace domain::creators

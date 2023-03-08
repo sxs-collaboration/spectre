@@ -63,6 +63,8 @@ class FunctionOfTime;
 }  // namespace domain
 
 namespace Frame {
+struct Grid;
+struct Distorted;
 struct Inertial;
 struct BlockLogical;
 }  // namespace Frame
@@ -120,12 +122,17 @@ namespace creators {
  * FunctionsOfTime controlling the map. The following time-dependent maps are
  * applied:
  *
- * - A `CubicScale` expansion and a `Rotation` applied to all blocks.
+ * - A `CubicScale` expansion and a `Rotation` applied to all blocks from the
+ *   Grid to the Inertial frame. However, if there is a size map in the block
+ *   (defined below), then the expansion and rotation maps go from the Distorted
+ *   to the Inertial frame.
  * - If an object is excised, then the corresponding shell has a
- *   `SphericalCompression` size map. We will also add a shape map here.
+ *   `SphericalCompression` size map. The size map goes from the Grid to the
+ *   Distorted frame. We will also add a shape map here.
  */
 class BinaryCompactObject : public DomainCreator<3> {
  private:
+  // Time-independent maps
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Identity2D = CoordinateMaps::Identity<2>;
@@ -133,6 +140,29 @@ class BinaryCompactObject : public DomainCreator<3> {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+
+  // Time-dependent maps
+  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
+  using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
+  using CompressionMap =
+      domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
+
+  template <typename SourceFrame, typename TargetFrame>
+  using CubicScaleMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap>;
+  template <typename SourceFrame, typename TargetFrame>
+  using RotationMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, RotationMap3D>;
+  template <typename SourceFrame, typename TargetFrame>
+  using CubicScaleAndRotationMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
+                            RotationMap3D>;
+  template <typename SourceFrame, typename TargetFrame>
+  using CompressionMapForComposition =
+      domain::CoordinateMap<SourceFrame, TargetFrame, CompressionMap>;
+  using CompressionAndCubicScaleAndRotationMapForComposition =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+                            CubicScaleMap, RotationMap3D>;
 
  public:
   using maps_list = tmpl::list<
@@ -153,15 +183,13 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Translation>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
-          domain::CoordinateMaps::TimeDependent::Rotation<3>>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::SphericalCompression<false>,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
-          domain::CoordinateMaps::TimeDependent::Rotation<3>>>;
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
+                            RotationMap3D>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, CubicScaleMap,
+                            RotationMap3D>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+                            CubicScaleMap, RotationMap3D>>;
 
   /// Options for an excision region in the domain
   struct Excision {
