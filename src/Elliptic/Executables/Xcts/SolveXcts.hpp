@@ -93,7 +93,8 @@ struct Metavariables {
                      volume_dim, Frame::Inertial>,
                  ::Tags::NonEuclideanMagnitude<
                      Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
-                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>>;
+                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+                 Xcts::Tags::LowerSpatialFourVelocityCompute>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  spacetime_quantities_compute, hydro_quantities_compute,

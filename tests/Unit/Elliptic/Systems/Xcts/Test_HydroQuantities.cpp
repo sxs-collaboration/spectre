@@ -44,19 +44,25 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
                   "[Unit][Elliptic]") {
   using hydro_tags = AnalyticData::hydro_tags<DataVector>;
+  using spatial_metric_tag =
+      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>;
   const Solutions::TovStar tov_star{
       1.e-3, std::make_unique<EquationsOfState::PolytropicFluid<true>>(1., 2.),
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
   const double outer_radius = tov_star.radial_solution().outer_radius();
   const tnsr::I<DataVector, 3> x{
       {{{outer_radius / 2., outer_radius * 2.}, {0., 0.}, {0., 0.}}}};
+  const auto spatial_metric = get<spatial_metric_tag>(
+      tov_star.variables(x, tmpl::list<spatial_metric_tag>{}));
   const auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Coordinates<3, Frame::Inertial>,
+          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
           elliptic::Tags::Background<elliptic::analytic_data::Background>,
           Parallel::Tags::MetavariablesImpl<Metavariables>>,
-      db::AddComputeTags<Tags::HydroQuantitiesCompute<hydro_tags>>>(
-      x,
+      db::AddComputeTags<Tags::HydroQuantitiesCompute<hydro_tags>,
+                         Tags::LowerSpatialFourVelocityCompute>>(
+      x, spatial_metric,
       std::unique_ptr<elliptic::analytic_data::Background>(
           std::make_unique<Solutions::TovStar>(tov_star)),
       Metavariables{});
@@ -65,6 +71,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
     using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
     CHECK_ITERABLE_APPROX(db::get<tag>(box), get<tag>(expected_vars));
   });
+  const auto u_i = db::get<
+      hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>>(
+      box);
+  const auto expected_u_i =
+      make_with_value<tnsr::i<DataVector, 3>>(DataVector(2), 0.);
+  CHECK_ITERABLE_APPROX(u_i, expected_u_i);
 }
 
 }  // namespace Xcts

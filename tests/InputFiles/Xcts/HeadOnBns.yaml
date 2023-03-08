@@ -196,6 +196,7 @@ EventsAndTriggers:
             - RestMassDensity
             - SpatialVelocity
             - LorentzFactor
+            - LowerSpatialFourVelocity
             - MagneticField
             - RadiallyCompressedCoordinates
           InterpolateToMesh: None
