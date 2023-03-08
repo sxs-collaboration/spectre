@@ -22,9 +22,11 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -36,6 +38,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
+#include "NumericalAlgorithms/FiniteDifference/HighOrderFluxCorrection.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -98,6 +101,9 @@ struct TimeDerivative {
         db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(*box);
 
     const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
+    const auto fd_derivative_order =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(*box)
+            .finite_difference_derivative_order();
 
     const bool element_is_interior = element.external_boundaries().empty();
     constexpr bool subcell_enabled_at_external_boundary =
@@ -284,9 +290,23 @@ struct TimeDerivative {
         dt_vars_ptr, *box, grmhd_source_tags{},
         typename grmhd::ValenciaDivClean::ComputeSources::argument_tags{});
 
+    std::optional<std::array<Variables<evolved_vars_tags>, 3>>
+        high_order_corrections{};
+    ::fd::cartesian_high_order_flux_corrections(
+        make_not_null(&high_order_corrections),
+
+        db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
+            evolved_vars_tags, 3>>(*box),
+        boundary_corrections, fd_derivative_order,
+        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+            *box),
+        subcell_mesh, recons.ghost_zone_size());
+
     for (size_t dim = 0; dim < 3; ++dim) {
       const auto& boundary_correction_in_axis =
-          gsl::at(boundary_corrections, dim);
+          high_order_corrections.has_value()
+              ? gsl::at(high_order_corrections.value(), dim)
+              : gsl::at(boundary_corrections, dim);
       const auto& component_inverse_jacobian =
           cell_centered_logical_to_grid_inv_jacobian.get(dim, dim);
       const double inverse_delta = gsl::at(one_over_delta_xi, dim);
