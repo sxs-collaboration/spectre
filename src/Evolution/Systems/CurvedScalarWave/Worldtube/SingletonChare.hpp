@@ -62,9 +62,8 @@ struct WorldtubeSingleton {
   using step_actions =
       tmpl::list<Actions::ReceiveElementData,
                  Actions::SendToElements<Metavariables>,
-                 ::Actions::RecordTimeStepperData<
-                     typename worldtube_system::variables_tag>,
-                 ::Actions::UpdateU<typename worldtube_system::variables_tag>>;
+                 ::Actions::RecordTimeStepperData<worldtube_system>,
+                 ::Actions::UpdateU<worldtube_system>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialization_actions>,

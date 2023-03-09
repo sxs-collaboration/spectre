@@ -154,11 +154,11 @@ struct Component {
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
   using step_actions =
-      tmpl::list<ComputeTimeDerivative, Actions::RecordTimeStepperData<>,
-                 tmpl::conditional_t<
-                     has_primitives,
-                     tmpl::list<Actions::UpdateU<>, Actions::UpdatePrimitives>,
-                     Actions::UpdateU<>>>;
+      tmpl::list<ComputeTimeDerivative,
+                 Actions::RecordTimeStepperData<typename metavariables::system>,
+                 Actions::UpdateU<typename metavariables::system>,
+                 tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
+                                     tmpl::list<>>>;
   using action_list = tmpl::flatten<
       tmpl::list<SelfStart::self_start_procedure<
                      step_actions, typename metavariables::system>,
@@ -413,7 +413,8 @@ double error_in_step(const size_t order, const double step) {
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
-  run_past<std::is_same<tmpl::pin<Actions::UpdateU<>>, tmpl::_1>,
+  run_past<std::is_same<tmpl::pin<Actions::UpdateU<System<TestPrimitives>>>,
+                        tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);

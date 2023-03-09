@@ -95,7 +95,7 @@ struct Component {
                      ::Actions::Label<NoOpLabel>,
                      /*UpdateU action is required to satisfy internal checks of
                        `ChangeStepSize`. It is not used in the test.*/
-                     Actions::UpdateU<>>>>;
+                     Actions::UpdateU<System>>>>;
 };
 
 template <typename StepChoosersToUse = AllStepChoosers>

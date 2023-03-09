@@ -237,9 +237,9 @@ struct EvolutionMetavars {
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim>,
-              Actions::RecordTimeStepperData<>,
+              Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<>>>,
+              Actions::UpdateU<system>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -253,9 +253,9 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
-              Actions::RecordTimeStepperData<>,
+              Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<>>>,
+              Actions::UpdateU<system>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           Burgers::subcell::TciOnDgGrid>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
@@ -267,9 +267,9 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           Burgers::subcell::TimeDerivative>,
-      Actions::RecordTimeStepperData<>,
+      Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-      Actions::UpdateU<>,
+      Actions::UpdateU<system>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           Burgers::subcell::TciOnFdGrid>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

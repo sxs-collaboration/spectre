@@ -25,15 +25,14 @@ struct Metavariables;
 /// system, and in the case for which step parameters may need to be rejected
 /// and re-tried, looping until an acceptable step is performed.
 template <typename System, bool LocalTimeStepping,
-          typename StepChoosersToUse = AllStepChoosers,
-          typename VariablesTag = NoSuchType, typename DbTags>
+          typename StepChoosersToUse = AllStepChoosers, typename DbTags>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
-  record_time_stepper_data<System, VariablesTag>(box);
+  record_time_stepper_data<System>(box);
   if constexpr (LocalTimeStepping) {
     do {
-      update_u<System, VariablesTag>(box);
+      update_u<System>(box);
     } while (not change_step_size<StepChoosersToUse>(box));
   } else {
-    update_u<System, VariablesTag>(box);
+    update_u<System>(box);
   }
 }
