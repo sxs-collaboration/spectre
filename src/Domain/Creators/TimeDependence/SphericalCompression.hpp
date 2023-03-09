@@ -49,6 +49,12 @@ namespace domain::creators::time_dependence {
  * \details This TimeDependence is suitable for use on a spherical shell,
  * where MinRadius and MaxRadius are the inner and outer radii of the shell,
  * respectively.
+ *
+ * \note The quantity stored in the FunctionOfTime is really
+ * the spherical-harmonic coefficient \f$\lambda_{00}(t)\f$.  This is
+ * different from the Shape map, which stores YlmSpherepack coefficients
+ * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ instead of \f$\lambda_{lm}(t)\f$.
+ * See domain::CoordinateMaps::TimeDependent::Shape for more details.
  */
 class SphericalCompression final : public TimeDependence<3> {
  private:

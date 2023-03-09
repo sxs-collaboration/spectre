@@ -44,6 +44,25 @@ namespace domain::CoordinateMaps::TimeDependent {
  * zero at the boundary of the domain. The shape map maps the unmapped
  * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
  *
+ * \note The quantities stored in the FunctionOfTime are not the
+ * complex spherical-harmonic coefficients \f$\lambda_{lm}(t)\f$, but
+ * instead are the real-valued SPHEREPACK coefficients
+ * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack.  The
+ * relationship between these two sets of coefficients is
+ * \f{align}
+ * a_{l0} & = \sqrt{\frac{2}{\pi}}\lambda_{l0}&\qquad l\geq 0,\\
+ * a_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Re}(\lambda_{lm})
+ * &\qquad l\geq 1, m\geq 1, \\
+ * b_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Im}(\lambda_{lm})
+ * &\qquad l\geq 1, m\geq 1.
+ * \f}
+ * The FunctionOfTime stores coefficients only for non-negative \f$m\f$;
+ * this is because the function we are expanding is real, so the
+ * coefficients for \f$m<0\f$ can be obtained from \f$m>0\f$ coefficients by
+ * complex conjugation.  Here and below we write the equations in
+ * terms of \f$\lambda_{lm}(t)\f$ instead of \f$a_{lm}(t)\f$ and
+ * \f$b_{lm}(t)\f$ because the resulting expressions are much shorter.
+ *
  * \f{equation}{
  * x^i = \xi^i - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
  * \lambda_{lm}(t)Y_{lm}(\theta, \phi).
