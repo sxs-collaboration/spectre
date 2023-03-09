@@ -130,14 +130,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             selected_obs_ids = all_obs_ids
         dim = volfile.get_dimension()
         for obs_id in selected_obs_ids:
-            if not domain:
-                domain = deserialize_domain[dim](volfile.get_domain(obs_id))
-            time = volfile.get_observation_value(obs_id)
-            if domain.is_time_dependent():
-                functions_of_time = deserialize_functions_of_time(
-                    volfile.get_functions_of_time(obs_id))
-            else:
-                functions_of_time = None
+            # Filter by element patterns first to avoid doing unnecessary work
+            # if the volfile doesn't contain any of the requested elements
             all_grid_names = volfile.get_grid_names(obs_id)
             if element_patterns is not None:
                 grid_names = [
@@ -149,6 +143,7 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             if not grid_names:
                 continue
             element_ids = [ElementId[dim](name) for name in grid_names]
+            # Reconstruct meshes
             all_extents = volfile.get_extents(obs_id)
             all_bases = volfile.get_bases(obs_id)
             all_quadratures = volfile.get_quadratures(obs_id)
@@ -158,6 +153,15 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
                     all_grid_names, all_extents, all_bases, all_quadratures)
                 if grid_name in grid_names
             ]
+            # Deserialize domain and functions of time
+            if not domain:
+                domain = deserialize_domain[dim](volfile.get_domain(obs_id))
+            time = volfile.get_observation_value(obs_id)
+            if domain.is_time_dependent():
+                functions_of_time = deserialize_functions_of_time(
+                    volfile.get_functions_of_time(obs_id))
+            else:
+                functions_of_time = None
             # Pre-load the tensor data because it's stored contiguously for all
             # grids in the file
             if tensor_components:
