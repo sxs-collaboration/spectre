@@ -49,6 +49,9 @@ void test_tags() {
   TestHelpers::db::test_compute_tag<
       domain::Tags::ElementToInertialInverseJacobian<Dim>>(
       "InverseJacobian(ElementLogical,Inertial)");
+  TestHelpers::db::test_compute_tag<
+      domain::Tags::GridToInertialInverseJacobian<Dim>>(
+      "InverseJacobian(Grid,Inertial)");
   TestHelpers::db::test_simple_tag<domain::Tags::MeshVelocity<Dim>>(
       "MeshVelocity");
   TestHelpers::db::test_compute_tag<
@@ -115,6 +118,7 @@ void test() {
                                                       Frame::Inertial>>,
       domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
       domain::Tags::ElementToInertialInverseJacobian<Dim>,
+      domain::Tags::GridToInertialInverseJacobian<Dim>,
       domain::Tags::InertialMeshVelocityCompute<Dim>>;
 
   MAKE_GENERATOR(gen);
@@ -193,8 +197,8 @@ void test() {
               .has_value());
 
       for (size_t i = 0; i < Dim; ++i) {
-        // Check that the `const_cast`s and set_data_ref inside the compute tag
-        // functions worked correctly
+        // Check that the `const_cast`s and set_data_ref inside the compute
+        // tag functions worked correctly
         CHECK(db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box)
                   .get(i)
                   .data() ==
@@ -235,8 +239,8 @@ void test() {
               db::get<domain::Tags::FunctionsOfTime>(box));
 
       for (size_t i = 0; i < Dim; ++i) {
-        // Check that the `const_cast`s and set_data_ref inside the compute tag
-        // functions worked correctly
+        // Check that the `const_cast`s and set_data_ref inside the compute
+        // tag functions worked correctly
         CHECK(db::get<domain::Tags::MeshVelocity<Dim>>(box)->get(i).data() ==
               std::get<3>(
                   *db::get<
@@ -248,6 +252,27 @@ void test() {
       CHECK_ITERABLE_APPROX(
           db::get<domain::Tags::MeshVelocity<Dim>>(box).value(),
           std::get<3>(expected_coords_mesh_velocity_jacobians));
+      for (size_t i = 0;
+           i < db::get<domain::Tags::InverseJacobian<Dim, Frame::Grid,
+                                                     Frame::Inertial>>(box)
+                   .size();
+           ++i) {
+        // Check that the `const_cast`s and set_data_ref inside the
+        // compute tag functions worked correctly
+        CHECK(
+            db::get<domain::Tags::InverseJacobian<Dim, Frame::Grid,
+                                                  Frame::Inertial>>(box)[i]
+                .data() ==
+            std::get<1>(*db::get<
+                        domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
+                box))[i]
+                .data());
+      }
+      CHECK_ITERABLE_APPROX(
+          (db::get<
+              domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>>(
+              box)),
+          std::get<1>(expected_coords_mesh_velocity_jacobians));
     } else {
       tnsr::I<DataVector, Dim, Frame::Inertial> expected_coords{num_pts};
       for (size_t i = 0; i < Dim; ++i) {
@@ -262,8 +287,8 @@ void test() {
       }
 
       for (size_t i = 0; i < Dim; ++i) {
-        // Check that the `const_cast`s and set_data_ref inside the compute tag
-        // functions worked correctly
+        // Check that the `const_cast`s and set_data_ref inside the
+        // compute tag functions worked correctly
         CHECK(db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box)
                   .get(i)
                   .data() ==
@@ -280,8 +305,8 @@ void test() {
                                                      Frame::Inertial>>(box)
                    .size();
            ++i) {
-        // Check that the `const_cast`s and set_data_ref inside the compute tag
-        // functions worked correctly
+        // Check that the `const_cast`s and set_data_ref inside the
+        // compute tag functions worked correctly
         CHECK(db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                     Frame::Inertial>>(box)[i]
                   .data() ==
@@ -295,6 +320,13 @@ void test() {
           expected_inv_jacobian);
 
       CHECK_FALSE(db::get<domain::Tags::MeshVelocity<Dim>>(box));
+      CHECK_THROWS_WITH(
+          (db::get<
+              domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>>(
+              box)),
+          Catch::Contains("Should not request Grid to Inertial jacobian for a "
+                          "non-moving mesh "
+                          "because it is the identity."));
     }
   };
   check_helper(3.0);
