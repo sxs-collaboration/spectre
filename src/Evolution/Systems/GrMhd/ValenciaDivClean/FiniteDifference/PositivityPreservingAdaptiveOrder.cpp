@@ -55,18 +55,7 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
   if (alpha_9.has_value()) {
     eight_to_the_alpha_9_ = pow(8.0, alpha_9.value());
   }
-  std::tie(reconstruct_, reconstruct_lower_neighbor_,
-           reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<
-          3, use_adaptive_order>(false, eight_to_the_alpha_9_.has_value(),
-                                 six_to_the_alpha_7_.has_value(),
-                                 low_order_reconstructor_);
-  std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
-           pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<
-          3, use_adaptive_order>(true, eight_to_the_alpha_9_.has_value(),
-                                 six_to_the_alpha_7_.has_value(),
-                                 low_order_reconstructor_);
+  set_function_pointers();
 }
 
 PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
@@ -78,6 +67,19 @@ PositivityPreservingAdaptiveOrderPrim::get_clone() const {
   return std::make_unique<PositivityPreservingAdaptiveOrderPrim>(*this);
 }
 
+void PositivityPreservingAdaptiveOrderPrim::set_function_pointers() {
+  std::tie(reconstruct_, reconstruct_lower_neighbor_,
+           reconstruct_upper_neighbor_) = ::fd::reconstruction::
+      positivity_preserving_adaptive_order_function_pointers<3, false>(
+          false, eight_to_the_alpha_9_.has_value(),
+          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+  std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
+           pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
+      positivity_preserving_adaptive_order_function_pointers<3, true>(
+          true, eight_to_the_alpha_9_.has_value(),
+          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+}
+
 void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   Reconstructor::pup(p);
   p | four_to_the_alpha_5_;
@@ -85,18 +87,7 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   p | eight_to_the_alpha_9_;
   p | low_order_reconstructor_;
   if (p.isUnpacking()) {
-    std::tie(reconstruct_, reconstruct_lower_neighbor_,
-             reconstruct_upper_neighbor_) = ::fd::reconstruction::
-        positivity_preserving_adaptive_order_function_pointers<
-            3, use_adaptive_order>(false, eight_to_the_alpha_9_.has_value(),
-                                   six_to_the_alpha_7_.has_value(),
-                                   low_order_reconstructor_);
-    std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
-             pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
-        positivity_preserving_adaptive_order_function_pointers<
-            3, use_adaptive_order>(true, eight_to_the_alpha_9_.has_value(),
-                                   six_to_the_alpha_7_.has_value(),
-                                   low_order_reconstructor_);
+    set_function_pointers();
   }
 }
 
@@ -107,6 +98,8 @@ template <size_t ThermodynamicDim, typename TagsList>
 void PositivityPreservingAdaptiveOrderPrim::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
+    const gsl::not_null<std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>
+        reconstruction_order,
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
@@ -126,11 +119,13 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
 
   reconstruct_prims_work<positivity_preserving_tags>(
       vars_on_lower_face, vars_on_upper_face,
-      [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-             const auto& volume_vars, const auto& ghost_cell_vars,
-             const auto& subcell_extents, const size_t number_of_variables) {
-        pp_reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
-                        ghost_cell_vars, subcell_extents, number_of_variables,
+      [this, &reconstruction_order](
+          auto upper_face_vars_ptr, auto lower_face_vars_ptr,
+          const auto& volume_vars, const auto& ghost_cell_vars,
+          const auto& subcell_extents, const size_t number_of_variables) {
+        pp_reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr,
+                        reconstruction_order, volume_vars, ghost_cell_vars,
+                        subcell_extents, number_of_variables,
                         four_to_the_alpha_5_,
                         six_to_the_alpha_7_.value_or(
                             std::numeric_limits<double>::signaling_NaN()),
@@ -289,6 +284,9 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
           vars_on_lower_face,                                                 \
       gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
           vars_on_upper_face,                                                 \
+      const gsl::not_null<                                                    \
+          std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>             \
+          reconstruction_order,                                               \
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \

@@ -85,6 +85,8 @@ class MonotonisedCentralPrim : public Reconstructor {
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;
 
+  static constexpr bool use_adaptive_order = false;
+
   void pup(PUP::er& p) override;
 
   size_t ghost_zone_size() const override { return 2; }

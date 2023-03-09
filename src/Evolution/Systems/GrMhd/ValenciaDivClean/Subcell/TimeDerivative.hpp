@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <type_traits>
 
@@ -104,6 +105,22 @@ struct TimeDerivative {
     const auto fd_derivative_order =
         db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(*box)
             .finite_difference_derivative_order();
+    std::optional<std::array<std::vector<std::uint8_t>, 3>>
+        reconstruction_order_data{};
+    std::optional<std::array<gsl::span<std::uint8_t>, 3>>
+        reconstruction_order{};
+    if (not fd_derivative_order.has_value()) {
+      reconstruction_order_data = make_array<3>(std::vector<std::uint8_t>(
+          (subcell_mesh.extents(0) + 2) * subcell_mesh.extents(1) *
+              subcell_mesh.extents(2),
+          std::numeric_limits<std::uint8_t>::max()));
+      reconstruction_order = std::array<gsl::span<std::uint8_t>, 3>{};
+      for (size_t i = 0; i < 3; ++i) {
+        gsl::at(reconstruction_order.value(), i) = gsl::make_span(
+            gsl::at(reconstruction_order_data.value(), i).data(),
+            gsl::at(reconstruction_order_data.value(), i).size());
+      }
+    }
 
     const bool element_is_interior = element.external_boundaries().empty();
     constexpr bool subcell_enabled_at_external_boundary =
@@ -175,18 +192,28 @@ struct TimeDerivative {
           // Reconstruct data to the face
           call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons,
-              [&box, &package_data_argvars_lower_face,
-               &package_data_argvars_upper_face](const auto& reconstructor) {
-                db::apply<typename std::decay_t<
-                    decltype(*reconstructor)>::reconstruction_argument_tags>(
+              &recons, [&box, &package_data_argvars_lower_face,
+                        &package_data_argvars_upper_face,
+                        &reconstruction_order](const auto& reconstructor) {
+                using ReconstructorType =
+                    std::decay_t<decltype(*reconstructor)>;
+                db::apply<
+                    typename ReconstructorType::reconstruction_argument_tags>(
                     [&package_data_argvars_lower_face,
-                     &package_data_argvars_upper_face,
-                     &reconstructor](const auto&... args) {
-                      reconstructor->reconstruct(
-                          make_not_null(&package_data_argvars_lower_face),
-                          make_not_null(&package_data_argvars_upper_face),
-                          args...);
+                     &package_data_argvars_upper_face, &reconstructor,
+                     &reconstruction_order](const auto&... args) {
+                      if constexpr (ReconstructorType::use_adaptive_order) {
+                        reconstructor->reconstruct(
+                            make_not_null(&package_data_argvars_lower_face),
+                            make_not_null(&package_data_argvars_upper_face),
+                            make_not_null(&reconstruction_order), args...);
+                      } else {
+                        (void)reconstruction_order;
+                        reconstructor->reconstruct(
+                            make_not_null(&package_data_argvars_lower_face),
+                            make_not_null(&package_data_argvars_upper_face),
+                            args...);
+                      }
                     },
                     *box);
               });
