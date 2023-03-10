@@ -167,7 +167,8 @@ struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
  */
 struct ExpansionOrder : db::SimpleTag {
   using type = size_t;
-  using options_tag = tmpl::list<OptionTags::ExpansionOrder>;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::ExpansionOrder>;
   static size_t create_from_options(const size_t order) { return order; }
 };
 
