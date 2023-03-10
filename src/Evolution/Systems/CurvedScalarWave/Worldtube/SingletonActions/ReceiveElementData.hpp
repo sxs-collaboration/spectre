@@ -42,8 +42,8 @@ namespace CurvedScalarWave::Worldtube::Actions {
  *    - `Worldtube::Tags::ElementFacesGridCoordinates`
  *    - `Tags::TimeStepId`
  * - Mutates:
- *    - `Worldtube::Tags::Psi0`
- *    - `Tags::dt<Worldtube::Tags::Psi0>`
+ *    - `Worldtube::Tags::PsiMonopole`
+ *    - `Tags::dt<Worldtube::Tags::PsiMonopole>`
  */
 struct ReceiveElementData {
   static constexpr size_t Dim = 3;
@@ -51,7 +51,8 @@ struct ReceiveElementData {
                                ::Tags::dt<CurvedScalarWave::Tags::Psi>>;
   using inbox_tags = tmpl::list<
       ::CurvedScalarWave::Worldtube::Tags::SphericalHarmonicsInbox<Dim>>;
-  using simple_tags = tmpl::list<Tags::Psi0, ::Tags::dt<Tags::Psi0>>;
+  using simple_tags =
+      tmpl::list<Tags::PsiMonopole, ::Tags::dt<Tags::PsiMonopole>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

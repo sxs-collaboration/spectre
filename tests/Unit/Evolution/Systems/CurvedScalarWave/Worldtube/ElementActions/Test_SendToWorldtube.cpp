@@ -222,15 +222,17 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     CHECK(worldtube_inbox.empty());
-    const auto& psi0_worldtube =
-        ActionTesting::get_databox_tag<worldtube_chare, Tags::Psi0>(runner, 0);
-    const auto& dt_psi0_worldtube =
-        ActionTesting::get_databox_tag<worldtube_chare, ::Tags::dt<Tags::Psi0>>(
+    const auto& psi_monopole_worldtube =
+        ActionTesting::get_databox_tag<worldtube_chare, Tags::PsiMonopole>(
             runner, 0);
+    const auto& dt_psi_monopole_worldtube =
+        ActionTesting::get_databox_tag<worldtube_chare,
+                                       ::Tags::dt<Tags::PsiMonopole>>(runner,
+                                                                      0);
     Approx apprx = Approx::custom().epsilon(1e-8).scale(1.0);
     // result is constant we set multiplied by l=m=0 spherical harmonic
-    CHECK(psi0_worldtube == apprx(psi_value));
-    CHECK(dt_psi0_worldtube  == -apprx(pi_value));
+    CHECK(psi_monopole_worldtube == apprx(psi_value));
+    CHECK(dt_psi_monopole_worldtube == -apprx(pi_value));
   }
 }
 }  // namespace

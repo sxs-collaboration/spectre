@@ -58,8 +58,9 @@ struct SendToElements {
     for (const auto& [element_id, grid_coords] : faces_grid_coords) {
       const size_t grid_size = get<0>(grid_coords).size();
       Variables<tags_to_send> vars_to_send(grid_size);
-      get(get<psi_tag>(vars_to_send)) = get<Tags::Psi0>(box);
-      get(get<dt_psi_tag>(vars_to_send)) = get<::Tags::dt<Tags::Psi0>>(box);
+      get(get<psi_tag>(vars_to_send)) = get<Tags::PsiMonopole>(box);
+      get(get<dt_psi_tag>(vars_to_send)) =
+          get<::Tags::dt<Tags::PsiMonopole>>(box);
       for (size_t i = 0; i < Dim; ++i) {
         // at 0th order the spatial derivative is just zero
         get<di_psi_tag>(vars_to_send).get(i) = 0.;

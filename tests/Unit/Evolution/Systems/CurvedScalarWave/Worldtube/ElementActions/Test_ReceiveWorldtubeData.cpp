@@ -81,8 +81,8 @@ struct MockWorldtubeSingleton {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<Tags::ElementFacesGridCoordinates<Dim>,
-                                ::Tags::TimeStepId, Tags::Psi0,
-                                ::Tags::dt<Tags::Psi0>>,
+                                ::Tags::TimeStepId, Tags::PsiMonopole,
+                                ::Tags::dt<Tags::PsiMonopole>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
