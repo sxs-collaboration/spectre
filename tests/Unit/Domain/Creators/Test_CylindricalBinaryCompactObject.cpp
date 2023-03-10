@@ -276,54 +276,6 @@ void test_connectivity_once(const bool with_sphere_e,
   // The Domain has no functions of time above, so make sure
   // that the functions_of_time function returns an empty map.
   CHECK(binary_compact_object.functions_of_time().empty());
-
-  if (with_boundary_conditions) {
-    CHECK_THROWS_WITH(
-        domain::creators::CylindricalBinaryCompactObject(
-            center_objectA, center_objectB, inner_radius_objectA,
-            inner_radius_objectB, include_inner_sphere_A,
-            include_inner_sphere_B, include_outer_sphere, outer_radius,
-            use_equiangular_map, refinement, grid_points,
-            create_inner_boundary_condition(),
-            std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                 TestPeriodicBoundaryCondition<3>>(),
-            Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Cannot have periodic boundary "
-                                  "conditions with a binary domain"));
-    CHECK_THROWS_WITH(
-        domain::creators::CylindricalBinaryCompactObject(
-            center_objectA, center_objectB, inner_radius_objectA,
-            inner_radius_objectB, include_inner_sphere_A,
-            include_inner_sphere_B, include_outer_sphere, outer_radius,
-            use_equiangular_map, refinement, grid_points,
-            std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                 TestPeriodicBoundaryCondition<3>>(),
-            create_outer_boundary_condition(),
-            Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains("Cannot have periodic boundary "
-                                  "conditions with a binary domain"));
-    CHECK_THROWS_WITH(
-        domain::creators::CylindricalBinaryCompactObject(
-            center_objectA, center_objectB, inner_radius_objectA,
-            inner_radius_objectB, include_inner_sphere_A,
-            include_inner_sphere_B, include_outer_sphere, outer_radius,
-            use_equiangular_map, refinement, grid_points, nullptr,
-            create_outer_boundary_condition(),
-            Options::Context{false, {}, 1, 1}),
-        Catch::Matchers::Contains(
-            "Must specify either both inner and outer boundary "
-            "conditions or neither."));
-    CHECK_THROWS_WITH(domain::creators::CylindricalBinaryCompactObject(
-                          center_objectA, center_objectB, inner_radius_objectA,
-                          inner_radius_objectB, include_inner_sphere_A,
-                          include_inner_sphere_B, include_outer_sphere,
-                          outer_radius, use_equiangular_map, refinement,
-                          grid_points, create_inner_boundary_condition(),
-                          nullptr, Options::Context{false, {}, 1, 1}),
-                      Catch::Matchers::Contains(
-                          "Must specify either both inner and outer boundary "
-                          "conditions or neither."));
-  }
 }
 
 void test_connectivity() {
@@ -612,8 +564,41 @@ void test_parse_errors() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "To use the CylindricalBBH domain with time-dependent maps"));
-  // Note: the boundary condition-related parse errors are checked in the
-  // test_connectivity function.
+  // Boundary condition errors
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Cannot have periodic boundary "
+                                "conditions with a binary domain"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
+          25.0, false, 1_st, 3_st,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Cannot have periodic boundary "
+                                "conditions with a binary domain"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
+          25.0, false, 1_st, 3_st, nullptr, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Must specify either both inner and outer boundary "
+          "conditions or neither."));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(), nullptr,
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Must specify either both inner and outer boundary "
+          "conditions or neither."));
 }
 }  // namespace
 
