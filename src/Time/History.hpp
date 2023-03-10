@@ -917,4 +917,19 @@ void History<Vars>::insert_initial_impl(TimeStepId time_step_id,
         std::move(time_step_id), std::nullopt, std::move(derivative)});
   }
 }
+
+template <typename Vars>
+bool operator==(const History<Vars>& a, const History<Vars>& b) {
+  using BaseSequence =
+      stl_boilerplate::RandomAccessSequence<History<Vars>, StepRecord<Vars>>;
+  return a.integration_order() == b.integration_order() and
+         static_cast<const BaseSequence&>(a) ==
+             static_cast<const BaseSequence&>(b) and
+         a.substeps() == b.substeps();
+}
+
+template <typename Vars>
+bool operator!=(const History<Vars>& a, const History<Vars>& b) {
+  return not(a == b);
+}
 }  // namespace TimeSteppers
