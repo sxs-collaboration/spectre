@@ -6,11 +6,13 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
 #include <iterator>
 #include <limits>
 #include <memory>
 #include <pup.h>
 #include <random>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -36,36 +38,14 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/CartesianProduct.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain::FunctionsOfTime {
-class FunctionOfTime;
-}  // namespace domain::FunctionsOfTime
-
 namespace {
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
-
-template <size_t Dim, bool EnableTimeDependentMaps, bool WithBoundaryConditions>
-struct Metavariables {
-  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
-    static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
-  };
-  using system = tmpl::conditional_t<WithBoundaryConditions,
-                                     TestHelpers::domain::BoundaryConditions::
-                                         SystemWithBoundaryConditions<Dim>,
-                                     TestHelpers::domain::BoundaryConditions::
-                                         SystemWithoutBoundaryConditions<Dim>>;
-  struct factory_creation
-      : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        DomainCreator<3>,
-        tmpl::list<::domain::creators::CylindricalBinaryCompactObject>>>;
-  };
-};
+using CylBCO = ::domain::creators::CylindricalBinaryCompactObject;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
@@ -97,47 +77,11 @@ create_outer_boundary_condition() {
       Direction<3>::upper_eta(), 314);
 }
 
-void test_connectivity_once(const bool with_sphere_e,
-                            const bool include_inner_sphere_A,
-                            const bool include_inner_sphere_B,
-                            const bool include_outer_sphere,
-                            const bool use_equiangular_map,
-                            const bool with_boundary_conditions) {
-  // Misc.:
-  constexpr size_t refinement = 1;
-  constexpr size_t grid_points = 3;
-  const double outer_radius = include_outer_sphere ? 100.0 : 30.0;
-
-  const double mass_ratio = with_sphere_e ? 4 : 1.2;
-  const double separation = 9.0;
-  const double y_offset = 0.05;
-  // Set centers so that the Newtonian COM is at the origin,
-  // except offset slightly in the y direction.
-  const std::array<double, 3> center_objectA = {separation / (1.0 + mass_ratio),
-                                                y_offset, 0.0};
-  const std::array<double, 3> center_objectB = {
-      -separation * mass_ratio / (1.0 + mass_ratio), y_offset, 0.0};
-
-  // Set radius = 2m for each object.
-  // Formula comes from assuming m_A+m_B=1.
-  const double inner_radius_objectA = 2.0 * mass_ratio / (1.0 + mass_ratio);
-  const double inner_radius_objectB = 2.0 / (1.0 + mass_ratio);
-
-  const domain::creators::CylindricalBinaryCompactObject binary_compact_object{
-      center_objectA,
-      center_objectB,
-      inner_radius_objectA,
-      inner_radius_objectB,
-      include_inner_sphere_A,
-      include_inner_sphere_B,
-      include_outer_sphere,
-      outer_radius,
-      use_equiangular_map,
-      refinement,
-      grid_points,
-      with_boundary_conditions ? create_inner_boundary_condition() : nullptr,
-      with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
-
+std::pair<std::vector<std::string>,
+          std::unordered_map<std::string, std::unordered_set<std::string>>>
+block_names_and_groups(const bool include_inner_sphere_A,
+                       const bool include_inner_sphere_B,
+                       const bool include_outer_sphere) {
   std::vector<std::string> block_names{
       "CAFilledCylinderCenter", "CAFilledCylinderEast",
       "CAFilledCylinderNorth",  "CAFilledCylinderWest",
@@ -255,59 +199,45 @@ void test_connectivity_once(const bool with_sphere_e,
           "OuterSphereCBCylinderEast", "OuterSphereCBCylinderNorth",
           "OuterSphereCBCylinderWest", "OuterSphereCBCylinderSouth"}});
   }
-  CHECK(binary_compact_object.block_names() == block_names);
-  CHECK(binary_compact_object.block_groups() == block_groups);
 
-  const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      binary_compact_object, with_boundary_conditions);
-
-  CHECK(domain.excision_spheres().size() == 2);
-  const auto& excision_sphere_a =
-      domain.excision_spheres().at("ExcisionSphereA");
-  CHECK(excision_sphere_a.radius() == inner_radius_objectA);
-  const auto& excision_sphere_b =
-      domain.excision_spheres().at("ExcisionSphereB");
-  CHECK(excision_sphere_b.radius() == inner_radius_objectB);
-  for (size_t i = 0; i < 3; ++i) {
-    CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
-    CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
-  }
-
-  // The Domain has no functions of time above, so make sure
-  // that the functions_of_time function returns an empty map.
-  CHECK(binary_compact_object.functions_of_time().empty());
+  return std::make_pair(block_names, block_groups);
 }
 
-void test_connectivity() {
-  MAKE_GENERATOR(gen);
+std::string stringize(const bool t) { return t ? "true" : "false"; }
 
-  // When we add sphere_e support we will make the following
-  // loop go over {true, false}
-  const bool with_sphere_e = false;
-  for (const auto& [include_outer_sphere, include_inner_sphere_A,
-                    include_inner_sphere_B, use_equiangular_map,
-                    with_boundary_conditions] :
-       random_sample<5>(
-           cartesian_product(make_array(true, false), make_array(true, false),
-                             make_array(true, false), make_array(true, false),
-                             make_array(true, false)),
-           make_not_null(&gen))) {
-    CAPTURE(with_sphere_e);
-    CAPTURE(include_outer_sphere);
-    CAPTURE(include_inner_sphere_A);
-    CAPTURE(include_inner_sphere_B);
-    CAPTURE(use_equiangular_map);
-    CAPTURE(with_boundary_conditions);
-    test_connectivity_once(with_sphere_e, include_inner_sphere_A,
-                           include_inner_sphere_B, include_outer_sphere,
-                           use_equiangular_map, with_boundary_conditions);
+static constexpr int precision = std::numeric_limits<double>::max_digits10;
+
+std::string stringize(const double t) {
+  std::stringstream ss{};
+  ss << std::setprecision(precision) << t;
+  return ss.str();
+}
+
+std::string stringize(const std::array<double, 3>& t) {
+  std::stringstream result{};
+  result << std::setprecision(precision) << "[";
+  bool first = true;
+  for (const auto& item : t) {
+    if (not first) {
+      result << ", ";
+    }
+    result << item;
+    first = false;
   }
+  result << "]";
+  return result.str();
 }
 
 std::string create_option_string(
     const bool add_time_dependence,
     const bool with_additional_outer_radial_refinement,
-    const bool with_additional_grid_points, const bool add_boundary_condition) {
+    const bool with_additional_grid_points, const bool include_outer_sphere,
+    const bool include_inner_sphere_A, const bool include_inner_sphere_B,
+    const bool add_boundary_condition, const bool use_equiangular_map,
+    const std::array<double, 3>& center_objectA,
+    const std::array<double, 3>& center_objectB,
+    const double inner_radius_objectA, const double inner_radius_objectB,
+    const double outer_radius) {
   const std::string time_dependence{
       add_time_dependence ? "  TimeDependentMaps:\n"
                             "    InitialTime: 1.0\n"
@@ -322,6 +252,7 @@ std::string create_option_string(
                             "    SizeMapB:\n"
                             "      InitialValues: [1.2, 0.0, 0.0]\n"
                           : ""};
+
   const std::string boundary_conditions{
       add_boundary_condition ? std::string{"  BoundaryConditions:\n"
                                            "    InnerBoundary:\n"
@@ -333,60 +264,97 @@ std::string create_option_string(
                                            "        Direction: upper-eta\n"
                                            "        BlockId: 314\n"}
                              : ""};
-  return "CylindricalBinaryCompactObject:\n"
-         "  CenterA: [3.0, 0.05, 0.0]\n"
-         "  RadiusA: 1.0\n"
-         "  CenterB: [-3.0, 0.05, 0.0]\n"
-         "  RadiusB: 1.0\n"
-         "  OuterRadius: 25.0\n"
-         "  UseEquiangularMap: false\n" +
-         (add_time_dependence ? std::string("  IncludeInnerSphereA: True\n"
-                                            "  IncludeInnerSphereB: True\n")
-                              : std::string("  IncludeInnerSphereA: False\n"
-                                            "  IncludeInnerSphereB: False\n")) +
-         "  IncludeOuterSphere: False\n"
-         "  InitialRefinement:" +
-         (with_additional_outer_radial_refinement
-              ? (add_time_dependence
-                     ? std::string("\n    InnerSphereA: [1, 1, 1]"
-                                   "\n    InnerSphereB: [1, 1, 1]")
-                     : "") +
-                    std::string("\n    Outer: [2, 1, 1]"
-                                "\n    InnerA: [1, 1, 1]"
-                                "\n    InnerB: [2, 1, 1]\n")
-              : std::string(" 1\n")) +
-         "  InitialGridPoints:" +
-         (with_additional_grid_points
-              ? (add_time_dependence
-                     ? std::string("\n    InnerSphereA: [3, 3, 3]"
-                                   "\n    InnerSphereB: [3, 3, 3]")
-                     : "") +
-                    std::string("\n    Outer: [4, 3, 3]"
-                                "\n    InnerA: [3, 3, 3]"
-                                "\n    InnerB: [5, 3, 3]\n")
-              : std::string(" 3\n")) +
+
+  const auto initial_structure =
+      [&include_outer_sphere, &include_inner_sphere_A, &include_inner_sphere_B](
+          const bool include_extra, const size_t value) {
+        const std::string same = "[" + get_output(value) + "," +
+                                 get_output(value) + "," + get_output(value) +
+                                 "]";
+        const std::string one_more = "[" + get_output(value + 1) + "," +
+                                     get_output(value) + "," +
+                                     get_output(value) + "]";
+        std::string result{};
+        if (include_extra) {
+          result += "\n    Outer: " + one_more;
+          result += "\n    InnerA: " + same;
+          result += "\n    InnerB: " + one_more;
+          if (include_outer_sphere) {
+            result += "\n    OuterSphere: " + one_more;
+          }
+          if (include_inner_sphere_A) {
+            result += "\n    InnerSphereA: " + same;
+          }
+          if (include_inner_sphere_B) {
+            result += "\n    InnerSphereB: " + same;
+          }
+        } else {
+          result = " " + get_output(value);
+        }
+        return result;
+      };
+
+  return "CylindricalBinaryCompactObject:"
+         "\n  CenterA: " +
+         stringize(center_objectA) +
+         "\n  RadiusA: " + stringize(inner_radius_objectA) +
+         "\n  CenterB: " + stringize(center_objectB) +
+         "\n  RadiusB: " + stringize(inner_radius_objectB) +
+         "\n  OuterRadius: " + stringize(outer_radius) +
+         "\n  UseEquiangularMap: " + stringize(use_equiangular_map) +
+         "\n  IncludeInnerSphereA: " + stringize(include_inner_sphere_A) +
+         "\n  IncludeInnerSphereB: " + stringize(include_inner_sphere_B) +
+         "\n  IncludeOuterSphere: " + stringize(include_outer_sphere) +
+         "\n  InitialRefinement:" +
+         initial_structure(with_additional_outer_radial_refinement, 1) +
+         "\n  InitialGridPoints:" +
+         initial_structure(with_additional_grid_points, 3) + "\n" +
          time_dependence + boundary_conditions;
 }
 
-void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
-                                     const bool with_control_systems) {
-  const auto binary_compact_object = [&with_boundary_conditions]() {
-    if (with_boundary_conditions) {
-      return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
-                                          Metavariables<3, true, true>>(
-          create_option_string(true, false, false, with_boundary_conditions));
-    } else {
-      return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
-                                          Metavariables<3, true, false>>(
-          create_option_string(true, false, false, with_boundary_conditions));
-    }
-  }();
-  const std::vector<double> times_to_check{{1., 10.}};
+void test_construction(const CylBCO& creator,
+                       const bool with_boundary_conditions,
+                       const bool include_inner_sphere_A,
+                       const bool include_inner_sphere_B,
+                       const bool include_outer_sphere,
+                       const double inner_radius_objectA,
+                       const double inner_radius_objectB,
+                       const std::array<double, 3>& center_objectA,
+                       const std::array<double, 3>& center_objectB,
+                       const std::vector<double>& times_to_check) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      *binary_compact_object, with_boundary_conditions, false, times_to_check);
+      creator, with_boundary_conditions, false, times_to_check);
 
+  const auto& [block_names, block_groups] = block_names_and_groups(
+      include_inner_sphere_A, include_inner_sphere_B, include_outer_sphere);
+
+  CHECK(creator.block_names() == block_names);
+  CHECK(creator.block_groups() == block_groups);
+
+  CHECK(domain.excision_spheres().size() == 2);
+  const auto& excision_sphere_a =
+      domain.excision_spheres().at("ExcisionSphereA");
+  CHECK(excision_sphere_a.radius() == inner_radius_objectA);
+  const auto& excision_sphere_b =
+      domain.excision_spheres().at("ExcisionSphereB");
+  CHECK(excision_sphere_b.radius() == inner_radius_objectB);
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
+    CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
+  }
+}
+
+auto construct_time_dependent(
+    const bool with_control_systems,
+    const typename CylBCO::InitialRefinement::type& initial_refinement,
+    const typename CylBCO::InitialGridPoints::type& initial_grid_points,
+    const bool with_boundary_conditions, const bool use_equiangular_map,
+    const std::array<double, 3>& center_objectA,
+    const std::array<double, 3>& center_objectB,
+    const double inner_radius_objectA, const double inner_radius_objectB,
+    const double outer_radius, const bool include_inner_sphere_A,
+    const bool include_inner_sphere_B, const bool include_outer_sphere) {
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
-
   constexpr double expected_initial_outer_boundary_function_value =
       1.0;  // hard-coded in CylindricalBinaryCompactObject.cpp
   constexpr double expected_asymptotic_velocity_outer_boundary =
@@ -429,7 +397,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
       with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
 
   // Functions of time evaluated at expected_time.
-  const std::tuple<
+  std::tuple<
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
       std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
       std::pair<std::string,
@@ -464,45 +432,36 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
               {expected_time, initial_size_B_coefs,
                initial_expiration_times[size_B_name]}});
 
-  for (const double time : times_to_check) {
-    CAPTURE(time);
-    TestHelpers::domain::creators::test_functions_of_time(
-        *binary_compact_object, expected_functions_of_time,
-        with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
-  }
-}
+  auto creator = CylBCO{
+      expected_time,
+      CylBCO::ExpansionMapOptions{
+          std::array{initial_expansion_factor_coefs[0][0],
+                     initial_expansion_factor_coefs[1][0]},
+          expected_asymptotic_velocity_outer_boundary,
+          expected_decay_timescale_outer_boundary_velocity},
+      {{initial_angular_velocity[0], initial_angular_velocity[1],
+        initial_angular_velocity[2]}},
+      {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
+        initial_size_A_coefs[1][0]}},
+      {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
+        initial_size_B_coefs[1][0]}},
+      center_objectA,
+      center_objectB,
+      inner_radius_objectA,
+      inner_radius_objectB,
+      include_inner_sphere_A,
+      include_inner_sphere_B,
+      include_outer_sphere,
+      outer_radius,
+      use_equiangular_map,
+      initial_refinement,
+      initial_grid_points,
+      with_boundary_conditions ? create_inner_boundary_condition() : nullptr,
+      with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
 
-void test_binary_factory() {
-  MAKE_GENERATOR(gen);
-  const auto check_impl = [](const std::string& opt_string,
-                             const bool with_boundary_conditions) {
-    const auto binary_compact_object = [&opt_string,
-                                        &with_boundary_conditions]() {
-      if (with_boundary_conditions) {
-        return TestHelpers::test_option_tag<
-            domain::OptionTags::DomainCreator<3>,
-            Metavariables<3, false, true>>(opt_string);
-      } else {
-        return TestHelpers::test_option_tag<
-            domain::OptionTags::DomainCreator<3>,
-            Metavariables<3, false, false>>(opt_string);
-      }
-    }();
-    TestHelpers::domain::creators::test_domain_creator(
-        *binary_compact_object, with_boundary_conditions);
-  };
-  for (const auto& [with_boundary_conds,
-                    with_additional_outer_radial_refinement,
-                    with_additional_grid_points] :
-       random_sample<5>(
-           cartesian_product(make_array(true, false), make_array(true, false),
-                             make_array(true, false)),
-           make_not_null(&gen))) {
-    check_impl(
-        create_option_string(false, with_additional_outer_radial_refinement,
-                             with_additional_grid_points, with_boundary_conds),
-        with_boundary_conds);
-  }
+  return std::make_tuple(std::move(creator),
+                         std::move(initial_expiration_times),
+                         std::move(expected_functions_of_time));
 }
 
 void test_parse_errors() {
@@ -600,16 +559,166 @@ void test_parse_errors() {
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
 }
+
+// This matches the structure in the option string
+std::unordered_map<std::string, std::array<size_t, 3>> make_initial_structure(
+    const size_t initial_value, const bool include_inner_sphere_A,
+    const bool include_inner_sphere_B, const bool include_outer_sphere) {
+  std::unordered_map<std::string, std::array<size_t, 3>> initial_map;
+  const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
+  const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
+                                       initial_value};
+  initial_map["Outer"] = one_more;
+  initial_map["InnerA"] = same;
+  initial_map["InnerB"] = one_more;
+  if (include_inner_sphere_A) {
+    initial_map["InnerSphereA"] = same;
+  }
+  if (include_inner_sphere_B) {
+    initial_map["InnerSphereB"] = same;
+  }
+  if (include_outer_sphere) {
+    initial_map["OuterSphere"] = one_more;
+  }
+
+  return initial_map;
+}
+
+void test_cylindrical_bbh() {
+  MAKE_GENERATOR(gen);
+
+  const std::vector<double> times_to_check{{1.0, 2.3}};
+
+  constexpr size_t refinement = 1;
+  constexpr size_t grid_points = 3;
+
+  const double separation = 9.0;
+  const double y_offset = 0.05;
+
+  // When we add sphere_e support we will make the following
+  // loop go over {true, false}
+  const bool with_sphere_e = false;
+  for (auto [include_outer_sphere, include_inner_sphere_A,
+             include_inner_sphere_B, use_equiangular_map,
+             with_additional_outer_radial_refinement,
+             with_additional_grid_points, with_time_dependence,
+             with_control_systems, with_boundary_conditions] :
+       random_sample<5>(
+           cartesian_product(make_array(true, false), make_array(true, false),
+                             make_array(true, false), make_array(true, false),
+                             make_array(true, false), make_array(true, false),
+                             make_array(true, false), make_array(true, false),
+                             make_array(true, false)),
+           make_not_null(&gen))) {
+    CAPTURE(with_sphere_e);
+    CAPTURE(include_outer_sphere);
+    CAPTURE(use_equiangular_map);
+    CAPTURE(with_boundary_conditions);
+    CAPTURE(with_additional_outer_radial_refinement);
+    CAPTURE(with_additional_grid_points);
+    CAPTURE(with_time_dependence);
+    if (with_time_dependence) {
+      include_inner_sphere_A = true;
+      include_inner_sphere_B = true;
+    } else {
+      // With no time dependence, can't have control systems
+      with_control_systems = false;
+    }
+    CAPTURE(include_inner_sphere_A);
+    CAPTURE(include_inner_sphere_B);
+    CAPTURE(with_control_systems);
+
+    const double outer_radius = include_outer_sphere ? 100.0 : 30.0;
+    const double mass_ratio = with_sphere_e ? 4 : 1.2;
+    // Set centers so that the Newtonian COM is at the origin,
+    // except offset slightly in the y direction.
+    const std::array<double, 3> center_objectA = {
+        separation / (1.0 + mass_ratio), y_offset, 0.0};
+    const std::array<double, 3> center_objectB = {
+        -separation * mass_ratio / (1.0 + mass_ratio), y_offset, 0.0};
+
+    // Set radius = 2m for each object.
+    // Formula comes from assuming m_A+m_B=1.
+    const double inner_radius_objectA = 2.0 * mass_ratio / (1.0 + mass_ratio);
+    const double inner_radius_objectB = 2.0 / (1.0 + mass_ratio);
+
+    CylBCO::InitialRefinement::type initial_refinement{};
+    CylBCO::InitialGridPoints::type initial_grid_points{};
+
+    if (with_additional_outer_radial_refinement) {
+      initial_refinement =
+          make_initial_structure(refinement, include_inner_sphere_A,
+                                 include_inner_sphere_B, include_outer_sphere);
+    } else {
+      initial_refinement = refinement;
+    }
+    if (with_additional_grid_points) {
+      initial_grid_points =
+          make_initial_structure(grid_points, include_inner_sphere_A,
+                                 include_inner_sphere_B, include_outer_sphere);
+    } else {
+      initial_grid_points = grid_points;
+    }
+
+    CylBCO cyl_binary_compact_object{};
+    if (with_time_dependence) {
+      auto [creator, initial_expiration_times, expected_functions_of_time] =
+          construct_time_dependent(
+              with_control_systems, initial_refinement, initial_grid_points,
+              with_boundary_conditions, use_equiangular_map, center_objectA,
+              center_objectB, inner_radius_objectA, inner_radius_objectB,
+              outer_radius, include_inner_sphere_A, include_inner_sphere_B,
+              include_outer_sphere);
+
+      cyl_binary_compact_object = std::move(creator);
+
+      for (const double time : times_to_check) {
+        CAPTURE(time);
+        TestHelpers::domain::creators::test_functions_of_time(
+            cyl_binary_compact_object, expected_functions_of_time,
+            initial_expiration_times);
+      }
+    } else {
+      cyl_binary_compact_object =
+          CylBCO{center_objectA,
+                 center_objectB,
+                 inner_radius_objectA,
+                 inner_radius_objectB,
+                 include_inner_sphere_A,
+                 include_inner_sphere_B,
+                 include_outer_sphere,
+                 outer_radius,
+                 use_equiangular_map,
+                 initial_refinement,
+                 initial_grid_points,
+                 with_boundary_conditions ? create_inner_boundary_condition()
+                                          : nullptr,
+                 with_boundary_conditions ? create_outer_boundary_condition()
+                                          : nullptr};
+    }
+
+    test_construction(cyl_binary_compact_object, with_boundary_conditions,
+                      include_inner_sphere_A, include_inner_sphere_B,
+                      include_outer_sphere, inner_radius_objectA,
+                      inner_radius_objectB, center_objectA, center_objectB,
+                      times_to_check);
+    TestHelpers::domain::creators::test_creation(
+        create_option_string(
+            with_time_dependence, with_additional_outer_radial_refinement,
+            with_additional_grid_points, include_outer_sphere,
+            include_inner_sphere_A, include_inner_sphere_B,
+            with_boundary_conditions, use_equiangular_map, center_objectA,
+            center_objectB, inner_radius_objectA, inner_radius_objectB,
+            outer_radius),
+        cyl_binary_compact_object, with_boundary_conditions,
+        with_time_dependence);
+  }
+}
 }  // namespace
 
-// [[TimeOut, 60]]
+// [[TimeOut, 45]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.CylindricalBinaryCompactObject",
                   "[Domain][Unit]") {
-  test_connectivity();
-  test_bbh_time_dependent_factory(true, true);
-  test_bbh_time_dependent_factory(true, false);
-  test_bbh_time_dependent_factory(false, true);
-  test_bbh_time_dependent_factory(false, false);
-  test_binary_factory();
+  test_cylindrical_bbh();
   test_parse_errors();
 }
