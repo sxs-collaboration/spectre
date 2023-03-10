@@ -236,5 +236,19 @@ struct PsiMonopole : db::SimpleTag {
   using type = double;
 };
 
+/*!
+ * \brief Holds the constant coefficient of the regular field inside the
+ * worldtube.
+ *
+ * \details At orders n = 0 or 1 this is just equal to the monopole, but at n =
+ * 2, the monopole gets an additional contribution from the trace of the second
+ * order coefficient. At this point, this tag is used to solve an ODE based on
+ * the expanded Klein-Gordon equation. It is implemented as a `Scalar` of size 1
+ * because the evolution system does not work with doubles.
+ */
+struct Psi0 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 }  // namespace Tags
 }  // namespace CurvedScalarWave::Worldtube
