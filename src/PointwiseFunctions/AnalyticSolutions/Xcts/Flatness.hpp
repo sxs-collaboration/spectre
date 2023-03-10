@@ -16,6 +16,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -107,11 +108,16 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
             gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 8>,
         ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
         ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
-        ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
+        ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
+        hydro::Tags::RestMassDensity<DataType>, hydro::Tags::Pressure<DataType>,
+        hydro::Tags::SpatialVelocity<DataType, 3>,
+        hydro::Tags::MagneticField<DataType, 3>>;
     using supported_tags_one =
         tmpl::list<Tags::ConformalFactor<DataType>,
                    Tags::LapseTimesConformalFactor<DataType>,
-                   gr::Tags::Lapse<DataType>>;
+                   gr::Tags::Lapse<DataType>,
+                   hydro::Tags::SpecificEnthalpy<DataType>,
+                   hydro::Tags::LorentzFactor<DataType>>;
     using supported_tags_metric = tmpl::list<
         Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
         Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,

@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts::AnalyticData {
@@ -50,6 +51,15 @@ using common_tags = tmpl::list<
     ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
         DataType, 3, Frame::Inertial>>>;
 
+/// Tags for hydro variables that are typically retrieved from a hydro solution
+template <typename DataType>
+using hydro_tags = tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                              hydro::Tags::SpecificEnthalpy<DataType>,
+                              hydro::Tags::Pressure<DataType>,
+                              hydro::Tags::SpatialVelocity<DataType, 3>,
+                              hydro::Tags::LorentzFactor<DataType>,
+                              hydro::Tags::MagneticField<DataType, 3>>;
+
 /*!
  * \brief Implementations for variables that analytic-data classes can share
  *
@@ -77,7 +87,7 @@ struct CommonVariables {
   CommonVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian)
       : mesh(std::move(local_mesh)),
         inv_jacobian(std::move(local_inv_jacobian)) {}
@@ -172,7 +182,7 @@ struct CommonVariables {
 
   std::optional<std::reference_wrapper<const Mesh<Dim>>> mesh;
   std::optional<std::reference_wrapper<const InverseJacobian<
-      DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
+      DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
       inv_jacobian;
 };
 

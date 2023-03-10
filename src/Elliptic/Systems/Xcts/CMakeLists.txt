@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Equations.cpp
   FluxesAndSources.cpp
+  HydroQuantities.cpp
   )
 
 spectre_target_headers(
@@ -20,6 +21,7 @@ spectre_target_headers(
   FirstOrderSystem.hpp
   FluxesAndSources.hpp
   Geometry.hpp
+  HydroQuantities.hpp
   Tags.hpp
   Xcts.hpp
   )
@@ -28,11 +30,12 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  GeneralRelativity
+  Hydro
   Utilities
   PRIVATE
   Elasticity
   ErrorHandling
-  GeneralRelativity
   LinearOperators
   Poisson
   Utilities
