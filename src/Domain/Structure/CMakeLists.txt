@@ -23,6 +23,7 @@ spectre_target_sources(
   OrientationMapHelpers.cpp
   SegmentId.cpp
   Side.cpp
+  ZCurve.cpp
   )
 
 spectre_target_headers(
@@ -49,6 +50,7 @@ spectre_target_headers(
   SegmentId.hpp
   Side.hpp
   TrimMap.hpp
+  ZCurve.hpp
   )
 
 target_link_libraries(
