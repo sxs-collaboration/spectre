@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -18,6 +20,7 @@
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -25,6 +28,8 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
@@ -32,6 +37,8 @@
 namespace detail {
 CREATE_HAS_STATIC_MEMBER_VARIABLE(use_z_order_distribution)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(use_z_order_distribution)
+CREATE_HAS_STATIC_MEMBER_VARIABLE(local_time_stepping)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(local_time_stepping)
 }  // namespace detail
 
 /*!
@@ -47,7 +54,13 @@ CREATE_HAS_STATIC_MEMBER_VARIABLE_V(use_z_order_distribution)
  * in the `Metavariables`, in which case elements are assigned to processors via
  * round-robin assignment. In both cases, an unordered set of `size_t`s can be
  * passed to the `allocate_array` function which represents physical processors
- * to avoid placing elements on.
+ * to avoid placing elements on. If the space-filling curve is used, then if
+ * `static constexpr bool local_time_stepping = true;` is specified
+ * in the `Metavariables`, `Element`s will be distributed according to their
+ * computational costs determined by the number of grid points and minimum grid
+ * spacing of that `Element` (see
+ * `domain::get_num_points_and_grid_spacing_cost()`), else the computational
+ * cost is determined only by the number of grid points in the `Element`.
  */
 template <class Metavariables, class PhaseDepActionList>
 struct DgElementArray {
@@ -95,18 +108,35 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
           initialization_items);
   const auto& initial_extents =
       get<domain::Tags::InitialExtents<volume_dim>>(initialization_items);
+  const auto& quadrature =
+      get<evolution::dg::Tags::Quadrature>(initialization_items);
 
   bool use_z_order_distribution = true;
   if constexpr (detail::has_use_z_order_distribution_v<Metavariables>) {
     use_z_order_distribution = Metavariables::use_z_order_distribution;
   }
 
+  bool local_time_stepping = false;
+  if constexpr (detail::has_local_time_stepping_v<Metavariables>) {
+    local_time_stepping = Metavariables::local_time_stepping;
+  }
+
   const size_t number_of_procs = Parallel::number_of_procs<size_t>(local_cache);
   const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(local_cache);
   const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
 
+  const auto& blocks = domain.blocks();
+
+  const std::unordered_map<ElementId<volume_dim>, double> element_costs =
+      domain::get_element_costs(
+          blocks, initial_refinement_levels, initial_extents,
+          local_time_stepping
+              ? domain::ElementWeight::NumGridPointsAndGridSpacing
+              : domain::ElementWeight::NumGridPoints,
+          quadrature);
   const domain::BlockZCurveProcDistribution<volume_dim> element_distribution{
-      num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
+      element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
+      initial_extents, procs_to_ignore};
 
   // Will be used to print domain diagnostic info
   std::vector<size_t> elements_per_core(number_of_procs, 0_st);
@@ -115,7 +145,7 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   std::vector<size_t> grid_points_per_node(number_of_nodes, 0_st);
 
   size_t which_proc = 0;
-  for (const auto& block : domain.blocks()) {
+  for (const auto& block : blocks) {
     const auto& initial_ref_levs = initial_refinement_levels[block.id()];
     const size_t grid_points_per_element = alg::accumulate(
         initial_extents[block.id()], 1_st, std::multiplies<size_t>());

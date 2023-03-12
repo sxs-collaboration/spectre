@@ -5,6 +5,9 @@
 
 #include <charm++.h>
 #include <cstddef>
+#include <functional>
+#include <optional>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -28,6 +31,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -45,7 +49,9 @@ namespace elliptic {
  * and `domain::Tags::InitialRefinementLevels`. The elements are distributed
  * on processors using the `domain::BlockZCurveProcDistribution`. In both cases,
  * an unordered set of `size_t`s can be passed to the `allocate_array` function
- * which represents physical processors to avoid placing elements on.
+ * which represents physical processors to avoid placing elements on. `Element`s
+ * are distributed to processors according to their computational costs
+ * determined by the number of grid points.
  */
 template <size_t Dim>
 struct DefaultElementsAllocator
@@ -75,8 +81,15 @@ struct DefaultElementsAllocator
         Parallel::number_of_nodes<size_t>(local_cache);
     const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
 
+    const auto& blocks = domain.blocks();
+
+    const std::unordered_map<ElementId<Dim>, double> element_costs =
+        domain::get_element_costs(
+            blocks, initial_refinement_levels, initial_extents,
+            domain::ElementWeight::NumGridPoints, std::nullopt);
     const domain::BlockZCurveProcDistribution<Dim> element_distribution{
-        num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
+        element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
+        initial_extents, procs_to_ignore};
 
     // Will be used to print domain diagnostic info
     std::vector<size_t> elements_per_core(number_of_procs, 0_st);
@@ -84,7 +97,7 @@ struct DefaultElementsAllocator
     std::vector<size_t> grid_points_per_core(number_of_procs, 0_st);
     std::vector<size_t> grid_points_per_node(number_of_nodes, 0_st);
 
-    for (const auto& block : domain.blocks()) {
+    for (const auto& block : blocks) {
       const size_t grid_points_per_element = alg::accumulate(
           initial_extents[block.id()], 1_st, std::multiplies<size_t>());
 
