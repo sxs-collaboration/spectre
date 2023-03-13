@@ -130,9 +130,26 @@ struct TciAndRollback {
           return false;
         }());
 
-    const bool subcell_allowed_in_block = not std::binary_search(
-        subcell_options.only_dg_block_ids().begin(),
-        subcell_options.only_dg_block_ids().end(), element.id().block_id());
+    // Loop over block neighbors and if neighbor id is inside of
+    // subcell_options.only_dg_block_ids(), then bordering DG-only block
+    const bool bordering_dg_block = alg::any_of(
+        element.neighbors(),
+        [&subcell_options](const auto& direction_and_neighbor) {
+          const bool first_block_id =
+              direction_and_neighbor.second.ids().begin()->block_id();
+          return std::binary_search(subcell_options.only_dg_block_ids().begin(),
+                                    subcell_options.only_dg_block_ids().end(),
+                                    first_block_id);
+        });
+
+    // Subcell is allowed in the element if 2 conditions are met:
+    // (i)  The current element block id is not marked as DG only
+    // (ii) The current element is not bordering a DG only block.
+    const bool subcell_allowed_in_element =
+        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
+                               subcell_options.only_dg_block_ids().end(),
+                               element.id().block_id()) and
+        not bordering_dg_block;
 
     // The reason we pass in the persson_exponent explicitly instead of
     // leaving it to the user is because the value of the exponent that
@@ -143,7 +160,8 @@ struct TciAndRollback {
     // exponent it should use, and to keep the interface between the TCIs
     // consistent, we also pass the exponent in separately here.
     std::tuple<int, RdmpTciData> tci_result = db::mutate_apply<TciMutator>(
-        make_not_null(&box), subcell_options.persson_exponent());
+        make_not_null(&box), subcell_options.persson_exponent(),
+        not subcell_allowed_in_element);
 
     const int tci_decision = std::get<0>(tci_result);
     db::mutate<Tags::TciDecision>(
@@ -163,7 +181,7 @@ struct TciAndRollback {
     //
     // then we can remove the current neighbor data and update the RDMP TCI
     // data.
-    if (not subcell_allowed_in_block or
+    if (not subcell_allowed_in_element or
         (cell_has_external_boundary and
          not subcell_enabled_at_external_boundary) or
         not cell_is_troubled) {

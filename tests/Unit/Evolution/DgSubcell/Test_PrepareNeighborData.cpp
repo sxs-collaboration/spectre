@@ -12,6 +12,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -23,8 +26,10 @@
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -135,6 +140,30 @@ compute_neighbor_meshes(const Element<Dim>& element, const bool all_dg,
   return result;
 }
 
+// TestCreator class needed for subcell options specified below
+template <size_t Dim>
+class TestCreator : public DomainCreator<Dim> {
+  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    return {};
+  }
+
+  std::vector<std::string> block_names() const override {
+    return {"Block0", "Block1"};
+  }
+
+  std::vector<std::array<size_t, Dim>> initial_extents() const override {
+    return {};
+  }
+
+  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
+      const override {
+    return {};
+  }
+};
+
 template <size_t Dim>
 void test(const bool all_neighbors_are_doing_dg) {
   CAPTURE(all_neighbors_are_doing_dg);
@@ -158,14 +187,35 @@ void test(const bool all_neighbors_are_doing_dg) {
   }
 
   const size_t ghost_zone_size = 2;
-  auto box = db::create<tmpl::list<GhostZoneSize, domain::Tags::Mesh<Dim>,
-                                   evolution::dg::subcell::Tags::Mesh<Dim>,
-                                   domain::Tags::Element<Dim>, variables_tag,
-                                   evolution::dg::subcell::Tags::DataForRdmpTci,
-                                   evolution::dg::Tags::NeighborMesh<Dim>>>(
-      ghost_zone_size, dg_mesh, subcell_mesh, element, vars,
-      // Set RDMP data since it would've been calculated before already.
-      evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes);
+
+  const bool always_use_subcell = false;
+  const bool use_halo = false;
+
+  // set subcell options
+  const evolution::dg::subcell::SubcellOptions& subcell_options =
+      evolution::dg::subcell::SubcellOptions{
+          evolution::dg::subcell::SubcellOptions{
+              1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+              use_halo,
+              all_neighbors_are_doing_dg
+                  ? std::optional{std::vector<std::string>{"Block1"}}
+                  : std::optional<std::vector<std::string>>{},
+              std::nullopt},
+          TestCreator<Dim>{}};
+
+  auto box =
+      db::create<tmpl::list<GhostZoneSize, domain::Tags::Mesh<Dim>,
+                            evolution::dg::subcell::Tags::Mesh<Dim>,
+                            domain::Tags::Element<Dim>, variables_tag,
+                            evolution::dg::subcell::Tags::DataForRdmpTci,
+                            evolution::dg::Tags::NeighborMesh<Dim>,
+                            evolution::dg::subcell::Tags::SubcellOptions<Dim>>>(
+          ghost_zone_size, dg_mesh, subcell_mesh, element, vars,
+          // Set RDMP data since it would've been calculated before already.
+          evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
+          subcell_options);
+
   Mesh<Dim> ghost_data_mesh{};
   const auto data_for_neighbors =
       evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(

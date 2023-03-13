@@ -52,6 +52,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -131,6 +132,8 @@ struct Metavariables {
   static bool tci_fails;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool tci_invoked;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static bool expected_evolve_on_dg_after_tci_failure;
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary = false;
@@ -157,7 +160,13 @@ struct Metavariables {
         const Mesh<Dim>& subcell_mesh,
         const evolution::dg::subcell::RdmpTciData& past_rdmp_data,
         const evolution::dg::subcell::SubcellOptions& subcell_options,
-        const double persson_exponent) {
+        const double persson_exponent,
+        const bool evolve_on_dg_after_tci_failure) {
+      // match with global static variable in metavariables
+
+      // assign value of passed in variable
+      using metavars = Metavariables<Dim, HasPrims>;
+
       Variables<tmpl::list<Var1>> projected_vars{
           subcell_mesh.number_of_grid_points()};
       evolution::dg::subcell::fd::project(
@@ -173,6 +182,8 @@ struct Metavariables {
           min(get(get<Var1>(dg_vars))), min(get(get<Var1>(projected_vars))))};
 
       CHECK(approx(persson_exponent) == 4.0);
+      CHECK(evolve_on_dg_after_tci_failure ==
+            metavars::expected_evolve_on_dg_after_tci_failure);
       tci_invoked = true;
       const bool rdmp_result =
           static_cast<bool>(evolution::dg::subcell::rdmp_tci(
@@ -195,6 +206,10 @@ bool Metavariables<Dim, HasPrims>::tci_fails = false;
 template <size_t Dim, bool HasPrims>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim, HasPrims>::tci_invoked = false;
+template <size_t Dim, bool HasPrims>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+bool Metavariables<Dim, HasPrims>::expected_evolve_on_dg_after_tci_failure =
+    false;
 
 template <size_t Dim>
 Element<Dim> create_element(const bool with_neighbors) {
@@ -217,7 +232,9 @@ class TestCreator : public DomainCreator<Dim> {
     return {};
   }
 
-  std::vector<std::string> block_names() const override { return {"Block0"}; }
+  std::vector<std::string> block_names() const override {
+    return {"Block0", "Block1"};
+  }
 
   std::vector<std::array<size_t, Dim>> initial_extents() const override {
     return {};
@@ -250,17 +267,23 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   metavars::tci_fails = tci_fails;
   metavars::tci_invoked = false;
 
+  // Sets neighboring block "Block1" to DG-only, if disable_subcell_in_block ==
+  // true.
   using comp = component<Dim, metavars>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
+  const evolution::dg::subcell::SubcellOptions& subcell_options =
       evolution::dg::subcell::SubcellOptions{
-          1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, use_halo,
-          disable_subcell_in_block
-              ? std::optional{std::vector<std::string>{"Block0"}}
-              : std::optional<std::vector<std::string>>{},
-          std::nullopt},
-      TestCreator<Dim>{}}}};
+          evolution::dg::subcell::SubcellOptions{
+              1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+              use_halo,
+              disable_subcell_in_block
+                  ? std::optional{std::vector<std::string>{"Block1"}}
+                  : std::optional<std::vector<std::string>>{},
+              std::nullopt},
+          TestCreator<Dim>{}};
+
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
+  MockRuntimeSystem runner{{subcell_options}};
 
   const TimeStepId time_step_id{true, self_starting ? -1 : 1,
                                 Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -300,6 +323,22 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
                     (2.0 * direction.dimension() + 1.0));
     }
   }
+  // test FD/DG element neighbor disable_subcell_in_block
+  const bool bordering_dg_block = alg::any_of(
+      element.neighbors(),
+      [&subcell_options](const auto& direction_and_neighbor) {
+        const bool first_block_id =
+            direction_and_neighbor.second.ids().begin()->block_id();
+        return alg::found(subcell_options.only_dg_block_ids(), first_block_id);
+      });
+
+  const bool self_block_dg_only = std::binary_search(
+      subcell_options.only_dg_block_ids().begin(),
+      subcell_options.only_dg_block_ids().end(), element.id().block_id());
+
+  // assign value of passed in variable.  Used as a test in apply() above
+  metavars::expected_evolve_on_dg_after_tci_failure =
+      bordering_dg_block or self_block_dg_only;
 
   const int tci_decision{-1};
 
@@ -541,29 +580,19 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
 template <size_t Dim>
 void test() {
-  for (const bool rdmp_fails : {true, false}) {
-    for (const bool tci_fails : {false, true}) {
-      for (const bool always_use_subcell : {false, true}) {
-        for (const bool self_starting : {false, true}) {
-          for (const bool have_neighbors : {false, true}) {
-            for (const bool use_halo : {false, true}) {
-              for (const bool neighbor_is_troubled : {false, true}) {
-                for (const bool disable_subcell_in_block : {false, true}) {
-                  test_impl<Dim, true>(
-                      rdmp_fails, tci_fails, always_use_subcell, self_starting,
-                      have_neighbors, use_halo, neighbor_is_troubled,
-                      disable_subcell_in_block);
-                  test_impl<Dim, false>(
-                      rdmp_fails, tci_fails, always_use_subcell, self_starting,
-                      have_neighbors, use_halo, neighbor_is_troubled,
-                      disable_subcell_in_block);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+  for (const auto& [rdmp_fails, tci_fails, always_use_subcell, self_starting,
+                    have_neighbors, use_halo, neighbor_is_troubled,
+                    disable_subcell_in_block] :
+       cartesian_product(make_array(false, true), make_array(false, true),
+                         make_array(false, true), make_array(false, true),
+                         make_array(false, true), make_array(false, true),
+                         make_array(false, true), make_array(false, true))) {
+    test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
+                         self_starting, have_neighbors, use_halo,
+                         neighbor_is_troubled, disable_subcell_in_block);
+    test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
+                          self_starting, have_neighbors, use_halo,
+                          neighbor_is_troubled, disable_subcell_in_block);
   }
 }
 

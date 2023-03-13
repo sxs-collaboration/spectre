@@ -46,7 +46,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
-    const double persson_exponent) {
+    const double persson_exponent, const bool element_stays_on_dg) {
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
 
   using std::max;
@@ -105,6 +105,46 @@ TciOnDgGrid<RecoveryScheme>::apply(
   const double average_sqrt_det_spatial_metric =
       l1Norm(get(sqrt_det_spatial_metric));
 
+  Variables<hydro::grmhd_tags<DataVector>> pre_tci_prims(num_dg_pts);
+
+  get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims) =
+      get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars);
+
+  // Calculate con2prim up front for primitive variable use later.
+  // Determine if con2prim is successful
+  const bool successful_con2prim_transformation = grmhd::ValenciaDivClean::
+      PrimitiveFromConservative<tmpl::list<RecoveryScheme>, false>::apply(
+          make_not_null(
+              &get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::ElectronFraction<DataVector>>(pre_tci_prims)),
+          make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
+              pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::SpatialVelocity<DataVector, 3>>(pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::MagneticField<DataVector, 3>>(pre_tci_prims)),
+          make_not_null(&get<hydro::Tags::DivergenceCleaningField<DataVector>>(
+              pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::LorentzFactor<DataVector>>(pre_tci_prims)),
+          make_not_null(&get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::SpecificEnthalpy<DataVector>>(pre_tci_prims)),
+          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos);
+
+  // This lambda is called before every TCI failure
+  // in order to allow primitives to be updated, rather
+  // than defaulting to primitive variables from
+  // the previous timestep
+  const auto& equate_pre_tci_prims = [&dg_prim_vars, &pre_tci_prims,
+                                      &element_stays_on_dg]() {
+    if (element_stays_on_dg) {
+      *dg_prim_vars = std::move(pre_tci_prims);
+    }
+  };
+
   // require: tilde_d/avg(sqrt{gamma}) >= 0.0 (or some positive user-specified
   // value)
   if (min(get(tilde_d)) / average_sqrt_det_spatial_metric <
@@ -117,12 +157,14 @@ TciOnDgGrid<RecoveryScheme>::apply(
       min(get(subcell_tilde_ye)) / average_sqrt_det_spatial_metric <
           tci_options.minimum_rest_mass_density_times_lorentz_factor *
               tci_options.minimum_ye) {
+    equate_pre_tci_prims();
     return {-1, std::move(rdmp_tci_data)};
   }
 
   // require: tilde_tau >= 0.0 (or some positive user-specified value)
   if (min(get(tilde_tau)) < tci_options.minimum_tilde_tau or
       min(get(subcell_tilde_tau)) < tci_options.minimum_tilde_tau) {
+    equate_pre_tci_prims();
     return {-2, std::move(rdmp_tci_data)};
   }
 
@@ -146,17 +188,22 @@ TciOnDgGrid<RecoveryScheme>::apply(
     return {false, std::move(rdmp_tci_data)};
   }
 
-  Variables<hydro::grmhd_tags<DataVector>> temp_prims(num_dg_pts);
   {
     // require: tilde{B}^2 <= 2sqrt{gamma}(1-epsilon_B)\tilde{tau}
     Scalar<DataVector>& tilde_b_squared =
-        get<hydro::Tags::RestMassDensity<DataVector>>(temp_prims);
+        get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims);
     dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
                 spatial_metric);
     for (size_t i = 0; i < num_dg_pts; ++i) {
       if (get(tilde_b_squared)[i] >
           (1.0 - tci_options.safety_factor_for_magnetic_field) * 2.0 *
               get(tilde_tau)[i] * get(sqrt_det_spatial_metric)[i]) {
+        // copy over original density that was just overwritten by b^2
+        // before con2prim call
+        get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims) =
+            get<hydro::Tags::RestMassDensity<DataVector>>(*dg_prim_vars);
+
+        equate_pre_tci_prims();
         return {-3, std::move(rdmp_tci_data)};
       }
     }
@@ -166,59 +213,39 @@ TciOnDgGrid<RecoveryScheme>::apply(
   // We assign them to a temporary so that if recovery fails at any of the
   // points we can use the valid primitives at the current time to provide a
   // high-order initial guess for the recovery on the subcells.
-  //
-  // Copy over the pressure since it's used as an initial guess in some
-  // recovery schemes.
-  get<hydro::Tags::Pressure<DataVector>>(temp_prims) =
-      get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars);
 
-  if (not grmhd::ValenciaDivClean::
-          PrimitiveFromConservative<tmpl::list<RecoveryScheme>, false>::apply(
-              make_not_null(
-                  &get<hydro::Tags::RestMassDensity<DataVector>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::ElectronFraction<DataVector>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
-                      temp_prims)),
-              make_not_null(&get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
-                  temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::MagneticField<DataVector, 3>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-                      temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::LorentzFactor<DataVector>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::Pressure<DataVector>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
-              tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-              eos)) {
+  if (not successful_con2prim_transformation) {
+    equate_pre_tci_prims();
     return {-4, std::move(rdmp_tci_data)};
   }
 
+  // Return to original density b/c overwritten from b^2 term
+  // for B^2 check
+  get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims) =
+      get<hydro::Tags::RestMassDensity<DataVector>>(*dg_prim_vars);
+
   // Check if we are in atmosphere after recovery. Unlikely we'd hit this and
   // not the check before the recovery, but just in case.
-  if (max(get(get<hydro::Tags::RestMassDensity<DataVector>>(temp_prims))) <
+  if (max(get(get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims))) <
       tci_options.atmosphere_density) {
-    *dg_prim_vars = std::move(temp_prims);
+    equate_pre_tci_prims();
     return {false, std::move(rdmp_tci_data)};
   }
 
   // Check that tilde_d, tilde_ye, and pressure satisfy the Persson TCI
   if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent)) {
+    equate_pre_tci_prims();
     return {-5, std::move(rdmp_tci_data)};
   }
   if (evolution::dg::subcell::persson_tci(tilde_ye, dg_mesh,
                                           persson_exponent)) {
+    equate_pre_tci_prims();
     return {-6, std::move(rdmp_tci_data)};
   }
   if (evolution::dg::subcell::persson_tci(
           get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars), dg_mesh,
           persson_exponent)) {
+    equate_pre_tci_prims();
     return {-7, std::move(rdmp_tci_data)};
   }
   // Check Cartesian magnitude of magnetic field satisfies the Persson TCI
@@ -226,6 +253,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
       max_mag_tilde_b > tci_options.magnetic_field_cutoff.value() and
       evolution::dg::subcell::persson_tci(mag_tilde_b, dg_mesh,
                                           persson_exponent)) {
+    equate_pre_tci_prims();
     return {-8, std::move(rdmp_tci_data)};
   }
 
@@ -235,10 +263,12 @@ TciOnDgGrid<RecoveryScheme>::apply(
           past_rdmp_tci_data.max_variables_values,
           past_rdmp_tci_data.min_variables_values,
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon())) {
+    equate_pre_tci_prims();
     return {-(8 + rdmp_tci_status), std::move(rdmp_tci_data)};
   }
 
-  *dg_prim_vars = std::move(temp_prims);
+  // If no TCI failures, assign proper primitives variables
+  *dg_prim_vars = std::move(pre_tci_prims);
   return {0, std::move(rdmp_tci_data)};
 }
 
@@ -270,7 +300,7 @@ GENERATE_INSTANTIATIONS(
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,         \
       const TciOptions& tci_options,                                         \
       const evolution::dg::subcell::SubcellOptions& subcell_options,         \
-      const double persson_exponent);
+      const double persson_exponent, const bool element_stays_on_dg);
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
