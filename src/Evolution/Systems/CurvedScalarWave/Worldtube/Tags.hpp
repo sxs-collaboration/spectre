@@ -167,7 +167,8 @@ struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
  */
 struct ExpansionOrder : db::SimpleTag {
   using type = size_t;
-  using options_tag = tmpl::list<OptionTags::ExpansionOrder>;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::ExpansionOrder>;
   static size_t create_from_options(const size_t order) { return order; }
 };
 
@@ -226,12 +227,12 @@ struct WorldtubeSolution : db::SimpleTag {
 };
 
 /*!
- * \brief Holds the constant value of the regular field inside the worldtube.
+ * \brief Holds the monopole of the regular field inside the worldtube.
  *
  * \warning This tag will be removed once higher expansion orders of the
  * worldtube scheme are implemented.
  */
-struct Psi0 : db::SimpleTag {
+struct PsiMonopole : db::SimpleTag {
   using type = double;
 };
 

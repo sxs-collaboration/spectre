@@ -107,6 +107,8 @@ struct ReceiveWorldtubeData {
           [&received_data, &puncture_field,
            &vars_on_face](const gsl::not_null<Variables<evolved_tags_list>*>
                               worldtube_solution) {
+            worldtube_solution->initialize(
+                puncture_field.value().number_of_grid_points());
             const auto& inv_jacobian = get<domain::Tags::InverseJacobian<
                 Dim, Frame::Grid, Frame::Inertial>>(vars_on_face);
             auto& phi_inertial =

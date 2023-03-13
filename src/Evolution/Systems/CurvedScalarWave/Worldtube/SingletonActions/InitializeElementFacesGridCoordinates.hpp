@@ -54,19 +54,24 @@ namespace CurvedScalarWave::Worldtube::Initialization {
 template <size_t Dim>
 struct InitializeElementFacesGridCoordinates {
   using return_tags = tmpl::list<Tags::ElementFacesGridCoordinates<Dim>>;
-  using argument_tags =
-      tmpl::list<::domain::Tags::Domain<Dim>,
-                 ::domain::Tags::InitialExtents<Dim>,
+  using simple_tags = tmpl::list<Tags::ElementFacesGridCoordinates<Dim>>;
+  using compute_tags = tmpl::list<>;
+  using simple_tags_from_options =
+      tmpl::list<::domain::Tags::InitialExtents<Dim>,
                  ::domain::Tags::InitialRefinementLevels<Dim>,
-                 evolution::dg::Tags::Quadrature, Tags::ExcisionSphere<Dim>>;
+                 evolution::dg::Tags::Quadrature>;
+  using const_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags = tmpl::list<>;
+  using argument_tags = tmpl::flatten<
+      tmpl::list<simple_tags_from_options, ::domain::Tags::Domain<Dim>,
+                 Tags::ExcisionSphere<Dim>>>;
   static void apply(
       const gsl::not_null<std::unordered_map<
           ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>*>
           element_faces_grid_coords,
-      const Domain<Dim>& domain,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
-      const Spectral::Quadrature& quadrature,
+      const Spectral::Quadrature& quadrature, const Domain<Dim>& domain,
       const ::ExcisionSphere<Dim>& excision_sphere) {
     const auto& blocks = domain.blocks();
     const auto& worldtube_grid_coords = excision_sphere.center();

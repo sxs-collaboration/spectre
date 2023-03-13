@@ -186,8 +186,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
         element_faces_grid_coords{};
     Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
-        make_not_null(&element_faces_grid_coords), shell_domain,
-        initial_extents, initial_refinements, quadrature, excision_sphere);
+        make_not_null(&element_faces_grid_coords), initial_extents,
+        initial_refinements, quadrature, shell_domain, excision_sphere);
 
     ActionTesting::emplace_singleton_component_and_initialize<worldtube_chare>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
@@ -222,15 +222,17 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     CHECK(worldtube_inbox.empty());
-    const auto& psi0_worldtube =
-        ActionTesting::get_databox_tag<worldtube_chare, Tags::Psi0>(runner, 0);
-    const auto& dt_psi0_worldtube =
-        ActionTesting::get_databox_tag<worldtube_chare, ::Tags::dt<Tags::Psi0>>(
+    const auto& psi_monopole_worldtube =
+        ActionTesting::get_databox_tag<worldtube_chare, Tags::PsiMonopole>(
             runner, 0);
+    const auto& dt_psi_monopole_worldtube =
+        ActionTesting::get_databox_tag<worldtube_chare,
+                                       ::Tags::dt<Tags::PsiMonopole>>(runner,
+                                                                      0);
     Approx apprx = Approx::custom().epsilon(1e-8).scale(1.0);
     // result is constant we set multiplied by l=m=0 spherical harmonic
-    CHECK(psi0_worldtube == apprx(psi_value));
-    CHECK(dt_psi0_worldtube  == -apprx(pi_value));
+    CHECK(psi_monopole_worldtube == apprx(psi_value));
+    CHECK(dt_psi_monopole_worldtube == -apprx(pi_value));
   }
 }
 }  // namespace

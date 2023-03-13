@@ -81,8 +81,8 @@ struct MockWorldtubeSingleton {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<Tags::ElementFacesGridCoordinates<Dim>,
-                                ::Tags::TimeStepId, Tags::Psi0,
-                                ::Tags::dt<Tags::Psi0>>,
+                                ::Tags::TimeStepId, Tags::PsiMonopole,
+                                ::Tags::dt<Tags::PsiMonopole>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -181,8 +181,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
         element_faces_grid_coords{};
     Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
-        make_not_null(&element_faces_grid_coords), shell_domain,
-        initial_extents, initial_refinements, quadrature, excision_sphere);
+        make_not_null(&element_faces_grid_coords), initial_extents,
+        initial_refinements, quadrature, shell_domain, excision_sphere);
 
     ActionTesting::emplace_singleton_component_and_initialize<worldtube_chare>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},

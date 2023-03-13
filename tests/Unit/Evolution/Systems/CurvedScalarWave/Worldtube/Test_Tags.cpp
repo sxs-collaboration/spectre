@@ -99,11 +99,11 @@ void test_compute_face_coordinates_grid() {
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
         all_faces_grid_coords_2{};
     Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
-        make_not_null(&all_faces_grid_coords_1), domain, initial_extents_1,
-        initial_refinements, quadrature, excision_sphere);
+        make_not_null(&all_faces_grid_coords_1), initial_extents_1,
+        initial_refinements, quadrature, domain, excision_sphere);
     Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
-        make_not_null(&all_faces_grid_coords_2), domain, initial_extents_2,
-        initial_refinements, quadrature, excision_sphere);
+        make_not_null(&all_faces_grid_coords_2), initial_extents_2,
+        initial_refinements, quadrature, domain, excision_sphere);
 
     for (const auto& element_id : element_ids) {
       const auto& my_block = blocks.at(element_id.block_id());
@@ -176,8 +176,8 @@ void test_compute_face_coordinates() {
   std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
       all_faces_grid_coords{};
   Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(
-      make_not_null(&all_faces_grid_coords), domain, initial_extents,
-      initial_refinements, quadrature, excision_sphere);
+      make_not_null(&all_faces_grid_coords), initial_extents,
+      initial_refinements, quadrature, domain, excision_sphere);
   for (const auto& element_id : element_ids) {
     const auto& my_block = blocks.at(element_id.block_id());
     const auto element = domain::Initialization::create_initial_element(
