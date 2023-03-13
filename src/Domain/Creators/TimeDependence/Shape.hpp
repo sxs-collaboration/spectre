@@ -63,6 +63,20 @@ namespace domain::creators::time_dependence {
  * shape map will go to the Distorted frame only and other maps will go from the
  * Distorted frame to the Inertial frame.
  *
+ * \note The quantities stored in the FunctionOfTime are not the
+ * complex spherical-harmonic coefficients \f$\lambda_{lm}(t)\f$, but
+ * instead are the real-valued SPHEREPACK coefficients
+ * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack.  The
+ * relationship between these two sets of coefficients is
+ * \f{align}
+ * a_{l0} & = \sqrt{\frac{2}{\pi}}\lambda_{l0}&\qquad l\geq 0,\\
+ * a_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Re}(\lambda_{lm})
+ * &\qquad l\geq 1, m\geq 1, \\
+ * b_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Im}(\lambda_{lm})
+ * &\qquad l\geq 1, m\geq 1.
+ * \f}
+ * See domain::CoordinateMaps::TimeDependent::Shape for more details.
+ *
  * \note To use this time dependence with the `control_system::system::Shape`
  * control system, you must choose the same \tparam Label that the control
  * system is using.

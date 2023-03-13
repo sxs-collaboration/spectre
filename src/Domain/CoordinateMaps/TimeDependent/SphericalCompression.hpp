@@ -52,9 +52,17 @@ namespace domain::CoordinateMaps::TimeDependent {
  * not the identity, using the appropriate template parameter, depending on
  * which region the block is in.
  *
- * \note Currently, this map only performs a compression. A generalization of
- * this map could also change the region's shape as well as its size, by
- * including more terms than the spherically symmetric term included here.
+ * \note This map performs a only a spherical compression. A
+ * generalization of this map that changes the region's shape as well as
+ * its size, by including more terms than the spherically symmetric
+ * term included here, can be found in the
+ * domain::CoordinateMaps::TimeDependent::Shape map.
+ *
+ * \note The quantity stored in the FunctionOfTime is really
+ * the spherical-harmonic coefficient \f$\lambda_{00}(t)\f$.  This is
+ * different from the Shape map, which stores YlmSpherepack coefficients
+ * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ instead of \f$\lambda_{lm}(t)\f$.
+ * See domain::CoordinateMaps::TimeDependent::Shape for more details.
  *
  * ### Mapped coordinates
  *
