@@ -478,6 +478,32 @@ void test_history() {
   CHECK(history.integration_order() == copy.integration_order());
   CHECK(history.empty());
   CHECK(history.substeps().empty());
+
+  {
+    History a{2};
+    History b{3};
+    History c = b;
+    c.insert(TimeStepId(true, 0, slab.start()), make_value(1.0),
+             make_deriv(10.0));
+    History d = c;
+    d.insert(TimeStepId(true, 0, slab.start(), 1, slab.start().value()),
+             make_value(2.0), make_deriv(20.0));
+
+    CHECK(a == a);
+    CHECK_FALSE(a != a);
+    CHECK(b == b);
+    CHECK_FALSE(b != b);
+    CHECK(c == c);
+    CHECK_FALSE(c != c);
+    CHECK(d == d);
+    CHECK_FALSE(d != d);
+    CHECK(a != b);
+    CHECK_FALSE(a == b);
+    CHECK(b != c);
+    CHECK_FALSE(b == c);
+    CHECK(c != d);
+    CHECK_FALSE(c == d);
+  }
 }
 
 void test_history_assertions() {
