@@ -261,7 +261,6 @@ void cartesian_high_order_fluxes_using_nodes(
                   collapsed_index(upper_n, reconstruction_extents);
             }
 
-            // Only do 4th-order correction for now...
             if (static_cast<int>(DerivOrder) >= 10 or
                 (static_cast<int>(DerivOrder) < 0 and
                  min(recons_order[lower_neighbor_index],
