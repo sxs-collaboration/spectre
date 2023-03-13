@@ -20,6 +20,7 @@
 #include "Time/SelfStart.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -109,6 +110,8 @@ OrderVector<double> constant_coefficients(const size_t order) {
   }
 }
 
+// This includes the overall factor of step size.
+//
 // Only T=double is used, but this can be used with T=Rational to
 // generate coefficient tables.
 template <typename T>
@@ -117,7 +120,7 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
   // the last time in the list to t=0.
 
   // The coefficients are, for each j,
-  // 1/step \int_0^{step} dt ell_j(t; -control_times),
+  // \int_0^{step} dt ell_j(t; -control_times),
   // where the step size is step=-control_times.back().
 
   const size_t order = control_times.size();
@@ -146,19 +149,21 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
     // integration so the indefinite integral is zero at t=0.  We do
     // not adjust the indexing, so the t^n term in the integral is in
     // the (n-1)th entry of the vector (as opposed to the nth entry
-    // before integrating).  This is convenient because we want to
-    // divide by the step size in the end, which is equivalent to this
-    // shift.
+    // before integrating).
     for (size_t m = 0; m < order; ++m) {
       poly[m] /= m + 1;
     }
-    result.push_back(evaluate_polynomial(poly, -control_times.back()));
+    result.push_back(-control_times.back() *
+                     evaluate_polynomial(poly, -control_times.back()));
   }
   return result;
 }
 
-// Get coefficients for a time step.  Arguments are an iterator
-// pair to past times, oldest to newest, and the time step to take.
+// Get coefficients for a time step.  Arguments are an iterator pair
+// to past times, oldest to newest, and the time step to take.  The
+// returned coefficients include the factor of the step size, so, for
+// example, the coefficients for Euler's method would be {size}, not
+// {1}.
 template <typename Iterator, typename Delta>
 OrderVector<double> get_coefficients(const Iterator& times_begin,
                                      const Iterator& times_end,
@@ -178,7 +183,9 @@ OrderVector<double> get_coefficients(const Iterator& times_begin,
     control_times.push_back(t->value());
   }
   if (constant_step_size) {
-    return constant_coefficients(control_times.size());
+    auto result = constant_coefficients(control_times.size());
+    alg::for_each(result, [&](double& coef) { coef *= step.value(); });
+    return result;
   }
 
   const double goal_time = control_times.back() + step.value();
@@ -300,7 +307,7 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
   for (auto history_entry = history_start;
        history_entry != history.end();
        ++history_entry, ++coefficient) {
-    *u += time_step.value() * *coefficient * history_entry->derivative;
+    *u += *coefficient * history_entry->derivative;
   }
 }
 
@@ -416,8 +423,7 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
-      *result +=
-          time_step.value() * *coefficients_it * *coupling(local_it, remote_it);
+      *result += *coefficients_it * *coupling(local_it, remote_it);
     }
     return;
   }
@@ -502,13 +508,11 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
                                 const UnionIter& evaluation_step) {
     if (step + 1 != union_times.end()) {
       const TimeDelta step_size = *(step + 1) - *step;
-      return step_size.value() *
-             ab_coefs(std::make_tuple(
+      return ab_coefs(std::make_tuple(
                  step, step_size))[static_cast<size_t>(step - evaluation_step)];
     } else {
       const auto step_size = end_time - *step;
-      return step_size.value() *
-             ab_coefs(std::make_tuple(
+      return ab_coefs(std::make_tuple(
                  step, step_size))[static_cast<size_t>(step - evaluation_step)];
     }
   };
