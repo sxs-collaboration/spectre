@@ -145,7 +145,7 @@ struct UpdateControlSystem {
     if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
       // LCOV_EXCL_START
       write_components_to_disk<ControlSystem>(time, cache, function_of_time,
-                                              q_and_dtq);
+                                              q_and_dtq, current_timescale);
       // LCOV_EXCL_STOP
     }
 
