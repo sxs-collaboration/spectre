@@ -35,6 +35,7 @@ struct Metavariables {
 // (the central black hole) and a worldtube excision sphere in circular orbit
 // around it with angular velocity R^{-3/2}, where R is the orbital radius.
 std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
-    const double orbit_radius, const double worldtube_radius);
+    const double orbit_radius, const double worldtube_radius,
+    const double angular_velocity);
 
 }  // namespace TestHelpers::CurvedScalarWave::Worldtube
