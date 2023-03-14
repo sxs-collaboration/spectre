@@ -37,6 +37,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -172,7 +173,7 @@ void test_compute_face_coordinates() {
   static constexpr size_t Dim = 3;
   const auto domain_creator =
       TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          7., 0.2);
+          7., 0.2, pow(7, -1.5));
   const double initial_time = 0.;
   auto domain = domain_creator->create_domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
@@ -370,6 +371,68 @@ void test_puncture_field() {
   CHECK(not puncture_field_nullopt.has_value());
 }
 
+void test_check_input_file() {
+  const auto bbh_correct =
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
+          7., 0.2, pow(7., -1.5));
+  const gr::Solutions::KerrSchild kerr_schild_correct(
+      1., make_array(0., 0., 0.), make_array(0., 0., 0.));
+  CHECK(Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::create_from_options(
+      bbh_correct, "ExcisionSphereA", kerr_schild_correct));
+  {
+    const auto bbh_incorrect = TestHelpers::CurvedScalarWave::Worldtube::
+        worldtube_binary_compact_object(7., 0.2, 1.);
+    CHECK_THROWS_WITH(
+        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
+             create_from_options(bbh_incorrect, "ExcisionSphereA",
+                                 kerr_schild_correct)),
+        Catch::Matchers::Contains(
+            "Only circular orbits are implemented at the moment so the "
+            "angular velocity should be [0., 0., orbital_radius^(-3/2)] = "));
+  }
+  {
+    const std::unique_ptr<DomainCreator<3>> shell =
+        std::make_unique<domain::creators::Sphere>(
+            1.5, 3., domain::creators::Sphere::Excision{}, size_t(1), size_t(6),
+            true);
+    CHECK_THROWS_WITH(
+        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
+             create_from_options(shell, "ExcisionSphere", kerr_schild_correct)),
+        Catch::Matchers::Contains(
+            "Expected functions of time to contain 'Rotation'."));
+  }
+  {
+    const gr::Solutions::KerrSchild kerr_schild_off_center(
+        1., make_array(0., 0., 0.), make_array(0.1, 0., 0.));
+    CHECK_THROWS_WITH(
+        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
+             create_from_options(bbh_correct, "ExcisionSphere",
+                                 kerr_schild_off_center)),
+        Catch::Matchers::Contains(
+            "The central black hole must be centered at [0., 0., 0.]."));
+  }
+  {
+    const gr::Solutions::KerrSchild kerr_schild_spinning(
+        1., make_array(0.1, 0., 0.), make_array(0., 0., 0.));
+    CHECK_THROWS_WITH(
+        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
+             create_from_options(bbh_correct, "ExcisionSphere",
+                                 kerr_schild_spinning)),
+        Catch::Matchers::Contains("Black hole spin is not implemented yet but "
+                                  "you requested non-zero spin."));
+  }
+  {
+    const gr::Solutions::KerrSchild kerr_schild_2M(2., make_array(0., 0., 0.),
+                                                   make_array(0., 0., 0.));
+    CHECK_THROWS_WITH(
+        (Tags::CheckInputFile<
+            3, gr::Solutions::KerrSchild>::create_from_options(bbh_correct,
+                                                               "ExcisionSphere",
+                                                               kerr_schild_2M)),
+        Catch::Matchers::Contains("The central black hole must have mass 1."));
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -395,11 +458,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
       "InertialParticlePosition");
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
+  TestHelpers::db::test_simple_tag<
+      Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
 
   test_excision_sphere_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
   test_inertial_particle_position_compute();
   test_puncture_field();
+  test_check_input_file();
 }
 }  // namespace CurvedScalarWave::Worldtube
