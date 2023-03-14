@@ -20,7 +20,7 @@
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -66,8 +66,7 @@ struct Metavariables {
               std::pair<Direction<volume_dim>, ElementId<volume_dim>>>&
               mortars_to_reconstruct_to) {
         const NeighborDataMap<Dim>& neighbor_data = db::get<
-            evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
-            box);
+            evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(box);
 
         // We just simply copy over the data sent since it doesn't actually
         // matter what we fill the packaged data with in the test, just that
@@ -94,9 +93,9 @@ void test() {
   rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
   rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
   NeighborDataMap<Dim> neighbor_data_map{};
-  auto box = db::create<tmpl::list<
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
-      evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
+  auto box = db::create<
+      tmpl::list<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
       std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
 
   std::pair<const TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};

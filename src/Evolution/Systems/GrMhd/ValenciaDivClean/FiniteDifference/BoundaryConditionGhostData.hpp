@@ -23,8 +23,8 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
@@ -233,7 +233,7 @@ void BoundaryConditionGhostData::apply(
     // ElementId::external_boundary_id()} as the mortar_id key
     const std::pair mortar_id{direction, ElementId<3>::external_boundary_id()};
 
-    db::mutate<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+    db::mutate<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
         box, [&mortar_id, &boundary_ghost_data](auto neighbor_data) {
           (*neighbor_data)[mortar_id] = std::move(boundary_ghost_data);
         });

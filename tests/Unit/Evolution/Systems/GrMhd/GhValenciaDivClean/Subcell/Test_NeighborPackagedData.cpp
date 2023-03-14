@@ -35,8 +35,8 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -126,7 +126,7 @@ double test(const size_t num_dg_pts) {
   // 1. compute prims from solution
   // 2. compute prims needed for reconstruction
   // 3. set neighbor data
-  evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>::type
+  evolution::dg::subcell::Tags::GhostDataForReconstruction<3>::type
       neighbor_data{};
   using prims_to_reconstruct_tags = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
@@ -262,7 +262,7 @@ double test(const size_t num_dg_pts) {
               std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
-          evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
           ValenciaDivClean::Tags::ConstraintDampingParameter,
           domain::Tags::ElementMap<3, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,

@@ -38,9 +38,9 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -300,7 +300,7 @@ void test(const bool always_use_subcell, const bool interior_element,
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+        comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0));

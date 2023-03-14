@@ -28,8 +28,8 @@
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -129,7 +129,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::DidRollback` sets to `false`
  *   - `subcell::Tags::TciDecision` is set to an integer value according to the
  *     return of TciMutator.
- *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  *     if the cell is not troubled
  *   - `subcell::Tags::TciGridHistory` if the time stepper is a multistep method
  */
@@ -254,7 +254,7 @@ struct TciAndSwitchToDg {
           })))) {
       db::mutate<
           variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
-          Tags::ActiveGrid, subcell::Tags::NeighborDataForReconstruction<Dim>,
+          Tags::ActiveGrid, subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::TciGridHistory,
           evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>>(
           make_not_null(&box),

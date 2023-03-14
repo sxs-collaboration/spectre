@@ -16,9 +16,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Options/Options.hpp"
@@ -115,11 +115,11 @@ class MonotonicityPreserving5Prim : public Reconstructor {
 
   size_t ghost_zone_size() const override { return 3; }
 
-  using reconstruction_argument_tags = tmpl::list<
-      ::Tags::Variables<hydro::grmhd_tags<DataVector>>,
-      hydro::Tags::EquationOfStateBase, domain::Tags::Element<dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<dim>,
-      evolution::dg::subcell::Tags::Mesh<dim>>;
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
+                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
+                 evolution::dg::subcell::Tags::Mesh<dim>>;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct(

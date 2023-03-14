@@ -36,8 +36,8 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -163,8 +163,8 @@ double test(const size_t num_dg_pts) {
   // 1. compute prims from solution
   // 2. compute prims needed for reconstruction
   // 3. set neighbor data
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<
-      Dim>::type neighbor_data{};
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>::type
+      neighbor_data{};
   using prims_to_reconstruct_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataVector>,
                  NewtonianEuler::Tags::Velocity<DataVector, Dim>,
@@ -236,7 +236,7 @@ double test(const size_t num_dg_pts) {
           evolution::Tags::BoundaryCorrection<system>,
           hydro::Tags::EquationOfState<eos>,
           typename system::primitive_variables_tag, variables_tag,
-          evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::Tags::MortarData<Dim>, domain::Tags::MeshVelocity<Dim>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
           evolution::dg::subcell::Tags::SubcellOptions<Dim>>,

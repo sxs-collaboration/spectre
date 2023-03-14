@@ -35,9 +35,9 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -125,9 +125,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     fill_with_random_values(make_not_null(&vars), gen, make_not_null(&dist));
     return vars;
   };
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<
-      Dim>::type neighbor_data =
-      TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>::type
+      neighbor_data = TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_random_variable);
 
@@ -172,7 +171,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       typename System<Dim>::variables_tag,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
       fd::Tags::Reconstructor<Dim>,
       evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,

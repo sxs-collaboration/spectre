@@ -40,8 +40,8 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
@@ -106,7 +106,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   using ReconstructorForTest = Burgers::fd::MonotonisedCentral;
 
   // dummy neighbor data to put into DataBox
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>::type
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<1>::type
       neighbor_data{};
 
   // Below are tags required by DirichletAnalytic boundary condition to compute
@@ -187,7 +187,7 @@ void test(const BoundaryConditionType& boundary_condition) {
       domain::Tags::Domain<1>, domain::Tags::ExternalBoundaryConditions<1>,
       evolution::dg::subcell::Tags::Mesh<1>,
       evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
       Burgers::fd::Tags::Reconstructor, domain::Tags::MeshVelocity<1>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<1>, Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
@@ -217,7 +217,7 @@ void test(const BoundaryConditionType& boundary_condition) {
     const std::pair mortar_id = {direction,
                                  ElementId<1>::external_boundary_id()};
     const DataVector& fd_ghost_data =
-        get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(box)
+        get<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(box)
             .at(mortar_id);
 
     // now check values for each types of boundary conditions

@@ -15,7 +15,7 @@ spectre_target_headers(
   Inactive.hpp
   Jacobians.hpp
   Mesh.hpp
-  NeighborData.hpp
+  GhostDataForReconstruction.hpp
   ObserverCoordinates.hpp
   ObserverMesh.hpp
   OnSubcellFaces.hpp

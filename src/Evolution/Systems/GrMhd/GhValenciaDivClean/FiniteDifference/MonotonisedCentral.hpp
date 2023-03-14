@@ -18,8 +18,8 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
@@ -93,12 +93,12 @@ class MonotonisedCentralPrim : public Reconstructor {
 
   size_t ghost_zone_size() const override { return 2; }
 
-  using reconstruction_argument_tags = tmpl::list<
-      ::Tags::Variables<hydro::grmhd_tags<DataVector>>,
-      typename System::variables_tag, hydro::Tags::EquationOfStateBase,
-      domain::Tags::Element<dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<dim>,
-      evolution::dg::subcell::Tags::Mesh<dim>>;
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
+                 typename System::variables_tag,
+                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
+                 evolution::dg::subcell::Tags::Mesh<dim>>;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct(

@@ -30,8 +30,8 @@
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
@@ -95,8 +95,9 @@ struct NeighborPackagedData {
       return neighbor_package_data;
     }
 
-    const auto& neighbor_subcell_data = db::get<
-        evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(box);
+    const auto& neighbor_subcell_data =
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            box);
     const Mesh<Dim>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& dg_mesh = db::get<domain::Tags::Mesh<Dim>>(box);

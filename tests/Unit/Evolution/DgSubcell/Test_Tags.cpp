@@ -23,10 +23,10 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
@@ -58,8 +58,8 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_compute_tag<subcell::Tags::MeshCompute<Dim>>(
       "Subcell(Mesh)");
   TestHelpers::db::test_simple_tag<
-      subcell::Tags::NeighborDataForReconstruction<Dim>>(
-      "NeighborDataForReconstruction");
+      subcell::Tags::GhostDataForReconstruction<Dim>>(
+      "GhostDataForReconstruction");
   TestHelpers::db::test_simple_tag<subcell::Tags::NeighborTciDecisions<Dim>>(
       "NeighborTciDecisions");
   TestHelpers::db::test_simple_tag<subcell::Tags::DataForRdmpTci>(

@@ -32,8 +32,8 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -75,7 +75,7 @@ struct component {
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciDecision,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
@@ -294,7 +294,7 @@ void test(const bool use_cell_centered_flux) {
        cell_centered_flux});
 
   using neighbor_data_tag =
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>;
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
   using rdmp_tci_data_tag = evolution::dg::subcell::Tags::DataForRdmpTci;
   using ActionTesting::get_databox_tag;
   CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).size() == 1);

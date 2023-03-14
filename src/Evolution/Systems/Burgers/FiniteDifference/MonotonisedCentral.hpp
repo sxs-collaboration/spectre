@@ -16,8 +16,8 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Options/Options.hpp"
@@ -81,7 +81,7 @@ class MonotonisedCentral : public Reconstructor {
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<volume_vars_tags>, domain::Tags::Element<1>,
-                 evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
                  evolution::dg::subcell::Tags::Mesh<1>>;
 
   void reconstruct(
