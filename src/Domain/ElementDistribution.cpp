@@ -3,153 +3,287 @@
 
 #include "Domain/ElementDistribution.hpp"
 
-#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
-#include <numeric>
+#include <functional>
+#include <optional>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/ZCurve.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Numeric.hpp"
 
 namespace domain {
-
 namespace {
-// This interleaves the bits of the element index.
-// A sketch of a 2D block with 4x2 elements, with bit indices and resulting
-// z-curve
+// \brief Get the cost of an `Element` computed as
+// `(number of grid points) / sqrt(minimum grid spacing in Frame::Grid)`
 //
-//        x-->
-//        00  01  10  11
-// y  0 |  0   2   4   6
-// |    |
-// v  1 |  1   3   5   7
+// \details As grid points in an `Element` increase, we expect the
+// computational cost of an `Element` to scale proportionally (if the minimum
+// grid spacing is held constant). In addition, the minimum grid spacing
+// between two points in an `Element` informs the time step that we take, where
+// the smaller the minimum spacing, the smaller time step we must take, which
+// means we expect computational work to scale inversely with the minimum grid
+// spacing.
+//
+// The reason that we use the square root of the spacing as opposed to just the
+// spacing in the denominator of the cost is that it was found experimentally
+// that using the square root yielded faster BBH simulation runtimes when using
+// local time stepping.
 template <size_t Dim>
-size_t z_curve_index(const ElementId<Dim>& element_id) {
-  // for the bit manipulation of the element index, we need to interleave the
-  // indices in each dimension in order according to how many bits are in the
-  // index representation. This variable stores the refinement level and
-  // dimension index in ascending order of refinement level, representing a
-  // permutation of the dimensions
-  std::array<std::pair<size_t, size_t>, Dim>
-      dimension_by_highest_refinement_level;
-  for (size_t i = 0; i < Dim; ++i) {
-    dimension_by_highest_refinement_level.at(i) =
-        std::make_pair(element_id.segment_id(i).refinement_level(), i);
-  }
-  alg::sort(dimension_by_highest_refinement_level,
-            [](const std::pair<size_t, size_t>& lhs,
-               const std::pair<size_t, size_t>& rhs) {
-              return lhs.first < rhs.first;
-            });
+double get_num_points_and_grid_spacing_cost(
+    const ElementId<Dim>& element_id, const Block<Dim>& block,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
+    const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const Spectral::Quadrature quadrature) {
+  Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
+      initial_extents, element_id, quadrature);
+  Element<Dim> element = ::domain::Initialization::create_initial_element(
+      element_id, block, initial_refinement_levels);
+  ElementMap<Dim, Frame::Grid> element_map{
+      element_id, block.is_time_dependent()
+                      ? block.moving_mesh_logical_to_grid_map().get_clone()
+                      : block.stationary_map().get_to_grid_frame()};
+  const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords =
+      logical_coordinates(mesh);
+  const tnsr::I<DataVector, Dim, Frame::Grid> grid_coords =
+      element_map(logical_coords);
+  const double min_grid_spacing =
+      minimum_grid_spacing(mesh.extents(), grid_coords);
 
-  size_t element_order_index = 0;
+  return mesh.number_of_grid_points() / sqrt(min_grid_spacing);
+}
+}  //  namespace
 
-  // 'gap' the lowest refinement direction bits as:
-  // ... x1 x0 -> ... x1 0 0 x0,
-  // then bitwise or in 'gap'ed and shifted next-lowest refinement direction
-  // bits as:
-  // ... y2 y1 y0 -> ... y2 0 y1 x1 0 y0 x0
-  // then bitwise or in 'gap'ed and shifted highest-refinement direction bits
-  // as:
-  // ... z3 z2 z1 z0 -> z3 z2 y2 z1 y1 x1 z0 y0 x0
-  // note that we must skip refinement-level 0 dimensions as though they are
-  // not present
-  size_t leading_gap = 0;
-  for (size_t i = 0; i < Dim; ++i) {
-    const size_t id_to_gap_and_shift =
-        element_id
-            .segment_id(
-                gsl::at(dimension_by_highest_refinement_level, i).second)
-            .index();
-    size_t total_gap = leading_gap;
-    if (gsl::at(dimension_by_highest_refinement_level, i).first > 0) {
-      ++leading_gap;
-    }
-    for (size_t bit_index = 0;
-         bit_index < gsl::at(dimension_by_highest_refinement_level, i).first;
-         ++bit_index) {
-      // This operation will not overflow for our present use of `ElementId`s.
-      // This technique densely assigns an ElementID a unique size_t identifier
-      // determining the Morton curve order, and `ElementId` supports refinement
-      // levels such that a global index within a block will fit in a 64-bit
-      // unsigned integer.
-      element_order_index |=
-          ((id_to_gap_and_shift & two_to_the(bit_index)) << total_gap);
-      for (size_t j = 0; j < Dim; ++j) {
-        if (i != j and
-            bit_index + 1 <
-                gsl::at(dimension_by_highest_refinement_level, j).first) {
-          ++total_gap;
-        }
+template <size_t Dim>
+std::unordered_map<ElementId<Dim>, double> get_element_costs(
+    const std::vector<Block<Dim>>& blocks,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
+    const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const ElementWeight element_weight,
+    const std::optional<Spectral::Quadrature>& quadrature) {
+  std::unordered_map<ElementId<Dim>, double> element_costs{};
+
+  for (size_t block_number = 0; block_number < blocks.size(); block_number++) {
+    const auto& block = blocks[block_number];
+    const auto initial_ref_levs = initial_refinement_levels[block_number];
+    const std::vector<ElementId<Dim>> element_ids =
+        initial_element_ids(block.id(), initial_ref_levs);
+    const size_t grid_points_per_element = alg::accumulate(
+        initial_extents[block_number], 1_st, std::multiplies<size_t>());
+
+    for (const auto& element_id : element_ids) {
+      if (element_weight == ElementWeight::Uniform) {
+        element_costs.insert({element_id, 1.0});
+      } else if (element_weight == ElementWeight::NumGridPoints) {
+        element_costs.insert({element_id, grid_points_per_element});
+      } else {
+        ASSERT(element_weight == ElementWeight::NumGridPointsAndGridSpacing,
+               "Unknown element_weight");
+        ASSERT(quadrature.has_value(),
+               "Since element_weight is "
+               "ElementWeight::NumGridPointsAndGridSpacing, quadrature must "
+               "have a value");
+
+        element_costs.insert(
+            {element_id, get_num_points_and_grid_spacing_cost(
+                             element_id, block, initial_refinement_levels,
+                             initial_extents, quadrature.value())});
       }
     }
   }
-  return element_order_index;
+
+  return element_costs;
 }
-}  // namespace
 
 template <size_t Dim>
 BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
-    size_t number_of_procs_with_elements,
-    const std::vector<std::array<size_t, Dim>>& refinements_by_block,
+    const std::unordered_map<ElementId<Dim>, double>& element_costs,
+    const size_t number_of_procs_with_elements,
+    const std::vector<Block<Dim>>& blocks,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
+    const std::vector<std::array<size_t, Dim>>& initial_extents,
     const std::unordered_set<size_t>& global_procs_to_ignore) {
+  const size_t num_blocks = blocks.size();
+
+  ASSERT(
+      number_of_procs_with_elements > 0,
+      "Must have a non-zero number of processors to distribute elements to.");
+  ASSERT(num_blocks > 0, "Must have a non-zero number of blocks.");
+  ASSERT(
+      initial_refinement_levels.size() == num_blocks,
+      "`initial_refinement_levels` is not the same size as number of blocks");
+  ASSERT(initial_extents.size() == num_blocks,
+         "`initial_extents` is not the same size as number of blocks");
+
+  size_t num_elements = 0;
+  std::vector<size_t> num_elements_by_block(num_blocks);
+  for (size_t i = 0; i < num_blocks; i++) {
+    const size_t num_elements_current_block = two_to_the(alg::accumulate(
+        initial_refinement_levels[i], 0_st, std::plus<size_t>()));
+    num_elements_by_block[i] = num_elements_current_block;
+    num_elements += num_elements_current_block;
+  }
+
+  ASSERT(element_costs.size() == num_elements,
+         "`element_costs` is not the same size as the total number of elements "
+         "computed from `initial_refinement_levels`");
+
   block_element_distribution_ =
-      std::vector<std::vector<std::pair<size_t, size_t>>>(
-          refinements_by_block.size());
-  auto add_number_of_elements_for_refinement =
-      [](size_t lhs, const std::array<size_t, Dim>& rhs) {
-        size_t value = 1;
-        for (size_t i = 0; i < Dim; ++i) {
-          value *= two_to_the(gsl::at(rhs, i));
-        }
-        return lhs + value;
-      };
-  const size_t number_of_elements =
-      std::accumulate(refinements_by_block.begin(), refinements_by_block.end(),
-                      0_st, add_number_of_elements_for_refinement);
-  ASSERT(not refinements_by_block.empty(),
-         "`refinements_by_block` must be non-empty.");
-  // currently, we just assign uniform weight to elements. In future, it will
-  // probably be better to take into account p-refinement, but then the z-curve
-  // method will also require weighting.
-  size_t remaining_elements_in_block =
-      add_number_of_elements_for_refinement(0_st, refinements_by_block[0]);
-  size_t current_block = 0;
-  // This variable will keep track of how many global procs we've skipped over
-  // so far. This bookkeeping is necessary so the element gets placed on the
-  // correct global proc. The loop variable `i` does not correspond to global
-  // proc number. It's just an index
+      std::vector<std::vector<std::pair<size_t, size_t>>>(num_blocks);
+
+  std::vector<std::vector<ElementId<Dim>>> initial_element_ids_by_block(
+      num_blocks);
+  for (size_t i = 0; i < num_blocks; i++) {
+    initial_element_ids_by_block[i].reserve(num_elements_by_block[i]);
+    initial_element_ids_by_block[i] =
+        initial_element_ids(blocks[i].id(), initial_refinement_levels[i]);
+    alg::sort(initial_element_ids_by_block[i],
+              [](const ElementId<Dim>& lhs, const ElementId<Dim>& rhs) {
+                return z_curve_index(lhs) < z_curve_index(rhs);
+              });
+  }
+
+  double total_cost = 0.0;
+  for (const auto& element_id_and_cost : element_costs) {
+    total_cost += element_id_and_cost.second;
+  }
+
+  size_t current_block_num = 0;
+  size_t element_num_of_block = 0;
+  double cost_remaining = total_cost;
   size_t number_of_ignored_procs_so_far = 0;
-  for (size_t i = 0; i < number_of_procs_with_elements; ++i) {
+  // distribute Elements to all but the final proc
+  for (size_t i = 0; i < number_of_procs_with_elements - 1; ++i) {
     size_t global_proc_number = i + number_of_ignored_procs_so_far;
     while (global_procs_to_ignore.find(global_proc_number) !=
            global_procs_to_ignore.end()) {
       ++number_of_ignored_procs_so_far;
       ++global_proc_number;
     }
-    size_t remaining_elements_on_proc =
-        (number_of_elements / number_of_procs_with_elements) +
-        (i < (number_of_elements % number_of_procs_with_elements) ? 1 : 0);
-    while (remaining_elements_on_proc > 0) {
-      block_element_distribution_.at(current_block)
-          .emplace_back(std::make_pair(global_proc_number,
-                                       std::min(remaining_elements_in_block,
-                                                remaining_elements_on_proc)));
-      if (remaining_elements_in_block <= remaining_elements_on_proc) {
-        remaining_elements_on_proc -= remaining_elements_in_block;
-        ++current_block;
-        if (current_block < refinements_by_block.size()) {
-          remaining_elements_in_block = add_number_of_elements_for_refinement(
-              0_st, gsl::at(refinements_by_block, current_block));
+
+    // The target cost per proc is updated as we distribute to each proc since
+    // the total cost on a proc will nearly never be exactly the target average.
+    // If we don't adjust the target cost, then we risk either not using all
+    // procs (from overshooting the average too much on multiple procs) or
+    // piling up cost on the last proc (from undershooting the average on
+    // multiple procs). Updating the target cost per proc keeps the total cost
+    // spread somewhat evenly to each proc.
+    double target_cost_per_proc =
+        cost_remaining / static_cast<double>(number_of_procs_with_elements - i);
+    double cost_spent_on_proc = 0.0;
+    size_t total_elements_distributed_to_proc = 0;
+    bool add_more_elements_to_proc = true;
+    // while we haven't yet distributed all blocks and we still have cost
+    // allowed on the proc
+    while (add_more_elements_to_proc and (current_block_num < num_blocks)) {
+      const size_t num_elements_current_block =
+          num_elements_by_block[current_block_num];
+      size_t num_elements_distributed_to_proc = 0;
+      // while we still have elements left on the block to distribute and we
+      // still have cost allowed on the proc
+      while (add_more_elements_to_proc and
+             (element_num_of_block < num_elements_current_block)) {
+        const ElementId<Dim>& element_id =
+            initial_element_ids_by_block[current_block_num]
+                                        [element_num_of_block];
+        const double element_cost = element_costs.at(element_id);
+
+        if (total_elements_distributed_to_proc == 0) {
+          // if we haven't yet assigned any elements to this proc, assign the
+          // current element to the current proc to ensure it gets at least one
+          // element
+          cost_remaining -= element_cost;
+          cost_spent_on_proc = element_cost;
+          num_elements_distributed_to_proc = 1;
+          total_elements_distributed_to_proc = 1;
+          element_num_of_block++;
+        } else {
+          const double current_cost_diff =
+              abs(target_cost_per_proc - cost_spent_on_proc);
+          const double next_cost_diff =
+              abs(target_cost_per_proc - (cost_spent_on_proc + element_cost));
+
+          if (current_cost_diff <= next_cost_diff) {
+            // if the current proc cost is closer to the target cost than if we
+            // were to add one more element, then we're done adding elements to
+            // this proc and don't add the current one
+            add_more_elements_to_proc = false;
+          } else {
+            // otherwise, the current proc cost is farther from the target then
+            // if we were to add one more element, so we add the current element
+            // to the current proc
+            cost_spent_on_proc += element_cost;
+            cost_remaining -= element_cost;
+            num_elements_distributed_to_proc++;
+            total_elements_distributed_to_proc++;
+            element_num_of_block++;
+          }
         }
-      } else {
-        remaining_elements_in_block -= remaining_elements_on_proc;
-        remaining_elements_on_proc = 0;
+      }
+
+      // add a proc and its element allowance for the current block
+      block_element_distribution_.at(current_block_num)
+          .emplace_back(std::make_pair(global_proc_number,
+                                       num_elements_distributed_to_proc));
+      if (element_num_of_block >= num_elements_current_block) {
+        // if we're done assigning elements from the current block, move on to
+        // the elements in the next block
+        ++current_block_num;
+        element_num_of_block = 0;
       }
     }
+  }
+
+  // distribute all remaining Elements on the final proc
+
+  size_t global_proc_number =
+      number_of_procs_with_elements - 1 + number_of_ignored_procs_so_far;
+  while (global_procs_to_ignore.find(global_proc_number) !=
+         global_procs_to_ignore.end()) {
+    ++global_proc_number;
+  }
+
+  // distribute remaining Elements of Block we left off on
+  if (current_block_num < num_blocks) {
+    block_element_distribution_.at(current_block_num)
+        .emplace_back(std::make_pair(
+            global_proc_number,
+            num_elements_by_block[current_block_num] - element_num_of_block));
+  }
+
+  // distribute any Blocks that still remain after the Block we left off on
+  current_block_num++;
+  while (current_block_num < num_blocks) {
+    const size_t num_elements_current_block =
+        num_elements_by_block[current_block_num];
+    block_element_distribution_.at(current_block_num)
+        .emplace_back(
+            std::make_pair(global_proc_number, num_elements_current_block));
+    current_block_num++;
   }
 }
 
@@ -170,10 +304,26 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
       "Processor not successfully chosen. This indicates a flaw in the logic "
       "of BlockZCurveProcDistribution.");
 }
+
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data) \
-  template class BlockZCurveProcDistribution<GET_DIM(data)>;
+#define INSTANTIATION(r, data)                                               \
+  template class BlockZCurveProcDistribution<GET_DIM(data)>;                 \
+  double get_num_points_and_grid_spacing_cost(                               \
+      const ElementId<GET_DIM(data)>& element_id,                            \
+      const Block<GET_DIM(data)>& block,                                     \
+      const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
+          initial_refinement_levels,                                         \
+      const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
+      Spectral::Quadrature quadrature);                                      \
+  template std::unordered_map<ElementId<GET_DIM(data)>, double>              \
+  get_element_costs(                                                         \
+      const std::vector<Block<GET_DIM(data)>>& blocks,                       \
+      const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
+          initial_refinement_levels,                                         \
+      const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
+      ElementWeight element_weight,                                          \
+      const std::optional<Spectral::Quadrature>& quadrature);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

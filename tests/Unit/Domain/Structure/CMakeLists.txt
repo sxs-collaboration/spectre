@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_SegmentId.cpp
   Test_Side.cpp
   Test_TrimMap.cpp
+  Test_ZCurve.cpp
   )
 
 add_test_library(

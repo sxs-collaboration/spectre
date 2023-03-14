@@ -7,6 +7,7 @@
 #include <charm++.h>
 #include <cstddef>
 #include <optional>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -93,6 +94,8 @@ struct ElementsAllocator
     auto& element_array =
         Parallel::get_parallel_component<ElementArray>(local_cache);
     const auto& domain = get<domain::Tags::Domain<Dim>>(local_cache);
+    const auto& initial_extents =
+        get<domain::Tags::InitialExtents<Dim>>(initialization_items);
     auto& initial_refinement_levels =
         get<domain::Tags::InitialRefinementLevels<Dim>>(initialization_items);
     auto& children_refinement_levels =
@@ -115,6 +118,7 @@ struct ElementsAllocator
           pretty_type::name<OptionsGroup>());
       max_levels = 1;
     }
+    const auto& blocks = domain.blocks();
     size_t multigrid_level = 0;
     do {
       // Store the current grid as child grid before coarsening it
@@ -127,7 +131,7 @@ struct ElementsAllocator
       }
       // Create element IDs for all elements on this level
       std::vector<ElementId<Dim>> element_ids{};
-      for (const auto& block : domain.blocks()) {
+      for (const auto& block : blocks) {
         const std::vector<ElementId<Dim>> block_element_ids =
             initial_element_ids(block.id(),
                                 initial_refinement_levels[block.id()],
@@ -163,8 +167,14 @@ struct ElementsAllocator
       // processors
       const size_t num_of_procs_to_use =
           static_cast<size_t>(sys::number_of_procs()) - procs_to_ignore.size();
+      const std::unordered_map<ElementId<Dim>, double> element_costs =
+          domain::get_element_costs(
+              blocks, initial_refinement_levels, initial_extents,
+              domain::ElementWeight::NumGridPoints, std::nullopt);
       const domain::BlockZCurveProcDistribution<Dim> element_distribution{
-          num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
+          element_costs,   num_of_procs_to_use,
+          blocks,          initial_refinement_levels,
+          initial_extents, procs_to_ignore};
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);
@@ -175,7 +185,7 @@ struct ElementsAllocator
           "%s level %zu has %zu elements in %zu blocks distributed on %d "
           "procs.\n",
           pretty_type::name<OptionsGroup>(), multigrid_level,
-          element_ids.size(), domain.blocks().size(), num_of_procs_to_use);
+          element_ids.size(), blocks.size(), num_of_procs_to_use);
       ++multigrid_level;
     } while (initial_refinement_levels != parent_refinement_levels);
     element_array.doneInserting();
