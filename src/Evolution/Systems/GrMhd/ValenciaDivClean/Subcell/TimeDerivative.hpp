@@ -39,6 +39,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
+#include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/HighOrderFluxCorrection.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -324,7 +325,8 @@ struct TimeDerivative {
 
         db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
             evolved_vars_tags, 3>>(*box),
-        boundary_corrections, fd_derivative_order,
+        boundary_corrections,
+        static_cast<::fd::DerivativeOrder>(fd_derivative_order.value_or(2)),
         db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
             *box),
         subcell_mesh, recons.ghost_zone_size());
