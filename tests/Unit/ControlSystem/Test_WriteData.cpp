@@ -117,7 +117,7 @@ void check_written_data(
   std::array<DataVector, 3> func_and_2_derivs{};
   // This has to be the same as in control_system::write_components_to_disk
   const std::vector<std::string> compare_legend{
-      "Time",         "Lambda",         "dtLambda",        "d2tLambda",
+      "Time",         "FunctionOfTime", "dtFunctionOfTime", "d2tFunctionOfTime",
       "ControlError", "dtControlError", "DampingTimescale"};
 
   auto& read_file = ActionTesting::get_databox_tag<
