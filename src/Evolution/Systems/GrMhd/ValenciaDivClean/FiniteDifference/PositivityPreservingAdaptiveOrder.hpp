@@ -206,12 +206,12 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const gsl::span<const double>&,
       const DirectionMap<dim, gsl::span<const double>>&, const Index<dim>&,
       size_t, double, double, double);
-  using PointerRecons = void (*)(
-      gsl::not_null<std::array<gsl::span<double>, dim>*>,
-      gsl::not_null<std::array<gsl::span<double>, dim>*>,
-      const gsl::span<const double>&,
-      const DirectionMap<dim, gsl::span<const double>>&, const Index<dim>&,
-      size_t, double, double, double);
+  using PointerRecons =
+      void (*)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
+               gsl::not_null<std::array<gsl::span<double>, dim>*>,
+               const gsl::span<const double>&,
+               const DirectionMap<dim, gsl::span<const double>>&,
+               const Index<dim>&, size_t, double, double, double);
   PointerRecons reconstruct_ = nullptr;
   PointerReconsOrder pp_reconstruct_ = nullptr;
 

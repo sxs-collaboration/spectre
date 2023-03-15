@@ -72,14 +72,14 @@ void reconstruct_prims_work(
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   size_t vars_in_neighbor_count = 0;
   tmpl::for_each<PrimTagsForReconstruction>([&element, &neighbor_data,
-                                                neighbor_num_pts,
-                                                &hydro_reconstructor,
-                                                reconstructed_num_pts,
-                                                volume_num_pts, &volume_prims,
-                                                &vars_in_neighbor_count,
-                                                &vars_on_lower_face,
-                                                &vars_on_upper_face,
-                                                &subcell_mesh](auto tag_v) {
+                                             neighbor_num_pts,
+                                             &hydro_reconstructor,
+                                             reconstructed_num_pts,
+                                             volume_num_pts, &volume_prims,
+                                             &vars_in_neighbor_count,
+                                             &vars_on_lower_face,
+                                             &vars_on_upper_face,
+                                             &subcell_mesh](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const typename tag::type* volume_tensor_ptr = nullptr;
     Variables<tmpl::list<
@@ -253,10 +253,10 @@ void reconstruct_fd_neighbor_work(
         subcell_volume_spacetime_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        DataVector,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(3),
+                       std::pair<Direction<3>, ElementId<3>>, DataVector,
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {
   const std::pair mortar_id{

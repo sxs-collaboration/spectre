@@ -36,10 +36,10 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -65,58 +65,58 @@ void reconstruct_prims_work(
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   size_t vars_in_neighbor_count = 0;
-  tmpl::for_each<prim_tags_for_reconstruction>(
-      [&element, &neighbor_data, neighbor_num_pts, &reconstruct,
-       reconstructed_num_pts, volume_num_pts, &volume_prims,
-       &vars_in_neighbor_count, &vars_on_lower_face, &vars_on_upper_face,
-       &subcell_mesh](auto tag_v) {
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        auto& volume_tensor = get<tag>(volume_prims);
+  tmpl::for_each<prim_tags_for_reconstruction>([&element, &neighbor_data,
+                                                neighbor_num_pts, &reconstruct,
+                                                reconstructed_num_pts,
+                                                volume_num_pts, &volume_prims,
+                                                &vars_in_neighbor_count,
+                                                &vars_on_lower_face,
+                                                &vars_on_upper_face,
+                                                &subcell_mesh](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    auto& volume_tensor = get<tag>(volume_prims);
 
-        const size_t number_of_components = volume_tensor.size();
-        const gsl::span<const double> volume_vars = gsl::make_span(
-            volume_tensor[0].data(), number_of_components * volume_num_pts);
-        std::array<gsl::span<double>, Dim> upper_face_vars{};
-        std::array<gsl::span<double>, Dim> lower_face_vars{};
-        for (size_t i = 0; i < Dim; ++i) {
-          gsl::at(upper_face_vars, i) = gsl::make_span(
-              get<tag>(gsl::at(*vars_on_upper_face, i))[0].data(),
-              number_of_components * reconstructed_num_pts);
-          gsl::at(lower_face_vars, i) = gsl::make_span(
-              get<tag>(gsl::at(*vars_on_lower_face, i))[0].data(),
-              number_of_components * reconstructed_num_pts);
-        }
+    const size_t number_of_components = volume_tensor.size();
+    const gsl::span<const double> volume_vars = gsl::make_span(
+        volume_tensor[0].data(), number_of_components * volume_num_pts);
+    std::array<gsl::span<double>, Dim> upper_face_vars{};
+    std::array<gsl::span<double>, Dim> lower_face_vars{};
+    for (size_t i = 0; i < Dim; ++i) {
+      gsl::at(upper_face_vars, i) =
+          gsl::make_span(get<tag>(gsl::at(*vars_on_upper_face, i))[0].data(),
+                         number_of_components * reconstructed_num_pts);
+      gsl::at(lower_face_vars, i) =
+          gsl::make_span(get<tag>(gsl::at(*vars_on_lower_face, i))[0].data(),
+                         number_of_components * reconstructed_num_pts);
+    }
 
-        DirectionMap<Dim, gsl::span<const double>> ghost_cell_vars{};
-        for (const auto& direction : Direction<Dim>::all_directions()) {
-          const auto& neighbors_in_direction =
-              element.neighbors().at(direction);
-          ASSERT(neighbors_in_direction.size() == 1,
-                 "Currently only support one neighbor in each direction, but "
-                 "got "
-                     << neighbors_in_direction.size() << " in direction "
-                     << direction);
-          ASSERT(
-              neighbor_data
-                      .at(std::pair{direction, *neighbors_in_direction.begin()})
-                      .size() != 0,
-              "The neighber data is empty in direction "
-                  << direction << " on element id " << element.id());
-          ghost_cell_vars[direction] = gsl::make_span(
-              &neighbor_data.at(std::pair{
-                  direction,
-                  *neighbors_in_direction
-                       .begin()})[vars_in_neighbor_count * neighbor_num_pts],
-              number_of_components * neighbor_num_pts);
-        }
+    DirectionMap<Dim, gsl::span<const double>> ghost_cell_vars{};
+    for (const auto& direction : Direction<Dim>::all_directions()) {
+      const auto& neighbors_in_direction = element.neighbors().at(direction);
+      ASSERT(neighbors_in_direction.size() == 1,
+             "Currently only support one neighbor in each direction, but "
+             "got "
+                 << neighbors_in_direction.size() << " in direction "
+                 << direction);
+      ASSERT(neighbor_data
+                     .at(std::pair{direction, *neighbors_in_direction.begin()})
+                     .size() != 0,
+             "The neighber data is empty in direction "
+                 << direction << " on element id " << element.id());
+      ghost_cell_vars[direction] = gsl::make_span(
+          &neighbor_data.at(std::pair{
+              direction,
+              *neighbors_in_direction
+                   .begin()})[vars_in_neighbor_count * neighbor_num_pts],
+          number_of_components * neighbor_num_pts);
+    }
 
-        reconstruct(make_not_null(&upper_face_vars),
-                    make_not_null(&lower_face_vars), volume_vars,
-                    ghost_cell_vars, subcell_mesh.extents(),
-                    number_of_components);
+    reconstruct(make_not_null(&upper_face_vars),
+                make_not_null(&lower_face_vars), volume_vars, ghost_cell_vars,
+                subcell_mesh.extents(), number_of_components);
 
-        vars_in_neighbor_count += number_of_components;
-      });
+    vars_in_neighbor_count += number_of_components;
+  });
 
   for (size_t i = 0; i < Dim; ++i) {
     auto& vars_upper_face = gsl::at(*vars_on_upper_face, i);
@@ -164,10 +164,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {

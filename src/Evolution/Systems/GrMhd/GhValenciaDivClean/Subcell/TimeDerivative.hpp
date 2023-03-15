@@ -483,15 +483,14 @@ struct TimeDerivative {
     // This is reasonable since the systems are a tensor product system.
     const auto& base_boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
-    using derived_boundary_corrections = typename std::decay_t<
-        decltype(base_boundary_correction)>::creatable_classes;
+    using derived_boundary_corrections = typename std::decay_t<decltype(
+        base_boundary_correction)>::creatable_classes;
     std::array<Variables<grmhd_evolved_vars_tags>, 3> boundary_corrections{};
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &base_boundary_correction, [&](const auto* gh_grmhd_correction) {
           // Need the GH packaged tags to avoid projecting them.
-          using gh_dg_package_field_tags = typename std::decay_t<
-              decltype(gh_grmhd_correction
-                           ->gh_correction())>::dg_package_field_tags;
+          using gh_dg_package_field_tags = typename std::decay_t<decltype(
+              gh_grmhd_correction->gh_correction())>::dg_package_field_tags;
           // Only apply correction to GRMHD variables.
           const auto& boundary_correction =
               gh_grmhd_correction->valencia_correction();
@@ -520,8 +519,8 @@ struct TimeDerivative {
               &recons,
               [&box, &package_data_argvars_lower_face,
                &package_data_argvars_upper_face](const auto& reconstructor) {
-                db::apply<typename std::decay_t<
-                    decltype(*reconstructor)>::reconstruction_argument_tags>(
+                db::apply<typename std::decay_t<decltype(
+                    *reconstructor)>::reconstruction_argument_tags>(
                     [&package_data_argvars_lower_face,
                      &package_data_argvars_upper_face,
                      &reconstructor](const auto&... args) {

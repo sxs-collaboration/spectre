@@ -8,8 +8,8 @@
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -33,10 +33,10 @@ void reconstruct_work(
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // check if subcell mesh is isotropic
   ASSERT(Mesh<Dim>(subcell_mesh.extents(0), subcell_mesh.basis(0),
@@ -78,11 +78,11 @@ void reconstruct_work(
            "got "
                << neighbors_in_direction.size() << " in direction "
                << direction);
-    ASSERT(neighbor_data
-                   .at(std::pair{direction, *neighbors_in_direction.begin()})
-                   .size() != 0,
-           "The neighber data is empty in direction "
-               << direction << " on element id " << element.id());
+    ASSERT(
+        neighbor_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+                .size() != 0,
+        "The neighber data is empty in direction "
+            << direction << " on element id " << element.id());
 
     ghost_cell_vars[direction] =
         gsl::make_span(&neighbor_data.at(std::pair{
@@ -109,10 +109,10 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
