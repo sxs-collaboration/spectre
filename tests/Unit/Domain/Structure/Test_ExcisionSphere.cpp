@@ -101,8 +101,8 @@ void test_abutting_direction_shell() {
         true,
         std::nullopt,
         {2.},
-        {domain::CoordinateMaps::Distribution::Linear,
-         domain::CoordinateMaps::Distribution::Linear}};
+        {std::vector{{domain::CoordinateMaps::Distribution::Linear,
+                      domain::CoordinateMaps::Distribution::Linear}}}};
     std::vector<domain::creators::Sphere> shells{};
     shells.push_back(std::move(shell_plain));
     shells.push_back(std::move(shell_partitioned));

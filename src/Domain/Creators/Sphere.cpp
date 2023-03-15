@@ -49,6 +49,24 @@ Excision::Excision(
     : boundary_condition(std::move(local_boundary_condition)) {}
 }  // namespace detail
 
+namespace {
+struct DistributionVisitor {
+  size_t num_shells;
+
+  std::vector<domain::CoordinateMaps::Distribution> operator()(
+      const domain::CoordinateMaps::Distribution distribution) const {
+    return std::vector<domain::CoordinateMaps::Distribution>(num_shells,
+                                                             distribution);
+  }
+
+  std::vector<domain::CoordinateMaps::Distribution> operator()(
+      const std::vector<domain::CoordinateMaps::Distribution>& distributions)
+      const {
+    return distributions;
+  }
+};
+}  // namespace
+
 Sphere::Sphere(
     double inner_radius, double outer_radius,
     std::variant<Excision, InnerCube> interior,
@@ -57,7 +75,7 @@ Sphere::Sphere(
     bool use_equiangular_map,
     std::optional<EquatorialCompressionOptions> equatorial_compression,
     std::vector<double> radial_partitioning,
-    std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    const typename RadialDistribution::type& radial_distribution,
     ShellWedges which_wedges,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
@@ -71,7 +89,6 @@ Sphere::Sphere(
       use_equiangular_map_(use_equiangular_map),
       equatorial_compression_(equatorial_compression),
       radial_partitioning_(std::move(radial_partitioning)),
-      radial_distribution_(std::move(radial_distribution)),
       which_wedges_(which_wedges),
       time_dependence_(std::move(time_dependence)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
@@ -112,6 +129,8 @@ Sphere::Sphere(
     }
   }
   num_shells_ = 1 + radial_partitioning_.size();
+  radial_distribution_ =
+      std::visit(DistributionVisitor{num_shells_}, radial_distribution);
   if (radial_distribution_.size() != num_shells_) {
     PARSE_ERROR(context,
                 "Specify a 'RadialDistribution' for every spherical shell. You "
@@ -131,9 +150,9 @@ Sphere::Sphere(
 
   // Determine number of blocks
   const size_t num_blocks_per_shell =
-      which_wedges_ == ShellWedges::All             ? 6
-      : which_wedges_ == ShellWedges::FourOnEquator ? 4
-                                                    : 1;
+      which_wedges_ == ShellWedges::All
+          ? 6
+          : which_wedges_ == ShellWedges::FourOnEquator ? 4 : 1;
   num_blocks_ = num_blocks_per_shell * num_shells_ + (fill_interior_ ? 1 : 0);
 
   // Create block names and groups
