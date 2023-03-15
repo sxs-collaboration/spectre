@@ -336,6 +336,11 @@ jobs:
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
             ccache_max_size: 2G
+          # This configuration seems to run consistently slower than newer gcc
+          # or clang builds, so we increase the test timeout a bit
+          - compiler: gcc-10
+            build_type: Debug
+            TEST_TIMEOUT_FACTOR: 2
           # Test with Python 3.7 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
