@@ -28,14 +28,12 @@ namespace control_system {
  *
  * \details The columns of data written are:
  * - %Time
- * - Lambda
- * - dtLambda
- * - d2tLambda
+ * - FunctionOfTime
+ * - dtFunctionOfTime
+ * - d2tFunctionOfTime
  * - ControlError
  * - dtControlError
  * - DampingTimescale
- *
- * where "Lambda" is the function of time value.
  *
  * Data will be stored in the reduction file. All subfiles for the control
  * system within the H5 file will be under the group "/ControlSystems".
@@ -105,9 +103,13 @@ void write_components_to_disk(
     // everything with ControlSystems/
     const std::string subfile_name{"/ControlSystems/" + ControlSystem::name() +
                                    "/" + *component_name_opt};
-    std::vector<std::string> legend{
-        "Time",         "Lambda",         "dtLambda",        "d2tLambda",
-        "ControlError", "dtControlError", "DampingTimescale"};
+    std::vector<std::string> legend{"Time",
+                                    "FunctionOfTime",
+                                    "dtFunctionOfTime",
+                                    "d2tFunctionOfTime",
+                                    "ControlError",
+                                    "dtControlError",
+                                    "DampingTimescale"};
 
     Parallel::threaded_action<
         observers::ThreadedActions::WriteReductionDataRow>(
