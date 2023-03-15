@@ -5,6 +5,9 @@ Executable: EvolveGhBinaryBlackHole
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPointsAndGridSpacing
+
 InitialData:
   NumericInitialData:
     FileGlob: "{{ IdFileGlob }}"

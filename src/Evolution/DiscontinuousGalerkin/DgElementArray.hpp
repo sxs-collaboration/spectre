@@ -20,6 +20,7 @@
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -28,6 +29,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
+#include "Parallel/Tags/Parallelization.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -71,7 +73,8 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>,
+                                             domain::Tags::ElementDistribution>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -110,16 +113,8 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
       get<domain::Tags::InitialExtents<volume_dim>>(initialization_items);
   const auto& quadrature =
       get<evolution::dg::Tags::Quadrature>(initialization_items);
-
-  bool use_z_order_distribution = true;
-  if constexpr (detail::has_use_z_order_distribution_v<Metavariables>) {
-    use_z_order_distribution = Metavariables::use_z_order_distribution;
-  }
-
-  bool local_time_stepping = false;
-  if constexpr (detail::has_local_time_stepping_v<Metavariables>) {
-    local_time_stepping = Metavariables::local_time_stepping;
-  }
+  const std::optional<domain::ElementWeight>& element_weight =
+      Parallel::get<domain::Tags::ElementDistribution>(local_cache);
 
   const size_t number_of_procs = Parallel::number_of_procs<size_t>(local_cache);
   const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(local_cache);
@@ -127,16 +122,19 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
 
   const auto& blocks = domain.blocks();
 
-  const std::unordered_map<ElementId<volume_dim>, double> element_costs =
-      domain::get_element_costs(
-          blocks, initial_refinement_levels, initial_extents,
-          local_time_stepping
-              ? domain::ElementWeight::NumGridPointsAndGridSpacing
-              : domain::ElementWeight::NumGridPoints,
-          quadrature);
-  const domain::BlockZCurveProcDistribution<volume_dim> element_distribution{
-      element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
-      initial_extents, procs_to_ignore};
+  // Only need the element distribution if the element weight has a value
+  // because then we have to use the space filling curve and not just use round
+  // robin.
+  domain::BlockZCurveProcDistribution<volume_dim> element_distribution{};
+  if (element_weight.has_value()) {
+    const std::unordered_map<ElementId<volume_dim>, double> element_costs =
+        domain::get_element_costs(blocks, initial_refinement_levels,
+                                  initial_extents, element_weight.value(),
+                                  quadrature);
+    element_distribution = domain::BlockZCurveProcDistribution<volume_dim>{
+        element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
+        initial_extents, procs_to_ignore};
+  }
 
   // Will be used to print domain diagnostic info
   std::vector<size_t> elements_per_core(number_of_procs, 0_st);
@@ -153,7 +151,8 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     const std::vector<ElementId<volume_dim>> element_ids =
         initial_element_ids(block.id(), initial_ref_levs);
 
-    if (use_z_order_distribution) {
+    // Value means ZCurve. nullopt means round robin
+    if (element_weight.has_value()) {
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);

@@ -15,6 +15,9 @@ Description: |
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
@@ -73,6 +76,10 @@ SchwarzSmoother:
   ObservePerCoreReductions: False
 
 ConvergenceReason: NumIterations
+
+Discretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
 
 Observers:
   VolumeFileName: "Test_SchwarzAlgorithm_Volume"

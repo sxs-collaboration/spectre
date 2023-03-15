@@ -12,6 +12,9 @@ ExpectedOutput:
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPointsAndGridSpacing
+
 Amr:
   Criteria:
   Verbosity: Quiet

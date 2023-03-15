@@ -21,6 +21,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -85,7 +86,8 @@ struct InitializeElement {
       tmpl::list<::domain::Tags::InitialExtents<1>,
                  ::domain::Tags::InitialRefinementLevels<1>>;
   using const_global_cache_tags =
-      tmpl::list<helpers_distributed::Source, OperatorIsMassive>;
+      tmpl::list<helpers_distributed::Source, OperatorIsMassive,
+                 elliptic::dg::Tags::Quadrature>;
   using simple_tags =
       tmpl::list<::domain::Tags::Mesh<1>,
                  ::domain::Tags::Coordinates<1, Frame::Inertial>, fields_tag,
@@ -97,7 +99,7 @@ struct InitializeElement {
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Initialize geometry
@@ -105,7 +107,8 @@ struct InitializeElement {
         db::get<::domain::Tags::InitialExtents<1>>(box);
     const auto& domain = db::get<::domain::Tags::Domain<1>>(box);
     auto mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+        initial_extents, element_id,
+        Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     const auto logical_coords = logical_coordinates(mesh);
     const auto& block = domain.blocks()[element_id.block_id()];
     const ElementMap<1, Frame::Inertial> element_map{

@@ -17,6 +17,9 @@ Description: |
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
@@ -58,6 +61,10 @@ ExpectedResult:
   - [0.9928055333486303, 0.7253224709680011, -0.04332079221988417]
 
 OperatorIsMassive: False
+
+Discretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
 
 Observers:
   VolumeFileName: "Test_MultigridAlgorithm_Volume"

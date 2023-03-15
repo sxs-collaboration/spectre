@@ -5,6 +5,9 @@ Executable: EvolveGhSingleBlackHole
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 # Note: most of the parameters in this file are just made up. They should be
 # replaced with values that make sense once we have a better idea of the
 # transition to ringdown.

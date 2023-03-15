@@ -8,6 +8,9 @@ Testing:
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 ResourceInfo:
   AvoidGlobalProc0: false
   Singletons:

@@ -8,6 +8,9 @@ Testing:
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 AnalyticData:
   PlaneWave:
     WaveVector: [0., 0., 0.]

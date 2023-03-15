@@ -12,10 +12,14 @@
 #include <vector>
 
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags/ElementDistribution.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
@@ -102,8 +106,14 @@ struct ElementsAllocator
         get<Tags::ChildrenRefinementLevels<Dim>>(initialization_items);
     auto& parent_refinement_levels =
         get<Tags::ParentRefinementLevels<Dim>>(initialization_items);
+    const auto& quadrature =
+        Parallel::get<elliptic::dg::Tags::Quadrature>(local_cache);
+    const std::optional<domain::ElementWeight>& element_weight =
+        get<domain::Tags::ElementDistribution>(local_cache);
     std::optional<size_t> max_levels =
         get<Tags::MaxLevels<OptionsGroup>>(local_cache);
+    const size_t number_of_procs =
+        Parallel::number_of_procs<size_t>(local_cache);
     if (max_levels == 0) {
       ERROR_NO_TRACE(
           "The 'MaxLevels' option includes the finest grid, so '0' is not a "
@@ -167,19 +177,36 @@ struct ElementsAllocator
       // processors
       const size_t num_of_procs_to_use =
           static_cast<size_t>(sys::number_of_procs()) - procs_to_ignore.size();
-      const std::unordered_map<ElementId<Dim>, double> element_costs =
-          domain::get_element_costs(
-              blocks, initial_refinement_levels, initial_extents,
-              domain::ElementWeight::NumGridPoints, std::nullopt);
-      const domain::BlockZCurveProcDistribution<Dim> element_distribution{
-          element_costs,   num_of_procs_to_use,
-          blocks,          initial_refinement_levels,
-          initial_extents, procs_to_ignore};
-      for (const auto& element_id : element_ids) {
-        const size_t target_proc =
-            element_distribution.get_proc_for_element(element_id);
-        element_array(element_id)
-            .insert(global_cache, initialization_items, target_proc);
+      // Distributed with weighted space filling curve
+      if (element_weight.has_value()) {
+        const std::unordered_map<ElementId<Dim>, double> element_costs =
+            domain::get_element_costs(blocks, initial_refinement_levels,
+                                      initial_extents, element_weight.value(),
+                                      quadrature);
+        const domain::BlockZCurveProcDistribution<Dim> element_distribution{
+            element_costs,   num_of_procs_to_use,
+            blocks,          initial_refinement_levels,
+            initial_extents, procs_to_ignore};
+
+        for (const auto& element_id : element_ids) {
+          const size_t target_proc =
+              element_distribution.get_proc_for_element(element_id);
+          element_array(element_id)
+              .insert(global_cache, initialization_items, target_proc);
+        }
+      } else {
+        // Distributed with round-robin
+        size_t which_proc = 0;
+        for (const auto& element_id : element_ids) {
+          while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
+            which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+          }
+
+          element_array(element_id)
+              .insert(global_cache, initialization_items, which_proc);
+
+          which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+        }
       }
       Parallel::printf(
           "%s level %zu has %zu elements in %zu blocks distributed on %d "
