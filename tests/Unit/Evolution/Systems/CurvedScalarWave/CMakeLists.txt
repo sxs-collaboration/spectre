@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Worldtube/ElementActions/Test_SendToWorldtube.cpp
   Worldtube/ElementActions/Test_ReceiveWorldtubeData.cpp
   Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
+  Worldtube/SingletonActions/Test_InitializeEvolvedVariables.cpp
   )
 
 add_test_library(

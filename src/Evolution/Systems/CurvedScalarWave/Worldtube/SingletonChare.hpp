@@ -5,9 +5,12 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeEvolvedVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -17,7 +20,13 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/UpdateU.hpp"
+#include "Time/SelfStart.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -36,19 +45,36 @@ struct WorldtubeSingleton {
   using metavariables = Metavariables;
   using evolved_vars = ::Tags::Variables<
       tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi>>;
+  // not currently supported
+  static constexpr bool local_time_stepping = false;
+  using initialization_actions = tmpl::list<
+      ::Initialization::Actions::InitializeItems<
+          ::Initialization::TimeStepping<Metavariables, local_time_stepping>,
+          Initialization::InitializeEvolvedVariables,
+          Initialization::InitializeElementFacesGridCoordinates<Dim>>,
+      Parallel::Actions::TerminatePhase>;
 
-  using initialization_actions =
-      tmpl::list<Initialization::InitializeElementFacesGridCoordinates<Dim>,
-                 Parallel::Actions::TerminatePhase>;
-
-  using step_actions = tmpl::list<Actions::ReceiveElementData>;
-
+  struct worldtube_system {
+    static constexpr size_t volume_dim = Dim;
+    static constexpr bool has_primitive_and_conservative_vars = false;
+    using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0>>;
+  };
+  using step_actions =
+      tmpl::list<Actions::ReceiveElementData,
+                 Actions::SendToElements<Metavariables>,
+                 ::Actions::RecordTimeStepperData<
+                     typename worldtube_system::variables_tag>,
+                 ::Actions::UpdateU<typename worldtube_system::variables_tag>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialization_actions>,
+      Parallel::PhaseActions<
+          Parallel::Phase::InitializeTimeStepperHistory,
+          SelfStart::self_start_procedure<step_actions, worldtube_system>>,
       Parallel::PhaseActions<Parallel::Phase::Register,
                              tmpl::list<Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<Parallel::Phase::Evolve, step_actions>>;
+      Parallel::PhaseActions<Parallel::Phase::Evolve,
+                             tmpl::list<step_actions, ::Actions::AdvanceTime>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
