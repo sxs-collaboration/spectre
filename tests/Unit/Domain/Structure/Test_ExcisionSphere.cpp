@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -88,23 +88,22 @@ void test_abutting_direction_shell() {
   const double inner_radius = 1.3;
   for (const auto& ref_level : std::array<size_t, 3>{{0, 1, 2}}) {
     // shell without radial partition (blocks have 2 outer boundaries)
-    domain::creators::Shell shell_plain{
-        inner_radius, 3.,
-        ref_level,    {4, 4},
-        true,         {},
-        {},           {domain::CoordinateMaps::Distribution::Linear}};
+    domain::creators::Sphere shell_plain{
+        inner_radius, 3.,   domain::creators::Sphere::Excision{},
+        ref_level,    4_st, true};
     // shell with radial partition (blocks have 1 outer boundary)
-    domain::creators::Shell shell_partitioned{
+    domain::creators::Sphere shell_partitioned{
         inner_radius,
         3.,
+        domain::creators::Sphere::Excision{},
         ref_level,
-        {4, 4},
+        4_st,
         true,
-        {},
+        std::nullopt,
         {2.},
         {domain::CoordinateMaps::Distribution::Linear,
          domain::CoordinateMaps::Distribution::Linear}};
-    std::vector<domain::creators::Shell> shells{};
+    std::vector<domain::creators::Sphere> shells{};
     shells.push_back(std::move(shell_plain));
     shells.push_back(std::move(shell_partitioned));
     for (const auto& shell : shells) {

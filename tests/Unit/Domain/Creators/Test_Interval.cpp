@@ -69,6 +69,45 @@ void test_interval_construction(const creators::Interval& domain_creator,
   }
 }
 
+std::string option_string(const CoordinateMaps::Distribution distribution,
+                          const std::optional<double>& singularity,
+                          const bool is_periodic, const bool time_dependent,
+                          const bool with_boundary_conditions) {
+  const std::string time_dep_options = time_dependent
+                                           ? "  TimeDependence:\n"
+                                             "    UniformTranslation:\n"
+                                             "      InitialTime: 0.\n"
+                                             "      Velocity: [2.3]\n"
+                                           : "  TimeDependence: None\n";
+  const std::string bc_options =
+      with_boundary_conditions
+          ? ("  BoundaryConditions:\n"
+             "    LowerBoundary:\n" +
+             std::string{is_periodic ? "      Periodic\n"
+                                     : "      TestBoundaryCondition:\n"
+                                       "        Direction: lower-xi\n"
+                                       "        BlockId: 0\n"} +
+             "    UpperBoundary:\n" +
+             std::string{is_periodic ? "      Periodic\n"
+                                     : "      TestBoundaryCondition:\n"
+                                       "        Direction: upper-xi\n"
+                                       "        BlockId: 0\n"})
+          : ("  IsPeriodicIn: [" + std::string{is_periodic ? "True" : "False"} +
+             "]\n");
+  return "Interval:\n"
+         "  LowerBound: [-1.2]\n"
+         "  UpperBound: [0.8]\n"
+         "  Distribution: " +
+         get_output(distribution) +
+         "\n"
+         "  Singularity: " +
+         (singularity.has_value() ? std::to_string(*singularity) : "None") +
+         "\n"
+         "  InitialGridPoints: [4]\n"
+         "  InitialRefinement: [3]\n" +
+         time_dep_options + bc_options;
+}
+
 void test_interval() {
   INFO("Interval");
   const std::vector<std::array<size_t, 1>> grid_points{{{4}}};
@@ -118,6 +157,10 @@ void test_interval() {
     test_interval_construction(
         interval, false, is_periodic, lower_bound, upper_bound, times,
         time_dependent ? velocity : std::array<double, 1>{{0.}});
+    TestHelpers::domain::creators::test_creation(
+        option_string(distribution, singularity, is_periodic, time_dependent,
+                      false),
+        interval, false);
 
     const creators::Interval interval_with_bc{
         lower_bound,
@@ -134,56 +177,10 @@ void test_interval() {
     test_interval_construction(
         interval_with_bc, true, is_periodic, lower_bound, upper_bound, times,
         time_dependent ? velocity : std::array<double, 1>{{0.}});
-  }
-}
-
-void test_interval_factory() {
-  INFO("Test option creation");
-
-  const std::string time_dep_options =
-      "  TimeDependence:\n"
-      "    UniformTranslation:\n"
-      "      InitialTime: 0.\n"
-      "      Velocity: [2.3]\n";
-  const std::string no_time_dep_options = "  TimeDependence: None\n";
-  const std::vector<double> times{0., 1.5};
-  const std::array<double, 1> velocity{{2.3}};
-
-  const std::string bc_options =
-      "  BoundaryConditions:\n"
-      "    LowerBoundary:\n"
-      "      TestBoundaryCondition:\n"
-      "        Direction: lower-xi\n"
-      "        BlockId: 0\n"
-      "    UpperBoundary:\n"
-      "      TestBoundaryCondition:\n"
-      "        Direction: upper-xi\n"
-      "        BlockId: 0\n";
-  const std::string no_bc_options = "  IsPeriodicIn: [True]\n";
-
-  for (const auto& [time_dependent, with_boundary_conditions] :
-       cartesian_product(make_array(true, false), make_array(true, false))) {
-    CAPTURE(time_dependent);
-    CAPTURE(with_boundary_conditions);
-    const bool is_periodic = not with_boundary_conditions;
-    const auto domain_creator =
-        TestHelpers::domain::BoundaryConditions::test_creation<
-            1, domain::creators::Interval>(
-            "Interval:\n"
-            "  LowerBound: [0]\n"
-            "  UpperBound: [1]\n"
-            "  Distribution: Linear\n"
-            "  Singularity: None\n"
-            "  InitialGridPoints: [3]\n"
-            "  InitialRefinement: [2]\n" +
-                (time_dependent ? time_dep_options : no_time_dep_options) +
-                (with_boundary_conditions ? bc_options : no_bc_options),
-            with_boundary_conditions);
-    const auto& interval =
-        dynamic_cast<const domain::creators::Interval&>(*domain_creator);
-    test_interval_construction(
-        interval, with_boundary_conditions, is_periodic, {{0.}}, {{1.}}, times,
-        time_dependent ? velocity : std::array<double, 1>{{0.}});
+    TestHelpers::domain::creators::test_creation(
+        option_string(distribution, singularity, is_periodic, time_dependent,
+                      true),
+        interval_with_bc, true);
   }
 }
 
@@ -265,7 +262,6 @@ void test_parse_errors() {
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
   test_interval();
-  test_interval_factory();
   test_parse_errors();
 }
 }  // namespace domain

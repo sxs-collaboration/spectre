@@ -47,24 +47,24 @@ InitialData: &InitialData
     Center: [0.0, 0.0, 0.0]
 
 DomainCreator:
-  Shell:
+  Sphere:
     InnerRadius: 1.9
     OuterRadius: 2.3
+    Interior:
+      ExciseWithBoundaryCondition:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
     InitialRefinement: 0
-    InitialGridPoints: [5, 5]
+    InitialGridPoints: 5
     UseEquiangularMap: true
     EquatorialCompression: None
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
     WhichWedges: All
     TimeDependence: None
-    BoundaryConditions:
-      InnerBoundary:
-        DirichletAnalytic:
-          AnalyticPrescription: *InitialData
-      OuterBoundary:
-        DirichletAnalytic:
-          AnalyticPrescription: *InitialData
+    OuterBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
 
 EvolutionSystem:
   GeneralizedHarmonic:

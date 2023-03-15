@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -64,12 +64,10 @@ void test_strahlkorper_coords_in_different_frame() {
         0.0, std::array<double, 3>({{-0.02, -0.01, -0.01}}),
         std::array<double, 3>({{0.01, 0.02, 0.03}}));
   }
-  domain::creators::Shell domain_creator(
-      1.9, 2.9, 1,
-      std::array<size_t, 2>{grid_points_each_dimension,
-                            grid_points_each_dimension},
-      false, {{1.0, 2}}, radial_partitioning, radial_distribution,
-      ShellWedges::All, std::move(time_dependence));
+  domain::creators::Sphere domain_creator(
+      1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+      grid_points_each_dimension, false, std::nullopt, radial_partitioning,
+      radial_distribution, ShellWedges::All, std::move(time_dependence));
   Domain<3> domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 

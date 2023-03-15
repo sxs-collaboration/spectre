@@ -9,7 +9,7 @@
 #include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -40,12 +40,10 @@ void test_strahlkorper_in_different_frame() {
   std::vector<double> radial_partitioning{};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
       domain::CoordinateMaps::Distribution::Linear};
-  domain::creators::Shell domain_creator(
-      1.9, 2.9, 1,
-      std::array<size_t, 2>{grid_points_each_dimension,
-                            grid_points_each_dimension},
-      false, {{1.0, 2}}, radial_partitioning, radial_distribution,
-      ShellWedges::All,
+  domain::creators::Sphere domain_creator(
+      1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+      grid_points_each_dimension, false, std::nullopt, radial_partitioning,
+      radial_distribution, ShellWedges::All,
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(
           0.0, std::array<double, 3>({{0.01, 0.02, 0.03}})));

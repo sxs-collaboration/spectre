@@ -11,7 +11,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -130,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   using elem_component = mock_element<metavars>;
 
   // Options
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_a(
       {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_b(

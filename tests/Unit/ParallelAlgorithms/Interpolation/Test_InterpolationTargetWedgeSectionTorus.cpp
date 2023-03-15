@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -61,8 +61,8 @@ void test_r_theta_lgl() {
       1.2, 4.0, 0.35 * M_PI, 0.55 * M_PI, num_radial, num_theta, num_phi, false,
       false);
 
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders = [&domain_creator, &num_total]() {
@@ -107,8 +107,8 @@ void test_r_theta_uniform() {
       1.8, 3.6, 0.25 * M_PI, 0.75 * M_PI, num_radial, num_theta, num_phi, true,
       true);
 
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders = [&domain_creator, &num_total]() {

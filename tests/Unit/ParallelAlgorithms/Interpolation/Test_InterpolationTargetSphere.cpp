@@ -17,7 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -119,8 +119,8 @@ void test_interpolation_target_sphere(
           std::string(MakeString{} << angular_ordering));
   CHECK(created_opts == sphere_opts);
 
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   TestHelpers::db::test_simple_tag<
       intrp::Tags::Sphere<MockMetavariables::InterpolationTargetA>>("Sphere");

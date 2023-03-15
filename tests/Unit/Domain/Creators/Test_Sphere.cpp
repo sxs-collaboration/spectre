@@ -55,24 +55,130 @@
 namespace domain {
 namespace {
 using Translation3D = CoordinateMaps::TimeDependent::Translation<3>;
+using Interior =
+    std::variant<creators::Sphere::Excision, creators::Sphere::InnerCube>;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-create_boundary_condition() {
+create_boundary_condition(const bool outer) {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
-      Direction<3>::upper_zeta(), 50);
+      outer ? Direction<3>::upper_zeta() : Direction<3>::lower_zeta(), 50);
 }
 
-// Calculate block logical coordinates residing on corners of
-// inner block or block faces of wedges
-// whose normal vector point radially outward from the
-// origin.  With this domain, this direction corresponds to
-// upper zeta.  These coordinates will be used to ensure
-// they lie on concentric spheres defined by either the inner
+Interior copy_interior(const Interior& interior,
+                       const bool with_boundary_conditions) {
+  if (std::holds_alternative<creators::Sphere::InnerCube>(interior)) {
+    return std::get<creators::Sphere::InnerCube>(interior);
+  } else {
+    return creators::Sphere::Excision{
+        with_boundary_conditions ? create_boundary_condition(false) : nullptr};
+  }
+}
+
+std::string stringize(const bool t) { return t ? "true" : "false"; }
+
+template <typename T>
+std::string stringize(const std::vector<T>& t) {
+  std::string result = "[";
+  bool first = true;
+  for (const auto& item : t) {
+    if (not first) {
+      result += ", ";
+    }
+    result += get_output(item);
+    first = false;
+  }
+  result += "]";
+  return result;
+}
+
+std::string option_string(
+    const double inner_radius, const double outer_radius,
+    const Interior& interior, const size_t initial_refinement,
+    const std::array<size_t, 3> initial_extents, const bool equiangular,
+    const std::optional<creators::Sphere::EquatorialCompressionOptions>&
+        equatorial_compression,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<CoordinateMaps::Distribution>& radial_distribution,
+    const ShellWedges which_wedges, const bool time_dependent,
+    const bool with_boundary_conditions) {
+  const std::string interior_option =
+      [&interior, &with_boundary_conditions]() -> std::string {
+    if (std::holds_alternative<creators::Sphere::Excision>(interior)) {
+      if (with_boundary_conditions) {
+        return "  Interior:\n"
+               "    ExciseWithBoundaryCondition:\n"
+               "      TestBoundaryCondition:\n"
+               "        Direction: lower-zeta\n"
+               "        BlockId: 50\n";
+      } else {
+        return "  Interior: Excise\n";
+      }
+    } else {
+      const double sphericity =
+          std::get<creators::Sphere::InnerCube>(interior).sphericity;
+      return "  Interior:\n"
+             "    FillWithSphericity: " +
+             std::to_string(sphericity) + "\n";
+    }
+  }();
+  const std::string equatorial_compression_option =
+      equatorial_compression.has_value()
+          ? "  EquatorialCompression:\n"
+            "    AspectRatio: " +
+                std::to_string(equatorial_compression->aspect_ratio) +
+                "\n"
+                "    IndexPolarAxis: " +
+                std::to_string(equatorial_compression->index_polar_axis) + "\n"
+          : "  EquatorialCompression: None\n";
+  const std::string time_dependence_option =
+      time_dependent ? "  TimeDependence:\n"
+                       "    UniformTranslation:\n"
+                       "      InitialTime: 1.0\n"
+                       "      Velocity: [2.3, -0.3, 0.5]\n"
+                     : "  TimeDependence: None\n";
+  const std::string outer_bc_option = with_boundary_conditions
+                                          ? "  OuterBoundaryCondition:\n"
+                                            "    TestBoundaryCondition:\n"
+                                            "      Direction: upper-zeta\n"
+                                            "      BlockId: 50\n"
+                                          : "";
+  return "Sphere:\n"
+         "  InnerRadius: " +
+         std::to_string(inner_radius) +
+         "\n"
+         "  OuterRadius: " +
+         std::to_string(outer_radius) + "\n" + interior_option +
+         "  InitialRefinement: " + std::to_string(initial_refinement) +
+         "\n"
+         "  InitialGridPoints: [" +
+         std::to_string(initial_extents[0]) + ", " +
+         std::to_string(initial_extents[1]) + ", " +
+         std::to_string(initial_extents[2]) +
+         "]\n"
+         "  UseEquiangularMap: " +
+         stringize(equiangular) +
+         "\n"
+         "  EquatorialCompression: None\n"
+         "  WhichWedges: " +
+         get_output(which_wedges) +
+         "\n"
+         "  RadialPartitioning: " +
+         stringize(radial_partitioning) +
+         "\n"
+         "  RadialDistribution: " +
+         stringize(radial_distribution) + "\n" + time_dependence_option +
+         outer_bc_option;
+}
+
+// Calculate block logical coordinates of points residing on corners of the
+// inner cube or on radial block faces of wedges. The radial direction in 3D
+// wedges is the positive zeta direction. These coordinates will be used to
+// ensure the points lie on concentric spheres defined by either the inner
 // sphere, outer sphere, or radial partition parameters.
 tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
-    const gsl::not_null<std::mt19937*> generator, const size_t num_blocks,
-    const size_t block_id, const bool abuts_inner_block) {
+    const gsl::not_null<std::mt19937*> generator, const bool is_inner_cube,
+    const bool abuts_inner_cube) {
   std::uniform_real_distribution<> real_dis(-1, 1);
 
   const double rand_int_xi = (2.0 * (rand() % 2) - 1.0);
@@ -87,14 +193,14 @@ tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
   // upper zeta face of wedges
   const double zeta_logical_coord = rand_int_zeta;
 
-  if (block_id == num_blocks - 1) {
-    // inner block only uses integer corners
+  if (is_inner_cube) {
+    // inner cube only uses integer corners
     xi_logical_coord = rand_int_xi;
     eta_logical_coord = rand_int_eta;
 
-  } else if (abuts_inner_block) {
-    // next to inner block,
-    // corners only on lower face b/c of square inner block neighbor
+  } else if (abuts_inner_cube) {
+    // next to inner cube,
+    // corners only on lower face b/c of square inner cube neighbor
     // face
     xi_logical_coord = rand_int_xi;
     eta_logical_coord = rand_int_eta;
@@ -118,8 +224,10 @@ tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
 
 void test_sphere_construction(
     const creators::Sphere& sphere, const double inner_radius,
-    const double outer_radius, const std::vector<double>& radial_partitioning,
-    const bool expect_boundary_conditions,
+    const double outer_radius, const bool fill_interior,
+    const std::vector<double> radial_partitioning = {},
+    const ShellWedges which_wedges = ShellWedges::All,
+    const bool expect_boundary_conditions = true,
     const std::vector<double>& times = {0.},
     const std::array<double, 3>& velocity = {{0., 0., 0.}}) {
   // check consistency of domain
@@ -138,10 +246,26 @@ void test_sphere_construction(
   expected_corner_radii.insert(expected_corner_radii.begin(), inner_radius);
   expected_corner_radii.emplace_back(outer_radius);
 
+  // Check total number of external boundaries
+  const size_t num_shells = radial_partitioning.size() + 1;
+  const size_t num_external_boundaries =
+      alg::accumulate(blocks, 0_st, [](const size_t count, const auto& block) {
+        return count + block.external_boundaries().size();
+      });
+  if (which_wedges == ShellWedges::All) {
+    CHECK(num_external_boundaries == (fill_interior ? 6 : 12));
+  } else if (which_wedges == ShellWedges::FourOnEquator) {
+    CHECK(num_external_boundaries ==
+          ((fill_interior ? 2 : 4) + 4 * (1 + num_shells * 2)));
+  } else if (which_wedges == ShellWedges::OneAlongMinusX) {
+    CHECK(num_external_boundaries ==
+          ((fill_interior ? 5 : 1) + 1 + num_shells * 4));
+  }
+
   MAKE_GENERATOR(generator);
 
-  // verify if adjacent to inner block
-  const auto abuts_inner_block =
+  // verify if adjacent to inner cube
+  const auto abuts_inner_cube =
       [&num_blocks](const auto& direction_and_neighbor) {
         return direction_and_neighbor.second.id() == num_blocks - 1;
       };
@@ -150,15 +274,16 @@ void test_sphere_construction(
     CAPTURE(block_id);
     const auto& block = blocks[block_id];
     const auto& boundary_conditions = all_boundary_conditions[block_id];
+    const bool is_inner_cube = fill_interior and block_id == num_blocks - 1;
 
     {
       INFO("Block boundaries are spherical");
       // This section tests if the logical coordinates of corners from all
       // blocks (and points on upper wedge faces) lie on spherical shells
       // specified by inner radius, radial partitions, or outer radius
-      const auto coords_on_spherical_partition =
-          logical_coords(make_not_null(&generator), num_blocks, block_id,
-                         alg::any_of(block.neighbors(), abuts_inner_block));
+      const auto coords_on_spherical_partition = logical_coords(
+          make_not_null(&generator), is_inner_cube,
+          fill_interior and alg::any_of(block.neighbors(), abuts_inner_cube));
       for (const double current_time : times) {
         CAPTURE(current_time);
         const double corner_distance_from_origin =
@@ -195,45 +320,61 @@ void test_sphere_construction(
       }
     }
 
-    // if block has 5 neighbors, 1 face should be external, and that direction
-    // should be upper_zeta, for the sphere
-    if (block.neighbors().size() == 5) {
-      CHECK(size(block.external_boundaries()) == 1);
-      CHECK(*begin(block.external_boundaries()) == Direction<3>::upper_zeta());
-
-      // also 5 neighbor blocks should only have 1 boundary condition
-      if (expect_boundary_conditions) {
-        CHECK(size(boundary_conditions) == 1);
+    if (which_wedges == ShellWedges::All) {
+      INFO("External boundaries");
+      const auto& external_boundaries = block.external_boundaries();
+      CAPTURE(external_boundaries);
+      if (is_inner_cube) {
+        // Inner cube cannot have external boundaries
+        CHECK(external_boundaries.empty());
+      } else {
+        // Wedges can have 0, 1, or 2 external boundaries
+        std::unordered_set<size_t> allowed_num_external_boundaries{};
+        if (fill_interior) {
+          allowed_num_external_boundaries.insert(1);
+        } else {
+          allowed_num_external_boundaries.insert(2);
+        }
+        if (not radial_partitioning.empty()) {
+          allowed_num_external_boundaries.insert(0);
+          allowed_num_external_boundaries.insert(1);
+        }
+        CHECK(allowed_num_external_boundaries.count(
+                  external_boundaries.size()) == 1);
       }
-      // Consistency check for like neighbor block directions: if block has 5
-      // neighbors, it's external --> four of the neighbors should have upper
-      // zeta external boundaries
-      size_t neighbor_count = 0;
-      for (auto neighbor : block.neighbors()) {
-        auto neighbor_id = neighbor.second;
-
-        if (size(blocks[neighbor_id.id()].external_boundaries()) == 1) {
-          if (*begin(blocks[neighbor_id.id()].external_boundaries()) ==
-              Direction<3>::upper_zeta()) {
-            neighbor_count++;
+      // All external boundaries must be radial
+      for (const Direction<3>& direction : external_boundaries) {
+        CAPTURE(direction);
+        if (fill_interior) {
+          // Stronger condition for filled sphere: all external boundaries
+          // must be upper zeta
+          CHECK(direction == Direction<3>::upper_zeta());
+        } else {
+          CHECK(direction.axis() == Direction<3>::Axis::Zeta);
+        }
+      }
+      // All angular neighbors must have the same external boundaries
+      if (not is_inner_cube) {
+        for (const auto& [direction, neighbor_id] : block.neighbors()) {
+          CAPTURE(direction);
+          if (direction.axis() != Direction<3>::Axis::Zeta) {
+            CHECK(blocks[neighbor_id.id()].external_boundaries() ==
+                  external_boundaries);
           }
         }
       }
+    }
 
-      CHECK(neighbor_count == 4);
-      // if > 5 neighbors, none should have external boundaries
-    } else if (block.neighbors().size() == 6) {
-      // internal block case
-      CHECK(size(block.external_boundaries()) == 0);
-      // internal blocks should not have boundary conditions
-      if (expect_boundary_conditions) {
-        CHECK(size(boundary_conditions) == 0);
+    if (expect_boundary_conditions) {
+      INFO("Boundary conditions");
+      for (const auto& direction : block.external_boundaries()) {
+        CAPTURE(direction);
+        const auto& boundary_condition =
+            dynamic_cast<const TestHelpers::domain::BoundaryConditions::
+                             TestBoundaryCondition<3>&>(
+                *boundary_conditions.at(direction));
+        CHECK(boundary_condition.direction() == direction);
       }
-    } else {
-      // If here, something is wrong; should only have 5 or 6 neighbors, so
-      // throw a guaranteed failure.
-      const bool block_does_not_have_correct_number_of_neighbors = false;
-      CHECK(block_does_not_have_correct_number_of_neighbors);
     }
   }  // block loop
 }  // test_sphere_construction()
@@ -243,8 +384,12 @@ void test_parse_errors() {
   INFO("Sphere check throws");
   const double inner_radius = 1.0;
   const double outer_radius = 2.0;
+  const creators::Sphere::InnerCube inner_cube{0.0};
   const size_t refinement = 2;
   const std::array<size_t, 3> initial_extents{{4, 5, 6}};
+  const bool use_equiangular_map = true;
+  const std::optional<creators::Sphere::EquatorialCompressionOptions>
+      equatorial_compression = std::nullopt;
   const std::vector<double> radial_partitioning = {};
   const std::vector<double> radial_partitioning_unordered = {
       {1.5 * inner_radius, 1.1 * inner_radius}};
@@ -261,96 +406,64 @@ void test_parse_errors() {
   const std::vector<domain::CoordinateMaps::Distribution>
       radial_distribution_inner_log{
           domain::CoordinateMaps::Distribution::Logarithmic};
+  const ShellWedges which_wedges = ShellWedges::All;
 
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, -1.0, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
-  CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 1.0, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
-  CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 2.0, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
-
-  CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, 0.5 * inner_radius, 0.5, refinement, initial_extents,
-          true, radial_partitioning, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, 0.5 * inner_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution, which_wedges, nullptr, nullptr,
+                       Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Inner radius must be smaller than outer radius"));
 
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 0.5, refinement, initial_extents, true,
-          radial_partitioning_unordered, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning_unordered,
+                       radial_distribution, which_wedges, nullptr, nullptr,
+                       Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Specify radial partitioning in ascending order."));
 
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 0.5, refinement, initial_extents, true,
-          radial_partitioning_low, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning_low,
+                       radial_distribution, which_wedges, nullptr, nullptr,
+                       Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "First radial partition must be larger than inner"));
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 0.5, refinement, initial_extents, true,
-          radial_partitioning_high, radial_distribution, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning_high,
+                       radial_distribution, which_wedges, nullptr, nullptr,
+                       Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Last radial partition must be smaller than outer"));
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 0.5, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution_too_many, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution_too_many, which_wedges, nullptr,
+                       nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Specify a 'RadialDistribution' for every spherical shell. You"));
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, 0.5, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution_inner_log, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution_inner_log, which_wedges, nullptr,
+                       nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The 'RadialDistribution' must be 'Linear' for the"));
 
   CHECK_THROWS_WITH(
       creators::Sphere(
-          inner_radius, outer_radius, 0.0, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution, nullptr,
+          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
+          use_equiangular_map, equatorial_compression, radial_partitioning,
+          radial_distribution, which_wedges, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -358,8 +471,9 @@ void test_parse_errors() {
           "Cannot have periodic boundary conditions with a Sphere"));
   CHECK_THROWS_WITH(
       creators::Sphere(
-          inner_radius, outer_radius, 0.0, refinement, initial_extents, true,
-          radial_partitioning, radial_distribution, nullptr,
+          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
+          use_equiangular_map, equatorial_compression, radial_partitioning,
+          radial_distribution, which_wedges, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -368,13 +482,23 @@ void test_parse_errors() {
           "an outflow-type boundary condition, you must use that."));
 }
 
-// Check wedge neighbors have consistent directions & orientations
-void test_sphere_boundaries() {
-  INFO("Ensure sphere boundaries are equidistant");
+void test_sphere() {
+  MAKE_GENERATOR(gen);
+
   const double inner_radius = 1.0;
   const double outer_radius = 2.0;
   const size_t initial_refinement = 3;
   const std::array<size_t, 3> initial_extents{{4, 5, 6}};
+
+  const std::array<
+      std::variant<creators::Sphere::Excision, creators::Sphere::InnerCube>, 3>
+      interiors{{creators::Sphere::Excision{}, creators::Sphere::InnerCube{0.0},
+                 creators::Sphere::InnerCube{0.7}}};
+  const std::array<
+      std::optional<creators::Sphere::EquatorialCompressionOptions>, 2>
+      equatorial_compressions{
+          {std::nullopt,
+           creators::Sphere::EquatorialCompressionOptions{0.5, 2}}};
   const std::array<std::vector<double>, 2> radial_partitioning{
       {{}, {0.5 * (inner_radius + outer_radius)}}};
   const std::array<std::vector<domain::CoordinateMaps::Distribution>, 2>
@@ -383,88 +507,74 @@ void test_sphere_boundaries() {
            {domain::CoordinateMaps::Distribution::Linear,
             domain::CoordinateMaps::Distribution::Logarithmic}}};
 
-  for (const auto& [sphericity, equiangular, array_index] :
-       cartesian_product(make_array(0.0, 0.7), make_array(false, true),
-                         make_array(0.0, 1.0))) {
-    CAPTURE(inner_radius);
-    CAPTURE(outer_radius);
-    CAPTURE(sphericity);
-    CAPTURE(initial_refinement);
-    CAPTURE(initial_extents);
-    CAPTURE(equiangular);
-    CAPTURE(radial_partitioning[array_index]);
-    CAPTURE(radial_distribution[array_index]);
-
-    const creators::Sphere sphere{inner_radius,
-                                  outer_radius,
-                                  sphericity,
-                                  initial_refinement,
-                                  initial_extents,
-                                  equiangular,
-                                  radial_partitioning[array_index],
-                                  radial_distribution[array_index]};
-
-    test_sphere_construction(sphere, inner_radius, outer_radius,
-                             radial_partitioning[array_index], false);
-
-    const creators::Sphere sphere_boundary_condition{
-        inner_radius,
-        outer_radius,
-        sphericity,
-        initial_refinement,
-        initial_extents,
-        equiangular,
-        radial_partitioning[array_index],
-        radial_distribution[array_index],
-        nullptr,
-        create_boundary_condition()};
-
-    test_sphere_construction(sphere_boundary_condition, inner_radius,
-                             outer_radius, radial_partitioning[array_index],
-                             true);
-  }
-}
-
-// Check wedge neighbors have consistent directions & orientations, with time
-// dependence
-void test_sphere_factory_time_dependent() {
-  INFO("Sphere factory time dependent");
-  const auto domain_creator = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3, domain::creators::Sphere>>(
-      "Sphere:\n"
-      "  InnerRadius: 1\n"
-      "  OuterRadius: 3\n"
-      "  InnerCubeSphericity: 0.0\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [3, 3, 4]\n"
-      "  UseEquiangularMap: false\n"
-      "  RadialPartitioning: []\n"
-      "  RadialDistribution: [Linear]\n"
-      "  TimeDependence:\n"
-      "    UniformTranslation:\n"
-      "      InitialTime: 1.0\n"
-      "      Velocity: [2.3, -0.3, 0.5]\n");
-  const auto* sphere =
-      dynamic_cast<const creators::Sphere*>(domain_creator.get());
-
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const std::vector<double> radial_partitioning = {};
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
   const std::vector<double> times{1., 10.};
 
-  test_sphere_construction(*sphere, inner_radius, outer_radius,
-                           radial_partitioning, false, times, velocity);
+  for (const auto& [interior_index, equiangular, equatorial_compression,
+                    array_index, which_wedges, time_dependent,
+                    with_boundary_conditions] :
+       random_sample<5>(
+           cartesian_product(
+               make_array(0_st, 1_st, 2_st), make_array(false, true),
+               equatorial_compressions, make_array(0.0, 1.0),
+               make_array(ShellWedges::All, ShellWedges::FourOnEquator,
+                          ShellWedges::OneAlongMinusX),
+               make_array(true, false), make_array(true, false)),
+           make_not_null(&gen))) {
+    const auto& interior = interiors[interior_index];
+    const bool fill_interior =
+        std::holds_alternative<creators::Sphere::InnerCube>(interior);
+    CAPTURE(fill_interior);
+    CAPTURE(equiangular);
+    CAPTURE(radial_partitioning[array_index]);
+    CAPTURE(radial_distribution[array_index]);
+    CAPTURE(which_wedges);
+    CAPTURE(time_dependent);
+    CAPTURE(with_boundary_conditions);
+
+    if (which_wedges != ShellWedges::All and with_boundary_conditions) {
+      continue;
+    }
+
+    const creators::Sphere sphere{
+        inner_radius,
+        outer_radius,
+        copy_interior(interior, with_boundary_conditions),
+        initial_refinement,
+        initial_extents,
+        equiangular,
+        equatorial_compression,
+        radial_partitioning[array_index],
+        radial_distribution[array_index],
+        which_wedges,
+        time_dependent
+            ? std::make_unique<
+                  domain::creators::time_dependence::UniformTranslation<3, 0>>(
+                  1., velocity)
+            : nullptr,
+        with_boundary_conditions ? create_boundary_condition(true) : nullptr};
+    test_sphere_construction(
+        sphere, inner_radius, outer_radius, fill_interior,
+        radial_partitioning[array_index], which_wedges,
+        with_boundary_conditions,
+        time_dependent ? times : std::vector<double>{0.},
+        time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}});
+    TestHelpers::domain::creators::test_creation(
+        option_string(inner_radius, outer_radius, interior, initial_refinement,
+                      initial_extents, equiangular, equatorial_compression,
+                      radial_partitioning[array_index],
+                      radial_distribution[array_index], which_wedges,
+                      time_dependent, with_boundary_conditions),
+        sphere, with_boundary_conditions);
+  }
 }
+
 }  // namespace
 
 // [[TimeOut, 15]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere", "[Domain][Unit]") {
   domain::creators::time_dependence::register_derived_with_charm();
   test_parse_errors();
-  test_sphere_boundaries();
-  test_sphere_factory_time_dependent();
+  test_sphere();
 }
 }  // namespace domain

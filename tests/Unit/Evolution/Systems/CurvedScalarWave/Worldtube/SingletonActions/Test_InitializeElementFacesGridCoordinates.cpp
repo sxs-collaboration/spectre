@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
@@ -86,18 +86,23 @@ SPECTRE_TEST_CASE(
     CAPTURE(initial_refinement);
     CAPTURE(quadrature);
     INFO("Testing Shell time independent");
-    const domain::creators::Shell shell{
-        1.5, 3., initial_refinement, {initial_extents, initial_extents}};
+    const domain::creators::Sphere shell{1.5,
+                                         3.,
+                                         domain::creators::Sphere::Excision{},
+                                         initial_refinement,
+                                         initial_extents,
+                                         true};
     test_initialize_element_faces_coordinates_map(shell, quadrature);
 
     INFO("Testing Shell time dependent");
-    const domain::creators::Shell shell_time_dependent{
+    const domain::creators::Sphere shell_time_dependent{
         1.5,
         3.,
+        domain::creators::Sphere::Excision{},
         initial_refinement,
-        {initial_extents, initial_extents},
+        initial_extents,
         true,
-        {},
+        std::nullopt,
         {},
         {domain::CoordinateMaps::Distribution::Linear},
         ShellWedges::All,

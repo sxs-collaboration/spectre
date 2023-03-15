@@ -12,10 +12,13 @@
 #include <unordered_map>
 #include <utility>
 
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Tuple.hpp"
@@ -140,6 +143,35 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
   }
 
   return domain;
+}
+
+/// Helper function to factory-create a domain creator in tests with or without
+/// boundary conditions
+template <typename Creator, size_t Dim = Creator::volume_dim>
+void test_creation(const std::string& option_string, const Creator& rhs,
+                   const bool with_boundary_conditions) {
+  INFO("Option-creation");
+  CAPTURE(option_string);
+  auto created = [&option_string, &with_boundary_conditions]() {
+    if (with_boundary_conditions) {
+      using metavars = TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<Dim, Creator>;
+      return TestHelpers::test_option_tag<
+          ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+    } else {
+      using metavars = TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<Dim, Creator>;
+      return TestHelpers::test_option_tag<
+          ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+    }
+  }();
+  REQUIRE(dynamic_cast<const Creator*>(created.get()) != nullptr);
+  // Check equality of domain creators by comparing the subset of properties
+  // that support comparison
+  const auto& lhs = *created;
+  CHECK(lhs.create_domain() == rhs.create_domain());
+  CHECK(lhs.initial_extents() == rhs.initial_extents());
+  CHECK(lhs.initial_refinement_levels() == rhs.initial_refinement_levels());
 }
 
 template <size_t Dim, typename... ExpectedFunctionsOfTime>

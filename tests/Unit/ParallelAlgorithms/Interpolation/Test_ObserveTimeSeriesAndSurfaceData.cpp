@@ -22,7 +22,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -374,8 +374,8 @@ SPECTRE_TEST_CASE(
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(
       10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}},
       intrp::AngularOrdering::Strahlkorper);
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
   tuples::TaggedTuple<
       observers::Tags::ReductionFileName, observers::Tags::SurfaceFileName,
       ::intrp::Tags::KerrHorizon<metavars::SurfaceA>, domain::Tags::Domain<3>,

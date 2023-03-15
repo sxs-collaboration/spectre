@@ -26,12 +26,6 @@ spectre_add_python_bindings_test(
   PyDomainCreators)
 
 spectre_add_python_bindings_test(
-  "Unit.Domain.Creators.Python.Shell"
-  Test_Shell.py
-  "Unit;Domain"
-  PyDomainCreators)
-
-spectre_add_python_bindings_test(
   "Unit.Domain.Creators.Python.Sphere"
   Test_Sphere.py
   "Unit;Domain"

@@ -8,7 +8,6 @@
 #include "Domain/Creators/Python/DomainCreator.hpp"
 #include "Domain/Creators/Python/Interval.hpp"
 #include "Domain/Creators/Python/Rectangle.hpp"
-#include "Domain/Creators/Python/Shell.hpp"
 #include "Domain/Creators/Python/Sphere.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -29,7 +28,6 @@ PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   py_bindings::bind_cylinder(m);
   py_bindings::bind_interval(m);
   py_bindings::bind_rectangle(m);
-  py_bindings::bind_shell(m);
   py_bindings::bind_sphere(m);
 }
 

@@ -13,7 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/ElementMap.hpp"
@@ -238,14 +238,16 @@ void test_interpolate_on_element(
 
   const auto domain_creator = []() {
     if constexpr (Metavariables::use_time_dependent_maps) {
-      return domain::creators::Shell(
-          0.9, 2.9, 2, {{7, 7}}, false, {}, {},
-          {domain::CoordinateMaps::Distribution::Linear}, ShellWedges::All,
+      return domain::creators::Sphere(
+          0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false,
+          std::nullopt, {}, {domain::CoordinateMaps::Distribution::Linear},
+          ShellWedges::All,
           std::make_unique<
               domain::creators::time_dependence::UniformTranslation<3>>(
               0.0, std::array<double, 3>({{0.1, 0.2, 0.3}})));
     } else {
-      return domain::creators::Shell(0.9, 2.9, 2, {{7, 7}}, false);
+      return domain::creators::Sphere(
+          0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false);
     }
   }();
   const auto domain = domain_creator.create_domain();

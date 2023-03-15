@@ -25,7 +25,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -396,8 +396,8 @@ void test(const bool dump_vol_data) {
   using observer_writer = mock_observer_writer<metavars>;
 
   // Make an InterpolatedVarsHolders containing the target points.
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{7, 7}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false);
   const auto domain = domain_creator.create_domain();
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));

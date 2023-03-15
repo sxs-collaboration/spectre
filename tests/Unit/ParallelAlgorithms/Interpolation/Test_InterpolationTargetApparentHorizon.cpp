@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -96,8 +96,8 @@ SPECTRE_TEST_CASE(
       "  Lmax: 12");
   CHECK(created_opts == apparent_horizon_opts);
 
-  const auto domain_creator =
-      domain::creators::Shell(1.8, 2.2, 1, {{5, 5}}, false);
+  const auto domain_creator = domain::creators::Sphere(
+      1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   const auto expected_block_coord_holders = [&domain_creator, &center,
                                              &radius]() {
