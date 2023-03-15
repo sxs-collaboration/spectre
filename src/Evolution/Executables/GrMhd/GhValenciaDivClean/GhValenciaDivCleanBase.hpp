@@ -271,8 +271,9 @@ struct GhValenciaDivCleanDefaults {
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
-  using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<Actions::MutateApply<tmpl::conditional_t<
+  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
+      GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
+      Actions::MutateApply<tmpl::conditional_t<
                      UseDgSubcell, grmhd::GhValenciaDivClean::SetPiFromGauge,
                      GeneralizedHarmonic::gauges::SetPiFromGauge<3>>>,
                  Initialization::Actions::AddComputeTags<
@@ -281,6 +282,20 @@ struct GhValenciaDivCleanDefaults {
                  VariableFixing::Actions::FixVariables<
                      VariableFixing::FixToAtmosphere<volume_dim>>,
                  Actions::UpdateConservatives,
+      tmpl::conditional_t<
+          UseDgSubcell,
+          tmpl::list<
+              evolution::dg::subcell::Actions::Initialize<
+                  volume_dim, system,
+                  grmhd::GhValenciaDivClean::subcell::DgInitialDataTci>,
+              Initialization::Actions::AddSimpleTags<
+                  grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
+              VariableFixing::Actions::FixVariables<
+                  VariableFixing::FixToAtmosphere<volume_dim>>,
+              Actions::UpdateConservatives,
+              Actions::MutateApply<
+                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
+          tmpl::list<>>,
                  Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -638,26 +653,6 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::TimeStepperHistory<derived_metavars>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<volume_dim>>,
-      Actions::UpdateConservatives,
-      GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-
-      tmpl::conditional_t<
-          use_dg_subcell,
-          tmpl::list<
-              evolution::dg::subcell::Actions::Initialize<
-                  volume_dim, system,
-                  grmhd::GhValenciaDivClean::subcell::DgInitialDataTci>,
-              Initialization::Actions::AddSimpleTags<
-                  grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
-              VariableFixing::Actions::FixVariables<
-                  VariableFixing::FixToAtmosphere<volume_dim>>,
-              Actions::UpdateConservatives,
-              Actions::MutateApply<
-                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
-          tmpl::list<>>,
-
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase, local_time_stepping>>,
