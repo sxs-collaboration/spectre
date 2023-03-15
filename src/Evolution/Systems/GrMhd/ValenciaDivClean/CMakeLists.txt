@@ -69,6 +69,7 @@ target_link_libraries(
   RootFinding
   )
 
+add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)

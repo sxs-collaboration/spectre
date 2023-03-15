@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ValenciaDivClean")
 
 set(LIBRARY_SOURCES
+  Actions/Test_NumericInitialData.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
   BoundaryConditions/Test_HydroFreeOutflow.cpp
