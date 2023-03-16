@@ -11,6 +11,10 @@
 #pragma once
 
 /// \cond
+namespace evolution {
+struct NumericInitialData;
+}  // namespace evolution
+
 namespace GeneralizedHarmonic {
 template <size_t Dim>
 struct System;

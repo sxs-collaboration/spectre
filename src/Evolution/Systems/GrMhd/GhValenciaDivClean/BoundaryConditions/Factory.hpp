@@ -62,7 +62,6 @@ using standard_boundary_conditions = tmpl::push_back<
 
 /// Boundary conditions that work with finite difference.
 using standard_fd_boundary_conditions =
-    tmpl::list<ConstraintPreservingFreeOutflow, DirichletAnalytic,
-               DirichletFreeOutflow,
+    tmpl::list<ConstraintPreservingFreeOutflow,
                domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

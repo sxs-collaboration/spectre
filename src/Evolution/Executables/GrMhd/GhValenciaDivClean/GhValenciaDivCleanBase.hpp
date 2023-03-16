@@ -221,6 +221,29 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+namespace detail {
+template <typename InitialData,
+          bool IsNumericInitialData =
+              evolution::is_numeric_initial_data_v<InitialData>>
+struct get_thermodynamic_dim;
+
+template <typename InitialData>
+struct get_thermodynamic_dim<InitialData, true> {
+  // Use a relativistic 1D EOS for numeric initial data for now. This assumption
+  // can be removed once we have an EOS base class that's agnostic to the
+  // thermodynamic dimension (alternatively the thermodynamic dimension could be
+  // specified as a template parameter to the metavariables, but that's not
+  // great because we have to compile separate executables for 1D and 2D EOS).
+  static constexpr size_t value = 1;
+};
+
+template <typename InitialData>
+struct get_thermodynamic_dim<InitialData, false> {
+  static constexpr size_t value =
+      InitialData::equation_of_state_type::thermodynamic_dim;
+};
+}  // namespace detail
+
 template <bool UseDgSubcell>
 struct GhValenciaDivCleanDefaults {
  public:
@@ -317,17 +340,23 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_dg_subcell = UseDgSubcell;
 
   using initial_data = InitialData;
+  static constexpr bool use_numeric_initial_data =
+      evolution::is_numeric_initial_data_v<initial_data>;
   static_assert(
-      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
+      is_analytic_data_v<initial_data> xor
+          is_analytic_solution_v<initial_data> xor use_numeric_initial_data,
       "initial_data must be either an analytic_data, an "
       "analytic_solution, or externally provided numerical initial data");
-  // note: numeric initial data not yet fully supported; I think it will need a
-  // new wrapping class around the numeric initial data class.
-  using eos_base = EquationsOfState::get_eos_base<
-      typename initial_data::equation_of_state_type>;
-  using equation_of_state_type = typename std::unique_ptr<eos_base>;
-  using equation_of_state_tag =
-      hydro::Tags::EquationOfState<equation_of_state_type>;
+
+  static constexpr size_t thermodynamic_dim =
+      detail::get_thermodynamic_dim<initial_data>::value;
+  // Get the EOS from options for numeric ID, or else from the analytic
+  // solution/data.
+  using equation_of_state_tag = std::conditional_t<
+      use_numeric_initial_data,
+      hydro::Tags::EquationOfStateFromOptions<true, thermodynamic_dim>,
+      hydro::Tags::EquationOfState<std::unique_ptr<
+          EquationsOfState::EquationOfState<true, thermodynamic_dim>>>>;
 
   using initial_data_list = GeneralizedHarmonic::solutions_including_matter<3>;
 
@@ -347,7 +376,9 @@ struct GhValenciaDivCleanTemplateBase<
   using observe_fields = tmpl::push_back<
       tmpl::append<
           typename system::variables_tag::tags_list,
-          typename system::primitive_variables_tag::tags_list, error_tags,
+          typename system::primitive_variables_tag::tags_list,
+          tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
+                              error_tags>,
           tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
                          volume_dim, domain_frame, DataVector>,
                      gr::Tags::SpacetimeNormalVectorCompute<
@@ -396,12 +427,29 @@ struct GhValenciaDivCleanTemplateBase<
                          volume_dim, Frame::ElementLogical, Frame::Inertial>,
                      ::Events::Tags::ObserverDetInvJacobianCompute<
                          Frame::ElementLogical, Frame::Inertial>>>,
-      tmpl::list<analytic_compute, error_compute,
-                 GeneralizedHarmonic::gauges::Tags::GaugeAndDerivativeCompute<
-                     volume_dim>>>;
+      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
+                          tmpl::list<analytic_compute, error_compute>>,
+      tmpl::list<GeneralizedHarmonic::gauges::Tags::GaugeAndDerivativeCompute<
+          volume_dim>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
+   private:
+    using boundary_conditions = tmpl::conditional_t<
+        use_dg_subcell,
+        tmpl::append<
+            grmhd::GhValenciaDivClean::BoundaryConditions::
+                standard_fd_boundary_conditions,
+            tmpl::conditional_t<
+                use_numeric_initial_data, tmpl::list<>,
+                tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
+                               DirichletAnalytic,
+                           grmhd::GhValenciaDivClean::BoundaryConditions::
+                               DirichletFreeOutflow>>>,
+        grmhd::GhValenciaDivClean::BoundaryConditions::
+            standard_boundary_conditions>;
+
+   public:
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
@@ -417,11 +465,7 @@ struct GhValenciaDivCleanTemplateBase<
                                            interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
-            tmpl::conditional_t<use_dg_subcell,
-                                grmhd::GhValenciaDivClean::BoundaryConditions::
-                                    standard_fd_boundary_conditions,
-                                grmhd::GhValenciaDivClean::BoundaryConditions::
-                                    standard_boundary_conditions>>,
+            boundary_conditions>,
         tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
                    GeneralizedHarmonic::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
@@ -457,8 +501,8 @@ struct GhValenciaDivCleanTemplateBase<
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
       GeneralizedHarmonic::gauges::Tags::GaugeCondition,
-      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          tmpl::list<>, initial_data_tag>,
+      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
+                          initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       equation_of_state_tag,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
@@ -590,7 +634,7 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::dg::Initialization::Domain<3>>,
       Initialization::Actions::ConservativeSystem<system>,
       std::conditional_t<
-          evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
+          use_numeric_initial_data, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::TimeStepperHistory<derived_metavars>,
@@ -630,7 +674,7 @@ struct GhValenciaDivCleanTemplateBase<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              evolution::is_numeric_initial_data_v<initial_data>,
+              use_numeric_initial_data,
               tmpl::list<
                   Parallel::PhaseActions<
                       Parallel::Phase::RegisterWithElementDataReader,
@@ -679,7 +723,7 @@ struct GhValenciaDivCleanTemplateBase<
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<derived_metavars>,
       observers::ObserverWriter<derived_metavars>,
-      std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+      std::conditional_t<use_numeric_initial_data,
                          importers::ElementDataReader<derived_metavars>,
                          tmpl::list<>>,
       intrp::Interpolator<derived_metavars>,
