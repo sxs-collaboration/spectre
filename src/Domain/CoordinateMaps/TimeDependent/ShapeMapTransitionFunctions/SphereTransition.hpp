@@ -14,9 +14,19 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 /*!
  * \ingroup CoordMapsTimeDependentGroup
- * \brief A transition function that falls off as \f$f(r) = (ar + b) / r\f$. The
- * coefficients \f$a\f$ and \f$b\f$ are chosen so that the map falls off
- * linearly from 1 at `r_min` to 0 at `r_max`.
+ * \brief A transition function meant to be used in the
+ * domain::CoordinateMaps::TimeDependent::Shape map.
+ *
+ * The formula for this transition function is
+ *
+ * \f{align}{
+ * f(r) &= \left\{\begin{array}{ll} 1 , & r <= r_{\rm min}, \\
+ *      \frac{ar + b}{r}, & r_{\rm min} < r < r_{\rm max}, \\
+ *      0, & r_{\rm max} <= r,\end{array}\right.
+ * \f}
+ *
+ * where the coefficients \f$a\f$ and \f$b\f$ are chosen so that the map falls
+ * off linearly from 1 at `r_min` to 0 at `r_max`.
  */
 class SphereTransition final : public ShapeMapTransitionFunction {
  public:
@@ -62,13 +72,10 @@ class SphereTransition final : public ShapeMapTransitionFunction {
   template <typename T>
   std::array<T, 3> gradient_impl(const std::array<T, 3>& source_coords) const;
 
-  // checks that the magnitudes are all between `r_min_` and `r_max_`
-  template <typename T>
-  void check_magnitudes(const T& mag) const;
-
   double r_min_{};
   double r_max_{};
   double a_{};
   double b_{};
+  static constexpr double eps_{std::numeric_limits<double>::epsilon() * 100};
 };
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions
