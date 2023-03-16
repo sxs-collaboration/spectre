@@ -16,14 +16,18 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -65,6 +69,68 @@ struct ExpansionOrder {
  * \brief Tags related to the worldtube
  */
 namespace Tags {
+/*!
+ * \brief Dummy tag that throws an error if the input file does not describe a
+ * circular orbit.
+ */
+template <size_t Dim, typename BackgroundType>
+struct CheckInputFile : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<
+      domain::OptionTags::DomainCreator<Dim>, OptionTags::ExcisionSphere,
+      CurvedScalarWave::OptionTags::BackgroundSpacetime<BackgroundType>>;
+
+  // puncture field is specialised on Kerr-Schild bakckground.
+  static_assert(std::is_same_v<BackgroundType, gr::Solutions::KerrSchild>);
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options(
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
+      const std::string& excision_sphere_name,
+      const BackgroundType& kerr_schild_background) {
+    if (not kerr_schild_background.zero_spin()) {
+      ERROR(
+          "Black hole spin is not implemented yet but you requested non-zero "
+          "spin.");
+    }
+    if (not equal_within_roundoff(kerr_schild_background.center(),
+                                  make_array(0., 0., 0.))) {
+      ERROR("The central black hole must be centered at [0., 0., 0.].");
+    }
+    if (not equal_within_roundoff(kerr_schild_background.mass(), 1.)) {
+      ERROR("The central black hole must have mass 1.");
+    }
+    const auto domain = domain_creator->create_domain();
+    const auto& excision_spheres = domain.excision_spheres();
+    const auto& excision_sphere = excision_spheres.at(excision_sphere_name);
+    const double orbital_radius = get<0>(excision_sphere.center());
+    const auto& functions_of_time = domain_creator->functions_of_time();
+    if (not functions_of_time.count("Rotation")) {
+      ERROR("Expected functions of time to contain 'Rotation'.");
+    }
+    // dynamic cast to access `angle_func_and_deriv` method
+    const auto* rotation_function_of_time =
+        dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
+            &*functions_of_time.at("Rotation"));
+    if (rotation_function_of_time == nullptr) {
+      ERROR("Failed dynamic cast to QuaternionFunctionOfTime.");
+    }
+    const auto angular_velocity =
+        rotation_function_of_time->angle_func_and_deriv(0.).at(1);
+    if (equal_within_roundoff(orbital_radius, 0.)) {
+      ERROR("The orbital radius was set to 0.");
+    }
+    if (not equal_within_roundoff(
+            angular_velocity,
+            DataVector{0.0, 0.0, pow(orbital_radius, -1.5)})) {
+      ERROR(
+          "Only circular orbits are implemented at the moment so the "
+          "angular velocity should be [0., 0., orbital_radius^(-3/2)] = "
+          << "[0., 0., " << pow(orbital_radius, -1.5) << "]");
+    }
+    return true;
+  }
+};
+
 /*!
  * \brief The excision sphere corresponding to the worldtube
  */

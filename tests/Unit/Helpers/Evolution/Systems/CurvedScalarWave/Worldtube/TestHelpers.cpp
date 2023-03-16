@@ -4,6 +4,7 @@
 #include "Helpers/Evolution/Systems/CurvedScalarWave/Worldtube/TestHelpers.hpp"
 
 #include <cstddef>
+#include <sstream>
 #include <string>
 
 #include "Domain/Creators/BinaryCompactObject.hpp"
@@ -14,10 +15,13 @@
 
 namespace TestHelpers::CurvedScalarWave::Worldtube {
 std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
-    const double orbit_radius, const double worldtube_radius) {
+    const double orbit_radius, const double worldtube_radius,
+    const double angular_velocity) {
   ASSERT(orbit_radius > 4. * worldtube_radius,
          "Can't construct a domain with these parameters");
-  const double angular_velocity = 1. / (orbit_radius * sqrt(orbit_radius));
+  std::stringstream angular_velocity_stream;
+  angular_velocity_stream << std::fixed << std::setprecision(16)
+                          << angular_velocity;
   std::string binary_compact_object_options =
       "BinaryCompactObject:\n"
       "  ObjectA:\n"
@@ -63,7 +67,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "      DecayTimescaleOuterBoundaryVelocity: 1.0\n"
       "    RotationMap:\n"
       "      InitialAngularVelocity: [0.0, 0.0," +
-      std::to_string(angular_velocity) +
+      angular_velocity_stream.str() +
       "]\n"
       "    SizeMap:\n"
       "      InitialValues: [0.0, 0.0]\n"
