@@ -1,0 +1,118 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveWorldtubeCurvedScalarWaveKerrSchild3D
+# Check: parse
+
+AnalyticData:
+  PlaneWave:
+    WaveVector: [0., 0., 0.]
+    Center: [1., 0., 0.]
+    Profile:
+      Sinusoid:
+        Amplitude: 0.
+        Wavenumber: 1.
+        Phase: 1.
+
+BackgroundSpacetime:
+  KerrSchild:
+    Mass: 1.
+    Center: [0., 0., 0.]
+    Spin: [0., 0., 0.]
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    WorldtubeSingleton:
+      Proc: Auto
+      Exclusive: false
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0001
+  TimeStepper: Rk5Tsitouras
+
+DomainCreator:
+  BinaryCompactObject:
+    InitialRefinement: 0
+    InitialGridPoints: 12
+    UseEquiangularMap: true
+    ObjectB:
+      InnerRadius: 1.9
+      OuterRadius: 2.2
+      XCoord: -1e-64
+      Interior:
+        ExciseWithBoundaryCondition: DemandOutgoingCharSpeeds
+      UseLogarithmicMap: false
+    ObjectA:
+      InnerRadius: 1.6
+      OuterRadius: 2.
+      XCoord: 5.
+      Interior:
+        ExciseWithBoundaryCondition: Worldtube
+      UseLogarithmicMap: false
+    Envelope:
+      UseProjectiveMap: false
+      Radius: 50.
+    OuterShell:
+      Radius: 400.
+      RadialDistribution: Linear
+      BoundaryCondition: ConstraintPreservingSphericalRadiation
+    TimeDependentMaps:
+      InitialTime: 0.
+      ExpansionMap:
+        OuterBoundary: 100.
+        InitialExpansion: 1.
+        InitialExpansionVelocity: 0.
+        AsymptoticVelocityOuterBoundary: 0.
+        DecayTimescaleOuterBoundaryVelocity: 1.
+      RotationMap:
+        InitialAngularVelocity: [0., 0., 0.08944271909999159]
+      SizeMap:
+        InitialValues: [0., 0.]
+        InitialVelocities: [0., 0.]
+        InitialAccelerations: [0., 0.]
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+EventsAndTriggers:
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5000
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: Volume
+          VariablesToObserve:
+            - Psi
+            - OneIndexConstraint
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          OverrideObservationValue: None
+  - - Times:
+        Specified:
+          Values: &FinalTime [1000.]
+    - - Completion
+
+Worldtube:
+  ExcisionSphere: ExcisionSphereA
+  ExpansionOrder: 0
+
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
+    DisableForDebugging: false
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "Volume"
+  ReductionFileName: "Reductions"
