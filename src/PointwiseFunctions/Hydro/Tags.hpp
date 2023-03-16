@@ -16,6 +16,19 @@
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to hydrodynamic systems.
 namespace hydro {
+
+/// %Tags for options of hydrodynamic systems.
+namespace OptionTags {
+
+/// The equation of state of the fluid.
+template <bool IsRelativistic, size_t ThermoDim>
+struct EquationOfState {
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
+  static constexpr Options::String help = {"The equation of state to use"};
+};
+}  // namespace OptionTags
+
 /// %Tags for hydrodynamic systems.
 namespace Tags {
 
@@ -66,7 +79,8 @@ struct ElectronFraction : db::SimpleTag {
 /// Base tag for the equation of state
 struct EquationOfStateBase : db::BaseTag {};
 
-/// The equation of state
+/// The equation of state retrieved from the analytic solution / data in the
+/// input file
 template <typename EquationOfStateType>
 struct EquationOfState : EquationOfStateBase, db::SimpleTag {
   using type = EquationOfStateType;
@@ -81,6 +95,20 @@ struct EquationOfState : EquationOfStateBase, db::SimpleTag {
       const typename Metavariables::initial_data_tag::type& initial_data) {
     return initial_data.equation_of_state().get_clone();
   }
+};
+
+/// The equation of state constructed from options in the input file
+template <bool IsRelativistic, size_t ThermodynamicDim>
+struct EquationOfStateFromOptions : EquationOfStateBase, db::SimpleTag {
+  static std::string name() { return "EquationOfState"; }
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
+
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      tmpl::list<OptionTags::EquationOfState<IsRelativistic, ThermodynamicDim>>;
+
+  static type create_from_options(const type& eos) { return eos->get_clone(); }
 };
 
 /// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is
@@ -236,17 +264,5 @@ struct MassFlux : db::SimpleTag {
   static std::string name() { return Frame::prefix<Fr>() + "MassFlux"; }
 };
 }  // namespace Tags
-
-/// %Tags for options of hydrodynamic systems.
-namespace OptionTags {
-
-/// The equation of state of the fluid.
-template <bool IsRelativistic, size_t ThermoDim>
-struct EquationOfState {
-  using type = std::unique_ptr<
-      EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
-  static constexpr Options::String help = {"The equation of state to use"};
-};
-}  // namespace OptionTags
 
 }  // namespace hydro
