@@ -94,9 +94,9 @@ struct Initialize {
   using const_global_cache_tags = tmpl::list<Tags::SubcellOptions<Dim>>;
 
   using simple_tags = tmpl::list<
-      Tags::ActiveGrid, Tags::DidRollback,
-      Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
-      Tags::TciDecision, Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
+      Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
+      Tags::NeighborDataForReconstruction<Dim>, Tags::TciDecision,
+      Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       fd::Tags::InverseJacobianLogicalToGrid<Dim>,
       fd::Tags::DetInverseJacobianLogicalToGrid,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>>;
@@ -125,9 +125,23 @@ struct Initialize {
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
 
-    const bool subcell_allowed_in_block = not std::binary_search(
-        subcell_options.only_dg_block_ids().begin(),
-        subcell_options.only_dg_block_ids().end(), element.id().block_id());
+    // Loop over block neighbors and if neighbor id is inside of
+    // subcell_options.only_dg_block_ids(), then bordering DG-only block
+    const bool bordering_dg_block = alg::any_of(
+        element.neighbors(),
+        [&subcell_options](const auto& direction_and_neighbor) {
+          const size_t first_block_id =
+              direction_and_neighbor.second.ids().begin()->block_id();
+          return std::binary_search(subcell_options.only_dg_block_ids().begin(),
+                                    subcell_options.only_dg_block_ids().end(),
+                                    first_block_id);
+        });
+
+    const bool subcell_allowed_in_element =
+        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
+                               subcell_options.only_dg_block_ids().end(),
+                               element.id().block_id()) and
+        not bordering_dg_block;
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
             .external_boundaries()
@@ -139,7 +153,7 @@ struct Initialize {
     bool cell_is_troubled = subcell_options.always_use_subcells() and
                             (cell_is_not_on_external_boundary or
                              subcell_enabled_at_external_boundary) and
-                            subcell_allowed_in_block;
+                            subcell_allowed_in_element;
 
     db::mutate<Tags::NeighborTciDecisions<Dim>>(
         make_not_null(&box), [&element](const auto neighbor_decisions_ptr) {
@@ -159,7 +173,7 @@ struct Initialize {
                    subcell::Tags::DataForRdmpTci>,
         typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
-         subcell_allowed_in_block, &subcell_mesh, &subcell_options](
+         subcell_allowed_in_element, &subcell_mesh, &subcell_options](
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto active_vars_ptr,
@@ -184,7 +198,7 @@ struct Initialize {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
           *tci_decision_ptr = std::get<0>(tci_result);
           const bool tci_flagged =
-              *tci_decision_ptr != 0 and subcell_allowed_in_block;
+              *tci_decision_ptr != 0 and subcell_allowed_in_element;
 
           if ((cell_is_not_on_external_boundary or
                subcell_enabled_at_external_boundary) and
