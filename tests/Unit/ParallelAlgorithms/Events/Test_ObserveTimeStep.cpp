@@ -99,12 +99,11 @@ struct MockContributeReductionData {
     }
 
     if (formatter.has_value()) {
-      const auto formatted_msg = (*formatter)(
-        0.123, 3, 1.560, 3.141, 2.7818, 1023.3, 9.32, 4.148
-      );
+      const auto formatted_msg =
+          (*formatter)(0.123, 3, 1.560, 3.141, 2.7818, 1023.3, 9.32, 4.148);
       CHECK(formatted_msg ==
-        "Simulation time: 0.123000\n"
-        "  Wall time: 9.320000s (min) - 4.148000s (max)");
+            "Simulation time: 0.123000\n"
+            "  Wall time: 9.320000s (min) - 4.148000s (max)");
     }
   }
 };
@@ -160,7 +159,6 @@ struct Metavariables {
         Event,
         tmpl::list<Events::ObserveTimeStep<typename Metavariables::system>>>>;
   };
-
 };
 
 template <typename Observer>
@@ -183,29 +181,28 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
                  Tags::TimeStep, System::variables_tag>;
   std::vector<db::compute_databox_type<tag_list>> element_boxes;
 
-  const auto create_element =
-      [&backwards_in_time, &element_boxes, &observation_time, &observer,
-       &runner,
-       &slab](const size_t num_points, TimeDelta::rational_t slab_fraction) {
-        if (backwards_in_time) {
-          slab_fraction *= -1;
-        }
-        auto box = db::create<tag_list>(
-            Metavariables{}, observation_time, slab.duration() * slab_fraction,
-            System::variables_tag::type(num_points));
+  const auto create_element = [&backwards_in_time, &element_boxes,
+                               &observation_time, &observer, &runner,
+                               &slab](const size_t num_points,
+                                      TimeDelta::rational_t slab_fraction) {
+    if (backwards_in_time) {
+      slab_fraction *= -1;
+    }
+    auto box = db::create<tag_list>(Metavariables{}, observation_time,
+                                    slab.duration() * slab_fraction,
+                                    System::variables_tag::type(num_points));
 
-        const auto ids_to_register =
-            observers::get_registration_observation_type_and_key(observer, box);
-        CHECK(ids_to_register->first ==
-              observers::TypeOfObservation::Reduction);
-        CHECK(ids_to_register->second ==
-              observers::ObservationKey("/time_step_subfile.dat"));
+    const auto ids_to_register =
+        observers::get_registration_observation_type_and_key(observer, box);
+    CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+    CHECK(ids_to_register->second ==
+          observers::ObservationKey("/time_step_subfile.dat"));
 
-        element_boxes.push_back(std::move(box));
+    element_boxes.push_back(std::move(box));
 
-        ActionTesting::emplace_component<element_component>(
-            &runner, element_boxes.size() - 1);
-      };
+    ActionTesting::emplace_component<element_component>(
+        &runner, element_boxes.size() - 1);
+  };
 
   create_element(5, {1, 20});
   create_element(30, {1, 2});

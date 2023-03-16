@@ -66,10 +66,9 @@ struct FormatTimeOutput
                          const double min_wall_time,
                          const double max_wall_time) const {
     std::stringstream ss;
-    ss  << "Simulation time: " << std::to_string(time)
-        << "\n  Wall time: " << std::to_string(min_wall_time)
-        << "s (min) - "
-        << std::to_string(max_wall_time) << "s (max)";
+    ss << "Simulation time: " << std::to_string(time)
+       << "\n  Wall time: " << std::to_string(min_wall_time) << "s (min) - "
+       << std::to_string(max_wall_time) << "s (max)";
     return ss.str();
   }
   // NOLINTNEXTLINE
