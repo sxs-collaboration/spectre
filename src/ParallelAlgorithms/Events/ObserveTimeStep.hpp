@@ -31,6 +31,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -67,8 +68,8 @@ struct FormatTimeOutput
                          const double max_wall_time) const {
     std::stringstream ss;
     ss << "Simulation time: " << std::to_string(time)
-       << "\n  Wall time: " << std::to_string(min_wall_time) << "s (min) - "
-       << std::to_string(max_wall_time) << "s (max)";
+       << "\n  Wall time: " << sys::pretty_wall_time(min_wall_time)
+       << " (min) - " << sys::pretty_wall_time(max_wall_time) << " (max)";
     return ss.str();
   }
   // NOLINTNEXTLINE
