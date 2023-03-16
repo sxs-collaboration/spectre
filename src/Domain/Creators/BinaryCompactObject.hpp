@@ -109,6 +109,9 @@ namespace creators {
  *   hemispheres. The cutting plane always intersects the x-axis at the origin.
  * - The x-coordinate locations of the two objects should be chosen such that
  *   the center of mass is located at x=0.
+ * -  Alternatively, one can replace the inner shell and cube blocks of each
+ *    object with a single cartesian cube. This is less efficient, but allows
+ *    testing of methods only coded on cartesian grids.
  *
  * \par Time dependence:
  * When using this domain, the metavariables struct can contain a struct named
@@ -297,15 +300,29 @@ class BinaryCompactObject : public DomainCreator<3> {
     bool use_logarithmic_map;
   };
 
+  // Simpler version of an object: a single cube centered on (xCoord,0,0)
+  struct CartesianCubeAtXCoord {
+    static constexpr Options::String help = {
+        "Options to set a single cube at a location on the x-axis"};
+    struct XCoord {
+      static std::string name() { return "CartesianCubeAtXCoord";}
+      using type = double;
+      static constexpr Options::String help = {"x-coordinate of center."};
+    };
+    using options = tmpl::list<XCoord>;
+    bool is_excised() const { return false; }
+    double x_coord;
+  };
+
   struct ObjectA {
-    using type = Object;
+    using type = std::variant<Object, CartesianCubeAtXCoord>;
     static constexpr Options::String help = {
         "Options for the object to the right of the origin (along the positive "
         "x-axis)."};
   };
 
   struct ObjectB {
-    using type = Object;
+    using type = std::variant<Object, CartesianCubeAtXCoord>;
     static constexpr Options::String help = {
         "Options for the object to the left of the origin (along the negative "
         "x-axis)."};
@@ -569,8 +586,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   // when the metavariables do not define
   // Metavariables::domain::enable_time_dependent_maps)
   BinaryCompactObject(
-      Object object_A, Object object_B, double envelope_radius,
-      double outer_radius,
+      typename ObjectA::type object_A, typename ObjectB::type object_B,
+      double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true, bool use_projective_map = true,
@@ -592,8 +609,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::array<double, 3> initial_angular_velocity,
       std::array<double, 2> initial_size_map_values,
       std::array<double, 2> initial_size_map_velocities,
-      std::array<double, 2> initial_size_map_accelerations, Object object_A,
-      Object object_B, double envelope_radius, double outer_radius,
+      std::array<double, 2> initial_size_map_accelerations,
+      typename ObjectA::type object_A, typename ObjectB::type object_B,
+      double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true, bool use_projective_map = true,
@@ -639,8 +657,8 @@ class BinaryCompactObject : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  Object object_A_{};
-  Object object_B_{};
+  typename ObjectA::type object_A_{};
+  typename ObjectB::type object_B_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
   std::vector<std::array<size_t, 3>> initial_refinement_{};
@@ -659,6 +677,14 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::vector<std::string> block_names_{};
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_{};
+
+  // Variables to handle std::variant on Object A and B
+  double x_coord_a_{};
+  double x_coord_b_{};
+  bool is_excised_a_ = false;
+  bool is_excised_b_ = false;
+  bool use_single_block_a_ = false;
+  bool use_single_block_b_ = false;
 
   // Variables for FunctionsOfTime options
   bool enable_time_dependence_{false};
