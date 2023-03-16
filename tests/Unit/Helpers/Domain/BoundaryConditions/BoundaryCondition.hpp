@@ -13,6 +13,7 @@
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Options.hpp"
@@ -130,9 +131,12 @@ template <size_t Dim>
 struct SystemWithoutBoundaryConditions {};
 
 /// Metavariables with a system that has boundary conditions
-template <size_t Dim, typename Creator>
+template <size_t Dim, typename Creator, bool EnableTimeDependentMaps = false>
 struct MetavariablesWithBoundaryConditions {
   using system = SystemWithBoundaryConditions<Dim>;
+  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
+    static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
+  };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -141,9 +145,12 @@ struct MetavariablesWithBoundaryConditions {
 };
 
 /// Metavariables with a system that doesn't have boundary conditions
-template <size_t Dim, typename Creator>
+template <size_t Dim, typename Creator, bool EnableTimeDependentMaps = false>
 struct MetavariablesWithoutBoundaryConditions {
   using system = SystemWithoutBoundaryConditions<Dim>;
+  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
+    static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
+  };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
