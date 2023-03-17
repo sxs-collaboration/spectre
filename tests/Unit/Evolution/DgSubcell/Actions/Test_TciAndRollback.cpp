@@ -327,7 +327,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const bool bordering_dg_block = alg::any_of(
       element.neighbors(),
       [&subcell_options](const auto& direction_and_neighbor) {
-        const bool first_block_id =
+        const size_t first_block_id =
             direction_and_neighbor.second.ids().begin()->block_id();
         return alg::found(subcell_options.only_dg_block_ids(), first_block_id);
       });
