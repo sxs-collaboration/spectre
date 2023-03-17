@@ -425,15 +425,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     using group = TimeDependentMaps;
   };
 
-  /// \brief The outer boundary or pivot point of the
-  /// `domain::CoordinateMaps::TimeDependent::CubicScale` map
-  struct ExpansionMapOuterBoundary {
-    using type = double;
-    static constexpr Options::String help = {
-        "Outer boundary or pivot point of the map"};
-    using group = ExpansionMap;
-    static std::string name() { return "OuterBoundary"; }
-  };
   /// \brief The initial value of the expansion factor.
   struct InitialExpansion {
     using type = double;
@@ -541,8 +532,8 @@ class BinaryCompactObject : public DomainCreator<3> {
           tmpl::list<>>>;
 
   using time_dependent_options =
-      tmpl::list<InitialTime, ExpansionMapOuterBoundary, InitialExpansion,
-                 InitialExpansionVelocity, AsymptoticVelocityOuterBoundary,
+      tmpl::list<InitialTime, InitialExpansion, InitialExpansionVelocity,
+                 AsymptoticVelocityOuterBoundary,
                  DecayTimescaleOuterBoundaryVelocity, InitialAngularVelocity,
                  InitialSizeMapValues, InitialSizeMapVelocities,
                  InitialSizeMapAccelerations>;
@@ -602,8 +593,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps == true),
   // with parameters corresponding to the additional options
   BinaryCompactObject(
-      double initial_time, double expansion_map_outer_boundary,
-      double initial_expansion, double initial_expansion_velocity,
+      double initial_time, double initial_expansion,
+      double initial_expansion_velocity,
       double asymptotic_velocity_outer_boundary,
       double decay_timescale_outer_boundary_velocity,
       std::array<double, 3> initial_angular_velocity,
@@ -689,8 +680,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Variables for FunctionsOfTime options
   bool enable_time_dependence_{false};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  double expansion_map_outer_boundary_{
-      std::numeric_limits<double>::signaling_NaN()};
   double initial_expansion_{std::numeric_limits<double>::signaling_NaN()};
   double initial_expansion_velocity_{
       std::numeric_limits<double>::signaling_NaN()};

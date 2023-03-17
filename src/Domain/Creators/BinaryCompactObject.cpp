@@ -288,8 +288,8 @@ BinaryCompactObject::BinaryCompactObject(
 // Time-dependent constructor, with additional options for specifying
 // the time-dependent maps
 BinaryCompactObject::BinaryCompactObject(
-    double initial_time, double expansion_map_outer_boundary,
-    double initial_expansion, double initial_expansion_velocity,
+    double initial_time, double initial_expansion,
+    double initial_expansion_velocity,
     double asymptotic_velocity_outer_boundary,
     double decay_timescale_outer_boundary_velocity,
     std::array<double, 3> initial_angular_velocity,
@@ -312,7 +312,6 @@ BinaryCompactObject::BinaryCompactObject(
                           std::move(outer_boundary_condition), context) {
   enable_time_dependence_ = true;
   initial_time_ = initial_time;
-  expansion_map_outer_boundary_ = expansion_map_outer_boundary;
   initial_expansion_ = initial_expansion;
   initial_expansion_velocity_ = initial_expansion_velocity;
   asymptotic_velocity_outer_boundary_ = asymptotic_velocity_outer_boundary;
@@ -563,7 +562,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
         distorted_to_inertial_block_maps{number_of_blocks_};
 
     CubicScaleMap expansion_map{
-        expansion_map_outer_boundary_, expansion_function_of_time_name_,
+        outer_radius_, expansion_function_of_time_name_,
         expansion_function_of_time_name_ + "OuterBoundary"s};
     RotationMap3D rotation_map{rotation_function_of_time_name_};
 

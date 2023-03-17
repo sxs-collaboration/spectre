@@ -357,7 +357,6 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
       add_time_dependence ? "  TimeDependentMaps:\n"
                             "    InitialTime: 1.0\n"
                             "    ExpansionMap: \n"
-                            "      OuterBoundary: 25.0\n"
                             "      InitialExpansion: 1.0\n"
                             "      InitialExpansionVelocity: -0.1\n"
                             "      AsymptoticVelocityOuterBoundary: -0.1\n"

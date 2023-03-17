@@ -90,7 +90,6 @@ DomainCreator:
       ExpansionMap:
         InitialExpansion: 1.0
         InitialExpansionVelocity: 0.0
-        OuterBoundary: 1493.0
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:

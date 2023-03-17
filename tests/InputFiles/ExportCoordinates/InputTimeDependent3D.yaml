@@ -47,7 +47,6 @@ DomainCreator:
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
-        OuterBoundary: 300.0
         InitialExpansion: 1.0
         InitialExpansionVelocity: -4.6148457646200002e-05
         AsymptoticVelocityOuterBoundary: -1.0e-6

@@ -60,7 +60,6 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "  TimeDependentMaps:\n"
       "    InitialTime: 0.0\n"
       "    ExpansionMap: \n"
-      "      OuterBoundary: 1.0\n"
       "      InitialExpansion: 1.0\n"
       "      InitialExpansionVelocity: 0.0\n"
       "      AsymptoticVelocityOuterBoundary: 0.0\n"
