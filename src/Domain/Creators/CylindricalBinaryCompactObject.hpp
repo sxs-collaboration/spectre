@@ -305,99 +305,19 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct TimeDependentMaps {
-    static constexpr Options::String help = {"Options for time-dependent maps"};
-  };
-
-  /// \brief The initial time of the functions of time.
-  struct InitialTime {
-    using type = double;
-    static constexpr Options::String help = {
-        "The initial time of the functions of time"};
-    using group = TimeDependentMaps;
-  };
-
-  /// \brief Options for the expansion map.
-  /// The outer boundary radius of the map is always set to
-  /// the outer boundary of the Domain, so there is no option
-  /// here to set the outer boundary radius.
-  struct ExpansionMapOptions {
-    static constexpr Options::String help = {"Options for the expansion map."};
-    struct InitialValues {
-      using type = std::array<double, 2>;
-      static constexpr Options::String help = {
-          "Initial value and deriv of expansion."};
-    };
-    struct AsymptoticVelocityOuterBoundary {
-      using type = double;
-      static constexpr Options::String help = {
-          "The asymptotic velocity of the outer boundary."};
-    };
-    struct DecayTimescaleOuterBoundaryVelocity {
-      using type = double;
-      static constexpr Options::String help = {
-          "The timescale for how fast the outer boundary velocity approaches "
-          "its asymptotic value."};
-    };
-    using options = tmpl::list<InitialValues, AsymptoticVelocityOuterBoundary,
-                               DecayTimescaleOuterBoundaryVelocity>;
-    ExpansionMapOptions() = default;
-    ExpansionMapOptions(std::array<double, 2> local_initial_values,
-                        double local_outer_boundary_velocity,
-                        double local_outer_boundary_decay_time)
-        : initial_values(std::move(local_initial_values)),
-          outer_boundary_velocity(local_outer_boundary_velocity),
-          outer_boundary_decay_time(local_outer_boundary_decay_time) {}
-    std::array<double, 2> initial_values;
-    double outer_boundary_velocity, outer_boundary_decay_time;
-  };
-
-  struct ExpansionMap {
-    using type = ExpansionMapOptions;
-    static constexpr Options::String help = {"Options for CubicScale map."};
-    using group = TimeDependentMaps;
-  };
-
-  struct RotationMap {
-    static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about an arbitrary axis."};
-    using group = TimeDependentMaps;
-  };
-  struct InitialAngularVelocity {
-    using type = std::array<double, 3>;
-    static constexpr Options::String help = {"The initial angular velocity."};
-    using group = RotationMap;
-  };
-
-  template <domain::ObjectLabel Object>
-  struct SizeMap {
-    static std::string name() { return "SizeMap" + get_output(Object); }
-    static constexpr Options::String help = {
-        "Options for a time-dependent size map about the specified object."};
-    using group = TimeDependentMaps;
-  };
-
-  template <domain::ObjectLabel Object>
-  struct SizeMapInitialValues {
-    static std::string name() { return "InitialValues"; }
-    using type = std::array<double, 3>;
-    static constexpr Options::String help = {
-        "Initial value and two derivatives of the size map."};
-    using group = SizeMap<Object>;
+    using type = bco::TimeDependentMapOptions;
+    static constexpr Options::String help = type::help;
   };
 
   using time_independent_options =
       tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
                  IncludeInnerSphereB, IncludeOuterSphere, OuterRadius,
                  UseEquiangularMap, InitialRefinement, InitialGridPoints>;
-  using time_dependent_options =
-      tmpl::list<InitialTime, ExpansionMap, InitialAngularVelocity,
-                 SizeMapInitialValues<domain::ObjectLabel::A>,
-                 SizeMapInitialValues<domain::ObjectLabel::B>>;
 
   template <typename Metavariables>
   using basic_options = tmpl::conditional_t<
       domain::creators::bco::enable_time_dependent_maps_v<Metavariables>,
-      tmpl::append<time_dependent_options, time_independent_options>,
+      tmpl::push_front<time_independent_options, TimeDependentMaps>,
       time_independent_options>;
 
   template <typename Metavariables>
@@ -434,10 +354,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       const Options::Context& context = {});
 
   CylindricalBinaryCompactObject(
-      double initial_time, ExpansionMapOptions expansion_map_options,
-      std::array<double, 3> initial_angular_velocity,
-      std::array<double, 3> initial_size_map_values_A,
-      std::array<double, 3> initial_size_map_values_B,
+      bco::TimeDependentMapOptions time_dependent_options,
       std::array<double, 3> center_A, std::array<double, 3> center_B,
       double radius_A, double radius_B, bool include_inner_sphere_A,
       bool include_inner_sphere_B, bool include_outer_sphere,
@@ -518,17 +435,6 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_{};
   // FunctionsOfTime options
-  inline static const std::string expansion_function_of_time_name_{"Expansion"};
-  inline static const std::string rotation_function_of_time_name_{"Rotation"};
-  inline static const std::array<std::string, 2>
-      size_map_function_of_time_names_{{"SizeA", "SizeB"}};
-  bool is_time_dependent_{false};
-  double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  ExpansionMapOptions expansion_map_options_{};
-  std::array<double, 3> initial_angular_velocity_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
-  std::array<std::array<double, 3>, 2> initial_size_map_values_{};
+  std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
 };
 }  // namespace domain::creators

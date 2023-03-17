@@ -23,6 +23,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
@@ -46,6 +47,7 @@
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using CylBCO = ::domain::creators::CylindricalBinaryCompactObject;
+using TimeDepOptions = domain::creators::bco::TimeDependentMapOptions;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
@@ -344,19 +346,8 @@ void test_construction(const CylBCO& creator,
   }
 }
 
-auto construct_time_dependent(
-    const bool with_control_systems,
-    const typename CylBCO::InitialRefinement::type& initial_refinement,
-    const typename CylBCO::InitialGridPoints::type& initial_grid_points,
-    const bool with_boundary_conditions, const bool use_equiangular_map,
-    const std::array<double, 3>& center_objectA,
-    const std::array<double, 3>& center_objectB,
-    const double inner_radius_objectA, const double inner_radius_objectB,
-    const double outer_radius, const bool include_inner_sphere_A,
-    const bool include_inner_sphere_B, const bool include_outer_sphere) {
+TimeDepOptions construct_time_dependent_options() {
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
-  constexpr double expected_initial_outer_boundary_function_value =
-      1.0;  // hard-coded in CylindricalBinaryCompactObject.cpp
   constexpr double expected_asymptotic_velocity_outer_boundary =
       -0.1;  // matches AsymptoticVelocityOuterBoundary: -0.1 above
   constexpr double expected_decay_timescale_outer_boundary_velocity =
@@ -380,61 +371,9 @@ auto construct_time_dependent(
   std::array<DataVector, 4> initial_size_A_coefs{{{1.1}, {0.0}, {0.0}, {0.0}}};
   std::array<DataVector, 4> initial_size_B_coefs{{{1.2}, {0.0}, {0.0}, {0.0}}};
 
-  // Hardcoded in CylindricalBinaryCompactObject.hpp
-  const std::string expansion_name = "Expansion";
-  const std::string rotation_name = "Rotation";
-  const std::string size_A_name = "SizeA";
-  const std::string size_B_name = "SizeB";
-
-  ExpirationTimeMap initial_expiration_times{};
-  initial_expiration_times[expansion_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[rotation_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[size_A_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[size_B_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-
-  // Functions of time evaluated at expected_time.
-  std::tuple<
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
-      std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
-      std::pair<std::string,
-                domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>>
-      expected_functions_of_time = std::make_tuple(
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              expansion_name,
-              {expected_time, initial_expansion_factor_coefs,
-               initial_expiration_times[expansion_name]}},
-          std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>{
-              "ExpansionOuterBoundary"s,
-              {expected_initial_outer_boundary_function_value, expected_time,
-               expected_asymptotic_velocity_outer_boundary,
-               expected_decay_timescale_outer_boundary_velocity}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>{
-              rotation_name,
-              {expected_time, initial_quaternion_coefs,
-               initial_rotation_angle_coefs,
-               initial_expiration_times[rotation_name]}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
-              size_A_name,
-              {expected_time, initial_size_A_coefs,
-               initial_expiration_times[size_A_name]}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
-              size_B_name,
-              {expected_time, initial_size_B_coefs,
-               initial_expiration_times[size_B_name]}});
-
-  auto creator = CylBCO{
+  return TimeDepOptions{
       expected_time,
-      CylBCO::ExpansionMapOptions{
+      TimeDepOptions::ExpansionMapOptions{
           std::array{initial_expansion_factor_coefs[0][0],
                      initial_expansion_factor_coefs[1][0]},
           expected_asymptotic_velocity_outer_boundary,
@@ -444,24 +383,7 @@ auto construct_time_dependent(
       {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
         initial_size_A_coefs[1][0]}},
       {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-        initial_size_B_coefs[1][0]}},
-      center_objectA,
-      center_objectB,
-      inner_radius_objectA,
-      inner_radius_objectB,
-      include_inner_sphere_A,
-      include_inner_sphere_B,
-      include_outer_sphere,
-      outer_radius,
-      use_equiangular_map,
-      initial_refinement,
-      initial_grid_points,
-      with_boundary_conditions ? create_inner_boundary_condition() : nullptr,
-      with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
-
-  return std::make_tuple(std::move(creator),
-                         std::move(initial_expiration_times),
-                         std::move(expected_functions_of_time));
+        initial_size_B_coefs[1][0]}}};
 }
 
 void test_parse_errors() {
@@ -513,14 +435,14 @@ void test_parse_errors() {
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          0.0,
-          domain::creators::CylindricalBinaryCompactObject::ExpansionMapOptions{
-              std::array{0.0, 0.0}, 0.0, 1.0},
-          std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
-          std::array{0.0, 0.0, 0.0}, {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0,
-          1.0, false, false, false, 25.0, false, 1_st, 3_st,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          TimeDepOptions{0.0,
+                         TimeDepOptions::ExpansionMapOptions{
+                             std::array{0.0, 0.0}, 0.0, 1.0},
+                         std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
+                         std::array{0.0, 0.0, 0.0}},
+          {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
+          25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "To use the CylindricalBBH domain with time-dependent maps"));
   // Boundary condition errors
@@ -662,22 +584,23 @@ void test_cylindrical_bbh() {
 
     CylBCO cyl_binary_compact_object{};
     if (with_time_dependence) {
-      auto [creator, initial_expiration_times, expected_functions_of_time] =
-          construct_time_dependent(
-              with_control_systems, initial_refinement, initial_grid_points,
-              with_boundary_conditions, use_equiangular_map, center_objectA,
-              center_objectB, inner_radius_objectA, inner_radius_objectB,
-              outer_radius, include_inner_sphere_A, include_inner_sphere_B,
-              include_outer_sphere);
-
-      cyl_binary_compact_object = std::move(creator);
-
-      for (const double time : times_to_check) {
-        CAPTURE(time);
-        TestHelpers::domain::creators::test_functions_of_time(
-            cyl_binary_compact_object, expected_functions_of_time,
-            initial_expiration_times);
-      }
+      cyl_binary_compact_object =
+          CylBCO{construct_time_dependent_options(),
+                 center_objectA,
+                 center_objectB,
+                 inner_radius_objectA,
+                 inner_radius_objectB,
+                 include_inner_sphere_A,
+                 include_inner_sphere_B,
+                 include_outer_sphere,
+                 outer_radius,
+                 use_equiangular_map,
+                 initial_refinement,
+                 initial_grid_points,
+                 with_boundary_conditions ? create_inner_boundary_condition()
+                                          : nullptr,
+                 with_boundary_conditions ? create_outer_boundary_condition()
+                                          : nullptr};
     } else {
       cyl_binary_compact_object =
           CylBCO{center_objectA,
