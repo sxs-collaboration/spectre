@@ -396,7 +396,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using basic_options = tmpl::conditional_t<
-      domain::creators::detail::enable_time_dependent_maps_v<Metavariables>,
+      domain::creators::bco::enable_time_dependent_maps_v<Metavariables>,
       tmpl::append<time_dependent_options, time_independent_options>,
       time_independent_options>;
 

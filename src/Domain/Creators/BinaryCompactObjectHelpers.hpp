@@ -5,7 +5,9 @@
 
 #include <type_traits>
 
-namespace domain::creators::detail {
+/// Namespace used to hold things used in both the BinaryCompactObject and
+/// CylindricalBinaryCompactObject domain creators.
+namespace domain::creators::bco {
 // If `Metavariables` has a `domain` member struct and
 // `domain::enable_time_dependent_maps` is `true`, then
 // inherit from `std::true_type`; otherwise, inherit from `std::false_type`.
@@ -20,4 +22,4 @@ struct enable_time_dependent_maps<Metavariables,
 template <typename Metavariables>
 constexpr bool enable_time_dependent_maps_v =
     enable_time_dependent_maps<Metavariables>::value;
-}  // namespace domain::creators::detail
+}  // namespace domain::creators::bco
