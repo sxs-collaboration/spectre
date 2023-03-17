@@ -305,7 +305,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Options to set a single cube at a location on the x-axis"};
     struct XCoord {
-      static std::string name() { return "CartesianCubeAtXCoord";}
+      static std::string name() { return "CartesianCubeAtXCoord"; }
       using type = double;
       static constexpr Options::String help = {"x-coordinate of center."};
     };
@@ -405,117 +405,10 @@ class BinaryCompactObject : public DomainCreator<3> {
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
-  // The following options are for optional time dependent maps
+  // This is for optional time dependent maps
   struct TimeDependentMaps {
-    static constexpr Options::String help = {"Options for time-dependent maps"};
-  };
-
-  /// \brief The initial time of the functions of time.
-  struct InitialTime {
-    using type = double;
-    static constexpr Options::String help = {
-        "The initial time of the functions of time"};
-    using group = TimeDependentMaps;
-  };
-
-  struct ExpansionMap {
-    static constexpr Options::String help = {
-        "Options for a time-dependent expansion map (specifically, a "
-        "CubicScale map)"};
-    using group = TimeDependentMaps;
-  };
-
-  /// \brief The initial value of the expansion factor.
-  struct InitialExpansion {
-    using type = double;
-    static constexpr Options::String help = {
-        "Expansion value at initial time."};
-    using group = ExpansionMap;
-  };
-  /// \brief The velocity of the expansion factor.
-  struct InitialExpansionVelocity {
-    using type = double;
-    static constexpr Options::String help = {"The rate of expansion."};
-    using group = ExpansionMap;
-  };
-  /// \brief The asymptotic radial velocity of the outer boundary.
-  struct AsymptoticVelocityOuterBoundary {
-    using type = double;
-    static constexpr Options::String help = {
-        "The asymptotic velocity of the outer boundary."};
-    using group = ExpansionMap;
-  };
-  /// \brief The timescale for how fast the outer boundary velocity approaches
-  /// its asymptotic value.
-  struct DecayTimescaleOuterBoundaryVelocity {
-    using type = double;
-    static constexpr Options::String help = {
-        "The timescale for how fast the outer boundary velocity approaches its "
-        "asymptotic value."};
-    using group = ExpansionMap;
-  };
-
-  struct RotationMap {
-    static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about an arbitrary axis."};
-    using group = TimeDependentMaps;
-  };
-  /// \brief The angular velocity of the rotation.
-  struct InitialAngularVelocity {
-    using type = std::array<double, 3>;
-    static constexpr Options::String help = {"The angular velocity."};
-    using group = RotationMap;
-  };
-
-  struct SizeMap {
-    static constexpr Options::String help = {
-        "Options for a time-dependent size maps."};
-    using group = TimeDependentMaps;
-  };
-
-  /// \brief Initial values for functions of time for size maps for objects A,B.
-  ///
-  /// \details If object A is not excised, no size map is applied for object A,
-  /// and this option is ignored for object A. If object B is not excised, no
-  /// size map is applied for object B, and this option is ignored for object B.
-  /// If neither object A nor object B are excised, this option is completely
-  /// ignored.
-  struct InitialSizeMapValues {
-    using type = std::array<double, 2>;
-    static constexpr Options::String help = {
-        "SizeMapA, SizeMapB values at initial time."};
-    using group = SizeMap;
-    static std::string name() { return "InitialValues"; }
-  };
-  /// \brief Initial velocities for functions of time for size maps for objects
-  /// A,B.
-  ///
-  /// \details If object A is not excised, no size map is applied for object A,
-  /// and this option is ignored for object A. If object B is not excised, no
-  /// size map is applied for object B, and this option is ignored for object B.
-  /// If neither object A nor object B are excised, this option is completely
-  /// ignored.
-  struct InitialSizeMapVelocities {
-    using type = std::array<double, 2>;
-    static constexpr Options::String help = {
-        "SizeMapA, SizeMapB initial velocities."};
-    using group = SizeMap;
-    static std::string name() { return "InitialVelocities"; }
-  };
-  /// \brief Initial accelerations for functions of time for size maps for
-  /// objects A,B
-  ///
-  /// \details If object A is not excised, no size map is applied for object A,
-  /// and this option is ignored for object A. If object B is not excised, no
-  /// size map is applied for object B, and this option is ignored for object B.
-  /// If neither object A nor object B are excised, this option is completely
-  /// ignored.
-  struct InitialSizeMapAccelerations {
-    using type = std::array<double, 2>;
-    static constexpr Options::String help = {
-        "SizeMapA, SizeMapB initial accelerations."};
-    using group = SizeMap;
-    static std::string name() { return "InitialAccelerations"; }
+    using type = bco::TimeDependentMapOptions;
+    static constexpr Options::String help = bco::TimeDependentMapOptions::help;
   };
 
   template <typename Metavariables>
@@ -531,18 +424,11 @@ class BinaryCompactObject : public DomainCreator<3> {
                   typename Metavariables::system>>>,
           tmpl::list<>>>;
 
-  using time_dependent_options =
-      tmpl::list<InitialTime, InitialExpansion, InitialExpansionVelocity,
-                 AsymptoticVelocityOuterBoundary,
-                 DecayTimescaleOuterBoundaryVelocity, InitialAngularVelocity,
-                 InitialSizeMapValues, InitialSizeMapVelocities,
-                 InitialSizeMapAccelerations>;
-
   template <typename Metavariables>
   using options = tmpl::conditional_t<
       domain::creators::bco::enable_time_dependent_maps_v<Metavariables>,
-      tmpl::append<time_dependent_options,
-                   time_independent_options<Metavariables>>,
+      tmpl::push_front<time_independent_options<Metavariables>,
+                       TimeDependentMaps>,
       time_independent_options<Metavariables>>;
 
   static constexpr Options::String help{
@@ -591,16 +477,9 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Constructor for time-dependent version of the domain
   // (i.e., for when
   // Metavariables::domain::enable_time_dependent_maps == true),
-  // with parameters corresponding to the additional options
+  // with an additional parameter
   BinaryCompactObject(
-      double initial_time, double initial_expansion,
-      double initial_expansion_velocity,
-      double asymptotic_velocity_outer_boundary,
-      double decay_timescale_outer_boundary_velocity,
-      std::array<double, 3> initial_angular_velocity,
-      std::array<double, 2> initial_size_map_values,
-      std::array<double, 2> initial_size_map_velocities,
-      std::array<double, 2> initial_size_map_accelerations,
+      bco::TimeDependentMapOptions time_dependent_options,
       typename ObjectA::type object_A, typename ObjectB::type object_B,
       double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
@@ -676,32 +555,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool is_excised_b_ = false;
   bool use_single_block_a_ = false;
   bool use_single_block_b_ = false;
-
-  // Variables for FunctionsOfTime options
-  bool enable_time_dependence_{false};
-  double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  double initial_expansion_{std::numeric_limits<double>::signaling_NaN()};
-  double initial_expansion_velocity_{
-      std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::string expansion_function_of_time_name_{"Expansion"};
-  double asymptotic_velocity_outer_boundary_{
-      std::numeric_limits<double>::signaling_NaN()};
-  double decay_timescale_outer_boundary_velocity_{
-      std::numeric_limits<double>::signaling_NaN()};
-  DataVector initial_angular_velocity_{3, 0.0};
-  DataVector initial_quaternion_{4, 0.0};
-  inline static const std::string rotation_function_of_time_name_{"Rotation"};
-  std::array<double, 2> initial_size_map_values_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
-  std::array<double, 2> initial_size_map_velocities_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
-  std::array<double, 2> initial_size_map_accelerations_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::array<std::string, 2>
-      size_map_function_of_time_names_{{"SizeA", "SizeB"}};
+  std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
 };
 }  // namespace creators
 }  // namespace domain

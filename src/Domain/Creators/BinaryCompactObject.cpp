@@ -37,6 +37,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
+#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Domain.hpp"
@@ -58,7 +59,6 @@ bool BinaryCompactObject::Object::is_excised() const {
   return inner_boundary_condition.has_value();
 }
 
-// Time-independent constructor
 BinaryCompactObject::BinaryCompactObject(
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     const double envelope_radius, const double outer_radius,
@@ -285,23 +285,14 @@ BinaryCompactObject::BinaryCompactObject(
   }
 }
 
-// Time-dependent constructor, with additional options for specifying
-// the time-dependent maps
 BinaryCompactObject::BinaryCompactObject(
-    double initial_time, double initial_expansion,
-    double initial_expansion_velocity,
-    double asymptotic_velocity_outer_boundary,
-    double decay_timescale_outer_boundary_velocity,
-    std::array<double, 3> initial_angular_velocity,
-    std::array<double, 2> initial_size_map_values,
-    std::array<double, 2> initial_size_map_velocities,
-    std::array<double, 2> initial_size_map_accelerations,
+    bco::TimeDependentMapOptions time_dependent_options,
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    const bool use_equiangular_map, bool use_projective_map,
-    CoordinateMaps::Distribution radial_distribution_outer_shell,
+    const bool use_equiangular_map, const bool use_projective_map,
+    const CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -310,23 +301,7 @@ BinaryCompactObject::BinaryCompactObject(
                           initial_number_of_grid_points, use_equiangular_map,
                           use_projective_map, radial_distribution_outer_shell,
                           std::move(outer_boundary_condition), context) {
-  enable_time_dependence_ = true;
-  initial_time_ = initial_time;
-  initial_expansion_ = initial_expansion;
-  initial_expansion_velocity_ = initial_expansion_velocity;
-  asymptotic_velocity_outer_boundary_ = asymptotic_velocity_outer_boundary;
-  decay_timescale_outer_boundary_velocity_ =
-      decay_timescale_outer_boundary_velocity;
-  // quat = (cos(theta/2), nhat*sin(theta/2)) but we always take theta = 0
-  // initially
-  initial_quaternion_ = DataVector{{1.0, 0.0, 0.0, 0.0}};
-  initial_size_map_values_ = initial_size_map_values;
-  initial_size_map_velocities_ = initial_size_map_velocities;
-  initial_size_map_accelerations_ = initial_size_map_accelerations;
-
-  for (size_t i = 0; i < initial_angular_velocity.size(); i++) {
-    initial_angular_velocity_[i] = gsl::at(initial_angular_velocity, i);
-  }
+  time_dependent_options_ = time_dependent_options;
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {
@@ -548,7 +523,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
                    block_groups_};
 
   // Inject the hard-coded time-dependence
-  if (enable_time_dependence_) {
+  if (time_dependent_options_.has_value()) {
     // Default initialize everything to nullptr so that we only need to set the
     // appropriate block maps for the specific frames
     std::vector<std::unique_ptr<
@@ -562,9 +537,9 @@ Domain<3> BinaryCompactObject::create_domain() const {
         distorted_to_inertial_block_maps{number_of_blocks_};
 
     CubicScaleMap expansion_map{
-        outer_radius_, expansion_function_of_time_name_,
-        expansion_function_of_time_name_ + "OuterBoundary"s};
-    RotationMap3D rotation_map{rotation_function_of_time_name_};
+        outer_radius_, time_dependent_options_->expansion_name,
+        time_dependent_options_->expansion_outer_boundary_name};
+    RotationMap3D rotation_map{time_dependent_options_->rotation_name};
 
     const auto expansion_rotation = [&expansion_map, &rotation_map](
                                         const auto source_frame,
@@ -620,7 +595,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // interior A or B, the layer 1 blocks for that object will have the same
     // map as the final block from the Grid to Inertial frame.
     if (is_excised_a_) {
-      CompressionMap size_A_map{size_map_function_of_time_names_[0],
+      CompressionMap size_A_map{gsl::at(time_dependent_options_->size_names, 0),
                                 std::get<Object>(object_A_).inner_radius,
                                 std::get<Object>(object_A_).outer_radius,
                                 {{x_coord_a_, 0.0, 0.0}}};
@@ -636,7 +611,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
     }
     const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
     if (is_excised_b_) {
-      CompressionMap size_B_map{size_map_function_of_time_names_[1],
+      CompressionMap size_B_map{gsl::at(time_dependent_options_->size_names, 1),
                                 std::get<Object>(object_B_).inner_radius,
                                 std::get<Object>(object_B_).outer_radius,
                                 {{x_coord_b_, 0.0, 0.0}}};
@@ -731,72 +706,11 @@ std::unordered_map<std::string,
 BinaryCompactObject::functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
-  std::unordered_map<std::string,
-                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-      result{};
-  if (not enable_time_dependence_) {
-    return result;
-  }
-
-  // Get existing function of time names that are used for the maps and assign
-  // their initial expiration time to infinity (i.e. not expiring)
-  std::unordered_map<std::string, double> expiration_times{
-      {expansion_function_of_time_name_,
-       std::numeric_limits<double>::infinity()},
-      {rotation_function_of_time_name_,
-       std::numeric_limits<double>::infinity()},
-      {size_map_function_of_time_names_[0],
-       std::numeric_limits<double>::infinity()},
-      {size_map_function_of_time_names_[1],
-       std::numeric_limits<double>::infinity()}};
-
-  // If we have control systems, overwrite these expiration times with the ones
-  // supplied by the control system
-  for (auto& [name, expr_time] : initial_expiration_times) {
-    expiration_times[name] = expr_time;
-  }
-
-  // ExpansionMap FunctionOfTime for the function \f$a(t)\f$ in the
-  // domain::CoordinateMaps::TimeDependent::CubicScale map
-  result[expansion_function_of_time_name_] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time_,
-          std::array<DataVector, 3>{
-              {{initial_expansion_}, {initial_expansion_velocity_}, {0.0}}},
-          expiration_times.at(expansion_function_of_time_name_));
-
-  // ExpansionMap FunctionOfTime for the function \f$b(t)\f$ in the
-  // domain::CoordinateMaps::TimeDependent::CubicScale map
-  result[expansion_function_of_time_name_ + "OuterBoundary"s] =
-      std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
-          1.0, initial_time_, asymptotic_velocity_outer_boundary_,
-          decay_timescale_outer_boundary_velocity_);
-
-  // RotationMap FunctionOfTime for the rotation angles about each axis.
-  // The initial rotation angles don't matter as we never actually use the
-  // angles themselves. We only use their derivatives (omega) to determine map
-  // parameters. In theory we could determine each initital angle from the input
-  // axis-angle representation, but we don't need to.
-  result[rotation_function_of_time_name_] =
-      std::make_unique<FunctionsOfTime::QuaternionFunctionOfTime<3>>(
-          initial_time_, std::array<DataVector, 1>{initial_quaternion_},
-          std::array<DataVector, 4>{
-              {{3, 0.0}, initial_angular_velocity_, {3, 0.0}, {3, 0.0}}},
-          expiration_times.at(rotation_function_of_time_name_));
-
-  // CompressionMap FunctionOfTime for objects A and B
-  for (size_t i = 0; i < size_map_function_of_time_names_.size(); i++) {
-    result[gsl::at(size_map_function_of_time_names_, i)] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-            initial_time_,
-            std::array<DataVector, 4>{
-                {{gsl::at(initial_size_map_values_, i)},
-                 {gsl::at(initial_size_map_velocities_, i)},
-                 {gsl::at(initial_size_map_accelerations_, i)},
-                 {0.0}}},
-            expiration_times.at(gsl::at(size_map_function_of_time_names_, i)));
-  }
-
-  return result;
+  return time_dependent_options_.has_value()
+             ? time_dependent_options_->create_functions_of_time(
+                   initial_expiration_times)
+             : std::unordered_map<
+                   std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{};
 }
 }  // namespace domain::creators

@@ -88,16 +88,15 @@ DomainCreator:
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
-        InitialExpansion: 1.0
-        InitialExpansionVelocity: 0.0
+        InitialValues: [1.0, 0.0]
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:
         InitialAngularVelocity: [0.0, 0.0, 0.0]
-      SizeMap:
-        InitialValues: [0.0, 0.0]
-        InitialVelocities: [0.0, 0.0]
-        InitialAccelerations: [0.0, 0.0]
+      SizeMapA:
+        InitialValues: [0.0, 0.0, 0.0]
+      SizeMapB:
+        InitialValues: [0.0, 0.0, 0.0]
 
 EventsAndDenseTriggers:
 

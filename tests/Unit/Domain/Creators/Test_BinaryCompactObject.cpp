@@ -357,16 +357,15 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
       add_time_dependence ? "  TimeDependentMaps:\n"
                             "    InitialTime: 1.0\n"
                             "    ExpansionMap: \n"
-                            "      InitialExpansion: 1.0\n"
-                            "      InitialExpansionVelocity: -0.1\n"
+                            "      InitialValues: [1.0, -0.1]\n"
                             "      AsymptoticVelocityOuterBoundary: -0.1\n"
                             "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
                             "    RotationMap:\n"
                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                            "    SizeMap:\n"
-                            "      InitialValues: [0.0, 0.0]\n"
-                            "      InitialVelocities: [-0.1, -0.2]\n"
-                            "      InitialAccelerations: [0.01, 0.02]"
+                            "    SizeMapA:\n"
+                            "      InitialValues: [0.0, -0.1, 0.01]\n"
+                            "    SizeMapB:\n"
+                            "      InitialValues: [0.0, -0.2, 0.02]"
                           : ""};
   const std::string interior_A{
       add_boundary_condition
@@ -537,84 +536,9 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
     }
   }();
 
-  constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
-  constexpr double expected_initial_function_value =
-      1.0;  // hard-coded in BinaryCompactObject.cpp
-  constexpr double expected_asymptotic_velocity_outer_boundary =
-      -0.1;  // matches AsymptoticVelocityOuterBoundary: -0.1 above
-  constexpr double expected_decay_timescale_outer_boundary_velocity =
-      5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
-  std::array<DataVector, 3> expansion_factor_coefs{{{1.0}, {-0.1}, {0.0}}};
-  const DataVector init_angular_vel{{0.0, 0.0, -0.2}};
-  std::array<DataVector, 1> quaternion_coefs{{{1.0, 0.0, 0.0, 0.0}}};
-  // Set initial angle for each axis to 0 because it doesn't matter. We don't
-  // use it or care about it.
-  std::array<DataVector, 4> rotation_angle_coefs{
-      {{3, 0.0}, init_angular_vel, {3, 0.0}, {3, 0.0}}};
-  std::array<DataVector, 4> lambda_factor_a0_coefs{
-      {{0.0}, {-0.1}, {0.01}, {0.0}}};
-  std::array<DataVector, 4> lambda_factor_b0_coefs{
-      {{0.0}, {-0.2}, {0.02}, {0.0}}};
-
-  // These names must match the hard coded ones in BinaryCompactObject
-  const std::string size_a_name = "SizeA";
-  const std::string size_b_name = "SizeB";
-  const std::string expansion_name = "Expansion";
-  const std::string rotation_name = "Rotation";
-
-  ExpirationTimeMap initial_expiration_times{};
-  initial_expiration_times[size_a_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[size_b_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[expansion_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-  initial_expiration_times[rotation_name] =
-      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
-
-  const std::tuple<
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
-      std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
-      std::pair<std::string,
-                domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>>
-      expected_functions_of_time = std::make_tuple(
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
-              size_a_name,
-              {expected_time, lambda_factor_a0_coefs,
-               initial_expiration_times[size_a_name]}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
-              size_b_name,
-              {expected_time, lambda_factor_b0_coefs,
-               initial_expiration_times[size_b_name]}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              expansion_name,
-              {expected_time, expansion_factor_coefs,
-               initial_expiration_times[expansion_name]}},
-          std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>{
-              "ExpansionOuterBoundary"s,
-              {expected_initial_function_value, expected_time,
-               expected_asymptotic_velocity_outer_boundary,
-               expected_decay_timescale_outer_boundary_velocity}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>{
-              rotation_name,
-              {expected_time, quaternion_coefs, rotation_angle_coefs,
-               initial_expiration_times[rotation_name]}});
-
-  const std::vector<double> times_to_check{{1., 10.}};
+  const std::vector<double> times_to_check{{1., 2.3}};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       *binary_compact_object, with_boundary_conditions, false, times_to_check);
-  for (const double time : times_to_check) {
-    CAPTURE(time);
-    TestHelpers::domain::creators::test_functions_of_time(
-        *binary_compact_object, expected_functions_of_time,
-        with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
-  }
 }
 
 void test_binary_factory() {
@@ -741,7 +665,7 @@ void test_parse_errors() {
 }
 }  // namespace
 
-// [[TimeOut, 45]]
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();

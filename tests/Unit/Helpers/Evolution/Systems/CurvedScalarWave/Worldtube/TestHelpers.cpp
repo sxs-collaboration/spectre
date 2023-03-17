@@ -60,18 +60,17 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "  TimeDependentMaps:\n"
       "    InitialTime: 0.0\n"
       "    ExpansionMap: \n"
-      "      InitialExpansion: 1.0\n"
-      "      InitialExpansionVelocity: 0.0\n"
+      "      InitialValues: [1.0, 0.0]\n"
       "      AsymptoticVelocityOuterBoundary: 0.0\n"
       "      DecayTimescaleOuterBoundaryVelocity: 1.0\n"
       "    RotationMap:\n"
       "      InitialAngularVelocity: [0.0, 0.0," +
       angular_velocity_stream.str() +
       "]\n"
-      "    SizeMap:\n"
-      "      InitialValues: [0.0, 0.0]\n"
-      "      InitialVelocities: [0.0, 0.0]\n"
-      "      InitialAccelerations: [0.0, 0.0]";
+      "    SizeMapA:\n"
+      "      InitialValues: [0.0, 0.0, 0.0]\n"
+      "    SizeMapB:\n"
+      "      InitialValues: [0.0, 0.0, 0.0]";
   return ::TestHelpers::test_option_tag<::domain::OptionTags::DomainCreator<3>,
                                         Metavariables>(
       binary_compact_object_options);

@@ -63,16 +63,15 @@ DomainCreator:
     TimeDependentMaps:
       InitialTime: 0.
       ExpansionMap:
-        InitialExpansion: 1.
-        InitialExpansionVelocity: 0.
+        InitialValues: [1., 0.]
         AsymptoticVelocityOuterBoundary: 0.
         DecayTimescaleOuterBoundaryVelocity: 1.
       RotationMap:
         InitialAngularVelocity: [0., 0., 0.08944271909999159]
-      SizeMap:
-        InitialValues: [0., 0.]
-        InitialVelocities: [0., 0.]
-        InitialAccelerations: [0., 0.]
+      SizeMapA:
+        InitialValues: [0., 0., 0.]
+      SizeMapB:
+        InitialValues: [0., 0., 0.]
 
 SpatialDiscretization:
   BoundaryCorrection:
