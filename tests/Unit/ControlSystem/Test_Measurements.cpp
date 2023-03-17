@@ -125,18 +125,19 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   const DataVector x_coord{-1.0, 1.0, -1.0, 1.0, 1.0, 2.0, 0.0, 2.0};
   const DataVector y_coord{0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0};
   const DataVector z_coord{0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
-  const tnsr::I<DataVector, 3, Frame::Grid> x_grid{{x_coord, y_coord, z_coord}};
+  const tnsr::I<DataVector, 3, Frame::Distorted> x_distorted{
+      {x_coord, y_coord, z_coord}};
 
   // mass_a and mass_b: Integral of tilde_d/inv_det_jacobian for x>=0 and x<0
   // first_moment_a, first_moment_b : Same as masses, but multiplying the
-  //                              integrand by x_grid
+  //                              integrand by x_distorted
   double mass_a = 0.;
   double mass_b = 0.;
   std::array<double, 3> first_moment_a = {0., 0., 0.};
   std::array<double, 3> first_moment_b = {0., 0., 0.};
   control_system::measurements::center_of_mass_integral_on_element(
       &mass_a, &mass_b, &first_moment_a, &first_moment_b, mesh,
-      inv_det_jacobian, tilde_d, x_grid);
+      inv_det_jacobian, tilde_d, x_distorted);
   // Comparison with expected answer
   CHECK(mass_a == 8.0);
   CHECK(mass_b == 2.5);

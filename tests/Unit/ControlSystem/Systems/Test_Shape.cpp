@@ -48,14 +48,14 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Frame {
-struct Grid;
+struct Distorted;
 }  // namespace Frame
 
 namespace control_system {
 namespace {
 using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-using Strahlkorper = Strahlkorper<Frame::Grid>;
+using Strahlkorper = Strahlkorper<Frame::Distorted>;
 template <typename Metavars>
 using SystemHelper = control_system::TestHelpers::SystemHelper<Metavars>;
 
@@ -105,9 +105,9 @@ void test_shape_control(
   SpherepackIterator iter{l_max, l_max};
   const double ah_radius =
       ah_coefs_function_of_time.func(initial_time)[0][iter.set(0, 0)()];
-  const tnsr::I<double, 3, Frame::Grid>& center = excision_sphere.center();
+  const tnsr::I<double, 3, Frame::Grid>& grid_center = excision_sphere.center();
   Strahlkorper horizon_a{l_max, l_max, ah_radius,
-                         make_array<double, 3>(center)};
+                         make_array<double, 3>(grid_center)};
   // B just needs to exist. Doesn't have to be valid
   const Strahlkorper horizon_b{};
 

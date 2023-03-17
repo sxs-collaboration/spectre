@@ -66,22 +66,23 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using temporal_id = ::Tags::TimeAndPrevious;
 
       using vars_to_interpolate_to_target =
-          ::ah::vars_to_interpolate_to_target<3, ::Frame::Grid>;
+          ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
+      using tags_to_observe = ::ah::tags_for_observing<Frame::Distorted>;
       using compute_items_on_target =
-          ::ah::compute_items_on_target<3, Frame::Grid>;
+          ::ah::compute_items_on_target<3, Frame::Distorted>;
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                               ::Frame::Grid>;
+                                               ::Frame::Distorted>;
       using post_interpolation_callback =
           intrp::callbacks::FindApparentHorizon<InterpolationTarget,
-                                                ::Frame::Grid>;
+                                                ::Frame::Distorted>;
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
-      using post_horizon_find_callbacks = tmpl::list<
-          control_system::RunCallbacks<FindHorizon, ControlSystems>,
-          ::ah::callbacks::ObserveCenters<InterpolationTarget, ::Frame::Grid>>;
+      using post_horizon_find_callbacks =
+          tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
+                     ::ah::callbacks::ObserveCenters<InterpolationTarget,
+                                                     ::Frame::Distorted>>;
     };
 
    public:

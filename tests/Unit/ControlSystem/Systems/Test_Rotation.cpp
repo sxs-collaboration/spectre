@@ -24,7 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
-struct Grid;
+struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
@@ -37,7 +37,7 @@ namespace {
 using RotationMap = domain::CoordinateMaps::TimeDependent::Rotation<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap>;
+    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, RotationMap>;
 
 template <size_t DerivOrder>
 void test_rotation_control_system(const bool newtonian) {

@@ -24,7 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
-struct Grid;
+struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
@@ -33,7 +33,7 @@ namespace {
 using ExpansionMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, ExpansionMap>;
+    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, ExpansionMap>;
 
 template <size_t DerivOrder>
 void test_expansion_control_system() {

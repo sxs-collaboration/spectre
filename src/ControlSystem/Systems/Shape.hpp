@@ -32,7 +32,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
+struct Distorted;
 }  // namespace Frame
 /// \endcond
 
@@ -90,9 +90,8 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
-    using type =
-        LinkedMessageQueue<double,
-                           tmpl::list<QueueTags::Strahlkorper<Frame::Grid>>>;
+    using type = LinkedMessageQueue<
+        double, tmpl::list<QueueTags::Strahlkorper<Frame::Distorted>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -100,19 +99,19 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags =
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>;
+        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>>;
 
     template <typename Metavariables>
     static void apply(
         typename measurements::SingleHorizon<Horizon>::Submeasurement /*meta*/,
-        const Strahlkorper<Frame::Grid>& strahlkorper,
+        const Strahlkorper<Frame::Distorted>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
           ControlComponent<Metavariables, Shape<Horizon, DerivOrder>>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Strahlkorper<Frame::Grid>, MeasurementQueue,
+          QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
           UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                        strahlkorper);
     }
