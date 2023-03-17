@@ -1,0 +1,300 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhBinaryBlackHole
+# Check: parse
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0002
+  InitialSlabSize: 0.25
+  StepChoosers:
+    - Increase:
+        Factor: 2
+    - ElementSizeCfl:
+        SafetyFactor: 0.5
+    - ErrorControl:
+        AbsoluteTolerance: 1e-8
+        RelativeTolerance: 1e-6
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.95
+  TimeStepper:
+    AdamsBashforth:
+      Order: 5
+
+DomainCreator:
+  CylindricalBinaryCompactObject:
+    CenterA: &CenterA [&XCoordA 7.683, 0.0, 0.0]
+    CenterB: &CenterB [&XCoordB -7.683, 0.0, 0.0]
+    RadiusA: &RadiusA 0.45825
+    RadiusB: &RadiusB 0.45825
+    IncludeInnerSphereA: true
+    IncludeInnerSphereB: true
+    IncludeOuterSphere: true
+    UseEquiangularMap: true
+    OuterRadius: 300.0
+    InitialRefinement: 2
+    InitialGridPoints: 7
+    BoundaryConditions:
+      InnerBoundary:
+        DemandOutgoingCharSpeeds:
+      OuterBoundary:
+        ConstraintPreservingBjorhus:
+          Type: ConstraintPreservingPhysical
+    TimeDependentMaps:
+      InitialTime: 0.0
+      ExpansionMap:
+        InitialValues: [1.0, -4.6148457646200002e-05]
+        AsymptoticVelocityOuterBoundary: -1.0e-6
+        DecayTimescaleOuterBoundaryVelocity: 50.0
+      RotationMap:
+        InitialAngularVelocity: [0.0, 0.0, 1.5264577062000000e-02]
+      SizeMapA:
+        InitialValues: [0.0, 0.0, 0.0]
+      SizeMapB:
+        InitialValues: [0.0, 0.0, 0.0]
+
+EventsAndDenseTriggers:
+
+# Set gauge and constraint damping parameters.
+# The values here are chosen empirically based on values that proved
+# successful in SpEC evolutions of binary black holes.
+# Note: Gaussian width = W / sqrt(34.54), so exp(-W^2/w^2) = 1e-15 at x=W,
+# is used in the damped-harmonic gauge parameters.
+# In SpEC, GaugeItems.input set what spectre calls W and spec calls
+# SecondaryWeightRmax. See
+# EvolutionSystems/GeneralizedHarmonic/DampedHarmonicGaugeItems.cpp
+# line 463 in https://github.com/sxs-collaboration/spec for where the Gaussian
+# is actually computed in SpEC.
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      DampedHarmonic:
+        SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0 / sqrt(34.54)
+        Amplitudes: [1.0, 1.0, 1.0]         # From SpEC run: damped harmonic
+        Exponents: [2, 2, 2]                # From SpEC run
+    DampingFunctionGamma0:
+      TimeDependentTripleGaussian:
+        Constant: 0.001             # 0.001 / (m_A + m_B)
+        Gaussian1:
+          Amplitude: 8.0             # 4.0 / m_A
+          Width: 3.5                 # 7.0 * m_A
+          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
+        Gaussian2:
+          Amplitude: 8.0             # 4.0 / m_B
+          Width: 3.5                 # 7.0 * m_B
+          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
+        Gaussian3:
+          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Width: 38.415              # 2.5 * (x_B - x_A)
+          Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -0.999
+        Amplitude: 0.999
+        Width: 153.66                # 10.0 * (x_B - x_A)
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      TimeDependentTripleGaussian:
+        Constant: 0.001              # 0.001 / (m_A + m_B)
+        Gaussian1:
+          Amplitude: 8.0             # 4.0 / m_A
+          Width: 3.5                 # 7.0 * m_A
+          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
+        Gaussian2:
+          Amplitude: 8.0             # 4.0 / m_B
+          Width: 3.5                 # 7.0 * m_B
+          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
+        Gaussian3:
+          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Width: 38.415              # 2.5 * (x_B - x_A)
+          Center: [0.0, 0.0, 0.0]
+
+PhaseChangeAndTriggers:
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 24
+    DisableForDebugging: True
+
+
+EventsAndTriggers:
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(FourIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 20
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Lapse
+            - Shift
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - PointwiseL2Norm(FourIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          OverrideObservationValue: None
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObservationAhA
+      - ObservationAhB
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    - - MonitorMemory:
+          ComponentsToMonitor: All
+  - - TimeCompares:
+        Comparison: GreaterThan
+        Value: 0.02
+    - - Completion
+
+Observers:
+  VolumeFileName: "GhBinaryBlackHoleVolumeData"
+  ReductionFileName: "GhBinaryBlackHoleReductionData"
+  SurfaceFileName: "GhBinaryBlackHoleSurfacesData"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
+ApparentHorizons:
+  ObservationAhA: &AhA
+    InitialGuess:
+      Lmax: 10
+      Radius: 2.2
+      Center: [*XCoordA, 0.0, 0.0]
+    FastFlow: &DefaultFastFlow
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+  ObservationAhB: &AhB
+    InitialGuess:
+      Lmax: 10
+      Radius: 2.2
+      Center: [*XCoordB, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Verbose
+  ControlSystemAhA: *AhA
+  ControlSystemAhB: *AhB
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    Lmax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+  ObservationExcisionBoundaryA:
+    Lmax: 10
+    Radius: *RadiusA
+    Center: *CenterA
+    AngularOrdering: Strahlkorper
+  ObservationExcisionBoundaryB:
+    Lmax: 10
+    Radius: *RadiusB
+    Center: *CenterB
+    AngularOrdering: Strahlkorper
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
+
+ControlSystems:
+  WriteDataToDisk: true
+  MeasurementsPerUpdate: 4
+  Expansion:
+    IsActive: true
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+  Rotation:
+    IsActive: true
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2, 0.2, 0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+
+# initial_data.h5 should contain numerical initial data on a grid that covers
+# the domain given above
+# - One way to produce initial data is with the `SolveXcts` executable. See the
+#   example in `docs/Examples/BbhInitialData`.
+# - You can also produce initial data with SpEC, interpolate it (using SpEC) to
+#   the domain given above (using the `ExportCoordinates` executable to get the
+#   coordinates of all grid points in the domain), and then load it here by
+#   selecting either the GH variables (`SpacetimeMetric`, `Pi`, `Phi`) or the
+#   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
+#   In this case, set `Interpolate: False` because the data is already given
+#   on this exact grid.
+Importers:
+  NumericInitialData:
+    FileGlob: "/path/to/initial_data.h5"
+    Subgroup: "VolumeData"
+    ObservationValue: Last
+    Interpolate: True
+    Variables:
+      Lapse: Lapse
+      # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`
+      # for details.
+      Shift: ShiftExcess
+      SpatialMetric: SpatialMetric
+      ExtrinsicCurvature: ExtrinsicCurvature
