@@ -15,11 +15,6 @@
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalEndcap.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/UniformCylindricalSide.hpp"
@@ -162,6 +157,28 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // This is Eq. (A9) with xi -> 1-xi.
   z_cutting_plane_ = cut_spheres_offset_factor_ *
                      ((1.0 - xi) * center_B_[2] + xi * center_A_[2]);
+
+  // outer_radius_A is the outer radius of the inner sphere A, if it exists.
+  // If the inner sphere A does not exist, then outer_radius_A is the same
+  // as radius_A_.
+  // If the inner sphere does exist, the algorithm for computing
+  // outer_radius_A is the same as in SpEC when there is one inner shell.
+  outer_radius_A_ =
+      include_inner_sphere_A_
+          ? radius_A_ +
+                0.5 * (std::abs(z_cutting_plane_ - center_A_[2]) - radius_A_)
+          : radius_A_;
+
+  // outer_radius_B is the outer radius of the inner sphere B, if it exists.
+  // If the inner sphere B does not exist, then outer_radius_B is the same
+  // as radius_B_.
+  // If the inner sphere does exist, the algorithm for computing
+  // outer_radius_B is the same as in SpEC when there is one inner shell.
+  outer_radius_B_ =
+      include_inner_sphere_B_
+          ? radius_B_ +
+                0.5 * (std::abs(z_cutting_plane_ - center_B_[2]) - radius_B_)
+          : radius_B_;
 
   number_of_blocks_ = 46;
   if (include_inner_sphere_A) {
@@ -395,7 +412,16 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
                 "Currently, one or both objects is missing the inner spheres.");
   }
 
-  time_dependent_options_ = time_dependent_options;
+  time_dependent_options_ = std::move(time_dependent_options);
+
+  time_dependent_options_->build_maps(
+      std::array{rotate_from_z_to_x_axis(center_A_),
+                 rotate_from_z_to_x_axis(center_B_)},
+      std::array{std::optional<double>{radius_A_},
+                 std::optional<double>{radius_B_}},
+      std::array{std::optional<double>{outer_radius_A_},
+                 std::optional<double>{outer_radius_B_}},
+      outer_radius_);
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain() const {
@@ -559,28 +585,6 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                     ? 3.0 * (center_A_[2] - center_B_[2])
                                     : outer_radius_;
 
-  // outer_radius_A is the outer radius of the inner sphere A, if it exists.
-  // If the inner sphere A does not exist, then outer_radius_A is the same
-  // as radius_A_.
-  // If the inner sphere does exist, the algorithm for computing
-  // outer_radius_A is the same as in SpEC when there is one inner shell.
-  const double outer_radius_A =
-      include_inner_sphere_A_
-          ? radius_A_ +
-                0.5 * (std::abs(z_cutting_plane_ - center_A_[2]) - radius_A_)
-          : radius_A_;
-
-  // outer_radius_B is the outer radius of the inner sphere B, if it exists.
-  // If the inner sphere B does not exist, then outer_radius_B is the same
-  // as radius_B_.
-  // If the inner sphere does exist, the algorithm for computing
-  // outer_radius_B is the same as in SpEC when there is one inner shell.
-  const double outer_radius_B =
-      include_inner_sphere_B_
-          ? radius_B_ +
-                0.5 * (std::abs(z_cutting_plane_ - center_B_[2]) - radius_B_)
-          : radius_B_;
-
   // z_cut_CA_lower is the lower z_plane position for the CA endcap,
   // defined by https://arxiv.org/abs/1206.3015 in the bulleted list
   // after Eq. (A.19) EXCEPT that here we use a factor of 1.6 instead of 1.5
@@ -597,12 +601,12 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // which isn't defined in https://arxiv.org/abs/1206.3015 (because the
   // maps are different).  We choose this plane to make the maps
   // less extreme.
-  const double z_cut_EA_upper = center_A_[2] + 0.7 * outer_radius_A;
+  const double z_cut_EA_upper = center_A_[2] + 0.7 * outer_radius_A_;
   // z_cut_EA_lower is the lower z_plane position for the EA endcap,
   // which isn't defined in https://arxiv.org/abs/1206.3015 (because the
   // maps are different).  We choose this plane to make the maps
   // less extreme.
-  const double z_cut_EA_lower = center_A_[2] - 0.7 * outer_radius_A;
+  const double z_cut_EA_lower = center_A_[2] - 0.7 * outer_radius_A_;
 
   // CA Filled Cylinder
   // 5 blocks: 0 thru 4
@@ -628,7 +632,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // 5 blocks: 9 thru 13
   add_endcap_to_list_of_maps(
       CoordinateMaps::UniformCylindricalEndcap(center_A_, center_EA,
-                                               outer_radius_A, radius_EA,
+                                               outer_radius_A_, radius_EA,
                                                z_cut_EA_upper, z_cut_CA_lower),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
@@ -637,7 +641,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   add_side_to_list_of_maps(
       // For some reason codecov complains about the next line.
       CoordinateMaps::UniformCylindricalSide(  // LCOV_EXCL_LINE
-          center_A_, center_EA, outer_radius_A, radius_EA, z_cut_EA_upper,
+          center_A_, center_EA, outer_radius_A_, radius_EA, z_cut_EA_upper,
           z_cut_EA_lower, z_cut_CA_lower, z_cutting_plane_),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
@@ -661,20 +665,20 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // maps are different).  We choose this plane to make the maps
   // less extreme.  Note here that 'upper' means 'closer to z=-infinity'
   // because we are on the -z side of the cutting plane.
-  const double z_cut_EB_upper = center_B_[2] - 0.7 * outer_radius_B;
+  const double z_cut_EB_upper = center_B_[2] - 0.7 * outer_radius_B_;
   // z_cut_EB_lower is the lower z_plane position for the EB endcap,
   // which isn't defined in https://arxiv.org/abs/1206.3015 (because the
   // maps are different).  We choose this plane to make the maps
   // less extreme. Note here that 'lower' means 'farther from z=-infinity'
   // because we are on the -z side of the cutting plane.
-  const double z_cut_EB_lower = center_B_[2] + 0.7 * outer_radius_B;
+  const double z_cut_EB_lower = center_B_[2] + 0.7 * outer_radius_B_;
 
   // EB Filled Cylinder
   // 5 blocks: 18 thru 22
   add_endcap_to_list_of_maps(
       CoordinateMaps::UniformCylindricalEndcap(
           flip_about_xy_plane(center_B_), flip_about_xy_plane(center_EB),
-          outer_radius_B, radius_EB, -z_cut_EB_upper, -z_cut_CB_lower),
+          outer_radius_B_, radius_EB, -z_cut_EB_upper, -z_cut_CB_lower),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
 
   // EB Cylinder
@@ -682,7 +686,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   add_side_to_list_of_maps(
       CoordinateMaps::UniformCylindricalSide(
           flip_about_xy_plane(center_B_), flip_about_xy_plane(center_EB),
-          outer_radius_B, radius_EB, -z_cut_EB_upper, -z_cut_EB_lower,
+          outer_radius_B_, radius_EB, -z_cut_EB_upper, -z_cut_EB_lower,
           -z_cut_CB_lower, -z_cutting_plane_),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
 
@@ -691,7 +695,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   add_flat_endcap_to_list_of_maps(
       CoordinateMaps::UniformCylindricalFlatEndcap(
           flip_about_xy_plane(center_A_),
-          flip_about_xy_plane(center_cutting_plane), outer_radius_A, radius_MB,
+          flip_about_xy_plane(center_cutting_plane), outer_radius_A_, radius_MB,
           -z_cut_EA_lower),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
   // MB Filled Cylinder
@@ -699,7 +703,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   add_flat_endcap_to_list_of_maps(
       // For some reason codecov complains about the next line.
       CoordinateMaps::UniformCylindricalFlatEndcap(  // LCOV_EXCL_LINE
-          center_B_, center_cutting_plane, outer_radius_B, radius_MB,
+          center_B_, center_cutting_plane, outer_radius_B_, radius_MB,
           z_cut_EB_lower),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
@@ -729,7 +733,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         // For some reason codecov complains about the next function.
         // LCOV_EXCL_START
         CoordinateMaps::UniformCylindricalEndcap(center_A_, center_A_,
-                                                 radius_A_, outer_radius_A,
+                                                 radius_A_, outer_radius_A_,
                                                  z_cut_upper, z_cut_EA_upper),
         // LCOV_EXCL_START
         CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
@@ -738,14 +742,14 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     add_endcap_to_list_of_maps(
         CoordinateMaps::UniformCylindricalEndcap(
             flip_about_xy_plane(center_A_), flip_about_xy_plane(center_A_),
-            radius_A_, outer_radius_A, -z_cut_lower, -z_cut_EA_lower),
+            radius_A_, outer_radius_A_, -z_cut_lower, -z_cut_EA_lower),
         CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
     // InnerSphereEA Cylinder
     // 4 blocks
     add_side_to_list_of_maps(
         // For some reason codecov complains about the next line.
         CoordinateMaps::UniformCylindricalSide(  // LCOV_EXCL_LINE
-            center_A_, center_A_, radius_A_, outer_radius_A, z_cut_upper,
+            center_A_, center_A_, radius_A_, outer_radius_A_, z_cut_upper,
             z_cut_lower, z_cut_EA_upper, z_cut_EA_lower),
         CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
   }
@@ -759,7 +763,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     add_endcap_to_list_of_maps(
         CoordinateMaps::UniformCylindricalEndcap(
             flip_about_xy_plane(center_B_), flip_about_xy_plane(center_B_),
-            radius_B_, outer_radius_B, -z_cut_upper, -z_cut_EB_upper),
+            radius_B_, outer_radius_B_, -z_cut_upper, -z_cut_EB_upper),
         CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
     // InnerSphereMB Filled Cylinder
     // 5 blocks
@@ -767,7 +771,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         // For some reason codecov complains about the next function.
         // LCOV_EXCL_START
         CoordinateMaps::UniformCylindricalEndcap(center_B_, center_B_,
-                                                 radius_B_, outer_radius_B,
+                                                 radius_B_, outer_radius_B_,
                                                  z_cut_lower, z_cut_EB_lower),
         // LCOV_EXCL_STOP
         CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
@@ -776,7 +780,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     add_side_to_list_of_maps(
         CoordinateMaps::UniformCylindricalSide(
             flip_about_xy_plane(center_B_), flip_about_xy_plane(center_B_),
-            radius_B_, outer_radius_B, -z_cut_upper, -z_cut_lower,
+            radius_B_, outer_radius_B_, -z_cut_upper, -z_cut_lower,
             -z_cut_EB_upper, -z_cut_EB_lower),
         CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
   }
@@ -901,67 +905,35 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
         distorted_to_inertial_block_maps{number_of_blocks_};
 
-    CubicScaleMap expansion_map{
-        outer_radius_, time_dependent_options_->expansion_name,
-        time_dependent_options_->expansion_outer_boundary_name};
-    RotationMap3D rotation_map{time_dependent_options_->rotation_name};
-    CompressionMap size_A_map{gsl::at(time_dependent_options_->size_names, 0),
-                              radius_A_, outer_radius_A,
-                              rotate_from_z_to_x_axis(center_A_)};
-    CompressionMap size_B_map{gsl::at(time_dependent_options_->size_names, 0),
-                              radius_B_, outer_radius_B,
-                              rotate_from_z_to_x_axis(center_B_)};
-
-    const auto expansion_rotation = [&expansion_map, &rotation_map](
-                                        const auto source_frame,
-                                        const auto target_frame) {
-      using SourceFrame = std::decay_t<decltype(source_frame)>;
-      using TargetFrame = std::decay_t<decltype(target_frame)>;
-      return std::make_unique<
-          CubicScaleAndRotationMapForComposition<SourceFrame, TargetFrame>>(
-          domain::push_back(
-              CubicScaleMapForComposition<SourceFrame, TargetFrame>{
-                  expansion_map},
-              RotationMapForComposition<SourceFrame, TargetFrame>{
-                  rotation_map}));
-    };
-
-    const auto size_expansion_rotation =
-        [&expansion_map, &rotation_map](const CompressionMap& size_map) {
-          return std::make_unique<
-              CompressionAndCubicScaleAndRotationMapForComposition>(
-              domain::push_back(
-                  CompressionMapForComposition<Frame::Grid, Frame::Inertial>{
-                      size_map},
-                  domain::push_back(
-                      CubicScaleMapForComposition<Frame::Grid, Frame::Inertial>{
-                          expansion_map},
-                      RotationMapForComposition<Frame::Grid, Frame::Inertial>{
-                          rotation_map})));
-        };
-
     // The 0th block always exists and will only need an expansion + rotation
     // map from the grid to inertial frame. No maps to the distorted frame
     grid_to_inertial_block_maps[0] =
-        expansion_rotation(Frame::Grid{}, Frame::Inertial{});
+        time_dependent_options_->frame_to_inertial_map<Frame::Grid>();
 
     // Because we require that both objects have inner shells, object A
     // corresponds to blocks 46-59 and object B corresponds to blocks 60-73. If
     // we have extra outer shells, those will have the same maps as
-    // block 0, and will start at block 74
-    grid_to_inertial_block_maps[46] = size_expansion_rotation(size_A_map);
-    grid_to_distorted_block_maps[46] = std::make_unique<
-        CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
-        size_A_map);
+    // block 0, and will start at block 74. The `true` being passed to
+    // everything_grid_to_inertial_map specifies that the size map *should* be
+    // included in the distorted frame. The `false` being passed to
+    // grid_to_distorted_map specifies that this map is *not* the identity.
+    grid_to_inertial_block_maps[46] =
+        time_dependent_options_
+            ->everything_grid_to_inertial_map<domain::ObjectLabel::A>(true);
+    grid_to_distorted_block_maps[46] =
+        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
+            false);
     distorted_to_inertial_block_maps[46] =
-        expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
+        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
 
-    grid_to_inertial_block_maps[60] = size_expansion_rotation(size_B_map);
-    grid_to_distorted_block_maps[60] = std::make_unique<
-        CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
-        size_B_map);
+    grid_to_inertial_block_maps[60] =
+        time_dependent_options_
+            ->everything_grid_to_inertial_map<domain::ObjectLabel::B>(true);
+    grid_to_distorted_block_maps[60] =
+        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
+            false);
     distorted_to_inertial_block_maps[60] =
-        expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
+        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
 
     for (size_t block = 1; block < number_of_blocks_; ++block) {
       if (block == 46 or block == 60) {

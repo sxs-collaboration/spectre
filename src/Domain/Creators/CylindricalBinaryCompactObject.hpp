@@ -39,14 +39,6 @@ class DiscreteRotation;
 class UniformCylindricalEndcap;
 class UniformCylindricalFlatEndcap;
 class UniformCylindricalSide;
-namespace TimeDependent {
-template <size_t VolumeDim>
-class CubicScale;
-template <size_t VolumeDim>
-class Rotation;
-template <bool InteriorMap>
-class SphericalCompression;
-}  // namespace TimeDependent
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -146,70 +138,41 @@ namespace domain::creators {
  *
  */
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
-  // Time-dependent maps
-  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
-  using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-  using CompressionMap =
-      domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
-
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap>;
-  template <typename SourceFrame, typename TargetFrame>
-  using RotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleAndRotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
-                            RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CompressionMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CompressionMap>;
-  using CompressionAndCubicScaleAndRotationMapForComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                            CubicScaleMap, RotationMap3D>;
-
  public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
-                                         CoordinateMaps::Interval,
-                                         CoordinateMaps::Interval>,
-          CoordinateMaps::UniformCylindricalEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Interval>,
-          CoordinateMaps::UniformCylindricalEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
-                                         CoordinateMaps::Interval,
-                                         CoordinateMaps::Interval>,
-          CoordinateMaps::UniformCylindricalFlatEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Interval>,
-          CoordinateMaps::UniformCylindricalFlatEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Interval>,
-          CoordinateMaps::UniformCylindricalSide,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>,
-      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                            CubicScaleMap, RotationMap3D>>;
+  using maps_list = tmpl::flatten<
+      tmpl::list<domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::UniformCylindricalEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::UniformCylindricalEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::UniformCylindricalFlatEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::UniformCylindricalFlatEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::UniformCylindricalSide,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 bco::TimeDependentMapOptions::maps_list>>;
 
   struct CenterA {
     using type = std::array<double, 3>;
@@ -410,6 +373,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   std::array<double, 3> center_B_{};
   double radius_A_{};
   double radius_B_{};
+  double outer_radius_A_{};
+  double outer_radius_B_{};
   bool include_inner_sphere_A_{};
   bool include_inner_sphere_B_{};
   bool include_outer_sphere_{};
