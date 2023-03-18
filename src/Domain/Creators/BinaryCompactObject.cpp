@@ -31,11 +31,6 @@
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
@@ -301,7 +296,30 @@ BinaryCompactObject::BinaryCompactObject(
                           initial_number_of_grid_points, use_equiangular_map,
                           use_projective_map, radial_distribution_outer_shell,
                           std::move(outer_boundary_condition), context) {
-  time_dependent_options_ = time_dependent_options;
+  time_dependent_options_ = std::move(time_dependent_options);
+
+  const std::optional<double> inner_radius_A =
+      use_single_block_a_
+          ? std::nullopt
+          : std::optional<double>{std::get<Object>(object_A_).inner_radius};
+  const std::optional<double> inner_radius_B =
+      use_single_block_b_
+          ? std::nullopt
+          : std::optional<double>{std::get<Object>(object_B_).inner_radius};
+  const std::optional<double> outer_radius_A =
+      use_single_block_a_
+          ? std::nullopt
+          : std::optional<double>{std::get<Object>(object_A_).outer_radius};
+  const std::optional<double> outer_radius_B =
+      use_single_block_b_
+          ? std::nullopt
+          : std::optional<double>{std::get<Object>(object_B_).outer_radius};
+
+  time_dependent_options_->build_maps(
+      std::array{std::array{x_coord_a_, 0.0, 0.0},
+                 std::array{x_coord_b_, 0.0, 0.0}},
+      std::array{inner_radius_A, inner_radius_B},
+      std::array{outer_radius_A, outer_radius_B}, outer_radius_);
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {
@@ -536,39 +554,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
         domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
         distorted_to_inertial_block_maps{number_of_blocks_};
 
-    CubicScaleMap expansion_map{
-        outer_radius_, time_dependent_options_->expansion_name,
-        time_dependent_options_->expansion_outer_boundary_name};
-    RotationMap3D rotation_map{time_dependent_options_->rotation_name};
-
-    const auto expansion_rotation = [&expansion_map, &rotation_map](
-                                        const auto source_frame,
-                                        const auto target_frame) {
-      using SourceFrame = std::decay_t<decltype(source_frame)>;
-      using TargetFrame = std::decay_t<decltype(target_frame)>;
-      return std::make_unique<
-          CubicScaleAndRotationMapForComposition<SourceFrame, TargetFrame>>(
-          domain::push_back(
-              CubicScaleMapForComposition<SourceFrame, TargetFrame>{
-                  expansion_map},
-              RotationMapForComposition<SourceFrame, TargetFrame>{
-                  rotation_map}));
-    };
-
-    const auto size_expansion_rotation =
-        [&expansion_map, &rotation_map](const CompressionMap& size_map) {
-          return std::make_unique<
-              CompressionAndCubicScaleAndRotationMapForComposition>(
-              domain::push_back(
-                  CompressionMapForComposition<Frame::Grid, Frame::Inertial>{
-                      size_map},
-                  domain::push_back(
-                      CubicScaleMapForComposition<Frame::Grid, Frame::Inertial>{
-                          expansion_map},
-                      RotationMapForComposition<Frame::Grid, Frame::Inertial>{
-                          rotation_map})));
-        };
-
     // Some maps (e.g. expansion, rotation) are applied to all blocks,
     // while other maps (e.g. size) are only applied to some blocks. Also, some
     // maps are applied from the Grid to the Inertial frame, while others are
@@ -584,48 +569,36 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // When covering the inner regions with cubes, all blocks will use the same
     // time-dependent map instead.
     grid_to_inertial_block_maps[number_of_blocks_ - 1] =
-        expansion_rotation(Frame::Grid{}, Frame::Inertial{});
+        time_dependent_options_->frame_to_inertial_map<Frame::Grid>();
 
     // Initialize the first block of the layer 1 blocks for each object
-    // If excising interior A or B, the block maps for the corrsponding layer
-    // 1 blocks (first 6 blocks) should also include a size map
-    // from the Grid to the Distorted frame, and then the combination
-    // expansion
-    // + rotation from the Distorted to Inertial frame. If not excising
-    // interior A or B, the layer 1 blocks for that object will have the same
-    // map as the final block from the Grid to Inertial frame.
-    if (is_excised_a_) {
-      CompressionMap size_A_map{gsl::at(time_dependent_options_->size_names, 0),
-                                std::get<Object>(object_A_).inner_radius,
-                                std::get<Object>(object_A_).outer_radius,
-                                {{x_coord_a_, 0.0, 0.0}}};
-      grid_to_inertial_block_maps[0] = size_expansion_rotation(size_A_map);
-      grid_to_distorted_block_maps[0] = std::make_unique<
-          CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
-          size_A_map);
-      distorted_to_inertial_block_maps[0] =
-          expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
-    } else {
-      grid_to_inertial_block_maps[0] =
-          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
-    }
+    // If excising interior A or B, the block maps for the corrsponding layer 1
+    // blocks (first 6 blocks) should also include a size map from the Grid to
+    // the Distorted frame, and then the combination expansion + rotation from
+    // the Distorted to Inertial frame. If not excising interior A or B, the
+    // layer 1 blocks for that object will have an Identity map from the Grid to
+    // the Distorted frame and the same map as the final block from the
+    // Distorted to Inertial frame.
+    grid_to_inertial_block_maps[0] =
+        time_dependent_options_
+            ->everything_grid_to_inertial_map<domain::ObjectLabel::A>(
+                is_excised_a_);
+    grid_to_distorted_block_maps[0] =
+        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
+            not is_excised_a_);
+    distorted_to_inertial_block_maps[0] =
+        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
+
     const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
-    if (is_excised_b_) {
-      CompressionMap size_B_map{gsl::at(time_dependent_options_->size_names, 1),
-                                std::get<Object>(object_B_).inner_radius,
-                                std::get<Object>(object_B_).outer_radius,
-                                {{x_coord_b_, 0.0, 0.0}}};
-      grid_to_inertial_block_maps[first_block_object_B] =
-          size_expansion_rotation(size_B_map);
-      grid_to_distorted_block_maps[first_block_object_B] = std::make_unique<
-          CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
-          size_B_map);
-      distorted_to_inertial_block_maps[first_block_object_B] =
-          expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
-    } else {
-      grid_to_inertial_block_maps[first_block_object_B] =
-          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
-    }
+    grid_to_inertial_block_maps[first_block_object_B] =
+        time_dependent_options_
+            ->everything_grid_to_inertial_map<domain::ObjectLabel::B>(
+                is_excised_b_);
+    grid_to_distorted_block_maps[first_block_object_B] =
+        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
+            not is_excised_b_);
+    distorted_to_inertial_block_maps[first_block_object_B] =
+        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
 
     // Fill in the rest of the block maps by cloning the relevant maps
     for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
