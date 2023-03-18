@@ -168,13 +168,13 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
         grid_points_per_node[target_node] += grid_points_per_element;
       }
     } else {
-      while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
-        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-      }
       for (size_t i = 0; i < element_ids.size(); ++i) {
+        while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
+          which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+        }
+
         dg_element_array(ElementId<volume_dim>(element_ids[i]))
             .insert(global_cache, initialization_items, which_proc);
-        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
 
         const size_t target_node =
             Parallel::node_of<size_t>(which_proc, local_cache);
@@ -182,6 +182,8 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
         ++elements_per_node[target_node];
         grid_points_per_core[which_proc] += grid_points_per_element;
         grid_points_per_node[target_node] += grid_points_per_element;
+
+        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
       }
     }
   }
