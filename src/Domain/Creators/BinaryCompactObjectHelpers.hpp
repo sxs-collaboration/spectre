@@ -14,7 +14,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Options.hpp"
@@ -69,8 +69,7 @@ struct TimeDependentMapOptions {
   // Time-dependent maps
   using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
   using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-  using CompressionMap =
-      domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
+  using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
 
   template <typename SourceFrame, typename TargetFrame>
   using CubicScaleAndRotationMapForComposition =
@@ -79,11 +78,11 @@ struct TimeDependentMapOptions {
   using DistortedToInertialComposition =
       CubicScaleAndRotationMapForComposition<Frame::Distorted, Frame::Inertial>;
   using GridToDistortedComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>;
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeMap>;
   template <bool IncludeDistortedMap>
   using GridToInertialComposition = tmpl::conditional_t<
       IncludeDistortedMap,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap,
                             CubicScaleMap, RotationMap3D>,
       CubicScaleAndRotationMapForComposition<Frame::Grid, Frame::Inertial>>;
 
@@ -165,9 +164,29 @@ struct TimeDependentMapOptions {
     using group = SizeMap<Object>;
   };
 
+  template <domain::ObjectLabel Object>
+  struct ShapeMapOptions {
+    static std::string name() { return "ShapeMap" + get_output(Object); }
+    static constexpr Options::String help = {
+        "Options for a time-dependent distortion (shape) map about the "
+        "specified object."};
+  };
+
+  template <domain::ObjectLabel Object>
+  struct ShapeMapLMax {
+    static std::string name() { return "LMax"; }
+    using type = size_t;
+    static constexpr Options::String help = {
+        "LMax used for the number of spherical harmonic coefficients of the "
+        "distortion map. Currently, all coefficients are initialized to zero."};
+    using group = ShapeMapOptions<Object>;
+  };
+
   using options = tmpl::list<InitialTime, ExpansionMap, InitialAngularVelocity,
                              SizeMapInitialValues<domain::ObjectLabel::A>,
-                             SizeMapInitialValues<domain::ObjectLabel::B>>;
+                             SizeMapInitialValues<domain::ObjectLabel::B>,
+                             ShapeMapLMax<domain::ObjectLabel::A>,
+                             ShapeMapLMax<domain::ObjectLabel::B>>;
   static constexpr Options::String help{
       "The options for all time dependent maps in a binary compact object "
       "domain."};
@@ -178,7 +197,9 @@ struct TimeDependentMapOptions {
                           ExpansionMapOptions expansion_map_options,
                           std::array<double, 3> initial_angular_velocity,
                           std::array<double, 3> initial_size_values_A,
-                          std::array<double, 3> initial_size_values_B);
+                          std::array<double, 3> initial_size_values_B,
+                          size_t initial_l_max_A, size_t initial_l_max_B,
+                          const Options::Context& context = {});
 
   /*!
    * \brief Create the function of time map using the options that were
@@ -190,6 +211,7 @@ struct TimeDependentMapOptions {
    * - ExpansionOuterBoundary: `FixedSpeedCubic`
    * - Rotation: `QuaternionFunctionOfTime<3>`
    * - SizeA/B: `PiecewisePolynomial<3>`
+   * - ShapeA/B: `PiecewisePolynomial<2>`
    */
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -203,7 +225,7 @@ struct TimeDependentMapOptions {
    *
    * - Expansion: `CubicScale<3>`
    * - Rotation: `Rotation<3>`
-   * - SizeA/B: `SphericalCompression`
+   * - ShapeA/B: `Shape` (with size FunctionOfTime)
    *
    * If the inner/outer radii for an object are `std::nullopt`, this means that
    * a Size map is not constructed for that object. An identity map will be used
@@ -231,8 +253,8 @@ struct TimeDependentMapOptions {
    * `Frame::Distorted`.
    *
    * If the argument `include_distorted_map` is true, then this will be a
-   * `SphericalCompression` map for the templated `Object`. If it is false, then
-   * this returns a `nullptr`.
+   * `Shape` map (with size FunctionOfTime) for the templated `Object`. If it is
+   * false, then this returns a `nullptr`.
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Distorted> grid_to_distorted_map(
@@ -243,8 +265,9 @@ struct TimeDependentMapOptions {
    * `Frame::Inertial`.
    *
    * If the argument `include_distorted_map` is true, then this map will have a
-   * composition of a `SphericalCompression`, `CubicScale`, and `Rotation` map.
-   * If it is false, there will only be `CubicScale` and `Rotation` maps.
+   * composition of a `Shape` (with size FunctionOfTime), `CubicScale`, and
+   * `Rotation` map. If it is false, there will only be `CubicScale` and
+   * `Rotation` maps.
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
@@ -257,6 +280,8 @@ struct TimeDependentMapOptions {
       "ExpansionOuterBoundary"};
   inline static const std::string rotation_name{"Rotation"};
   inline static const std::array<std::string, 2> size_names{{"SizeA", "SizeB"}};
+  inline static const std::array<std::string, 2> shape_names{
+      {"ShapeA", "ShapeB"}};
 
  private:
   static size_t get_index(domain::ObjectLabel object);
@@ -274,10 +299,11 @@ struct TimeDependentMapOptions {
       std::array{std::numeric_limits<double>::signaling_NaN(),
                  std::numeric_limits<double>::signaling_NaN(),
                  std::numeric_limits<double>::signaling_NaN()}};
+  std::array<size_t, 2> initial_l_max_{0, 0};
   // Maps
   CubicScaleMap expansion_map_{};
   RotationMap3D rotation_map_{};
-  std::array<CompressionMap, 2> size_maps_{};
+  std::array<ShapeMap, 2> shape_maps_{};
 };
 
 }  // namespace domain::creators::bco

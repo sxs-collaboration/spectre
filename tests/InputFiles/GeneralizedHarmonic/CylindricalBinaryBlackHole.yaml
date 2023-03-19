@@ -61,6 +61,10 @@ DomainCreator:
         InitialValues: [0.0, 0.0, 0.0]
       SizeMapB:
         InitialValues: [0.0, 0.0, 0.0]
+      ShapeMapA:
+        LMax: 8
+      ShapeMapB:
+        LMax: 8
 
 EventsAndDenseTriggers:
 

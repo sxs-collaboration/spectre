@@ -365,7 +365,11 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
                             "    SizeMapA:\n"
                             "      InitialValues: [0.0, -0.1, 0.01]\n"
                             "    SizeMapB:\n"
-                            "      InitialValues: [0.0, -0.2, 0.02]"
+                            "      InitialValues: [0.0, -0.2, 0.02]\n"
+                            "    ShapeMapA:\n"
+                            "      LMax: 8\n"
+                            "    ShapeMapB:\n"
+                            "      LMax: 8"
                           : ""};
   const std::string interior_A{
       add_boundary_condition

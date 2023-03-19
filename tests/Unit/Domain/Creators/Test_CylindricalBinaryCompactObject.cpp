@@ -253,6 +253,10 @@ std::string create_option_string(
                             "      InitialValues: [1.1, 0.0, 0.0]\n"
                             "    SizeMapB:\n"
                             "      InitialValues: [1.2, 0.0, 0.0]\n"
+                            "    ShapeMapA:\n"
+                            "      LMax: 8\n"
+                            "    ShapeMapB:\n"
+                            "      LMax: 8\n"
                           : ""};
 
   const std::string boundary_conditions{
@@ -383,7 +387,9 @@ TimeDepOptions construct_time_dependent_options() {
       {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
         initial_size_A_coefs[1][0]}},
       {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-        initial_size_B_coefs[1][0]}}};
+        initial_size_B_coefs[1][0]}},
+      8_st,
+      8_st};
 }
 
 void test_parse_errors() {
@@ -439,7 +445,7 @@ void test_parse_errors() {
                          TimeDepOptions::ExpansionMapOptions{
                              std::array{0.0, 0.0}, 0.0, 1.0},
                          std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
-                         std::array{0.0, 0.0, 0.0}},
+                         std::array{0.0, 0.0, 0.0}, 8, 8},
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),

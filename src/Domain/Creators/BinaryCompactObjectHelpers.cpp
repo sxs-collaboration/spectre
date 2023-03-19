@@ -13,6 +13,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -29,12 +31,26 @@ TimeDependentMapOptions::TimeDependentMapOptions(
     double initial_time, ExpansionMapOptions expansion_map_options,
     std::array<double, 3> initial_angular_velocity,
     std::array<double, 3> initial_size_values_A,
-    std::array<double, 3> initial_size_values_B)
+    std::array<double, 3> initial_size_values_B, const size_t initial_l_max_A,
+    const size_t initial_l_max_B, const Options::Context& context)
     : initial_time_(initial_time),
       expansion_map_options_(expansion_map_options),
       initial_angular_velocity_(initial_angular_velocity),
       initial_size_values_(
-          std::array{initial_size_values_A, initial_size_values_B}) {}
+          std::array{initial_size_values_A, initial_size_values_B}),
+      initial_l_max_{initial_l_max_A, initial_l_max_B} {
+  const auto check_l_max = [&context](const size_t l_max,
+                                      const domain::ObjectLabel label) {
+    if (l_max <= 1) {
+      PARSE_ERROR(context, "Initial LMax for object "
+                               << label << " must be 2 or greater but is "
+                               << l_max << " instead.");
+    }
+  };
+
+  check_l_max(initial_l_max_A, domain::ObjectLabel::A);
+  check_l_max(initial_l_max_B, domain::ObjectLabel::B);
+}
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -51,7 +67,9 @@ TimeDependentMapOptions::create_functions_of_time(
       {expansion_name, std::numeric_limits<double>::infinity()},
       {rotation_name, std::numeric_limits<double>::infinity()},
       {gsl::at(size_names, 0), std::numeric_limits<double>::infinity()},
-      {gsl::at(size_names, 1), std::numeric_limits<double>::infinity()}};
+      {gsl::at(size_names, 1), std::numeric_limits<double>::infinity()},
+      {gsl::at(shape_names, 0), std::numeric_limits<double>::infinity()},
+      {gsl::at(shape_names, 1), std::numeric_limits<double>::infinity()}};
 
   // If we have control systems, overwrite these expiration times with the ones
   // supplied by the control system
@@ -108,6 +126,19 @@ TimeDependentMapOptions::create_functions_of_time(
             expiration_times.at(gsl::at(size_names, i)));
   }
 
+  // ShapeMap FunctionOfTime for objects A and B
+  for (size_t i = 0; i < shape_names.size(); i++) {
+    const DataVector shape_zeros{
+        YlmSpherepack::spectral_size(gsl::at(initial_l_max_, i),
+                                     gsl::at(initial_l_max_, i)),
+        0.0};
+    result[gsl::at(shape_names, i)] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_,
+            std::array<DataVector, 3>{shape_zeros, shape_zeros, shape_zeros},
+            expiration_times.at(gsl::at(shape_names, i)));
+  }
+
   return result;
 }
 
@@ -122,9 +153,17 @@ void TimeDependentMapOptions::build_maps(
   for (size_t i = 0; i < 2; i++) {
     if (gsl::at(object_inner_radii, i).has_value() and
         gsl::at(object_outer_radii, i).has_value()) {
-      gsl::at(size_maps_, i) = CompressionMap{
-          gsl::at(size_names, i), gsl::at(object_inner_radii, i).value(),
-          gsl::at(object_outer_radii, i).value(), gsl::at(centers, i)};
+      std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                          ShapeMapTransitionFunction>
+          transition_func = std::make_unique<
+              domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                  SphereTransition>(gsl::at(object_inner_radii, i).value(),
+                                    gsl::at(object_outer_radii, i).value());
+
+      gsl::at(shape_maps_, i) =
+          ShapeMap{gsl::at(centers, i),        gsl::at(initial_l_max_, i),
+                   gsl::at(initial_l_max_, i), std::move(transition_func),
+                   gsl::at(shape_names, i),    gsl::at(size_names, i)};
     }
   }
 }
@@ -147,7 +186,7 @@ TimeDependentMapOptions::grid_to_distorted_map(
   if (include_distorted_map) {
     const size_t index = get_index(Object);
     return std::make_unique<GridToDistortedComposition>(
-        gsl::at(size_maps_, index));
+        gsl::at(shape_maps_, index));
   } else {
     return nullptr;
   }
@@ -160,7 +199,7 @@ TimeDependentMapOptions::grid_to_inertial_map(
   if (include_distorted_map) {
     const size_t index = get_index(Object);
     return std::make_unique<GridToInertialComposition<true>>(
-        gsl::at(size_maps_, index), expansion_map_, rotation_map_);
+        gsl::at(shape_maps_, index), expansion_map_, rotation_map_);
   } else {
     return std::make_unique<GridToInertialComposition<false>>(expansion_map_,
                                                               rotation_map_);
