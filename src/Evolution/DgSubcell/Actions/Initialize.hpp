@@ -48,10 +48,14 @@ namespace evolution::dg::subcell::Actions {
  * `true`.
  *
  * If the cell is troubled then `Tags::ActiveGrid` is set to
- * `subcell::ActiveGrid::Subcell`, the `System::variables_tag` become the
- * variables on the subcell grid set by calling
- * `evolution::Initialization::Actions::SetVariables`, and the
- * `db::add_tag_prefix<Tags::dt, System::variables_tag>` are resized to the
+ * `subcell::ActiveGrid::Subcell` and the `System::variables_tag` become the
+ * variables on the subcell grid. The variables are set by projecting from the
+ * DG grid for numeric initial data, or by calling
+ * `evolution::Initialization::Actions::SetVariables` for analytic initial data.
+ * For systems with primitive and conservative variables, only the primitive
+ * variables are set by this action, so the conservative variables must be
+ * updated in a subsequent action.
+ * The `db::add_tag_prefix<Tags::dt, System::variables_tag>` are resized to the
  * subcell grid with an `ASSERT` requiring that they were previously set to the
  * size of the DG grid (this is to reduce the likelihood of them being resized
  * back to the DG grid later).
@@ -82,11 +86,12 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
- *   - `subcell::Tags::Corodinates<Dim, Frame::Grid>` (as compute tag)
+ *   - `subcell::Tags::Coordinates<Dim, Frame::Grid>` (as compute tag)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Inertial>` (as compute tag)
  * - Removes: nothing
  * - Modifies:
- *   - `System::variables_tag` if the cell is troubled
+ *   - `System::variables_tag` and `System::primitive_variables_tag` if the cell
+ *     is troubled
  *   - `Tags::dt<System::variables_tag>` if the cell is troubled
  */
 template <size_t Dim, typename System, typename TciMutator>
@@ -212,17 +217,38 @@ struct Initialize {
         },
         make_not_null(&box));
     if (cell_is_troubled) {
-      // Set variables on subcells.
-      if constexpr (System::has_primitive_and_conservative_vars) {
-        db::mutate<typename System::primitive_variables_tag>(
-            make_not_null(&box), [&subcell_mesh](const auto prim_vars_ptr) {
-              prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
-            });
+      static constexpr bool has_analytic_initial_data =
+          db::tag_is_retrievable_v<evolution::initial_data::Tags::InitialData,
+                                   db::DataBox<DbTagsList>> or
+          db::tag_is_retrievable_v<::Tags::AnalyticSolutionOrData,
+                                   db::DataBox<DbTagsList>>;
+      if constexpr (has_analytic_initial_data) {
+        // Set analytic variables on subcells.
+        if constexpr (System::has_primitive_and_conservative_vars) {
+          db::mutate<typename System::primitive_variables_tag>(
+              make_not_null(&box), [&subcell_mesh](const auto prim_vars_ptr) {
+                prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
+              });
+        }
+        evolution::Initialization::Actions::
+            SetVariables<Tags::Coordinates<Dim, Frame::ElementLogical>>::apply(
+                box, inboxes, cache, array_index, ActionList{},
+                std::add_pointer_t<ParallelComponent>{nullptr});
+      } else {
+        // Project numeric initial data to subcells. It would be good to
+        // interpolate numeric initial data directly to the subcell points
+        // instead. A simple way to accomplish this is to start the evolution
+        // on subcell grids and switch to DG where we can, instead of the
+        // reverse (which we currently do).
+        if constexpr (System::has_primitive_and_conservative_vars) {
+          db::mutate<typename System::primitive_variables_tag>(
+              make_not_null(&box),
+              [&dg_mesh, &subcell_mesh](const auto prim_vars_ptr) {
+                *prim_vars_ptr = fd::project(*prim_vars_ptr, dg_mesh,
+                                             subcell_mesh.extents());
+              });
+        }
       }
-      evolution::Initialization::Actions::
-          SetVariables<Tags::Coordinates<Dim, Frame::ElementLogical>>::apply(
-              box, inboxes, cache, array_index, ActionList{},
-              std::add_pointer_t<ParallelComponent>{nullptr});
       db::mutate<
           db::add_tag_prefix<::Tags::dt, typename System::variables_tag>>(
           make_not_null(&box),
