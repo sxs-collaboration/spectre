@@ -368,6 +368,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
     do_lts_test({{full / 8, full / 4}});
     do_lts_test({{full / 16, full / 4}});
     do_lts_test({{full / 4, full / 16}});
+    do_lts_test({{full / 32, full / 4}});
+    do_lts_test({{full / 4, full / 32}});
 
     // Non-nesting cases
     do_lts_test({{full / 4, full / 6}});
