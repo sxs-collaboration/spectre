@@ -38,10 +38,9 @@ void fluxes_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric);
 }  // namespace detail
 
@@ -94,7 +93,7 @@ struct Fluxes {
 
   using argument_tags =
       tmpl::list<Tags::TildeE, Tags::TildeB, Tags::TildePsi, Tags::TildePhi,
-                 Tags::TildeQ, Tags::SpatialCurrentDensity, gr::Tags::Lapse<>,
+                 Tags::TildeQ, Tags::TildeJ, gr::Tags::Lapse<>,
                  gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
@@ -108,7 +107,7 @@ struct Fluxes {
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
       const Scalar<DataVector>& tilde_q,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const Scalar<DataVector>& sqrt_det_spatial_metric,

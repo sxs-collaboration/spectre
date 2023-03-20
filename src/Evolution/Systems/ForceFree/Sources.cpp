@@ -6,7 +6,9 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/ForceFree/ElectricCurrentDensity.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -32,14 +34,13 @@ void sources_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
     const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j_drift,
     const double kappa_psi, const double kappa_phi,
     // GR args
     const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature) {
   // S(\tilde{E}^i)
   raise_or_lower_index(source_tilde_e, d_lapse, inv_spatial_metric);
@@ -47,8 +48,7 @@ void sources_impl(
     source_tilde_e->get(i) -=
         get(lapse) * trace_spatial_christoffel_second.get(i);
     source_tilde_e->get(i) *= get(tilde_psi);
-    source_tilde_e->get(i) -= get(lapse) * get(sqrt_det_spatial_metric) *
-                              spatial_current_density.get(i);
+    source_tilde_e->get(i) -= tilde_j_drift.get(i);
     for (size_t m = 0; m < 3; ++m) {
       source_tilde_e->get(i) -= tilde_e.get(m) * d_shift.get(m, i);
     }
@@ -96,24 +96,31 @@ void Sources::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_e,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_psi, const Scalar<DataVector>& tilde_phi,
-    const Scalar<DataVector>& tilde_q,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_current_density,
-    const double kappa_psi, const double kappa_phi,
+    const Scalar<DataVector>& tilde_q, const double kappa_psi,
+    const double kappa_phi, const double parallel_conductivity,
     // GR variables
     const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature) {
   // temp variable to store metric derivative quantities
   Variables<tmpl::list<
+      ::Tags::TempI<0, 3>,
       gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
       gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
       gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
                                                   DataVector>>>
       temp_tensors(get<0>(tilde_e).size());
+
+  // compute the drift component of tilde_J
+  auto& tilde_j_drift = get<::Tags::TempI<0, 3>>(temp_tensors);
+  ComputeDriftTildeJ::apply(make_not_null(&tilde_j_drift), tilde_q, tilde_e,
+                            tilde_b, parallel_conductivity, lapse,
+                            sqrt_det_spatial_metric, spatial_metric);
 
   // compute the product \gamma^jk \Gamma^i_{jk}
   auto& spatial_christoffel_first_kind = get<
@@ -137,9 +144,8 @@ void Sources::apply(
   detail::sources_impl(source_tilde_e, source_tilde_b, source_tilde_psi,
                        source_tilde_phi, trace_spatial_christoffel_second,
                        tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q,
-                       spatial_current_density, kappa_psi, kappa_phi, lapse,
-                       d_lapse, d_shift, inv_spatial_metric,
-                       sqrt_det_spatial_metric, extrinsic_curvature);
+                       tilde_j_drift, kappa_psi, kappa_phi, lapse, d_lapse,
+                       d_shift, inv_spatial_metric, extrinsic_curvature);
 }
 
 }  // namespace ForceFree

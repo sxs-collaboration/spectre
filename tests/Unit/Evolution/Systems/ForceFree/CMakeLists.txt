@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Characteristics.cpp
+  Test_ElectricCurrentDensity.cpp
   Test_Fluxes.cpp
   Test_Sources.cpp
   Test_Tags.cpp
