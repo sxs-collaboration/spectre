@@ -167,8 +167,9 @@ std::string option_string(
          stringize(radial_partitioning) +
          "\n"
          "  RadialDistribution: " +
-         stringize(radial_distribution) + "\n" + time_dependence_option +
-         outer_bc_option;
+         (radial_distribution.size() == 1 ? get_output(radial_distribution[0])
+                                          : stringize(radial_distribution)) +
+         "\n" + time_dependence_option + outer_bc_option;
 }
 
 // Calculate block logical coordinates of points residing on corners of the
@@ -492,20 +493,25 @@ void test_sphere() {
 
   const std::array<
       std::variant<creators::Sphere::Excision, creators::Sphere::InnerCube>, 3>
-      interiors{{creators::Sphere::Excision{}, creators::Sphere::InnerCube{0.0},
-                 creators::Sphere::InnerCube{0.7}}};
+      interiors{{creators::Sphere::InnerCube{0.0},
+                 creators::Sphere::InnerCube{0.7},
+                 creators::Sphere::Excision{}}};
   const std::array<
       std::optional<creators::Sphere::EquatorialCompressionOptions>, 2>
       equatorial_compressions{
           {std::nullopt,
            creators::Sphere::EquatorialCompressionOptions{0.5, 2}}};
-  const std::array<std::vector<double>, 2> radial_partitioning{
-      {{}, {0.5 * (inner_radius + outer_radius)}}};
-  const std::array<std::vector<domain::CoordinateMaps::Distribution>, 2>
-      radial_distribution{
-          {{domain::CoordinateMaps::Distribution::Linear},
-           {domain::CoordinateMaps::Distribution::Linear,
-            domain::CoordinateMaps::Distribution::Logarithmic}}};
+  const double outer_minus_inner = outer_radius - inner_radius;
+  const std::array<std::vector<double>, 3> radial_partitioning{
+      {{},
+       {0.5 * (inner_radius + outer_radius)},
+       {inner_radius + 0.3 * outer_minus_inner,
+        inner_radius + 0.6 * outer_minus_inner}}};
+  const std::array<std::vector<domain::CoordinateMaps::Distribution>, 3>
+      radial_distribution{{{domain::CoordinateMaps::Distribution::Linear},
+                           {domain::CoordinateMaps::Distribution::Linear,
+                            domain::CoordinateMaps::Distribution::Logarithmic},
+                           {domain::CoordinateMaps::Distribution::Linear}}};
 
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
   const std::vector<double> times{1., 10.};
@@ -516,7 +522,7 @@ void test_sphere() {
        random_sample<5>(
            cartesian_product(
                make_array(0_st, 1_st, 2_st), make_array(false, true),
-               equatorial_compressions, make_array(0.0, 1.0),
+               equatorial_compressions, make_array(0_st, 1_st, 2_st),
                make_array(ShellWedges::All, ShellWedges::FourOnEquator,
                           ShellWedges::OneAlongMinusX),
                make_array(true, false), make_array(true, false)),
@@ -536,6 +542,13 @@ void test_sphere() {
       continue;
     }
 
+    creators::Sphere::RadialDistribution::type radial_distribution_variant;
+    if (radial_distribution[array_index].size() == 1) {
+      radial_distribution_variant = radial_distribution[array_index][0];
+    } else {
+      radial_distribution_variant = radial_distribution[array_index];
+    }
+
     const creators::Sphere sphere{
         inner_radius,
         outer_radius,
@@ -545,7 +558,7 @@ void test_sphere() {
         equiangular,
         equatorial_compression,
         radial_partitioning[array_index],
-        radial_distribution[array_index],
+        radial_distribution_variant,
         which_wedges,
         time_dependent
             ? std::make_unique<

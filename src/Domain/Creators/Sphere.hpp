@@ -255,14 +255,17 @@ class Sphere : public DomainCreator<3> {
   };
 
   struct RadialDistribution {
-    using type = std::vector<domain::CoordinateMaps::Distribution>;
+    using type =
+        std::variant<domain::CoordinateMaps::Distribution,
+                     std::vector<domain::CoordinateMaps::Distribution>>;
     static constexpr Options::String help = {
         "Select the radial distribution of grid points in each spherical "
         "shell. There must be N+1 radial distributions specified for N radial "
         "partitions. If the interior of the sphere is filled with a cube, the "
         "innermost shell must have a 'Linear' distribution because it changes "
-        "in sphericity."};
-    static size_t lower_bound_on_size() { return 1; }
+        "in sphericity. You can also specify just a single radial distribution "
+        "(not in a vector) which will use the same distribution for all "
+        "partitions."};
   };
 
   struct WhichWedges {
@@ -318,8 +321,8 @@ class Sphere : public DomainCreator<3> {
       bool use_equiangular_map,
       std::optional<EquatorialCompressionOptions> equatorial_compression = {},
       std::vector<double> radial_partitioning = {},
-      std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
-          {domain::CoordinateMaps::Distribution::Linear},
+      const typename RadialDistribution::type& radial_distribution =
+          domain::CoordinateMaps::Distribution::Linear,
       ShellWedges which_wedges = ShellWedges::All,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
