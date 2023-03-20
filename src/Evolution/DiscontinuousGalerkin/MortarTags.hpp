@@ -6,12 +6,14 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"  // for MortarSize
@@ -78,5 +80,17 @@ template <size_t Dim>
 struct MortarNextTemporalId : db::SimpleTag {
   using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
   using type = std::unordered_map<Key, TimeStepId, boost::hash<Key>>;
+};
+
+/// \brief The BoundaryMessage received from the inbox
+///
+/// We must store the `std::unique_ptr` in the DataBox so the memory persists in
+/// case data was sent from another node
+/// \tparam Dim The volume dimension, not the face dimension
+template <size_t Dim>
+struct BoundaryMessageFromInbox : db::SimpleTag {
+  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using type = std::unordered_map<Key, std::unique_ptr<BoundaryMessage<Dim>>,
+                                  boost::hash<Key>>;
 };
 }  // namespace evolution::dg::Tags

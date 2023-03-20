@@ -14,7 +14,7 @@ namespace evolution::dg {
 template <size_t Dim>
 BoundaryMessage<Dim>::BoundaryMessage(
     const size_t subcell_ghost_data_size_in, const size_t dg_flux_data_size_in,
-    const bool sent_across_nodes_in, const bool enable_if_disabled_in,
+    const bool owning_in, const bool enable_if_disabled_in,
     const size_t sender_node_in, const size_t sender_core_in,
     const int tci_status_in, const ::TimeStepId& current_time_step_id_in,
     const ::TimeStepId& next_time_step_id_in,
@@ -25,7 +25,7 @@ BoundaryMessage<Dim>::BoundaryMessage(
     double* dg_flux_data_in)
     : subcell_ghost_data_size(subcell_ghost_data_size_in),
       dg_flux_data_size(dg_flux_data_size_in),
-      sent_across_nodes(sent_across_nodes_in),
+      owning(owning_in),
       enable_if_disabled(enable_if_disabled_in),
       sender_node(sender_node_in),
       sender_core(sender_core_in),
@@ -49,10 +49,22 @@ size_t BoundaryMessage<Dim>::total_bytes_with_data(const size_t subcell_size,
 
 template <size_t Dim>
 void* BoundaryMessage<Dim>::pack(BoundaryMessage<Dim>* in_msg) {
+  // If this is the case, then in_msg is already in the correct memory layout
+  // with the data appended to one contiguous buffer (aka owning) so we can just
+  // return the message itself
+  if (in_msg->owning) {
+    return static_cast<void*>(in_msg);
+  }
+
   const size_t subcell_size = in_msg->subcell_ghost_data_size;
   const size_t dg_size = in_msg->dg_flux_data_size;
 
   const size_t totalsize = total_bytes_with_data(subcell_size, dg_size);
+
+  // The fact that we call the pack() function means we are sending data across
+  // address boundaries (nodes) which means we will be owning the data the
+  // pointers point to.
+  in_msg->owning = true;
 
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   auto* out_msg = reinterpret_cast<BoundaryMessage<Dim>*>(
@@ -139,7 +151,7 @@ bool operator==(const BoundaryMessage<Dim>& lhs,
                 const BoundaryMessage<Dim>& rhs) {
   return lhs.subcell_ghost_data_size == rhs.subcell_ghost_data_size and
          lhs.dg_flux_data_size == rhs.dg_flux_data_size and
-         lhs.sent_across_nodes == rhs.sent_across_nodes and
+         lhs.owning == rhs.owning and
          lhs.enable_if_disabled == rhs.enable_if_disabled and
          lhs.sender_node == rhs.sender_node and
          lhs.sender_core == rhs.sender_core and
@@ -175,8 +187,7 @@ std::ostream& operator<<(std::ostream& os,
                          const BoundaryMessage<Dim>& message) {
   os << "subcell_ghost_data_size = " << message.subcell_ghost_data_size << "\n";
   os << "dg_flux_data_size = " << message.dg_flux_data_size << "\n";
-  os << "sent_across_nodes = " << std::boolalpha << message.sent_across_nodes
-     << "\n";
+  os << "owning = " << std::boolalpha << message.owning << "\n";
   os << "enable_if_disabled = " << std::boolalpha << message.enable_if_disabled
      << "\n";
   os << "sender_node = " << message.sender_node << "\n";

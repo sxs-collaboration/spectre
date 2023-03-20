@@ -20,6 +20,8 @@ void test() {
   TestHelpers::db::test_simple_tag<Tags::MortarSize<Dim>>("MortarSize");
   TestHelpers::db::test_simple_tag<Tags::MortarNextTemporalId<Dim>>(
       "MortarNextTemporalId");
+  TestHelpers::db::test_simple_tag<Tags::BoundaryMessageFromInbox<Dim>>(
+      "BoundaryMessageFromInbox");
 }
 }  // namespace
 

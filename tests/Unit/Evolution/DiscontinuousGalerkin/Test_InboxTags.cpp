@@ -34,7 +34,7 @@ BoundaryMessage<Dim>* create_boundary_message(
   return new BoundaryMessage<Dim>(
       ghost_data.value_or(DataVector{}).size(),  // subcell_ghost_data_size
       dg_data.value_or(DataVector{}).size(),     // dg_flux_data_size
-      true,                                      // sent_across_nodes
+      true,                                      // owning
       false,                                     // enable_if_disabled
       2,                                         // sender_node
       12,                                        // sender_core

@@ -217,9 +217,10 @@ void test(const bool all_neighbors_are_doing_dg) {
           subcell_options);
 
   Mesh<Dim> ghost_data_mesh{};
-  const auto data_for_neighbors =
-      evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
-          make_not_null(&ghost_data_mesh), make_not_null(&box), volume_fluxes);
+  DirectionMap<Dim, DataVector> data_for_neighbors{};
+  evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
+      make_not_null(&data_for_neighbors), make_not_null(&ghost_data_mesh),
+      make_not_null(&box), volume_fluxes);
 
   CHECK(ghost_data_mesh ==
         (all_neighbors_are_doing_dg ? dg_mesh : subcell_mesh));
