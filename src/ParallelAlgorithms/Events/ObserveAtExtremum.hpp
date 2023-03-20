@@ -244,6 +244,23 @@ ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
                      << scalar_name << "' is not known. Known tensors are: "
                      << ((db::tag_name<ObservableTensorTags>() + ",") + ...));
   }
+
+  tmpl::for_each<tmpl::list<ObservableTensorTags...>>(
+      [this, &context](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        const std::string tensor_name = db::tag_name<tag>();
+        if (tensor_name == scalar_name) {
+          if constexpr (tt::is_a_v<std::optional, typename tag::type>) {
+            if (tag::type::value_type::rank() != 0) {
+              PARSE_ERROR(context,
+                          "ObserveAtExtremum can only observe scalars!");
+            }
+          } else if (tag::type::rank() != 0) {
+            PARSE_ERROR(context, "ObserveAtExtremum can only observe scalars!");
+          }
+        }
+      });
+
   if (extremum_type != "Max" and extremum_type != "Min") {
     PARSE_ERROR(context, "Extremum type " << extremum_type
                                           << " not recognized; use Max or Min");
@@ -314,9 +331,9 @@ operator()(const typename ObservationValueTag::type& observation_value,
       }
       data_to_reduce.push_back(components[0][index_of_extremum]);
       if (extremum_type_ == "Max") {
-        legend.push_back("Max of " + scalar_name_);
+        legend.push_back("Max(" + scalar_name_ + ")");
       } else {
-        legend.push_back("Min of " + scalar_name_);
+        legend.push_back("Min(" + scalar_name_ + ")");
       }
     }
   });
@@ -339,12 +356,11 @@ operator()(const typename ObservationValueTag::type& observation_value,
         for (size_t j = 0; j < components.size(); j++) {
           data_to_reduce.push_back(components[j][index_of_extremum]);
           if (components.size() > 1) {
-            legend.push_back("Value of " + tensor_name + "_" +
-                             component_names[j] + " at " + extremum_type_ +
-                             " of " + scalar_name_);
+            legend.push_back("At" + scalar_name_ + extremum_type_ + "(" +
+                             tensor_name + "_" + component_names[j] + ")");
           } else {
-            legend.push_back("Value of " + tensor_name + " at " +
-                             extremum_type_ + " of " + scalar_name_);
+            legend.push_back("At" + scalar_name_ + extremum_type_ + "(" +
+                             tensor_name + ")");
           }
         }
       }

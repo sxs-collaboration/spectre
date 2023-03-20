@@ -227,19 +227,19 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.time == observation_time);
   CHECK(results.legend[0] == "Time");
   if (extremum_type == "Max") {
-    CHECK(results.legend[1] == "Max of Var0");
-    CHECK(results.legend[2] == "Value of Var0 at Max of Var0");
-    CHECK(results.legend[3] == "Value of Var1_x at Max of Var0");
-    CHECK(results.legend[4] == "Value of Var1_y at Max of Var0");
-    CHECK(results.legend[5] == "Value of Var1_z at Max of Var0");
+    CHECK(results.legend[1] == "Max(Var0)");
+    CHECK(results.legend[2] == "AtVar0Max(Var0)");
+    CHECK(results.legend[3] == "AtVar0Max(Var1_x)");
+    CHECK(results.legend[4] == "AtVar0Max(Var1_y)");
+    CHECK(results.legend[5] == "AtVar0Max(Var1_z)");
     CHECK(results.reduced_vector ==
           std::vector<double>{27.0, 27.0, 11.0, 38.0, 65.0});
   } else {
-    CHECK(results.legend[1] == "Min of Var0");
-    CHECK(results.legend[2] == "Value of Var0 at Min of Var0");
-    CHECK(results.legend[3] == "Value of Var1_x at Min of Var0");
-    CHECK(results.legend[4] == "Value of Var1_y at Min of Var0");
-    CHECK(results.legend[5] == "Value of Var1_z at Min of Var0");
+    CHECK(results.legend[1] == "Min(Var0)");
+    CHECK(results.legend[2] == "AtVar0Min(Var0)");
+    CHECK(results.legend[3] == "AtVar0Min(Var1_x)");
+    CHECK(results.legend[4] == "AtVar0Min(Var1_y)");
+    CHECK(results.legend[5] == "AtVar0Min(Var1_z)");
     CHECK(results.reduced_vector ==
           std::vector<double>{1.0, 1.0, 28.0, 12.0, 39.0});
   }
