@@ -252,7 +252,7 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::inv_jacobian_impl(
       auto& prev_inv_jacobian = get<index - 1>(inv_jacobians);
       if (UNLIKELY(map.is_identity())) {
         for (size_t i = 0; i < Dim; ++i) {
-          for (size_t j = 0; j <= i; ++j) {
+          for (size_t j = 0; j < Dim; ++j) {
             get<index>(inv_jacobians).get(i, j) =
                 std::move(prev_inv_jacobian.get(i, j));
           }
@@ -308,7 +308,7 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::jacobian_impl(
       auto& prev_jacobian = get<index - 1>(jacobians);
       if (UNLIKELY(map.is_identity())) {
         for (size_t i = 0; i < Dim; ++i) {
-          for (size_t j = 0; j <= i; ++j) {
+          for (size_t j = 0; j < Dim; ++j) {
             get<index>(jacobians).get(i, j) =
                 std::move(prev_jacobian.get(i, j));
           }
