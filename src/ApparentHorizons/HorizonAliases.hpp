@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ApparentHorizons/TagsDeclarations.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
@@ -25,7 +26,8 @@ using source_vars = tmpl::list<
     GeneralizedHarmonic::Tags::Pi<Dim, ::Frame::Inertial>,
     GeneralizedHarmonic::Tags::Phi<Dim, ::Frame::Inertial>,
     ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>;
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
 
 template <size_t Dim, typename Frame>
 using vars_to_interpolate_to_target =

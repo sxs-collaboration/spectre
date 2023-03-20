@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"
@@ -197,7 +199,8 @@ struct EvolutionMetavars {
     static constexpr bool enable_time_dependent_maps = true;
   };
 
-  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  template <::domain::ObjectLabel Horizon>
+  struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>;
@@ -207,38 +210,60 @@ struct EvolutionMetavars {
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame::Grid>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Grid>;
+        intrp::TargetPoints::ApparentHorizon<Ah<Horizon>, ::Frame::Grid>;
     using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Grid>;
+        intrp::callbacks::FindApparentHorizon<Ah<Horizon>, ::Frame::Grid>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
-    using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA,
-                                             ::Frame::Grid>,
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
+    using post_horizon_find_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+                       surface_tags_to_observe, Ah<Horizon>, ::Frame::Grid>,
+                   intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                                Ah<Horizon>>>;
+    static std::string name() {
+      return "ObservationAh" + ::domain::name(Horizon);
+    }
   };
 
-  struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using AhA = Ah<::domain::ObjectLabel::A>;
+  using AhB = Ah<::domain::ObjectLabel::B>;
+
+  template <::domain::ObjectLabel Excision>
+  struct ExcisionBoundary
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>;
-    using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
-    using surface_tags_to_observe = ::ah::surface_tags_for_observing;
-    using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame::Grid>;
+    using tags_to_observe = tmpl::list<
+        gr::Tags::Lapse<DataVector>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorper<Frame::Grid>>;
+    using compute_vars_to_interpolate =
+        ah::ComputeExcisionBoundaryVolumeQuantities;
+    using vars_to_interpolate_to_target = tmpl::list<
+        gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
+        gr::Tags::SpatialMetric<3, Frame::Grid>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+    using compute_items_on_source = tmpl::list<>;
+    using compute_items_on_target = tmpl::append<tmpl::list<
+        gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Grid, DataVector>,
+        StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, Frame::Grid,
+                                                         DataVector>,
+        StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
+        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
+            3, Frame::Grid>>>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<AhB, ::Frame::Grid>;
-    using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<AhB, ::Frame::Grid>;
-    using horizon_find_failure_callback =
-        intrp::callbacks::IgnoreFailedApparentHorizon;
-    using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB,
-                                             ::Frame::Grid>,
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>>;
+        intrp::TargetPoints::Sphere<ExcisionBoundary<Excision>, ::Frame::Grid>;
+    using post_interpolation_callback = intrp::callbacks::ObserveSurfaceData<
+        tags_to_observe, ExcisionBoundary<Excision>, ::Frame::Grid>;
+    // run_callbacks
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::gh_dg_element_array;
+    static std::string name() {
+      return "ObservationExcisionBoundary" + ::domain::name(Excision);
+    }
   };
 
+  using ExcisionBoundaryA = ExcisionBoundary<::domain::ObjectLabel::A>;
+  using ExcisionBoundaryB = ExcisionBoundary<::domain::ObjectLabel::B>;
   using control_systems =
       tmpl::list<control_system::Systems::Rotation<
                      3, control_system::measurements::BothHorizons>,
@@ -376,6 +401,12 @@ struct EvolutionMetavars {
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, BondiSachs, EvolutionMetavars, source_vars_no_deriv>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryA, EvolutionMetavars,
+                    interpolator_source_vars>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryB, EvolutionMetavars,
+                    interpolator_source_vars>,
                 Events::MonitorMemory<3, ::Tags::Time>, Events::Completion,
                 dg::Events::field_observations<volume_dim, Tags::Time,
                                                observe_fields,
@@ -533,7 +564,7 @@ struct EvolutionMetavars {
 
   using interpolation_target_tags = tmpl::push_back<
       control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, AhB, BondiSachs>;
+      AhA, AhB, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;

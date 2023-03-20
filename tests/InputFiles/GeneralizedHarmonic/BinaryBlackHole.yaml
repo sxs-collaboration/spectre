@@ -7,10 +7,10 @@
 ResourceInfo:
   AvoidGlobalProc0: false
   Singletons:
-    AhA:
+    ObservationAhA:
       Proc: Auto
       Exclusive: true
-    AhB:
+    ObservationAhB:
       Proc: Auto
       Exclusive: true
     ControlSystemAhA:
@@ -23,6 +23,12 @@ ResourceInfo:
     Rotation: Auto
     Expansion: Auto
     BondiSachsInterpolation: Auto
+    ObservationExcisionBoundaryA:
+      Proc: Auto
+      Exclusive: false
+    ObservationExcisionBoundaryB:
+      Proc: Auto
+      Exclusive: false
 
 Evolution:
   InitialTime: 0.0
@@ -206,8 +212,14 @@ EventsAndTriggers:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - AhA
-      - AhB
+    - - ObservationAhA
+      - ObservationAhB
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObservationExcisionBoundaryA
+      - ObservationExcisionBoundaryB
   - - Slabs:
         EvenlySpaced:
           Interval: 100
@@ -228,7 +240,7 @@ Interpolator:
   DumpVolumeDataOnFailure: false
 
 ApparentHorizons:
-  AhA: &AhA
+  ObservationAhA: &AhA
     InitialGuess:
       Lmax: 10
       Radius: 2.2
@@ -243,7 +255,7 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
-  AhB: &AhB
+  ObservationAhB: &AhB
     InitialGuess:
       Lmax: 10
       Radius: 2.2
@@ -259,6 +271,16 @@ InterpolationTargets:
     Radius: [100, 150, 200]
     Center: [0, 0, 0]
     AngularOrdering: Cce
+  ObservationExcisionBoundaryA:
+    Lmax: 10
+    Center: [0., 0., 0.]
+    Radius: 2.0
+    AngularOrdering: "Strahlkorper"
+  ObservationExcisionBoundaryB:
+    Lmax: 10
+    Center: [0., 0., 0.]
+    Radius: 2.0
+    AngularOrdering: "Strahlkorper"
 
 Cce:
   BondiSachsOutputFilePrefix: "BondiSachs"
