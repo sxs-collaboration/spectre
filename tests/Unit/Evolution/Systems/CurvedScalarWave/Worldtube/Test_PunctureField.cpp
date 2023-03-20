@@ -43,7 +43,7 @@ void test_circular_orbit() {
   sample_points.get(0) += orbit_radius;
   const double time_0 = 0.;
   const double time_1 = 20.;
-  for (size_t order = 0; order < 1; ++order) {
+  for (size_t order = 0; order <= 1; ++order) {
     CAPTURE(order);
     puncture_vars puncture_t0{num_points};
     Worldtube::puncture_field(make_not_null(&puncture_t0), sample_points,
@@ -90,7 +90,7 @@ void test_derivative() {
   MAKE_GENERATOR(gen);
   const double time = 17.4;
   const double orbit_radius = 10.;
-  for (size_t order = 0; order < 1; ++order) {
+  for (size_t order = 0; order <= 1; ++order) {
     CAPTURE(order);
     const auto helper_func = [&time, &orbit_radius,
                               &order](const std::array<double, 3>& point) {
