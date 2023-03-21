@@ -117,12 +117,10 @@ class Worldtube final : public BoundaryConditions::BoundaryCondition<Dim> {
       const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> phi,
       const gsl::not_null<Scalar<DataVector>*> lapse,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
-      const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
-          inverse_spatial_metric,
       const gsl::not_null<Scalar<DataVector>*> gamma1,
       const gsl::not_null<Scalar<DataVector>*> gamma2,
       const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
-          inverse_spatial_metric_2,
+          inverse_spatial_metric,
 
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*face_mesh_velocity*/,

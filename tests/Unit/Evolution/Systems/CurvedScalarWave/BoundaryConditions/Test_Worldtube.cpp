@@ -89,41 +89,38 @@ void test_dg_ghost(const gsl::not_null<std::mt19937*> gen) {
   tnsr::I<DataVector, Dim, Frame::Inertial> shift_res(num_points);
   Scalar<DataVector> gamma1_res(num_points);
   Scalar<DataVector> gamma2_res(num_points);
-  tnsr::II<DataVector, Dim, Frame::Inertial> inverse_spatial_metric_res_1(
-      num_points);
-  tnsr::II<DataVector, Dim, Frame::Inertial> inverse_spatial_metric_res_2(
+  tnsr::II<DataVector, Dim, Frame::Inertial> inverse_spatial_metric_res(
       num_points);
 
   CurvedScalarWave::BoundaryConditions::Worldtube<Dim> worldtube_bcs{};
   worldtube_bcs.dg_ghost(
       make_not_null(&psi_res), make_not_null(&pi_res), make_not_null(&phi_res),
       make_not_null(&lapse_res), make_not_null(&shift_res),
-      make_not_null(&inverse_spatial_metric_res_1), make_not_null(&gamma1_res),
-      make_not_null(&gamma2_res), make_not_null(&inverse_spatial_metric_res_2),
-      std::nullopt, normal_covector, normal_vector, psi_interior, pi_interior,
-      phi_interior, lapse, shift, inverse_spatial_metric, gamma1, gamma2,
-      dt_psi, d_psi, d_phi, worldtube_vars);
+      make_not_null(&gamma1_res), make_not_null(&gamma2_res),
+      make_not_null(&inverse_spatial_metric_res), std::nullopt, normal_covector,
+      normal_vector, psi_interior, pi_interior, phi_interior, lapse, shift,
+      inverse_spatial_metric, gamma1, gamma2, dt_psi, d_psi, d_phi,
+      worldtube_vars);
 
   CHECK(lapse_res == lapse);
   CHECK(shift_res == shift);
-  CHECK(inverse_spatial_metric_res_1 == inverse_spatial_metric);
-  CHECK(inverse_spatial_metric_res_2 == inverse_spatial_metric);
+  CHECK(inverse_spatial_metric_res == inverse_spatial_metric);
   CHECK(gamma1_res == gamma1);
   CHECK(gamma2_res == gamma2);
-
+  const auto unit_normal_vector = tenex::evaluate<ti::I>(
+      inverse_spatial_metric(ti::I, ti::J) * normal_covector(ti::j));
   const auto char_fields_interior = CurvedScalarWave::characteristic_fields(
-      gamma2, inverse_spatial_metric, psi_interior, pi_interior, phi_interior,
-      normal_covector);
+      gamma2, psi_interior, pi_interior, phi_interior, normal_covector,
+      normal_vector);
 
   const auto char_fields_worldtube = CurvedScalarWave::characteristic_fields(
-      gamma2, inverse_spatial_metric,
-      get<CurvedScalarWave::Tags::Psi>(worldtube_vars),
+      gamma2, get<CurvedScalarWave::Tags::Psi>(worldtube_vars),
       get<CurvedScalarWave::Tags::Pi>(worldtube_vars),
-      get<CurvedScalarWave::Tags::Phi<Dim>>(worldtube_vars), normal_covector);
+      get<CurvedScalarWave::Tags::Phi<Dim>>(worldtube_vars), normal_covector,
+      normal_vector);
 
   const auto char_fields_res = CurvedScalarWave::characteristic_fields(
-      gamma2, inverse_spatial_metric, psi_res, pi_res, phi_res,
-      normal_covector);
+      gamma2, psi_res, pi_res, phi_res, normal_covector, normal_vector);
   Approx approx = Approx::custom().epsilon(1.e-12).scale(1.);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get<CurvedScalarWave::Tags::VPsi>(char_fields_interior),

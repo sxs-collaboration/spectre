@@ -193,14 +193,14 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&csw_v_plus_int), make_not_null(&csw_v_minus_int),
       make_not_null(&csw_gamma2_int), make_not_null(&csw_normal_int),
       make_not_null(&csw_char_speeds_int), psi, pi, phi, lapse, shift,
-      inverse_spatial_metric, gamma1, gamma2, normal_int, normal_vector_int,
+      gamma1, gamma2, normal_int, normal_vector_int,
       mesh_velocity, normal_dot_mesh_velociy_int);
   csw_flux_computer.dg_package_data(
       make_not_null(&csw_v_psi_ext), make_not_null(&csw_v_zero_ext),
       make_not_null(&csw_v_plus_ext), make_not_null(&csw_v_minus_ext),
       make_not_null(&csw_gamma2_ext), make_not_null(&csw_normal_ext),
       make_not_null(&csw_char_speeds_ext), psi, pi, phi, lapse, shift,
-      inverse_spatial_metric, gamma1, gamma2, normal_ext, normal_vector_ext,
+      gamma1, gamma2, normal_ext, normal_vector_ext,
       mesh_velocity, normal_dot_mesh_velociy_ext);
   csw_flux_computer.dg_boundary_terms(
       make_not_null(&csw_psi_bcorr), make_not_null(&csw_pi_bcorr),

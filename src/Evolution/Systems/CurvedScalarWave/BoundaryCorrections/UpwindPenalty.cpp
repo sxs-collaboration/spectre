@@ -117,39 +117,20 @@ double UpwindPenalty<Dim>::dg_package_data(
 
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
     const Scalar<DataVector>& constraint_gamma1,
     const Scalar<DataVector>& constraint_gamma2,
 
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
-    const tnsr::I<DataVector, Dim,
-                  Frame::Inertial>& /* interface_unit_normal_vector */,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>&
+        interface_unit_normal_vector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
   *packaged_gamma2 = constraint_gamma2;
   *packaged_interface_unit_normal = interface_unit_normal;
-
-  {  // package characteristic fields
-    Variables<CurvedScalarWave_detail::char_field_tags<Dim>> char_fields{};
-    get(get<Tags::VPsi>(char_fields))
-        .set_data_ref(make_not_null(&get(*packaged_v_psi)));
-    for (size_t i = 0; i < Dim; ++i) {
-      get<Tags::VZero<Dim>>(char_fields)
-          .get(i)
-          .set_data_ref(make_not_null(&packaged_v_zero->get(i)));
-    }
-    get(get<Tags::VPlus>(char_fields))
-        .set_data_ref(make_not_null(&get(*packaged_v_plus)));
-    get(get<Tags::VMinus>(char_fields))
-        .set_data_ref(make_not_null(&get(*packaged_v_minus)));
-
-    characteristic_fields(make_not_null(&char_fields), constraint_gamma2,
-                          inverse_spatial_metric, psi, pi, phi,
-                          interface_unit_normal);
-  }
-
-  // package characteristic speeds
+  characteristic_fields(packaged_v_psi, packaged_v_zero, packaged_v_plus,
+                        packaged_v_minus, constraint_gamma2, psi, pi, phi,
+                        interface_unit_normal, interface_unit_normal_vector);
   characteristic_speeds(packaged_char_speeds, constraint_gamma1, lapse, shift,
                         interface_unit_normal);
   if (normal_dot_mesh_velocity.has_value()) {

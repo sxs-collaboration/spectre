@@ -86,6 +86,32 @@ typename Tag::type field_with_tag_variables(
   return get<Tag>(CurvedScalarWave::characteristic_fields(
       gamma_2, psi, pi, phi, normal_one_form, normal_vector));
 }
+
+// uses the overload that returns tensors by reference
+template <typename Tag, size_t SpatialDim>
+typename Tag::type field_with_tag_tensor(
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& normal_vector) {
+  Scalar<DataVector> v_psi{};
+  tnsr::i<DataVector, SpatialDim, Frame::Inertial> v_zero{};
+  Scalar<DataVector> v_plus{};
+  Scalar<DataVector> v_minus{};
+  CurvedScalarWave::characteristic_fields(
+      make_not_null(&v_psi), make_not_null(&v_zero), make_not_null(&v_plus),
+      make_not_null(&v_minus), gamma_2, psi, pi, phi, normal_one_form,
+      normal_vector);
+  Variables<tmpl::list<
+      CurvedScalarWave::Tags::VPsi, CurvedScalarWave::Tags::VZero<SpatialDim>,
+      CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>
+      vars(get(gamma_2).size());
+  get<CurvedScalarWave::Tags::VPsi>(vars) = v_psi;
+  get<CurvedScalarWave::Tags::VZero<SpatialDim>>(vars) = v_zero;
+  get<CurvedScalarWave::Tags::VPlus>(vars) = v_plus;
+  get<CurvedScalarWave::Tags::VMinus>(vars) = v_minus;
+  return get<Tag>(vars);
 }
 
 template <size_t SpatialDim>
@@ -107,6 +133,24 @@ void test_characteristic_fields() {
   // VMinus
   pypp::check_with_random_values<1>(
       field_with_tag_variables<CurvedScalarWave::Tags::VMinus, SpatialDim>,
+      "Characteristics", "char_field_vminus", {{{-2.0, 2.0}}}, used_for_size);
+
+// VPsi
+  pypp::check_with_random_values<1>(
+      field_with_tag_tensor<CurvedScalarWave::Tags::VPsi, SpatialDim>,
+      "Characteristics", "char_field_vpsi", {{{-2.0, 2.0}}}, used_for_size);
+  // VZero
+  pypp::check_with_random_values<1>(
+      field_with_tag_tensor<CurvedScalarWave::Tags::VZero<SpatialDim>,
+                            SpatialDim>,
+      "Characteristics", "char_field_vzero", {{{-2.0, 2.0}}}, used_for_size);
+  // VPlus
+  pypp::check_with_random_values<1>(
+      field_with_tag_tensor<CurvedScalarWave::Tags::VPlus, SpatialDim>,
+      "Characteristics", "char_field_vplus", {{{-2.0, 2.0}}}, used_for_size);
+  // VMinus
+  pypp::check_with_random_values<1>(
+      field_with_tag_tensor<CurvedScalarWave::Tags::VMinus, SpatialDim>,
       "Characteristics", "char_field_vminus", {{{-2.0, 2.0}}}, used_for_size);
 }
 }  // namespace

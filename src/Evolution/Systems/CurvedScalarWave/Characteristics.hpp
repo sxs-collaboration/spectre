@@ -160,6 +160,19 @@ void characteristic_fields(
         unit_normal_one_form,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& unit_normal_vector);
 
+template <size_t SpatialDim>
+void characteristic_fields(
+    const gsl::not_null<Scalar<DataVector>*>& v_psi,
+    const gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*>&
+        v_zero,
+    const gsl::not_null<Scalar<DataVector>*>& v_plus,
+    const gsl::not_null<Scalar<DataVector>*>& v_minus,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& unit_normal_vector);
 
 template <size_t SpatialDim>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
