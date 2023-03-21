@@ -444,12 +444,12 @@ struct TimeDerivative {
       db::mutate<evolved_vars_tag>(
           box,
           [&filter_options, &recons, &subcell_mesh](const auto evolved_vars_ptr,
-                                                    const auto& neighbor_data) {
+                                                    const auto& ghost_data) {
             typename evolved_vars_tag::type filtered_vars = *evolved_vars_ptr;
             // $(recons.ghost_zone_size() - 1) * 2 + 1$ => always use highest
             // order dissipation filter possible.
             grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter(
-                make_not_null(&filtered_vars), *evolved_vars_ptr, neighbor_data,
+                make_not_null(&filtered_vars), *evolved_vars_ptr, ghost_data,
                 subcell_mesh, 2 * recons.ghost_zone_size(),
                 filter_options.spacetime_dissipation.value());
             *evolved_vars_ptr = filtered_vars;

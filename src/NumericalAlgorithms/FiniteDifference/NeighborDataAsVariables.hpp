@@ -13,6 +13,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -36,9 +37,10 @@ void neighbor_data_as_variables(
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
         vars_neighbor_data,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        all_ghost_data,
     const size_t ghost_zone_size, const Mesh<Dim>& subcell_mesh) {
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
@@ -47,7 +49,9 @@ void neighbor_data_as_variables(
                                 subcell_mesh.quadrature(0)),
       "subcell_mesh must be isotropic but got " << subcell_mesh);
   vars_neighbor_data->clear();
-  for (const auto& [neighbor_id, data] : neighbor_data) {
+  for (const auto& [neighbor_id, ghost_data] : all_ghost_data) {
+    const DataVector& data =
+        ghost_data.neighbor_ghost_data_for_reconstruction();
     (*vars_neighbor_data)[neighbor_id] = {};
     (*vars_neighbor_data)[neighbor_id].set_data_ref(
         const_cast<double*>(data.data()),

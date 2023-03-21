@@ -261,7 +261,8 @@ void test(const BoundaryConditionType& boundary_condition) {
                                  ElementId<3>::external_boundary_id()};
     const DataVector& fd_ghost_data =
         get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box)
-            .at(mortar_id);
+            .at(mortar_id)
+            .neighbor_ghost_data_for_reconstruction();
 
     // Copy the computed FD ghost data into a Variables object in order to
     // facilitate comparison. Note that the returned FD ghost data contains the
@@ -443,7 +444,8 @@ void test(const BoundaryConditionType& boundary_condition) {
 
       const DataVector& fd_ghost_data_velocity_inward =
           get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box)
-              .at(mortar_id);
+              .at(mortar_id)
+              .neighbor_ghost_data_for_reconstruction();
       Variables<prims_to_reconstruct> fd_ghost_vars_velocity_inward{
           ghost_zone_size * num_face_pts};
       std::copy(fd_ghost_data_velocity_inward.begin(),

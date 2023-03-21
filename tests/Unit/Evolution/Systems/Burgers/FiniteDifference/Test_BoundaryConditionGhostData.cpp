@@ -107,7 +107,7 @@ void test(const BoundaryConditionType& boundary_condition) {
 
   // dummy neighbor data to put into DataBox
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<1>::type
-      neighbor_data{};
+      ghost_data{};
 
   // Below are tags required by DirichletAnalytic boundary condition to compute
   // inertial coords of ghost FD cells:
@@ -196,7 +196,7 @@ void test(const BoundaryConditionType& boundary_condition) {
                                                   Frame::Inertial>,
       Tags::AnalyticSolution<SolutionForTest>, Burgers::Tags::U>>(
       EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
-      subcell_mesh, subcell_logical_coords, neighbor_data,
+      subcell_mesh, subcell_logical_coords, ghost_data,
       std::unique_ptr<Burgers::fd::Reconstructor>{
           std::make_unique<ReconstructorForTest>()},
       volume_mesh_velocity, normal_vectors, time,
@@ -218,7 +218,8 @@ void test(const BoundaryConditionType& boundary_condition) {
                                  ElementId<1>::external_boundary_id()};
     const DataVector& fd_ghost_data =
         get<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(box)
-            .at(mortar_id);
+            .at(mortar_id)
+            .neighbor_ghost_data_for_reconstruction();
 
     // now check values for each types of boundary conditions
 

@@ -24,6 +24,9 @@ template <size_t Dim>
 class Mesh;
 template <typename TagsList>
 class Variables;
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::fd {
@@ -38,9 +41,9 @@ void spacetime_kreiss_oliger_filter(
     const Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
-    const FixedHashMap<maximum_number_of_neighbors(3),
-                       std::pair<Direction<3>, ElementId<3>>, DataVector,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
-        neighbor_data_for_reconstruction,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& all_ghost_data,
     const Mesh<3>& volume_mesh, size_t order, double epsilon);
 }  // namespace grmhd::GhValenciaDivClean::fd

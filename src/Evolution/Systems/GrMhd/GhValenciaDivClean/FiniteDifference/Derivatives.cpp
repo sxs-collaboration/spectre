@@ -14,6 +14,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
@@ -33,10 +34,10 @@ void spacetime_derivatives(
     const Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
-    const FixedHashMap<maximum_number_of_neighbors(3),
-                       std::pair<Direction<3>, ElementId<3>>, DataVector,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
-        neighbor_data_for_reconstruction,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& all_ghost_data,
     const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
@@ -54,11 +55,12 @@ void spacetime_derivatives(
       number_of_independent_components;
 
   DirectionMap<3, gsl::span<const double>> ghost_cell_vars{};
-  for (const auto& [directional_element_id, neighbor_data] :
-       neighbor_data_for_reconstruction) {
+  for (const auto& [directional_element_id, ghost_data] : all_ghost_data) {
     using NeighborVariables =
         Variables<grmhd::GhValenciaDivClean::Tags::
                       primitive_grmhd_and_spacetime_reconstruction_tags>;
+    const DataVector& neighbor_data =
+        ghost_data.neighbor_ghost_data_for_reconstruction();
     const size_t neighbor_number_of_points =
         neighbor_data.size() /
         NeighborVariables::number_of_independent_components;

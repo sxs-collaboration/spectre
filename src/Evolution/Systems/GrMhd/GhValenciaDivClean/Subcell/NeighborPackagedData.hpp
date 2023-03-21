@@ -99,7 +99,7 @@ struct NeighborPackagedData {
       return neighbor_package_data;
     }
 
-    const auto& neighbor_subcell_data =
+    const auto& ghost_subcell_data =
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             box);
     const Mesh<3>& subcell_mesh =
@@ -138,7 +138,7 @@ struct NeighborPackagedData {
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &base_boundary_correction,
         [&box, &dg_mesh, &mortars_to_reconstruct_to, &neighbor_package_data,
-         &neighbor_subcell_data, &recons, &subcell_mesh, &subcell_options,
+         &ghost_subcell_data, &recons, &subcell_mesh, &subcell_options,
          &volume_prims,
          &volume_spacetime_vars](const auto* gh_grmhd_correction) {
           using DerivedCorrection =
@@ -185,13 +185,13 @@ struct NeighborPackagedData {
             call_with_dynamic_type<void,
                                    typename grmhd::GhValenciaDivClean::fd::
                                        Reconstructor::creatable_classes>(
-                &recons, [&element, &eos, &mortar_id, &neighbor_subcell_data,
+                &recons, [&element, &eos, &mortar_id, &ghost_subcell_data,
                           &subcell_mesh, &vars_on_face, &volume_prims,
                           &volume_spacetime_vars](const auto& reconstructor) {
                   reconstructor->reconstruct_fd_neighbor(
                       make_not_null(&vars_on_face), volume_prims,
-                      volume_spacetime_vars, eos, element,
-                      neighbor_subcell_data, subcell_mesh, mortar_id.first);
+                      volume_spacetime_vars, eos, element, ghost_subcell_data,
+                      subcell_mesh, mortar_id.first);
                 });
 
             grmhd::ValenciaDivClean::subcell::compute_fluxes(

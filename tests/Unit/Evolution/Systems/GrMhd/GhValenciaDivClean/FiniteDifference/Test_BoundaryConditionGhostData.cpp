@@ -256,8 +256,9 @@ void test(const BoundaryConditionType& boundary_condition) {
   const auto direction = Direction<3>::upper_xi();
   const std::pair mortar_id = {direction, ElementId<3>::external_boundary_id()};
   const DataVector& fd_ghost_data =
-      get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box).at(
-          mortar_id);
+      get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box)
+          .at(mortar_id)
+          .neighbor_ghost_data_for_reconstruction();
 
   // Copy the computed FD ghost data into a Variables object in order to
   // facilitate comparison. Note that the returned FD ghost data contains the

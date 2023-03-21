@@ -45,6 +45,9 @@ class Variables;
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace ScalarAdvection::fd {
@@ -122,9 +125,9 @@ class AoWeno53 : public Reconstructor<Dim> {
       const Element<Dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-          neighbor_data,
+          std::pair<Direction<Dim>, ElementId<Dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   template <typename TagsList>
@@ -134,9 +137,9 @@ class AoWeno53 : public Reconstructor<Dim> {
       const Element<Dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-          neighbor_data,
+          std::pair<Direction<Dim>, ElementId<Dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 

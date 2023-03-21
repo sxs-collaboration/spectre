@@ -25,6 +25,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
@@ -216,7 +217,8 @@ void test(const bool use_cell_centered_flux) {
 
   using NeighborDataMap =
       FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                   std::pair<Direction<Dim>, ElementId<Dim>>,
+                   evolution::dg::subcell::GhostData,
                    boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
   NeighborDataMap neighbor_data{};
   const std::pair east_neighbor_id{Direction<Dim>::upper_xi(), east_id};
@@ -293,18 +295,18 @@ void test(const bool use_cell_centered_flux) {
        mortar_next_id, typename evolution::dg::Tags::NeighborMesh<Dim>::type{},
        cell_centered_flux});
 
-  using neighbor_data_tag =
+  using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
   using rdmp_tci_data_tag = evolution::dg::subcell::Tags::DataForRdmpTci;
   using ActionTesting::get_databox_tag;
-  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).size() == 1);
-  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id)
+  CHECK(get_databox_tag<comp, ghost_data_tag>(runner, self_id).size() == 1);
+  CHECK(get_databox_tag<comp, ghost_data_tag>(runner, self_id)
             .count(east_neighbor_id) == 1);
 
   // Run the SendDataForReconstruction action on self_id
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
-  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).empty());
+  CHECK(get_databox_tag<comp, ghost_data_tag>(runner, self_id).empty());
 
   // Check local RDMP data
   const evolution::dg::subcell::RdmpTciData& rdmp_tci_data =
@@ -487,8 +489,8 @@ void test(const bool use_cell_centered_flux) {
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
   // Check the received data was stored correctly
-  const auto& neighbor_data_from_box =
-      get_databox_tag<comp, neighbor_data_tag>(runner, self_id);
+  const auto& ghost_data_from_box =
+      get_databox_tag<comp, ghost_data_tag>(runner, self_id);
   CHECK(rdmp_tci_data.max_variables_values.size() == 1);
   CHECK(approx(rdmp_tci_data.max_variables_values[0]) ==
         (Dim > 1 ? static_cast<double>(
@@ -500,12 +502,13 @@ void test(const bool use_cell_centered_flux) {
   CHECK(approx(rdmp_tci_data.min_variables_values[0]) ==
         (Dim > 1 ? -10.0 : min(get<0>(logical_coordinates(subcell_mesh)))));
 
-  REQUIRE(neighbor_data_from_box.find(east_neighbor_id) !=
-          neighbor_data_from_box.end());
+  REQUIRE(ghost_data_from_box.find(east_neighbor_id) !=
+          ghost_data_from_box.end());
   const DataVector east_ghost_cells_and_rdmp_view{
       east_ghost_cells_and_rdmp.data(),
       east_ghost_cells_and_rdmp.size() - rdmp_size};
-  CHECK(neighbor_data_from_box.find(east_neighbor_id)->second ==
+  CHECK(ghost_data_from_box.find(east_neighbor_id)
+            ->second.neighbor_ghost_data_for_reconstruction() ==
         east_ghost_cells_and_rdmp_view);
   CHECK(
       get_databox_tag<comp,
@@ -514,12 +517,13 @@ void test(const bool use_cell_centered_flux) {
           .at(east_neighbor_id) == -10);
   if constexpr (Dim > 1) {
     const std::pair south_neighbor_id{Direction<Dim>::lower_eta(), south_id};
-    REQUIRE(neighbor_data_from_box.find(south_neighbor_id) !=
-            neighbor_data_from_box.end());
+    REQUIRE(ghost_data_from_box.find(south_neighbor_id) !=
+            ghost_data_from_box.end());
     const DataVector south_ghost_cells_and_rdmp_view{
         south_ghost_cells_and_rdmp.data(),
         south_ghost_cells_and_rdmp.size() - rdmp_size};
-    CHECK(neighbor_data_from_box.find(south_neighbor_id)->second ==
+    CHECK(ghost_data_from_box.find(south_neighbor_id)
+              ->second.neighbor_ghost_data_for_reconstruction() ==
           south_ghost_cells_and_rdmp_view);
     CHECK(get_databox_tag<
               comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(

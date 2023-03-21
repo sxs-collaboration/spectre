@@ -99,7 +99,7 @@ struct NeighborPackagedData {
         db::get<typename System<Dim>::variables_tag>(box), dg_mesh,
         subcell_mesh.extents());
 
-    const auto& neighbor_subcell_data =
+    const auto& ghost_subcell_data =
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
             box);
 
@@ -160,11 +160,11 @@ struct NeighborPackagedData {
                                  typename ScalarAdvection::fd::Reconstructor<
                                      Dim>::creatable_classes>(
               &recons,
-              [&element, &mortar_id, &neighbor_subcell_data, &subcell_mesh,
+              [&element, &mortar_id, &ghost_subcell_data, &subcell_mesh,
                &vars_on_face, &volume_vars_subcell](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_vars_subcell, element,
-                    neighbor_subcell_data, subcell_mesh, mortar_id.first);
+                    ghost_subcell_data, subcell_mesh, mortar_id.first);
               });
 
           // Compute fluxes

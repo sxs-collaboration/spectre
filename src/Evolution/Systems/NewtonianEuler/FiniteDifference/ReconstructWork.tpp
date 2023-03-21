@@ -18,6 +18,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,9 +38,10 @@ void reconstruct_prims_work(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -65,7 +67,7 @@ void reconstruct_prims_work(
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   size_t vars_in_neighbor_count = 0;
-  tmpl::for_each<prim_tags_for_reconstruction>([&element, &neighbor_data,
+  tmpl::for_each<prim_tags_for_reconstruction>([&element, &ghost_data,
                                                 neighbor_num_pts, &reconstruct,
                                                 reconstructed_num_pts,
                                                 volume_num_pts, &volume_prims,
@@ -98,16 +100,16 @@ void reconstruct_prims_work(
              "got "
                  << neighbors_in_direction.size() << " in direction "
                  << direction);
-      ASSERT(neighbor_data
-                     .at(std::pair{direction, *neighbors_in_direction.begin()})
-                     .size() != 0,
+
+      const DataVector& neighbor_data =
+          ghost_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+              .neighbor_ghost_data_for_reconstruction();
+
+      ASSERT(neighbor_data.size() != 0,
              "The neighber data is empty in direction "
                  << direction << " on element id " << element.id());
       ghost_cell_vars[direction] = gsl::make_span(
-          &neighbor_data.at(std::pair{
-              direction,
-              *neighbors_in_direction
-                   .begin()})[vars_in_neighbor_count * neighbor_num_pts],
+          &neighbor_data[vars_in_neighbor_count * neighbor_num_pts],
           number_of_components * neighbor_num_pts);
     }
 
@@ -165,9 +167,10 @@ void reconstruct_fd_neighbor_work(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
@@ -193,10 +196,11 @@ void reconstruct_fd_neighbor_work(
   Variables<prim_tags_for_reconstruction> neighbor_prims{
       ghost_data_extents.product()};
   {
-    ASSERT(neighbor_data.contains(mortar_id),
+    ASSERT(ghost_data.contains(mortar_id),
            "The neighbor data does not contain the mortar: ("
                << mortar_id.first << ',' << mortar_id.second << ")");
-    const auto& neighbor_data_in_direction = neighbor_data.at(mortar_id);
+    const DataVector& neighbor_data_in_direction =
+        ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
     std::copy(neighbor_data_in_direction.begin(),
               std::next(neighbor_data_in_direction.begin(),
                         static_cast<std::ptrdiff_t>(

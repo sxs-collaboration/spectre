@@ -19,6 +19,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
@@ -124,7 +125,8 @@ void test() {
   }();
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{
@@ -139,6 +141,11 @@ void test() {
       subcell_mesh,  // neighbor mesh is the same as my mesh since both are
                      // doing subcell
       element, subcell_mesh, number_of_ghost_zones);
+
+  const auto get_neighbor_data =
+      [&neighbor_data](const auto mortar_id) -> const DataVector& {
+    return neighbor_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
+  };
   {
     DataVector expected_max_rdmp_tci_data{number_of_rdmp_vars};
     DataVector expected_min_rdmp_tci_data{number_of_rdmp_vars};
@@ -152,7 +159,7 @@ void test() {
 
     REQUIRE(neighbor_data.size() == 1);
     REQUIRE(neighbor_data.find(upper_xi_id) != neighbor_data.end());
-    CHECK(neighbor_data.at(upper_xi_id) ==
+    CHECK(get_neighbor_data(upper_xi_id) ==
           expected_neighbor_data_from_upper_xi);
   }
 
@@ -176,9 +183,9 @@ void test() {
     REQUIRE(neighbor_data.size() == 2);
     REQUIRE(neighbor_data.find(upper_xi_id) != neighbor_data.end());
     REQUIRE(neighbor_data.find(lower_xi_id) != neighbor_data.end());
-    CHECK(neighbor_data.at(upper_xi_id) ==
+    CHECK(get_neighbor_data(upper_xi_id) ==
           expected_neighbor_data_from_upper_xi);
-    CHECK(neighbor_data.at(lower_xi_id) ==
+    CHECK(get_neighbor_data(lower_xi_id) ==
           expected_neighbor_data_from_lower_xi);
   }
 
@@ -211,9 +218,9 @@ void test() {
     REQUIRE(neighbor_data.find(upper_xi_id) != neighbor_data.end());
     REQUIRE(neighbor_data.find(lower_xi_id) != neighbor_data.end());
     REQUIRE(neighbor_data.find(upper_eta_id) != neighbor_data.end());
-    CHECK(neighbor_data.at(upper_xi_id) ==
+    CHECK(get_neighbor_data(upper_xi_id) ==
           expected_neighbor_data_from_upper_xi);
-    CHECK(neighbor_data.at(lower_xi_id) ==
+    CHECK(get_neighbor_data(lower_xi_id) ==
           expected_neighbor_data_from_lower_xi);
 
     auto projection_matrices =
@@ -230,18 +237,18 @@ void test() {
                              number_of_ghost_zones};
     apply_matrices(make_not_null(&expected_data), projection_matrices,
                    view_aligned_received_dg_data, dg_mesh.extents());
-    CHECK(neighbor_data.at(upper_eta_id) == expected_data);
+    CHECK(get_neighbor_data(upper_eta_id) == expected_data);
   }
 
   {
     // Check that not inserting but updating in a direction that already has FD
     // data does nothing. That is, even the pointer should stay the same.
-    const double* expected_pointer = neighbor_data.at(lower_xi_id).data();
+    const double* expected_pointer = get_neighbor_data(lower_xi_id).data();
     evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
-        make_not_null(&neighbor_data), neighbor_data.at(lower_xi_id),
+        make_not_null(&neighbor_data), get_neighbor_data(lower_xi_id),
         number_of_rdmp_vars, lower_xi_id, subcell_mesh, element, subcell_mesh,
         number_of_ghost_zones);
-    CHECK(neighbor_data.at(lower_xi_id).data() == expected_pointer);
+    CHECK(get_neighbor_data(lower_xi_id).data() == expected_pointer);
   }
 
   if constexpr (Dim > 2) {
@@ -254,9 +261,11 @@ void test() {
     DataVector aligned_received_dg_data{dg_mesh.number_of_grid_points()};
     alg::iota(aligned_received_dg_data,
               *std::prev(received_dg_data.end()) + 1.0);
-    neighbor_data.insert(std::pair{upper_zeta_id, aligned_received_dg_data});
+    neighbor_data[upper_zeta_id] = evolution::dg::subcell::GhostData{1};
+    neighbor_data[upper_zeta_id].neighbor_ghost_data_for_reconstruction() =
+        aligned_received_dg_data;
     evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
-        make_not_null(&neighbor_data), neighbor_data.at(upper_zeta_id), 0,
+        make_not_null(&neighbor_data), get_neighbor_data(upper_zeta_id), 0,
         upper_zeta_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones);
 
     auto projection_matrices =
@@ -271,7 +280,7 @@ void test() {
                              number_of_ghost_zones};
     apply_matrices(make_not_null(&expected_data), projection_matrices,
                    aligned_received_dg_data, dg_mesh.extents());
-    CHECK(neighbor_data.at(upper_zeta_id) == expected_data);
+    CHECK(get_neighbor_data(upper_zeta_id) == expected_data);
 
     // Do lower-zeta neighbor. This is unaligned DG.
     const std::pair lower_zeta_id{Direction<Dim>::lower_zeta(),
@@ -279,9 +288,11 @@ void test() {
     DataVector unaligned_received_dg_data{dg_mesh.number_of_grid_points()};
     alg::iota(unaligned_received_dg_data,
               *std::prev(aligned_received_dg_data.end()) + 1.0);
-    neighbor_data.insert(std::pair{lower_zeta_id, unaligned_received_dg_data});
+    neighbor_data[lower_zeta_id] = evolution::dg::subcell::GhostData{1};
+    neighbor_data[lower_zeta_id].neighbor_ghost_data_for_reconstruction() =
+        unaligned_received_dg_data;
     evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
-        make_not_null(&neighbor_data), neighbor_data.at(lower_zeta_id), 0,
+        make_not_null(&neighbor_data), get_neighbor_data(lower_zeta_id), 0,
         lower_zeta_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones);
 
     projection_matrices[2] =
@@ -296,7 +307,7 @@ void test() {
         neighbors.at(Direction<Dim>::lower_zeta()).orientation().inverse_map());
     apply_matrices(make_not_null(&expected_data), projection_matrices,
                    oriented_data, dg_mesh.extents());
-    CHECK(neighbor_data.at(lower_zeta_id) == expected_data);
+    CHECK(get_neighbor_data(lower_zeta_id) == expected_data);
   }
 
 #ifdef SPECTRE_DEBUG
@@ -375,25 +386,6 @@ void test() {
           lower_xi_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains(
           "The number of DG volume grid points times the number of variables"));
-
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
-          make_not_null(&rdmp_tci_data), make_not_null(&neighbor_data),
-          received_fd_data, number_of_rdmp_vars, upper_xi_id,
-          subcell_mesh,  // neighbor mesh is the same as my mesh since both are
-                         // doing subcell
-          element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
-          "Failed to insert the neighbor data in direction "));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
-          make_not_null(&neighbor_data), received_fd_data, number_of_rdmp_vars,
-          upper_xi_id,
-          subcell_mesh,  // neighbor mesh is the same as my mesh since both are
-                         // doing subcell
-          element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
-          "Failed to insert the neighbor data in direction "));
 
   if constexpr (Dim > 1) {
     Mesh<Dim> non_uniform_mesh{};

@@ -21,6 +21,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -229,10 +230,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3),
-                       std::pair<Direction<3>, ElementId<3>>, DataVector,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {
   const std::pair mortar_id{
@@ -242,10 +243,11 @@ void reconstruct_fd_neighbor_work(
   ghost_data_extents[direction_to_reconstruct.dimension()] = ghost_zone_size;
   Variables<PrimsTagsSentByNeighbor> neighbor_prims{};
   {
-    ASSERT(neighbor_data.contains(mortar_id),
+    ASSERT(ghost_data.contains(mortar_id),
            "The neighbor data does not contain the mortar: ("
                << mortar_id.first << ',' << mortar_id.second << ")");
-    const auto& neighbor_data_on_mortar = neighbor_data.at(mortar_id);
+    const DataVector& neighbor_data_on_mortar =
+        ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
     neighbor_prims.set_data_ref(
         const_cast<double*>(neighbor_data_on_mortar.data()),
         neighbor_prims.number_of_independent_components *

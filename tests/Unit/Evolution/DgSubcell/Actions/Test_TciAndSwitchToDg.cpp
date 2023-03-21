@@ -29,6 +29,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
@@ -259,9 +260,10 @@ void test_impl(
       make_time_stepper(multistep_time_stepper);
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data{};
+      ghost_data{};
 
   const int tci_decision{-1};  // default value
 
@@ -322,10 +324,9 @@ void test_impl(
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
-       neighbor_data, tci_decision, rdmp_tci_data, tci_grid_history,
-       evolved_vars, time_stepper_history,
-       make_time_stepper(multistep_time_stepper), neighbor_decisions,
-       Element<Dim>{ElementId<Dim>{0}, {}},
+       ghost_data, tci_decision, rdmp_tci_data, tci_grid_history, evolved_vars,
+       time_stepper_history, make_time_stepper(multistep_time_stepper),
+       neighbor_decisions, Element<Dim>{ElementId<Dim>{0}, {}},
        typename evolution::dg::subcell::Tags::CellCenteredFlux<
            typename metavars::system::flux_variables, Dim>::type::value_type{
            subcell_mesh.number_of_grid_points()}});

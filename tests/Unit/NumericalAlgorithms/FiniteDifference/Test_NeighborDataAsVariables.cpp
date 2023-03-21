@@ -15,6 +15,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -43,12 +44,14 @@ void test() {
   const size_t neighbor_mesh_size =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
   for (size_t i = 0; i < Direction<Dim>::all_directions().size(); ++i) {
     neighbor_data[std::pair{gsl::at(Direction<Dim>::all_directions(), i),
-                            ElementId<Dim>{i}}] =
+                            ElementId<Dim>{i}}]
+        .neighbor_ghost_data_for_reconstruction() =
         DataVector{Vars::number_of_independent_components * neighbor_mesh_size,
                    square(i + 1.0)};
   }
@@ -61,7 +64,9 @@ void test() {
   REQUIRE(neighbor_data_as_vars.size() == neighbor_data.size());
   for (const auto& [neighbor_id, vars] : neighbor_data_as_vars) {
     REQUIRE(neighbor_data.find(neighbor_id) != neighbor_data.end());
-    CHECK(neighbor_data.at(neighbor_id).data() == vars.data());
+    CHECK(neighbor_data.at(neighbor_id)
+              .neighbor_ghost_data_for_reconstruction()
+              .data() == vars.data());
     CHECK(vars.number_of_grid_points() == neighbor_mesh_size);
     CHECK(vars.size() ==
           Vars::number_of_independent_components * neighbor_mesh_size);

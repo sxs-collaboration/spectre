@@ -126,7 +126,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     return vars;
   };
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>::type
-      neighbor_data = TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
+      ghost_data = TestHelpers::ScalarAdvection::fd::compute_ghost_data(
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_random_variable);
 
@@ -183,7 +183,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       domain::Tags::MeshVelocity<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       evolution::dg::subcell::Tags::SubcellOptions<Dim>>>(
-      element, dg_mesh, subcell_mesh, volume_vars_dg, neighbor_data,
+      element, dg_mesh, subcell_mesh, volume_vars_dg, ghost_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection<Dim>>{
@@ -252,7 +252,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     // reconstruct U on the mortar
     dynamic_cast<const ReconstructionForTest&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&vars_on_mortar_face),
-                                 volume_vars_subcell, element, neighbor_data,
+                                 volume_vars_subcell, element, ghost_data,
                                  subcell_mesh, direction);
 
     // retrieve face-centered velocity field and slice it on the mortar, then

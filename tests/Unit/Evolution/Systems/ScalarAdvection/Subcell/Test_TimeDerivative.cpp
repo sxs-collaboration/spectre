@@ -101,7 +101,7 @@ void test_subcell_timederivative() {
   // set the ghost data from neighbor
   const ReconstructionForTest reconstructor{};
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>::type
-      neighbor_data = TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
+      ghost_data = TestHelpers::ScalarAdvection::fd::compute_ghost_data(
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_test_solution);
 
@@ -121,7 +121,7 @@ void test_subcell_timederivative() {
       element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
-      neighbor_data,
+      ghost_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection<Dim>>{

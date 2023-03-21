@@ -17,6 +17,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -81,9 +82,8 @@ void neighbor_reconstructed_face_solution(
   constexpr size_t volume_dim = Metavariables::volume_dim;
   db::mutate<subcell::Tags::GhostDataForReconstruction<volume_dim>,
              subcell::Tags::DataForRdmpTci>(
-      box,
-      [&received_temporal_id_and_data](const auto subcell_neighbor_data_ptr,
-                                       const auto rdmp_tci_data_ptr) {
+      box, [&received_temporal_id_and_data](const auto subcell_ghost_data_ptr,
+                                            const auto rdmp_tci_data_ptr) {
         const size_t number_of_evolved_vars =
             rdmp_tci_data_ptr->max_variables_values.size();
         for (auto& received_mortar_data :
@@ -110,16 +110,23 @@ void neighbor_reconstructed_face_solution(
                 neighbor_ghost_and_subcell_data[offset_for_min + var_index]);
           }
 
-          ASSERT(subcell_neighbor_data_ptr->find(mortar_id) ==
-                     subcell_neighbor_data_ptr->end(),
+          ASSERT(subcell_ghost_data_ptr->find(mortar_id) ==
+                     subcell_ghost_data_ptr->end(),
                  "The subcell neighbor data is already inserted. Direction: "
                      << mortar_id.first
                      << " with ElementId: " << mortar_id.second);
+
+          (*subcell_ghost_data_ptr)[mortar_id] = GhostData{1};
+          GhostData& all_ghost_data = subcell_ghost_data_ptr->at(mortar_id);
+          DataVector& neighbor_data =
+              all_ghost_data.neighbor_ghost_data_for_reconstruction();
+          neighbor_data.destructive_resize(
+              neighbor_ghost_and_subcell_data.size() -
+              2 * number_of_evolved_vars);
+
           // Copy over the neighbor data for reconstruction. We need this
           // since we might be doing a step unwind and the DG algorithm deletes
           // the inbox data after lifting the fluxes to the volume.
-          DataVector neighbor_data{neighbor_ghost_and_subcell_data.size() -
-                                   2 * number_of_evolved_vars};
           // The std::prev avoids copying over the data for the RDMP TCI, which
           // is both the maximum and minimum of each evolved variable, so
           // `2*number_of_evolved_vars` components.
@@ -128,7 +135,6 @@ void neighbor_reconstructed_face_solution(
                               2 * static_cast<std::ptrdiff_t>(
                                       number_of_evolved_vars)),
                     neighbor_data.begin());
-          (*subcell_neighbor_data_ptr)[mortar_id] = std::move(neighbor_data);
         }
       });
   std::vector<std::pair<Direction<volume_dim>, ElementId<volume_dim>>>

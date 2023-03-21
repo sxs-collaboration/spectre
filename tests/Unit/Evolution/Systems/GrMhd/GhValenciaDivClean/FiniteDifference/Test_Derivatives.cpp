@@ -14,6 +14,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Derivatives.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
@@ -49,14 +50,14 @@ SPECTRE_TEST_CASE(
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::set_element();
 
   const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, DataVector,
+                     std::pair<Direction<3>, ElementId<3>>,
+                     evolution::dg::subcell::GhostData,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-      neighbor_data_for_reconstruction =
-          TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
-              compute_neighbor_data(subcell_mesh, logical_coords,
-                                    element.neighbors(), ghost_zone_size,
-                                    TestHelpers::grmhd::GhValenciaDivClean::fd::
-                                        detail::compute_prim_solution);
+      all_ghost_data = TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
+          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                             ghost_zone_size,
+                             TestHelpers::grmhd::GhValenciaDivClean::fd::
+                                 detail::compute_prim_solution);
   const auto volume_prims_for_recons =
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::compute_prim_solution(
           logical_coords);
@@ -76,9 +77,8 @@ SPECTRE_TEST_CASE(
       deriv_of_gh_vars{subcell_mesh.number_of_grid_points()};
 
   grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
-      make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
-      neighbor_data_for_reconstruction, subcell_mesh,
-      cell_centered_logical_to_inertial_inv_jacobian);
+      make_not_null(&deriv_of_gh_vars), volume_evolved_vars, all_ghost_data,
+      subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
 
   Variables<db::wrap_tags_in<
       Tags::deriv, typename grmhd::GhValenciaDivClean::System::gradients_tags,
@@ -157,11 +157,12 @@ SPECTRE_TEST_CASE(
     const std::pair directional_element_id{
         direction, *element.neighbors().at(direction).begin()};
     FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, DataVector,
+                 std::pair<Direction<3>, ElementId<3>>,
+                 evolution::dg::subcell::GhostData,
                  boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        bad_neighbor_data_for_reconstruction = neighbor_data_for_reconstruction;
-    auto& neighbor_data =
-        bad_neighbor_data_for_reconstruction.at(directional_element_id);
+        bad_ghost_data = all_ghost_data;
+    DataVector& neighbor_data = bad_ghost_data.at(directional_element_id)
+                                    .neighbor_ghost_data_for_reconstruction();
     neighbor_data = DataVector{2};
     const std::string match_string{
         MakeString{}
@@ -173,7 +174,7 @@ SPECTRE_TEST_CASE(
                number_of_independent_components};
     CHECK_THROWS_WITH(grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
                           make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
-                          bad_neighbor_data_for_reconstruction, subcell_mesh,
+                          bad_ghost_data, subcell_mesh,
                           cell_centered_logical_to_inertial_inv_jacobian),
                       Catch::Contains(match_string));
   }

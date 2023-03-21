@@ -21,6 +21,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -443,9 +444,9 @@ void cartesian_high_order_fluxes_using_nodes(
 
 /*!
  * \brief Fill the `flux_neighbor_data` with pointers into the
- * `reconstruction_neighbor_data`.
+ * `all_ghost_data`.
  *
- * The `reconstruction_neighbor_data` is stored in the tag
+ * The `all_ghost_data` is stored in the tag
  * `evolution::dg::subcell::Tags::GhostDataForReconstruction`, and the
  * `ghost_zone_size` should come from the FD reconstructor.
  */
@@ -454,21 +455,24 @@ void set_cartesian_neighbor_cell_centered_fluxes(
     const gsl::not_null<DirectionMap<Dim, Variables<FluxesTags>>*>
         flux_neighbor_data,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        reconstruction_neighbor_data,
+        all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     const size_t number_of_rdmp_values_in_ghost_data) {
-  for (const auto& [direction_id, ghost_data] : reconstruction_neighbor_data) {
+  for (const auto& [direction_id, ghost_data] : all_ghost_data) {
     const size_t neighbor_flux_size =
         subcell_mesh.number_of_grid_points() /
         subcell_mesh.extents(direction_id.first.dimension()) * ghost_zone_size *
         Variables<FluxesTags>::number_of_independent_components;
+    const DataVector& neighbor_data =
+        ghost_data.neighbor_ghost_data_for_reconstruction();
     (*flux_neighbor_data)[direction_id.first].set_data_ref(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<double*>(std::next(
-            ghost_data.data(),
-            static_cast<std::ptrdiff_t>(ghost_data.size() -
+            neighbor_data.data(),
+            static_cast<std::ptrdiff_t>(neighbor_data.size() -
                                         number_of_rdmp_values_in_ghost_data -
                                         neighbor_flux_size))),
         neighbor_flux_size);
@@ -481,7 +485,7 @@ void set_cartesian_neighbor_cell_centered_fluxes(
  * The `cell_centered_fluxes` is stored in the tag
  * `evolution::dg::subcell::Tags::CellCenteredFlux`, `fd_derivative_order` is
  * from `evolution::dg::subcell::Tags::SubcellOptions`
- * (`.finite_difference_derivative_order()`), the `reconstruction_neighbor_data`
+ * (`.finite_difference_derivative_order()`), the `all_ghost_data`
  * is stored in the tag
  * `evolution::dg::subcell::Tags::GhostDataForReconstruction`, the
  * `ghost_zone_size` should come from the FD reconstructor.
@@ -509,9 +513,10 @@ void cartesian_high_order_flux_corrections(
         second_order_boundary_corrections,
     const fd::DerivativeOrder& fd_derivative_order,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        reconstruction_neighbor_data,
+        all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     [[maybe_unused]] const std::array<gsl::span<std::uint8_t>, Dim>&
         reconstruction_order = {},
@@ -543,8 +548,8 @@ void cartesian_high_order_flux_corrections(
               << second_order_boundary_corrections[0].number_of_grid_points());
       DirectionMap<Dim, Variables<FluxesTags>> flux_neighbor_data{};
       set_cartesian_neighbor_cell_centered_fluxes(
-          make_not_null(&flux_neighbor_data), reconstruction_neighbor_data,
-          subcell_mesh, ghost_zone_size, number_of_rdmp_values_in_ghost_data);
+          make_not_null(&flux_neighbor_data), all_ghost_data, subcell_mesh,
+          ghost_zone_size, number_of_rdmp_values_in_ghost_data);
 
       cartesian_high_order_fluxes_using_nodes(
           make_not_null(&(high_order_corrections->value())),

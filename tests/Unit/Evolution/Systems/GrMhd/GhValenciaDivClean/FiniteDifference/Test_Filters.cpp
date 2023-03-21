@@ -14,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Filters.hpp"
@@ -46,7 +47,8 @@ void set_solution(
         volume_vars,
     const gsl::not_null<FixedHashMap<
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        DataVector, boost::hash<std::pair<Direction<3>, ElementId<3>>>>*>
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>*>
         neighbor_data,
     const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& logical_coords,
@@ -91,7 +93,9 @@ void set_solution(
     CAPTURE(deriv_order / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    (*neighbor_data)[std::pair{direction, ElementId<3>{0}}] =
+    const auto key = std::pair{direction, ElementId<3>{0}};
+    (*neighbor_data)[key] = evolution::dg::subcell::GhostData{1};
+    (*neighbor_data)[key].neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
 }
@@ -113,7 +117,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
       volume_evolved_variables{subcell_mesh.number_of_grid_points()};
 
   FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, DataVector,
+               std::pair<Direction<3>, ElementId<3>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data_for_reconstruction{};
 

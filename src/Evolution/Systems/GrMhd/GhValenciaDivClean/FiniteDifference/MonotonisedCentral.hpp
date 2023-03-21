@@ -52,6 +52,9 @@ class not_null;
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::fd {
@@ -111,9 +114,9 @@ class MonotonisedCentralPrim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-          neighbor_data,
+          std::pair<Direction<dim>, ElementId<dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
@@ -128,9 +131,9 @@ class MonotonisedCentralPrim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-          neighbor_data,
+          std::pair<Direction<dim>, ElementId<dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 };
