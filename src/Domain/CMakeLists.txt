@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AreaElement.cpp
   Block.cpp
   BlockLogicalCoordinates.cpp
   CreateInitialElement.cpp
@@ -23,7 +24,6 @@ spectre_target_sources(
   MinimumGridSpacing.cpp
   RadiallyCompressedCoordinates.cpp
   SizeOfElement.cpp
-  SurfaceJacobian.cpp
   TagsTimeDependent.cpp
 )
 
@@ -31,6 +31,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AreaElement.hpp
   Block.hpp
   BlockLogicalCoordinates.hpp
   CreateInitialElement.hpp
@@ -49,7 +50,6 @@ spectre_target_headers(
   MinimumGridSpacing.hpp
   RadiallyCompressedCoordinates.hpp
   SizeOfElement.hpp
-  SurfaceJacobian.hpp
   Tags.hpp
   TagsCharacteristicSpeeds.hpp
   TagsTimeDependent.hpp
