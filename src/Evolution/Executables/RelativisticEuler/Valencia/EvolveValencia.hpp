@@ -232,12 +232,12 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<Dim>>,
+          evolution::dg::Initialization::Domain<Dim>,
+          Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::GrTagsForHydro<system>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Initialization::Actions::AddComputeTags<

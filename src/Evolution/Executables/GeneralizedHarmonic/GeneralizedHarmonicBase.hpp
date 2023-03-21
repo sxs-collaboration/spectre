@@ -399,7 +399,8 @@ struct GeneralizedHarmonicTemplateBase<
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<volume_dim>>,
+          evolution::dg::Initialization::Domain<volume_dim>,
+          Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           UseNumericalInitialData, tmpl::list<>,
@@ -410,7 +411,6 @@ struct GeneralizedHarmonicTemplateBase<
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,
-      Initialization::Actions::TimeStepperHistory<derived_metavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<

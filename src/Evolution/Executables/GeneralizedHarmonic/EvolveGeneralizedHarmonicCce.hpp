@@ -146,7 +146,8 @@ struct EvolutionMetavars
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<VolumeDim>>,
+          evolution::dg::Initialization::Domain<VolumeDim>,
+          Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           UseNumericalInitialData, tmpl::list<>,
@@ -157,7 +158,6 @@ struct EvolutionMetavars
           domain::Tags::InverseJacobian<VolumeDim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<VolumeDim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<

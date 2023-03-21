@@ -646,13 +646,13 @@ struct GhValenciaDivCleanTemplateBase<
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<3>>,
+          evolution::dg::Initialization::Domain<3>,
+          Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       std::conditional_t<
           use_numeric_initial_data, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
-      Initialization::Actions::TimeStepperHistory<derived_metavars>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase, local_time_stepping>>,

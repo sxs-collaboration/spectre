@@ -213,12 +213,12 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<volume_dim>>,
+          evolution::dg::Initialization::Domain<volume_dim>,
+          Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::GrTagsForHydro<system>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags<system>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1Closure<neutrino_species>>,
