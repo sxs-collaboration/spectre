@@ -44,38 +44,24 @@ void TimeDerivative<Dim>::apply(
   *result_gamma1 = gamma1;
   *result_gamma2 = gamma2;
 
-  dt_psi->get() = -lapse.get() * pi.get();
-  for (size_t m = 0; m < Dim; ++m) {
-    dt_psi->get() +=
-        shift.get(m) *
-        (d_psi.get(m) + gamma1.get() * (d_psi.get(m) - phi.get(m)));
-  }
+  tenex::evaluate(dt_psi,
+                  -lapse() * pi() + shift(ti::I) * d_psi(ti::i) +
+                      gamma1() * shift(ti::J) * (d_psi(ti::j) - phi(ti::j)));
 
-  dt_pi->get() = lapse.get() * pi.get() * trace_extrinsic_curvature.get();
-  for (size_t m = 0; m < Dim; ++m) {
-    dt_pi->get() += shift.get(m) * d_pi.get(m);
-    dt_pi->get() += lapse.get() * phi.get(m) * trace_spatial_christoffel.get(m);
-    dt_pi->get() += gamma1.get() * gamma2.get() * shift.get(m) *
-                    (d_psi.get(m) - phi.get(m));
-  }
-  for (size_t m = 0; m < Dim; ++m) {
-    for (size_t n = 0; n < Dim; ++n) {
-      dt_pi->get() -=
-          lapse.get() * upper_spatial_metric.get(m, n) * d_phi.get(m, n);
-      dt_pi->get() -=
-          upper_spatial_metric.get(m, n) * deriv_lapse.get(m) * phi.get(n);
-    }
-  }
-  for (size_t k = 0; k < Dim; ++k) {
-    dt_phi->get(k) =
-        -lapse.get() *
-            (d_pi.get(k) + gamma2.get() * (phi.get(k) - d_psi.get(k))) -
-        pi.get() * deriv_lapse.get(k);
-    for (size_t m = 0; m < Dim; ++m) {
-      dt_phi->get(k) +=
-          shift.get(m) * d_phi.get(m, k) + phi.get(m) * deriv_shift.get(k, m);
-    }
-  }
+  tenex::evaluate(
+      dt_pi,
+      lapse() * pi() * trace_extrinsic_curvature() +
+          shift(ti::I) * d_pi(ti::i) +
+          lapse() * trace_spatial_christoffel(ti::I) * phi(ti::i) +
+          gamma1() * gamma2() * shift(ti::I) * (d_psi(ti::i) - phi(ti::i)) -
+          lapse() * upper_spatial_metric(ti::I, ti::J) * d_phi(ti::i, ti::j) -
+          upper_spatial_metric(ti::I, ti::J) * phi(ti::i) * deriv_lapse(ti::j));
+
+  tenex::evaluate<ti::i>(
+      dt_phi, -lapse() * d_pi(ti::i) + shift(ti::J) * d_phi(ti::j, ti::i) +
+                  gamma2() * lapse() * (d_psi(ti::i) - phi(ti::i)) -
+                  pi() * deriv_lapse(ti::i) +
+                  phi(ti::j) * deriv_shift(ti::i, ti::J));
 }
 }  // namespace CurvedScalarWave
 // Generate explicit instantiations of partial_derivatives function as well as
