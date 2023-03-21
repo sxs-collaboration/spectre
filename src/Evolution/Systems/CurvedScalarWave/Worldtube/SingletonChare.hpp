@@ -7,6 +7,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ChangeSlabSize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeEvolvedVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
@@ -60,7 +61,7 @@ struct WorldtubeSingleton {
     using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0>>;
   };
   using step_actions =
-      tmpl::list<Actions::ReceiveElementData,
+      tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
                  Actions::SendToElements<Metavariables>,
                  ::Actions::RecordTimeStepperData<
                      typename worldtube_system::variables_tag>,

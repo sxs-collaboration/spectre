@@ -5,6 +5,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ChangeSlabSize.hpp
   InitializeElementFacesGridCoordinates.hpp
   InitializeEvolvedVariables.hpp
   ReceiveElementData.hpp
