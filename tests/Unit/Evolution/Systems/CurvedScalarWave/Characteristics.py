@@ -27,31 +27,23 @@ def char_speed_vminus(gamma1, lapse, shift, unit_normal):
 # Test functions for characteristic fields
 
 
-def char_field_vpsi(gamma2, inverse_spatial_metric, psi, pi, phi,
-                    normal_one_form):
+def char_field_vpsi(gamma2, psi, pi, phi, normal_one_form, normal_vector):
     return psi
 
 
-def char_field_vzero(gamma2, inverse_spatial_metric, psi, pi, phi,
-                     normal_one_form):
-    normal_vector =\
-        np.einsum('ij,j', inverse_spatial_metric, normal_one_form)
+def char_field_vzero(gamma2, psi, pi, phi, normal_one_form, normal_vector):
     projection_tensor = np.identity(len(normal_vector)) -\
         np.einsum('i,j', normal_one_form, normal_vector)
     return np.einsum('ij,j->i', projection_tensor, phi)
 
 
-def char_field_vplus(gamma2, inverse_spatial_metric, psi, pi, phi,
-                     normal_one_form):
-    phi_dot_normal = np.einsum('ij,i,j', inverse_spatial_metric,
-                               normal_one_form, phi)
+def char_field_vplus(gamma2, psi, pi, phi, normal_one_form, normal_vector):
+    phi_dot_normal = np.dot(normal_vector, phi)
     return pi + phi_dot_normal - (gamma2 * psi)
 
 
-def char_field_vminus(gamma2, inverse_spatial_metric, psi, pi, phi,
-                      normal_one_form):
-    phi_dot_normal = np.einsum('ij,i,j', inverse_spatial_metric,
-                               normal_one_form, phi)
+def char_field_vminus(gamma2, psi, pi, phi, normal_one_form, normal_vector):
+    phi_dot_normal = np.dot(normal_vector, phi)
     return pi - phi_dot_normal - (gamma2 * psi)
 
 

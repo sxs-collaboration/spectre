@@ -141,26 +141,25 @@ template <size_t SpatialDim>
 Variables<
     tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus, Tags::VMinus>>
 characteristic_fields(
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form);
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& unit_normal_vector);
 
 template <size_t SpatialDim>
 void characteristic_fields(
     gsl::not_null<Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>,
                                        Tags::VPlus, Tags::VMinus>>*>
         char_fields,
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form);
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& unit_normal_vector);
+
 
 template <size_t SpatialDim>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
@@ -181,8 +180,10 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
           unit_normal_one_form) {
-    characteristic_fields<SpatialDim>(result, gamma_2, inverse_spatial_metric,
-                                      psi, pi, phi, unit_normal_one_form);
+    const auto unit_normal_vector = tenex::evaluate<ti::I>(
+        inverse_spatial_metric(ti::I, ti::J) * unit_normal_one_form(ti::j));
+    characteristic_fields<SpatialDim>(result, gamma_2, psi, pi, phi,
+                                      unit_normal_one_form, unit_normal_vector);
   }
 };
 /// @}

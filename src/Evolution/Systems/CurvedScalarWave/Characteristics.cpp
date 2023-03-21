@@ -67,32 +67,24 @@ void characteristic_fields(
     const gsl::not_null<Variables<tmpl::list<
         Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus, Tags::VMinus>>*>
         char_fields,
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) {
-  if (UNLIKELY(get_size(get(get<Tags::VPsi>(*char_fields))) !=
-               get_size(get(gamma_2)))) {
-    *char_fields =
-        Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
-                             Tags::VMinus>>(get_size(get(gamma_2)));
-  }
-  get(get<Tags::VMinus>(*char_fields)) = get(dot_product(
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi));
-
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_vector) {
+  char_fields->initialize(get(gamma_2).size());
+  dot_product(make_not_null(&get<Tags::VMinus>(*char_fields)),
+              unit_normal_vector, phi);
   // Eq.(34) of Holst+ (2004) for VZero
   for (size_t i = 0; i < SpatialDim; ++i) {
     get<Tags::VZero<SpatialDim>>(*char_fields).get(i) =
         phi.get(i) -
         unit_normal_one_form.get(i) * get(get<Tags::VMinus>(*char_fields));
   }
-
   // Eq.(33) of Holst+ (2004) for VPsi
   get<Tags::VPsi>(*char_fields) = psi;
-
   // Eq.(35) of Holst+ (2004) for VPlus and VMinus
   get(get<Tags::VPlus>(*char_fields)) =
       get(pi) + get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
@@ -104,20 +96,18 @@ template <size_t SpatialDim>
 Variables<
     tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus, Tags::VMinus>>
 characteristic_fields(
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) {
-  auto char_fields =
-      make_with_value<Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>,
-                                           Tags::VPlus, Tags::VMinus>>>(
-          get(gamma_2), std::numeric_limits<double>::signaling_NaN());
-  characteristic_fields(make_not_null(&char_fields), gamma_2,
-                        inverse_spatial_metric, psi, pi, phi,
-                        unit_normal_one_form);
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_vector) {
+  Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
+                       Tags::VMinus>>
+      char_fields{get(gamma_2).size()};
+  characteristic_fields(make_not_null(&char_fields), gamma_2, psi, pi, phi,
+                        unit_normal_one_form, unit_normal_vector);
   return char_fields;
 }
 
@@ -230,24 +220,24 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
           CurvedScalarWave::Tags::VZero<DIM(data)>,                           \
           CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>*>   \
           char_fields,                                                        \
-      const Scalar<DataVector>& gamma_2,                                      \
-      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                 \
-          inverse_spatial_metric,                                             \
-      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,       \
+      const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form);                                              \
+          unit_normal_one_form,                                               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_vector);                                                \
   template Variables<tmpl::list<                                              \
       CurvedScalarWave::Tags::VPsi, CurvedScalarWave::Tags::VZero<DIM(data)>, \
       CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>         \
   CurvedScalarWave::characteristic_fields(                                    \
-      const Scalar<DataVector>& gamma_2,                                      \
-      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                 \
-          inverse_spatial_metric,                                             \
-      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,       \
+      const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form);                                              \
+          unit_normal_one_form,                                               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_vector);                                                \
   template struct CurvedScalarWave::CharacteristicFieldsCompute<DIM(data)>;   \
   template void CurvedScalarWave::evolved_fields_from_characteristic_fields(  \
       const gsl::not_null<Variables<                                          \
