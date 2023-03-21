@@ -4,15 +4,25 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
 #include <unordered_map>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Frame {
+struct Grid;
+}  // namespace Frame
+/// \endcond
 
 namespace CurvedScalarWave::Worldtube::Tags {
-
 /*!
  * \brief Inbox of the worldtube singleton chare which receives quantities
  * projected onto spherical harmonics.
