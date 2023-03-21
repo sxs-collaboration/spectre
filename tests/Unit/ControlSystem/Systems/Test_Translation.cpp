@@ -30,7 +30,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
-struct Grid;
+struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
@@ -39,7 +39,7 @@ namespace {
 using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>;
+    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, TranslationMap>;
 
 template <size_t DerivOrder>
 void test_translation_control_system() {

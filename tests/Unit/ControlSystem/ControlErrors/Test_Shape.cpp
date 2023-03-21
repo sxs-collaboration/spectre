@@ -45,14 +45,14 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Frame {
-struct Grid;
+struct Distorted;
 }  // namespace Frame
 
 namespace control_system {
 namespace {
 using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-using Strahlkorper = Strahlkorper<Frame::Grid>;
+using Strahlkorper = Strahlkorper<Frame::Distorted>;
 
 void test_shape_control_error() {
   constexpr size_t deriv_order = 2;
@@ -167,8 +167,8 @@ void test_shape_control_error() {
       make_not_null(&generator), coef_dist, fake_ah_coefs);
   fake_ah_coefs = measurement_coefs;
 
-  using QueueTuple =
-      tuples::TaggedTuple<control_system::QueueTags::Strahlkorper<Frame::Grid>>;
+  using QueueTuple = tuples::TaggedTuple<
+      control_system::QueueTags::Strahlkorper<Frame::Distorted>>;
   QueueTuple fake_measurement_tuple{fake_ah};
 
   const DataVector control_error =

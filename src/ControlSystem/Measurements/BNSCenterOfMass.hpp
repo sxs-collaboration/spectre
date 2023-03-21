@@ -56,7 +56,7 @@ namespace Tags {
 /// \ingroup ControlSystemGroup
 /// DataBox tag for location of neutron star center
 /// (or more accurately, center of mass of the matter
-/// in the x>0 (label A) or x<0 (label B) region, in grid
+/// in the x>0 (label A) or x<0 (label B) region, in grid (distorted)
 /// coordinates.
 template <::domain::ObjectLabel Center>
 struct NeutronStarCenter : db::SimpleTag {
@@ -71,14 +71,19 @@ struct NeutronStarCenter : db::SimpleTag {
 /// \f$x>0\f$ (label A) or \f$x<0\f$ (label B).
 /// inv_det_jacobian is the inverse determinant of the jacobian of the
 ///                  map between logical and inertial coordinates
-/// xGrid contains the coordinates in the grid frame
+/// x_distorted contains the coordinates in the distorted frame
+///
+/// \note The `x` position is in the Distorted frame to fit in with the control
+/// system which works in the distorted frame. For BNS simulations, the
+/// Distorted frame should be identical to the Grid frame (i.e. the identity
+/// map), but it still needs to be there to interface with the control system.
 void center_of_mass_integral_on_element(
     const gsl::not_null<double*> mass_a, const gsl::not_null<double*> mass_b,
     const gsl::not_null<std::array<double, 3>*> first_moment_A,
     const gsl::not_null<std::array<double, 3>*> first_moment_B,
     const Mesh<3>& mesh, const Scalar<DataVector>& inv_det_jacobian,
     const Scalar<DataVector>& tilde_d,
-    const tnsr::I<DataVector, 3, Frame::Grid>& x_grid);
+    const tnsr::I<DataVector, 3, Frame::Distorted>& x_distorted);
 
 /// Measurement providing the location of the center of mass of the
 /// matter in the \f$x>0\f$ and \f$x<0\f$ regions (assumed to correspond to the
@@ -95,7 +100,7 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
                    Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                         Frame::Inertial>,
                    grmhd::ValenciaDivClean::TildeD,
-                   domain::Tags::Coordinates<3, Frame::Grid>>;
+                   domain::Tags::Coordinates<3, Frame::Distorted>>;
 
     /// Calculate integrals needed for CoM computation on each element,
     /// then reduce the data.
@@ -104,7 +109,7 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
     static void apply(const Mesh<3>& mesh,
                       const Scalar<DataVector>& inv_det_jacobian,
                       const Scalar<DataVector>& tilde_d,
-                      const tnsr::I<DataVector, 3, Frame::Grid> x_grid,
+                      const tnsr::I<DataVector, 3, Frame::Distorted> x_grid,
                       const LinkedMessageId<double>& measurement_id,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const ElementId<3>& /*array_index*/,

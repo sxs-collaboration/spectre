@@ -32,7 +32,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
+struct Distorted;
 }  // namespace Frame
 /// \endcond
 
@@ -107,11 +107,11 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
         tmpl::list<
             measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::A>,
             measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::B>>,
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>>>;
+        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>>>;
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(measurements::BothHorizons::FindHorizon<Horizon> /*meta*/,
-                      const Strahlkorper<Frame::Grid>& strahlkorper,
+                      const Strahlkorper<Frame::Distorted>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<

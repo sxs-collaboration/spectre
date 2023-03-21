@@ -31,6 +31,7 @@
 
 namespace Frame {
 struct Grid;
+struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
@@ -41,7 +42,7 @@ using RotationMap = domain::CoordinateMaps::TimeDependent::Rotation<3>;
 using ExpansionMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, ExpansionMap,
+    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, ExpansionMap,
                           RotationMap, TranslationMap>;
 
 std::string create_input_string(const std::string& name) {
