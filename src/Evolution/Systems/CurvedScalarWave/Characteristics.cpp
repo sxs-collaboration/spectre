@@ -24,10 +24,7 @@ void characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  if (UNLIKELY(get_size(get<0>(*char_speeds)) != get_size(get(gamma_1)))) {
-    *char_speeds = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
-        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
-  }
+  destructive_resize_components(char_speeds, get(gamma_1).size());
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
   get<0>(*char_speeds) = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
   get<1>(*char_speeds) = -shift_dot_normal;                        // v(VZero)
@@ -42,9 +39,9 @@ void characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  if (UNLIKELY(get_size((*char_speeds)[0]) != get_size(get(gamma_1)))) {
-    *char_speeds = make_with_value<std::array<DataVector, 4>>(
-        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
+  const size_t size = get(gamma_1).size();
+  for (auto& char_speed : *char_speeds) {
+    char_speed.destructive_resize(size);
   }
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
   (*char_speeds)[0] = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
@@ -59,9 +56,7 @@ std::array<DataVector, 4> characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  auto char_speeds = make_with_value<std::array<DataVector, 4>>(
-      get<0>(unit_normal_one_form),
-      std::numeric_limits<double>::signaling_NaN());
+  std::array<DataVector, 4> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), gamma_1, lapse, shift,
                         unit_normal_one_form);
   return char_speeds;
@@ -183,9 +178,8 @@ evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  auto evolved_fields = make_with_value<
-      Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>>(
-      get(gamma_2), std::numeric_limits<double>::signaling_NaN());
+  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>
+      evolved_fields(get(gamma_2).size());
   evolved_fields_from_characteristic_fields(make_not_null(&evolved_fields),
                                             gamma_2, v_psi, v_zero, v_plus,
                                             v_minus, unit_normal_one_form);
