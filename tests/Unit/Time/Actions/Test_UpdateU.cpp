@@ -25,6 +25,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Time/History.hpp"
@@ -32,6 +33,9 @@
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 class TimeStepper;
+namespace PUP {
+struct er;
+}  // namespace PUP
 
 namespace {
 struct Var : db::SimpleTag {
@@ -42,61 +46,48 @@ struct AlternativeVar : db::SimpleTag {
   using type = double;
 };
 
-struct System {
+struct SingleVariableSystem {
   using variables_tag = Var;
 };
 
-using variables_tag = Var;
-using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+struct TwoVariableSystem {
+  using variables_tag = tmpl::list<Var, AlternativeVar>;
+};
 
-
-using alternative_variables_tag = AlternativeVar;
-using dt_alternative_variables_tag = Tags::dt<AlternativeVar>;
-using alternative_history_tag =
-    Tags::HistoryEvolvedVariables<alternative_variables_tag>;
-
-template <typename Metavariables, typename SimpleTags, typename UpdateAction>
+template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
-  using simple_tags = tmpl::append<
-      tmpl::list<Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl>,
-      SimpleTags>;
+  using const_global_cache_tags = tmpl::list<>;
+  using simple_tags =
+      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::TimeStep,
+                 ::Tags::IsUsingTimeSteppingErrorControl, Var,
+                 Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
+                 Tags::HistoryEvolvedVariables<AlternativeVar>>;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<
-                     Parallel::Phase::Initialization,
-                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-                 Parallel::PhaseActions<Parallel::Phase::Testing,
-                                        tmpl::list<UpdateAction>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::UpdateU<
+                                 typename metavariables::system_for_test>>>>;
 };
 
-struct Metavariables;
-
-using component_with_default_variables =
-    Component<Metavariables, tmpl::list<variables_tag, history_tag>,
-              Actions::UpdateU<>>;
-using component_with_template_specified_variables =
-    Component<Metavariables,
-              tmpl::list<alternative_variables_tag, alternative_history_tag>,
-              Actions::UpdateU<AlternativeVar>>;
-using component_with_stepper_error = Component<
-    Metavariables,
-    tmpl::list<variables_tag, history_tag, Tags::StepperError<variables_tag>,
-               Tags::PreviousStepperError<variables_tag>,
-               Tags::StepperErrorUpdated>,
-    Actions::UpdateU<>>;
-
+template <typename System>
 struct Metavariables {
-  using system = System;
-  using component_list = tmpl::list<component_with_default_variables,
-                                    component_with_template_specified_variables,
-                                    component_with_stepper_error>;
+  using system_for_test = System;
+  using component_list = tmpl::list<Component<Metavariables>>;
+
+  void pup(PUP::er& /*p*/) {}
 };
 
+template <typename System, bool AlternativeUpdates>
 void test_integration() {
+  using history_tag = Tags::HistoryEvolvedVariables<Var>;
+  using alternative_history_tag = Tags::HistoryEvolvedVariables<AlternativeVar>;
+
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
 
@@ -104,88 +95,98 @@ void test_integration() {
     return 2. * t - 2. * (y - t * t);
   };
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
-  ActionTesting::emplace_component_and_initialize<
-      component_with_default_variables>(
-      &runner, 0, {time_step, false, 1., history_tag::type{3}});
-
-  ActionTesting::emplace_component_and_initialize<
-      component_with_template_specified_variables>(
-      &runner, 0, {time_step, false, 1., alternative_history_tag::type{3}});
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  auto box = db::create<db::AddSimpleTags<
+      Tags::TimeStepper<TimeSteppers::Rk3HesthavenSsp>, Tags::TimeStep,
+      ::Tags::IsUsingTimeSteppingErrorControl, Var, history_tag, AlternativeVar,
+      alternative_history_tag>>(
+      std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, false, 1.,
+      typename history_tag::type{3}, 1.,
+      typename alternative_history_tag::type{3});
 
   const std::array<Time, 3> substep_times{
-    {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
+      {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
   // The exact answer is y = x^2, but the integrator would need a
   // smaller step size to get that accurately.
-  const std::array<double, 3> expected_values{{3., 3., 10./3.}};
+  const std::array<double, 3> expected_values{{3., 3., 10. / 3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
-    auto& before_box =
-        ActionTesting::get_databox<component_with_default_variables>(
-            make_not_null(&runner), 0);
-    db::mutate<history_tag>(
-        make_not_null(&before_box),
+    db::mutate<history_tag, alternative_history_tag>(
+        make_not_null(&box),
         [&rhs, &substep, &substep_times](
             const gsl::not_null<typename history_tag::type*> history,
+            const gsl::not_null<typename alternative_history_tag::type*>
+                alternative_history,
             const double vars) {
           const double time = gsl::at(substep_times, substep).value();
           history->insert(TimeStepId(true, 0, substep_times[0], substep, time),
                           vars, rhs(time, vars));
+          *alternative_history = *history;
         },
-        db::get<variables_tag>(before_box));
+        db::get<Var>(box));
 
-    auto& alternative_before_box =
-        ActionTesting::get_databox<component_with_template_specified_variables>(
-            make_not_null(&runner), 0);
-    db::mutate<alternative_history_tag>(
-        make_not_null(&alternative_before_box),
-        [&rhs, &substep, &substep_times](
-            const gsl::not_null<typename alternative_history_tag::type*>
-                alternative_history,
-            const double alternative_vars) {
-          const double time = gsl::at(substep_times, substep).value();
-          alternative_history->insert(
-              TimeStepId(true, 0, substep_times[0], substep, time),
-              alternative_vars, rhs(time, alternative_vars));
-        },
-        db::get<alternative_variables_tag>(alternative_before_box));
-
-    runner.next_action<component_with_default_variables>(0);
-    runner.next_action<component_with_template_specified_variables>(0);
-    const auto& box =
-        ActionTesting::get_databox<component_with_default_variables>(runner, 0);
-    auto& alternative_box =
-        ActionTesting::get_databox<component_with_template_specified_variables>(
-            make_not_null(&runner), 0);
-
-    CHECK(db::get<variables_tag>(box) ==
-          approx(gsl::at(expected_values, substep)));
-
-    CHECK(db::get<alternative_variables_tag>(alternative_box) ==
-          approx(gsl::at(expected_values, substep)));
+    update_u<System>(make_not_null(&box));
+    CHECK(db::get<Var>(box) == approx(gsl::at(expected_values, substep)));
+    if (AlternativeUpdates) {
+      CHECK(db::get<AlternativeVar>(box) ==
+            approx(gsl::at(expected_values, substep)));
+    } else {
+      CHECK(db::get<AlternativeVar>(box) == 1.0);
+    }
   }
 }
 
-void test_stepper_error() {
+void test_action() {
+  using system = SingleVariableSystem;
+  using metavariables = Metavariables<system>;
+  using component = Component<metavariables>;
+
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
-  ActionTesting::emplace_component_and_initialize<component_with_stepper_error>(
+  Var::type vars = 1.0;
+  Tags::HistoryEvolvedVariables<Var>::type history{3};
+  history.insert(TimeStepId(true, 0, slab.start()), vars, 3.0);
+
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {time_step, true, 1., history_tag::type{3}, 1234.5, 1234.5, false});
+      {std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, false,
+       vars, std::move(history), AlternativeVar::type{},
+       Tags::HistoryEvolvedVariables<AlternativeVar>::type{}});
+
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  auto box_for_function = serialize_and_deserialize(
+      ActionTesting::get_databox<component>(make_not_null(&runner), 0));
+
+  runner.next_action<component>(0);
+  update_u<system>(make_not_null(&box_for_function));
+
+  const auto& action_box = ActionTesting::get_databox<component>(runner, 0);
+  CHECK(db::get<Var>(box_for_function) == db::get<Var>(action_box));
+}
+
+void test_stepper_error() {
+  using variables_tag = Var;
+  using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+
+  const Slab slab(1., 3.);
+  const TimeDelta time_step = slab.duration() / 2;
+
+  auto box = db::create<db::AddSimpleTags<
+      Tags::TimeStepper<TimeSteppers::Rk3HesthavenSsp>, Tags::TimeStep,
+      ::Tags::IsUsingTimeSteppingErrorControl, variables_tag, history_tag,
+      Tags::StepperError<variables_tag>,
+      Tags::PreviousStepperError<variables_tag>, Tags::StepperErrorUpdated>>(
+      std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, true, 1.,
+      history_tag::type{3}, 1234.5, 1234.5, false);
 
   const std::array<TimeDelta, 3> substep_offsets{
       {0 * slab.duration(), time_step, time_step / 2}};
 
-  auto& box = ActionTesting::get_databox<component_with_stepper_error>(
-      make_not_null(&runner), 0);
-  const auto do_substep = [&box, &runner, &substep_offsets](
-                              const Time& step_start, const size_t substep) {
+  const auto do_substep = [&box, &substep_offsets](const Time& step_start,
+                                                   const size_t substep) {
     db::mutate<history_tag>(
         make_not_null(&box),
         [&step_start, &substep, &substep_offsets](
@@ -198,7 +199,7 @@ void test_stepper_error() {
         },
         db::get<variables_tag>(box));
 
-    runner.next_action<component_with_stepper_error>(0);
+    update_u<SingleVariableSystem>(make_not_null(&box));
   };
 
   using error_tag = Tags::StepperError<variables_tag>;
@@ -227,6 +228,8 @@ void test_stepper_error() {
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
-  test_integration();
+  test_integration<SingleVariableSystem, false>();
+  test_integration<TwoVariableSystem, true>();
+  test_action();
   test_stepper_error();
 }

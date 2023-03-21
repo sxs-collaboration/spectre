@@ -15,7 +15,9 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 // IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 
@@ -28,18 +30,10 @@ class GlobalCache;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
-/// Perform variable updates for one substep for a substep method, or one step
-/// for an LMM method.
-///
-/// \note This is a free function version of `Actions::UpdateU`. This free
-/// function alternative permits the inclusion of the time step procedure in
-/// the middle of another action.
-template <typename System, typename VariablesTag = NoSuchType, typename DbTags>
-void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
-  using variables_tag =
-      tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
-                          typename System::variables_tag, VariablesTag>;
-  using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+namespace update_u_detail {
+template <typename System, typename VariablesTag, typename DbTags>
+void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
+  using history_tag = Tags::HistoryEvolvedVariables<VariablesTag>;
   bool is_using_error_control = false;
   if constexpr (db::tag_is_retrievable_v<Tags::IsUsingTimeSteppingErrorControl,
                                          db::DataBox<DbTags>>) {
@@ -47,14 +41,14 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
         db::get<Tags::IsUsingTimeSteppingErrorControl>(*box);
   }
   if (is_using_error_control) {
-    using error_tag = ::Tags::StepperError<variables_tag>;
-    using previous_error_tag = ::Tags::PreviousStepperError<variables_tag>;
+    using error_tag = ::Tags::StepperError<VariablesTag>;
+    using previous_error_tag = ::Tags::PreviousStepperError<VariablesTag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
-      db::mutate<Tags::StepperErrorUpdated, variables_tag, error_tag,
+      db::mutate<Tags::StepperErrorUpdated, VariablesTag, error_tag,
                  previous_error_tag, history_tag>(
           box,
           [](const gsl::not_null<bool*> stepper_error_updated,
-             const gsl::not_null<typename variables_tag::type*> vars,
+             const gsl::not_null<typename VariablesTag::type*> vars,
              const gsl::not_null<typename error_tag::type*> error,
              const gsl::not_null<typename previous_error_tag::type*>
                  previous_error,
@@ -84,14 +78,38 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
           "`::Tags::StepperError<VariablesTag>` is not present in the box.");
     }
   } else {
-    db::mutate<variables_tag, history_tag>(
+    db::mutate<VariablesTag, history_tag>(
         box,
-        [](const gsl::not_null<typename variables_tag::type*> vars,
+        [](const gsl::not_null<typename VariablesTag::type*> vars,
            const gsl::not_null<typename history_tag::type*> history,
            const ::TimeDelta& time_step, const auto& time_stepper) {
           time_stepper.update_u(vars, history, time_step);
         },
         db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+  }
+}
+}  // namespace update_u_detail
+
+/// Perform variable updates for one substep for a substep method, or one step
+/// for an LMM method.
+///
+/// \note This is a free function version of `Actions::UpdateU`. This free
+/// function alternative permits the inclusion of the time step procedure in
+/// the middle of another action.
+template <typename System, typename DbTags>
+void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
+  if constexpr (tt::is_a_v<tmpl::list, typename System::variables_tag>) {
+    // The system has multiple evolved variables, probably because
+    // there is a mixture of real and complex values or similar.  Step
+    // all of them.
+    tmpl::for_each<typename System::variables_tag>([&](auto tag) {
+      update_u_detail::update_one_variables<System,
+                                            tmpl::type_from<decltype(tag)>>(
+          box);
+    });
+  } else {
+    update_u_detail::update_one_variables<System,
+                                          typename System::variables_tag>(box);
   }
 }
 
@@ -102,8 +120,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - variables_tag (either the provided `VariablesTag` or the
-///   `system::variables_tag` if none is provided)
+///   - system::variables_tag
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepper<>
@@ -115,7 +132,7 @@ namespace Actions {
 /// - Modifies:
 ///   - variables_tag
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
-template <typename VariablesTag = NoSuchType>
+template <typename System>
 struct UpdateU {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -125,7 +142,7 @@ struct UpdateU {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
-    update_u<typename Metavariables::system, VariablesTag>(make_not_null(&box));
+    update_u<System>(make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

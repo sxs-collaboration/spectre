@@ -384,9 +384,9 @@ struct GeneralizedHarmonicTemplateBase<
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim>,
-              Actions::RecordTimeStepperData<>,
+              Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<>,
+              Actions::UpdateU<system>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
                   tmpl::list<gr::Tags::SpacetimeMetric<
