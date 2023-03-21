@@ -10,7 +10,6 @@
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -55,7 +54,6 @@ struct System {
       gr::Tags::TraceExtrinsicCurvature<DataVector>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
-  using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed<Dim>;
