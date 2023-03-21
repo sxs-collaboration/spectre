@@ -149,20 +149,36 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
 /// boundary conditions
 template <typename Creator, size_t Dim = Creator::volume_dim>
 void test_creation(const std::string& option_string, const Creator& rhs,
-                   const bool with_boundary_conditions) {
+                   const bool with_boundary_conditions,
+                   const bool with_time_dependent_maps = false) {
   INFO("Option-creation");
   CAPTURE(option_string);
-  auto created = [&option_string, &with_boundary_conditions]() {
+  auto created = [&option_string, &with_boundary_conditions,
+                  &with_time_dependent_maps]() {
     if (with_boundary_conditions) {
-      using metavars = TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<Dim, Creator>;
-      return TestHelpers::test_option_tag<
-          ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      if (with_time_dependent_maps) {
+        using metavars = TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditions<Dim, Creator, true>;
+        return TestHelpers::test_option_tag<
+            ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      } else {
+        using metavars = TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditions<Dim, Creator, false>;
+        return TestHelpers::test_option_tag<
+            ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      }
     } else {
-      using metavars = TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<Dim, Creator>;
-      return TestHelpers::test_option_tag<
-          ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      if (with_time_dependent_maps) {
+        using metavars = TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<Dim, Creator, true>;
+        return TestHelpers::test_option_tag<
+            ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      } else {
+        using metavars = TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<Dim, Creator, false>;
+        return TestHelpers::test_option_tag<
+            ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
+      }
     }
   }();
   REQUIRE(dynamic_cast<const Creator*>(created.get()) != nullptr);
