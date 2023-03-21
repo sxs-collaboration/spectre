@@ -12,7 +12,7 @@ SpECTRE source files for evolution executables are located in
 as defined in the `CMakeLists.txt` file located in the same directory as the
 source file. For example, to compile the executable that evolves a scalar wave
 using a three-dimensional domain, navigate to `$SPECTRE_HOME/build/`, then
-one runs the command: `make EvolveScalarWavePlaneWave3D`, which then results
+one runs the command: `make EvolveScalarWave3D`, which then results
 in an executable of the same name in the `bin` directory of the user's
 build directory.
 
@@ -26,7 +26,7 @@ which the user can then modify as desired. Copy the executable and YAML file
 to a directory of your choice. The YAML file is then passed as an argument to
 the executable using the flag `--input-file`. For example, for a scalar wave
 evolution, run the command:
-`./EvolveScalarWavePlaneWave3D --input-file PlaneWave3D.yaml`.
+`./EvolveScalarWave3D --input-file PlaneWave3D.yaml`.
 By default, the example input files do not produce any output. This can be
 changed by modifying the options passed to `EventsAndTriggers` or
 `EventsAndDenseTriggers`:
