@@ -446,7 +446,7 @@ void cartesian_high_order_fluxes_using_nodes(
  * `reconstruction_neighbor_data`.
  *
  * The `reconstruction_neighbor_data` is stored in the tag
- * `evolution::dg::subcell::Tags::NeighborDataForReconstruction`, and the
+ * `evolution::dg::subcell::Tags::GhostDataForReconstruction`, and the
  * `ghost_zone_size` should come from the FD reconstructor.
  */
 template <size_t Dim, typename FluxesTags>
@@ -483,7 +483,7 @@ void set_cartesian_neighbor_cell_centered_fluxes(
  * from `evolution::dg::subcell::Tags::SubcellOptions`
  * (`.finite_difference_derivative_order()`), the `reconstruction_neighbor_data`
  * is stored in the tag
- * `evolution::dg::subcell::Tags::NeighborDataForReconstruction`, the
+ * `evolution::dg::subcell::Tags::GhostDataForReconstruction`, the
  * `ghost_zone_size` should come from the FD reconstructor.
  *
  * By default we assume no RDMP data is in the `ghost_data` buffer. In the

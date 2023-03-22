@@ -33,8 +33,8 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
@@ -99,7 +99,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   const size_t ghost_zone_size{ReconstructorForTest{}.ghost_zone_size()};
 
   // dummy neighbor data to put into DataBox
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>::type
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<3>::type
       neighbor_data{};
 
   // Below are tags required by DirichletAnalytic boundary condition to compute
@@ -228,7 +228,7 @@ void test(const BoundaryConditionType& boundary_condition) {
       domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
       fd::Tags::Reconstructor, domain::Tags::MeshVelocity<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
@@ -260,7 +260,7 @@ void test(const BoundaryConditionType& boundary_condition) {
     const std::pair mortar_id = {direction,
                                  ElementId<3>::external_boundary_id()};
     const DataVector& fd_ghost_data =
-        get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(box)
+        get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box)
             .at(mortar_id);
 
     // Copy the computed FD ghost data into a Variables object in order to
@@ -442,8 +442,7 @@ void test(const BoundaryConditionType& boundary_condition) {
                                             ReconstructorForTest{});
 
       const DataVector& fd_ghost_data_velocity_inward =
-          get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
-              box)
+          get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box)
               .at(mortar_id);
       Variables<prims_to_reconstruct> fd_ghost_vars_velocity_inward{
           ghost_zone_size * num_face_pts};

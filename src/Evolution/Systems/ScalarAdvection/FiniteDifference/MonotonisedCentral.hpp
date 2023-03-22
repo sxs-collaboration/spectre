@@ -16,8 +16,8 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Options/Options.hpp"
@@ -80,10 +80,11 @@ class MonotonisedCentral : public Reconstructor<Dim> {
 
   size_t ghost_zone_size() const override { return 2; }
 
-  using reconstruction_argument_tags = tmpl::list<
-      ::Tags::Variables<volume_vars_tags>, domain::Tags::Element<Dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
-      evolution::dg::subcell::Tags::Mesh<Dim>>;
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<volume_vars_tags>,
+                 domain::Tags::Element<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::Mesh<Dim>>;
 
   template <typename TagsList>
   void reconstruct(

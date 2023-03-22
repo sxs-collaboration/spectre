@@ -29,8 +29,8 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -185,7 +185,7 @@ struct TciAndRollback {
         (cell_has_external_boundary and
          not subcell_enabled_at_external_boundary) or
         not cell_is_troubled) {
-      db::mutate<subcell::Tags::NeighborDataForReconstruction<Dim>,
+      db::mutate<subcell::Tags::GhostDataForReconstruction<Dim>,
                  subcell::Tags::DataForRdmpTci>(
           make_not_null(&box),
           [&tci_result](const auto neighbor_data_ptr,
@@ -198,7 +198,7 @@ struct TciAndRollback {
 
     db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
                Tags::ActiveGrid, Tags::DidRollback,
-               subcell::Tags::NeighborDataForReconstruction<Dim>>(
+               subcell::Tags::GhostDataForReconstruction<Dim>>(
         make_not_null(&box),
         [&dg_mesh, &element, &subcell_mesh](
             const auto active_vars_ptr, const auto active_history_ptr,

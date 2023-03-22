@@ -16,8 +16,8 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -100,11 +100,11 @@ class AoWeno53Prim : public Reconstructor<Dim> {
 
   size_t ghost_zone_size() const override { return 3; }
 
-  using reconstruction_argument_tags = tmpl::list<
-      ::Tags::Variables<prims_tags>, hydro::Tags::EquationOfStateBase,
-      domain::Tags::Element<Dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
-      evolution::dg::subcell::Tags::Mesh<Dim>>;
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<prims_tags>,
+                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::Mesh<Dim>>;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct(

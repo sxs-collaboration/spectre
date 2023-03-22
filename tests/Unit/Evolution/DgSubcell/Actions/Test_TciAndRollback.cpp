@@ -35,8 +35,8 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -90,7 +90,7 @@ struct component {
           evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
           evolution::dg::subcell::Tags::ActiveGrid,
           evolution::dg::subcell::Tags::DidRollback,
-          evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::TciDecision,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           evolution::dg::Tags::NeighborMesh<Dim>,
@@ -516,7 +516,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     const auto& neighbor_data_for_reconstruction =
         ActionTesting::get_databox_tag<
             comp,
-            evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+            evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
             runner, 0);
     CHECK_ITERABLE_APPROX(neighbor_data_for_reconstruction,
                           expected_neighbor_data);
@@ -569,7 +569,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     const auto& neighbor_data_for_reconstruction =
         ActionTesting::get_databox_tag<
             comp,
-            evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+            evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
             runner, 0);
     CHECK(neighbor_data_for_reconstruction.empty());
   }

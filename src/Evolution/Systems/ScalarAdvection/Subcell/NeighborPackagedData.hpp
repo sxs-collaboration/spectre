@@ -27,8 +27,8 @@
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
@@ -99,8 +99,9 @@ struct NeighborPackagedData {
         db::get<typename System<Dim>::variables_tag>(box), dg_mesh,
         subcell_mesh.extents());
 
-    const auto& neighbor_subcell_data = db::get<
-        evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(box);
+    const auto& neighbor_subcell_data =
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            box);
 
     const ScalarAdvection::fd::Reconstructor<Dim>& recons =
         db::get<ScalarAdvection::fd::Tags::Reconstructor<Dim>>(box);

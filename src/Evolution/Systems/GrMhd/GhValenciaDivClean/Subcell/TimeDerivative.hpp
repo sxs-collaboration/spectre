@@ -24,8 +24,8 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
@@ -454,8 +454,7 @@ struct TimeDerivative {
                 filter_options.spacetime_dissipation.value());
             *evolved_vars_ptr = filtered_vars;
           },
-          db::get<
-              evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+          db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
               *box));
     }
 
@@ -474,7 +473,7 @@ struct TimeDerivative {
         cell_centered_gh_derivs{num_pts};
     grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
         make_not_null(&cell_centered_gh_derivs), evolved_vars,
-        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
         subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
 

@@ -32,8 +32,8 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -103,7 +103,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
                             make_not_null(&dist));
     return vars;
   };
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>::type
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<1>::type
       neighbor_data = TestHelpers::Burgers::fd::compute_neighbor_data(
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_random_variable);
@@ -147,7 +147,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Element<1>, domain::Tags::Mesh<1>,
       evolution::dg::subcell::Tags::Mesh<1>, typename System::variables_tag,
-      evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
+      evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
       fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
       domain::Tags::ElementMap<1, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,

@@ -327,7 +327,7 @@ struct TimeDerivative {
             evolved_vars_tags, 3>>(*box),
         boundary_corrections,
         static_cast<::fd::DerivativeOrder>(fd_derivative_order.value_or(2)),
-        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
         subcell_mesh, recons.ghost_zone_size());
 

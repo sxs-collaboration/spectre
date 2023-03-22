@@ -36,8 +36,8 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -179,7 +179,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
   // 1. compute prims from solution
   // 2. compute prims needed for reconstruction
   // 3. set neighbor data
-  evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>::type
+  evolution::dg::subcell::Tags::GhostDataForReconstruction<3>::type
       neighbor_data{};
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -297,7 +297,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
           variables_tag,
           evolution::dg::subcell::Tags::OnSubcellFaces<
               typename System::flux_spacetime_variables_tag, 3>,
-          evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
           Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>,
           domain::Tags::ElementMap<3, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,

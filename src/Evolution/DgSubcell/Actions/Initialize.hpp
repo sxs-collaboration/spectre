@@ -20,9 +20,9 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -80,7 +80,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::ActiveGrid`
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::TciGridHistory`
- *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  *   - `subcell::Tags::TciDecision`
  *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
@@ -100,7 +100,7 @@ struct Initialize {
 
   using simple_tags = tmpl::list<
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
-      Tags::NeighborDataForReconstruction<Dim>, Tags::TciDecision,
+      Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       fd::Tags::InverseJacobianLogicalToGrid<Dim>,
       fd::Tags::DetInverseJacobianLogicalToGrid,

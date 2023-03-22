@@ -19,8 +19,8 @@
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -34,7 +34,7 @@ namespace evolution::dg::subcell {
  *
  *
  * The data needed for reconstruction is copied over into
- * `subcell::Tags::NeighborDataForReconstruction`.
+ * `subcell::Tags::GhostDataForReconstruction`.
  * Additionally, the max/min of the evolved variables from neighboring elements
  * that is used for the relaxed discrete maximum principle troubled-cell
  * indicator is combined with the data from the local element and stored in
@@ -79,7 +79,7 @@ void neighbor_reconstructed_face_solution(
                                   ElementId<Metavariables::volume_dim>>>>>*>
         received_temporal_id_and_data) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
-  db::mutate<subcell::Tags::NeighborDataForReconstruction<volume_dim>,
+  db::mutate<subcell::Tags::GhostDataForReconstruction<volume_dim>,
              subcell::Tags::DataForRdmpTci>(
       box,
       [&received_temporal_id_and_data](const auto subcell_neighbor_data_ptr,

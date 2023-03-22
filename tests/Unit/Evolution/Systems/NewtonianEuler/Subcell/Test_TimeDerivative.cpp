@@ -26,8 +26,8 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
@@ -177,8 +177,8 @@ std::array<double, 3> test(const size_t num_dg_pts) {
   // 1. compute prims from solution
   // 2. compute prims needed for reconstruction
   // 3. set neighbor data
-  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<
-      dim>::type neighbor_data{};
+  typename evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>::type
+      neighbor_data{};
   using prims_to_reconstruct_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataVector>,
                  NewtonianEuler::Tags::Velocity<DataVector, dim>,
@@ -224,7 +224,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           hydro::Tags::EquationOfState<eos>,
           typename system::primitive_variables_tag, dt_variables_tag,
           variables_tag,
-          evolution::dg::subcell::Tags::NeighborDataForReconstruction<dim>,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
           evolution::dg::Tags::MortarData<dim>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<dim>>>(

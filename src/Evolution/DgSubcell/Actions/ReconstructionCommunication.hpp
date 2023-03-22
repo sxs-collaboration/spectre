@@ -38,8 +38,8 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -95,7 +95,7 @@ namespace evolution::dg::subcell::Actions {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  */
 template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping>
 struct SendDataForReconstruction {
@@ -122,7 +122,7 @@ struct SendDataForReconstruction {
            "Subcell is the active scheme.");
     using flux_variables = typename Metavariables::system::flux_variables;
 
-    db::mutate<Tags::NeighborDataForReconstruction<Dim>>(
+    db::mutate<Tags::GhostDataForReconstruction<Dim>>(
         make_not_null(&box), [](const auto neighbor_data_ptr) {
           // Clear the previous neighbor data and add current local data
           neighbor_data_ptr->clear();
@@ -281,7 +281,7 @@ struct SendDataForReconstruction {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  *   - `subcell::Tags::DataForRdmpTci`
  *   - `evolution::dg::Tags::MortarData`
  *   - `evolution::dg::Tags::MortarNextTemporalId`
@@ -332,7 +332,7 @@ struct ReceiveDataForReconstruction {
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
 
-    db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
+    db::mutate<Tags::GhostDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
                evolution::dg::Tags::NeighborMesh<Dim>,

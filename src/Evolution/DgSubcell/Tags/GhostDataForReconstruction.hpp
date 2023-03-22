@@ -15,9 +15,10 @@
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 
 namespace evolution::dg::subcell::Tags {
-/// The neighbor data for reconstruction.
+/// The ghost data from neighboring elements used for reconstructing the
+/// solution on the interfaces between elements
 template <size_t Dim>
-struct NeighborDataForReconstruction : db::SimpleTag {
+struct GhostDataForReconstruction : db::SimpleTag {
   using type =
       FixedHashMap<maximum_number_of_neighbors(Dim),
                    std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,

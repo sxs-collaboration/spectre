@@ -23,8 +23,8 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -91,7 +91,7 @@ struct NeighborPackagedData {
         subcell_mesh.extents());
 
     const auto& neighbor_subcell_data =
-        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(
             box);
 
     const Burgers::fd::Reconstructor& recons =

@@ -25,8 +25,8 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
@@ -198,7 +198,7 @@ void BoundaryConditionGhostData::apply(
               boundary_ghost_data.begin());
     const std::pair mortar_id{direction, ElementId<1>::external_boundary_id()};
 
-    db::mutate<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(
+    db::mutate<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(
         box, [&mortar_id, &boundary_ghost_data](auto neighbor_data) {
           (*neighbor_data)[mortar_id] = boundary_ghost_data;
         });
