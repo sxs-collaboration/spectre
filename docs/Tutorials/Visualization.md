@@ -50,9 +50,8 @@ files. An XDMF file must be created from the volume data in order to do
 visualization using ParaView. To this end we provide the tool
 `generate-xdmf` in the Python command-line interface. Run it in your build
 directory as `spectre generate-xdmf`. It
-takes three required arguments which are passed to `--file-prefix`,
-`--subfile-name`, and `--output`. The argument passed to `--file-prefix` is the
-name of the H5 volume data, leaving out the node number and extension. The
+takes two required arguments which are passed to `--subfile-name`, and
+`--output`. The
 argument passed to `--subfile-name` is the name of the subfile inside the H5
 volume data file where data is stored. In the above example, `--subfile-name`
 would be `VolumePsiPiPhiEvery50Slabs`. The argument passed to `--output` is the
