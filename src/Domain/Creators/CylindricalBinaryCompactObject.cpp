@@ -528,9 +528,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // outer radius 2, and z-extents from -1 to +1.  These blocks are
   // either the central square blocks, or the surrounding wedge
   // blocks. The radii and bounds are what are expected by the
-  // UniformCylindricalEndcap maps, (except cylinder_inner_radius, which
-  // determines the internal block boundaries inside the cylinder, and
-  // which the UniformCylindricalEndcap maps don't care about).
+  // UniformCylindricalEndcap maps.
   const double cylindrical_shell_inner_radius = 1.0;
   const double cylindrical_shell_outer_radius = 2.0;
   const double cylindrical_shell_lower_bound_z = -1.0;
