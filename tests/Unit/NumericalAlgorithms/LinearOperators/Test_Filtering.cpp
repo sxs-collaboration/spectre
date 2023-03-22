@@ -250,19 +250,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter",
   // are cached in the action.
   const double alpha = 10.0;
   const unsigned half_power = 16;
-  invoke_test_exponential_filter_action<1, true>(alpha, half_power, true);
-  invoke_test_exponential_filter_action<2, true>(alpha, half_power, true);
-  invoke_test_exponential_filter_action<3, true>(alpha, half_power, true);
-  invoke_test_exponential_filter_action<1, false>(alpha, half_power, true);
-  invoke_test_exponential_filter_action<2, false>(alpha, half_power, true);
-  invoke_test_exponential_filter_action<3, false>(alpha, half_power, true);
-
-  invoke_test_exponential_filter_action<1, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<2, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<3, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<1, false>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<2, false>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<3, false>(alpha, half_power, false);
+  tmpl::for_each<tmpl::make_sequence<tmpl::size_t<1>, 3>>(
+      [&alpha, &half_power](auto dim_v) {
+        constexpr size_t Dim = tmpl::type_from<decltype(dim_v)>::value;
+        for (const bool enable : std::array{true, false}) {
+          invoke_test_exponential_filter_action<Dim, true>(alpha, half_power,
+                                                           enable);
+          invoke_test_exponential_filter_action<Dim, false>(alpha, half_power,
+                                                            enable);
+        }
+      });
 
   test_exponential_filter_creation<1>();
   test_exponential_filter_creation<2>();
