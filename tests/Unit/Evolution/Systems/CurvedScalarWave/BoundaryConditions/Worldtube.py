@@ -58,22 +58,18 @@ def pi(face_mesh_velocity, normal_covector, normal_vector, psi, pi, phi, lapse,
     wt_pi = 1.
     wt_phi = np.ones(3)
 
-    vpsi_interior = Characteristics.char_field_vpsi(gamma2,
-                                                    inverse_spatial_metric,
-                                                    psi, pi, phi,
-                                                    normal_covector)
-    vzero_interior = Characteristics.char_field_vzero(gamma2,
-                                                      inverse_spatial_metric,
-                                                      psi, pi, phi,
-                                                      normal_covector)
-    vplus_interior = Characteristics.char_field_vplus(gamma2,
-                                                      inverse_spatial_metric,
-                                                      psi, pi, phi,
-                                                      normal_covector)
-    vminus_wt = Characteristics.char_field_vminus(gamma2,
-                                                  inverse_spatial_metric,
-                                                  wt_psi, wt_pi, wt_phi,
-                                                  normal_covector)
+    vpsi_interior = Characteristics.char_field_vpsi(gamma2, psi, pi, phi,
+                                                    normal_covector,
+                                                    normal_vector)
+    vzero_interior = Characteristics.char_field_vzero(gamma2, psi, pi, phi,
+                                                      normal_covector,
+                                                      normal_vector)
+    vplus_interior = Characteristics.char_field_vplus(gamma2, psi, pi, phi,
+                                                      normal_covector,
+                                                      normal_vector)
+    vminus_wt = Characteristics.char_field_vminus(gamma2, wt_psi, wt_pi,
+                                                  wt_phi, normal_covector,
+                                                  normal_vector)
 
     return Characteristics.evol_field_pi(gamma2, vpsi_interior, vzero_interior,
                                          vplus_interior, vminus_wt,
@@ -89,22 +85,18 @@ def phi(face_mesh_velocity, normal_covector, normal_vector, psi, pi, phi,
     wt_pi = 1.
     wt_phi = np.ones(3)
 
-    vpsi_interior = Characteristics.char_field_vpsi(gamma2,
-                                                    inverse_spatial_metric,
-                                                    psi, pi, phi,
-                                                    normal_covector)
-    vzero_interior = Characteristics.char_field_vzero(gamma2,
-                                                      inverse_spatial_metric,
-                                                      psi, pi, phi,
-                                                      normal_covector)
-    vplus_interior = Characteristics.char_field_vplus(gamma2,
-                                                      inverse_spatial_metric,
-                                                      psi, pi, phi,
-                                                      normal_covector)
-    vminus_wt = Characteristics.char_field_vminus(gamma2,
-                                                  inverse_spatial_metric,
-                                                  wt_psi, wt_pi, wt_phi,
-                                                  normal_covector)
+    vpsi_interior = Characteristics.char_field_vpsi(gamma2, psi, pi, phi,
+                                                    normal_covector,
+                                                    normal_vector)
+    vzero_interior = Characteristics.char_field_vzero(gamma2, psi, pi, phi,
+                                                      normal_covector,
+                                                      normal_vector)
+    vplus_interior = Characteristics.char_field_vplus(gamma2, psi, pi, phi,
+                                                      normal_covector,
+                                                      normal_vector)
+    vminus_wt = Characteristics.char_field_vminus(gamma2, wt_psi, wt_pi,
+                                                  wt_phi, normal_covector,
+                                                  normal_vector)
     return Characteristics.evol_field_phi(gamma2, vpsi_interior,
                                           vzero_interior, vplus_interior,
                                           vminus_wt, normal_covector)

@@ -119,7 +119,6 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   using dg_package_data_temporary_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
   using dg_package_data_volume_tags = tmpl::list<>;
 
@@ -139,7 +138,6 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
 
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
       const Scalar<DataVector>& constraint_gamma1,
       const Scalar<DataVector>& constraint_gamma2,
 

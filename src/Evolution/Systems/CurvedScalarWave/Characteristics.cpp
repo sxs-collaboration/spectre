@@ -24,10 +24,7 @@ void characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  if (UNLIKELY(get_size(get<0>(*char_speeds)) != get_size(get(gamma_1)))) {
-    *char_speeds = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
-        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
-  }
+  destructive_resize_components(char_speeds, get(gamma_1).size());
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
   get<0>(*char_speeds) = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
   get<1>(*char_speeds) = -shift_dot_normal;                        // v(VZero)
@@ -42,9 +39,9 @@ void characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  if (UNLIKELY(get_size((*char_speeds)[0]) != get_size(get(gamma_1)))) {
-    *char_speeds = make_with_value<std::array<DataVector, 4>>(
-        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
+  const size_t size = get(gamma_1).size();
+  for (auto& char_speed : *char_speeds) {
+    char_speed.destructive_resize(size);
   }
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
   (*char_speeds)[0] = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
@@ -59,9 +56,7 @@ std::array<DataVector, 4> characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  auto char_speeds = make_with_value<std::array<DataVector, 4>>(
-      get<0>(unit_normal_one_form),
-      std::numeric_limits<double>::signaling_NaN());
+  std::array<DataVector, 4> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), gamma_1, lapse, shift,
                         unit_normal_one_form);
   return char_speeds;
@@ -72,32 +67,24 @@ void characteristic_fields(
     const gsl::not_null<Variables<tmpl::list<
         Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus, Tags::VMinus>>*>
         char_fields,
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) {
-  if (UNLIKELY(get_size(get(get<Tags::VPsi>(*char_fields))) !=
-               get_size(get(gamma_2)))) {
-    *char_fields =
-        Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
-                             Tags::VMinus>>(get_size(get(gamma_2)));
-  }
-  get(get<Tags::VMinus>(*char_fields)) = get(dot_product(
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi));
-
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_vector) {
+  char_fields->initialize(get(gamma_2).size());
+  dot_product(make_not_null(&get<Tags::VMinus>(*char_fields)),
+              unit_normal_vector, phi);
   // Eq.(34) of Holst+ (2004) for VZero
   for (size_t i = 0; i < SpatialDim; ++i) {
     get<Tags::VZero<SpatialDim>>(*char_fields).get(i) =
         phi.get(i) -
         unit_normal_one_form.get(i) * get(get<Tags::VMinus>(*char_fields));
   }
-
   // Eq.(33) of Holst+ (2004) for VPsi
   get<Tags::VPsi>(*char_fields) = psi;
-
   // Eq.(35) of Holst+ (2004) for VPlus and VMinus
   get(get<Tags::VPlus>(*char_fields)) =
       get(pi) + get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
@@ -109,21 +96,51 @@ template <size_t SpatialDim>
 Variables<
     tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus, Tags::VMinus>>
 characteristic_fields(
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
-        inverse_spatial_metric,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) {
-  auto char_fields =
-      make_with_value<Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>,
-                                           Tags::VPlus, Tags::VMinus>>>(
-          get(gamma_2), std::numeric_limits<double>::signaling_NaN());
-  characteristic_fields(make_not_null(&char_fields), gamma_2,
-                        inverse_spatial_metric, psi, pi, phi,
-                        unit_normal_one_form);
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_vector) {
+  Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
+                       Tags::VMinus>>
+      char_fields{get(gamma_2).size()};
+  characteristic_fields(make_not_null(&char_fields), gamma_2, psi, pi, phi,
+                        unit_normal_one_form, unit_normal_vector);
   return char_fields;
+}
+
+template <size_t SpatialDim>
+void characteristic_fields(
+    const gsl::not_null<Scalar<DataVector>*>& v_psi,
+    const gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*>&
+        v_zero,
+    const gsl::not_null<Scalar<DataVector>*>& v_plus,
+    const gsl::not_null<Scalar<DataVector>*>& v_minus,
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_vector) {
+  const size_t size = get(gamma_2).size();
+  destructive_resize_components(v_psi, size);
+  destructive_resize_components(v_zero, size);
+  destructive_resize_components(v_plus, size);
+  destructive_resize_components(v_minus, size);
+
+  dot_product(v_minus, unit_normal_vector, phi);
+  // Eq.(34) of Holst+ (2004) for VZero
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    v_zero->get(i) = phi.get(i) - unit_normal_one_form.get(i) * get(*v_minus);
+  }
+  // Eq.(33) of Holst+ (2004) for VPsi
+  *v_psi = psi;
+  // Eq.(35) of Holst+ (2004) for VPlus and VMinus
+  get(*v_plus) = get(pi) + get(*v_minus) - get(gamma_2) * get(psi);
+  get(*v_minus) = get(pi) - get(*v_minus) - get(gamma_2) * get(psi);
 }
 
 template <size_t SpatialDim>
@@ -183,9 +200,8 @@ evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  auto evolved_fields = make_with_value<
-      Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>>(
-      get(gamma_2), std::numeric_limits<double>::signaling_NaN());
+  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>
+      evolved_fields(get(gamma_2).size());
   evolved_fields_from_characteristic_fields(make_not_null(&evolved_fields),
                                             gamma_2, v_psi, v_zero, v_plus,
                                             v_minus, unit_normal_one_form);
@@ -236,24 +252,37 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
           CurvedScalarWave::Tags::VZero<DIM(data)>,                           \
           CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>*>   \
           char_fields,                                                        \
-      const Scalar<DataVector>& gamma_2,                                      \
-      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                 \
-          inverse_spatial_metric,                                             \
-      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,       \
+      const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form);                                              \
+          unit_normal_one_form,                                               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_vector);                                                \
   template Variables<tmpl::list<                                              \
       CurvedScalarWave::Tags::VPsi, CurvedScalarWave::Tags::VZero<DIM(data)>, \
       CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>         \
   CurvedScalarWave::characteristic_fields(                                    \
-      const Scalar<DataVector>& gamma_2,                                      \
-      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                 \
-          inverse_spatial_metric,                                             \
-      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,       \
+      const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form);                                              \
+          unit_normal_one_form,                                               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_vector);                                                \
+  template void CurvedScalarWave::characteristic_fields(                      \
+      const gsl::not_null<Scalar<DataVector>*>& v_psi,                        \
+      const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>&  \
+          v_zero,                                                             \
+      const gsl::not_null<Scalar<DataVector>*>& v_plus,                       \
+      const gsl::not_null<Scalar<DataVector>*>& v_minus,                      \
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,       \
+      const Scalar<DataVector>& pi,                                           \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_one_form,                                               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_vector);                                                \
   template struct CurvedScalarWave::CharacteristicFieldsCompute<DIM(data)>;   \
   template void CurvedScalarWave::evolved_fields_from_characteristic_fields(  \
       const gsl::not_null<Variables<                                          \

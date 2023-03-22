@@ -9,55 +9,58 @@ from Evolution.Systems.CurvedScalarWave.Characteristics import (
     evol_field_psi, evol_field_pi, evol_field_phi)
 
 
-def dg_package_data_v_psi(psi, pi, phi, lapse, shift, inverse_spatial_metric,
-                          constraint_gamma1, constraint_gamma2,
-                          interface_unit_normal, interface_unit_normal_vector,
-                          mesh_velocity, normal_dot_mesh_velocity):
-    return char_field_vpsi(constraint_gamma2, inverse_spatial_metric, psi, pi,
-                           phi, interface_unit_normal)
+def dg_package_data_v_psi(psi, pi, phi, lapse, shift, constraint_gamma1,
+                          constraint_gamma2, interface_unit_normal,
+                          interface_unit_normal_vector, mesh_velocity,
+                          normal_dot_mesh_velocity):
+    return char_field_vpsi(constraint_gamma2, psi, pi, phi,
+                           interface_unit_normal, interface_unit_normal_vector)
 
 
-def dg_package_data_v_zero(psi, pi, phi, lapse, shift, inverse_spatial_metric,
-                           constraint_gamma1, constraint_gamma2,
-                           interface_unit_normal, interface_unit_normal_vector,
-                           mesh_velocity, normal_dot_mesh_velocity):
-    return char_field_vzero(constraint_gamma2, inverse_spatial_metric, psi, pi,
-                            phi, interface_unit_normal)
-
-
-def dg_package_data_v_plus(psi, pi, phi, lapse, shift, inverse_spatial_metric,
-                           constraint_gamma1, constraint_gamma2,
-                           interface_unit_normal, interface_unit_normal_vector,
-                           mesh_velocity, normal_dot_mesh_velocity):
-    return char_field_vplus(constraint_gamma2, inverse_spatial_metric, psi, pi,
-                            phi, interface_unit_normal)
-
-
-def dg_package_data_v_minus(psi, pi, phi, lapse, shift, inverse_spatial_metric,
-                            constraint_gamma1, constraint_gamma2,
+def dg_package_data_v_zero(psi, pi, phi, lapse, shift, constraint_gamma1,
+                           constraint_gamma2, interface_unit_normal,
+                           interface_unit_normal_vector, mesh_velocity,
+                           normal_dot_mesh_velocity):
+    return char_field_vzero(constraint_gamma2, psi, pi, phi,
                             interface_unit_normal,
+                            interface_unit_normal_vector)
+
+
+def dg_package_data_v_plus(psi, pi, phi, lapse, shift, constraint_gamma1,
+                           constraint_gamma2, interface_unit_normal,
+                           interface_unit_normal_vector, mesh_velocity,
+                           normal_dot_mesh_velocity):
+    return char_field_vplus(constraint_gamma2, psi, pi, phi,
+                            interface_unit_normal,
+                            interface_unit_normal_vector)
+
+
+def dg_package_data_v_minus(psi, pi, phi, lapse, shift, constraint_gamma1,
+                            constraint_gamma2, interface_unit_normal,
                             interface_unit_normal_vector, mesh_velocity,
                             normal_dot_mesh_velocity):
-    return char_field_vminus(constraint_gamma2, inverse_spatial_metric, psi,
-                             pi, phi, interface_unit_normal)
+    return char_field_vminus(constraint_gamma2, psi, pi, phi,
+                             interface_unit_normal,
+                             interface_unit_normal_vector)
 
 
-def dg_package_data_gamma2(psi, pi, phi, lapse, shift, inverse_spatial_metric,
-                           constraint_gamma1, constraint_gamma2,
-                           interface_unit_normal, interface_unit_normal_vector,
-                           mesh_velocity, normal_dot_mesh_velocity):
+def dg_package_data_gamma2(psi, pi, phi, lapse, shift, constraint_gamma1,
+                           constraint_gamma2, interface_unit_normal,
+                           interface_unit_normal_vector, mesh_velocity,
+                           normal_dot_mesh_velocity):
     return constraint_gamma2
 
 
-def dg_package_data_interface_unit_normal(
-    psi, pi, phi, lapse, shift, inverse_spatial_metric, constraint_gamma1,
-    constraint_gamma2, interface_unit_normal, interface_unit_normal_vector,
-    mesh_velocity, normal_dot_mesh_velocity):
+def dg_package_data_interface_unit_normal(psi, pi, phi, lapse, shift,
+                                          constraint_gamma1, constraint_gamma2,
+                                          interface_unit_normal,
+                                          interface_unit_normal_vector,
+                                          mesh_velocity,
+                                          normal_dot_mesh_velocity):
     return interface_unit_normal
 
 
-def dg_package_data_char_speeds(psi, pi, phi, lapse, shift,
-                                inverse_spatial_metric, constraint_gamma1,
+def dg_package_data_char_speeds(psi, pi, phi, lapse, shift, constraint_gamma1,
                                 constraint_gamma2, interface_unit_normal,
                                 interface_unit_normal_vector, mesh_velocity,
                                 normal_dot_mesh_velocity):
