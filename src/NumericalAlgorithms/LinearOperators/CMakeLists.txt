@@ -35,7 +35,6 @@ spectre_target_headers(
   PartialDerivatives.hpp
   PartialDerivatives.tpp
   PowerMonitors.hpp
-  Tags.hpp
   WeakDivergence.hpp
   )
 

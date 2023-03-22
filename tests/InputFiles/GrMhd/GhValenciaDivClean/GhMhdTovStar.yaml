@@ -130,6 +130,7 @@ Filtering:
     Alpha: 36
     HalfPower: 64
     Enable: true
+    BlocksToFilter: All
 
 
 EventsAndTriggers:

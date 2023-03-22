@@ -14,7 +14,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -23,6 +22,17 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace domain::Tags {
+template <size_t VolumeDim>
+struct Domain;
+}  // namespace domain::Tags
+namespace Filters::Tags {
+template <typename FilterType>
+struct Filter;
+}  // namespace Filters::Tags
+/// \endcond
 
 namespace dg {
 namespace Actions {
@@ -98,9 +108,47 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     using evolved_vars_tags_list = typename evolved_vars_tag::tags_list;
     const FilterType& filter_helper =
         Parallel::get<::Filters::Tags::Filter<FilterType>>(cache);
-    if (not filter_helper.enable()) {
+    const size_t block_id =
+        db::get<domain::Tags::Element<volume_dim>>(box).id().block_id();
+    const auto& domain = Parallel::get<domain::Tags::Domain<volume_dim>>(cache);
+    const auto& block_groups = domain.block_groups();
+    const std::string& block_name = domain.blocks()[block_id].name();
+
+    // Technically this whole next block could be done on a single line, but
+    // then it would be very dense and hard to understand. This way is easier to
+    // read and understand
+    bool enable = filter_helper.enable();
+    // Only do this check if filtering is enabled. A `nullopt` means all blocks
+    // are allowed to do filtering
+    if (enable and filter_helper.blocks_to_filter().has_value()) {
+      const auto& blocks_to_filter = filter_helper.blocks_to_filter().value();
+
+      // If nothing in the loop sets this to true, then our block isn't in the
+      // blocks to filter, so we shouldn't filter in this element
+      bool block_is_in_blocks_to_filter = false;
+      for (const std::string& block_to_filter : blocks_to_filter) {
+        // First check if the block to filter is our current block. If it is,
+        // then we do want to filter.
+        if (block_to_filter == block_name) {
+          block_is_in_blocks_to_filter = true;
+          break;
+        } else if (block_groups.count(block_to_filter) == 1 and
+                   block_groups.at(block_to_filter).count(block_name) == 1) {
+          // If the block to filter isn't our current block, then we need to
+          // check if the block to filter is a block group. If it is, check that
+          // our block is in the block group. If it is, then we enable filtering
+          block_is_in_blocks_to_filter = true;
+          break;
+        }
+      }
+
+      enable = block_is_in_blocks_to_filter;
+    }
+
+    if (not enable) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
+
     const Mesh<volume_dim> mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     const Matrix empty{};
     auto filter = make_array<volume_dim>(std::cref(empty));

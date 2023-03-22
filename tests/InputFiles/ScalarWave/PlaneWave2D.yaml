@@ -64,6 +64,7 @@ Filtering:
     Alpha: 12
     HalfPower: 32
     Enable: true
+    BlocksToFilter: All
 
 EventsAndTriggers:
   - - Slabs:

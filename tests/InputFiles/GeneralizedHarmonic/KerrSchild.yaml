@@ -98,6 +98,7 @@ Filtering:
     Alpha: 36.0
     HalfPower: 64
     Enable: true
+    BlocksToFilter: All
 
 SpatialDiscretization:
   BoundaryCorrection:

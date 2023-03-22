@@ -32,6 +32,7 @@
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Tags/Filter.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
