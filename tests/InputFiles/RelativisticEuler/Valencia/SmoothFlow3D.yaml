@@ -22,7 +22,9 @@ DomainCreator:
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [4, 4, 4]
     TimeDependence: None
-    BoundaryCondition: DirichletAnalytic
+    BoundaryConditionInX: DirichletAnalytic
+    BoundaryConditionInY: DirichletAnalytic
+    BoundaryConditionInZ: DirichletAnalytic
 
 AnalyticSolution:
   SmoothFlow:

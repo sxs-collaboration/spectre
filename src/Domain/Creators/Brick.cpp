@@ -44,7 +44,9 @@ Brick::Brick(
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
       time_dependence_(std::move(time_dependence)),
-      boundary_condition_(nullptr) {
+      boundary_condition_in_x_(nullptr),
+      boundary_condition_in_y_(nullptr),
+      boundary_condition_in_z_(nullptr) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
@@ -56,7 +58,11 @@ Brick::Brick(
     typename InitialRefinement::type initial_refinement_level_xyz,
     typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        boundary_condition,
+        boundary_condition_in_x,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        boundary_condition_in_y,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        boundary_condition_in_z,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     const Options::Context& context)
@@ -69,22 +75,33 @@ Brick::Brick(
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
       time_dependence_(std::move(time_dependence)),
-      boundary_condition_(std::move(boundary_condition)) {
+      boundary_condition_in_x_(std::move(boundary_condition_in_x)),
+      boundary_condition_in_y_(std::move(boundary_condition_in_y)),
+      boundary_condition_in_z_(std::move(boundary_condition_in_z)) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
   }
   using domain::BoundaryConditions::is_none;
-  if (is_none(boundary_condition_)) {
+  ASSERT(boundary_condition_in_x_ != nullptr and
+             boundary_condition_in_y_ != nullptr and
+             boundary_condition_in_z_ != nullptr,
+         "None of the boundary conditions can be nullptr.");
+  if (is_none(boundary_condition_in_x_) or is_none(boundary_condition_in_y_) or
+      is_none(boundary_condition_in_z_)) {
     PARSE_ERROR(
         context,
         "None boundary condition is not supported. If you would like an "
         "outflow-type boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
-  if (is_periodic(boundary_condition_)) {
+  if (is_periodic(boundary_condition_in_x_)) {
     is_periodic_in_xyz_[0] = true;
+  }
+  if (is_periodic(boundary_condition_in_y_)) {
     is_periodic_in_xyz_[1] = true;
+  }
+  if (is_periodic(boundary_condition_in_z_)) {
     is_periodic_in_xyz_[2] = true;
   }
 }
@@ -125,17 +142,28 @@ Domain<3> Brick::create_domain() const {
 std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
 Brick::external_boundary_conditions() const {
-  if (boundary_condition_ == nullptr) {
+  if (boundary_condition_in_x_ == nullptr) {
+    ASSERT(boundary_condition_in_y_ == nullptr and
+               boundary_condition_in_z_ == nullptr,
+           "Boundary conditions must be specified in all or no directions");
     return {};
   }
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions{1};
-  if (is_periodic_in_xyz_[0]) {
-    return boundary_conditions;
-  }
-  for (const auto& direction : Direction<3>::all_directions()) {
-    boundary_conditions[0][direction] = boundary_condition_->get_clone();
+  for (const auto& side : {Side::Lower, Side::Upper}) {
+    if (not is_periodic_in_xyz_[0]) {
+      boundary_conditions[0][Direction<3>{0, side}] =
+          boundary_condition_in_x_->get_clone();
+    }
+    if (not is_periodic_in_xyz_[1]) {
+      boundary_conditions[0][Direction<3>{1, side}] =
+          boundary_condition_in_y_->get_clone();
+    }
+    if (not is_periodic_in_xyz_[2]) {
+      boundary_conditions[0][Direction<3>{2, side}] =
+          boundary_condition_in_z_->get_clone();
+    }
   }
   return boundary_conditions;
 }

@@ -93,6 +93,8 @@ void test(const BoundaryConditionType& boundary_condition) {
                                                     num_dg_pts};
   const auto brick = domain::creators::Brick(
       lower_bounds, upper_bounds, refinement_levels, number_of_grid_points,
+      std::make_unique<BoundaryConditionType>(boundary_condition),
+      std::make_unique<BoundaryConditionType>(boundary_condition),
       std::make_unique<BoundaryConditionType>(boundary_condition), nullptr);
   auto domain = brick.create_domain();
   auto boundary_conditions = brick.external_boundary_conditions();

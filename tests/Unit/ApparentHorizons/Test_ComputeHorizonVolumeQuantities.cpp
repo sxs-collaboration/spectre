@@ -40,6 +40,7 @@ namespace {
 template <typename IsTimeDependent, typename TargetFrame, typename SrcTags,
           typename DestTags>
 void test_compute_horizon_volume_quantities() {
+  CAPTURE(IsTimeDependent::value);
   const size_t number_of_grid_points = 8;
 
   // slab and temporal_id used only in the TimeDependent version.
@@ -64,7 +65,8 @@ void test_compute_horizon_volume_quantities() {
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
-                              number_of_grid_points});
+                              number_of_grid_points},
+        std::array<bool, 3>{false, false, false});
   }
   const auto domain = domain_creator->create_domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
