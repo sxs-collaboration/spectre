@@ -80,17 +80,12 @@ class Exponential {
   };
 
   /// \brief Turn the filter off
-  ///
-  /// This option exists to temporarily disable the filter for debugging
-  /// purposes. For problems where filtering is not needed, the preferred
-  /// approach is to not compile the filter into the executable.
-  struct DisableForDebugging {
+  struct Enable {
     using type = bool;
-    static type suggested_value() { return false; }
-    static constexpr Options::String help = {"Disable the filter"};
+    static constexpr Options::String help = {"Enable the filter"};
   };
 
-  using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
+  using options = tmpl::list<Alpha, HalfPower, Enable>;
   static constexpr Options::String help = {"An exponential filter."};
   static std::string name() {
     return "ExpFilter" + std::to_string(FilterIndex);
@@ -98,12 +93,12 @@ class Exponential {
 
   Exponential() = default;
 
-  Exponential(double alpha, unsigned half_power, bool disable_for_debugging);
+  Exponential(double alpha, unsigned half_power, bool enable);
 
   /// A cached matrix used to apply the filter to the given mesh
   const Matrix& filter_matrix(const Mesh<1>& mesh) const;
 
-  bool disable_for_debugging() const { return disable_for_debugging_; }
+  bool enable() const { return enable_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -116,7 +111,7 @@ class Exponential {
 
   double alpha_{36.0};
   unsigned half_power_{16};
-  bool disable_for_debugging_{false};
+  bool enable_{true};
 };
 
 template <size_t LocalFilterIndex>

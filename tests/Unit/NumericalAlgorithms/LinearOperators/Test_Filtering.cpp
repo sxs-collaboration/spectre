@@ -96,28 +96,27 @@ template <typename Metavariables,
           Requires<Metavariables::filter_individually> = nullptr>
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool disable_for_debugging) {
-  return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging},
-          Filters::Exponential<1>{2.0 * alpha, 2 * half_power,
-                                  disable_for_debugging}};
+                   const bool enable) {
+  return {Filters::Exponential<0>{alpha, half_power, enable},
+          Filters::Exponential<1>{2.0 * alpha, 2 * half_power, enable}};
 }
 
 template <typename Metavariables,
           Requires<not Metavariables::filter_individually> = nullptr>
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool disable_for_debugging) {
-  return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging}};
+                   const bool enable) {
+  return {Filters::Exponential<0>{alpha, half_power, enable}};
 }
 
 template <size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType, bool FilterIndividually>
 void test_exponential_filter_action(const double alpha,
                                     const unsigned half_power,
-                                    const bool disable_for_debugging) {
+                                    const bool enable) {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
-  CAPTURE(disable_for_debugging);
+  CAPTURE(enable);
 
   // Need to increase approx slightly on some hardware
   Approx custom_approx = Approx::custom().epsilon(5.0e-13);
@@ -144,8 +143,7 @@ void test_exponential_filter_action(const double alpha,
     }
 
     ActionTesting::MockRuntimeSystem<metavariables> runner(
-        create_cache_tuple<metavariables>(alpha, half_power,
-                                          disable_for_debugging));
+        create_cache_tuple<metavariables>(alpha, half_power, enable));
     ActionTesting::emplace_component_and_initialize<component>(
         &runner, 0, {mesh, initial_vars});
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
@@ -158,10 +156,7 @@ void test_exponential_filter_action(const double alpha,
     std::array<Matrix, Dim> filter_scalar{};
     std::array<Matrix, Dim> filter_vector{};
     for (size_t d = 0; d < Dim; d++) {
-      if (disable_for_debugging) {
-        gsl::at(filter_scalar, d) = Matrix{};
-        gsl::at(filter_vector, d) = Matrix{};
-      } else {
+      if (enable) {
         gsl::at(filter_scalar, d) = Spectral::filtering::exponential_filter(
             mesh.slice_through(d), alpha, half_power);
         if (FilterIndividually) {
@@ -170,6 +165,9 @@ void test_exponential_filter_action(const double alpha,
         } else {
           gsl::at(filter_vector, d) = gsl::at(filter_scalar, d);
         }
+      } else {
+        gsl::at(filter_scalar, d) = Matrix{};
+        gsl::at(filter_vector, d) = Matrix{};
       }
     }
 
@@ -197,23 +195,19 @@ void test_exponential_filter_action(const double alpha,
 template <size_t Dim, bool FilterIndividually>
 void invoke_test_exponential_filter_action(const double alpha,
                                            const unsigned half_power,
-                                           const bool disable_for_debugging) {
+                                           const bool enable) {
   test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto,
-                                 FilterIndividually>(alpha, half_power,
-                                                     disable_for_debugging);
+                                 FilterIndividually>(alpha, half_power, enable);
   test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::Gauss,
-                                 FilterIndividually>(alpha, half_power,
-                                                     disable_for_debugging);
+                                 FilterIndividually>(alpha, half_power, enable);
   test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::GaussLobatto,
-                                 FilterIndividually>(alpha, half_power,
-                                                     disable_for_debugging);
+                                 FilterIndividually>(alpha, half_power, enable);
   test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::Gauss,
-                                 FilterIndividually>(alpha, half_power,
-                                                     disable_for_debugging);
+                                 FilterIndividually>(alpha, half_power, enable);
 }
 
 template <size_t Dim>
@@ -230,23 +224,23 @@ void test_exponential_filter_creation() {
       "  ExpFilter0:\n"
       "    Alpha: 36\n"
       "    HalfPower: 32\n"
-      "    DisableForDebugging: False\n"
+      "    Enable: True\n"
       "  ExpFilter1:\n"
       "    Alpha: 36\n"
       "    HalfPower: 12\n"
-      "    DisableForDebugging: False\n");
+      "    Enable: True\n");
   // [multiple_exponential_filters]
   const auto filter = options.get<OptionTags::Filter<Filter>>();
 
-  CHECK(filter == Filter{36.0, 32, false});
-  CHECK_FALSE(filter == Filter{35.0, 32, false});
-  CHECK_FALSE(filter == Filter{36.0, 33, false});
-  CHECK_FALSE(filter == Filter{36.0, 32, true});
+  CHECK(filter == Filter{36.0, 32, true});
+  CHECK_FALSE(filter == Filter{35.0, 32, true});
+  CHECK_FALSE(filter == Filter{36.0, 33, true});
+  CHECK_FALSE(filter == Filter{36.0, 32, false});
 
-  CHECK_FALSE(filter != Filter{36.0, 32, false});
-  CHECK(filter != Filter{35.0, 32, false});
-  CHECK(filter != Filter{36.0, 33, false});
-  CHECK(filter != Filter{36.0, 32, true});
+  CHECK_FALSE(filter != Filter{36.0, 32, true});
+  CHECK(filter != Filter{35.0, 32, true});
+  CHECK(filter != Filter{36.0, 33, true});
+  CHECK(filter != Filter{36.0, 32, false});
 }
 }  // namespace
 
@@ -256,19 +250,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter",
   // are cached in the action.
   const double alpha = 10.0;
   const unsigned half_power = 16;
-  invoke_test_exponential_filter_action<1, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<2, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<3, true>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<1, false>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<2, false>(alpha, half_power, false);
-  invoke_test_exponential_filter_action<3, false>(alpha, half_power, false);
-
   invoke_test_exponential_filter_action<1, true>(alpha, half_power, true);
   invoke_test_exponential_filter_action<2, true>(alpha, half_power, true);
   invoke_test_exponential_filter_action<3, true>(alpha, half_power, true);
   invoke_test_exponential_filter_action<1, false>(alpha, half_power, true);
   invoke_test_exponential_filter_action<2, false>(alpha, half_power, true);
   invoke_test_exponential_filter_action<3, false>(alpha, half_power, true);
+
+  invoke_test_exponential_filter_action<1, true>(alpha, half_power, false);
+  invoke_test_exponential_filter_action<2, true>(alpha, half_power, false);
+  invoke_test_exponential_filter_action<3, true>(alpha, half_power, false);
+  invoke_test_exponential_filter_action<1, false>(alpha, half_power, false);
+  invoke_test_exponential_filter_action<2, false>(alpha, half_power, false);
+  invoke_test_exponential_filter_action<3, false>(alpha, half_power, false);
 
   test_exponential_filter_creation<1>();
   test_exponential_filter_creation<2>();

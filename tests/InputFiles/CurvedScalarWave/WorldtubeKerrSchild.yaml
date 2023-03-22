@@ -107,7 +107,7 @@ Filtering:
   ExpFilter0:
     Alpha: 12
     HalfPower: 32
-    DisableForDebugging: false
+    Enable: true
 
 EventsAndDenseTriggers:
 

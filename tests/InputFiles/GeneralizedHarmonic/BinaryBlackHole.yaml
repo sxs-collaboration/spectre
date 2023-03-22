@@ -167,7 +167,7 @@ Filtering:
   ExpFilter0:
     Alpha: 36.0
     HalfPower: 24
-    DisableForDebugging: True
+    Enable: false
 
 
 EventsAndTriggers:

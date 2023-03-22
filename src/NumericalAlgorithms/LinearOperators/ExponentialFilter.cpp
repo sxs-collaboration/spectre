@@ -16,10 +16,8 @@ namespace Filters {
 template <size_t FilterIndex>
 Exponential<FilterIndex>::Exponential(const double alpha,
                                       const unsigned half_power,
-                                      const bool disable_for_debugging)
-    : alpha_(alpha),
-      half_power_(half_power),
-      disable_for_debugging_(disable_for_debugging) {}
+                                      const bool enable)
+    : alpha_(alpha), half_power_(half_power), enable_(enable) {}
 
 template <size_t FilterIndex>
 const Matrix& Exponential<FilterIndex>::filter_matrix(
@@ -59,14 +57,14 @@ template <size_t FilterIndex>
 void Exponential<FilterIndex>::pup(PUP::er& p) {
   p | alpha_;
   p | half_power_;
-  p | disable_for_debugging_;
+  p | enable_;
 }
 
 template <size_t LocalFilterIndex>
 bool operator==(const Exponential<LocalFilterIndex>& lhs,
                 const Exponential<LocalFilterIndex>& rhs) {
   return lhs.alpha_ == rhs.alpha_ and lhs.half_power_ == rhs.half_power_ and
-         lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
+         lhs.enable_ == rhs.enable_;
 }
 
 template <size_t FilterIndex>

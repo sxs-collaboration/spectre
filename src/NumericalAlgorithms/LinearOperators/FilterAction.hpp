@@ -98,7 +98,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     using evolved_vars_tags_list = typename evolved_vars_tag::tags_list;
     const FilterType& filter_helper =
         Parallel::get<::Filters::Tags::Filter<FilterType>>(cache);
-    if (UNLIKELY(filter_helper.disable_for_debugging())) {
+    if (not filter_helper.enable()) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     const Mesh<volume_dim> mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
