@@ -8,81 +8,13 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tags/TempTensor.hpp"
-#include "DataStructures/TempBuffer.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"  // IWYU pragma: keep
-
-namespace CurvedScalarWave::BoundaryCorrections::CurvedScalarWave_detail {
-template <typename FieldTag>
-void weight_char_field(
-    const gsl::not_null<typename FieldTag::type*> weighted_char_field,
-    const typename FieldTag::type& char_field, const DataVector& char_speed,
-    const double sign) {
-  auto weighted_char_field_it = weighted_char_field->begin();
-
-  // pass sign = -1 for weighting internal fields, +1 for external fields
-  for (auto int_it = char_field.begin(); int_it != char_field.end();
-       ++int_it, ++weighted_char_field_it) {
-    *weighted_char_field_it =
-        *int_it * (-sign * step_function(sign * char_speed) * char_speed);
-  }
-}
-
-// Useful for code abbreviation below
-template <size_t Dim>
-using char_field_tags =
-    tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>;
-
-template <size_t Dim>
-void weight_char_fields(
-    const gsl::not_null<Variables<char_field_tags<Dim>>*>
-        weighted_char_fields_int,
-    const gsl::not_null<Variables<char_field_tags<Dim>>*>
-        weighted_char_fields_ext,
-    const Scalar<DataVector>& v_psi_int,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero_int,
-    const Scalar<DataVector>& v_plus_int, const Scalar<DataVector>& v_minus_int,
-    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_int,
-    const Scalar<DataVector>& v_psi_ext,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero_ext,
-    const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
-    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext) {
-  weight_char_field<Tags::VPsi>(
-      make_not_null(&get<Tags::VPsi>(*weighted_char_fields_int)), v_psi_int,
-      get<0>(char_speeds_int), -1.);
-  weight_char_field<Tags::VZero<Dim>>(
-      make_not_null(&get<Tags::VZero<Dim>>(*weighted_char_fields_int)),
-      v_zero_int, get<1>(char_speeds_int), -1.);
-  weight_char_field<Tags::VPlus>(
-      make_not_null(&get<Tags::VPlus>(*weighted_char_fields_int)), v_plus_int,
-      get<2>(char_speeds_int), -1.);
-  weight_char_field<Tags::VMinus>(
-      make_not_null(&get<Tags::VMinus>(*weighted_char_fields_int)), v_minus_int,
-      get<3>(char_speeds_int), -1.);
-
-  weight_char_field<Tags::VPsi>(
-      make_not_null(&get<Tags::VPsi>(*weighted_char_fields_ext)), v_psi_ext,
-      get<0>(char_speeds_ext), 1.);
-  weight_char_field<Tags::VZero<Dim>>(
-      make_not_null(&get<Tags::VZero<Dim>>(*weighted_char_fields_ext)),
-      v_zero_ext, get<1>(char_speeds_ext), 1.);
-  weight_char_field<Tags::VPlus>(
-      make_not_null(&get<Tags::VPlus>(*weighted_char_fields_ext)), v_plus_ext,
-      get<2>(char_speeds_ext), 1.);
-  weight_char_field<Tags::VMinus>(
-      make_not_null(&get<Tags::VMinus>(*weighted_char_fields_ext)), v_minus_ext,
-      get<3>(char_speeds_ext), 1.);
-}
-}  // namespace CurvedScalarWave::BoundaryCorrections::CurvedScalarWave_detail
 
 namespace CurvedScalarWave::BoundaryCorrections {
 template <size_t Dim>
@@ -161,124 +93,46 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
     const Scalar<DataVector>& v_psi_ext,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero_ext,
     const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
-    const Scalar<DataVector>& gamma2_ext,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal_ext,
+    const Scalar<DataVector>& /*gamma2_ext*/,
+    const tnsr::i<DataVector, Dim,
+                  Frame::Inertial>& /*interface_unit_normal_ext*/,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
     dg::Formulation /*dg_formulation*/) const {
-  // Declare a Tempbuffer to contain all memory needed
-  TempBuffer<tmpl::list<
-      ::Tags::TempScalar<0, DataVector>,
-      ::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempScalar<1, DataVector>, ::Tags::TempScalar<2, DataVector>,
-      ::Tags::TempScalar<3, DataVector>,
-      ::Tags::Tempi<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempScalar<4, DataVector>, ::Tags::TempScalar<5, DataVector>,
-      ::Tags::TempScalar<6, DataVector>, ::Tags::TempScalar<7, DataVector>,
-      ::Tags::Tempi<2, Dim, Frame::Inertial, DataVector>>>
-      buffer(get_size(get(v_psi_int)));
-  Variables<CurvedScalarWave_detail::char_field_tags<Dim>>
-      weighted_char_fields_int{};
-  Variables<CurvedScalarWave_detail::char_field_tags<Dim>>
-      weighted_char_fields_ext{};
-  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>
-      weighted_evolved_fields_int{};
-  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>
-      weighted_evolved_fields_ext{};
+  // The implementations assumes that the external unit normal vector is
+  // exactly negative the internal unit normal vector and that the internal
+  // gamma2 is equal to the external gamma2. For Gauss quadrature this will not
+  // be exactly true due to interpolation error but that should not matter.
+  get(*psi_boundary_correction) = -step_function(get<0>(char_speeds_ext)) *
+                                      get<0>(char_speeds_ext) * get(v_psi_ext) -
+                                  step_function(-get<0>(char_speeds_int)) *
+                                      get<0>(char_speeds_int) * get(v_psi_int);
 
-  // Set memory refs
-  get(get<Tags::VPsi>(weighted_char_fields_int))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<0, DataVector>>(buffer))));
-  for (size_t i = 0; i < Dim; ++i) {
-    get<Tags::VZero<Dim>>(weighted_char_fields_int)
-        .get(i)
-        .set_data_ref(make_not_null(
-            &get<::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>>(buffer)
-                 .get(i)));
+  auto& temp_1 = get<Dim - 1>(*phi_boundary_correction);
+  temp_1 = -step_function(get<2>(char_speeds_ext)) * get<2>(char_speeds_ext) *
+               get(v_plus_ext) -
+           step_function(-get<3>(char_speeds_int)) * get<3>(char_speeds_int) *
+               get(v_minus_int);
+
+  // in 2+ dimensions the calculation is done without any memory allocations
+  DataVector temp_2{};
+  if constexpr (Dim > 1) {
+    temp_2.set_data_ref(make_not_null(&get<Dim - 2>(*phi_boundary_correction)));
   }
-  get(get<Tags::VPlus>(weighted_char_fields_int))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<1, DataVector>>(buffer))));
-  get(get<Tags::VMinus>(weighted_char_fields_int))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<2, DataVector>>(buffer))));
-
-  get(get<Tags::VPsi>(weighted_char_fields_ext))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<3, DataVector>>(buffer))));
-  for (size_t i = 0; i < Dim; ++i) {
-    get<Tags::VZero<Dim>>(weighted_char_fields_ext)
-        .get(i)
-        .set_data_ref(make_not_null(
-            &get<::Tags::Tempi<1, Dim, Frame::Inertial, DataVector>>(buffer)
-                 .get(i)));
-  }
-  get(get<Tags::VPlus>(weighted_char_fields_ext))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<4, DataVector>>(buffer))));
-  get(get<Tags::VMinus>(weighted_char_fields_ext))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<5, DataVector>>(buffer))));
-
-  get(get<Tags::Psi>(weighted_evolved_fields_int))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<6, DataVector>>(buffer))));
-  get(get<Tags::Pi>(weighted_evolved_fields_int))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<7, DataVector>>(buffer))));
-  for (size_t i = 0; i < Dim; ++i) {
-    get<Tags::Phi<Dim>>(weighted_evolved_fields_int)
-        .get(i)
-        .set_data_ref(make_not_null(
-            &get<::Tags::Tempi<2, Dim, Frame::Inertial, DataVector>>(buffer)
-                 .get(i)));
-  }
-
-  CurvedScalarWave_detail::weight_char_fields<Dim>(
-      make_not_null(&weighted_char_fields_int),
-      make_not_null(&weighted_char_fields_ext), v_psi_int, v_zero_int,
-      v_plus_int, v_minus_int, char_speeds_int, v_psi_ext, v_zero_ext,
-      v_plus_ext, v_minus_ext, char_speeds_ext);
-
-  evolved_fields_from_characteristic_fields(
-      make_not_null(&weighted_evolved_fields_int), gamma2_int,
-      get<Tags::VPsi>(weighted_char_fields_int),
-      get<Tags::VZero<Dim>>(weighted_char_fields_int),
-      get<Tags::VPlus>(weighted_char_fields_int),
-      get<Tags::VMinus>(weighted_char_fields_int), interface_unit_normal_int);
-
-  // Set memory refs
-  get(get<Tags::Psi>(weighted_evolved_fields_ext))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<0, DataVector>>(buffer))));
-  get(get<Tags::Pi>(weighted_evolved_fields_ext))
-      .set_data_ref(
-          make_not_null(&get(get<::Tags::TempScalar<1, DataVector>>(buffer))));
-  for (size_t i = 0; i < Dim; ++i) {
-    get<Tags::Phi<Dim>>(weighted_evolved_fields_ext)
-        .get(i)
-        .set_data_ref(make_not_null(
-            &get<::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>>(buffer)
-                 .get(i)));
-  }
-
-  evolved_fields_from_characteristic_fields(
-      make_not_null(&weighted_evolved_fields_ext), gamma2_ext,
-      get<Tags::VPsi>(weighted_char_fields_ext),
-      get<Tags::VZero<Dim>>(weighted_char_fields_ext),
-      get<Tags::VPlus>(weighted_char_fields_ext),
-      get<Tags::VMinus>(weighted_char_fields_ext), interface_unit_normal_ext);
-
-  get(*psi_boundary_correction) =
-      get(get<Tags::Psi>(weighted_evolved_fields_ext)) -
-      get(get<Tags::Psi>(weighted_evolved_fields_int));
+  temp_2 = step_function(-get<2>(char_speeds_int)) * get<2>(char_speeds_int) *
+               get(v_plus_int) +
+           step_function(get<3>(char_speeds_ext)) * get<3>(char_speeds_ext) *
+               get(v_minus_ext);
   get(*pi_boundary_correction) =
-      get(get<Tags::Pi>(weighted_evolved_fields_ext)) -
-      get(get<Tags::Pi>(weighted_evolved_fields_int));
+      0.5 * (temp_1 - temp_2) + get(gamma2_int) * get(*psi_boundary_correction);
+
+  temp_1 = -0.5 * (temp_1 + temp_2);
   for (size_t i = 0; i < Dim; ++i) {
     phi_boundary_correction->get(i) =
-        get<Tags::Phi<Dim>>(weighted_evolved_fields_ext).get(i) -
-        get<Tags::Phi<Dim>>(weighted_evolved_fields_int).get(i);
+        temp_1 * interface_unit_normal_int.get(i) -
+        step_function(get<1>(char_speeds_ext)) * get<1>(char_speeds_ext) *
+            v_zero_ext.get(i) -
+        step_function(-get<1>(char_speeds_int)) * get<1>(char_speeds_int) *
+            v_zero_int.get(i);
   }
 }
 

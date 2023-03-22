@@ -107,9 +107,9 @@ def dg_boundary_terms_pi(v_psi_int, v_zero_int, v_plus_int, v_minus_int,
      weighted_v_plus_ext, weighted_v_minus_ext) = _weight_char_fields(
          v_psi_int, v_zero_int, v_plus_int, v_minus_int, char_speeds_int,
          v_psi_ext, v_zero_ext, v_plus_ext, v_minus_ext, char_speeds_ext)
-    return (evol_field_pi(gamma2_ext, weighted_v_psi_ext, weighted_v_zero_ext,
+    return (evol_field_pi(gamma2_int, weighted_v_psi_ext, weighted_v_zero_ext,
                           weighted_v_plus_ext, weighted_v_minus_ext,
-                          interface_normal_ext) -
+                          -interface_normal_int) -
             evol_field_pi(gamma2_int, weighted_v_psi_int, weighted_v_zero_int,
                           weighted_v_plus_int, weighted_v_minus_int,
                           interface_normal_int))
@@ -125,9 +125,9 @@ def dg_boundary_terms_phi(v_psi_int, v_zero_int, v_plus_int, v_minus_int,
      weighted_v_plus_ext, weighted_v_minus_ext) = _weight_char_fields(
          v_psi_int, v_zero_int, v_plus_int, v_minus_int, char_speeds_int,
          v_psi_ext, v_zero_ext, v_plus_ext, v_minus_ext, char_speeds_ext)
-    return (evol_field_phi(gamma2_ext, weighted_v_psi_ext, weighted_v_zero_ext,
+    return (evol_field_phi(gamma2_int, weighted_v_psi_ext, weighted_v_zero_ext,
                            weighted_v_plus_ext, weighted_v_minus_ext,
-                           interface_normal_ext) -
+                           -interface_normal_int) -
             evol_field_phi(gamma2_int, weighted_v_psi_int, weighted_v_zero_int,
                            weighted_v_plus_int, weighted_v_minus_int,
                            interface_normal_int))
@@ -143,9 +143,9 @@ def dg_boundary_terms_psi(v_psi_int, v_zero_int, v_plus_int, v_minus_int,
      weighted_v_plus_ext, weighted_v_minus_ext) = _weight_char_fields(
          v_psi_int, v_zero_int, v_plus_int, v_minus_int, char_speeds_int,
          v_psi_ext, v_zero_ext, v_plus_ext, v_minus_ext, char_speeds_ext)
-    return (evol_field_psi(gamma2_ext, weighted_v_psi_ext, weighted_v_zero_ext,
+    return (evol_field_psi(gamma2_int, weighted_v_psi_ext, weighted_v_zero_ext,
                            weighted_v_plus_ext, weighted_v_minus_ext,
-                           interface_normal_ext) -
+                           -interface_normal_int) -
             evol_field_psi(gamma2_int, weighted_v_psi_int, weighted_v_zero_int,
                            weighted_v_plus_int, weighted_v_minus_int,
                            interface_normal_int))
