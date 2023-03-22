@@ -3,7 +3,7 @@
 
 spectre_target_sources(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
   Domain.cpp
   InitialExtents.cpp
   InitialRefinementLevels.cpp

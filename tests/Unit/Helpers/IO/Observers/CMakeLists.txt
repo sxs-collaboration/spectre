@@ -7,7 +7,7 @@ add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
   MockH5.cpp
 )
 

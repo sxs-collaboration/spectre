@@ -3,7 +3,7 @@
 
 spectre_target_sources(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
   FunctionsOfTimeInitialize.cpp
   )
 

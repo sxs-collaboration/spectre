@@ -12,7 +12,7 @@ spectre_target_headers(
 
 spectre_target_sources(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
   BoundaryMessage.cpp
   )
 
