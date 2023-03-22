@@ -4,30 +4,23 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <optional>
-#include <tuple>
-#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/AlgorithmExecution.hpp"
-#include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
-#include "Utilities/Requires.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Initialization {
@@ -143,10 +136,7 @@ struct TimeStepping {
     *next_time_step = *time_step;
   }
 };
-}  // namespace Initialization
 
-namespace Initialization {
-namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Initialize time-stepper items
 ///
@@ -164,39 +154,29 @@ struct TimeStepperHistory {
   using variables_tag = typename Metavariables::system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
+  using const_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using simple_tags =
       tmpl::list<dt_variables_tag,
                  ::Tags::HistoryEvolvedVariables<variables_tag>>;
+  using compute_tags = tmpl::list<>;
 
-  using compute_tags = db::AddComputeTags<>;
+  using argument_tags =
+      tmpl::list<::Tags::TimeStepper<>, domain::Tags::Mesh<dim>>;
+  using return_tags = simple_tags;
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    using DtVars = typename dt_variables_tag::type;
+  static void apply(
+      const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
+      const gsl::not_null<TimeSteppers::History<typename variables_tag::type>*>
+          history,
+      const TimeStepper& time_stepper, const Mesh<dim>& mesh) {
+    // Will be overwritten before use
+    dt_vars->initialize(mesh.number_of_grid_points());
 
-    const size_t num_grid_points =
-        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
-
-    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
-    // Will be overwritten before use
-    DtVars dt_vars{num_grid_points};
-    typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history{
-      starting_order};
-
-    Initialization::mutate_assign<tmpl::list<
-        dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>>>(
-        make_not_null(&box), std::move(dt_vars), std::move(history));
-
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    history->integration_order(starting_order);
   }
 };
-}  // namespace Actions
 }  // namespace Initialization

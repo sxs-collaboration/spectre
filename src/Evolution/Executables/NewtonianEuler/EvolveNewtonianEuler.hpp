@@ -249,11 +249,11 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<Dim>>,
+          evolution::dg::Initialization::Domain<Dim>,
+          Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       Actions::UpdateConservatives,
       tmpl::conditional_t<
           use_dg_subcell,
