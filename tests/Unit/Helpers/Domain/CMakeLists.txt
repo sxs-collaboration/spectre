@@ -31,3 +31,4 @@ target_link_libraries(
   )
 
 add_subdirectory(BoundaryConditions)
+add_subdirectory(Structure)
