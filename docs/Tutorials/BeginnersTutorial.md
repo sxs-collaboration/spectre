@@ -146,12 +146,11 @@ directory where you have the `H5` files, run
 
 ```
 spectre generate-xdmf \
-  --file-prefix ExportTimeDependentCoordinates3DVolume \
-  --subfile-name element_data --output BBH_Coords
+  --subfile-name element_data --output BBH_Coords \
+  ExportTimeDependentCoordinates3DVolume*h5
 ```
 
-The `--file-prefix` argument must be whatever is before the number `0` in the
-name of your `Volume` file. We output volume data per node so we append the
+We output volume data per node so we append the
 node number to each volume file we have. Since you're most likely running on a
 laptop, you'll only be running on one node so you should only get one output
 file for the volume. The `--subfile-name` argument is the group name inside the
