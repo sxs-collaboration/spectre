@@ -371,6 +371,14 @@ decltype(auto) remove_if(Container& c, UnaryPredicate&& unary_predicate) {
                         std::forward<UnaryPredicate>(unary_predicate));
 }
 
+/// Convience wrapper around std::sample
+template <class Container, class OutputIt, class Distance, class URBG>
+decltype(auto) sample(Container& c, OutputIt out, Distance n, URBG&& g) {
+  using std::begin;
+  using std::end;
+  return std::sample(begin(c), end(c), out, n, g);
+}
+
 /// Convenience wrapper around std::sort
 template <class Container>
 decltype(auto) sort(Container& c) {
