@@ -1,0 +1,201 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhValenciaDivClean
+# Check: parse
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+
+Evolution:
+  InitialTime: 0.0
+  # The initial time step gets overriden by `ChangeSlabSize` below
+  InitialTimeStep: 0.075
+  TimeStepper: Rk3HesthavenSsp
+
+PhaseChangeAndTriggers:
+
+# Values taken from the Xcts/HeadOnBns.yaml input file
+EquationOfState:
+  PolytropicFluid:
+      PolytropicConstant: 123.6489
+      PolytropicExponent: 2.
+
+DomainCreator:
+  Sphere:
+    InnerRadius: 80.
+    OuterRadius: 200.
+    Interior:
+      FillWithSphericity: 0.
+    InitialRefinement: 3
+    InitialGridPoints: 8
+    UseEquiangularMap: False
+    RadialPartitioning: []
+    RadialDistribution: [Linear]
+    EquatorialCompression: None
+    WhichWedges: All
+    TimeDependence: None
+    OuterBoundaryCondition:
+      ConstraintPreservingFreeOutflow:
+        Type: ConstraintPreservingPhysical
+
+VariableFixing:
+  FixConservatives:
+    CutoffD: 1.0e-12
+    MinimumValueOfD: 1.0e-12
+    CutoffYe: 0.0
+    MinimumValueOfYe: 0.0
+    SafetyFactorForB: 1.0e-12
+    SafetyFactorForS: 1.0e-12
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-12
+    DensityCutoff: &density_cutoff 1.0e-12
+    TransitionDensityCutoff: 1.0e-11
+    MaxVelocityMagnitude: 1.0e-4
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 1.0
+  GeneralizedHarmonic:
+    # These gauge parameters will need some tuning for the binary
+    GaugeCondition: Harmonic
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 0.1
+        Width: 80.
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -0.999
+        Amplitude: 0.999
+        Width: 200.
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 4.0
+        Width: 80.
+        Center: [0.0, 0.0, 0.0]
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    ProductUpwindPenaltyAndRusanov:
+      UpwindPenalty:
+      Rusanov:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Subcell:
+      RdmpDelta0: 1.0e-7
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      InitialData:
+        RdmpDelta0: 1.0e-7
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      AlwaysUseSubcells: False
+      SubcellToDgReconstructionMethod: DimByDim
+      UseHalo: True
+      OnlyDgBlocksAndGroups: [Wedges]
+      FiniteDifferenceDerivativeOrder: Auto
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      AtmosphereDensity: 1.01e-15
+      SafetyFactorForB: 1.0e-12
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      MonotonisedCentralPrim:
+    FilterOptions:
+      SpacetimeDissipation: 0.1
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36
+    HalfPower: 64
+    DisableForDebugging: false
+
+EventsAndTriggers:
+  # Set time step based on CLF condition
+  - - Slabs:
+        Specified:
+          Values: [0]
+    - - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: 0.5
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObserveTimeStep:
+            SubfileName: TimeSteps
+            PrintTimeToTerminal: True
+            ObservePerCore: False
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: RestMassDensity
+              NormType: Max
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - RestMassDensity
+            - Pressure
+            - SpatialVelocity
+            - LorentzFactor
+            - SpecificEnthalpy
+            - SpecificInternalEnergy
+            - MagneticField
+            - ElectronFraction
+            - DivergenceCleaningField
+            - PointwiseL2Norm(GaugeConstraint)
+            - TciStatus
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+          OverrideObservationValue: None
+  - - TimeCompares:
+        Comparison: GreaterThan
+        Value: 1.5
+    - - Completion
+
+Observers:
+  VolumeFileName: "GhMhdVolume"
+  ReductionFileName: "GhMhdReductions"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
+EventsAndDenseTriggers:
+
+EventsRunAtCleanup:
+
+Importers:
+  GrNumericInitialData:
+    FileGlob: BnsVolume*.h5
+    Subgroup: VolumeData
+    ObservationValue: Last
+    Interpolate: True
+    Variables:
+      Lapse: Lapse
+      Shift: ShiftExcess
+      SpatialMetric: SpatialMetric
+      ExtrinsicCurvature: ExtrinsicCurvature
+  HydroNumericInitialData:
+    FileGlob: BnsVolume*.h5
+    Subgroup: VolumeData
+    ObservationValue: Last
+    Interpolate: True
+    Variables:
+      RestMassDensity: RestMassDensity
+      LowerSpatialFourVelocity: LowerSpatialFourVelocity
+      ElectronFraction: 0.15
+      MagneticField: 0.
+    DensityCutoff: *density_cutoff

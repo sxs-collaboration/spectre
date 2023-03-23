@@ -55,6 +55,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -81,6 +82,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
@@ -242,6 +244,20 @@ struct get_thermodynamic_dim<InitialData, false> {
   static constexpr size_t value =
       InitialData::equation_of_state_type::thermodynamic_dim;
 };
+
+namespace OptionTags {
+struct GrNumericInitialData {
+  using group = importers::OptionTags::Group;
+  static constexpr Options::String help =
+      "Numeric initial data for GR variables";
+};
+
+struct HydroNumericInitialData {
+  using group = importers::OptionTags::Group;
+  static constexpr Options::String help =
+      "Numeric initial data for hydro variables";
+};
+}  // namespace OptionTags
 }  // namespace detail
 
 template <bool UseDgSubcell>
@@ -274,14 +290,14 @@ struct GhValenciaDivCleanDefaults {
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Actions::MutateApply<tmpl::conditional_t<
-                     UseDgSubcell, grmhd::GhValenciaDivClean::SetPiFromGauge,
-                     GeneralizedHarmonic::gauges::SetPiFromGauge<3>>>,
-                 Initialization::Actions::AddComputeTags<
-                     tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
-                         volume_dim, domain_frame, DataVector>>>,
-                 VariableFixing::Actions::FixVariables<
-                     VariableFixing::FixToAtmosphere<volume_dim>>,
-                 Actions::UpdateConservatives,
+          UseDgSubcell, grmhd::GhValenciaDivClean::SetPiFromGauge,
+          GeneralizedHarmonic::gauges::SetPiFromGauge<3>>>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
+              volume_dim, domain_frame, DataVector>>>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::FixToAtmosphere<volume_dim>>,
+      Actions::UpdateConservatives,
       tmpl::conditional_t<
           UseDgSubcell,
           tmpl::list<
@@ -296,7 +312,7 @@ struct GhValenciaDivCleanDefaults {
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
           tmpl::list<>>,
-                 Parallel::Actions::TerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -664,29 +680,33 @@ struct GhValenciaDivCleanTemplateBase<
           intrp::Tags::InterpPointInfo<derived_metavars>>,
       Parallel::Actions::TerminatePhase>;
 
+  using import_initial_data_action_lists = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::RegisterWithElementDataReader,
+          tmpl::list<importers::Actions::RegisterWithElementDataReader,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::ImportInitialData,
+          tmpl::list<
+              // Load GH data first, then MHD data. Possible optimization:
+              // combine into one action for GH+MHD data.
+              GeneralizedHarmonic::Actions::ReadNumericInitialData<
+                  detail::OptionTags::GrNumericInitialData>,
+              grmhd::ValenciaDivClean::Actions::ReadNumericInitialData<
+                  detail::OptionTags::HydroNumericInitialData>,
+              GeneralizedHarmonic::Actions::SetNumericInitialData<
+                  detail::OptionTags::GrNumericInitialData>,
+              grmhd::ValenciaDivClean::Actions::SetNumericInitialData<
+                  detail::OptionTags::HydroNumericInitialData>,
+              Parallel::Actions::TerminatePhase>>>;
+
   using dg_element_array_component = DgElementArray<
       derived_metavars,
       tmpl::flatten<tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          tmpl::conditional_t<
-              use_numeric_initial_data,
-              tmpl::list<
-                  Parallel::PhaseActions<
-                      Parallel::Phase::RegisterWithElementDataReader,
-                      tmpl::list<
-                          importers::Actions::RegisterWithElementDataReader,
-                          Parallel::Actions::TerminatePhase>>,
-                  Parallel::PhaseActions<
-                      Parallel::Phase::ImportInitialData,
-                      tmpl::list<importers::Actions::ReadVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 importers::Actions::ReceiveVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 Parallel::Actions::TerminatePhase>>>,
-              tmpl::list<>>,
+          tmpl::conditional_t<use_numeric_initial_data,
+                              import_initial_data_action_lists, tmpl::list<>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
