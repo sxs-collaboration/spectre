@@ -154,15 +154,27 @@ void test_make_generator(const gsl::not_null<std::mt19937*> generator) {
 
 void test_random_sample(const gsl::not_null<std::mt19937*> generator) {
   const std::vector<double> vec{1., 2., 3.5};
-  {
-    const auto rnd = random_sample(vec.begin(), vec.end(), generator);
-    CHECK((*rnd == 1. or *rnd == 2. or *rnd == 3.5));
+  for (const double rnd : random_sample<2>(vec, generator)) {
+    CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
   }
-  {
-    for (const double rnd : random_sample<2>(vec, generator)) {
-      CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      random_sample<5>(vec, generator),
+      Catch::Contains("Cannot take 5 samples from container of size 3"));
+#endif
+  const std::unordered_set ints{1, 4, 2, 3};
+  const std::vector<int> two_samples = random_sample(2, ints, generator);
+  CHECK(two_samples.size() == 2);
+  const std::vector<int> over_sampled = random_sample(10, ints, generator);
+  CHECK(over_sampled.size() == ints.size());
+  const auto check_sample = [&ints](const std::vector<int>& samples) {
+    for (const auto& sample : samples) {
+      CHECK(alg::count(ints, sample) == 1);
+      CHECK(alg::count(samples, sample) == 1);
     }
-  }
+  };
+  check_sample(two_samples);
+  check_sample(over_sampled);
 }
 }  // namespace
 
