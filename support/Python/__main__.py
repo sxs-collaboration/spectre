@@ -74,7 +74,11 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.TransformVolumeData import (
                 transform_volume_data_command)
             return transform_volume_data_command
-        raise NotImplementedError(f"The command '{name}' is not implemented.")
+
+        available_commands = " " + "\n ".join(self.list_commands(ctx))
+        raise click.UsageError(
+            f"The command '{name}' is not implemented. "
+            f"Available commands are:\n{available_commands}")
 
 
 def print_machine(ctx, param, value):
