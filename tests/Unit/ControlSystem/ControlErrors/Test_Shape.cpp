@@ -100,8 +100,7 @@ void test_shape_control_error() {
   initial_size_func[0][0] = ah_radius;
 
   // Setup control system stuff
-  const std::string shape_name =
-      Systems::Shape<::domain::ObjectLabel::A, deriv_order>::name();
+  const std::string shape_name = system::name();
   const std::string size_name =
       ControlErrors::detail::size_name<::domain::ObjectLabel::A>();
   const std::string excision_sphere_A_name =

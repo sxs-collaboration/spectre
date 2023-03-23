@@ -289,14 +289,17 @@ struct MockMetavars {
 
   using element_component = MockElementComponent<metavars>;
 
-  using expansion_system = control_system::Systems::Expansion<
-      exp_deriv_order, control_system::measurements::BothHorizons>;
-  using rotation_system = control_system::Systems::Rotation<
-      rot_deriv_order, control_system::measurements::BothHorizons>;
-  using translation_system = control_system::Systems::Translation<
-      trans_deriv_order, control_system::measurements::BothHorizons>;
-  using shape_system = control_system::Systems::Shape<::domain::ObjectLabel::A,
-                                                      shape_deriv_order>;
+  using BothHorizons = control_system::measurements::BothHorizons;
+
+  using expansion_system =
+      control_system::Systems::Expansion<exp_deriv_order, BothHorizons>;
+  using rotation_system =
+      control_system::Systems::Rotation<rot_deriv_order, BothHorizons>;
+  using translation_system =
+      control_system::Systems::Translation<trans_deriv_order, BothHorizons>;
+  using shape_system =
+      control_system::Systems::Shape<::domain::ObjectLabel::A,
+                                     shape_deriv_order, BothHorizons>;
 
   using control_systems = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
