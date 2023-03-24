@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DomainStructureHelpers")
 
 set(LIBRARY_SOURCES
+  Test_NeighborHelpers.cpp
   Test_OrientationMapHelpers.cpp
   )
 
