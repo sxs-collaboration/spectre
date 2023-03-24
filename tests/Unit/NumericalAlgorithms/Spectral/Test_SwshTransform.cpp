@@ -16,6 +16,7 @@
 #include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"

@@ -32,6 +32,7 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -64,6 +65,38 @@ template <typename Tag, typename DataBoxType>
 constexpr bool tag_is_retrievable_v =
     tag_is_retrievable<Tag, DataBoxType>::value;
 /// @}
+
+namespace detail {
+template <typename TagsList, typename Tag>
+struct creation_tag_impl {
+  DEBUG_STATIC_ASSERT(
+      not has_no_matching_tag_v<TagsList, Tag>,
+      "Found no tags in the DataBox that match the tag being retrieved.");
+  DEBUG_STATIC_ASSERT(
+      has_unique_matching_tag_v<TagsList, Tag>,
+      "Found more than one tag in the DataBox that matches the tag "
+      "being retrieved. This happens because more than one tag with the same "
+      "base (class) tag was added to the DataBox.");
+  using normalized_tag = first_matching_tag<TagsList, Tag>;
+  // A list with 0 or 1 elements.  This uses `Tag` rather than
+  // `normalized_tag` because subitems of compute tags normalize to
+  // `Tags::Subitem<...>`, which is not what is in the `Subitems`
+  // list.
+  using parent_of_subitem =
+      tmpl::filter<TagsList, tmpl::bind<tmpl::list_contains, Subitems<tmpl::_1>,
+                                        tmpl::pin<Tag>>>;
+  using type = tmpl::front<tmpl::push_back<parent_of_subitem, normalized_tag>>;
+};
+}  // namespace detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief The tag added to \p Box referred to by \p Tag.  This
+ * resolves base tags and converts subitems to full items.
+ */
+template <typename Tag, typename Box>
+using creation_tag =
+    typename detail::creation_tag_impl<typename Box::tags_list, Tag>::type;
 
 namespace detail {
 template <typename Tag>
@@ -257,6 +290,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   /// by the free function db::get_mutable_reference
   template <typename Tag>
   auto& get_mutable_reference();
+
+  /// Check whether a tags depends on another tag.  Should be called
+  /// through the metafunction db::tag_depends_on.
+  template <typename Consumer, typename Provider>
+  constexpr static bool tag_depends_on();
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
@@ -885,6 +923,55 @@ auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
   return get_item<item_tag>().mutate();
 }
 
+template <typename... Tags>
+template <typename Consumer, typename Provider>
+constexpr bool DataBox<tmpl::list<Tags...>>::tag_depends_on() {
+  // We need to check for things depending on the passed tag, any
+  // subitems, and the parent item if we were passed a subitem.  These
+  // dependencies are handled internally by the mutation functions and
+  // not encoded in the graph.
+  using provider_aliases =
+      tmpl::push_front<typename Subitems<Provider>::type,
+                       creation_tag<Provider, DataBox<tmpl::list<Tags...>>>>;
+
+  // We have to replace subitems with their parents here because
+  // subitems of compute tags sometimes get graph edges from their
+  // parents and sometimes do not, depending on if they have
+  // dependencies.
+  using consumer_tag_to_check =
+      creation_tag<Consumer, DataBox<tmpl::list<Tags...>>>;
+
+  // We cannot recursively call the function we are in, because we
+  // need to avoid the normalization done above.  Otherwise we could
+  // end up in a loop when destination of an edge normalizes to its
+  // source.
+  //
+  // Lambdas cannot capture themselves, but they can take themselves
+  // as an argument.
+  auto check_dependents = [](auto&& recurse,
+                             auto node_depending_on_provider_v) {
+    using node_depending_on_provider = decltype(node_depending_on_provider_v);
+    if (std::is_same_v<node_depending_on_provider, consumer_tag_to_check>) {
+      return true;
+    }
+
+    using next_nodes_to_check = tmpl::transform<
+        tmpl::filter<
+            edge_list,
+            tmpl::has_source<tmpl::_1, tmpl::pin<node_depending_on_provider>>>,
+        tmpl::get_destination<tmpl::_1>>;
+
+    return tmpl::as_pack<next_nodes_to_check>([&](auto... nodes) {
+      return (... or recurse(recurse, tmpl::type_from<decltype(nodes)>{}));
+    });
+  };
+
+  return tmpl::as_pack<provider_aliases>([&](auto... aliases) {
+    return (... or check_dependents(check_dependents,
+                                    tmpl::type_from<decltype(aliases)>{}));
+  });
+}
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Retrieve a mutable reference to the item with tag `Tag` from the
@@ -902,12 +989,25 @@ SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
   return box->template get_mutable_reference<Tag>();
 }
 
+/// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief List of Tags to remove from the DataBox
+ * \brief Check whether the tag \p Consumer depends on the tag \p
+ * Provider in a given \p Box.
+ *
+ * This is equivalent to the question of whether changing \p Provider
+ * (through `db::mutate`, updating one of its dependencies, etc.)
+ * could change the value of `db::get<Consumer>`.  Tags depend on
+ * themselves, and an item and its subitems all depend on one another.
  */
-template <typename... Tags>
-using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
+template <typename Consumer, typename Provider, typename Box>
+using tag_depends_on =
+    std::bool_constant<Box::template tag_depends_on<Consumer, Provider>()>;
+
+template <typename Consumer, typename Provider, typename Box>
+constexpr bool tag_depends_on_v =
+    tag_depends_on<Consumer, Provider, Box>::value;
+/// @}
 
 /*!
  * \ingroup DataBoxGroup
