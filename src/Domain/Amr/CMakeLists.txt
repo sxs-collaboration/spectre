@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Flag.cpp
   Helpers.cpp
+  NewNeighborIds.cpp
   UpdateAmrDecision.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   Amr.hpp
   Flag.hpp
   Helpers.hpp
+  NewNeighborIds.hpp
   UpdateAmrDecision.hpp
   )
 
