@@ -9,6 +9,7 @@
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -29,10 +30,11 @@ namespace control_system {
 /// of the submeasurement that they are interested in.
 ///
 /// In addition to being manually called, this struct is designed to
-/// be usable as a `post_horizon_find_callback` from
-/// `intrp::callbacks::FindApparentHorizon`.
+/// be usable as a `post_horizon_find_callback` or a
+/// `post_interpolation_callback`.
 template <typename Submeasurement, typename ControlSystems>
-struct RunCallbacks {
+struct RunCallbacks
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
  private:
   static_assert(
       tt::assert_conforms_to_v<Submeasurement, protocols::Submeasurement>);
@@ -42,10 +44,13 @@ struct RunCallbacks {
           tt::assert_conforms_to<tmpl::_1, protocols::ControlSystem>>::value);
 
  public:
-  template <typename DbTags, typename Metavariables>
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const LinkedMessageId<double>& measurement_id) {
+                    const TemporalId& measurement_id) {
+    static_assert(
+        std::is_same_v<TemporalId, LinkedMessageId<double>>,
+        "RunCallbacks expects a LinkedMessageId<double> as its temporal id");
     tmpl::for_each<ControlSystems>(
         [&box, &cache, &measurement_id](auto control_system_v) {
           using ControlSystem = tmpl::type_from<decltype(control_system_v)>;
