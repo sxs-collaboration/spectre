@@ -30,5 +30,6 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Amr)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(Structure)
