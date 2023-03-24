@@ -35,6 +35,10 @@ using WrappedPointInfoTag =
     Vars::PointInfoTag<InterpolationTargetTag, Metavariables::volume_dim>;
 }  // namespace point_info_detail
 
+/// Base tag for `InterpPointInfo` so we don't have to have the metavariables in
+/// order to retrieve the tag
+struct InterpPointInfoBase : db::BaseTag {};
+
 /// The following tag is for the case in which interpolation
 /// bypasses the `Interpolator` ParallelComponent.  In that case,
 /// the `Element` must hold interpolation information in its `DataBox`.
@@ -42,7 +46,7 @@ using WrappedPointInfoTag =
 /// A particular `Vars::PointInfo` can be retrieved from this
 /// `TaggedTuple` via a `Vars::PointInfoTag`.
 template <typename Metavariables>
-struct InterpPointInfo : db::SimpleTag {
+struct InterpPointInfo : db::SimpleTag, InterpPointInfoBase {
   using type = tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
       point_info_detail::WrappedPointInfoTag,
       typename Metavariables::interpolation_target_tags, Metavariables>>;
