@@ -50,6 +50,8 @@ class FunctionOfTime;
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using Object = domain::creators::BinaryCompactObject::Object;
+using CartesianCubeAtXCoord =
+    domain::creators::BinaryCompactObject::CartesianCubeAtXCoord;
 using Excision = domain::creators::BinaryCompactObject::Excision;
 using Distribution = domain::CoordinateMaps::Distribution;
 
@@ -434,6 +436,89 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          stringize(use_equiangular_map) + "\n" + time_dependence;
 }
 
+void test_bns_domain_with_cubes() {
+  INFO("BNS domain with cubes");
+
+  MAKE_GENERATOR(gen);
+
+  // ObjectA:
+  constexpr double xcoord_objectA = 3.0;
+
+  // ObjectB:
+  constexpr double xcoord_objectB = -3.0;
+
+  // Envelope:
+  constexpr double envelope_radius = 25.5;
+  constexpr bool use_projective_map = true;
+
+  // Outer shell:
+  constexpr double outer_radius = 32.4;
+
+  // Misc.:
+  constexpr size_t grid_points = 3;
+  constexpr bool use_equiangular_map = false;
+  const auto radial_distribution_outer_shell = Distribution::Inverse;
+  constexpr bool with_boundary_conditions = true;
+
+  std::unordered_map<std::string, std::array<size_t, 3>> refinement{
+      {"ObjectA", {{1, 1, 1}}},
+      {"ObjectB", {{1, 1, 1}}},
+      {"Envelope", {{1, 1, 1}}},
+      {"OuterShell", {{1, 1, 4}}}};
+  const domain::creators::BinaryCompactObject binary_compact_object{
+      CartesianCubeAtXCoord{xcoord_objectA},
+      CartesianCubeAtXCoord{xcoord_objectB},
+      envelope_radius,
+      outer_radius,
+      refinement,
+      grid_points,
+      use_equiangular_map,
+      use_projective_map,
+      radial_distribution_outer_shell,
+      create_outer_boundary_condition()};
+
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      binary_compact_object, with_boundary_conditions);
+
+  std::vector<std::string> expected_block_names{"ObjectA",
+                                                "ObjectB",
+                                                "EnvelopeUpperZLeft",
+                                                "EnvelopeUpperZRight",
+                                                "EnvelopeLowerZLeft",
+                                                "EnvelopeLowerZRight",
+                                                "EnvelopeUpperYLeft",
+                                                "EnvelopeUpperYRight",
+                                                "EnvelopeLowerYLeft",
+                                                "EnvelopeLowerYRight",
+                                                "EnvelopeUpperX",
+                                                "EnvelopeLowerX",
+                                                "OuterShellUpperZLeft",
+                                                "OuterShellUpperZRight",
+                                                "OuterShellLowerZLeft",
+                                                "OuterShellLowerZRight",
+                                                "OuterShellUpperYLeft",
+                                                "OuterShellUpperYRight",
+                                                "OuterShellLowerYLeft",
+                                                "OuterShellLowerYRight",
+                                                "OuterShellUpperX",
+                                                "OuterShellLowerX"};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      expected_block_groups{
+          {"Envelope",
+           {"EnvelopeUpperZRight", "EnvelopeUpperX", "EnvelopeLowerZLeft",
+            "EnvelopeLowerZRight", "EnvelopeUpperYRight", "EnvelopeLowerYRight",
+            "EnvelopeUpperYLeft", "EnvelopeUpperZLeft", "EnvelopeLowerYLeft",
+            "EnvelopeLowerX"}},
+          {"OuterShell",
+           {"OuterShellUpperZLeft", "OuterShellUpperZRight",
+            "OuterShellLowerZLeft", "OuterShellLowerZRight",
+            "OuterShellUpperYLeft", "OuterShellUpperYRight",
+            "OuterShellLowerYLeft", "OuterShellLowerYRight", "OuterShellUpperX",
+            "OuterShellLowerX"}}};
+  CHECK(binary_compact_object.block_names() == expected_block_names);
+  CHECK(binary_compact_object.block_groups() == expected_block_groups);
+}
+
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                                      const bool with_control_systems) {
   INFO("BBH time dependent factory");
@@ -578,49 +663,49 @@ void test_binary_factory() {
 void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectA's center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectB's center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("The radius for the enveloping cube is too "
                                 "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectB's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectA's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, std::nullopt, true}, 25.5, 32.4, 2_st, 6_st, true,
-          true, Distribution::Linear, create_outer_boundary_condition(),
+          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -1.0, std::nullopt, true}, 25.5, 32.4, 2_st, 6_st,
+          true, true, Distribution::Linear, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
@@ -628,9 +713,9 @@ void test_parse_errors() {
           "of Object B"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, std::nullopt, true},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          Object{0.3, 1.0, 1.0, std::nullopt, true},
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
@@ -638,17 +723,17 @@ void test_parse_errors() {
           "of Object A"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true, true,
+          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true, true,
           Distribution::Linear, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
-          32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true, true,
+          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          25.5, 32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true, true,
           Distribution::Linear, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialGridPoints'"));
@@ -661,6 +746,7 @@ void test_parse_errors() {
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
+  test_bns_domain_with_cubes();
   test_bbh_time_dependent_factory(true, true);
   test_bbh_time_dependent_factory(true, false);
   test_bbh_time_dependent_factory(false, true);

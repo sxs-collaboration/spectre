@@ -60,8 +60,8 @@ bool BinaryCompactObject::Object::is_excised() const {
 
 // Time-independent constructor
 BinaryCompactObject::BinaryCompactObject(
-    Object object_A, Object object_B, const double envelope_radius,
-    const double outer_radius,
+    typename ObjectA::type object_A, typename ObjectB::type object_B,
+    const double envelope_radius, const double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, const bool use_projective_map,
@@ -77,9 +77,24 @@ BinaryCompactObject::BinaryCompactObject(
       use_projective_map_(use_projective_map),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
+  // Get useful information about the type of grid used around each compact
+  // object
+  x_coord_a_ =
+      std::visit([](const auto& arg) { return arg.x_coord; }, object_A_);
+  x_coord_b_ =
+      std::visit([](const auto& arg) { return arg.x_coord; }, object_B_);
+  is_excised_a_ =
+      std::visit([](const auto& arg) { return arg.is_excised(); }, object_A_);
+  is_excised_b_ =
+      std::visit([](const auto& arg) { return arg.is_excised(); }, object_B_);
+  use_single_block_a_ =
+      std::holds_alternative<CartesianCubeAtXCoord>(object_A_);
+  use_single_block_b_ =
+      std::holds_alternative<CartesianCubeAtXCoord>(object_B_);
+
   // Determination of parameters for domain construction:
-  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
-  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
+  translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
+  length_inner_cube_ = abs(x_coord_a_ - x_coord_b_);
   length_outer_cube_ = 2.0 * envelope_radius_ / sqrt(3.0);
   if (use_projective_map_) {
     projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
@@ -92,19 +107,27 @@ BinaryCompactObject::BinaryCompactObject(
   // The envelope and outer shell have another 10 blocks each.
   number_of_blocks_ = 44;
   // For each object whose interior is not excised, add 1 block
-  if (not object_A_.is_excised()) {
+  if ((not use_single_block_a_) and (not is_excised_a_)) {
     number_of_blocks_++;
   }
-  if (not object_B_.is_excised()) {
+  if ((not use_single_block_b_) and (not is_excised_b_)) {
     number_of_blocks_++;
   }
 
-  if (object_A_.x_coord <= 0.0) {
+  // For each of the object replaced by a single block, remove (12-1)=11
+  if (use_single_block_a_) {
+    number_of_blocks_ -= 11;
+  }
+  if (use_single_block_b_) {
+    number_of_blocks_ -= 11;
+  }
+
+  if (x_coord_a_ <= 0.0) {
     PARSE_ERROR(
         context,
         "The x-coordinate of ObjectA's center is expected to be positive.");
   }
-  if (object_B_.x_coord >= 0.0) {
+  if (x_coord_b_ >= 0.0) {
     PARSE_ERROR(
         context,
         "The x-coordinate of ObjectB's center is expected to be negative.");
@@ -117,41 +140,52 @@ BinaryCompactObject::BinaryCompactObject(
         "malformed. A recommended radius is:\n"
             << suggested_value);
   }
-  if (object_A_.outer_radius < object_A_.inner_radius) {
-    PARSE_ERROR(context,
-                "ObjectA's inner radius must be less than its outer radius.");
+  // The following options are irrelevant if the inner regions are covered
+  // with simple blocks, so we only check them if object_A_ uses the first
+  // variant type.
+  if (not use_single_block_a_) {
+    const auto& object_a = std::get<Object>(object_A_);
+    if (object_a.outer_radius < object_a.inner_radius) {
+      PARSE_ERROR(context,
+                  "ObjectA's inner radius must be less than its outer radius.");
+    }
+    if (object_a.use_logarithmic_map and not object_a.is_excised()) {
+      PARSE_ERROR(
+          context,
+          "Using a logarithmically spaced radial grid in the part "
+          "of Layer 1 enveloping Object A requires excising the interior of "
+          "Object A");
+    }
+    if (object_a.is_excised() and
+        ((*object_a.inner_boundary_condition == nullptr) !=
+         (outer_boundary_condition_ == nullptr))) {
+      PARSE_ERROR(
+          context,
+          "Must specify either both inner and outer boundary conditions "
+          "or neither.");
+    }
   }
-  if (object_B_.outer_radius < object_B_.inner_radius) {
-    PARSE_ERROR(context,
-                "ObjectB's inner radius must be less than its outer radius.");
-  }
-  if (object_A_.use_logarithmic_map and not object_A_.is_excised()) {
-    PARSE_ERROR(
-        context,
-        "Using a logarithmically spaced radial grid in the part "
-        "of Layer 1 enveloping Object A requires excising the interior of "
-        "Object A");
-  }
-  if (object_B_.use_logarithmic_map and not object_B_.is_excised()) {
-    PARSE_ERROR(
-        context,
-        "Using a logarithmically spaced radial grid in the part "
-        "of Layer 1 enveloping Object B requires excising the interior of "
-        "Object B");
-  }
-  if (object_A_.is_excised() and
-      ((*object_A_.inner_boundary_condition == nullptr) !=
-       (outer_boundary_condition_ == nullptr))) {
-    PARSE_ERROR(context,
-                "Must specify either both inner and outer boundary conditions "
-                "or neither.");
-  }
-  if (object_B_.is_excised() and
-      ((*object_B_.inner_boundary_condition == nullptr) !=
-       (outer_boundary_condition_ == nullptr))) {
-    PARSE_ERROR(context,
-                "Must specify either both inner and outer boundary conditions "
-                "or neither.");
+  if (not use_single_block_b_) {
+    const auto& object_b = std::get<Object>(object_B_);
+    if (object_b.outer_radius < object_b.inner_radius) {
+      PARSE_ERROR(context,
+                  "ObjectB's inner radius must be less than its outer radius.");
+    }
+    if (object_b.use_logarithmic_map and not object_b.is_excised()) {
+      PARSE_ERROR(
+          context,
+          "Using a logarithmically spaced radial grid in the part "
+          "of Layer 1 enveloping Object B requires excising the interior of "
+          "Object B");
+    }
+    if (object_b.is_excised() and
+        ((*object_b.inner_boundary_condition == nullptr) !=
+         (outer_boundary_condition_ == nullptr))) {
+      PARSE_ERROR(
+          context,
+          "Must specify either both inner and outer boundary conditions "
+          "or neither.");
+    }
   }
   if (envelope_radius_ >= outer_radius_) {
     PARSE_ERROR(context,
@@ -159,10 +193,10 @@ BinaryCompactObject::BinaryCompactObject(
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(outer_boundary_condition_) or
-      (object_A_.is_excised() and
-       is_periodic(*object_A_.inner_boundary_condition)) or
-      (object_B_.is_excised() and
-       is_periodic(*object_B_.inner_boundary_condition))) {
+      (is_excised_a_ and
+       is_periodic(*(std::get<Object>(object_A_).inner_boundary_condition))) or
+      (is_excised_b_ and
+       is_periodic(*(std::get<Object>(object_B_).inner_boundary_condition)))) {
     PARSE_ERROR(
         context,
         "Cannot have periodic boundary conditions with a binary domain");
@@ -207,18 +241,28 @@ BinaryCompactObject::BinaryCompactObject(
       }
     }
   };
-  add_object_region("ObjectA", "Shell");  // 6 blocks
-  add_object_region("ObjectA", "Cube");   // 6 blocks
-  add_object_region("ObjectB", "Shell");  // 6 blocks
-  add_object_region("ObjectB", "Cube");   // 6 blocks
-  add_outer_region("Envelope");           // 10 blocks
-  add_outer_region("OuterShell");         // 10 blocks
-  if (not object_A_.is_excised()) {
+  if (use_single_block_a_) {
+    block_names_.emplace_back("ObjectA");
+  } else {
+    add_object_region("ObjectA", "Shell");  // 6 blocks
+    add_object_region("ObjectA", "Cube");   // 6 blocks
+  }
+  if (use_single_block_b_) {
+    block_names_.emplace_back("ObjectB");
+  } else {
+    add_object_region("ObjectB", "Shell");  // 6 blocks
+    add_object_region("ObjectB", "Cube");   // 6 blocks
+  }
+  add_outer_region("Envelope");    // 10 blocks
+  add_outer_region("OuterShell");  // 10 blocks
+
+  if ((not use_single_block_a_) and (not is_excised_a_)) {
     add_object_interior("ObjectA");  // 1 block
   }
-  if (not object_B_.is_excised()) {
+  if ((not use_single_block_b_) and (not is_excised_b_)) {
     add_object_interior("ObjectB");  // 1 block
   }
+
   ASSERT(block_names_.size() == number_of_blocks_,
          "Number of block names (" << block_names_.size()
                                    << ") doesn't match number of blocks ("
@@ -227,6 +271,7 @@ BinaryCompactObject::BinaryCompactObject(
   // Expand initial refinement and number of grid points over all blocks
   const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names_,
                                                        block_groups_};
+
   try {
     initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
   } catch (const std::exception& error) {
@@ -250,8 +295,9 @@ BinaryCompactObject::BinaryCompactObject(
     std::array<double, 3> initial_angular_velocity,
     std::array<double, 2> initial_size_map_values,
     std::array<double, 2> initial_size_map_velocities,
-    std::array<double, 2> initial_size_map_accelerations, Object object_A,
-    Object object_B, double envelope_radius, double outer_radius,
+    std::array<double, 2> initial_size_map_accelerations,
+    typename ObjectA::type object_A, typename ObjectB::type object_B,
+    double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, bool use_projective_map,
@@ -285,76 +331,104 @@ BinaryCompactObject::BinaryCompactObject(
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {
-  const double inner_sphericity_A = object_A_.is_excised() ? 1.0 : 0.0;
-  const double inner_sphericity_B = object_B_.is_excised() ? 1.0 : 0.0;
+  const double inner_sphericity_A = is_excised_a_ ? 1.0 : 0.0;
+  const double inner_sphericity_B = is_excised_b_ ? 1.0 : 0.0;
 
   using Maps = std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>;
 
   const std::vector<domain::CoordinateMaps::Distribution>
       object_A_radial_distribution{
-          object_A_.use_logarithmic_map
+          ((not use_single_block_a_) and
+           std::get<Object>(object_A_).use_logarithmic_map)
               ? domain::CoordinateMaps::Distribution::Logarithmic
               : domain::CoordinateMaps::Distribution::Linear};
 
   const std::vector<domain::CoordinateMaps::Distribution>
       object_B_radial_distribution{
-          object_B_.use_logarithmic_map
+          ((not use_single_block_b_) and
+           std::get<Object>(object_B_).use_logarithmic_map)
               ? domain::CoordinateMaps::Distribution::Logarithmic
               : domain::CoordinateMaps::Distribution::Linear};
 
   Maps maps{};
 
-  // --- Blocks enclosing each object (24 blocks) ---
-  //
-  // Each object is surrounded by 6 inner wedges that make a sphere, and another
-  // 6 outer wedges that transition to a cube.
-
   // ObjectA/B is on the right/left, respectively.
   const Translation translation_A{
-      Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord},
-      Identity2D{}};
+      Affine{-1.0, 1.0, -1.0 + x_coord_a_, 1.0 + x_coord_a_}, Identity2D{}};
   const Translation translation_B{
-      Affine{-1.0, 1.0, -1.0 + object_B_.x_coord, 1.0 + object_B_.x_coord},
-      Identity2D{}};
+      Affine{-1.0, 1.0, -1.0 + x_coord_b_, 1.0 + x_coord_b_}, Identity2D{}};
 
-  Maps maps_center_A =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_A_.inner_radius,
-                                    object_A_.outer_radius, inner_sphericity_A,
-                                    1.0, use_equiangular_map_, false, {},
-                                    object_A_radial_distribution),
-          translation_A);
-  Maps maps_cube_A =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_A_.outer_radius,
-                                    sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
-                                    0.0, use_equiangular_map_),
-          translation_A);
-  Maps maps_center_B =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_B_.inner_radius,
-                                    object_B_.outer_radius, inner_sphericity_B,
-                                    1.0, use_equiangular_map_, false, {},
-                                    object_B_radial_distribution),
-          translation_B);
-  Maps maps_cube_B =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_B_.outer_radius,
-                                    sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
-                                    0.0, use_equiangular_map_),
-          translation_B);
+  // Two blocks covering the compact objects and their immediate neighborhood
+  if (use_single_block_a_) {
+    maps.emplace_back(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            Affine3D{Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_a_,
+                            0.5 * length_inner_cube_ + x_coord_a_),
+                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
+                            0.5 * length_inner_cube_),
+                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
+                            0.5 * length_inner_cube_)}));
+  } else {
+    // --- Blocks enclosing each object (12 blocks per object) ---
+    //
+    // Each object is surrounded by 6 inner wedges that make a sphere, and
+    // another 6 outer wedges that transition to a cube.
+    const auto& object_a = std::get<Object>(object_A_);
 
-  std::move(maps_center_A.begin(), maps_center_A.end(),
-            std::back_inserter(maps));
-  std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
-  std::move(maps_center_B.begin(), maps_center_B.end(),
-            std::back_inserter(maps));
-  std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
+    Maps maps_center_A =
+        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Inertial, 3>(
+            sph_wedge_coordinate_maps(object_a.inner_radius,
+                                      object_a.outer_radius, inner_sphericity_A,
+                                      1.0, use_equiangular_map_, false, {},
+                                      object_A_radial_distribution),
+            translation_A);
+    Maps maps_cube_A =
+        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Inertial, 3>(
+            sph_wedge_coordinate_maps(object_a.outer_radius,
+                                      sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
+                                      0.0, use_equiangular_map_),
+            translation_A);
+    std::move(maps_center_A.begin(), maps_center_A.end(),
+              std::back_inserter(maps));
+    std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
+  }
+  if (use_single_block_b_) {
+    maps.emplace_back(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            Affine3D{Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_b_,
+                            0.5 * length_inner_cube_ + x_coord_b_),
+                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
+                            0.5 * length_inner_cube_),
+                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
+                            0.5 * length_inner_cube_)}));
+  } else {
+    // --- Blocks enclosing each object (12 blocks per object) ---
+    //
+    // Each object is surrounded by 6 inner wedges that make a sphere, and
+    // another 6 outer wedges that transition to a cube.
+    const auto& object_b = std::get<Object>(object_B_);
+    Maps maps_center_B =
+        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Inertial, 3>(
+            sph_wedge_coordinate_maps(object_b.inner_radius,
+                                      object_b.outer_radius, inner_sphericity_B,
+                                      1.0, use_equiangular_map_, false, {},
+                                      object_B_radial_distribution),
+            translation_B);
+    Maps maps_cube_B =
+        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Inertial, 3>(
+            sph_wedge_coordinate_maps(object_b.outer_radius,
+                                      sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
+                                      0.0, use_equiangular_map_),
+            translation_B);
+    std::move(maps_center_B.begin(), maps_center_B.end(),
+              std::back_inserter(maps));
+    std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
+  }
 
   // --- Frustums enclosing both objects (10 blocks) ---
   //
@@ -384,81 +458,90 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // Each object can optionally be filled with a cube-shaped block, in which
   // case the enclosing wedges configured above transition from the cube to a
   // sphere.
-  if (not object_A_.is_excised()) {
-    const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
-    if (use_equiangular_map_) {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A)},
-              translation_A));
-    } else {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Affine3D{
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A)},
-              translation_A));
-    }
-  }
-  if (not object_B_.is_excised()) {
-    const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
-    if (use_equiangular_map_) {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
-                                        scaled_r_inner_B),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
-                                        scaled_r_inner_B),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
-                                        scaled_r_inner_B)},
-              translation_B));
-    } else {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Affine3D{
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B)},
-              translation_B));
-    }
-  }
-
-  // Excision spheres
-  // - Block 0 through 5 enclose object A, and 12 through 17 enclose object B.
-  // - The 3D wedge map is oriented such that the lower-zeta logical direction
-  //   points radially inward.
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
-  if (object_A_.is_excised()) {
-    excision_spheres.emplace(
-        "ExcisionSphereA",
-        ExcisionSphere<3>{
-            object_A_.inner_radius,
-            tnsr::I<double, 3, Frame::Grid>{{object_A_.x_coord, 0.0, 0.0}},
-            {{0, Direction<3>::lower_zeta()},
-             {1, Direction<3>::lower_zeta()},
-             {2, Direction<3>::lower_zeta()},
-             {3, Direction<3>::lower_zeta()},
-             {4, Direction<3>::lower_zeta()},
-             {5, Direction<3>::lower_zeta()}}});
+  if (not use_single_block_a_) {
+    if (not is_excised_a_) {
+      const double scaled_r_inner_A =
+          std::get<Object>(object_A_).inner_radius / sqrt(3.0);
+      if (use_equiangular_map_) {
+        maps.emplace_back(
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                          scaled_r_inner_A),
+                              Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                          scaled_r_inner_A),
+                              Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                          scaled_r_inner_A)},
+                translation_A));
+      } else {
+        maps.emplace_back(make_coordinate_map_base<Frame::BlockLogical,
+                                                   Frame::Inertial>(
+            Affine3D{
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A)},
+            translation_A));
+      }
+    }
+    // Excision spheres
+    // - Block 0 through 5 enclose object A, and 12 through 17 enclose object B.
+    // - The 3D wedge map is oriented such that the lower-zeta logical direction
+    //   points radially inward.
+    else {
+      excision_spheres.emplace(
+          "ExcisionSphereA",
+          ExcisionSphere<3>{
+              std::get<Object>(object_A_).inner_radius,
+              tnsr::I<double, 3, Frame::Grid>{{x_coord_a_, 0.0, 0.0}},
+              {{0, Direction<3>::lower_zeta()},
+               {1, Direction<3>::lower_zeta()},
+               {2, Direction<3>::lower_zeta()},
+               {3, Direction<3>::lower_zeta()},
+               {4, Direction<3>::lower_zeta()},
+               {5, Direction<3>::lower_zeta()}}});
+    }
   }
-  if (object_B_.is_excised()) {
-    excision_spheres.emplace(
-        "ExcisionSphereB",
-        ExcisionSphere<3>{
-            object_B_.inner_radius,
-            tnsr::I<double, 3, Frame::Grid>{{object_B_.x_coord, 0.0, 0.0}},
-            {{12, Direction<3>::lower_zeta()},
-             {13, Direction<3>::lower_zeta()},
-             {14, Direction<3>::lower_zeta()},
-             {15, Direction<3>::lower_zeta()},
-             {16, Direction<3>::lower_zeta()},
-             {17, Direction<3>::lower_zeta()}}});
+  if (not use_single_block_b_) {
+    if (not is_excised_b_) {
+      const double scaled_r_inner_B =
+          std::get<Object>(object_B_).inner_radius / sqrt(3.0);
+      if (use_equiangular_map_) {
+        maps.emplace_back(
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
+                                          scaled_r_inner_B),
+                              Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
+                                          scaled_r_inner_B),
+                              Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
+                                          scaled_r_inner_B)},
+                translation_B));
+      } else {
+        maps.emplace_back(make_coordinate_map_base<Frame::BlockLogical,
+                                                   Frame::Inertial>(
+            Affine3D{
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),
+                Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B)},
+            translation_B));
+      }
+    }
+    // Excision spheres
+    // - Block 0 through 5 enclose object A, and 12 through 17 enclose object B.
+    // - The 3D wedge map is oriented such that the lower-zeta logical direction
+    //   points radially inward.
+    else {
+      excision_spheres.emplace(
+          "ExcisionSphereB",
+          ExcisionSphere<3>{
+              std::get<Object>(object_B_).inner_radius,
+              tnsr::I<double, 3, Frame::Grid>{{x_coord_b_, 0.0, 0.0}},
+              {{12, Direction<3>::lower_zeta()},
+               {13, Direction<3>::lower_zeta()},
+               {14, Direction<3>::lower_zeta()},
+               {15, Direction<3>::lower_zeta()},
+               {16, Direction<3>::lower_zeta()},
+               {17, Direction<3>::lower_zeta()}}});
+    }
   }
 
   // Have corners determined automatically
@@ -483,14 +566,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
         expansion_map_outer_boundary_, expansion_function_of_time_name_,
         expansion_function_of_time_name_ + "OuterBoundary"s};
     RotationMap3D rotation_map{rotation_function_of_time_name_};
-    CompressionMap size_A_map{size_map_function_of_time_names_[0],
-                              object_A_.inner_radius,
-                              object_A_.outer_radius,
-                              {{object_A_.x_coord, 0.0, 0.0}}};
-    CompressionMap size_B_map{size_map_function_of_time_names_[1],
-                              object_B_.inner_radius,
-                              object_B_.outer_radius,
-                              {{object_B_.x_coord, 0.0, 0.0}}};
 
     const auto expansion_rotation = [&expansion_map, &rotation_map](
                                         const auto source_frame,
@@ -529,21 +604,27 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // block. Then, set the maps of the other blocks by cloning the maps from
     // the appropriate block.
 
-    // All blocks except possibly blocks 0-5 and 12-17 get the same map from the
-    // Grid to the Inertial frame, so initialize the final block with the "base"
-    // map (here a composition of an expansion and a rotation).
+    // All blocks except possibly the first 6 blocks of each object get the same
+    // map from the Grid to the Inertial frame, so initialize the final block
+    // with the "base" map (here a composition of an expansion and a rotation).
+    // When covering the inner regions with cubes, all blocks will use the same
+    // time-dependent map instead.
     grid_to_inertial_block_maps[number_of_blocks_ - 1] =
         expansion_rotation(Frame::Grid{}, Frame::Inertial{});
 
     // Initialize the first block of the layer 1 blocks for each object
-    // (specifically, initialize block 0 and block 12). If excising interior
-    // A or B, the block maps for the corrsponding layer 1 blocks (blocks 0-5
-    // for object A, blocks 12-17 for object B) should also include a size map
-    // from the Grid to the Distorted frame, and then the combination expansion
-    // + rotation from the Distorted to Inertial frame. If not excising interior
-    // A or B, the layer 1 blocks for that object will have the same map as the
-    // final block from the Grid to Inertial frame.
-    if (object_A_.is_excised()) {
+    // If excising interior A or B, the block maps for the corrsponding layer
+    // 1 blocks (first 6 blocks) should also include a size map
+    // from the Grid to the Distorted frame, and then the combination
+    // expansion
+    // + rotation from the Distorted to Inertial frame. If not excising
+    // interior A or B, the layer 1 blocks for that object will have the same
+    // map as the final block from the Grid to Inertial frame.
+    if (is_excised_a_) {
+      CompressionMap size_A_map{size_map_function_of_time_names_[0],
+                                std::get<Object>(object_A_).inner_radius,
+                                std::get<Object>(object_A_).outer_radius,
+                                {{x_coord_a_, 0.0, 0.0}}};
       grid_to_inertial_block_maps[0] = size_expansion_rotation(size_A_map);
       grid_to_distorted_block_maps[0] = std::make_unique<
           CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
@@ -554,42 +635,48 @@ Domain<3> BinaryCompactObject::create_domain() const {
       grid_to_inertial_block_maps[0] =
           grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
     }
-    if (object_B_.is_excised()) {
-      grid_to_inertial_block_maps[12] = size_expansion_rotation(size_B_map);
-      grid_to_distorted_block_maps[12] = std::make_unique<
+    const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
+    if (is_excised_b_) {
+      CompressionMap size_B_map{size_map_function_of_time_names_[1],
+                                std::get<Object>(object_B_).inner_radius,
+                                std::get<Object>(object_B_).outer_radius,
+                                {{x_coord_b_, 0.0, 0.0}}};
+      grid_to_inertial_block_maps[first_block_object_B] =
+          size_expansion_rotation(size_B_map);
+      grid_to_distorted_block_maps[first_block_object_B] = std::make_unique<
           CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
           size_B_map);
-      distorted_to_inertial_block_maps[12] =
+      distorted_to_inertial_block_maps[first_block_object_B] =
           expansion_rotation(Frame::Distorted{}, Frame::Inertial{});
     } else {
-      grid_to_inertial_block_maps[12] =
+      grid_to_inertial_block_maps[first_block_object_B] =
           grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
     }
 
     // Fill in the rest of the block maps by cloning the relevant maps
     for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
-      if (block < 6) {
+      if ((not use_single_block_a_) and block < 6) {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[0]->get_clone();
         grid_to_distorted_block_maps[block] =
             grid_to_distorted_block_maps[0]->get_clone();
         distorted_to_inertial_block_maps[block] =
             distorted_to_inertial_block_maps[0]->get_clone();
-      } else if (block == 12) {
-        continue;  // block 12 already initialized
-      } else if (block > 12 and block < 18) {
+      } else if (block == first_block_object_B) {
+        continue;  // already initialized
+      } else if ((not use_single_block_b_) and block > first_block_object_B and
+                 block < first_block_object_B + 6) {
         grid_to_inertial_block_maps[block] =
-            grid_to_inertial_block_maps[12]->get_clone();
+            grid_to_inertial_block_maps[first_block_object_B]->get_clone();
         grid_to_distorted_block_maps[block] =
-            grid_to_distorted_block_maps[12]->get_clone();
+            grid_to_distorted_block_maps[first_block_object_B]->get_clone();
         distorted_to_inertial_block_maps[block] =
-            distorted_to_inertial_block_maps[12]->get_clone();
+            distorted_to_inertial_block_maps[first_block_object_B]->get_clone();
       } else {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
       }
     }
-
     // Finally, inject the time dependent maps into the corresponding blocks
     for (size_t block = 0; block < number_of_blocks_; ++block) {
       domain.inject_time_dependent_map_for_block(
@@ -614,18 +701,25 @@ BinaryCompactObject::external_boundary_conditions() const {
   // Excision surfaces
   for (size_t i = 0; i < 6; ++i) {
     // Block 0 - 5 wrap excision surface A
-    if (object_A_.is_excised()) {
+    if (is_excised_a_) {
       boundary_conditions[i][Direction<3>::lower_zeta()] =
-          (*object_A_.inner_boundary_condition)->get_clone();
+          (*(std::get<Object>(object_A_).inner_boundary_condition))
+              ->get_clone();
     }
-    // Blocks 12 - 17 wrap excision surface B
-    if (object_B_.is_excised()) {
-      boundary_conditions[i + 12][Direction<3>::lower_zeta()] =
-          (*object_B_.inner_boundary_condition)->get_clone();
+    // Blocks 12 - 17 or 1 - 6 wrap excision surface B
+    const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
+    if (is_excised_b_) {
+      boundary_conditions[i +
+                          first_block_object_B][Direction<3>::lower_zeta()] =
+          (*(std::get<Object>(object_B_).inner_boundary_condition))
+              ->get_clone();
     }
   }
   // Outer boundary
-  const size_t offset_outer_blocks = 34;
+  const size_t offset_outer_blocks =
+      (use_single_block_a_ and use_single_block_b_)
+          ? 12
+          : ((use_single_block_a_ or use_single_block_b_) ? 23 : 34);
   for (size_t i = 0; i < 10; ++i) {
     boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
         outer_boundary_condition_->get_clone();
