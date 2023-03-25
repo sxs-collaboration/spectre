@@ -5,6 +5,7 @@
 
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
+#include "ControlSystem/Measurements/CharSpeed.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -43,6 +44,34 @@ static_assert(tt::assert_conforms_to_v<
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::BothNSCenters,
                              control_system::protocols::Measurement>);
+
+static_assert(tt::assert_conforms_to_v<
+              control_system::measurements::CharSpeed<domain::ObjectLabel::A>,
+              control_system::protocols::Measurement>);
+
+static_assert(
+    tt::assert_conforms_to_v<control_system::measurements::CharSpeed<
+                                 domain::ObjectLabel::A>::Excision,
+                             control_system::protocols::Submeasurement>);
+
+static_assert(
+    tt::assert_conforms_to_v<control_system::measurements::CharSpeed<
+                                 domain::ObjectLabel::A>::Horizon,
+                             control_system::protocols::Submeasurement>);
+
+static_assert(
+    tt::assert_conforms_to_v<
+        control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+            Excision::interpolation_target_tag<
+                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
+        intrp::protocols::InterpolationTargetTag>);
+
+static_assert(
+    tt::assert_conforms_to_v<
+        control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+            Horizon::interpolation_target_tag<
+                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
+        intrp::protocols::InterpolationTargetTag>);
 
 namespace {
 
