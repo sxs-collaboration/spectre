@@ -24,6 +24,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -89,6 +90,10 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
         magnetic_field,
     const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
 
+    const gsl::not_null<std::optional<Variables<db::wrap_tags_in<
+        Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+        cell_centered_ghost_fluxes,
+
     const Direction<3>& direction,
 
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
@@ -98,13 +103,15 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
 
     // fd_interior_temporary_tags
     const Mesh<3>& subcell_mesh,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
+    const Scalar<DataVector>& interior_lapse,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
 
     // fd_interior_primitive_variables_tags
     const Scalar<DataVector>& interior_rest_mass_density,
     const Scalar<DataVector>& interior_electron_fraction,
     const Scalar<DataVector>& interior_pressure,
+    const Scalar<DataVector>& interior_specific_internal_energy,
     const Scalar<DataVector>& interior_lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
@@ -131,9 +138,12 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
   // higher-order DemandOutgoingCharSpeeds boundary condition.
 
   auto lapse_at_boundary = evolution::dg::subcell::slice_tensor_for_subcell(
-      lapse, subcell_extents, 1, direction);
+      interior_lapse, subcell_extents, 1, direction);
   auto shift_at_boundary = evolution::dg::subcell::slice_tensor_for_subcell(
-      shift, subcell_extents, 1, direction);
+      interior_shift, subcell_extents, 1, direction);
+  auto spatial_metric_at_boundary =
+      evolution::dg::subcell::slice_tensor_for_subcell(
+          interior_spatial_metric, subcell_extents, 1, direction);
 
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>> buffer{
       num_face_pts};
@@ -170,24 +180,41 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
     using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
     using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
     using Pressure = hydro::Tags::Pressure<DataVector>;
+    using SpecificInternalEnergy =
+        hydro::Tags::SpecificInternalEnergy<DataVector>;
     using LorentzFactorTimesSpatialVelocity =
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
     using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
     using DivergenceCleaningField =
         hydro::Tags::DivergenceCleaningField<DataVector>;
+    using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
+    using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
+    using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<>;
+    using SpatialMetric = gr::Tags::SpatialMetric<3>;
+    using InvSpatialMetric = gr::Tags::InverseSpatialMetric<3>;
+    using Lapse = gr::Tags::Lapse<>;
+    using Shift = gr::Tags::Shift<3>;
 
     using prim_tags_for_reconstruction =
         tmpl::list<RestMassDensity, ElectronFraction, Pressure,
                    LorentzFactorTimesSpatialVelocity, MagneticField,
                    DivergenceCleaningField>;
+    using fluxes_tags = tmpl::list<SpecificInternalEnergy, SpatialMetric, Lapse,
+                                   Shift, SpatialVelocity, LorentzFactor,
+                                   SqrtDetSpatialMetric, InvSpatialMetric>;
 
+    const bool need_tags_for_fluxes = cell_centered_ghost_fluxes->has_value();
     // Create a single large DV to reduce the number of Variables allocations
-    const size_t buffer_size_per_grid_pts =
-        (*rest_mass_density).size() + (*electron_fraction).size() +
-        (*pressure).size() + (*lorentz_factor_times_spatial_velocity).size() +
-        (*magnetic_field).size() + (*divergence_cleaning_field).size();
+    const size_t buffer_size_for_fluxes =
+        need_tags_for_fluxes
+            ? Variables<fluxes_tags>::number_of_independent_components
+            : 0;
+    const size_t buffer_size_per_grid_pts = Variables<
+        prim_tags_for_reconstruction>::number_of_independent_components;
     DataVector buffer_for_boundary_and_ghost_vars{
-        buffer_size_per_grid_pts * num_face_pts * (1 + ghost_zone_size), 0.0};
+        (buffer_size_per_grid_pts + buffer_size_for_fluxes) * num_face_pts *
+            (1 + ghost_zone_size),
+        0.0};
 
     // a Variables object to store prim variables on outermost layer of FD grid
     // points
@@ -196,7 +223,8 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
         buffer_size_per_grid_pts * num_face_pts};
     // a Variables object to store prim variables on ghost zone
     Variables<prim_tags_for_reconstruction> ghost_vars{
-        buffer_for_boundary_and_ghost_vars.data() + boundary_vars.size(),
+        std::next(buffer_for_boundary_and_ghost_vars.data(),
+                  static_cast<std::ptrdiff_t>(boundary_vars.size())),
         buffer_size_per_grid_pts * num_face_pts * ghost_zone_size};
 
     auto get_boundary_val = [&direction, &subcell_extents](auto volume_tensor) {
@@ -238,6 +266,91 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
         get<LorentzFactorTimesSpatialVelocity>(ghost_vars);
     *magnetic_field = get<MagneticField>(ghost_vars);
     *divergence_cleaning_field = get<DivergenceCleaningField>(ghost_vars);
+
+    if (need_tags_for_fluxes) {
+      Variables<fluxes_tags> outermost_fluxes_vars{
+          std::next(ghost_vars.data(),
+                    static_cast<std::ptrdiff_t>(ghost_vars.size())),
+          num_face_pts * buffer_size_for_fluxes};
+      Variables<fluxes_tags> ghost_fluxes_vars{
+          std::next(outermost_fluxes_vars.data(),
+                    static_cast<std::ptrdiff_t>(outermost_fluxes_vars.size())),
+          num_face_pts * buffer_size_for_fluxes * ghost_zone_size};
+
+      get<SpecificInternalEnergy>(outermost_fluxes_vars) =
+          get_boundary_val(interior_specific_internal_energy);
+      get<SpatialMetric>(outermost_fluxes_vars) =
+          get_boundary_val(interior_spatial_metric);
+      get<Lapse>(outermost_fluxes_vars) = get_boundary_val(interior_lapse);
+      get<Shift>(outermost_fluxes_vars) = get_boundary_val(interior_shift);
+
+      for (size_t i_ghost = 0; i_ghost < ghost_zone_size; ++i_ghost) {
+        add_slice_to_data(make_not_null(&ghost_fluxes_vars),
+                          outermost_fluxes_vars, ghost_data_extents,
+                          dim_direction, i_ghost);
+      }
+
+      determinant_and_inverse(
+          make_not_null(&get<SqrtDetSpatialMetric>(ghost_fluxes_vars)),
+          make_not_null(&get<InvSpatialMetric>(ghost_fluxes_vars)),
+          get<SpatialMetric>(ghost_fluxes_vars));
+      get(get<SqrtDetSpatialMetric>(ghost_fluxes_vars)) =
+          sqrt(get(get<SqrtDetSpatialMetric>(ghost_fluxes_vars)));
+      tenex::evaluate(
+          make_not_null(&get<LorentzFactor>(ghost_fluxes_vars)),
+          sqrt(1.0 + get<SpatialMetric>(ghost_fluxes_vars)(ti::i, ti::j) *
+                         (*lorentz_factor_times_spatial_velocity)(ti::I) *
+                         (*lorentz_factor_times_spatial_velocity)(ti::J)));
+      tenex::evaluate<ti::I>(
+          make_not_null(&get<SpatialVelocity>(ghost_fluxes_vars)),
+          (*lorentz_factor_times_spatial_velocity)(ti::I) /
+              get<LorentzFactor>(ghost_fluxes_vars)());
+
+      Variables<typename System::variables_tag::tags_list> temp_vars(
+          get(*rest_mass_density).size());
+
+      ConservativeFromPrimitive::apply(
+          make_not_null(&get<Tags::TildeD>(temp_vars)),
+          make_not_null(&get<Tags::TildeYe>(temp_vars)),
+          make_not_null(&get<Tags::TildeTau>(temp_vars)),
+          make_not_null(&get<Tags::TildeS<>>(temp_vars)),
+          make_not_null(&get<Tags::TildeB<>>(temp_vars)),
+          make_not_null(&get<Tags::TildePhi>(temp_vars)),
+
+          // Note: Only the spatial velocity changes.
+          *rest_mass_density, *electron_fraction,
+          get<SpecificInternalEnergy>(ghost_fluxes_vars), *pressure,
+          get<SpatialVelocity>(ghost_fluxes_vars),
+          get<LorentzFactor>(ghost_fluxes_vars), *magnetic_field,
+
+          get<SqrtDetSpatialMetric>(ghost_fluxes_vars),
+          get<SpatialMetric>(ghost_fluxes_vars), *divergence_cleaning_field);
+
+      ComputeFluxes::apply(
+          make_not_null(
+              &get<Flux<Tags::TildeD>>(cell_centered_ghost_fluxes->value())),
+          make_not_null(
+              &get<Flux<Tags::TildeYe>>(cell_centered_ghost_fluxes->value())),
+          make_not_null(
+              &get<Flux<Tags::TildeTau>>(cell_centered_ghost_fluxes->value())),
+          make_not_null(
+              &get<Flux<Tags::TildeS<>>>(cell_centered_ghost_fluxes->value())),
+          make_not_null(
+              &get<Flux<Tags::TildeB<>>>(cell_centered_ghost_fluxes->value())),
+          make_not_null(
+              &get<Flux<Tags::TildePhi>>(cell_centered_ghost_fluxes->value())),
+
+          get<Tags::TildeD>(temp_vars), get<Tags::TildeYe>(temp_vars),
+          get<Tags::TildeTau>(temp_vars), get<Tags::TildeS<>>(temp_vars),
+          get<Tags::TildeB<>>(temp_vars), get<Tags::TildePhi>(temp_vars),
+
+          get<Lapse>(ghost_fluxes_vars), get<Shift>(ghost_fluxes_vars),
+          get<SqrtDetSpatialMetric>(ghost_fluxes_vars),
+          get<SpatialMetric>(ghost_fluxes_vars),
+          get<InvSpatialMetric>(ghost_fluxes_vars), *pressure,
+          get<SpatialVelocity>(ghost_fluxes_vars),
+          get<LorentzFactor>(ghost_fluxes_vars), *magnetic_field);
+    }
   }
 }
 

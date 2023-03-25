@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -17,6 +18,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -29,6 +31,10 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 /// directed out of the domain; no boundary data is altered by this boundary
 /// condition.
 class DemandOutgoingCharSpeeds final : public BoundaryCondition {
+ private:
+  template <typename T>
+  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -79,11 +85,12 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
   using fd_interior_temporary_tags =
       tmpl::list<evolution::dg::subcell::Tags::Mesh<3>,
                  gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::Lapse<DataVector>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::SpatialMetric<3>>;
   using fd_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -91,14 +98,17 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
   using fd_gridless_tags = tmpl::list<fd::Tags::Reconstructor>;
 
   static void fd_demand_outgoing_char_speeds(
-      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-      const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-      const gsl::not_null<Scalar<DataVector>*> pressure,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          magnetic_field,
-      const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
+      gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+
+      gsl::not_null<std::optional<Variables<db::wrap_tags_in<
+          Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+          cell_centered_ghost_fluxes,
 
       const Direction<3>& direction,
 
@@ -109,13 +119,15 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
 
       // fd_interior_temporary_tags
       const Mesh<3>& subcell_mesh,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-      const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
+      const Scalar<DataVector>& interior_lapse,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
 
       // fd_interior_primitive_variables_tags
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,

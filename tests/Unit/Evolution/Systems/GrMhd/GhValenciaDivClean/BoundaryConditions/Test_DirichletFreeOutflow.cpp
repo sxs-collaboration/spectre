@@ -283,6 +283,11 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   });
 }
 
+namespace {
+template <typename T>
+using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+}  // namespace
+
 template <typename T, typename U>
 void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   std::uniform_real_distribution<> dist(0.1, 1.0);
@@ -415,17 +420,38 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
          lorentz_factor_times_spatial_velocity, magnetic_field,
          divergence_cleaning_field, spacetime_metric, pi, phi] = vars;
 
+  // Note: Once we support high-order fluxes with GHMHD we will need to
+  // handle this correctly.
+  std::optional<Variables<db::wrap_tags_in<
+      Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>
+      cell_centered_ghost_fluxes{std::nullopt};
+  // Set to zero since it shouldn't be used
+  Scalar<DataVector> interior_specific_internal_energy{};
+  Scalar<DataVector> specific_internal_energy{};
+  tnsr::I<DataVector, 3> spatial_velocity{};
+  Scalar<DataVector> lorentz_factor{};
+  const tnsr::I<DataVector, 3> interior_shift{};
+  const Scalar<DataVector> interior_lapse{};
+  const tnsr::ii<DataVector, 3> interior_spatial_metric{};
+  tnsr::ii<DataVector, 3> spatial_metric{};
+  tnsr::II<DataVector, 3> inv_spatial_metric{};
+  Scalar<DataVector> sqrt_det_spatial_metric{};
+  Scalar<DataVector> lapse{};
+  tnsr::I<DataVector, 3> shift{};
+
   boundary_condition.fd_ghost(
       make_not_null(&spacetime_metric), make_not_null(&pi), make_not_null(&phi),
       make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
       make_not_null(&pressure),
       make_not_null(&lorentz_factor_times_spatial_velocity),
       make_not_null(&magnetic_field), make_not_null(&divergence_cleaning_field),
+
       direction, subcell_mesh,
 
       get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
       get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
       get<hydro::Tags::Pressure<DataVector>>(prim_vars),
+      interior_specific_internal_energy,
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(prim_vars),
       get<hydro::Tags::MagneticField<DataVector, 3>>(prim_vars),
@@ -445,21 +471,38 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
       make_not_null(&rest_mass_density_expected),
       make_not_null(&electron_fraction_expected),
       make_not_null(&pressure_expected),
+      make_not_null(&specific_internal_energy),
       make_not_null(&lorentz_factor_times_spatial_velocity_expected),
+      make_not_null(&spatial_velocity), make_not_null(&lorentz_factor),
       make_not_null(&magnetic_field_expected),
-      make_not_null(&divergence_cleaning_field_expected), direction,
-      subcell_mesh,
+      make_not_null(&divergence_cleaning_field_expected),
+
+      make_not_null(&spatial_metric), make_not_null(&inv_spatial_metric),
+      make_not_null(&sqrt_det_spatial_metric), make_not_null(&lapse),
+      make_not_null(&shift),
+
+      direction, subcell_mesh,
 
       get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
       get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
       get<hydro::Tags::Pressure<DataVector>>(prim_vars),
+      interior_specific_internal_energy,
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(prim_vars),
       get<hydro::Tags::MagneticField<DataVector, 3>>(prim_vars),
 
-      reconstructor.ghost_zone_size());
+      // Note: metric vars are empty because they shouldn't be used
+      interior_spatial_metric, interior_lapse, interior_shift,
 
-  CHECK(vars == expected_vars);
+      reconstructor.ghost_zone_size(),
+
+      cell_centered_ghost_fluxes.has_value());
+
+  tmpl::for_each<typename Vars::tags_list>([&expected_vars, &vars](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CAPTURE(pretty_type::short_name<tag>());
+    CHECK(get<tag>(vars) == get<tag>(expected_vars));
+  });
 }
 }  // namespace
 
