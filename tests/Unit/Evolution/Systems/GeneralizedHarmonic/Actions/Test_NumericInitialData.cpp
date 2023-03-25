@@ -84,8 +84,6 @@ struct MockReadVolumeData {
                 selected_fields) == "CustomSpacetimeMetric");
       CHECK(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
                 selected_fields) == "CustomPi");
-      CHECK(get<importers::Tags::Selected<Tags::Phi<3, Frame::Inertial>>>(
-                selected_fields) == "CustomPhi");
       CHECK_FALSE(get<importers::Tags::Selected<
                       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
           selected_fields));
@@ -115,8 +113,6 @@ struct MockReadVolumeData {
               gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>>(
               selected_fields));
       CHECK_FALSE(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
-          selected_fields));
-      CHECK_FALSE(get<importers::Tags::Selected<Tags::Phi<3, Frame::Inertial>>>(
           selected_fields));
     } else {
       REQUIRE(false);
@@ -215,8 +211,6 @@ void test_numeric_initial_data(
             kerr_gh_vars);
     get<Tags::Pi<3, Frame::Inertial>>(inbox) =
         get<Tags::Pi<3, Frame::Inertial>>(kerr_gh_vars);
-    get<Tags::Phi<3, Frame::Inertial>>(inbox) =
-        get<Tags::Phi<3, Frame::Inertial>>(kerr_gh_vars);
   } else if (std::holds_alternative<detail::Adm>(selected_vars)) {
     const auto kerr_adm_vars = kerr.variables(
         coords, 0.,
@@ -263,11 +257,9 @@ void test_numeric_initial_data(
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
                   "[Unit][Evolution]") {
   test_numeric_initial_data(
-      detail::GeneralizedHarmonic{"CustomSpacetimeMetric", "CustomPi",
-                                  "CustomPhi"},
+      detail::GeneralizedHarmonic{"CustomSpacetimeMetric", "CustomPi"},
       "SpacetimeMetric: CustomSpacetimeMetric\n"
-      "Pi: CustomPi\n"
-      "Phi: CustomPhi");
+      "Pi: CustomPi\n");
   test_numeric_initial_data(
       detail::Adm{"CustomSpatialMetric", "CustomLapse", "CustomShift",
                   "CustomExtrinsicCurvature"},
