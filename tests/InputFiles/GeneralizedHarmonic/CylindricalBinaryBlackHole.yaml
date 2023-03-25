@@ -6,29 +6,7 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
-  Singletons:
-    ObservationAhA:
-      Proc: Auto
-      Exclusive: true
-    ObservationAhB:
-      Proc: Auto
-      Exclusive: true
-    ControlSystemAhA:
-      Proc: Auto
-      Exclusive: true
-    ControlSystemAhB:
-      Proc: Auto
-      Exclusive: true
-    MemoryMonitor: Auto
-    Rotation: Auto
-    Expansion: Auto
-    BondiSachsInterpolation: Auto
-    ObservationExcisionBoundaryA:
-      Proc: Auto
-      Exclusive: false
-    ObservationExcisionBoundaryB:
-      Proc: Auto
-      Exclusive: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -50,49 +28,32 @@ Evolution:
       Order: 5
 
 DomainCreator:
-  BinaryCompactObject:
-    ObjectA:
-      InnerRadius: 0.7925
-      OuterRadius: 6.683
-      XCoord: &XCoordA 7.683
-      Interior:
-        ExciseWithBoundaryCondition:
-          DemandOutgoingCharSpeeds:
-      UseLogarithmicMap: true
-    ObjectB:
-      InnerRadius: 0.7925
-      OuterRadius: 6.683
-      XCoord: &XCoordB -7.683
-      Interior:
-        ExciseWithBoundaryCondition:
-          DemandOutgoingCharSpeeds:
-      UseLogarithmicMap: true
-    Envelope:
-      Radius: 100.0
-      UseProjectiveMap: true
-    OuterShell:
-      Radius: 1493.0
-      RadialDistribution: Logarithmic
-      BoundaryCondition:
+  CylindricalBinaryCompactObject:
+    CenterA: &CenterA [&XCoordA 7.683, 0.0, 0.0]
+    CenterB: &CenterB [&XCoordB -7.683, 0.0, 0.0]
+    RadiusA: &RadiusA 0.45825
+    RadiusB: &RadiusB 0.45825
+    IncludeInnerSphereA: true
+    IncludeInnerSphereB: true
+    IncludeOuterSphere: true
+    UseEquiangularMap: true
+    OuterRadius: 300.0
+    InitialRefinement: 2
+    InitialGridPoints: 7
+    BoundaryConditions:
+      InnerBoundary:
+        DemandOutgoingCharSpeeds:
+      OuterBoundary:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
-    UseEquiangularMap: True
-    InitialRefinement:
-      ObjectAShell:   [3, 3, 4]
-      ObjectACube:    [2, 2, 1]
-      ObjectBShell:   [3, 3, 4]
-      ObjectBCube:    [2, 2, 1]
-      Envelope:       [2, 2, 3]
-      OuterShell:     [2, 2, 5]
-    InitialGridPoints: 5
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
-        InitialValues: [1.0, 0.0]
+        InitialValues: [1.0, -4.6148457646200002e-05]
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:
-        InitialAngularVelocity: [0.0, 0.0, 0.0]
+        InitialAngularVelocity: [0.0, 0.0, 1.5264577062000000e-02]
       SizeMapA:
         InitialValues: [0.0, 0.0, 0.0]
       SizeMapB:
@@ -102,7 +63,7 @@ EventsAndDenseTriggers:
 
 # Set gauge and constraint damping parameters.
 # The values here are chosen empirically based on values that proved
-# sucessful in SpEC evolutions of binary black holes.
+# successful in SpEC evolutions of binary black holes.
 # Note: Gaussian width = W / sqrt(34.54), so exp(-W^2/w^2) = 1e-15 at x=W,
 # is used in the damped-harmonic gauge parameters.
 # In SpEC, GaugeItems.input set what spectre calls W and spec calls
@@ -192,7 +153,7 @@ EventsAndTriggers:
             Components: Sum
   - - Slabs:
         EvenlySpaced:
-          Interval: 1000
+          Interval: 20
           Offset: 0
     - - ObserveFields:
           SubfileName: VolumeData
@@ -212,12 +173,6 @@ EventsAndTriggers:
           Offset: 0
     - - ObservationAhA
       - ObservationAhB
-  - - Slabs:
-        EvenlySpaced:
-          Interval: 1
-          Offset: 0
-    - - ObservationExcisionBoundaryA
-      - ObservationExcisionBoundaryB
   - - Slabs:
         EvenlySpaced:
           Interval: 100
@@ -271,14 +226,14 @@ InterpolationTargets:
     AngularOrdering: Cce
   ObservationExcisionBoundaryA:
     Lmax: 10
-    Center: [0., 0., 0.]
-    Radius: 2.0
-    AngularOrdering: "Strahlkorper"
+    Radius: *RadiusA
+    Center: *CenterA
+    AngularOrdering: Strahlkorper
   ObservationExcisionBoundaryB:
     Lmax: 10
-    Center: [0., 0., 0.]
-    Radius: 2.0
-    AngularOrdering: "Strahlkorper"
+    Radius: *RadiusB
+    Center: *CenterB
+    AngularOrdering: Strahlkorper
 
 Cce:
   BondiSachsOutputFilePrefix: "BondiSachs"

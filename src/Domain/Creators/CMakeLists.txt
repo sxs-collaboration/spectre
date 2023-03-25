@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AlignedLattice.cpp
   BinaryCompactObject.cpp
+  BinaryCompactObjectHelpers.cpp
   Brick.cpp
   Cylinder.cpp
   CylindricalBinaryCompactObject.cpp
