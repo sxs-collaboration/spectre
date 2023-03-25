@@ -75,7 +75,7 @@ void test(const TestThis& test_this) {
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,
-      std::nullopt};
+      fd::DerivativeOrder::Two};
 
   const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
       ScalarAdvection::subcell::TciOnFdGrid<Dim>::apply(

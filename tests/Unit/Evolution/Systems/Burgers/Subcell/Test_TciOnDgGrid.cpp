@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TciOnDgGrid",
         evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
         false,
         std::nullopt,
-        std::nullopt};
+        fd::DerivativeOrder::Two};
 
     const bool element_stays_on_dg = false;
     const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =

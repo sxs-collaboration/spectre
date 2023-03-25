@@ -98,7 +98,7 @@ SpatialDiscretization:
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: True
       OnlyDgBlocksAndGroups: [Wedges]
-      FiniteDifferenceDerivativeOrder: Auto
+      FiniteDifferenceDerivativeOrder: 2
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20

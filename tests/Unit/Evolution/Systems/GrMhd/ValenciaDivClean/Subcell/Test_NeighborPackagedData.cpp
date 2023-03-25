@@ -273,7 +273,7 @@ double test(const size_t num_dg_pts) {
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, std::nullopt});
+          std::nullopt, ::fd::DerivativeOrder::Two});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   std::vector<std::pair<Direction<3>, ElementId<3>>>

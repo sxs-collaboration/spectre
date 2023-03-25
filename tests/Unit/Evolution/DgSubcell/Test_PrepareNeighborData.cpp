@@ -201,7 +201,7 @@ void test(const bool all_neighbors_are_doing_dg) {
               all_neighbors_are_doing_dg
                   ? std::optional{std::vector<std::string>{"Block1"}}
                   : std::optional<std::vector<std::string>>{},
-              std::nullopt},
+              ::fd::DerivativeOrder::Two},
           TestCreator<Dim>{}};
 
   auto box =

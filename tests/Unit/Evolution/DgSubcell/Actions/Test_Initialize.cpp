@@ -216,7 +216,7 @@ void test(const bool always_use_subcell, const bool interior_element,
                allow_subcell_in_block
                    ? std::optional<std::vector<std::string>>{}
                    : std::optional{std::vector<std::string>{"Block0"}},
-               std::nullopt},
+               ::fd::DerivativeOrder::Two},
            TestCreator<Dim>{}}}};
   Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
