@@ -657,6 +657,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              elliptic::BoundaryConditionType::Dirichlet),
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       const ElementId<3> self_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
       const ElementId<3> neighbor_id_xi{0, {{{1, 1}, {1, 0}, {1, 0}}}};
@@ -742,6 +748,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{12, 12, 12}},
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              elliptic::BoundaryConditionType::Dirichlet),
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),

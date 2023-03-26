@@ -83,9 +83,12 @@ class Brick : public DomainCreator<3> {
         "The time dependence of the moving mesh domain."};
   };
 
-  template <typename BoundaryConditionsBase>
+  template <typename BoundaryConditionsBase, size_t Dim>
   struct BoundaryCondition {
-    static std::string name() { return "BoundaryCondition"; }
+    static std::string name() {
+      return "BoundaryConditionIn" +
+             std::string{Dim == 0 ? 'X' : (Dim == 1 ? 'Y' : 'Z')};
+    }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -101,9 +104,19 @@ class Brick : public DomainCreator<3> {
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
-          tmpl::list<BoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>>,
+          tmpl::list<
+              BoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>,
+                  0>,
+              BoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>,
+                  1>,
+              BoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>,
+                  2>>,
           options_periodic>,
       tmpl::list<TimeDependence>>;
 
@@ -122,7 +135,11 @@ class Brick : public DomainCreator<3> {
         typename InitialRefinement::type initial_refinement_level_xyz,
         typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-            boundary_condition = nullptr,
+            boundary_condition_in_x = nullptr,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+            boundary_condition_in_y = nullptr,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+            boundary_condition_in_z = nullptr,
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
             time_dependence = nullptr,
         const Options::Context& context = {});
@@ -161,7 +178,11 @@ class Brick : public DomainCreator<3> {
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition_;
+      boundary_condition_in_x_;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      boundary_condition_in_y_;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      boundary_condition_in_z_;
   inline static const std::vector<std::string> block_names_{"Brick"};
 };
 }  // namespace creators

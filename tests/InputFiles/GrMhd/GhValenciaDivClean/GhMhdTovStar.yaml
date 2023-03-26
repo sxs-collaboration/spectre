@@ -43,7 +43,11 @@ DomainCreator:
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [3, 3, 3]
     TimeDependence: None
-    BoundaryCondition:
+    BoundaryConditionInX:
+      DirichletAnalytic:
+    BoundaryConditionInY:
+      DirichletAnalytic:
+    BoundaryConditionInZ:
       DirichletAnalytic:
 
 VariableFixing:

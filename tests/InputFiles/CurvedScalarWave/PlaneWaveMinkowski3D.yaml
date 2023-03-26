@@ -57,7 +57,9 @@ DomainCreator:
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [6, 6, 6]
     TimeDependence: None
-    BoundaryCondition: Periodic
+    BoundaryConditionInX: Periodic
+    BoundaryConditionInY: Periodic
+    BoundaryConditionInZ: Periodic
 
 SpatialDiscretization:
   BoundaryCorrection:
