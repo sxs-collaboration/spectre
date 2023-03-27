@@ -11,6 +11,7 @@
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Shape.hpp"
+#include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -54,7 +55,8 @@ namespace control_system::Systems {
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Shape Shape \endlink control error
  */
-template <::domain::ObjectLabel Horizon, size_t DerivOrder>
+template <::domain::ObjectLabel Horizon, size_t DerivOrder,
+          typename Measurement>
 struct Shape : tt::ConformsTo<protocols::ControlSystem> {
   static constexpr size_t deriv_order = DerivOrder;
 
@@ -80,7 +82,12 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     }
   }
 
-  using measurement = measurements::SingleHorizon<Horizon>;
+  using measurement = Measurement;
+  static_assert(
+      std::is_same_v<measurement, measurements::SingleHorizon<Horizon>> or
+          std::is_same_v<measurement, measurements::BothHorizons>,
+      "Must use either SingleHorizon or BothHorizon measurement for Shape "
+      "control system.");
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
@@ -108,12 +115,36 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
-          ControlComponent<Metavariables, Shape<Horizon, DerivOrder>>>(cache);
+          ControlComponent<Metavariables, Shape>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
           UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                        strahlkorper);
+    }
+
+    template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
+    static void apply(
+        measurements::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
+        const Strahlkorper<Frame::Distorted>& strahlkorper,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const LinkedMessageId<double>& measurement_id) {
+      // The measurement event will call this for both horizons, but we only
+      // need one of the horizons. So if it is called for the wrong horizon,
+      // just do nothing.
+      if constexpr (MeasureHorizon == Horizon) {
+        auto& control_sys_proxy = Parallel::get_parallel_component<
+            ControlComponent<Metavariables, Shape>>(cache);
+
+        Parallel::simple_action<::Actions::UpdateMessageQueue<
+            QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
+            UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
+                                         strahlkorper);
+      } else {
+        (void)strahlkorper;
+        (void)cache;
+        (void)measurement_id;
+      }
     }
   };
 };

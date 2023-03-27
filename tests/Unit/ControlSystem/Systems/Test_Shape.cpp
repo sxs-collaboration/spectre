@@ -455,7 +455,8 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
 }
 
 void test_names() {
-  using shape = control_system::Systems::Shape<::domain::ObjectLabel::A, 2>;
+  using shape = control_system::Systems::Shape<::domain::ObjectLabel::A, 2,
+                                               measurements::BothHorizons>;
 
   CHECK(pretty_type::name<shape>() == "ShapeA");
 
