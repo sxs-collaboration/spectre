@@ -18,20 +18,17 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Tags.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-void test_options_empty_success() {
-  Options::Parser<tmpl::list<>> opts("");
-  opts.parse("");
-  // Catch requires us to have at least one CHECK in each test
-  // The Unit.Options.Empty.success does not need to check anything
-  CHECK(true);
-}
+void test_options_empty() {
+  {
+    // Check for no error.
+    Options::Parser<tmpl::list<>> opts("");
+    opts.parse("");
+  }
 
-SPECTRE_TEST_CASE("Unit.Options.Empty.extra", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<>> opts("");
@@ -39,16 +36,16 @@ SPECTRE_TEST_CASE("Unit.Options.Empty.extra", "[Unit][Options]") {
       }(),
       Catch::Contains(
           "At line 1 column 1:\nOption 'Option' is not a valid option."));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<>> opts("");
+        opts.parse("4");
+      }(),
+      Catch::Contains("\n'4' does not look like options"));
 }
 
-// [[OutputRegex, In string:.*'4' does not look like options]]
-SPECTRE_TEST_CASE("Unit.Options.Empty.not_map", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<>> opts("");
-  opts.parse("4");
-}
-
-SPECTRE_TEST_CASE("Unit.Options.syntax_error", "[Unit][Options]") {
+void test_options_syntax_error() {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<>> opts("");
@@ -76,7 +73,7 @@ struct NamedSimple {
       "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 
-void test_options_simple_success() {
+void test_options_simple() {
   {
     Options::Parser<tmpl::list<Simple>> opts("");
     opts.parse("Simple: -4");
@@ -87,6 +84,83 @@ void test_options_simple_success() {
     opts.parse("SomeName: -4");
     CHECK(opts.get<NamedSimple>() == -4);
   }
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Simple>> opts("");
+        opts.parse(
+            "Simple: -4\n"
+            "Simple: -3");
+      }(),
+      Catch::Contains("At line 2 column 1:\nOption 'Simple' specified twice."));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<NamedSimple>> opts("");
+        opts.parse(
+            "SomeName: -4\n"
+            "SomeName: -3");
+      }(),
+      Catch::Contains(
+          "At line 2 column 1:\nOption 'SomeName' specified twice."));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Simple>> opts("");
+        opts.parse("");
+      }(),
+      Catch::Contains("In string:\nYou did not specify the option (Simple)"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<NamedSimple>> opts("");
+        opts.parse("");
+      }(),
+      Catch::Contains("In string:\nYou did not specify the option (SomeName)"));
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        Options::Parser<tmpl::list<NamedSimple, Simple>> opts("");
+        opts.parse("");
+      }()),
+      Catch::Contains(
+          "In string:\nYou did not specify the options (SomeName,Simple)"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Simple>> opts("");
+        opts.parse("Simple:");
+        opts.get<Simple>();
+      }(),
+      Catch::Contains("While parsing option Simple:\nAt line 1 column "
+                      "1:\nFailed to convert value to type int:"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<NamedSimple>> opts("");
+        opts.parse("SomeName:");
+        opts.get<NamedSimple>();
+      }(),
+      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
+                      "1:\nFailed to convert value to type int:"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Simple>> opts("");
+        opts.parse("Simple: 2.3");
+        opts.get<Simple>();
+      }(),
+      Catch::Contains("While parsing option Simple:\nAt line 1 column "
+                      "9:\nFailed to convert value to type int: 2.3"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<NamedSimple>> opts("");
+        opts.parse("SomeName: 2.3");
+        opts.get<NamedSimple>();
+      }(),
+      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
+                      "11:\nFailed to convert value to type int: 2.3"));
 }
 
 void test_options_print_long_help() {
@@ -108,96 +182,6 @@ Options:
 )");
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<Simple>> opts("");
-        opts.parse(
-            "Simple: -4\n"
-            "Simple: -3");
-      }(),
-      Catch::Contains("At line 2 column 1:\nOption 'Simple' specified twice."));
-}
-
-SPECTRE_TEST_CASE("Unit.Options.NamedSimple.duplicate", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<NamedSimple>> opts("");
-        opts.parse(
-            "SomeName: -4\n"
-            "SomeName: -3");
-      }(),
-      Catch::Contains(
-          "At line 2 column 1:\nOption 'SomeName' specified twice."));
-}
-
-// [[OutputRegex, In string:.*You did not specify the option \(Simple\)]]
-SPECTRE_TEST_CASE("Unit.Options.Simple.missing", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<Simple>> opts("");
-  opts.parse("");
-}
-
-// [[OutputRegex, In string:.*You did not specify the option \(SomeName\)]]
-SPECTRE_TEST_CASE("Unit.Options.NamedSimple.missing", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<NamedSimple>> opts("");
-  opts.parse("");
-}
-
-// [[OutputRegex, In string:.*You did not specify the options
-// \(SomeName,Simple\)]]
-SPECTRE_TEST_CASE("Unit.Options.multiple_missing", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<NamedSimple, Simple>> opts("");
-  opts.parse("");
-}
-
-SPECTRE_TEST_CASE("Unit.Options.Simple.missing_arg", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<Simple>> opts("");
-        opts.parse("Simple:");
-        opts.get<Simple>();
-      }(),
-      Catch::Contains("While parsing option Simple:\nAt line 1 column "
-                      "1:\nFailed to convert value to type int:"));
-}
-
-SPECTRE_TEST_CASE("Unit.Options.NamedSimple.missing_arg", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<NamedSimple>> opts("");
-        opts.parse("SomeName:");
-        opts.get<NamedSimple>();
-      }(),
-      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
-                      "1:\nFailed to convert value to type int:"));
-}
-
-SPECTRE_TEST_CASE("Unit.Options.Simple.invalid", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<Simple>> opts("");
-        opts.parse("Simple: 2.3");
-        opts.get<Simple>();
-      }(),
-      Catch::Contains("While parsing option Simple:\nAt line 1 column "
-                      "9:\nFailed to convert value to type int: 2.3"));
-}
-
-SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<NamedSimple>> opts("");
-        opts.parse("SomeName: 2.3");
-        opts.get<NamedSimple>();
-      }(),
-      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
-                      "11:\nFailed to convert value to type int: 2.3"));
-}
-
-namespace {
 // [options_example_group]
 struct Group {
   static constexpr Options::String help = {"Group halp"};
@@ -275,20 +259,16 @@ void test_options_grouped() {
         "  TagWithTemplatedGroup: 3");
     CHECK(opts.get<TagWithTemplatedGroup>() == 3);
   }
-}
-}  // namespace
 
-// [[OutputRegex, In string:.*You did not specify the option \(OuterGroup\)]]
-SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_outer_group",
-                  "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<InnerGroupedTag>> opts("");
-  opts.parse("");
-  opts.get<InnerGroupedTag>();
-}
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<InnerGroupedTag>> opts("");
+        opts.parse("");
+        opts.get<InnerGroupedTag>();
+      }(),
+      Catch::Contains(
+          "In string:\nYou did not specify the option (OuterGroup)"));
 
-SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_inner_group",
-                  "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<InnerGroupedTag>> opts("");
@@ -311,62 +291,6 @@ struct Bounded {
 };
 // [options_example_scalar_struct]
 
-void test_options_suggested_followed() {
-  Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
-  opts.parse("Bounded: 8");
-  CHECK(opts.get<Bounded>() == 8);
-}
-
-void test_options_suggested_not_followed() {
-  // [options_example_scalar_parse]
-  Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
-  opts.parse("Bounded: 3");
-  CHECK(opts.get<Bounded>() == 3);
-  // [options_example_scalar_parse]
-}
-
-SPECTRE_TEST_CASE("Unit.Options.Bounded.below", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<Bounded>> opts("");
-        opts.parse("Bounded: 1");
-        opts.get<Bounded>();
-      }(),
-      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
-                      "10:\nValue 1 is below the lower bound of 2"));
-}
-
-void test_options_bounded_lower_bound() {
-  Options::Parser<tmpl::list<Bounded>> opts("");
-  opts.parse("Bounded: 2");
-  CHECK(opts.get<Bounded>() == 2);
-}
-
-void test_options_bounded_upper_bound() {
-  Options::Parser<tmpl::list<Bounded>> opts("");
-  opts.parse("Bounded: 10");
-  CHECK(opts.get<Bounded>() == 10);
-}
-
-SPECTRE_TEST_CASE("Unit.Options.Bounded.above", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<Bounded>> opts("");
-        opts.parse("Bounded: 11");
-        opts.get<Bounded>();
-      }(),
-      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
-                      "10:\nValue 11 is above the upper bound of 10"));
-}
-
-// [[OutputRegex, Bounded, line 1:.  Specified: 5.  Suggested: 3]]
-SPECTRE_TEST_CASE("Unit.Options.suggestion_warning", "[Unit][Options]") {
-  OUTPUT_TEST();
-  Options::Parser<tmpl::list<Bounded>> opts("");
-  opts.parse("Bounded: 5");
-  opts.get<Bounded>();
-}
-
 struct BadSuggestion {
   using type = int;
   static constexpr Options::String help = {"halp"};
@@ -381,7 +305,21 @@ struct NamedBadSuggestion {
   static type lower_bound() { return 4; }
 };
 
-SPECTRE_TEST_CASE("Unit.Options.BadSuggestion", "[Unit][Options]") {
+void test_options_suggested() {
+  {
+    Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
+    opts.parse("Bounded: 8");
+    CHECK(opts.get<Bounded>() == 8);
+  }
+
+  {
+    // [options_example_scalar_parse]
+    Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
+    opts.parse("Bounded: 3");
+    CHECK(opts.get<Bounded>() == 3);
+    // [options_example_scalar_parse]
+  }
+
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<BadSuggestion>> opts("");
@@ -390,9 +328,7 @@ SPECTRE_TEST_CASE("Unit.Options.BadSuggestion", "[Unit][Options]") {
       }(),
       Catch::Contains("Checking SUGGESTED value for BadSuggestion:\nValue 3 is "
                       "below the lower bound of 4"));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.NamedBadSuggestion", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<NamedBadSuggestion>> opts("");
@@ -401,6 +337,46 @@ SPECTRE_TEST_CASE("Unit.Options.NamedBadSuggestion", "[Unit][Options]") {
       }(),
       Catch::Contains("Checking SUGGESTED value for SomeName:\nValue 3 is "
                       "below the lower bound of 4"));
+}
+
+// [[OutputRegex, Bounded, line 1:.  Specified: 5.  Suggested: 3]]
+SPECTRE_TEST_CASE("Unit.Options.suggestion_warning", "[Unit][Options]") {
+  OUTPUT_TEST();
+  Options::Parser<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 5");
+  opts.get<Bounded>();
+}
+
+void test_options_bounded() {
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Bounded>> opts("");
+        opts.parse("Bounded: 1");
+        opts.get<Bounded>();
+      }(),
+      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
+                      "10:\nValue 1 is below the lower bound of 2"));
+
+  {
+    Options::Parser<tmpl::list<Bounded>> opts("");
+    opts.parse("Bounded: 2");
+    CHECK(opts.get<Bounded>() == 2);
+  }
+
+  {
+    Options::Parser<tmpl::list<Bounded>> opts("");
+    opts.parse("Bounded: 10");
+    CHECK(opts.get<Bounded>() == 10);
+  }
+
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Bounded>> opts("");
+        opts.parse("Bounded: 11");
+        opts.get<Bounded>();
+      }(),
+      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
+                      "10:\nValue 11 is above the upper bound of 10"));
 }
 
 // [options_example_vector_struct]
@@ -416,7 +392,7 @@ struct VectorOption {
 };
 // [options_example_vector_struct]
 
-SPECTRE_TEST_CASE("Unit.Options.Vector.too_short", "[Unit][Options]") {
+void test_options_bounded_vector() {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<VectorOption>> opts("");
@@ -426,21 +402,19 @@ SPECTRE_TEST_CASE("Unit.Options.Vector.too_short", "[Unit][Options]") {
       Catch::Contains(
           "While parsing option Vector:\nAt line 1 column 9:\nValue must have "
           "at least 2 entries, but 1 were given."));
-}
 
-void test_options_vector_lower_bound() {
-  Options::Parser<tmpl::list<VectorOption>> opts("");
-  opts.parse("Vector: [2,3]");
-  CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3}));
-}
+  {
+    Options::Parser<tmpl::list<VectorOption>> opts("");
+    opts.parse("Vector: [2,3]");
+    CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3}));
+  }
 
-void test_options_vector_upper_bound() {
-  Options::Parser<tmpl::list<VectorOption>> opts("");
-  opts.parse("Vector: [2, 3, 3, 3, 5]");
-  CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3, 3, 3, 5}));
-}
+  {
+    Options::Parser<tmpl::list<VectorOption>> opts("");
+    opts.parse("Vector: [2, 3, 3, 3, 5]");
+    CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3, 3, 3, 5}));
+  }
 
-SPECTRE_TEST_CASE("Unit.Options.Vector.too_long", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<VectorOption>> opts("");
@@ -450,9 +424,7 @@ SPECTRE_TEST_CASE("Unit.Options.Vector.too_long", "[Unit][Options]") {
       Catch::Contains(
           "While parsing option Vector:\nAt line 1 column 9:\nValue must have "
           "at most 5 entries, but 6 were given."));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.Vector.empty_too_short", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<VectorOption>> opts("");
@@ -469,7 +441,12 @@ struct Array {
   static constexpr Options::String help = {"halp"};
 };
 
-SPECTRE_TEST_CASE("Unit.Options.Array.too_short", "[Unit][Options]") {
+struct ZeroArray {
+  using type = std::array<int, 0>;
+  static constexpr Options::String help = {"halp"};
+};
+
+void test_options_array() {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Array>> opts("");
@@ -478,15 +455,13 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_short", "[Unit][Options]") {
       }(),
       Catch::Contains("While parsing option Array:\nAt line 1 column "
                       "8:\nFailed to convert value to type [int x3]: [1, 2]"));
-}
 
-void test_options_array_success() {
-  Options::Parser<tmpl::list<Array>> opts("");
-  opts.parse("Array: [1,2,3]");
-  CHECK(opts.get<Array>() == (std::array<int, 3>{{1, 2, 3}}));
-}
+  {
+    Options::Parser<tmpl::list<Array>> opts("");
+    opts.parse("Array: [1,2,3]");
+    CHECK(opts.get<Array>() == (std::array<int, 3>{{1, 2, 3}}));
+  }
 
-SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Array>> opts("");
@@ -496,9 +471,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
       Catch::Contains(
           "While parsing option Array:\nAt line 1 column 8:\nFailed to convert "
           "value to type [int x3]: [1, 2, 3, 4]"));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Array>> opts("");
@@ -513,9 +486,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
       Catch::Contains(
           "While parsing option Array:\nAt line 2 column 3:\nFailed to convert "
           "value to type [int x3]:\n  - 1\n  - 2\n  - 3\n  - 4"));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Array>> opts("");
@@ -524,20 +495,12 @@ SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
       }(),
       Catch::Contains("While parsing option Array:\nAt line 1 column "
                       "1:\nFailed to convert value to type [int x3]:"));
-}
 
-struct ZeroArray {
-  using type = std::array<int, 0>;
-  static constexpr Options::String help = {"halp"};
-};
-
-void test_options_zero_array_missing() {
-  Options::Parser<tmpl::list<ZeroArray>> opts("");
-  opts.parse("ZeroArray:");
-  opts.get<ZeroArray>();
-  // Catch requires us to have at least one CHECK in each test
-  // The Unit.Options.ZeroArray.missing does not need to check anything
-  CHECK(true);
+  {
+    Options::Parser<tmpl::list<ZeroArray>> opts("");
+    opts.parse("ZeroArray:");
+    opts.get<ZeroArray>();
+  }
 }
 
 struct Map {
@@ -545,25 +508,25 @@ struct Map {
   static constexpr Options::String help = {"halp"};
 };
 
-void test_options_map_success() {
-  Options::Parser<tmpl::list<Map>> opts("");
-  opts.parse(
-      "Map:\n"
-      "  A: 3\n"
-      "  Z: 2");
-  std::map<std::string, int> expected;
-  expected.emplace("A", 3);
-  expected.emplace("Z", 2);
-  CHECK(opts.get<Map>() == expected);
-}
+void test_options_map() {
+  {
+    Options::Parser<tmpl::list<Map>> opts("");
+    opts.parse(
+        "Map:\n"
+        "  A: 3\n"
+        "  Z: 2");
+    std::map<std::string, int> expected;
+    expected.emplace("A", 3);
+    expected.emplace("Z", 2);
+    CHECK(opts.get<Map>() == expected);
+  }
 
-void test_options_map_empty() {
-  Options::Parser<tmpl::list<Map>> opts("");
-  opts.parse("Map:");
-  CHECK(opts.get<Map>().empty());
-}
+  {
+    Options::Parser<tmpl::list<Map>> opts("");
+    opts.parse("Map:");
+    CHECK(opts.get<Map>().empty());
+  }
 
-SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Map>> opts("");
@@ -572,9 +535,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
       }(),
       Catch::Contains("While parsing option Map:\nAt line 1 column 6:\nFailed "
                       "to convert value to type {string: int}: string"));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Map>> opts("");
@@ -592,7 +553,7 @@ struct UnorderedMap {
   static constexpr Options::String help = {"halp"};
 };
 
-void test_options_unordered_map_success() {
+void test_options_unordered_map() {
   Options::Parser<tmpl::list<UnorderedMap>> opts("");
   opts.parse(
       "UnorderedMap:\n"
@@ -611,32 +572,32 @@ struct VariantTag {
 };
 
 void test_options_variant() {
-  const auto check = [](const std::string& input, const auto& expected) {
-    using Tag = tmpl::wrap<std::decay_t<decltype(expected)>, VariantTag>;
-    Options::Parser<tmpl::list<Tag>> opts("");
-    opts.parse("VariantTag: " + input);
-    CHECK(opts.template get<Tag>() == expected);
-  };
-  check("3", std::variant<int>(std::in_place_type_t<int>{}, 3));
-  check("Hello", std::variant<std::string>(std::in_place_type_t<std::string>{},
-                                           "Hello"));
-  check("3", std::variant<int, std::string>(std::in_place_type_t<int>{}, 3));
-  check("Hello", std::variant<int, std::string>(
-                     std::in_place_type_t<std::string>{}, "Hello"));
-  check("3", std::variant<std::string, int>(std::in_place_type_t<std::string>{},
-                                            "3"));
-  check("Hello", std::variant<std::string, int>(
-                     std::in_place_type_t<std::string>{}, "Hello"));
-
   {
-    const std::string help_text =
-        Options::Parser<tmpl::list<VariantTag<int, std::string>>>("").help();
-    CAPTURE(help_text);
-    CHECK(help_text.find("type=int or string\n") != std::string::npos);
-  }
-}
+    const auto check = [](const std::string& input, const auto& expected) {
+      using Tag = tmpl::wrap<std::decay_t<decltype(expected)>, VariantTag>;
+      Options::Parser<tmpl::list<Tag>> opts("");
+      opts.parse("VariantTag: " + input);
+      CHECK(opts.template get<Tag>() == expected);
+    };
+    check("3", std::variant<int>(std::in_place_type_t<int>{}, 3));
+    check("Hello", std::variant<std::string>(
+                       std::in_place_type_t<std::string>{}, "Hello"));
+    check("3", std::variant<int, std::string>(std::in_place_type_t<int>{}, 3));
+    check("Hello", std::variant<int, std::string>(
+                       std::in_place_type_t<std::string>{}, "Hello"));
+    check("3", std::variant<std::string, int>(
+                   std::in_place_type_t<std::string>{}, "3"));
+    check("Hello", std::variant<std::string, int>(
+                       std::in_place_type_t<std::string>{}, "Hello"));
 
-SPECTRE_TEST_CASE("Unit.Options.Format.variant.Error", "[Unit][Options]") {
+    {
+      const std::string help_text =
+          Options::Parser<tmpl::list<VariantTag<int, std::string>>>("").help();
+      CAPTURE(help_text);
+      CHECK(help_text.find("type=int or string\n") != std::string::npos);
+    }
+  }
+
   using tag = VariantTag<int, std::string>;
   CHECK_THROWS_WITH(
       []() {
@@ -740,19 +701,7 @@ struct NamedDuplicate {
   static std::string name() { return "Duplicate"; }
   static constexpr Options::String help = {"halp"};
 };
-#endif  // SPECTRE_DEBUG
 
-// [[OutputRegex, Duplicate option name: Duplicate]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.Duplicate", "[Unit][Options]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Options::Parser<tmpl::list<Duplicate, NamedDuplicate>> opts("");
-  opts.parse("");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-#ifdef SPECTRE_DEBUG
 struct
     ToooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooLong {
   using type = int;
@@ -779,8 +728,15 @@ struct NamedNoHelp {
 };
 #endif
 
-void test_options_too_long() {
+void test_options_invalid_calls() {
 #ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        Options::Parser<tmpl::list<Duplicate, NamedDuplicate>> opts("");
+        opts.parse("");
+      }()),
+      Catch::Contains("Duplicate option name: Duplicate"));
+
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<short_alias_for_too_long>> opts("");
@@ -793,24 +749,16 @@ void test_options_too_long() {
       Catch::Contains("The option name "
                       "Tooooooooooooooooooooooooooooooooooooooooooooooooooooo"
                       "ooooooooooooooLong is too long for nice formatting"));
-#endif
-}
 
-// [[OutputRegex, You must supply a help string of non-zero length for NoHelp]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NoHelp", "[Unit][Options]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Options::Parser<tmpl::list<NoHelp>> opts("");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      Options::Parser<tmpl::list<NoHelp>>(""),
+      Catch::Contains(
+          "You must supply a help string of non-zero length for NoHelp"));
 
-// [[OutputRegex, You must supply a help string of non-zero length for NoHelp]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedNoHelp", "[Unit][Options]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Options::Parser<tmpl::list<NamedNoHelp>> opts("");
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      Options::Parser<tmpl::list<NamedNoHelp>>(""),
+      Catch::Contains(
+          "You must supply a help string of non-zero length for NoHelp"));
 #endif
 }
 
@@ -900,23 +848,31 @@ struct VectorWithLimits {
   static size_t upper_bound_on_size() { return 9; }
 };
 
+struct SuggestedBool {
+  using type = bool;
+  static type suggested_value() { return false; }
+  constexpr static Options::String help = "halp";
+};
+
 void test_options_format() {
-  const auto check = [](auto opt) {
-    using Opt = decltype(opt);
-    Options::Parser<tmpl::list<Opt>> opts("");
-    INFO("Help string:\n"
-         << opts.help() << "\n\nExpected to find:\n"
-         << "  type="s + Opt::expected + "\n");
-    // Add whitespace to check that we've got the entire type
-    CHECK(opts.help().find("type="s + Opt::expected + "\n"s) !=
-          std::string::npos);
-  };
-  check(FormatMap{});
-  check(FormatVector{});
-  check(FormatList{});
-  check(FormatArray{});
-  check(FormatPair{});
-  check(FormatUnorderedMap{});
+  {
+    const auto check = [](auto opt) {
+      using Opt = decltype(opt);
+      Options::Parser<tmpl::list<Opt>> opts("");
+      INFO("Help string:\n"
+           << opts.help() << "\n\nExpected to find:\n"
+           << "  type="s + Opt::expected + "\n");
+      // Add whitespace to check that we've got the entire type
+      CHECK(opts.help().find("type="s + Opt::expected + "\n"s) !=
+            std::string::npos);
+    };
+    check(FormatMap{});
+    check(FormatVector{});
+    check(FormatList{});
+    check(FormatArray{});
+    check(FormatPair{});
+    check(FormatUnorderedMap{});
+  }
 
   CHECK(Options::Parser<tmpl::list<ScalarWithLimits>>("").help() == R"(
 ==== Description of expected options:
@@ -943,15 +899,21 @@ Options:
     VectorHelp
 
 )");
-}
 
-// [[OutputRegex, Failed to convert value to type
-// {\[int x0\]: \[double x0\]}:]]
-SPECTRE_TEST_CASE("Unit.Options.Format.UnorderedMap.Error", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<FormatUnorderedMap>> opts("");
-  opts.parse("FormatUnorderedMap: X");
-  opts.get<FormatUnorderedMap>();
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<FormatUnorderedMap>> opts("");
+        opts.parse("FormatUnorderedMap: X");
+        opts.get<FormatUnorderedMap>();
+      }(),
+      Catch::Contains(
+          "Failed to convert value to type {[int x0]: [double x0]}:"));
+
+  {
+    const auto help = Options::Parser<tmpl::list<SuggestedBool>>("").help();
+    CAPTURE(help);
+    CHECK(help.find("suggested=false") != std::string::npos);
+  }
 }
 
 struct ExplicitObject {
@@ -977,18 +939,6 @@ void test_options_explicit_constructor() {
   Options::Parser<tmpl::list<ExplicitObjectTag>> opts("");
   opts.parse("ExplicitObjectTag:");
   opts.get<ExplicitObjectTag>();
-}
-
-struct SuggestedBool {
-  using type = bool;
-  static type suggested_value() { return false; }
-  constexpr static Options::String help = "halp";
-};
-
-void test_options_format_bool() {
-  const auto help = Options::Parser<tmpl::list<SuggestedBool>>("").help();
-  CAPTURE(help);
-  CHECK(help.find("suggested=false") != std::string::npos);
 }
 
 void test_options_input_source() {
@@ -1241,52 +1191,52 @@ void test_options_alternatives() {
 }
 
 void test_options_overlay() {
-  Options::Parser<tmpl::list<Simple, InnerGroupedTag, OuterGroupedTag>> parser(
-      "");
-  parser.parse(
-      "Simple: 1\n"
-      "OuterGroup:\n"
-      "  OuterGroupedTag: 2\n"
-      "  InnerGroup:\n"
-      "    InnerGroupedTag: 3\n");
-  CHECK(parser.get<Simple>() == 1);
-  CHECK(parser.get<OuterGroupedTag>() == 2);
-  CHECK(parser.get<InnerGroupedTag>() == 3);
-  parser.overlay<tmpl::list<Simple>>("Simple: 4");
-  CHECK(parser.get<Simple>() == 4);
-  CHECK(parser.get<OuterGroupedTag>() == 2);
-  CHECK(parser.get<InnerGroupedTag>() == 3);
-  parser.overlay<tmpl::list<Simple>>("");
-  CHECK(parser.get<Simple>() == 4);
-  CHECK(parser.get<OuterGroupedTag>() == 2);
-  CHECK(parser.get<InnerGroupedTag>() == 3);
-  parser.overlay<tmpl::list<InnerGroupedTag>>(
-      "OuterGroup:\n"
-      "  InnerGroup:\n"
-      "    InnerGroupedTag: 5\n");
-  CHECK(parser.get<Simple>() == 4);
-  CHECK(parser.get<OuterGroupedTag>() == 2);
-  CHECK(parser.get<InnerGroupedTag>() == 5);
-  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>("Simple: 6\n");
-  CHECK(parser.get<Simple>() == 6);
-  CHECK(parser.get<OuterGroupedTag>() == 2);
-  CHECK(parser.get<InnerGroupedTag>() == 5);
-  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
-      "OuterGroup:\n"
-      "  OuterGroupedTag: 7\n");
-  CHECK(parser.get<Simple>() == 6);
-  CHECK(parser.get<OuterGroupedTag>() == 7);
-  CHECK(parser.get<InnerGroupedTag>() == 5);
-  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
-      "Simple: 8\n"
-      "OuterGroup:\n"
-      "  OuterGroupedTag: 9\n");
-  CHECK(parser.get<Simple>() == 8);
-  CHECK(parser.get<OuterGroupedTag>() == 9);
-  CHECK(parser.get<InnerGroupedTag>() == 5);
-}
+  {
+    Options::Parser<tmpl::list<Simple, InnerGroupedTag, OuterGroupedTag>>
+        parser("");
+    parser.parse(
+        "Simple: 1\n"
+        "OuterGroup:\n"
+        "  OuterGroupedTag: 2\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 3\n");
+    CHECK(parser.get<Simple>() == 1);
+    CHECK(parser.get<OuterGroupedTag>() == 2);
+    CHECK(parser.get<InnerGroupedTag>() == 3);
+    parser.overlay<tmpl::list<Simple>>("Simple: 4");
+    CHECK(parser.get<Simple>() == 4);
+    CHECK(parser.get<OuterGroupedTag>() == 2);
+    CHECK(parser.get<InnerGroupedTag>() == 3);
+    parser.overlay<tmpl::list<Simple>>("");
+    CHECK(parser.get<Simple>() == 4);
+    CHECK(parser.get<OuterGroupedTag>() == 2);
+    CHECK(parser.get<InnerGroupedTag>() == 3);
+    parser.overlay<tmpl::list<InnerGroupedTag>>(
+        "OuterGroup:\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 5\n");
+    CHECK(parser.get<Simple>() == 4);
+    CHECK(parser.get<OuterGroupedTag>() == 2);
+    CHECK(parser.get<InnerGroupedTag>() == 5);
+    parser.overlay<tmpl::list<Simple, OuterGroupedTag>>("Simple: 6\n");
+    CHECK(parser.get<Simple>() == 6);
+    CHECK(parser.get<OuterGroupedTag>() == 2);
+    CHECK(parser.get<InnerGroupedTag>() == 5);
+    parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
+        "OuterGroup:\n"
+        "  OuterGroupedTag: 7\n");
+    CHECK(parser.get<Simple>() == 6);
+    CHECK(parser.get<OuterGroupedTag>() == 7);
+    CHECK(parser.get<InnerGroupedTag>() == 5);
+    parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
+        "Simple: 8\n"
+        "OuterGroup:\n"
+        "  OuterGroupedTag: 9\n");
+    CHECK(parser.get<Simple>() == 8);
+    CHECK(parser.get<OuterGroupedTag>() == 9);
+    CHECK(parser.get<InnerGroupedTag>() == 5);
+  }
 
-SPECTRE_TEST_CASE("Unit.Options.overlay.invalid", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Simple>> parser("");
@@ -1295,9 +1245,7 @@ SPECTRE_TEST_CASE("Unit.Options.overlay.invalid", "[Unit][Options]") {
       }(),
       Catch::Contains(
           "At line 1 column 1:\nOption 'NotSimple' is not a valid option."));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.overlay.not_overlayable", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Simple>> parser("");
@@ -1306,9 +1254,7 @@ SPECTRE_TEST_CASE("Unit.Options.overlay.not_overlayable", "[Unit][Options]") {
       }(),
       Catch::Contains(
           "At line 1 column 1:\nOption 'Simple' is not overlayable."));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.overlay.duplicate", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<Simple>> parser("");
@@ -1318,9 +1264,7 @@ SPECTRE_TEST_CASE("Unit.Options.overlay.duplicate", "[Unit][Options]") {
             "Simple: 2");
       }(),
       Catch::Contains("At line 2 column 1:\nOption 'Simple' specified twice."));
-}
 
-SPECTRE_TEST_CASE("Unit.Options.overlay.subgroup_context", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<OuterGroupedTag>> parser("");
@@ -1441,29 +1385,24 @@ void test_options_serialization() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
-  test_options_empty_success();
-  test_options_simple_success();
+  test_options_empty();
+  test_options_syntax_error();
+  test_options_simple();
   test_options_print_long_help();
   test_options_grouped();
-  test_options_suggested_followed();
-  test_options_suggested_not_followed();
-  test_options_bounded_lower_bound();
-  test_options_bounded_upper_bound();
-  test_options_vector_lower_bound();
-  test_options_vector_upper_bound();
-  test_options_array_success();
-  test_options_zero_array_missing();
-  test_options_map_success();
-  test_options_map_empty();
-  test_options_unordered_map_success();
+  test_options_suggested();
+  test_options_bounded();
+  test_options_bounded_vector();
+  test_options_array();
+  test_options_map();
+  test_options_unordered_map();
   test_options_variant();
   test_options_complex_containers();
-  test_options_too_long();
+  test_options_invalid_calls();
   test_options_apply();
   test_options_option_context_default_stream();
   test_options_format();
   test_options_explicit_constructor();
-  test_options_format_bool();
   test_options_input_source();
   test_options_alternatives();
   test_options_overlay();
