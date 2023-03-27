@@ -26,6 +26,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/RealSphericalHarmonics.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -145,29 +146,6 @@ struct SendToWorldtube {
       const auto& y = get<1>(centered_face_coords.value());
       const auto& z = get<2>(centered_face_coords.value());
 
-      // calculates the real spherical harmonics, see e.g.
-      // https://en.wikipedia.org/wiki/Spherical_harmonics#Real_form
-      auto real_spherical_harmonic =
-          [](gsl::not_null<DataVector*> spherical_harmonic,
-             const DataVector& local_theta, const DataVector& local_phi,
-             size_t l, int m) -> void {
-        for (size_t i = 0; i < local_theta.size(); ++i) {
-          if (m < 0) {
-            spherical_harmonic->at(i) =
-                pow(-1, m) * M_SQRT2 *
-                boost::math::spherical_harmonic_i(l, abs(m), local_theta.at(i),
-                                                  local_phi.at(i));
-          } else if (m > 0) {
-            spherical_harmonic->at(i) =
-                pow(-1, m) * M_SQRT2 *
-                boost::math::spherical_harmonic_r(l, m, local_theta.at(i),
-                                                  local_phi.at(i));
-          } else {
-            spherical_harmonic->at(i) = boost::math::spherical_harmonic_r(
-                l, m, local_theta.at(i), local_phi.at(i));
-          }
-        }
-      };
       const size_t order = db::get<Worldtube::Tags::ExpansionOrder>(box);
       const size_t num_modes = (order + 1) * (order + 1);
       Variables<tags_to_send> Ylm_coefs(num_modes);
@@ -182,8 +160,7 @@ struct SendToWorldtube {
       // project onto spherical harmonics
       for (size_t l = 0; l <= order; ++l) {
         for (int m = -l; m <= static_cast<int>(l); ++m, ++index) {
-          real_spherical_harmonic(make_not_null(&spherical_harmonic), theta,
-                                  phi, l, m);
+          spherical_harmonic = real_spherical_harmonic(theta, phi, l, m);
           get(get<CurvedScalarWave::Tags::Psi>(Ylm_coefs)).at(index) =
               definite_integral(psi_regular_times_det * spherical_harmonic,
                                 face_mesh);
