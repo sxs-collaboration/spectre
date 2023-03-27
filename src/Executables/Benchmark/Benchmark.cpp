@@ -5,6 +5,7 @@
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #include <benchmark/benchmark.h>
 #pragma GCC diagnostic pop
+#include <charm++.h>
 #include <string>
 #include <vector>
 

@@ -7,11 +7,14 @@
 #include <ostream>
 
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
 /// \cond
+namespace Options {
+struct Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
 namespace PUP {
 class er;
 }  // namespace PUP
