@@ -31,6 +31,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonChare.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -85,6 +86,9 @@ struct MockWorldtubeSingleton {
                   Tags::ElementFacesGridCoordinates<Dim>, ::Tags::TimeStepId,
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+                                       Frame::Grid>,
+                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>,
+                  Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                        Frame::Grid>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<
@@ -112,14 +116,15 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
   domain::creators::register_derived_with_charm();
   using element_chare = MockElementArray<metavars>;
   using worldtube_chare = MockWorldtubeSingleton<metavars>;
-  const size_t initial_extent = 8;
+  const size_t initial_extent = 5;
   const size_t face_size = initial_extent * initial_extent;
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
-  const size_t expansion_order = 0;
   // we create several differently refined shells so a different number of
   // elements sends data
-  for (const auto& [initial_refinement, worldtube_radius] : cartesian_product(
-           std::array<size_t, 3>{0, 1, 2}, make_array(0.07, 1., 2.8))) {
+  for (const auto& [expansion_order, initial_refinement, worldtube_radius] :
+       cartesian_product(std::array<size_t, 2>{0, 1},
+                         std::array<size_t, 3>{0, 1, 2},
+                         make_array(0.07, 1., 2.8))) {
     const domain::creators::Sphere shell{worldtube_radius,
                                          3.,
                                          domain::creators::Sphere::Excision{},
@@ -147,8 +152,14 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
     // the puncture field to 0, so psi and dt_psi are passed on directly
     // and we can check the analytical result.
     const puncture_field_type puncture_field{face_size, 0.};
-    const double psi_value = dist(generator);
-    const double dt_psi_value = dist(generator);
+    const double psi_coefs_0 = dist(generator);
+    const double pi_coefs_0 = dist(generator);
+    const auto psi_coefs_1 =
+        make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
+    const auto pi_coefs_1 =
+        make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
     const Time dummy_time{{1., 2.}, {1, 2}};
     const TimeStepId dummy_time_step_id{true, 123, dummy_time};
 
@@ -159,11 +170,13 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
       const auto& my_block = blocks.at(element_id.block_id());
       auto element = domain::Initialization::create_initial_element(
           element_id, my_block, initial_refinements);
-      // since the spatial derivative is zero at zeroth order this will not be
-      // used
-      auto grid_inv_jacobian =
+
+      auto identity_inv_jacobian =
           InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>(
-              grid_size, 1.);
+              grid_size, 0.);
+      for (size_t i = 0; i < Dim; ++i) {
+        identity_inv_jacobian.get(i, i) = 1.;
+      }
       // we set lapse and shift to Minkowski so dt Psi = - Pi
       Scalar<DataVector> lapse(grid_size, 1.);
       tnsr::I<DataVector, Dim, Frame::Inertial> shift(grid_size, 0.);
@@ -181,8 +194,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
           element_id,
           {std::move(element), std::move(mesh),
            std::move(optional_puncture_field), std::move(shift),
-           std::move(lapse), std::move(grid_inv_jacobian), dummy_time_step_id,
-           std::move(advective_term), worldtube_solution});
+           std::move(lapse), std::move(identity_inv_jacobian),
+           dummy_time_step_id, std::move(advective_term), worldtube_solution});
     }
 
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
@@ -194,7 +207,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
     ActionTesting::emplace_singleton_component_and_initialize<worldtube_chare>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
         {element_faces_grid_coords, dummy_time_step_id,
-         Scalar<double>(psi_value), Scalar<double>(dt_psi_value)});
+         Scalar<double>(psi_coefs_0), Scalar<double>(pi_coefs_0), psi_coefs_1,
+         pi_coefs_1});
 
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
@@ -220,11 +234,20 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
       if (element_faces_grid_coords.count(element_id)) {
         CHECK(element_inbox.count(dummy_time_step_id));
         const auto& inbox_data = element_inbox.at(dummy_time_step_id);
+        const auto& grid_coords = element_faces_grid_coords.at(element_id);
+        DataVector expected_solution_psi(face_size, psi_coefs_0);
+        DataVector expected_solution_dt_psi(face_size, pi_coefs_0);
+        if (expansion_order > 0) {
+          for (size_t i = 0; i < Dim; ++i) {
+            expected_solution_psi += psi_coefs_1.get(i) * grid_coords.get(i);
+            expected_solution_dt_psi += pi_coefs_1.get(i) * grid_coords.get(i);
+          }
+        }
         CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Psi>(inbox_data)),
-                              DataVector(face_size, psi_value));
+                              expected_solution_psi);
         CHECK_ITERABLE_APPROX(
             get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(inbox_data)),
-            DataVector(face_size, dt_psi_value));
+            expected_solution_dt_psi);
 
         // ReceiveWorldtubeData
         CHECK(ActionTesting::next_action_if_ready<element_chare>(
@@ -236,14 +259,15 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
                 runner, element_id);
         CHECK_ITERABLE_APPROX(
             get(get<CurvedScalarWave::Tags::Psi>(worldtube_solution)),
-            DataVector(face_size, psi_value));
+            expected_solution_psi);
         CHECK_ITERABLE_APPROX(
             get(get<CurvedScalarWave::Tags::Pi>(worldtube_solution)),
-            DataVector(face_size, -dt_psi_value));
+            -expected_solution_dt_psi);
         for (size_t i = 0; i < Dim; ++i) {
           CHECK_ITERABLE_APPROX(
               get<CurvedScalarWave::Tags::Phi<Dim>>(worldtube_solution).get(i),
-              DataVector(face_size, 0.));
+              DataVector(face_size,
+                         expansion_order > 0 ? psi_coefs_1.get(i) : 0.));
         }
       } else {
         CHECK(element_inbox.empty());
