@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_MonotonicityPreserving5.cpp
   Test_MonotonisedCentral.cpp
   Test_NeighborDataAsVariables.cpp
+  Test_NonUniform1D.cpp
   Test_PartialDerivatives.cpp
   Test_PositivityPreservingAdaptiveOrder.cpp
   Test_Unlimited.cpp
