@@ -47,6 +47,7 @@ target_link_libraries(
   Domain
   DomainStructure
   ErrorHandling
+  FiniteDifference
   FunctionsOfTime
   INTERFACE
   Observer
