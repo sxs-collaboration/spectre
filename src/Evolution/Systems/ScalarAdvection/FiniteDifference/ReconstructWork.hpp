@@ -29,6 +29,9 @@ namespace gsl {
 template <typename>
 class not_null;
 }  // namespace gsl
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace ScalarAdvection::fd {
@@ -44,9 +47,10 @@ void reconstruct_work(
     const Variables<tmpl::list<Tags::U>> volume_vars,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size);
 
 /*!
@@ -65,9 +69,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size);

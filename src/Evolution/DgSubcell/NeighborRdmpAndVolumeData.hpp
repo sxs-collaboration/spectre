@@ -12,6 +12,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -25,7 +26,7 @@ class Mesh;
 namespace evolution::dg::subcell {
 /*!
  * \brief Check whether `neighbor_subcell_data` is FD or DG, and either insert
- * or copy into `neighbor_data_ptr` the FD data (projecting if
+ * or copy into `ghost_data_ptr` the FD data (projecting if
  * `neighbor_subcell_data` is DG data).
  *
  * This is intended to be used during a rollback from DG to make sure neighbor
@@ -35,9 +36,9 @@ template <bool InsertIntoMap, size_t Dim>
 void insert_or_update_neighbor_volume_data(
     gsl::not_null<
         FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-        neighbor_data_ptr,
+        ghost_data_ptr,
     const DataVector& neighbor_subcell_data,
     const size_t number_of_rdmp_vars_in_buffer,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
@@ -55,9 +56,9 @@ void insert_neighbor_rdmp_and_volume_data(
     gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
     gsl::not_null<
         FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-        neighbor_data_ptr,
+        ghost_data_ptr,
     const DataVector& received_neighbor_subcell_data,
     size_t number_of_rdmp_vars,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,

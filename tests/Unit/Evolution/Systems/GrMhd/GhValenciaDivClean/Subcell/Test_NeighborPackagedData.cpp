@@ -164,8 +164,10 @@ double test(const size_t num_dg_pts) {
             directions_to_slice, 0)
             .at(direction.opposite());
 
-    neighbor_data[std::pair{direction,
-                            *element.neighbors().at(direction).begin()}] =
+    const auto key =
+        std::pair{direction, *element.neighbors().at(direction).begin()};
+    neighbor_data[key] = evolution::dg::subcell::GhostData{1};
+    neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         std::move(neighbor_data_in_direction);
   }
 

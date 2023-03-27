@@ -28,6 +28,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -294,10 +295,12 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Dg;
 
+  using GhostData = evolution::dg::subcell::GhostData;
+
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data{};
+      ghost_data{};
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
                std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
@@ -309,18 +312,20 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     if ((direction.side() == Side::Upper and direction.dimension() % 2 == 0) or
         (direction.side() == Side::Lower and direction.dimension() % 2 != 0)) {
       neighbor_meshes[directional_element_id] = dg_mesh;
-      neighbor_data[directional_element_id] =
-          DataVector{dg_mesh.number_of_grid_points()};
-      alg::iota(neighbor_data[directional_element_id],
-                subcell_mesh.number_of_grid_points() *
-                    (2.0 * direction.dimension() + 1.0));
+      ghost_data[directional_element_id] = GhostData{1};
+      DataVector& neighbor_data = ghost_data.at(directional_element_id)
+                                      .neighbor_ghost_data_for_reconstruction();
+      neighbor_data = DataVector{dg_mesh.number_of_grid_points()};
+      alg::iota(neighbor_data, subcell_mesh.number_of_grid_points() *
+                                   (2.0 * direction.dimension() + 1.0));
     } else {
       neighbor_meshes[directional_element_id] = subcell_mesh;
-      neighbor_data[directional_element_id] =
-          DataVector{dg_mesh.number_of_grid_points()};
-      alg::iota(neighbor_data[directional_element_id],
-                subcell_mesh.number_of_grid_points() *
-                    (2.0 * direction.dimension() + 1.0));
+      ghost_data[directional_element_id] = GhostData{1};
+      DataVector& neighbor_data = ghost_data.at(directional_element_id)
+                                      .neighbor_ghost_data_for_reconstruction();
+      neighbor_data = DataVector{dg_mesh.number_of_grid_points()};
+      alg::iota(neighbor_data, subcell_mesh.number_of_grid_points() *
+                                   (2.0 * direction.dimension() + 1.0));
     }
   }
   // test FD/DG element neighbor disable_subcell_in_block
@@ -406,19 +411,18 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
-         neighbor_meshes, evolved_vars, time_stepper_history,
-         initial_value_evolved_vars, neighbor_decisions, prim_vars,
-         initial_value_prim_vars});
+         did_rollback, ghost_data, tci_decision, rdmp_tci_data, neighbor_meshes,
+         evolved_vars, time_stepper_history, initial_value_evolved_vars,
+         neighbor_decisions, prim_vars, initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
-         neighbor_meshes, evolved_vars, time_stepper_history,
-         initial_value_evolved_vars, neighbor_decisions});
+         did_rollback, ghost_data, tci_decision, rdmp_tci_data, neighbor_meshes,
+         evolved_vars, time_stepper_history, initial_value_evolved_vars,
+         neighbor_decisions});
   }
 
   // Invoke the TciAndRollback action on the runner
@@ -505,21 +509,25 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       }
     }
 
-    auto expected_neighbor_data = neighbor_data;
+    auto expected_ghost_data = ghost_data;
     for (const auto& [directional_element_id, neighbor_mesh] :
          neighbor_meshes) {
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
-          make_not_null(&expected_neighbor_data),
-          expected_neighbor_data.at(directional_element_id), 0,
-          directional_element_id, neighbor_mesh, element, subcell_mesh, 2);
+          make_not_null(&expected_ghost_data),
+          expected_ghost_data.at(directional_element_id)
+              .neighbor_ghost_data_for_reconstruction(),
+          0, directional_element_id, neighbor_mesh, element, subcell_mesh, 2);
     }
-    const auto& neighbor_data_for_reconstruction =
-        ActionTesting::get_databox_tag<
-            comp,
-            evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
-            runner, 0);
-    CHECK_ITERABLE_APPROX(neighbor_data_for_reconstruction,
-                          expected_neighbor_data);
+    const auto& ghost_data_for_reconstruction = ActionTesting::get_databox_tag<
+        comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+        runner, 0);
+    for (const auto& [id, local_ghost_data] : expected_ghost_data) {
+      CHECK(ghost_data_for_reconstruction.contains(id));
+      CHECK_ITERABLE_APPROX(
+          (ghost_data_for_reconstruction.at(id)
+               .neighbor_ghost_data_for_reconstruction()),
+          local_ghost_data.neighbor_ghost_data_for_reconstruction());
+    }
 
   } else {
     CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 2);
@@ -566,12 +574,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       }
     }
 
-    const auto& neighbor_data_for_reconstruction =
-        ActionTesting::get_databox_tag<
-            comp,
-            evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
-            runner, 0);
-    CHECK(neighbor_data_for_reconstruction.empty());
+    const auto& ghost_data_for_reconstruction = ActionTesting::get_databox_tag<
+        comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+        runner, 0);
+    CHECK(ghost_data_for_reconstruction.empty());
   }
   CHECK(ActionTesting::get_databox_tag<
             comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) ==

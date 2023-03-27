@@ -20,6 +20,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
@@ -206,9 +207,9 @@ struct TciAndRollback {
             const gsl::not_null<bool*> did_rollback_ptr,
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-                neighbor_data_ptr,
+                ghost_data_ptr,
             const FixedHashMap<
                 maximum_number_of_neighbors(Dim),
                 std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
@@ -241,9 +242,10 @@ struct TciAndRollback {
           for (const auto& [directional_element_id, neighbor_mesh] :
                neighbor_meshes) {
             evolution::dg::subcell::insert_or_update_neighbor_volume_data<
-                false>(neighbor_data_ptr,
-                       neighbor_data_ptr->at(directional_element_id), 0,
-                       directional_element_id, neighbor_mesh, element,
+                false>(ghost_data_ptr,
+                       ghost_data_ptr->at(directional_element_id)
+                           .neighbor_ghost_data_for_reconstruction(),
+                       0, directional_element_id, neighbor_mesh, element,
                        subcell_mesh, ghost_zone_size);
           }
 

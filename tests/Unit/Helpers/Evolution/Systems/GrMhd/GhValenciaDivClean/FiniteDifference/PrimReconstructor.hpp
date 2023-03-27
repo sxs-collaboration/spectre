@@ -23,6 +23,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
@@ -46,19 +47,20 @@
 
 namespace TestHelpers::grmhd::GhValenciaDivClean::fd {
 namespace detail {
+using GhostData = evolution::dg::subcell::GhostData;
 template <typename F>
 FixedHashMap<maximum_number_of_neighbors(3),
-             std::pair<Direction<3>, ElementId<3>>, DataVector,
+             std::pair<Direction<3>, ElementId<3>>, GhostData,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-compute_neighbor_data(
+compute_ghost_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, DataVector,
+               std::pair<Direction<3>, ElementId<3>>, GhostData,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-      neighbor_data{};
+      ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
     const ElementId<3>& neighbor_id = *neighbors_in_direction.begin();
@@ -76,10 +78,12 @@ compute_neighbor_data(
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    neighbor_data[std::pair{direction, neighbor_id}] =
+    ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(std::pair{direction, neighbor_id})
+        .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
-  return neighbor_data;
+  return ghost_data;
 }
 
 inline Variables<::grmhd::GhValenciaDivClean::Tags::
@@ -219,9 +223,9 @@ void test_prim_reconstructor_impl(
   neighbors_for_data[gsl::at(Direction<3>::all_directions(), 5)] =
       Neighbors<3>{{ElementId<3>::external_boundary_id()}, {}};
   const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, DataVector,
+                     std::pair<Direction<3>, ElementId<3>>, GhostData,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-      neighbor_data = compute_neighbor_data(
+      ghost_data = compute_ghost_data(
           subcell_mesh, logical_coords, neighbors_for_data,
           reconstructor.ghost_zone_size(), compute_prim_solution);
 
@@ -296,7 +300,7 @@ void test_prim_reconstructor_impl(
   dynamic_cast<const Reconstructor&>(reconstructor)
       .reconstruct(make_not_null(&vars_on_lower_face),
                    make_not_null(&vars_on_upper_face), volume_prims,
-                   volume_cons_vars, eos, element, neighbor_data, subcell_mesh);
+                   volume_cons_vars, eos, element, ghost_data, subcell_mesh);
 
   for (size_t dim = 0; dim < 3; ++dim) {
     CAPTURE(dim);
@@ -448,7 +452,7 @@ void test_prim_reconstructor_impl(
       dynamic_cast<const Reconstructor&>(reconstructor)
           .reconstruct_fd_neighbor(make_not_null(&upper_side_vars_on_mortar),
                                    volume_prims, volume_spacetime_vars, eos,
-                                   element, neighbor_data, subcell_mesh,
+                                   element, ghost_data, subcell_mesh,
                                    Direction<3>{dim, Side::Upper});
     }
 
@@ -457,7 +461,7 @@ void test_prim_reconstructor_impl(
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),
                                  volume_prims, volume_spacetime_vars, eos,
-                                 element, neighbor_data, subcell_mesh,
+                                 element, ghost_data, subcell_mesh,
                                  Direction<3>{dim, Side::Lower});
 
     tmpl::for_each<tmpl::append<tags_to_test, spacetime_tags>>(

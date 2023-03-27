@@ -30,6 +30,7 @@
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
@@ -123,9 +124,9 @@ struct SendDataForReconstruction {
     using flux_variables = typename Metavariables::system::flux_variables;
 
     db::mutate<Tags::GhostDataForReconstruction<Dim>>(
-        make_not_null(&box), [](const auto neighbor_data_ptr) {
+        make_not_null(&box), [](const auto ghost_data_ptr) {
           // Clear the previous neighbor data and add current local data
-          neighbor_data_ptr->clear();
+          ghost_data_ptr->clear();
         });
 
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
@@ -343,9 +344,9 @@ struct ReceiveDataForReconstruction {
          &received_data, &subcell_mesh](
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-                neighbor_data_ptr,
+                ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
             const gsl::not_null<std::unordered_map<
                 Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
@@ -386,7 +387,7 @@ struct ReceiveDataForReconstruction {
                 mortar_id, std::get<0>(received_mortar_data.second));
           }
 
-          ASSERT(neighbor_data_ptr->empty(),
+          ASSERT(ghost_data_ptr->empty(),
                  "Should have no elements in the neighbor data when "
                  "receiving neighbor data");
           const size_t number_of_rdmp_vars =
@@ -403,7 +404,7 @@ struct ReceiveDataForReconstruction {
                element.neighbors()) {
             for (const auto& neighbor : neighbors_in_direction) {
               std::pair directional_element_id{direction, neighbor};
-              ASSERT(neighbor_data_ptr->count(directional_element_id) == 0,
+              ASSERT(ghost_data_ptr->count(directional_element_id) == 0,
                      "Found neighbor already inserted in direction "
                          << direction << " with ElementId " << neighbor);
               ASSERT(std::get<2>(received_data[directional_element_id])
@@ -414,7 +415,7 @@ struct ReceiveDataForReconstruction {
               // This reduces the memory footprint.
 
               evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
-                  rdmp_tci_data_ptr, neighbor_data_ptr,
+                  rdmp_tci_data_ptr, ghost_data_ptr,
                   *std::get<2>(received_data[directional_element_id]),
                   number_of_rdmp_vars, directional_element_id,
                   neighbor_mesh->at(directional_element_id), element,

@@ -121,8 +121,17 @@ void BoundaryConditionGhostData::apply(
 
     // Allocate a vector to store the computed FD ghost data and assign a
     // non-owning Variables on it.
-    DataVector boundary_ghost_data{num_prims_tensor_components *
-                                   ghost_zone_size * num_face_pts};
+    auto& all_ghost_data = db::get_mutable_reference<
+        evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box);
+    // Put the computed ghost data into neighbor data with {direction,
+    // ElementId::external_boundary_id()} as the mortar_id key
+    const std::pair mortar_id{direction, ElementId<3>::external_boundary_id()};
+
+    all_ghost_data[mortar_id] = evolution::dg::subcell::GhostData{1};
+    DataVector& boundary_ghost_data =
+        all_ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
+    boundary_ghost_data.destructive_resize(num_prims_tensor_components *
+                                           ghost_zone_size * num_face_pts);
     Variables<prims_for_reconstruction> ghost_data_vars{
         boundary_ghost_data.data(), boundary_ghost_data.size()};
 
@@ -227,15 +236,6 @@ void BoundaryConditionGhostData::apply(
                   << pretty_type::short_name<BoundaryCondition>()
                   << " when using finite-difference");
           }
-        });
-
-    // Put the computed ghost data into neighbor data with {direction,
-    // ElementId::external_boundary_id()} as the mortar_id key
-    const std::pair mortar_id{direction, ElementId<3>::external_boundary_id()};
-
-    db::mutate<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
-        box, [&mortar_id, &boundary_ghost_data](auto neighbor_data) {
-          (*neighbor_data)[mortar_id] = std::move(boundary_ghost_data);
         });
   }
 }

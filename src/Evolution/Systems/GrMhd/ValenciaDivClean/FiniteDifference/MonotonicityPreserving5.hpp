@@ -50,6 +50,9 @@ class er;
 }  // namespace PUP
 template <typename TagsList>
 class Variables;
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::fd {
@@ -130,9 +133,9 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-          neighbor_data,
+          std::pair<Direction<dim>, ElementId<dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
@@ -143,9 +146,9 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-          neighbor_data,
+          std::pair<Direction<dim>, ElementId<dim>>,
+          evolution::dg::subcell::GhostData,
+          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

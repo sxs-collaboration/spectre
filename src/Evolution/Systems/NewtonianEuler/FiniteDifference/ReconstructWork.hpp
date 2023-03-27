@@ -31,6 +31,9 @@ namespace EquationsOfState {
 template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
 }  // namespace EquationsOfState
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace NewtonianEuler::fd {
@@ -48,9 +51,10 @@ void reconstruct_prims_work(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
@@ -70,9 +74,10 @@ void reconstruct_fd_neighbor_work(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
     const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       evolution::dg::subcell::GhostData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+        ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct, size_t ghost_zone_size);
 }  // namespace NewtonianEuler::fd

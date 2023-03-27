@@ -23,6 +23,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -207,8 +208,10 @@ std::array<double, 3> test(const size_t num_dg_pts) {
             NewtonianEuler::fd::MonotonisedCentralPrim<dim>{}.ghost_zone_size(),
             directions_to_slice, 0)
             .at(direction.opposite());
-    neighbor_data[std::pair{direction,
-                            *element.neighbors().at(direction).begin()}] =
+    const auto key =
+        std::pair{direction, *element.neighbors().at(direction).begin()};
+    neighbor_data[key] = evolution::dg::subcell::GhostData{1};
+    neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;
   }
 

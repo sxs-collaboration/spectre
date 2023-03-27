@@ -261,7 +261,7 @@ struct TciAndSwitchToDg {
           [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
-              const auto subcell_neighbor_data_ptr,
+              const auto subcell_ghost_data_ptr,
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
                   tci_grid_history_ptr,
@@ -284,7 +284,7 @@ struct TciAndSwitchToDg {
 
             // Clear the neighbor data needed for subcell reconstruction since
             // we have now completed the time step.
-            subcell_neighbor_data_ptr->clear();
+            subcell_ghost_data_ptr->clear();
 
             // Clear the TCI grid history since we don't need to use it when on
             // the DG grid.

@@ -17,6 +17,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -33,9 +34,10 @@ struct VolumeDouble : db::SimpleTag {
 };
 
 template <size_t Dim>
-using NeighborDataMap =
+using GhostDataMap =
     FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                 std::pair<Direction<Dim>, ElementId<Dim>>,
+                 evolution::dg::subcell::GhostData,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 template <size_t Dim>
 using NeighborReconstructionMap =
@@ -65,7 +67,7 @@ struct Metavariables {
           const std::vector<
               std::pair<Direction<volume_dim>, ElementId<volume_dim>>>&
               mortars_to_reconstruct_to) {
-        const NeighborDataMap<Dim>& neighbor_data = db::get<
+        const GhostDataMap<Dim>& ghost_data = db::get<
             evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(box);
 
         // We just simply copy over the data sent since it doesn't actually
@@ -74,7 +76,8 @@ struct Metavariables {
         // from the stored NeighborData.
         NeighborReconstructionMap<Dim> neighbor_package_data{};
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
-          neighbor_package_data[mortar_id] = neighbor_data.at(mortar_id);
+          neighbor_package_data[mortar_id] =
+              ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
         }
         return neighbor_package_data;
       }
@@ -92,7 +95,7 @@ void test() {
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
   rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
-  NeighborDataMap<Dim> neighbor_data_map{};
+  GhostDataMap<Dim> neighbor_data_map{};
   auto box = db::create<
       tmpl::list<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(

@@ -25,6 +25,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -192,15 +193,18 @@ void BoundaryConditionGhostData::apply(
 
     // Put the computed ghost data into neighbor data with {direction,
     // ElementId::external_boundary_id()} as the mortar_id key
-    DataVector boundary_ghost_data{ghost_data_vars.size()};
-    std::copy(get(get<Burgers::Tags::U>(ghost_data_vars)).begin(),
-              get(get<Burgers::Tags::U>(ghost_data_vars)).end(),
-              boundary_ghost_data.begin());
     const std::pair mortar_id{direction, ElementId<1>::external_boundary_id()};
 
     db::mutate<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(
-        box, [&mortar_id, &boundary_ghost_data](auto neighbor_data) {
-          (*neighbor_data)[mortar_id] = boundary_ghost_data;
+        box, [&mortar_id, &ghost_data_vars](auto ghost_data_ptr) {
+          (*ghost_data_ptr)[mortar_id] = evolution::dg::subcell::GhostData{1};
+          DataVector& neighbor_data =
+              ghost_data_ptr->at(mortar_id)
+                  .neighbor_ghost_data_for_reconstruction();
+          neighbor_data.destructive_resize(ghost_data_vars.size());
+          std::copy(get(get<Burgers::Tags::U>(ghost_data_vars)).begin(),
+                    get(get<Burgers::Tags::U>(ghost_data_vars)).end(),
+                    neighbor_data.begin());
         });
   }
 }

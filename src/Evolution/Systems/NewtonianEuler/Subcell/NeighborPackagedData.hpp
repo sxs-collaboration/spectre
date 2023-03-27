@@ -95,7 +95,7 @@ struct NeighborPackagedData {
       return neighbor_package_data;
     }
 
-    const auto& neighbor_subcell_data =
+    const auto& ghost_subcell_data =
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
             box);
     const Mesh<Dim>& subcell_mesh =
@@ -121,7 +121,7 @@ struct NeighborPackagedData {
         derived_boundary_corrections>([&box, &boundary_correction, &dg_mesh,
                                        &mortars_to_reconstruct_to,
                                        &neighbor_package_data,
-                                       &neighbor_subcell_data, &recons,
+                                       &ghost_subcell_data, &recons,
                                        &subcell_mesh, &subcell_options,
                                        &volume_prims](
                                           auto derived_correction_v) {
@@ -157,12 +157,12 @@ struct NeighborPackagedData {
           call_with_dynamic_type<void,
                                  typename NewtonianEuler::fd::Reconstructor<
                                      Dim>::creatable_classes>(
-              &recons, [&element, &eos, &mortar_id, &neighbor_subcell_data,
-                        &subcell_mesh, &vars_on_face,
-                        &volume_prims](const auto& reconstructor) {
+              &recons,
+              [&element, &eos, &mortar_id, &ghost_subcell_data, &subcell_mesh,
+               &vars_on_face, &volume_prims](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims, eos, element,
-                    neighbor_subcell_data, subcell_mesh, mortar_id.first);
+                    ghost_subcell_data, subcell_mesh, mortar_id.first);
               });
 
           NewtonianEuler::subcell::compute_fluxes<Dim>(

@@ -8,8 +8,8 @@
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -17,6 +17,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -32,8 +33,8 @@ void reconstruct_work(
     const Variables<tmpl::list<Tags::U>> volume_vars, const Element<1>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        DataVector,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
     const Mesh<1>& subcell_mesh, const size_t ghost_zone_size) {
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
   const size_t reconstructed_num_pts = volume_num_pts + 1;
@@ -67,22 +68,25 @@ void reconstruct_work(
              "got "
                  << neighbors_in_direction.size() << " in direction "
                  << direction);
-      ASSERT(neighbor_data
-                     .at(std::pair{direction, *neighbors_in_direction.begin()})
-                     .size() != 0,
-             "The neighber data is empty in direction "
+
+      const DataVector& neighbor_data =
+          ghost_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+              .neighbor_ghost_data_for_reconstruction();
+
+      ASSERT(neighbor_data.size() != 0,
+             "The neighbor data is empty in direction "
                  << direction << " on element id " << element.id());
 
-      ghost_cell_vars[direction] =
-          gsl::make_span(&neighbor_data.at(std::pair{
-                             direction, *neighbors_in_direction.begin()})[0],
-                         number_of_variables * ghost_zone_size);
-    } else {
-      // retrieve boundary ghost data from neighbor_data
       ghost_cell_vars[direction] = gsl::make_span(
-          &neighbor_data.at(
-              std::pair{direction, ElementId<1>::external_boundary_id()})[0],
-          number_of_variables * ghost_zone_size);
+          &neighbor_data[0], number_of_variables * ghost_zone_size);
+    } else {
+      // retrieve boundary ghost data from ghost_data
+      const DataVector& neighbor_data =
+          ghost_data
+              .at(std::pair{direction, ElementId<1>::external_boundary_id()})
+              .neighbor_ghost_data_for_reconstruction();
+      ghost_cell_vars[direction] = gsl::make_span(
+          &neighbor_data[0], number_of_variables * ghost_zone_size);
     }
   }
 
@@ -106,8 +110,8 @@ void reconstruct_fd_neighbor_work(
     const Element<1>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        DataVector,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
     const Mesh<1>& subcell_mesh, const Direction<1>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
   const std::pair mortar_id{
@@ -121,11 +125,12 @@ void reconstruct_fd_neighbor_work(
   Variables<tmpl::list<Tags::U>> neighbor_vars{ghost_data_extents.product()};
 
   {
-    ASSERT(neighbor_data.contains(mortar_id),
+    ASSERT(ghost_data.contains(mortar_id),
            "The neighbor data does not contain the mortar: ("
                << mortar_id.first << ',' << mortar_id.second << ")");
 
-    const auto& neighbor_data_in_direction = neighbor_data.at(mortar_id);
+    const DataVector& neighbor_data_in_direction =
+        ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
     std::copy(
         neighbor_data_in_direction.begin(),
         std::next(neighbor_data_in_direction.begin(),

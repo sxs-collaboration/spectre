@@ -21,6 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
@@ -36,20 +37,21 @@ namespace TestHelpers {
  * \brief Defines functions useful for testing advection subcell
  */
 namespace ScalarAdvection::fd {
+using GhostData = evolution::dg::subcell::GhostData;
 template <size_t Dim, typename F>
 FixedHashMap<maximum_number_of_neighbors(Dim),
-             std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+             std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
              boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
-                      const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
-                          volume_logical_coords,
-                      const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
-                      const size_t ghost_zone_size,
-                      const F& compute_variables_of_neighbor_data) {
+compute_ghost_data(const Mesh<Dim>& subcell_mesh,
+                   const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+                       volume_logical_coords,
+                   const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
+                   const size_t ghost_zone_size,
+                   const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data{};
+      ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() ==
             1);  // currently only support one neighbor in each direction
@@ -69,10 +71,12 @@ compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    neighbor_data[std::pair{direction, neighbor_id}] =
+    ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(std::pair{direction, neighbor_id})
+        .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
-  return neighbor_data;
+  return ghost_data;
 }
 
 template <size_t Dim, typename Reconstructor>
@@ -116,11 +120,11 @@ void test_reconstructor(const size_t points_per_dimension,
                                Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
   const FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data = compute_neighbor_data(
-          subcell_mesh, logical_coords, element.neighbors(),
-          reconstructor.ghost_zone_size(), compute_solution);
+      ghost_data =
+          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                             reconstructor.ghost_zone_size(), compute_solution);
 
   // create Variables on lower and upper faces to perform reconstruction
   using dg_package_data_argument_tags =
@@ -145,7 +149,7 @@ void test_reconstructor(const size_t points_per_dimension,
   dynamic_cast<const Reconstructor&>(reconstructor)
       .reconstruct(make_not_null(&vars_on_lower_face),
                    make_not_null(&vars_on_upper_face), volume_vars, element,
-                   neighbor_data, subcell_mesh);
+                   ghost_data, subcell_mesh);
 
   for (size_t dim = 0; dim < Dim; ++dim) {
     // construct face-centered coordinates
@@ -191,7 +195,7 @@ void test_reconstructor(const size_t points_per_dimension,
       // call the reconstruction
       dynamic_cast<const Reconstructor&>(reconstructor)
           .reconstruct_fd_neighbor(make_not_null(&vars_on_mortar_face),
-                                   volume_vars, element, neighbor_data,
+                                   volume_vars, element, ghost_data,
                                    subcell_mesh, direction);
 
       // slice face-centered variables to get the values on the mortar

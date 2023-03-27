@@ -252,8 +252,10 @@ std::array<double, 5> test(const size_t num_dg_pts,
             volume_neighbor_data, subcell_mesh.extents(),
             recons.ghost_zone_size(), directions_to_slice, 0)
             .at(direction.opposite());
-    neighbor_data[std::pair{direction,
-                            *element.neighbors().at(direction).begin()}] =
+    const auto key =
+        std::pair{direction, *element.neighbors().at(direction).begin()};
+    neighbor_data[key] = evolution::dg::subcell::GhostData{1};
+    neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;
   }
 

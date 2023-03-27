@@ -104,7 +104,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
     return vars;
   };
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<1>::type
-      neighbor_data = TestHelpers::Burgers::fd::compute_neighbor_data(
+      ghost_data = TestHelpers::Burgers::fd::compute_ghost_data(
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_random_variable);
 
@@ -155,7 +155,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
       domain::Tags::MeshVelocity<1>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<1>>>(
-      element, dg_mesh, subcell_mesh, volume_vars_dg, neighbor_data,
+      element, dg_mesh, subcell_mesh, volume_vars_dg, ghost_data,
       std::unique_ptr<fd::Reconstructor>{
           std::make_unique<ReconstructorUsedForTest>()},
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection>{
@@ -200,7 +200,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
     // reconstruct U on the mortar
     dynamic_cast<const ReconstructorUsedForTest&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&vars_on_mortar_face),
-                                 volume_vars_subcell, element, neighbor_data,
+                                 volume_vars_subcell, element, ghost_data,
                                  subcell_mesh, direction);
 
     // compute fluxes

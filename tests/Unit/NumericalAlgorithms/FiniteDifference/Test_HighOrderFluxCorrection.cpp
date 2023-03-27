@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
@@ -153,9 +154,10 @@ void test(const fd::DerivativeOrder correction_order) {
   // slice_data to get the subset of points that are needed.
   DirectionMap<Dim, FluxVars> neighbor_data{};
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      reconstruction_neighbor_data{};
+      reconstruction_ghost_data{};
 
   for (const auto& direction : Direction<Dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coords;
@@ -183,11 +185,15 @@ void test(const fd::DerivativeOrder correction_order) {
               neighbor_data[direction].data());
 
     const std::pair mortar_id{direction, ElementId<Dim>{0}};
-    reconstruction_neighbor_data[mortar_id] =
+    reconstruction_ghost_data[mortar_id] = evolution::dg::subcell::GhostData{1};
+    reconstruction_ghost_data[mortar_id]
+        .neighbor_ghost_data_for_reconstruction() =
         DataVector{sliced_data.at(direction.opposite()).size()};
     std::copy(sliced_data.at(direction.opposite()).begin(),
               sliced_data.at(direction.opposite()).end(),
-              reconstruction_neighbor_data[mortar_id].data());
+              reconstruction_ghost_data[mortar_id]
+                  .neighbor_ghost_data_for_reconstruction()
+                  .data());
   }
 
   std::array<CorrectionVars, Dim> second_order_corrections{};
@@ -232,7 +238,7 @@ void test(const fd::DerivativeOrder correction_order) {
       make_not_null(&high_order_corrections),
 
       volume_vars, second_order_corrections, correction_order,
-      reconstruction_neighbor_data, mesh, number_of_ghost_points,
+      reconstruction_ghost_data, mesh, number_of_ghost_points,
       reconstruction_order);
 
   // Now compute the Cartesian derivative of the high_order_corrections to
@@ -279,7 +285,7 @@ void test(const fd::DerivativeOrder correction_order) {
         ::fd::cartesian_high_order_flux_corrections(
             make_not_null(&high_order_corrections_assert), volume_vars,
             second_order_corrections, correction_order,
-            reconstruction_neighbor_data, mesh, number_of_ghost_points),
+            reconstruction_ghost_data, mesh, number_of_ghost_points),
         Catch::Matchers::Contains(
             "The high_order_corrections must all have size"));
   }
@@ -291,7 +297,7 @@ void test(const fd::DerivativeOrder correction_order) {
         ::fd::cartesian_high_order_flux_corrections(
             make_not_null(&high_order_corrections), volume_vars,
             second_order_corrections_copy, correction_order,
-            reconstruction_neighbor_data, mesh, number_of_ghost_points),
+            reconstruction_ghost_data, mesh, number_of_ghost_points),
         Catch::Matchers::Contains(
             "All second-order boundary corrections must be of the same size"));
   }

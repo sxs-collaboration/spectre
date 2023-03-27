@@ -29,6 +29,9 @@ template <size_t Dim>
 class Element;
 template <size_t Dim>
 class Mesh;
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace Burgers::fd {
@@ -42,10 +45,10 @@ void reconstruct_work(
     gsl::not_null<std::array<Variables<TagsList>, 1>*> vars_on_upper_face,
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars, const Element<1>& element,
-    const FixedHashMap<maximum_number_of_neighbors(1),
-                       std::pair<Direction<1>, ElementId<1>>, DataVector,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
     const Mesh<1>& subcell_mesh, const size_t ghost_zone_size);
 
 /*!
@@ -62,10 +65,10 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<1>& element,
-    const FixedHashMap<maximum_number_of_neighbors(1),
-                       std::pair<Direction<1>, ElementId<1>>, DataVector,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
     const Mesh<1>& subcell_mesh, const Direction<1>& direction_to_reconstruct,
     const size_t ghost_zone_size);
 }  // namespace Burgers::fd

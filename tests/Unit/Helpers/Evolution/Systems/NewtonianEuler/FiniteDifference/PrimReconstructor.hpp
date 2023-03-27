@@ -20,6 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
@@ -34,20 +35,23 @@
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::NewtonianEuler::fd {
+using GhostData = evolution::dg::subcell::GhostData;
 template <size_t Dim, typename F>
 FixedHashMap<maximum_number_of_neighbors(Dim),
-             std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+             std::pair<Direction<Dim>, ElementId<Dim>>,
+             evolution::dg::subcell::GhostData,
              boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
-                      const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
-                          volume_logical_coords,
-                      const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
-                      const size_t ghost_zone_size,
-                      const F& compute_variables_of_neighbor_data) {
+compute_ghost_data(const Mesh<Dim>& subcell_mesh,
+                   const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+                       volume_logical_coords,
+                   const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
+                   const size_t ghost_zone_size,
+                   const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+               std::pair<Direction<Dim>, ElementId<Dim>>,
+               evolution::dg::subcell::GhostData,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data{};
+      ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
     const ElementId<Dim>& neighbor_id = *neighbors_in_direction.begin();
@@ -65,10 +69,12 @@ compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    neighbor_data[std::pair{direction, neighbor_id}] =
+    ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(std::pair{direction, neighbor_id})
+        .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
-  return neighbor_data;
+  return ghost_data;
 }
 
 namespace detail {
@@ -137,11 +143,11 @@ void test_prim_reconstructor_impl(
   };
 
   const FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_data = compute_neighbor_data(
-          subcell_mesh, logical_coords, element.neighbors(),
-          reconstructor.ghost_zone_size(), compute_solution);
+      ghost_data =
+          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                             reconstructor.ghost_zone_size(), compute_solution);
 
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *
@@ -160,9 +166,10 @@ void test_prim_reconstructor_impl(
   volume_prims.assign_subset(compute_solution(logical_coords));
 
   // Now we have everything to call the reconstruction
-  dynamic_cast<const Reconstructor&>(reconstructor).reconstruct(
-      make_not_null(&vars_on_lower_face), make_not_null(&vars_on_upper_face),
-      volume_prims, eos, element, neighbor_data, subcell_mesh);
+  dynamic_cast<const Reconstructor&>(reconstructor)
+      .reconstruct(make_not_null(&vars_on_lower_face),
+                   make_not_null(&vars_on_upper_face), volume_prims, eos,
+                   element, ghost_data, subcell_mesh);
 
   for (size_t dim = 0; dim < Dim; ++dim) {
     CAPTURE(dim);
