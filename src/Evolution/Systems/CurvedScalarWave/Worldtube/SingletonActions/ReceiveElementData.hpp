@@ -9,11 +9,15 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmToStf.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -42,8 +46,9 @@ namespace CurvedScalarWave::Worldtube::Actions {
  *    - `Worldtube::Tags::ElementFacesGridCoordinates`
  *    - `Tags::TimeStepId`
  * - Mutates:
- *    - `Worldtube::Tags::PsiMonopole`
- *    - `Tags::dt<Worldtube::Tags::PsiMonopole>`
+ *    - `Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>`
+ *    - `Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+                                      Frame::Grid>`
  */
 struct ReceiveElementData {
   static constexpr size_t Dim = 3;
@@ -52,7 +57,9 @@ struct ReceiveElementData {
   using inbox_tags = tmpl::list<
       ::CurvedScalarWave::Worldtube::Tags::SphericalHarmonicsInbox<Dim>>;
   using simple_tags =
-      tmpl::list<Tags::PsiMonopole, ::Tags::dt<Tags::PsiMonopole>>;
+      tmpl::list<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>,
+                 Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+                                      Frame::Grid>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -83,13 +90,19 @@ struct ReceiveElementData {
       external_ylm_coefs += element_ylm_coefs;
     }
     const double wt_radius = db::get<Tags::ExcisionSphere<Dim>>(box).radius();
-    external_ylm_coefs /= sqrt(4. * M_PI) * wt_radius * wt_radius;
+    external_ylm_coefs /= wt_radius * wt_radius;
 
-    ::Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box),
-        get(get<CurvedScalarWave::Tags::Psi>(external_ylm_coefs)).at(0),
-        get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(external_ylm_coefs))
-            .at(0));
+    DataVector& psi_ylm_coefs =
+        get(get<CurvedScalarWave::Tags::Psi>(external_ylm_coefs));
+    DataVector& dt_psi_ylm_coefs =
+        get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(external_ylm_coefs));
+
+    const ModalVector psi_stf_l0(psi_ylm_coefs.data(), 1);
+    const ModalVector dt_psi_stf_l0(dt_psi_ylm_coefs.data(), 1);
+
+    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                                 ylm_to_stf_0(psi_stf_l0),
+                                                 ylm_to_stf_0(dt_psi_stf_l0));
     inbox.erase(time_step_id);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
