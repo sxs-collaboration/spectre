@@ -68,6 +68,9 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct TraceSpacetimeChristoffelFirstKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct TraceSpacetimeChristoffelSecondKind;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct TraceSpatialChristoffelFirstKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>

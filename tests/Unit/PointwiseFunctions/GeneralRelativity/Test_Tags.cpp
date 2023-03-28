@@ -66,6 +66,9 @@ void test_simple_tags() {
       gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame, Type>>(
       "TraceSpacetimeChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
+      gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame, Type>>(
+      "TraceSpacetimeChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
       gr::Tags::TraceSpatialChristoffelFirstKind<Dim, Frame, Type>>(
       "TraceSpatialChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
