@@ -271,6 +271,15 @@ struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
 /// @}
 
 /*!
+ * \brief Holds the advection term that is the scalar product of the
+ * mesh velocity with the spatial derivative of the regular scalar field.
+ */
+template <size_t Dim>
+struct RegularFieldAdvectiveTerm : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
  * all element faces abutting the worldtube with the corresponding ElementIds.
  */
