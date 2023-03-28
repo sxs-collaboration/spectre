@@ -186,7 +186,7 @@ bool receive_boundary_data_global_time_stepping(
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
-template <typename Metavariables, bool DenseOutput = false, typename DbTagsList,
+template <typename Metavariables, bool DenseOutput, typename DbTagsList,
           typename... InboxTags>
 bool receive_boundary_data_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
@@ -334,7 +334,7 @@ bool receive_boundary_data_local_time_stepping(
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
 template <bool LocalTimeStepping, typename System, size_t VolumeDim,
-          bool DenseOutput = false>
+          bool DenseOutput>
 struct ApplyBoundaryCorrections {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static_assert(local_time_stepping or not DenseOutput,
@@ -764,7 +764,7 @@ namespace Actions {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput = false>
+template <typename System, size_t VolumeDim, bool DenseOutput>
 struct ApplyBoundaryCorrectionsToTimeDerivative {
   using inbox_tags = tmpl::list<
       evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
@@ -812,7 +812,7 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput = false>
+template <typename System, size_t VolumeDim, bool DenseOutput>
 struct ApplyLtsBoundaryCorrections {
   using inbox_tags = tmpl::list<
       evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
@@ -837,7 +837,7 @@ struct ApplyLtsBoundaryCorrections {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not receive_boundary_data_local_time_stepping<Metavariables>(
+    if (not receive_boundary_data_local_time_stepping<Metavariables, false>(
             make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
