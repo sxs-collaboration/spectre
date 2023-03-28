@@ -100,8 +100,9 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
 
   // Do not allow updates at or before last update time
   if (UNLIKELY(not times_.empty() and time <= last_time_updated())) {
-    ERROR("The specified time t=" << time << " is at or before the last time "
-                                             "updated, t_update="
+    ERROR("The specified time t=" << time
+                                  << " is at or before the last time "
+                                     "updated, t_update="
                                   << last_time_updated() << ".");
   }
 

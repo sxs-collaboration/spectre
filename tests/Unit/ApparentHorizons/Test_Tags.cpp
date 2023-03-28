@@ -75,17 +75,19 @@ void test_normals() {
               cos_phi * (2.0 / 3.0) *
                   (amp * (-1. + square(cos_theta)) * sin_phi - r * sin_theta) +
               cos_theta * (-10. * r - 10. * amp * sin_phi * sin_theta)) +
-         0.1 * cos_phi * (amp * (-1. + 1. * square(cos_theta)) * sin_phi -
-                          1. * r * sin_theta) *
+         0.1 * cos_phi *
+             (amp * (-1. + 1. * square(cos_theta)) * sin_phi -
+              1. * r * sin_theta) *
              (1. * amp * square(cos_phi) +
               1. * amp * square(cos_theta) * square(sin_phi) -
               1. * r * sin_phi * sin_theta +
               cos_phi * (amp * (-10. + 10. * square(cos_theta)) * sin_phi -
                          10. * r * sin_theta) +
               cos_theta * (-2. * r - 2. * amp * sin_phi * sin_theta)) +
-         2. * (amp * square(cos_phi) +
-               sin_phi *
-                   (amp * square(cos_theta) * sin_phi - 1. * r * sin_theta)) *
+         2. *
+             (amp * square(cos_phi) +
+              sin_phi *
+                  (amp * square(cos_theta) * sin_phi - 1. * r * sin_theta)) *
              (amp * square(cos_phi) +
               amp * square(cos_theta) * square(sin_phi) -
               1. * r * sin_phi * sin_theta +
@@ -166,7 +168,7 @@ void test_dimensionful_spin_vector_compute_tag() {
       db::AddComputeTags<StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<
           Frame::Inertial, Frame::Inertial>>>(
       dimensionful_spin_magnitude, area_element, radius, r_hat, ricci_scalar,
-      spin_function, strahlkorper,strahlkorper_cartesian_coords);
+      spin_function, strahlkorper, strahlkorper_cartesian_coords);
   // LHS of the == in the CHECK is retrieving the computed dimensionful spin
   // vector from your DimensionfulSpinVectorCompute tag and RHS of ==
   // should be same logic as DimensionfulSpinVectorCompute::function
@@ -312,8 +314,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       StrahlkorperTags::UnitNormalVectorCompute<Frame::Inertial>>(
       "UnitNormalVector");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::RicciScalarCompute<Frame::Inertial>>(
-      "RicciScalar");
+      StrahlkorperTags::RicciScalarCompute<Frame::Inertial>>("RicciScalar");
   TestHelpers::db::test_compute_tag<StrahlkorperTags::MaxRicciScalarCompute>(
       "MaxRicciScalar");
   TestHelpers::db::test_compute_tag<StrahlkorperTags::MinRicciScalarCompute>(
