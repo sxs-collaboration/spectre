@@ -204,7 +204,6 @@ struct SomeType {};
 struct SomeTag : db::SimpleTag {
   using type = SomeType;
 };
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
@@ -218,6 +217,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_base_tag<ah::Tags::ObserveCentersBase>(
       "ObserveCentersBase");
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
+  TestHelpers::db::test_simple_tag<
+      ah::Tags::TimeDerivStrahlkorper<Frame::Inertial>>(
+      "TimeDerivStrahlkorper");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
       "IrreducibleMass");
@@ -268,6 +270,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_simple_tag<
       StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
+  TestHelpers::db::test_compute_tag<
+      ah::Tags::TimeDerivStrahlkorperCompute<Frame::Inertial>>(
+      "TimeDerivStrahlkorper");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::EuclideanAreaElementCompute<Frame::Inertial>>(
       "EuclideanAreaElement");
