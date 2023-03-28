@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_StrahlkorperFunctions.cpp
   Test_Tags.cpp
   Test_YlmSpherepack.cpp
+  Test_YlmToStf.cpp
   )
 
 add_test_library(

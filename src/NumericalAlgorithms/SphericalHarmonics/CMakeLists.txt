@@ -16,6 +16,7 @@ spectre_target_sources(
   Tags.cpp
   YlmSpherepack.cpp
   YlmSpherepackHelper.cpp
+  YlmToStf.cpp
   )
 
 spectre_target_headers(
@@ -32,6 +33,7 @@ spectre_target_headers(
   TagsTypeAliases.hpp
   YlmSpherepack.hpp
   YlmSpherepackHelper.hpp
+  YlmToStf.hpp
   )
 
 target_link_libraries(
