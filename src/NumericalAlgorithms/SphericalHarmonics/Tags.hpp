@@ -358,3 +358,28 @@ using compute_items_tags =
                D2xRadiusCompute<Frame>, LaplacianRadiusCompute<Frame>,
                NormalOneFormCompute<Frame>, TangentsCompute<Frame>>;
 }  // namespace StrahlkorperTags
+
+/// Tags related to symmetric trace-free tensors
+namespace Stf::Tags {
+
+/*!
+ * \brief Tag used to hold a symmetric trace-free tensor of a certain rank.
+ * \details The type is a symmetric tensor of the requested rank. A
+ * ScalarBaseTag of type `Scalar<double>` is used to identify the tag of which
+ * the symmetric trace-free expansion is done.
+ */
+template <typename ScalarBaseTag, size_t rank, size_t Dim, typename Frame>
+struct StfTensor : db::SimpleTag {
+  static_assert(std::is_same_v<typename ScalarBaseTag::type, Scalar<double>>,
+                "StfTensor base tags must be a Scalar.");
+  static_assert(rank <= 3, "StfTensor tag is only implemented up to rank 3.");
+  static std::string name() {
+    return MakeString{} << "StfTensor(" << db::tag_name<ScalarBaseTag>()
+                        << "," << rank << ")";
+  }
+  using type_list =
+      tmpl::list<Scalar<double>, tnsr::i<double, Dim, Frame>,
+                 tnsr::ii<double, Dim, Frame>, tnsr::iii<double, Dim, Frame>>;
+  using type = tmpl::at<type_list, tmpl::size_t<rank>>;
+};
+}  // namespace Stf::Tags

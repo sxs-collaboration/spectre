@@ -15,6 +15,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -58,9 +59,12 @@ struct SendToElements {
     for (const auto& [element_id, grid_coords] : faces_grid_coords) {
       const size_t grid_size = get<0>(grid_coords).size();
       Variables<tags_to_send> vars_to_send(grid_size);
-      get(get<psi_tag>(vars_to_send)) = get<Tags::PsiMonopole>(box);
+      get(get<psi_tag>(vars_to_send)) = get(
+          get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(
+              box));
       get(get<dt_psi_tag>(vars_to_send)) =
-          get<::Tags::dt<Tags::PsiMonopole>>(box);
+          get(get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+                                       Frame::Grid>>(box));
       for (size_t i = 0; i < Dim; ++i) {
         // at 0th order the spatial derivative is just zero
         get<di_psi_tag>(vars_to_send).get(i) = 0.;

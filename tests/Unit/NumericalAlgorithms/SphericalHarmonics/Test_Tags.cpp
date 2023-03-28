@@ -118,11 +118,11 @@ void test_radius_and_derivs() {
         (9. * sin(3. * phi) * sin_theta -
          sin_phi * (7. * sin_theta + 12. * square(cos_phi) * sin(3. * theta))) /
         (16. * square(r));
-    expected_d2x_radius.get(0, 1)[s] =
-        -((cos_phi * (square(cos_phi) +
-                      ((-1. + 3. * cos_2_theta) * square(sin_phi)) / 2.) *
-           sin_theta) /
-          square(r));
+    expected_d2x_radius.get(0, 1)[s] = -(
+        (cos_phi *
+         (square(cos_phi) + ((-1. + 3. * cos_2_theta) * square(sin_phi)) / 2.) *
+         sin_theta) /
+        square(r));
     expected_d2x_radius.get(0, 2)[s] =
         (3. * cos_phi * cos_theta * sin_phi * square(sin_theta)) / square(r);
     expected_d2x_radius.get(1, 1)[s] =
@@ -235,14 +235,44 @@ struct SomeType {};
 struct SomeTag : db::SimpleTag {
   using type = SomeType;
 };
+struct DummyScalar : db::SimpleTag {
+  using type = Scalar<double>;
+};
+
+void test_stf_tensor_tag() {
+  static_assert(std::is_same_v<
+                Stf::Tags::StfTensor<DummyScalar, 0, 3, Frame::Inertial>::type,
+                Scalar<double>>);
+  static_assert(std::is_same_v<
+                Stf::Tags::StfTensor<DummyScalar, 1, 3, Frame::Inertial>::type,
+                tnsr::i<double, 3, Frame::Inertial>>);
+  static_assert(std::is_same_v<
+                Stf::Tags::StfTensor<DummyScalar, 2, 3, Frame::Inertial>::type,
+                tnsr::ii<double, 3, Frame::Inertial>>);
+  static_assert(std::is_same_v<
+                Stf::Tags::StfTensor<DummyScalar, 3, 3, Frame::Inertial>::type,
+                tnsr::iii<double, 3, Frame::Inertial>>);
+  TestHelpers::db::test_simple_tag<
+      Stf::Tags::StfTensor<DummyScalar, 0, 3, Frame::Inertial>>(
+      "StfTensor(DummyScalar,0)");
+  TestHelpers::db::test_simple_tag<
+      Stf::Tags::StfTensor<DummyScalar, 1, 3, Frame::Inertial>>(
+      "StfTensor(DummyScalar,1)");
+  TestHelpers::db::test_simple_tag<
+      Stf::Tags::StfTensor<DummyScalar, 2, 3, Frame::Inertial>>(
+      "StfTensor(DummyScalar,2)");
+  TestHelpers::db::test_simple_tag<
+      Stf::Tags::StfTensor<DummyScalar, 3, 3, Frame::Inertial>>(
+      "StfTensor(DummyScalar,3)");
+}
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.StrahlkorperDataBox",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags", "[ApparentHorizons][Unit]") {
   test_average_radius();
   test_radius_and_derivs();
   test_normals();
+  test_stf_tensor_tag();
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::ThetaPhi<Frame::Inertial>>(

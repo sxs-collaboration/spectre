@@ -293,13 +293,12 @@ struct WorldtubeSolution : db::SimpleTag {
 };
 
 /*!
- * \brief Holds the monopole of the regular field inside the worldtube.
+ * \brief The scalar field inside the worldtube.
  *
- * \warning This tag will be removed once higher expansion orders of the
- * worldtube scheme are implemented.
+ * \details This tag is used as a base tag for Stf::Tags::StfTensor
  */
-struct PsiMonopole : db::SimpleTag {
-  using type = double;
+struct PsiWorldtube : db::SimpleTag {
+  using type = Scalar<double>;
 };
 
 /*!
