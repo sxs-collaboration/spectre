@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "Options/ParseOptions.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace PUP {
@@ -46,12 +46,17 @@ void operator|(er& p, blaze::DynamicMatrix<Type, SO, Alloc, Tag>& t) {
 /// @}
 }  // namespace PUP
 
+namespace DynamicMatrix_detail {
+template <typename Type>
+std::vector<std::vector<Type>> parse_to_vectors(const Options::Option& options);
+}  // namespace DynamicMatrix_detail
+
 template <typename Type, bool SO, typename Alloc, typename Tag>
 struct Options::create_from_yaml<blaze::DynamicMatrix<Type, SO, Alloc, Tag>> {
   template <typename Metavariables>
   static blaze::DynamicMatrix<Type, SO, Alloc, Tag> create(
       const Options::Option& options) {
-    const auto data = options.parse_as<std::vector<std::vector<Type>>>();
+    const auto data = DynamicMatrix_detail::parse_to_vectors<Type>(options);
     const size_t num_rows = data.size();
     size_t num_cols = 0;
     if (num_rows > 0) {

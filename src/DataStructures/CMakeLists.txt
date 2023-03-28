@@ -9,7 +9,11 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ApplyMatrices.cpp
+  CompressedMatrix.cpp
+  CompressedVector.cpp
   DynamicBuffer.cpp
+  DynamicMatrix.cpp
+  DynamicVector.cpp
   FloatingPointType.cpp
   Index.cpp
   IndexIterator.cpp

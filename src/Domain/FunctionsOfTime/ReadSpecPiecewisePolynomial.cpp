@@ -22,6 +22,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace domain::FunctionsOfTime {
 template <template <size_t> class FoTType, size_t MaxDeriv>

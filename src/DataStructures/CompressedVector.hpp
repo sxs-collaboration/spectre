@@ -13,8 +13,15 @@
 #include <pup.h>
 #include <vector>
 
-#include "Options/ParseOptions.hpp"
 #include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace Options {
+struct Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+/// \endcond
 
 namespace PUP {
 /// @{
@@ -53,12 +60,17 @@ void operator|(er& p, blaze::CompressedVector<T, TF, Tag>& t) {
 /// @}
 }  // namespace PUP
 
+namespace CompressedVector_detail {
+template <typename T>
+std::vector<T> parse_to_vector(const Options::Option& options);
+}  // namespace CompressedVector_detail
+
 template <typename T, bool TF, typename Tag>
 struct Options::create_from_yaml<blaze::CompressedVector<T, TF, Tag>> {
   template <typename Metavariables>
   static blaze::CompressedVector<T, TF, Tag> create(
       const Options::Option& options) {
-    const auto data = options.parse_as<std::vector<T>>();
+    const auto data = CompressedVector_detail::parse_to_vector<T>(options);
     blaze::CompressedVector<T, TF, Tag> result(data.size());
     // Insert only non-zero elements. Can't use iterators and `std::copy`
     // because for sparse types the iterators only run over non-zero elements.
