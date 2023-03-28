@@ -598,15 +598,22 @@ void test_options_variant() {
     }
   }
 
-  using tag = VariantTag<int, std::string>;
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<tag>> opts("");
-        opts.parse("VariantTag: []");
-        opts.get<tag>();
-      }(),
-      Catch::Contains("While creating a variant:\nAt line 1 column 13:\nFailed "
-                      "to convert value to type int or string"));
+  {
+    using tag = VariantTag<int, std::string>;
+    CHECK_THROWS_WITH(
+        []() {
+          Options::Parser<tmpl::list<tag>> opts("");
+          opts.parse("VariantTag: []");
+          opts.get<tag>();
+        }(),
+        Catch::Contains("While creating a variant:\nAt line 1 column "
+                        "13:\nFailed to convert value to type int or string: "
+                        "[]") and
+            Catch::Contains("At line 1 column 13:\nFailed to convert value to "
+                            "type int: []") and
+            Catch::Contains("At line 1 column 13:\nFailed to convert value to "
+                            "type string: []"));
+  }
 }
 
 template <typename T>

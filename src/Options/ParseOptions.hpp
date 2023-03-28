@@ -1087,9 +1087,10 @@ struct create_from_yaml<std::variant<T...>> {
   template <typename Metavariables>
   static Result create(const Option& options) {
     Result result{};
+    std::string errors{};
     bool constructed = false;
-    const auto try_parse =
-        [&constructed, &options, &result](auto alternative_v) {
+    const auto try_parse = [&constructed, &errors, &options,
+                            &result](auto alternative_v) {
       using Alternative = tmpl::type_from<decltype(alternative_v)>;
       if (constructed) {
         return;
@@ -1097,14 +1098,20 @@ struct create_from_yaml<std::variant<T...>> {
       try {
         result = options.parse_as<Alternative, Metavariables>();
         constructed = true;
-      } catch (...) {
+      } catch (const Options_detail::propagate_context& e) {
         // This alternative failed, but a later one may succeed.
+        errors += "\n\n" + e.message();
       }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(try_parse(tmpl::type_<T>{}));
     if (not constructed) {
-      options
-          .parse_as<Options_detail::variant_parse_error<T...>, Metavariables>();
+      try {
+        options.parse_as<Options_detail::variant_parse_error<T...>,
+                         Metavariables>();
+      } catch (const Options_detail::propagate_context& e) {
+        throw Options_detail::propagate_context(
+            e.message() + "\n\nPossible errors:" + errors);
+      }
     }
     return result;
   }
