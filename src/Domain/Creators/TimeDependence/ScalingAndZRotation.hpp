@@ -58,7 +58,7 @@ namespace domain::creators::time_dependence {
  *
  * For this map, the cubic scaling goes from the grid frame to the distorted
  * frame, and the rotation goes from the distorted frame to the inertial frame.
- *
+ * This was chosen as a way of testing composed maps in the distorted frame.
  */
 template <size_t MeshDim>
 class ScalingAndZRotation final : public TimeDependence<MeshDim> {
@@ -69,16 +69,24 @@ class ScalingAndZRotation final : public TimeDependence<MeshDim> {
  private:
   using Identity = domain::CoordinateMaps::Identity<1>;
   using Rotation = domain::CoordinateMaps::TimeDependent::Rotation<2>;
+  using Rotation3D =
+      domain::CoordinateMaps::TimeDependent::ProductOf2Maps<Rotation, Identity>;
   using CubicScaleMap =
       domain::CoordinateMaps::TimeDependent::CubicScale<MeshDim>;
 
  public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, Rotation>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          CoordinateMaps::TimeDependent::ProductOf2Maps<Rotation, Identity>>>;
+  using maps_list = tmpl::flatten<tmpl::list<
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CubicScaleMap>,
+      tmpl::conditional_t<
+          MeshDim == 2,
+          tmpl::list<domain::CoordinateMap<Frame::Distorted, Frame::Inertial,
+                                           Rotation>,
+                     domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                           CubicScaleMap, Rotation>>,
+          tmpl::list<domain::CoordinateMap<Frame::Distorted, Frame::Inertial,
+                                           Rotation3D>,
+                     domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                           CubicScaleMap, Rotation3D>>>>>;
 
   static constexpr size_t mesh_dim = MeshDim;
 
@@ -155,8 +163,7 @@ class ScalingAndZRotation final : public TimeDependence<MeshDim> {
   ~ScalingAndZRotation() override = default;
   ScalingAndZRotation(const ScalingAndZRotation&) = delete;
   ScalingAndZRotation(ScalingAndZRotation&&) = default;
-  ScalingAndZRotation& operator=(const ScalingAndZRotation&) =
-      delete;
+  ScalingAndZRotation& operator=(const ScalingAndZRotation&) = delete;
   ScalingAndZRotation& operator=(ScalingAndZRotation&&) = default;
 
   ScalingAndZRotation(double initial_time, double angular_velocity,
