@@ -65,7 +65,8 @@ struct MockElementArray {
                   gr::Tags::Lapse<DataVector>,
                   domain::Tags::InverseJacobian<Dim, Frame::Grid,
                                                 Frame::Inertial>,
-                  ::Tags::TimeStepId, Tags::WorldtubeSolution<Dim>>,
+                  ::Tags::TimeStepId, Tags::RegularFieldAdvectiveTerm<Dim>,
+                  Tags::WorldtubeSolution<Dim>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::ReceiveWorldtubeData>>>;
@@ -173,13 +174,15 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
           excision_sphere.abutting_direction(element_id).has_value()
               ? std::make_optional<puncture_field_type>(puncture_field)
               : std::nullopt;
+
+      Scalar<DataVector> advective_term(face_size, 0.);
       ActionTesting::emplace_array_component_and_initialize<element_chare>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           element_id,
           {std::move(element), std::move(mesh),
            std::move(optional_puncture_field), std::move(shift),
            std::move(lapse), std::move(grid_inv_jacobian), dummy_time_step_id,
-           worldtube_solution});
+           std::move(advective_term), worldtube_solution});
     }
 
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>

@@ -19,6 +19,7 @@
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
@@ -62,7 +63,6 @@ struct SendToWorldtube {
   static constexpr size_t Dim = 3;
   using tags_to_send = tmpl::list<CurvedScalarWave::Tags::Psi,
                                   ::Tags::dt<CurvedScalarWave::Tags::Psi>>;
-
   using tags_to_slice_to_face = tmpl::list<
       CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
       CurvedScalarWave::Tags::Phi<Dim>,
@@ -71,6 +71,7 @@ struct SendToWorldtube {
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>>;
 
   using inbox_tags = tmpl::list<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>;
+  using simple_tags = tmpl::list<Tags::RegularFieldAdvectiveTerm<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -103,7 +104,6 @@ struct SendToWorldtube {
                           direction.value().dimension(),
                           index_to_slice_at(mesh.extents(), direction.value()));
           });
-
       const auto& face_lapse = get<gr::Tags::Lapse<DataVector>>(vars_on_face);
       const auto& face_shift =
           get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(vars_on_face);
@@ -135,6 +135,36 @@ struct SendToWorldtube {
           get(dot_product(face_shift, face_phi)) -
           get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(
               puncture_field.value()));
+
+      const auto& mesh_velocity = db::get<domain::Tags::MeshVelocity<Dim>>(box);
+      ASSERT(mesh_velocity.has_value(),
+             "Expected a moving grid for worldrube evolution.");
+      // is an optional so we can't put the tag into variables. The shift is not
+      // used at this point so we use the allocation for the mesh_velocity to
+      // save memory.
+      auto& mesh_velocity_on_face =
+          get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(vars_on_face);
+      data_on_slice(make_not_null(&mesh_velocity_on_face),
+                    mesh_velocity.value(), mesh.extents(),
+                    direction.value().dimension(),
+                    index_to_slice_at(mesh.extents(), direction.value()));
+      db::mutate<Tags::RegularFieldAdvectiveTerm<Dim>>(
+          make_not_null(&box),
+          [&face_phi, &mesh_velocity_on_face,
+           &di_psi_puncture =
+               get<::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                                 Frame::Inertial>>(puncture_field.value())](
+              const gsl::not_null<Scalar<DataVector>*> regular_advective_term) {
+            tenex::evaluate<>(regular_advective_term,
+                              (face_phi(ti::i) - di_psi_puncture(ti::i)) *
+                                  mesh_velocity_on_face(ti::I));
+          });
+      // The time derivative is transformed into the grid frame using the
+      // advective term which comes from the transformation of the time
+      // derivative due to the moving mesh.
+      dt_psi_regular_times_det +=
+          get(get<Tags::RegularFieldAdvectiveTerm<Dim>>(box));
+
       psi_regular_times_det *= get(area_element);
       dt_psi_regular_times_det *= get(area_element);
       const auto& centered_face_coords =

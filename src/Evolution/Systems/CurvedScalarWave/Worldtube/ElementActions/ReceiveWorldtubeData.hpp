@@ -99,8 +99,12 @@ struct ReceiveWorldtubeData {
       auto& received_data = inbox.at(time_step_id);
       get(get<psi_tag>(received_data)) +=
           get(get<psi_tag>(puncture_field.value()));
+
+      // the advective term transforms the time derivative back into the
+      // inertial frame
       get(get<dt_psi_tag>(received_data)) +=
-          get(get<dt_psi_tag>(puncture_field.value()));
+          get(get<dt_psi_tag>(puncture_field.value())) -
+          get(get<Tags::RegularFieldAdvectiveTerm<Dim>>(box));
 
       db::mutate<Tags::WorldtubeSolution<Dim>>(
           make_not_null(&box),

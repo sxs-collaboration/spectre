@@ -22,6 +22,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/SendToWorldtube.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
@@ -67,7 +68,7 @@ struct MockElementArray {
                   domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                 Frame::Grid>,
                   typename CurvedScalarWave::System<Dim>::variables_tag,
-                  ::Tags::TimeStepId>,
+                  domain::Tags::MeshVelocity<Dim>, ::Tags::TimeStepId>,
               db::AddComputeTags<
                   Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
@@ -172,17 +173,24 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
           grid_size, 0.);
       get(get<CurvedScalarWave::Tags::Psi>(evolved_vars)) = psi_value;
       get(get<CurvedScalarWave::Tags::Pi>(evolved_vars)) = pi_value;
+      const bool is_abutting =
+          excision_sphere.abutting_direction(element_id).has_value();
       std::optional<puncture_field_type> optional_puncture_field =
-          excision_sphere.abutting_direction(element_id).has_value()
-              ? std::make_optional<puncture_field_type>(puncture_field)
+          is_abutting ? std::make_optional<puncture_field_type>(puncture_field)
+                      : std::nullopt;
+      // we set the mesh_velocity to zero so we can recover the exact dt value
+      std::optional<tnsr::I<DataVector, Dim>> mesh_velocity =
+          is_abutting
+              ? std::make_optional<tnsr::I<DataVector, Dim>>(face_size, 0.)
               : std::nullopt;
+
       ActionTesting::emplace_array_component_and_initialize<element_chare>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           element_id,
           {std::move(element), std::move(mesh), grid_coords,
            std::move(optional_puncture_field), std::move(shift),
            std::move(lapse), std::move(grid_inv_jacobian), evolved_vars,
-           dummy_time_step_id});
+           std::move(mesh_velocity), dummy_time_step_id});
     }
 
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
@@ -205,6 +213,14 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     for (const auto& element_id : element_ids) {
       ActionTesting::next_action<element_chare>(make_not_null(&runner),
                                                 element_id);
+      if (excision_sphere.abutting_direction(element_id).has_value()) {
+        const auto& regular_field_advective_term =
+            ActionTesting::get_databox_tag<
+                element_chare, Tags::RegularFieldAdvectiveTerm<Dim>>(
+                runner, element_id);
+        CHECK_ITERABLE_APPROX(regular_field_advective_term,
+                              Scalar<DataVector>(face_size, 0.));
+      }
     }
 
     using inbox_tag = Tags::SphericalHarmonicsInbox<Dim>;
