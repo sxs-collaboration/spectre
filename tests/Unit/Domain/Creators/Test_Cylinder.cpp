@@ -36,6 +36,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Stringize.hpp"
 
 namespace domain {
 namespace {
@@ -304,7 +305,7 @@ void test_cylinder_no_refinement() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [4,4,3]\n"
         "  UseEquiangularMap: " +
-        std::string{equiangular_map ? "true" : "false"} +
+        stringize(equiangular_map) +
         "\n"
         "  RadialPartitioning: []\n"
         "  PartitioningInZ: []\n"
@@ -312,8 +313,7 @@ void test_cylinder_no_refinement() {
         "  DistributionInZ: [Linear]\n" +
         std::string{with_boundary_conditions
                         ? boundary_conditions_string(periodic_in_z)
-                        : "  IsPeriodicInZ: " +
-                              std::string{periodic_in_z ? "true" : "false"} +
+                        : "  IsPeriodicInZ: " + stringize(periodic_in_z) +
                               "\n"}};
 
     const auto cylinder_factory =

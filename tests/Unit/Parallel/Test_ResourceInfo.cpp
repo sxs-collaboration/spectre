@@ -20,6 +20,7 @@
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Stringize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -376,7 +377,7 @@ Parallel::ResourceInfo<Metavariables> create_resource_info(
     const bool avoid_global_proc_0,
     const std::vector<std::pair<bool, int>>& singletons) {
   std::string option_str =
-      "AvoidGlobalProc0: " + (avoid_global_proc_0 ? "true"s : "false"s) + "\n";
+      "AvoidGlobalProc0: " + stringize(avoid_global_proc_0) + "\n";
   option_str += "Singletons:\n";
   for (size_t i = 0; i < singletons.size(); i++) {
     const bool exclusive = singletons[i].first;
@@ -384,7 +385,7 @@ Parallel::ResourceInfo<Metavariables> create_resource_info(
     option_str += "  FakeSingleton" + get_output(i) + ":\n";
     option_str +=
         "    Proc: " + (proc == -1 ? "Auto"s : get_output(proc)) + "\n";
-    option_str += "    Exclusive: " + (exclusive ? "true"s : "false"s) + "\n";
+    option_str += "    Exclusive: " + stringize(exclusive) + "\n";
   }
 
   return serialize_and_deserialize(
