@@ -116,10 +116,10 @@ struct EvolutionMetavars
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, VolumeDim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, VolumeDim>>,
+                         system, VolumeDim, false>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, VolumeDim>,
+                  system, VolumeDim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>,

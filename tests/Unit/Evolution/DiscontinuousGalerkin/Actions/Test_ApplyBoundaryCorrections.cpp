@@ -423,11 +423,12 @@ struct component {
           tmpl::list<tmpl::conditional_t<
               local_time_stepping,
               ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  typename Metavariables::system, Metavariables::volume_dim>,
+                  typename Metavariables::system, Metavariables::volume_dim,
+                  false>,
               ::evolution::dg::Actions::
                   ApplyBoundaryCorrectionsToTimeDerivative<
-                      typename Metavariables::system,
-                      Metavariables::volume_dim>>>>>;
+                      typename Metavariables::system, Metavariables::volume_dim,
+                      false>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
