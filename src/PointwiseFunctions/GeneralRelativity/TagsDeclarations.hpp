@@ -85,5 +85,9 @@ template <typename DataType>
 struct WeylElectricScalar;
 template <typename DataType>
 struct WeylMagneticScalar;
+template <typename DataType, size_t Dim, typename Frame>
+struct WeylTypeD1;
+template <typename Datatype>
+struct WeylTypeD1Scalar;
 }  // namespace Tags
 }  // namespace gr
