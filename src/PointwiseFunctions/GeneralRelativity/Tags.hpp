@@ -106,6 +106,16 @@ struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::a<DataType, Dim, Frame>;
 };
 /*!
+ * \brief Trace of the spacetime Christoffel symbols of the second kind
+ * \f$\Gamma^{i} = \Gamma^i_{jk}g^{jk}\f$, where \f$\Gamma^i_{jk}\f$ are
+ * Christoffel symbols of the second kind and \f$g^{jk}\f$ is the
+ * inverse spacetime metric.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceSpacetimeChristoffelSecondKind : db::SimpleTag {
+  using type = tnsr::A<DataType, Dim, Frame>;
+};
+/*!
  * \brief Trace of the spatial Christoffel symbols of the first kind
  * \f$\Gamma_{i} = \Gamma_{ijk}\gamma^{jk}\f$, where \f$\Gamma_{ijk}\f$ are
  * Christoffel symbols of the first kind and \f$\gamma^{jk}\f$ is the
