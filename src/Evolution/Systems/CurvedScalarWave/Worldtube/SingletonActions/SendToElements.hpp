@@ -51,23 +51,39 @@ struct SendToElements {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    const size_t order = db::get<Tags::ExpansionOrder>(box);
     auto& element_proxies = Parallel::get_parallel_component<
         typename Metavariables::dg_element_array>(cache);
     const auto& faces_grid_coords =
         get<Tags::ElementFacesGridCoordinates<Dim>>(box);
+    const auto& psi_l0 =
+        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(box);
+    const auto& dt_psi_l0 =
+        get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+                                 Frame::Grid>>(box);
+    const auto& psi_l1 =
+        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>>(box);
+    const auto& dt_psi_l1 =
+        get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
+                                 Frame::Grid>>(box);
 
     for (const auto& [element_id, grid_coords] : faces_grid_coords) {
       const size_t grid_size = get<0>(grid_coords).size();
       Variables<tags_to_send> vars_to_send(grid_size);
-      get(get<psi_tag>(vars_to_send)) = get(
-          get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(
-              box));
-      get(get<dt_psi_tag>(vars_to_send)) =
-          get(get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
-                                       Frame::Grid>>(box));
-      for (size_t i = 0; i < Dim; ++i) {
-        // at 0th order the spatial derivative is just zero
-        get<di_psi_tag>(vars_to_send).get(i) = 0.;
+      get(get<psi_tag>(vars_to_send)) = get(psi_l0);
+      get(get<dt_psi_tag>(vars_to_send)) = get(dt_psi_l0);
+      if (order > 0) {
+        for (size_t i = 0; i < Dim; ++i) {
+          get(get<psi_tag>(vars_to_send)) += psi_l1.get(i) * grid_coords.get(i);
+          get(get<dt_psi_tag>(vars_to_send)) +=
+              dt_psi_l1.get(i) * grid_coords.get(i);
+          get<di_psi_tag>(vars_to_send).get(i) = psi_l1.get(i);
+        }
+      } else {
+        for (size_t i = 0; i < Dim; ++i) {
+          // at 0th order the spatial derivative is just zero
+          get<di_psi_tag>(vars_to_send).get(i) = 0.;
+        }
       }
       Parallel::receive_data<Tags::RegularFieldInbox<Dim>>(
           element_proxies[element_id], db::get<::Tags::TimeStepId>(box),

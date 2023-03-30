@@ -101,7 +101,7 @@ EventsAndTriggers:
 
 Worldtube:
   ExcisionSphere: ExcisionSphereA
-  ExpansionOrder: 0
+  ExpansionOrder: 1
 
 Filtering:
   ExpFilter0:
