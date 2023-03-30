@@ -14,9 +14,10 @@ def mass_weighted_kinetic_energy(tilde_d, lorentz_factor):
     return tilde_d * (lorentz_factor - 1.0)
 
 
-def tilde_d_unbound_ut_criterion(tilde_d, lorentz_factor,
-                                 spatial_velocity_one_form, lapse, shift):
-    shift_dot_velocity = np.dot(spatial_velocity_one_form, shift)
+def tilde_d_unbound_ut_criterion(tilde_d, lorentz_factor, spatial_velocity,
+                                 spatial_metric, lapse, shift):
+    shift_dot_velocity = np.einsum("ab, ab", spatial_metric,
+                                   np.outer(spatial_velocity, shift))
     u_t = lorentz_factor * (-lapse + shift_dot_velocity)
     return tilde_d * (u_t < -1.0)
 

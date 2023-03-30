@@ -68,7 +68,8 @@ template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 void tilde_d_unbound_ut_criterion(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor,
-    const tnsr::i<DataType, Dim, Fr>& spatial_velocity_one_form,
+    const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+    const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
 
 namespace Tags {
@@ -119,7 +120,8 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
                                          db::ComputeTag {
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD, LorentzFactor<DataType>,
-                 SpatialVelocityOneForm<DataType, Dim, Fr>,
+                 SpatialVelocity<DataType, Dim, Fr>,
+                 gr::Tags::SpatialMetric<DataType, Dim, Fr>,
                  gr::Tags::Lapse<DataType>, gr::Tags::Shift<DataType, Dim, Fr>>;
 
   using return_type = Scalar<DataType>;
@@ -129,7 +131,8 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<Scalar<DataType>*> result,
       const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor,
-      const tnsr::i<DataType, Dim, Fr>& spatial_velocity_one_form,
+      const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+      const tnsr::ii<DataType, Dim, Fr>& spacial_metric,
       const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift)>(
       &tilde_d_unbound_ut_criterion<DataType, Dim, Fr>);
 };
