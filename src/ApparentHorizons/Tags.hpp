@@ -10,6 +10,7 @@
 
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "ApparentHorizons/TimeDerivStrahlkorper.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -53,6 +54,28 @@ struct ObserveCentersBase : db::BaseTag {};
 struct ObserveCenters : ObserveCentersBase, db::SimpleTag {
   using type = bool;
 };
+
+/// @{
+/// Tag to compute the time derivative of the coefficients of a Strahlkorper
+/// from a number of previous Strahlkorpers.
+template <typename Frame>
+struct TimeDerivStrahlkorper : db::SimpleTag {
+  using type = ::Strahlkorper<Frame>;
+};
+
+template <typename Frame>
+struct TimeDerivStrahlkorperCompute : db::ComputeTag,
+                                      TimeDerivStrahlkorper<Frame> {
+  using base = TimeDerivStrahlkorper<Frame>;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<::Strahlkorper<Frame>*>,
+      const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&)>(
+      &ah::time_deriv_of_strahlkorper<Frame>);
+
+  using argument_tags = tmpl::list<PreviousStrahlkorpers<Frame>>;
+};
+/// @}
 }  // namespace ah::Tags
 
 /// \ingroup SurfacesGroup

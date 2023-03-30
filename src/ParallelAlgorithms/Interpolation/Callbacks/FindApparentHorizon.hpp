@@ -275,7 +275,22 @@ struct FindApparentHorizon
       }
     }
 
-    if (not horizon_finder_failed) {
+    // If it failed, don't update any variables, just reset the Strahlkorper to
+    // it's previous value
+    if (horizon_finder_failed) {
+      db::mutate<StrahlkorperTags::Strahlkorper<Frame>>(
+          box,
+          [](const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+             const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
+                 previous_strahlkorpers) {
+            // Don't keep a partially-converged strahlkorper in the
+            // DataBox.  Reset to either the original initial guess or
+            // to the last-found Strahlkorper (whichever one happens
+            // to be in previous_strahlkorpers).
+            *strahlkorper = previous_strahlkorpers.front().second;
+          },
+          db::get<::ah::Tags::PreviousStrahlkorpers<Frame>>(*box));
+    } else {
       // The interpolated variables
       // Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
       // have been interpolated from the volume to the points on the
@@ -343,33 +358,20 @@ struct FindApparentHorizon
             },
             box);
       }
-      tmpl::for_each<
-          typename InterpolationTargetTag::post_horizon_find_callbacks>(
-          [&box, &cache, &temporal_id](auto callback_v) {
-            using callback = tmpl::type_from<decltype(callback_v)>;
-            callback::apply(*box, *cache, temporal_id);
-          });
-    }
 
-    // Prepare for finding horizon at a new time.
-    db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>,
-               ::ah::Tags::PreviousStrahlkorpers<Frame>>(
-        box, [&horizon_finder_failed, &temporal_id](
-                 const gsl::not_null<::FastFlow*> fast_flow,
-                 const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-                 const gsl::not_null<
-                     std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
-                     previous_strahlkorpers) {
-          if (horizon_finder_failed) {
-            // Don't keep a partially-converged strahlkorper in the
-            // DataBox.  Reset to either the original initial guess or
-            // to the last-found Strahlkorper (whichever one happens
-            // to be in previous_strahlkorpers).
-            *strahlkorper = previous_strahlkorpers->front().second;
-          } else {
+      // Update the previous strahlkorpers. We do this before the callbacks
+      // in case any of the callbacks need the previous strahlkorpers with the
+      // current strahlkorper already in it.
+      db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
+                 ::ah::Tags::PreviousStrahlkorpers<Frame>>(
+          box, [&temporal_id](
+                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+                   const gsl::not_null<
+                       std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                       previous_strahlkorpers) {
             // This is the number of previous strahlkorpers that we
             // keep around.
-            const size_t num_previous_strahlkorpers = 2;
+            const size_t num_previous_strahlkorpers = 3;
 
             // Save a new previous_strahlkorper.
             previous_strahlkorpers->emplace_front(
@@ -381,9 +383,24 @@ struct FindApparentHorizon
                    num_previous_strahlkorpers) {
               previous_strahlkorpers->pop_back();
             }
-          }
+          });
+
+      // Finally call callbacks
+      tmpl::for_each<
+          typename InterpolationTargetTag::post_horizon_find_callbacks>(
+          [&box, &cache, &temporal_id](auto callback_v) {
+            using callback = tmpl::type_from<decltype(callback_v)>;
+            callback::apply(*box, *cache, temporal_id);
+          });
+    }
+
+    // Prepare for finding horizon at a new time. Regardless of if we failed or
+    // not, we reset fast flow.
+    db::mutate<::ah::Tags::FastFlow>(
+        box, [](const gsl::not_null<::FastFlow*> fast_flow) {
           fast_flow->reset_for_next_find();
         });
+
     // We return true because we are now done with all the volume data
     // at this temporal_id, so we want it cleaned up.
     return true;

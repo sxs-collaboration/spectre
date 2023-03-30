@@ -5,6 +5,7 @@
 
 #include <ostream>
 
+#include "NumericalAlgorithms/FiniteDifference/NonUniform1D.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -100,8 +101,9 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
 
   // Do not allow updates at or before last update time
   if (UNLIKELY(not times_.empty() and time <= last_time_updated())) {
-    ERROR("The specified time t=" << time << " is at or before the last time "
-                                             "updated, t_update="
+    ERROR("The specified time t=" << time
+                                  << " is at or before the last time "
+                                     "updated, t_update="
                                   << last_time_updated() << ".");
   }
 
@@ -164,65 +166,8 @@ template <size_t DerivOrder>
 std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs()
     const {
   // initialize the finite difference coefs
-  std::array<std::array<double, DerivOrder + 1>, DerivOrder + 1> coefs{};
-
-  // These coeffiecients are the weights of the Lagrange interpolation
-  // polynomial and its derivatives evaluated at `time_[0]`
-  if constexpr (DerivOrder == 1) {
-    const double one_over_delta_t = 1.0 / (times_[0] - times_[1]);
-
-    // set coefs for function value
-    coefs[0] = {{1.0, 0.0}};
-    // first deriv coefs
-    coefs[1] = {{one_over_delta_t, -one_over_delta_t}};
-  } else if constexpr (DerivOrder == 2) {
-    const double t0_minus_t1 = times_[0] - times_[1];
-    const double t1_minus_t2 = times_[1] - times_[2];
-    const double t0_minus_t2 = times_[0] - times_[2];
-    const double denom = 1.0 / t0_minus_t2;
-    const double one_over_mult_dts = 1.0 / (t0_minus_t1 * t1_minus_t2);
-
-    // set coefs for function value
-    coefs[0] = {{1.0, 0.0, 0.0}};
-    // first deriv coefs
-    coefs[1] = {{(2.0 + t1_minus_t2 / t0_minus_t1) * denom,
-                 -t0_minus_t2 * one_over_mult_dts,
-                 t0_minus_t1 / t1_minus_t2 * denom}};
-    // second deriv coefs
-    coefs[2] = {{2.0 / t0_minus_t1 * denom, -2.0 * one_over_mult_dts,
-                 2.0 / t1_minus_t2 * denom}};
-  } else if constexpr (DerivOrder == 3) {
-    const double t1_minus_t0 = times_[1] - times_[0];
-    const double t2_minus_t0 = times_[2] - times_[0];
-    const double t3_minus_t0 = times_[3] - times_[0];
-    const double t1_minus_t2 = times_[1] - times_[2];
-    const double t1_minus_t3 = times_[1] - times_[3];
-    const double t2_minus_t3 = times_[2] - times_[3];
-
-    // set coefs for function value
-    coefs[0] = {{1.0, 0.0, 0.0, 0.0}};
-    // first deriv coefs
-    coefs[1] = {
-        {-1.0 / t1_minus_t0 - 1.0 / t2_minus_t0 - 1.0 / t3_minus_t0,
-         t2_minus_t0 * t3_minus_t0 / (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
-         -t1_minus_t0 * t3_minus_t0 / (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
-         t1_minus_t0 * t2_minus_t0 /
-             (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
-    // second deriv coefs
-    coefs[2] = {{2.0 * (t1_minus_t0 + t2_minus_t0 + t3_minus_t0) /
-                     (t1_minus_t0 * t2_minus_t0 * t3_minus_t0),
-                 -2.0 * (t2_minus_t0 + t3_minus_t0) /
-                     (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
-                 2.0 * (t1_minus_t0 + t3_minus_t0) /
-                     (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
-                 -2.0 * (t1_minus_t0 + t2_minus_t0) /
-                     (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
-    // third deriv coefs
-    coefs[3] = {{-6.0 / (t1_minus_t0 * t2_minus_t0 * t3_minus_t0),
-                 6.0 / (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
-                 -6.0 / (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
-                 6.0 / (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
-  }
+  std::array<std::array<double, DerivOrder + 1>, DerivOrder + 1> coefs =
+      fd::non_uniform_1d_weights<DerivOrder + 1>(times_);
 
   std::array<DataVector, DerivOrder + 1> result =
       make_array<DerivOrder + 1>(DataVector(raw_qs_[0].size(), 0.0));

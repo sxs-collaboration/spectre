@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_StrahlkorperCoordsInDifferentFrame.cpp
   Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
+  Test_TimeDerivStrahlkorper.cpp
   )
 
 add_test_library(
@@ -28,6 +29,7 @@ target_link_libraries(
   PRIVATE
   ApparentHorizons
   ApparentHorizonsHelpers
+  FiniteDifference
   GeneralRelativitySolutions
   LinearOperators
   Logging

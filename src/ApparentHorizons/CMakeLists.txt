@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
+  TimeDerivStrahlkorper.cpp
   StrahlkorperGr.cpp
   StrahlkorperCoordsInDifferentFrame.cpp
   StrahlkorperInDifferentFrame.cpp
@@ -31,6 +32,7 @@ spectre_target_headers(
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TimeDerivStrahlkorper.hpp
   )
 
 target_link_libraries(
@@ -38,6 +40,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  FiniteDifference
   GeneralRelativity
   LinearAlgebra
   Options
