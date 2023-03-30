@@ -529,6 +529,31 @@ void test_frustum_fail_equiangular() {
   CHECK(not equiangular_map.inverse(test_mapped_point2).has_value());
   CHECK(not equiangular_map.inverse(test_mapped_point3).has_value());
 }
+
+void test_bulged_frustum_inverse() {
+  // Check that the bulged frustum inverse map works with input coordinates
+  // outside of the domain, and returns nullopt. The map involves a numerical
+  // rootfind, which has to terminate cleanly for this to work. These parameters
+  // are taken from a BBH domain where this case failed.
+  CoordinateMaps::Frustum frustum{
+      {{{{-40., -20.}},
+        {{0., 20.}},
+        {{-69.282032302755098385, -69.282032302755098385}},
+        {{0., 69.282032302755098385}}}},
+      20.,
+      69.282032302755098385,
+      OrientationMap<3>{{{Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                          Direction<3>::upper_eta()}}},
+      true,
+      0.288675,
+      false,
+      1.,
+      -1.};
+  const auto inverse =
+      frustum.inverse({{-83.565015846289398382, -20.891253961572349596,
+                        -82.337943622612172589}});
+  CHECK_FALSE(inverse.has_value());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
@@ -545,6 +570,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_bulged_frustum_equiangular_upper();
   test_bulged_frustum_equiangular_lower();
   test_frustum_fail_equiangular();
+  test_bulged_frustum_inverse();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
