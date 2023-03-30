@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ForceFreeSolutions")
 
 set(LIBRARY_SOURCES
+  Test_AlfvenWave.cpp
   Test_FastWave.cpp
   )
 
