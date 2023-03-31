@@ -12,3 +12,9 @@ spectre_add_python_bindings_test(
   Test_CleanOutput.py
   "Python"
   None)
+
+spectre_add_python_bindings_test(
+  "tools.Status"
+  Test_Status.py
+  "Python"
+  None)

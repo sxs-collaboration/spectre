@@ -27,6 +27,7 @@ class Cli(click.MultiCommand):
             "plot-power-monitors",
             "render-1d",
             "simplify-traces",
+            "status",
             "transform-volume-data",
         ]
 
@@ -70,6 +71,9 @@ class Cli(click.MultiCommand):
             from spectre.tools.CharmSimplifyTraces import (
                 simplify_traces_command)
             return simplify_traces_command
+        elif name == "status":
+            from spectre.tools.Status import (status_command)
+            return status_command
         elif name in ["transform-volume-data", "transform-vol"]:
             from spectre.Visualization.TransformVolumeData import (
                 transform_volume_data_command)
