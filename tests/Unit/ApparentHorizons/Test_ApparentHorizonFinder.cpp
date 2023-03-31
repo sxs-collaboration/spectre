@@ -231,9 +231,7 @@ struct mock_interpolation_target {
           typename InterpolationTargetTag::compute_target_points,
           typename InterpolationTargetTag::post_interpolation_callback>>;
   using mutable_global_cache_tags =
-      tmpl::conditional_t<metavariables::use_time_dependent_maps,
-                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
-                          tmpl::list<>>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
@@ -371,7 +369,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                       std::move(apparent_horizon_opts)};
 
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
-        std::move(tuple_of_opts), tuples::TaggedTuple<>{},
+        std::move(tuple_of_opts), domain_creator->functions_of_time(),
         std::vector<size_t>{3, 2});
   }
   auto& runner = *runner_ptr;
@@ -459,7 +457,12 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                      Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
-      tnsr::I<DataVector, 3, Frame> analytic_solution_coords{};
+      // If the map is time-independent, we always compute
+      // analytic_solution_coords in the inertial frame.
+      tnsr::I<
+          DataVector, 3,
+          std::conditional_t<IsTimeDependent::value, Frame, ::Frame::Inertial>>
+          analytic_solution_coords{};
       if constexpr (std::is_same_v<Frame, ::Frame::Grid> and
                     IsTimeDependent::value) {
         ElementMap<3, ::Frame::Grid> map_logical_to_grid{
@@ -494,40 +497,47 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
       // Compute psi, pi, phi for KerrSchild.
       // Horizon is always at 0,0,0 in analytic_solution_coordinates.
+      // Note that we always use Inertial frame if the map is time-independent.
       gr::Solutions::KerrSchild solution(mass, dimensionless_spin,
                                          analytic_solution_center);
       const auto solution_vars = solution.variables(
           analytic_solution_coords, 0.0,
-          typename gr::Solutions::KerrSchild::tags<DataVector, Frame>{});
+          typename gr::Solutions::KerrSchild::tags<
+              DataVector, std::conditional_t<IsTimeDependent::value, Frame,
+                                             ::Frame::Inertial>>{});
 
       // Fill output variables with solution.
       typename ::Tags::Variables<typename metavars::interpolator_source_vars>::
           type output_vars(mesh.number_of_grid_points());
 
-      if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+      if constexpr (std::is_same_v<Frame, ::Frame::Inertial> or
+                    not IsTimeDependent::value) {
         // Easy case: Grid and Inertial frame are the same
 
         const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
         const auto& dt_lapse =
             get<Tags::dt<gr::Tags::Lapse<DataVector>>>(solution_vars);
-        const auto& d_lapse = get<
-            typename gr::Solutions::KerrSchild ::DerivLapse<DataVector, Frame>>(
-            solution_vars);
+        const auto& d_lapse =
+            get<typename gr::Solutions::KerrSchild ::DerivLapse<
+                DataVector, ::Frame::Inertial>>(solution_vars);
         const auto& shift =
-            get<gr::Tags::Shift<3, Frame, DataVector>>(solution_vars);
-        const auto& d_shift = get<
-            typename gr::Solutions::KerrSchild ::DerivShift<DataVector, Frame>>(
-            solution_vars);
-        const auto& dt_shift =
-            get<Tags::dt<gr::Tags::Shift<3, Frame, DataVector>>>(solution_vars);
-        const auto& g =
-            get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(solution_vars);
-        const auto& dt_g =
-            get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataVector>>>(
+            get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
                 solution_vars);
+        const auto& d_shift =
+            get<typename gr::Solutions::KerrSchild ::DerivShift<
+                DataVector, ::Frame::Inertial>>(solution_vars);
+        const auto& dt_shift =
+            get<Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
+                solution_vars);
+        const auto& g =
+            get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+                solution_vars);
+        const auto& dt_g = get<Tags::dt<
+            gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
+            solution_vars);
         const auto& d_g =
             get<typename gr::Solutions::KerrSchild ::DerivSpatialMetric<
-                DataVector, Frame>>(solution_vars);
+                DataVector, ::Frame::Inertial>>(solution_vars);
 
         get<::gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(output_vars) =
             gr::spacetime_metric(lapse, shift, g);
@@ -541,7 +551,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                 get<::GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
                     output_vars));
       } else {
-        // Frame is not Inertial, so need to transform tensors to
+        // Frame is not Inertial, and we are time-dependent,
+        // so need to transform tensors to
         // Inertial frame, since InterpolatorReceiveVolumeData always gets
         // its volume data in the Inertial frame.
 
@@ -771,6 +782,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Inertial>>,
                         std::false_type>(&test_kerr_horizon_called, 3, 5, 1.1,
                                          {{0.12, 0.23, 0.45}});
+
+  // Time-independent tests with different frame tags.
+  test_schwarzschild_horizon_called = 0;
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Grid>>,
+                        std::false_type, Frame::Grid>(
+      &test_schwarzschild_horizon_called, 3, 3, 1.0, {{0.0, 0.0, 0.0}});
 
   // Time-dependent tests.
   test_schwarzschild_horizon_called = 0;
