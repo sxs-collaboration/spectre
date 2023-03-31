@@ -1,19 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Amr")
+set(LIBRARY "Test_DomainAmrHelpers")
 
 set(LIBRARY_SOURCES
-  Test_Flag.cpp
-  Test_Helpers.cpp
-  Test_NewNeighborIds.cpp
-  Test_Tags.cpp
-  Test_UpdateAmrDecision.cpp
+  Test_NeighborFlagHelpers.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Domain/Amr"
+  "Helpers/Tests/Domain/Amr/"
   "${LIBRARY_SOURCES}"
   ""
   )

@@ -3,8 +3,11 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <iterator>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -209,6 +212,20 @@ void test_remove() {
   CHECK(str2 == "Textwithsomewhitespaces");
 }
 
+void test_sample() {
+  std::vector<int> v{-1, 3, 5, 9, -24, 8};
+  std::mt19937 gen;
+  for (size_t s = 0; s < 8; ++s) {
+    std::vector<int> alg_s{};
+    gen.seed(1);
+    alg::sample(v, std::back_inserter(alg_s), s, gen);
+    std::vector<int> std_s{};
+    gen.seed(1);
+    std::sample(std::begin(v), std::end(v), std::back_inserter(std_s), s, gen);
+    CHECK(alg_s == std_s);
+  }
+}
+
 void test_sort() {
   std::vector<int> t_orig{3, 5, 8, -1};
   std::vector<int> t0 = t_orig;
@@ -246,6 +263,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   test_for_each();
   test_min_max_element();
   test_remove();
+  test_sample();
   test_sort();
   test_transform();
 }

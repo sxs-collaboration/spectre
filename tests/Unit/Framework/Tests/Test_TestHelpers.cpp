@@ -17,9 +17,10 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.TestHelpers", "[Unit]") {
+namespace {
+void test_test_helpers() {
   std::vector<double> vector{0, 1, 2, 3};
   test_iterators(vector);
   test_reverse_iterators(vector);
@@ -94,7 +95,7 @@ SPECTRE_TEST_CASE("Unit.TestHelpers", "[Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.TestHelpers.Derivative", "[Unit]") {
+void test_derivative() {
   {  // 3D Test
     const std::array<double, 3> x{{1.2, -3.4, 1.3}};
     const double delta = 1.e-2;
@@ -142,24 +143,45 @@ SPECTRE_TEST_CASE("Unit.TestHelpers.Derivative", "[Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.TestHelpers.MAKE_GENERATOR", "[Unit]") {
-  MAKE_GENERATOR(gen1);
+void test_make_generator(const gsl::not_null<std::mt19937*> generator) {
   MAKE_GENERATOR(gen2);
   // This will fail randomly every 2**32 runs.  That is probably OK.
-  CHECK(gen1() != gen2());
+  CHECK((*generator)() != gen2());
 
   MAKE_GENERATOR(seeded_gen, 12345);
   CHECK(seeded_gen() == 3992670690);
+}
 
+void test_random_sample(const gsl::not_null<std::mt19937*> generator) {
   const std::vector<double> vec{1., 2., 3.5};
-  {
-    const auto rnd =
-        random_sample(vec.begin(), vec.end(), make_not_null(&gen1));
-    CHECK((*rnd == 1. or *rnd == 2. or *rnd == 3.5));
+  for (const double rnd : random_sample<2>(vec, generator)) {
+    CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
   }
-  {
-    for (const double rnd : random_sample<2>(vec, make_not_null(&gen1))) {
-      CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      random_sample<5>(vec, generator),
+      Catch::Contains("Cannot take 5 samples from container of size 3"));
+#endif
+  const std::unordered_set ints{1, 4, 2, 3};
+  const std::vector<int> two_samples = random_sample(2, ints, generator);
+  CHECK(two_samples.size() == 2);
+  const std::vector<int> over_sampled = random_sample(10, ints, generator);
+  CHECK(over_sampled.size() == ints.size());
+  const auto check_sample = [&ints](const std::vector<int>& samples) {
+    for (const auto& sample : samples) {
+      CHECK(alg::count(ints, sample) == 1);
+      CHECK(alg::count(samples, sample) == 1);
     }
-  }
+  };
+  check_sample(two_samples);
+  check_sample(over_sampled);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.TestHelpers", "[Unit]") {
+  test_test_helpers();
+  test_derivative();
+  MAKE_GENERATOR(gen1);
+  test_make_generator(make_not_null(&gen1));
+  test_random_sample(make_not_null(&gen1));
 }

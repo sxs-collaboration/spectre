@@ -1,19 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Amr")
+set(LIBRARY "Test_DomainStructureHelpers")
 
 set(LIBRARY_SOURCES
-  Test_Flag.cpp
-  Test_Helpers.cpp
-  Test_NewNeighborIds.cpp
-  Test_Tags.cpp
-  Test_UpdateAmrDecision.cpp
+  Test_NeighborHelpers.cpp
+  Test_OrientationMapHelpers.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Domain/Amr"
+  "Helpers/Tests/Domain/Structure/"
   "${LIBRARY_SOURCES}"
   ""
   )
@@ -21,9 +18,6 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  Amr
-  DomainAmrHelpers
   DomainStructure
   DomainStructureHelpers
-  Utilities
   )

@@ -23,6 +23,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -397,23 +398,7 @@ void test_throw_exception(const ThrowingFunctor& func,
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief A random element between `start` and `end`
- */
-template <typename Iter>
-Iter random_sample(Iter start, Iter end,
-                   const gsl::not_null<std::mt19937*> generator) {
-  const auto length = std::distance(start, end);
-  if (length > 1) {
-    std::uniform_int_distribution<size_t> dist(0,
-                                               static_cast<size_t>(length) - 1);
-    std::advance(start, dist(*generator));
-  }
-  return start;
-}
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief `NumSamples` random elements of the `container`
+ * \brief `NumSamples` unique random elements of the `container`
  *
  * This function is useful to iterate over a random subset of a container, like
  * this:
@@ -428,11 +413,31 @@ template <size_t NumSamples, typename Container,
           typename ValueType = typename Container::value_type>
 std::array<ValueType, NumSamples> random_sample(
     const Container& container, const gsl::not_null<std::mt19937*> generator) {
+  ASSERT(NumSamples <= container.size(),
+         "Cannot take " << NumSamples << " samples from container of size "
+                        << container.size());
   std::array<ValueType, NumSamples> result;
-  for (size_t i = 0; i < NumSamples; ++i) {
-    gsl::at(result, i) =
-        *random_sample(container.begin(), container.end(), generator);
-  }
+  alg::sample(container, std::begin(result), NumSamples, *generator);
+  return result;
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Creates a new std::vector holding `number_of_samples` unique random
+ * elements of the `container`
+ *
+ * \note If `container` has fewer elements than `number_of_samples`, this
+ * function returns a std::vector of all elements in `container`
+ */
+template <typename Container,
+          typename ValueType = typename Container::value_type>
+std::vector<ValueType> random_sample(
+    const size_t number_of_samples, const Container& container,
+    const gsl::not_null<std::mt19937*> generator) {
+  std::vector<ValueType> result{};
+  result.reserve(std::min(number_of_samples, container.size()));
+  alg::sample(container, std::back_inserter(result), number_of_samples,
+              *generator);
   return result;
 }
 

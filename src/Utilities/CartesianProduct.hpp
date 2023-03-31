@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <iterator>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -56,7 +57,7 @@ void cartesian_product(OutputIterator result,
 
 /*!
  * \ingroup UtilitiesGroup
- * \brief The Cartesian product of a sequence arrays
+ * \brief The Cartesian product of a sequence of arrays
  *
  * Returns a `std::array` with all possible combinations of the input arrays.
  * The last dimension varies fastest.
@@ -71,5 +72,22 @@ std::array<std::tuple<Ts...>, (... * Lens)> cartesian_product(
   std::array<std::tuple<Ts...>, (... * Lens)> result{};
   cartesian_product(result.begin(),
                     std::make_pair(dimensions.begin(), dimensions.end())...);
+  return result;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief The Cartesian product of several containers
+ *
+ * Returns a `std::vector` with all possible combinations of the values of the
+ * input containers. The value of the last container varies fastest.
+ */
+template <typename... Containers>
+std::vector<std::tuple<typename Containers::value_type...>> cartesian_product(
+    const Containers&... containers) {
+  std::vector<std::tuple<typename Containers::value_type...>> result{};
+  cartesian_product(
+      std::back_inserter(result),
+      std::make_pair(std::begin(containers), std::end(containers))...);
   return result;
 }

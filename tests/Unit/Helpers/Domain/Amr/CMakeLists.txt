@@ -1,37 +1,27 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Amr)
+set(LIBRARY "DomainAmrHelpers")
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Flag.cpp
-  Helpers.cpp
-  NewNeighborIds.cpp
-  UpdateAmrDecision.cpp
+  NeighborFlagHelpers.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
-  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit
   HEADERS
-  Amr.hpp
-  Flag.hpp
-  Helpers.hpp
-  NewNeighborIds.hpp
-  UpdateAmrDecision.hpp
+  NeighborFlagHelpers.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
-  PRIVATE
-  Domain
+  PUBLIC
+  Amr
   DomainStructure
-  ErrorHandling
   Utilities
   )
-
-add_subdirectory(Tags)
