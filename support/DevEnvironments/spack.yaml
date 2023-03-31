@@ -61,9 +61,11 @@ spack:
   - 'python@3.7:'
   - py-click
   - py-h5py -mpi
+  - py-humanize
   - py-nbconvert
   - py-numpy
   - py-matplotlib
+  - py-pandas
   - 'py-pybind11@2.6:'
   - py-pyyaml
   - py-rich

@@ -17,10 +17,14 @@
 # autocompletion
 click
 h5py >= 3.5.0
+# Humanize: For human-readable output like "2 hours ago"
+humanize
 # - We constrain the Numpy version because v1.22+ segfaults in Pypp tests, see
 #   issue: https://github.com/sxs-collaboration/spectre/issues/3844
 numpy < 1.22.0
 matplotlib
+# Pandas: To work with columns of data
+pandas
 pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 10.11.0
