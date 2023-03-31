@@ -18,6 +18,7 @@ namespace {
 // Check order for quadrature (RHS depends only on time).
 void check_quadrature_order(const std::vector<double>& substep_times,
                             const std::vector<double>& coefficients,
+                            const double this_substep_time,
                             const size_t expected) {
   if (expected == 0) {
     return;
@@ -25,7 +26,7 @@ void check_quadrature_order(const std::vector<double>& substep_times,
   CAPTURE(coefficients);
   CAPTURE(expected);
   // Split out first case to avoid 0^0 annoyance
-  CHECK(alg::accumulate(coefficients, 0.0) == approx(1.0));
+  CHECK(alg::accumulate(coefficients, 0.0) == approx(this_substep_time));
   // Don't require the next order to be inconsistent, as the method
   // may do better for quadrature than for an ODE.  Order 0 (i.e.,
   // that the stepper is at least first order) was checked above.
@@ -36,7 +37,8 @@ void check_quadrature_order(const std::vector<double>& substep_times,
       integral +=
           coefficients[substep] * std::pow(substep_times[substep - 1], order);
     }
-    CHECK(integral == approx(1.0 / (order + 1.0)));
+    CHECK(integral ==
+          approx(pow(this_substep_time, order + 1.0) / (order + 1.0)));
   }
 }
 }  // namespace
@@ -92,8 +94,9 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
     }
   }
 
-  check_quadrature_order(substep_times, result_coefficients, expected_order);
-  check_quadrature_order(substep_times, error_coefficients,
+  check_quadrature_order(substep_times, result_coefficients, 1.0,
+                         expected_order);
+  check_quadrature_order(substep_times, error_coefficients, 1.0,
                          expected_error_order);
 }
 
@@ -126,7 +129,8 @@ void check_implicit_tableau(
     const auto& coefficients = implicit_coefficients[substep - 1];
     // Substep is DIRK
     CHECK(coefficients.size() <= substep + 1);
-    check_quadrature_order(substep_times, coefficients, expected_stage_order);
+    check_quadrature_order(substep_times, coefficients,
+                           substep_times[substep - 1], expected_stage_order);
   }
 }
 
