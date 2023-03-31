@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   TimeSteppers/Test_Rk3HesthavenSsp.cpp
   TimeSteppers/Test_Rk3Kennedy.cpp
   TimeSteppers/Test_Rk3Owren.cpp
+  TimeSteppers/Test_Rk4Kennedy.cpp
   TimeSteppers/Test_Rk4Owren.cpp
   TimeSteppers/Test_Rk5Owren.cpp
   TimeSteppers/Test_Rk5Tsitouras.cpp

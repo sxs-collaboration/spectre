@@ -14,6 +14,7 @@ spectre_target_sources(
   Rk3HesthavenSsp.cpp
   Rk3Kennedy.cpp
   Rk3Owren.cpp
+  Rk4Kennedy.cpp
   Rk4Owren.cpp
   Rk5Owren.cpp
   Rk5Tsitouras.cpp
@@ -37,6 +38,7 @@ spectre_target_headers(
   Rk3HesthavenSsp.hpp
   Rk3Kennedy.hpp
   Rk3Owren.hpp
+  Rk4Kennedy.hpp
   Rk4Owren.hpp
   Rk5Owren.hpp
   Rk5Tsitouras.hpp
