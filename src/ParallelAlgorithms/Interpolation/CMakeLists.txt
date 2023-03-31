@@ -24,6 +24,7 @@ spectre_target_headers(
   IntrpOptionHolders.hpp
   PointInfoTag.hpp
   Tags.hpp
+  TagsMetafunctions.hpp
   )
 
 add_dependencies(
