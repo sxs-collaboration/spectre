@@ -996,6 +996,26 @@ auto Parser<OptionList, Group>::call_with_chosen_alternatives_impl(
 }
 
 namespace Options_detail {
+// Work around Clang bug: https://github.com/llvm/llvm-project/issues/33002
+template <typename... T>
+struct my_void_t_impl {
+  using type = void;
+};
+template <typename... T>
+using my_void_t = typename my_void_t_impl<T...>::type;
+
+template <typename T, typename Metavariables, typename = my_void_t<>>
+struct has_options_list : std::false_type {};
+
+template <typename T, typename Metavariables>
+struct has_options_list<T, Metavariables,
+                        my_void_t<typename T::template options<Metavariables>>>
+    : std::true_type {};
+
+template <typename T, typename Metavariables>
+struct has_options_list<T, Metavariables, my_void_t<typename T::options>>
+    : std::true_type {};
+
 template <typename T, typename Metavariables, typename = std::void_t<>>
 struct get_options_list {
   using type = typename T::template options<Metavariables>;
@@ -1005,6 +1025,37 @@ template <typename T, typename Metavariables>
 struct get_options_list<T, Metavariables, std::void_t<typename T::options>> {
   using type = typename T::options;
 };
+
+template <typename T, typename Metavariables>
+struct ClassConstructor {
+  const Options::Context& context;
+
+  template <typename ParsedOptions, typename... Args>
+  T operator()(ParsedOptions /*meta*/, Args&&... args) const {
+    if constexpr (std::is_constructible<T, ParsedOptions,
+                                        decltype(std::move(args))...,
+                                        const Context&, Metavariables>{}) {
+      return T(ParsedOptions{}, std::move(args)..., context, Metavariables{});
+    } else if constexpr (std::is_constructible<T, ParsedOptions,
+                                               decltype(std::move(args))...,
+                                               const Context&>{}) {
+      return T(ParsedOptions{}, std::move(args)..., context);
+    } else if constexpr (std::is_constructible<T, ParsedOptions,
+                                               decltype(std::move(
+                                                   args))...>{}) {
+      return T(ParsedOptions{}, std::move(args)...);
+    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+                                               const Context&,
+                                               Metavariables>{}) {
+      return T(std::move(args)..., context, Metavariables{});
+    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+                                               const Context&>{}) {
+      return T(std::move(args)..., context);
+    } else {
+      return T{std::move(args)...};
+    }
+  }
+};
 }  // namespace Options_detail
 
 template <typename T>
@@ -1013,33 +1064,8 @@ T create_from_yaml<T>::create(const Option& options) {
   Parser<typename Options_detail::get_options_list<T, Metavariables>::type>
       parser(T::help);
   parser.parse(options);
-  return parser.template apply_all<Metavariables>([&options](
-                                                      auto parsed_options,
-                                                      auto&&... args) {
-    if constexpr (std::is_constructible<T, decltype(parsed_options),
-                                        decltype(std::move(args))...,
-                                        const Context&, Metavariables>{}) {
-      return T(parsed_options, std::move(args)..., options.context(),
-               Metavariables{});
-    } else if constexpr (std::is_constructible<T, decltype(parsed_options),
-                                               decltype(std::move(args))...,
-                                               const Context&>{}) {
-      return T(parsed_options, std::move(args)..., options.context());
-    } else if constexpr (std::is_constructible<T, decltype(parsed_options),
-                                               decltype(
-                                                   std::move(args))...>{}) {
-      return T(parsed_options, std::move(args)...);
-    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
-                                               const Context&,
-                                               Metavariables>{}) {
-      return T(std::move(args)..., options.context(), Metavariables{});
-    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
-                                               const Context&>{}) {
-      return T(std::move(args)..., options.context());
-    } else {
-      return T{std::move(args)...};
-    }
-  });
+  return parser.template apply_all<Metavariables>(
+      Options_detail::ClassConstructor<T, Metavariables>{options.context()});
 }
 
 // yaml-cpp doesn't handle C++11 types yet
@@ -1077,6 +1103,57 @@ struct create_from_yaml<Options::Options_detail::variant_parse_error<T...>> {
   }
 };
 
+namespace Options_variant_detail {
+template <typename T, typename Metavariables,
+          typename =
+              typename Options_detail::has_options_list<T, Metavariables>::type>
+struct is_alternative_parsable_impl : std::false_type {};
+
+template <typename T, typename Metavariables>
+struct is_alternative_parsable_impl<T, Metavariables, std::true_type>
+    : tmpl::all<
+          typename Options_detail::get_options_list<T, Metavariables>::type,
+          std::is_same<tmpl::_1,
+                       Options_detail::find_subgroup<tmpl::_1, void>>> {};
+
+template <typename T, typename Metavariables>
+struct is_alternative_parsable
+    : is_alternative_parsable_impl<T, Metavariables> {};
+
+template <typename Result, typename Metavariables, typename... Alternatives>
+Result parse_as_alternatives(const Options::Option& options,
+                             tmpl::list<Alternatives...> /*meta*/) {
+  using options_list = tmpl::list<
+      Options::Alternatives<typename Options_detail::get_options_list<
+          Alternatives, Metavariables>::type...>>;
+  std::string help = ("" + ... +
+                      (Options_detail::yaml_type<Alternatives>::value() + "\n" +
+                       wrap_text(Alternatives::help, 77, "  ") + "\n\n"));
+  help.resize(help.size() - 2);
+  Options::Parser<options_list> parser(std::move(help));
+  parser.parse(options);
+  return parser.template apply_all<Metavariables>([&](auto parsed_options,
+                                                      auto... args) -> Result {
+    // Actually matching against the whole option list is hard in the
+    // presence of possible nested alternatives, so we just check if
+    // all the options are individually valid.
+    using possible_alternatives = tmpl::filter<
+        tmpl::list<Alternatives...>,
+        std::is_same<tmpl::bind<tmpl::list_difference,
+                                tmpl::pin<decltype(parsed_options)>,
+                                Options_detail::flatten_alternatives<
+                                    Options_detail::get_options_list<
+                                        tmpl::_1, tmpl::pin<Metavariables>>>>,
+                     tmpl::pin<tmpl::list<>>>>;
+    static_assert(tmpl::size<possible_alternatives>::value == 1,
+                  "Option lists for variant alternatives are too similar.");
+    return Options_detail::ClassConstructor<tmpl::front<possible_alternatives>,
+                                            Metavariables>{options.context()}(
+        parsed_options, std::move(args)...);
+  });
+}
+}  // namespace Options_variant_detail
+
 template <typename... T>
 struct create_from_yaml<std::variant<T...>> {
   using Result = std::variant<T...>;
@@ -1086,34 +1163,69 @@ struct create_from_yaml<std::variant<T...>> {
 
   template <typename Metavariables>
   static Result create(const Option& options) {
-    Result result{};
-    std::string errors{};
-    bool constructed = false;
-    const auto try_parse = [&constructed, &errors, &options,
-                            &result](auto alternative_v) {
-      using Alternative = tmpl::type_from<decltype(alternative_v)>;
-      if (constructed) {
-        return;
+    using alternative_parsable_types =
+        tmpl::filter<tmpl::list<T...>,
+                     Options_variant_detail::is_alternative_parsable<
+                         tmpl::_1, tmpl::pin<Metavariables>>>;
+
+    static constexpr bool use_alternative_parsing =
+        std::is_same_v<alternative_parsable_types, tmpl::list<T...>>;
+    static constexpr bool use_hybrid_parsing =
+        not use_alternative_parsing and
+        tmpl::size<alternative_parsable_types>::value > 1;
+
+    if constexpr (use_alternative_parsing) {
+      return Options_variant_detail::parse_as_alternatives<Result,
+                                                           Metavariables>(
+          options, alternative_parsable_types{});
+    } else {
+      Result result{};
+      std::string errors{};
+      bool constructed = false;
+
+      if constexpr (use_hybrid_parsing) {
+        try {
+          result = Options_variant_detail::parse_as_alternatives<Result,
+                                                                 Metavariables>(
+              options, alternative_parsable_types{});
+          constructed = true;
+        } catch (const Options_detail::propagate_context& e) {
+          // This alternative failed, but a later one may succeed.
+          errors += "\n\n" + e.message();
+        }
       }
-      try {
-        result = options.parse_as<Alternative, Metavariables>();
-        constructed = true;
-      } catch (const Options_detail::propagate_context& e) {
-        // This alternative failed, but a later one may succeed.
-        errors += "\n\n" + e.message();
+
+      const auto try_parse = [&constructed, &errors, &options,
+                              &result](auto alternative_v) {
+        using Alternative = tmpl::type_from<decltype(alternative_v)>;
+        if (use_hybrid_parsing and
+            tmpl::any<alternative_parsable_types,
+                      std::is_same<tmpl::_1, tmpl::pin<Alternative>>>::value) {
+          return;
+        }
+        if (constructed) {
+          return;
+        }
+        try {
+          result = options.parse_as<Alternative, Metavariables>();
+          constructed = true;
+        } catch (const Options_detail::propagate_context& e) {
+          // This alternative failed, but a later one may succeed.
+          errors += "\n\n" + e.message();
+        }
+      };
+      EXPAND_PACK_LEFT_TO_RIGHT(try_parse(tmpl::type_<T>{}));
+      if (not constructed) {
+        try {
+          options.parse_as<Options_detail::variant_parse_error<T...>,
+                           Metavariables>();
+        } catch (const Options_detail::propagate_context& e) {
+          throw Options_detail::propagate_context(
+              e.message() + "\n\nPossible errors:" + errors);
+        }
       }
-    };
-    EXPAND_PACK_LEFT_TO_RIGHT(try_parse(tmpl::type_<T>{}));
-    if (not constructed) {
-      try {
-        options.parse_as<Options_detail::variant_parse_error<T...>,
-                         Metavariables>();
-      } catch (const Options_detail::propagate_context& e) {
-        throw Options_detail::propagate_context(
-            e.message() + "\n\nPossible errors:" + errors);
-      }
+      return result;
     }
-    return result;
   }
 };
 }  // namespace Options

@@ -571,6 +571,49 @@ struct VariantTag {
   static constexpr Options::String help = {"halp"};
 };
 
+struct VariantOption1 {
+  static constexpr Options::String help = {"VariantOption1 halp"};
+  struct Opt1 {
+    using type = int;
+    static constexpr Options::String help = {"halp"};
+  };
+  using options = tmpl::list<Opt1>;
+  VariantOption1() = default;
+  VariantOption1(int /*unused*/) {}
+};
+
+struct VariantOption2 {
+  static constexpr Options::String help = {"VariantOption2 halp"};
+  struct Opt2 {
+    using type = int;
+    static constexpr Options::String help = {"halp"};
+  };
+  template <typename Metavariables>
+  using options =
+      tmpl::list<tmpl::conditional_t<Metavariables::valid, Opt2, void>>;
+  VariantOption2() = default;
+  VariantOption2(tmpl::list<Opt2> /*meta*/, int /*unused*/) {}
+};
+
+struct VariantOption2Metavars {
+  static constexpr bool valid = true;
+};
+
+struct VariantOptionWithGroup {
+  static constexpr Options::String help = {"VariantOptionWithGroup halp"};
+  struct Group {
+    static constexpr Options::String help = {"halp"};
+  };
+  struct Opt3 {
+    using type = int;
+    static constexpr Options::String help = {"halp"};
+    using group = Group;
+  };
+  using options = tmpl::list<Opt3>;
+  VariantOptionWithGroup() = default;
+  VariantOptionWithGroup(int /*unused*/) {}
+};
+
 void test_options_variant() {
   {
     const auto check = [](const std::string& input, const auto& expected) {
@@ -613,6 +656,148 @@ void test_options_variant() {
                             "type int: []") and
             Catch::Contains("At line 1 column 13:\nFailed to convert value to "
                             "type string: []"));
+  }
+
+  {
+    using tag = VariantTag<VariantOption1, VariantOption2>;
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt1: 3");
+      CHECK(std::holds_alternative<VariantOption1>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt2: 3");
+      CHECK(std::holds_alternative<VariantOption2>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    CHECK_THROWS_WITH(([]() {
+                        Options::Parser<tmpl::list<tag>> parser("halp");
+                        parser.parse(
+                            "VariantTag:\n"
+                            "  OptZ: 3");
+                        parser.get<tag, VariantOption2Metavars>();
+                      }()),
+                      Catch::Contains("VariantOption1 halp") and
+                          Catch::Contains("VariantOption2 halp") and
+                          Catch::Contains("EITHER") and
+                          not Catch::Contains("Possible errors"));
+  }
+  {
+    using tag = VariantTag<VariantOption1, int>;
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt1: 3");
+      CHECK(std::holds_alternative<VariantOption1>(parser.get<tag>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse("VariantTag: 3");
+      CHECK(std::holds_alternative<int>(parser.get<tag>()));
+    }
+    CHECK_THROWS_WITH(
+        ([]() {
+          Options::Parser<tmpl::list<tag>> parser("halp");
+          parser.parse(
+              "VariantTag:\n"
+              "  OptZ: 3");
+          parser.get<tag>();
+        }()),
+        Catch::Contains(
+            "Failed to convert value to type VariantOption1 or int:") and
+            Catch::Contains("VariantOption1 halp") and
+            Catch::Contains("Failed to convert value to type int:") and
+            not Catch::Contains("EITHER") and
+            Catch::Contains("Possible errors"));
+  }
+  {
+    using tag = VariantTag<VariantOption1, int, VariantOption2>;
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt1: 3");
+      CHECK(std::holds_alternative<VariantOption1>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse("VariantTag: 3");
+      CHECK(std::holds_alternative<int>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt2: 3");
+      CHECK(std::holds_alternative<VariantOption2>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    CHECK_THROWS_WITH(
+        ([]() {
+          Options::Parser<tmpl::list<tag>> parser("halp");
+          parser.parse(
+              "VariantTag:\n"
+              "  OptZ: 3");
+          parser.get<tag, VariantOption2Metavars>();
+        }()),
+        Catch::Contains("Failed to convert value to type VariantOption1 or int "
+                        "or VariantOption2:") and
+            Catch::Contains("VariantOption1 halp") and
+            Catch::Contains("VariantOption2 halp") and
+            Catch::Contains("Failed to convert value to type int:") and
+            Catch::Contains("EITHER") and Catch::Contains("Possible errors"));
+  }
+  {
+    using tag =
+        VariantTag<VariantOption1, VariantOption2, VariantOptionWithGroup>;
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt1: 3");
+      CHECK(std::holds_alternative<VariantOption1>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Opt2: 3");
+      CHECK(std::holds_alternative<VariantOption2>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    {
+      Options::Parser<tmpl::list<tag>> parser("halp");
+      parser.parse(
+          "VariantTag:\n"
+          "  Group:\n"
+          "    Opt3: 3");
+      CHECK(std::holds_alternative<VariantOptionWithGroup>(
+          parser.get<tag, VariantOption2Metavars>()));
+    }
+    CHECK_THROWS_WITH(
+        ([]() {
+          Options::Parser<tmpl::list<tag>> parser("halp");
+          parser.parse(
+              "VariantTag:\n"
+              "  OptZ: 3");
+          parser.get<tag, VariantOption2Metavars>();
+        }()),
+        Catch::Contains("Failed to convert value to type VariantOption1 or "
+                        "VariantOption2 or VariantOptionWithGroup:") and
+            Catch::Contains("VariantOption1 halp") and
+            Catch::Contains("VariantOption2 halp") and
+            Catch::Contains("VariantOptionWithGroup halp") and
+            Catch::Contains("EITHER") and Catch::Contains("Possible errors"));
   }
 }
 
