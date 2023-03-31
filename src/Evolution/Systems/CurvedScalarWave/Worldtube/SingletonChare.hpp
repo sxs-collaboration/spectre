@@ -58,7 +58,8 @@ struct WorldtubeSingleton {
   struct worldtube_system {
     static constexpr size_t volume_dim = Dim;
     static constexpr bool has_primitive_and_conservative_vars = false;
-    using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0>>;
+    using variables_tag =
+        ::Tags::Variables<tmpl::list<Tags::Psi0, Tags::dtPsi0>>;
   };
   using step_actions =
       tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
