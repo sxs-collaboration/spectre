@@ -14,6 +14,7 @@ spectre_python_add_module(
   PlotPowerMonitors.py
   plots.mplstyle
   ReadH5.py
+  ReadInputFile.py
   Render1D.py
   TransformVolumeData.py
 )
