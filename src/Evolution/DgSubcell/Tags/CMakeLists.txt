@@ -20,6 +20,7 @@ spectre_target_headers(
   ObserverMesh.hpp
   OnSubcellFaces.hpp
   OnSubcells.hpp
+  ReconstructionOrder.hpp
   SubcellOptions.hpp
   SubcellSolver.hpp
   Tags.hpp
