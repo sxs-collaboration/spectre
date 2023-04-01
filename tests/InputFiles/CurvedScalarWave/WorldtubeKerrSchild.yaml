@@ -22,10 +22,7 @@ BackgroundSpacetime:
 
 ResourceInfo:
   AvoidGlobalProc0: false
-  Singletons:
-    WorldtubeSingleton:
-      Proc: Auto
-      Exclusive: false
+  Singletons: Auto
 
 PhaseChangeAndTriggers:
 
@@ -94,6 +91,12 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1000
+          Offset: 0
+    - - PsiAlongAxis1
+      - PsiAlongAxis2
   - - Times:
         Specified:
           Values: &FinalTime [1000.]
@@ -102,6 +105,16 @@ EventsAndTriggers:
 Worldtube:
   ExcisionSphere: ExcisionSphereA
   ExpansionOrder: 1
+
+InterpolationTargets:
+  PsiAlongAxis1:
+    Begin: [0., 0., 0.]
+    End: [0., 0., 400.]
+    NumberOfPoints: 1000
+  PsiAlongAxis2:
+    Begin: [0., 0., 0.]
+    End: [400., 0., 0.]
+    NumberOfPoints: 1000
 
 Filtering:
   ExpFilter0:
