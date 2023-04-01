@@ -13,7 +13,7 @@
 #include <pup.h>
 #include <vector>
 
-#include "Options/ParseOptions.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace PUP {
@@ -68,12 +68,17 @@ void operator|(er& p, blaze::CompressedMatrix<Type, SO, Tag>& t) {
 /// @}
 }  // namespace PUP
 
+namespace CompressedMatrix_detail {
+template <typename Type>
+std::vector<std::vector<Type>> parse_to_vectors(const Options::Option& options);
+}  // namespace CompressedMatrix_detail
+
 template <typename Type, bool SO, typename Tag>
 struct Options::create_from_yaml<blaze::CompressedMatrix<Type, SO, Tag>> {
   template <typename Metavariables>
   static blaze::CompressedMatrix<Type, SO, Tag> create(
       const Options::Option& options) {
-    const auto data = options.parse_as<std::vector<std::vector<Type>>>();
+    const auto data = CompressedMatrix_detail::parse_to_vectors<Type>(options);
     const size_t num_rows = data.size();
     size_t num_cols = 0;
     if (num_rows > 0) {

@@ -5,7 +5,13 @@
 
 #include <ostream>
 
-#include "Options/ParseOptions.hpp"
+/// \cond
+namespace Options {
+struct Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+/// \endcond
 
 namespace importers {
 

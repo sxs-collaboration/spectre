@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
 #include "Options/Options.hpp"

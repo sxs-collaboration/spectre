@@ -11,6 +11,7 @@
 
 #include "DataStructures/Matrix.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace TestHelpers::observers {
 void MockDat::append(const std::vector<std::string>& legend,

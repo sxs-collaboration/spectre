@@ -13,8 +13,15 @@
 #include <type_traits>
 #include <vector>
 
-#include "Options/ParseOptions.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+/// \cond
+namespace Options {
+struct Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+/// \endcond
 
 namespace PUP {
 /// @{
@@ -59,12 +66,17 @@ struct MakeWithSize<blaze::DynamicVector<T, TF, Tag>> {
 };
 }  // namespace MakeWithValueImpls
 
+namespace DynamicVector_detail {
+template <typename T>
+std::vector<T> parse_to_vector(const Options::Option& options);
+}  // namespace DynamicVector_detail
+
 template <typename T, bool TF, typename Tag>
 struct Options::create_from_yaml<blaze::DynamicVector<T, TF, Tag>> {
   template <typename Metavariables>
   static blaze::DynamicVector<T, TF, Tag> create(
       const Options::Option& options) {
-    const auto data = options.parse_as<std::vector<T>>();
+    const auto data = DynamicVector_detail::parse_to_vector<T>(options);
     blaze::DynamicVector<T, TF, Tag> result(data.size());
     std::copy(std::begin(data), std::end(data), result.begin());
     return result;
