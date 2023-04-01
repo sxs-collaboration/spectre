@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -87,6 +88,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
+ *   - `subcell::Tags::ReconstructionOrder<Dim>` (set as `std::nullopt`)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Grid>` (as compute tag)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Inertial>` (as compute tag)
  * - Removes: nothing
@@ -105,7 +107,8 @@ struct Initialize {
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       fd::Tags::InverseJacobianLogicalToGrid<Dim>,
       fd::Tags::DetInverseJacobianLogicalToGrid,
-      subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>>;
+      subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
+      subcell::Tags::ReconstructionOrder<Dim>>;
   using compute_tags =
       tmpl::list<Tags::MeshCompute<Dim>, Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<
