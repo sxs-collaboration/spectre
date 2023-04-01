@@ -17,9 +17,8 @@ namespace {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.CSW.Worldtube.InitializeEvolvedVariables",
     "[Unit][Evolution]") {
-  using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0>>;
-  using dt_variables_tag =
-      ::Tags::Variables<tmpl::list<::Tags::dt<Tags::Psi0>>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0, Tags::dtPsi0>>;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   auto box = db::create<
       db::AddSimpleTags<variables_tag, dt_variables_tag,

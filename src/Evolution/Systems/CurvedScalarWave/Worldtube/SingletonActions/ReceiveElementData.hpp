@@ -48,6 +48,9 @@ namespace CurvedScalarWave::Worldtube::Actions {
  * - Mutates:
  *    - `Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>`
  *    - `Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
+ *                                     Frame::Grid>`
+ *    - `Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>`
+ *    - `Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                       Frame::Grid>`
  */
 struct ReceiveElementData {

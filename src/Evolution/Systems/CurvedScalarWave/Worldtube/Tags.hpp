@@ -324,5 +324,13 @@ struct Psi0 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/*!
+ * \brief Holds the time derivative of Psi0 which is used as a reduction
+ * variable.
+ */
+struct dtPsi0 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 }  // namespace Tags
 }  // namespace CurvedScalarWave::Worldtube

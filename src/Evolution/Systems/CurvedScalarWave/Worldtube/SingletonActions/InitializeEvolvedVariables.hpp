@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
@@ -22,9 +23,8 @@ namespace CurvedScalarWave::Worldtube::Initialization {
  * which use the same time stepper.
  */
 struct InitializeEvolvedVariables {
-  using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0>>;
-  using dt_variables_tag =
-      ::Tags::Variables<tmpl::list<::Tags::dt<Tags::Psi0>>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi0, Tags::dtPsi0>>;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   using simple_tags =
       tmpl::list<variables_tag, dt_variables_tag,
@@ -37,9 +37,11 @@ struct InitializeEvolvedVariables {
   using mutable_global_cache_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::TimeStepper<>>;
   static void apply(
-      const gsl::not_null<Variables<tmpl::list<Tags::Psi0>>*> psi0,
-      const gsl::not_null<Variables<tmpl::list<::Tags::dt<Tags::Psi0>>>*>
-          dt_psi0,
+      const gsl::not_null<Variables<tmpl::list<Tags::Psi0, Tags::dtPsi0>>*>
+          evolved_vars,
+      const gsl::not_null<Variables<
+          tmpl::list<::Tags::dt<Tags::Psi0>, ::Tags::dt<Tags::dtPsi0>>>*>
+          dt_evolved_vars,
       const gsl::not_null<::Tags::HistoryEvolvedVariables<variables_tag>::type*>
           time_stepper_history,
       const TimeStepper& time_stepper) {
@@ -48,8 +50,8 @@ struct InitializeEvolvedVariables {
     *time_stepper_history =
         typename ::Tags::HistoryEvolvedVariables<variables_tag>::type{
             starting_order};
-    psi0->initialize(size_t(1), 0.);
-    dt_psi0->initialize(size_t(1), 0.);
+    evolved_vars->initialize(size_t(1), 0.);
+    dt_evolved_vars->initialize(size_t(1), 0.);
   }
 };
 }  // namespace CurvedScalarWave::Worldtube::Initialization
