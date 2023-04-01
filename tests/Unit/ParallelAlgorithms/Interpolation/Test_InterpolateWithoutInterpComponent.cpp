@@ -117,7 +117,7 @@ struct MockMetavariables {
     // The following are not used in this test, but must be there to
     // conform to the protocol.
     using compute_target_points = ::intrp::TargetPoints::LineSegment<
-        InterpolationTargetAWithComputeVarsToInterpolate, 3>;
+        InterpolationTargetAWithComputeVarsToInterpolate, 3, Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetAWithComputeVarsToInterpolate>;
@@ -131,7 +131,8 @@ struct MockMetavariables {
     // The following are not used in this test, but must be there to
     // conform to the protocol.
     using compute_target_points = ::intrp::TargetPoints::LineSegment<
-        InterpolationTargetAWithoutComputeVarsToInterpolate, 3>;
+        InterpolationTargetAWithoutComputeVarsToInterpolate, 3,
+        Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetAWithoutComputeVarsToInterpolate>;
@@ -156,7 +157,6 @@ struct MockMetavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
   };
-
 };
 
 template <typename MockMetavariables>
