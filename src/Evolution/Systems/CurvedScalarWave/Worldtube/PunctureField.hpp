@@ -43,7 +43,7 @@ namespace CurvedScalarWave::Worldtube {
  * of temporaries were optimized manually.
  */
 void puncture_field(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
@@ -57,7 +57,7 @@ void puncture_field(
  * described in \cite Detweiler2003 expanded to order 0 in geodesic distance.
  */
 void puncture_field_0(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
@@ -71,7 +71,7 @@ void puncture_field_0(
  * described in \cite Detweiler2003 expanded to order 1 in geodesic distance.
  */
 void puncture_field_1(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>

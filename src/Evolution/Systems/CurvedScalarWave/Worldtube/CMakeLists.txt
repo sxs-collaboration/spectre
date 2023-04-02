@@ -10,6 +10,8 @@ spectre_target_sources(
   PRIVATE
   Tags.cpp
   PunctureField.cpp
+  PunctureFieldOrder0.cpp
+  PunctureFieldOrder1.cpp
   )
 
 spectre_target_headers(
