@@ -18,6 +18,8 @@
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -27,6 +29,7 @@
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
@@ -36,6 +39,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -92,6 +96,8 @@ void test(const bool moving_mesh) {
       tmpl::list<Var1, Var2>, Dim, Frame::Grid>>("CellCenteredFlux");
   TestHelpers::db::test_simple_tag<subcell::Tags::ReconstructionOrder<Dim>>(
       "ReconstructionOrder");
+  TestHelpers::db::test_simple_tag<subcell::Tags::MethodOrder<Dim>>(
+      "MethodOrder");
 
   TestHelpers::db::test_compute_tag<
       subcell::Tags::LogicalCoordinatesCompute<Dim>>(
@@ -130,6 +136,8 @@ void test(const bool moving_mesh) {
       "Variables(DetInvJacobian(Grid,Inertial),Jacobian(Grid,Inertial))");
   TestHelpers::db::test_compute_tag<subcell::Tags::TciStatusCompute<Dim>>(
       "TciStatus");
+  TestHelpers::db::test_compute_tag<subcell::Tags::MethodOrderCompute<Dim>>(
+      "MethodOrder");
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -150,13 +158,16 @@ void test(const bool moving_mesh) {
   const double time = 1.3;
   const Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto);
+  using ReconsOrder = typename subcell::Tags::ReconstructionOrder<Dim>::type;
   auto active_coords_box = db::create<
       db::AddSimpleTags<domain::Tags::ElementMap<Dim, Frame::Grid>,
                         domain::CoordinateMaps::Tags::CoordinateMap<
                             Dim, Frame::Grid, Frame::Inertial>,
                         domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
                         ::domain::Tags::Mesh<Dim>, subcell::Tags::ActiveGrid,
-                        subcell::Tags::TciDecision>,
+                        subcell::Tags::TciDecision,
+                        subcell::Tags::ReconstructionOrder<Dim>,
+                        subcell::Tags::SubcellOptions<Dim>>,
       db::AddComputeTags<
           domain::Tags::LogicalCoordinates<Dim>,
           domain::Tags::MappedCoordinates<
@@ -196,13 +207,26 @@ void test(const bool moving_mesh) {
               Dim, Frame::ElementLogical, Frame::Inertial>,
           subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
                                                            Frame::Inertial>,
-          subcell::Tags::TciStatusCompute<Dim>>>(
+          subcell::Tags::TciStatusCompute<Dim>,
+          subcell::Tags::MethodOrderCompute<Dim>>>(
       ElementMap<Dim, Frame::Grid>{
           ElementId<Dim>{0},
           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
               domain::CoordinateMaps::Identity<Dim>{})},
       grid_to_inertial_map->get_clone(), clone_unique_ptrs(functions_of_time),
-      time, dg_mesh, subcell::ActiveGrid::Dg, tci_decision);
+      time, dg_mesh, subcell::ActiveGrid::Dg, tci_decision, ReconsOrder{},
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-7,
+          1.0e-7,
+          1.0e-7,
+          1.0e-7,
+          4.0,
+          4.0,
+          false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+          false,
+          {},
+          ::fd::DerivativeOrder::Two});
   const auto check_box = [&active_coords_box,
                           &tci_decision](const Mesh<Dim>& expected_mesh) {
     (void)tci_decision;  // Incorrect compiler warning.
@@ -296,6 +320,34 @@ void test(const bool moving_mesh) {
     CHECK(db::get<subcell::Tags::TciStatus>(active_coords_box) ==
           Scalar<DataVector>(expected_mesh.number_of_grid_points(),
                              static_cast<double>(tci_decision)));
+    if (db::get<subcell::Tags::ActiveGrid>(active_coords_box) ==
+        subcell::ActiveGrid::Dg) {
+      REQUIRE(db::get<subcell::Tags::MethodOrder<Dim>>(active_coords_box)
+                  .has_value());
+      for (size_t i = 0; i < Dim; ++i) {
+        CHECK(db::get<subcell::Tags::MethodOrder<Dim>>(active_coords_box)
+                  .value()[i] ==
+              DataVector{expected_mesh.number_of_grid_points(),
+                         static_cast<double>(expected_mesh.extents(i))});
+      }
+    } else {
+      if (db::get<subcell::Tags::ReconstructionOrder<Dim>>(active_coords_box)
+              .has_value()) {
+        CHECK(db::get<subcell::Tags::MethodOrder<Dim>>(active_coords_box) ==
+              db::get<subcell::Tags::ReconstructionOrder<Dim>>(
+                  active_coords_box));
+      } else {
+        for (size_t i = 0; i < Dim; ++i) {
+          CHECK(db::get<subcell::Tags::MethodOrder<Dim>>(active_coords_box)
+                    .value()[i] ==
+                DataVector{expected_mesh.number_of_grid_points(),
+                           static_cast<double>(static_cast<int>(
+                               db::get<subcell::Tags::SubcellOptions<Dim>>(
+                                   active_coords_box)
+                                   .finite_difference_derivative_order()))});
+        }
+      }
+    }
   };
 
   check_box(db::get<domain::Tags::Mesh<Dim>>(active_coords_box));
@@ -303,6 +355,17 @@ void test(const bool moving_mesh) {
       make_not_null(&active_coords_box), [](const auto active_grid_ptr) {
         *active_grid_ptr = subcell::ActiveGrid::Subcell;
       });
+  check_box(db::get<subcell::Tags::Mesh<Dim>>(active_coords_box));
+  db::mutate<subcell::Tags::ReconstructionOrder<Dim>>(
+      make_not_null(&active_coords_box),
+      [](const auto recons_order_ptr, const size_t num_pts) {
+        (*recons_order_ptr) = ReconsOrder{num_pts};
+        for (size_t i = 0; i < Dim; ++i) {
+          recons_order_ptr->value()[i] = static_cast<double>(i) + 3.0;
+        }
+      },
+      db::get<subcell::Tags::Mesh<Dim>>(active_coords_box)
+          .number_of_grid_points());
   check_box(db::get<subcell::Tags::Mesh<Dim>>(active_coords_box));
 
   TestHelpers::db::test_compute_tag<subcell::Tags::ObserverMeshCompute<Dim>>(
