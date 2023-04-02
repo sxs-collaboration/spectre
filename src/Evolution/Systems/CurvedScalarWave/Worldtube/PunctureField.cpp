@@ -27,11 +27,12 @@ void puncture_field(
     puncture_field_0(result, coords, time, orbital_radius, bh_mass);
   } else if (order == 1) {
     puncture_field_1(result, coords, time, orbital_radius, bh_mass);
+  } else if (order == 2) {
+    puncture_field_2(result, coords, time, orbital_radius, bh_mass);
   } else {
     ERROR(
-        "The puncture field is only implemented up to expansion order 1 but "
-        "you requested "
-        "order "
+        "The puncture field is only implemented up to expansion order 2 but "
+        "you requested order "
         << order);
   }
 }

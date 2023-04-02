@@ -78,4 +78,18 @@ void puncture_field_1(
         result,
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
     const double orbital_radius, const double bh_mass);
+
+/*!
+ * \brief Computes the puncture/singular field \f$\Psi^\mathcal{P}\f$ of a
+ * scalar charge in circular orbit around a Schwarzschild black hole as
+ * described in \cite Detweiler2003 expanded to order 2 in geodesic distance.
+ */
+void puncture_field_2(
+    const gsl::not_null<Variables<tmpl::list<
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                      Frame::Inertial>>>*>
+        result,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
+    const double orbital_radius, const double bh_mass);
 }  // namespace CurvedScalarWave::Worldtube
