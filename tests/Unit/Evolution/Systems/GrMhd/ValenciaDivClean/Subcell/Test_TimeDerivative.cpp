@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -149,8 +150,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
           3.8, std::nullopt, 4.0,
           ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral};
   REQUIRE((static_cast<int>(fd_derivative_order) < 0 or
-          (static_cast<size_t>(fd_derivative_order) / 2 <=
-           recons.ghost_zone_size())));
+           (static_cast<size_t>(fd_derivative_order) / 2 <=
+            recons.ghost_zone_size())));
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
@@ -311,7 +312,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
           domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
           CellCenteredFluxesTag,
-          evolution::dg::subcell::Tags::SubcellOptions<3>>,
+          evolution::dg::subcell::Tags::SubcellOptions<3>,
+          evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
       element, subcell_mesh,
@@ -342,7 +344,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
       evolution::dg::subcell::SubcellOptions{
           1.0e-7, 1.0e-3, 1.0e-7, 1.0e-3, 4.0, 4.0, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, fd_derivative_order});
+          std::nullopt, fd_derivative_order},
+      typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{});
 
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
@@ -358,6 +361,14 @@ std::array<double, 5> test(const size_t num_dg_pts,
   subcell::TimeDerivative::apply(
       make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
       determinant(cell_centered_logical_to_grid_inv_jacobian));
+
+  if (static_cast<int>(fd_derivative_order) < 0) {
+    CHECK(db::get<evolution::dg::subcell::Tags::ReconstructionOrder<3>>(box)
+              .has_value());
+  } else {
+    CHECK(not db::get<evolution::dg::subcell::Tags::ReconstructionOrder<3>>(box)
+                  .has_value());
+  }
 
   const auto& dt_vars = db::get<dt_variables_tag>(box);
   return {{max(abs(get(get<::Tags::dt<Tags::TildeD>>(dt_vars)))),
