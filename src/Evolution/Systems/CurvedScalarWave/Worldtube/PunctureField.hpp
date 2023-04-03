@@ -43,7 +43,7 @@ namespace CurvedScalarWave::Worldtube {
  * of temporaries were optimized manually.
  */
 void puncture_field(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
@@ -57,7 +57,7 @@ void puncture_field(
  * described in \cite Detweiler2003 expanded to order 0 in geodesic distance.
  */
 void puncture_field_0(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
@@ -71,7 +71,21 @@ void puncture_field_0(
  * described in \cite Detweiler2003 expanded to order 1 in geodesic distance.
  */
 void puncture_field_1(
-    gsl::not_null<Variables<tmpl::list<
+    const gsl::not_null<Variables<tmpl::list<
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                      Frame::Inertial>>>*>
+        result,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
+    const double orbital_radius, const double bh_mass);
+
+/*!
+ * \brief Computes the puncture/singular field \f$\Psi^\mathcal{P}\f$ of a
+ * scalar charge in circular orbit around a Schwarzschild black hole as
+ * described in \cite Detweiler2003 expanded to order 2 in geodesic distance.
+ */
+void puncture_field_2(
+    const gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
