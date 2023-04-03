@@ -125,6 +125,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Domain.Amr.NewNeighborIds", "[Domain][Unit]") {
   MAKE_GENERATOR(generator);
   test<1>(make_not_null(&generator));
