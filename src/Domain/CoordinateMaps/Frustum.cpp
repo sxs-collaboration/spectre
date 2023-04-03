@@ -233,6 +233,18 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     struct {
       std::array<double, 3> operator()(
           const std::array<double, 3>& source_coords) const {
+        // Terminate the rootfind when it diverges too far away from the logical
+        // coordinate bounds of [-1, 1]. In this case the target coordinates are
+        // likely outside of the bulged frustum. It would be better if we found
+        // a way to handle this case more cleanly before the rootfind diverges.
+        // Either way, logical coordinates too far outside of [-1, 1] lead to a
+        // singular Jacobian, so we have to terminate here anyway.
+        if (abs(source_coords[0]) > 3. or abs(source_coords[1]) > 3. or
+            abs(source_coords[2]) > 3.) {
+          throw convergence_error{
+              "Logical coordinates are too far outside of [-1., 1], so the "
+              "rootfind is likely diverging."};
+        }
         return map(source_coords) - target_coords;
       }
       std::array<std::array<double, 3>, 3> jacobian(

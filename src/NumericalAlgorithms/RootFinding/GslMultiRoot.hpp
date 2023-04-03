@@ -272,7 +272,7 @@ std::array<double, Dim> gsl_multiroot_impl(
   int status;
   size_t iteration_number = 0;
   do {
-    if (UNLIKELY(verbosity == Verbosity::Debug)) {
+    if (UNLIKELY(verbosity >= Verbosity::Debug)) {
       print_state<Dim>(iteration_number, *solver, iteration_number == 0);
     }
     iteration_number++;
@@ -284,7 +284,7 @@ std::array<double, Dim> gsl_multiroot_impl(
     status = solver_iterate(solver.get());
     // Check if solver is stuck
     if (UNLIKELY(status == GSL_ENOPROG)) {
-      if (UNLIKELY(verbosity == Verbosity::Debug)) {
+      if (UNLIKELY(verbosity >= Verbosity::Debug)) {
         Parallel::printf(
             "The iteration is not making any progress, preventing the "
             "algorithm from continuing.");
@@ -293,14 +293,13 @@ std::array<double, Dim> gsl_multiroot_impl(
     }
     status = condition.test(*solver);
   } while (status == GSL_CONTINUE and iteration_number < maximum_iterations);
-  if (UNLIKELY(verbosity == Verbosity::Verbose or
-               verbosity == Verbosity::Debug)) {
+  if (UNLIKELY(verbosity >= Verbosity::Verbose)) {
     Parallel::printf("Finished iterating:\n");
     print_state<Dim>(iteration_number, *solver,
-                     verbosity == Verbosity::Verbose);
+                     verbosity >= Verbosity::Verbose);
   }
   bool success = (status == GSL_SUCCESS);
-  if (UNLIKELY(verbosity != Verbosity::Silent)) {
+  if (UNLIKELY(verbosity > Verbosity::Silent)) {
     Parallel::printf("\n");
     if (not success) {
       const std::string ascii_divider = std::string(70, '#');
@@ -328,8 +327,7 @@ std::array<double, Dim> gsl_multiroot_impl(
   if (success_with_tolerance and maximum_absolute_tolerance > 0.0) {
     success = true;
   }
-  if (UNLIKELY(failed_root_is_forgiven and (verbosity == Verbosity::Verbose or
-                                            verbosity == Verbosity::Debug))) {
+  if (UNLIKELY(failed_root_is_forgiven and verbosity >= Verbosity::Verbose)) {
     Parallel::printf(
         "The failed root was forgiven as each component was found to be under "
         "maximum_absolute_tolerance %f",
@@ -364,7 +362,7 @@ std::array<double, Dim> gsl_multiroot_impl(
       error_message << gsl_vector_get(solver->dx, i) << "\n";
     }
 
-    if (UNLIKELY(verbosity == Verbosity::Debug)) {
+    if (UNLIKELY(verbosity >= Verbosity::Debug)) {
       Parallel::printf("Error: %s\n", gsl_strerror(status));
       if (iteration_number >= maximum_iterations) {
         Parallel::printf(
@@ -480,8 +478,7 @@ std::array<double, Dim> gsl_multiroot(
         "Hybrid.");
   }
   // Print initial parameters
-  if (UNLIKELY(verbosity == Verbosity::Verbose or
-               verbosity == Verbosity::Debug)) {
+  if (UNLIKELY(verbosity >= Verbosity::Verbose)) {
     gsl_multiroot_detail::print_rootfinding_parameters(
         method, maximum_absolute_tolerance, condition);
   }
@@ -519,8 +516,7 @@ std::array<double, Dim> gsl_multiroot(
         "Hybrid.");
   }
   // Print initial parameters
-  if (UNLIKELY(verbosity == Verbosity::Verbose or
-               verbosity == Verbosity::Debug)) {
+  if (UNLIKELY(verbosity >= Verbosity::Verbose)) {
     gsl_multiroot_detail::print_rootfinding_parameters(
         method, maximum_absolute_tolerance, condition);
   }
