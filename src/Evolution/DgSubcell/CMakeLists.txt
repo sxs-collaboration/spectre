@@ -30,6 +30,7 @@ spectre_target_headers(
   RdmpTciData.hpp
   Reconstruction.hpp
   ReconstructionMethod.hpp
+  ReconstructionOrder.hpp
   SliceData.hpp
   SliceTensor.hpp
   SliceVariable.hpp
