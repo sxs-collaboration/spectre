@@ -464,7 +464,9 @@ std::vector<Neighbors<Dim>> valid_neighbors(
   const OrientationMap<Dim> aligned{};
   const size_t block_id = element_id.block_id();
   const size_t neighbor_block_id =
-      (face_type == FaceType::Block ? block_id + 1 : block_id);
+      (face_type == FaceType::Block
+           ? block_id + 2 * normal_dim + (side == Side::Lower ? 1 : 2)
+           : block_id);
   std::vector<Neighbors<Dim>> result;
   if (endpoint == 1.0 or endpoint == -1.0) {
     ASSERT(face_type != FaceType::Internal,
