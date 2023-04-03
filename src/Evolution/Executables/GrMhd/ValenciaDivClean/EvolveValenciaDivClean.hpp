@@ -32,6 +32,7 @@
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -247,10 +248,12 @@ struct EvolutionMetavars {
           tmpl::list<grmhd::ValenciaDivClean::Tags::
                          ComovingMagneticFieldMagnitudeCompute>,
           error_tags,
-          tmpl::conditional_t<use_dg_subcell,
-                              tmpl::list<evolution::dg::subcell::Tags::
-                                             TciStatusCompute<volume_dim>>,
-                              tmpl::list<>>>,
+          tmpl::conditional_t<
+              use_dg_subcell,
+              tmpl::list<
+                  evolution::dg::subcell::Tags::TciStatusCompute<volume_dim>,
+                  evolution::dg::subcell::Tags::MethodOrderCompute<volume_dim>>,
+              tmpl::list<>>>,
       tmpl::conditional_t<
           use_dg_subcell,
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,
