@@ -169,7 +169,7 @@ struct MockMetavariables {
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<LineA, volume_dim>;
+        intrp::TargetPoints::LineSegment<LineA, volume_dim, Frame::Inertial>;
     using post_interpolation_callback = intrp::callbacks::ObserveLineSegment<
         tmpl::append<vars_to_interpolate_to_target, compute_items_on_target>,
         LineA>;
@@ -183,7 +183,7 @@ struct MockMetavariables {
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<LineB, volume_dim>;
+        intrp::TargetPoints::LineSegment<LineB, volume_dim, Frame::Inertial>;
     using post_interpolation_callback = intrp::callbacks::ObserveLineSegment<
         tmpl::append<vars_to_interpolate_to_target, compute_items_on_target>,
         LineB>;
@@ -462,13 +462,13 @@ void run_test(gsl::not_null<Generator*> generator,
 
   const auto& data_box_a =
       ActionTesting::get_databox<target_a_component>(runner, 0);
-  const auto interpolated_coords_a =
-      intrp::TargetPoints::LineSegment<typename metavars::LineA, Dim>::points(
+  const auto interpolated_coords_a = intrp::TargetPoints::
+      LineSegment<typename metavars::LineA, Dim, Frame::Inertial>::points(
           data_box_a, tmpl::type_<metavars>{});
   const auto& data_box_b =
       ActionTesting::get_databox<target_b_component>(runner, 0);
-  const auto interpolated_coords_b =
-      intrp::TargetPoints::LineSegment<typename metavars::LineB, Dim>::points(
+  const auto interpolated_coords_b = intrp::TargetPoints::
+      LineSegment<typename metavars::LineB, Dim, Frame::Inertial>::points(
           data_box_b, tmpl::type_<metavars>{});
 
   check_file_contents("/LineA", interpolated_coords_a);

@@ -117,15 +117,15 @@ namespace TargetPoints {
 ///
 /// For requirements on InterpolationTargetTag, see
 /// intrp::protocols::InterpolationTargetTag
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
 struct LineSegment : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
   using is_sequential = std::false_type;
-  using frame = Frame::Inertial;
+  using frame = Frame;
 
   template <typename Metavariables, typename DbTags>
-  static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
+  static tnsr::I<DataVector, VolumeDim, Frame> points(
       const db::DataBox<DbTags>& box,
       const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& options =
@@ -133,7 +133,7 @@ struct LineSegment : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 
     // Fill points on a line segment
     const double fractional_distance = 1.0 / (options.number_of_points - 1);
-    tnsr::I<DataVector, VolumeDim, Frame::Inertial> target_points(
+    tnsr::I<DataVector, VolumeDim, Frame> target_points(
         options.number_of_points);
     for (size_t n = 0; n < options.number_of_points; ++n) {
       for (size_t d = 0; d < VolumeDim; ++d) {
@@ -147,7 +147,7 @@ struct LineSegment : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
-  static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
+  static tnsr::I<DataVector, VolumeDim, Frame> points(
       const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
       const TemporalId& /*temporal_id*/) {
     return points(box, meta);

@@ -131,10 +131,9 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<
-          ::intrp::Actions::InitializeInterpolator<
-              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
-              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
+      tmpl::list<::intrp::Actions::InitializeInterpolator<
+          intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<
           intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
@@ -183,7 +182,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::LineSegment<InterpolatorTargetA, 3>;
+        ::intrp::TargetPoints::LineSegment<InterpolatorTargetA, 3,
+                                           Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
                                                      InterpolatorTargetA>;

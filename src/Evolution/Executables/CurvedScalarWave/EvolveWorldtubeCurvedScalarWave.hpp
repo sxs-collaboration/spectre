@@ -75,11 +75,16 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveLineSegment.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/PureSphericalHarmonic.hpp"
@@ -158,6 +163,33 @@ struct EvolutionMetavars {
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  deriv_compute>;
 
+  template <size_t Number>
+  struct PsiAlongAxis
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    static std::string name() {
+      return "PsiAlongAxis" + std::to_string(Number);
+    }
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target =
+        tmpl::list<CurvedScalarWave::Tags::Psi,
+                   domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+    using compute_items_on_target = tmpl::list<>;
+    using compute_target_points =
+        intrp::TargetPoints::LineSegment<PsiAlongAxis<Number>, volume_dim,
+                                         Frame::Grid>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveLineSegment<vars_to_interpolate_to_target,
+                                             PsiAlongAxis<Number>>;
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::dg_element_array;
+  };
+
+  using interpolation_target_tags =
+      tmpl::list<PsiAlongAxis<1>, PsiAlongAxis<2>>;
+  using interpolator_source_vars =
+      tmpl::list<CurvedScalarWave::Tags::Psi,
+                 domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -171,6 +203,12 @@ struct EvolutionMetavars {
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::time_events<system>, Events::Completion,
+                              intrp::Events::InterpolateWithoutInterpComponent<
+                                  volume_dim, PsiAlongAxis<1>,
+                                  EvolutionMetavars, interpolator_source_vars>,
+                              intrp::Events::InterpolateWithoutInterpComponent<
+                                  volume_dim, PsiAlongAxis<2>,
+                                  EvolutionMetavars, interpolator_source_vars>,
                               dg::Events::field_observations<
                                   volume_dim, Tags::Time, observe_fields,
                                   non_tensor_compute_tags>>>>,
@@ -180,6 +218,7 @@ struct EvolutionMetavars {
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   Parallel::Phase::LoadBalancing>,
                               PhaseControl::CheckpointAndExitAfterWallclock>>,
+
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    tmpl::push_back<StepChoosers::standard_slab_choosers<
                                        system, local_time_stepping>,
@@ -255,6 +294,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::PunctureFieldCompute<volume_dim>,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      intrp::Actions::ElementInitInterpPoints<
+          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 
@@ -285,6 +326,8 @@ struct EvolutionMetavars {
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
+      intrp::InterpolationTarget<EvolutionMetavars, PsiAlongAxis<1>>,
+      intrp::InterpolationTarget<EvolutionMetavars, PsiAlongAxis<2>>,
       CurvedScalarWave::Worldtube::WorldtubeSingleton<EvolutionMetavars>,
       dg_element_array>>;
 
