@@ -141,6 +141,7 @@ void test_valid_neighbors(const gsl::not_null<std::mt19937*> generator) {
 
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("TestHelpers.Domain.Structure.NeighborHelpers",
                   "[Domain][Unit]") {
   MAKE_GENERATOR(generator);
