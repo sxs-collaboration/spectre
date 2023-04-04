@@ -105,8 +105,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>>;
+                 hydro::Tags::Pressure<DataVector>>;
   using dg_interior_temporary_tags = tmpl::list<
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::Lapse<DataVector>,
@@ -153,7 +152,6 @@ class HydroFreeOutflow final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
       const Scalar<DataVector>& interior_lorentz_factor,
       const Scalar<DataVector>& interior_pressure,
-      const Scalar<DataVector>& interior_specific_enthalpy,
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
       const Scalar<DataVector>& interior_lapse,

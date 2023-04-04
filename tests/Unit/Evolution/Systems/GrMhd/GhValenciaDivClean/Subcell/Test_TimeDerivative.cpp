@@ -312,8 +312,7 @@ double test(const size_t num_dg_pts) {
         get<tmpl::at_c<p2c_argument_tags, 6>>(prims_to_reconstruct),
         get<tmpl::at_c<p2c_argument_tags, 7>>(prims_to_reconstruct),
         get<tmpl::at_c<p2c_argument_tags, 8>>(prims_to_reconstruct),
-        get<tmpl::at_c<p2c_argument_tags, 9>>(prims_to_reconstruct),
-        get<tmpl::at_c<p2c_argument_tags, 10>>(prims_to_reconstruct));
+        get<tmpl::at_c<p2c_argument_tags, 9>>(prims_to_reconstruct));
 
     grmhd::ValenciaDivClean::ComputeFluxes::apply(
         make_not_null(&get<tmpl::at_c<flux_tags, 0>>(prims_to_reconstruct)),

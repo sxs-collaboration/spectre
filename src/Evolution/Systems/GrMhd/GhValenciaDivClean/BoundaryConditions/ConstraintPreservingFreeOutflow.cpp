@@ -73,7 +73,6 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
     const Scalar<DataVector>& interior_lorentz_factor,
     const Scalar<DataVector>& interior_pressure,
-    const Scalar<DataVector>& interior_specific_enthalpy,
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*coords*/,
     const Scalar<DataVector>& interior_gamma1,
@@ -123,7 +122,7 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
                interior_rest_mass_density, interior_electron_fraction,
                interior_specific_internal_energy, interior_spatial_velocity,
                interior_magnetic_field, interior_lorentz_factor,
-               interior_pressure, interior_specific_enthalpy,
+               interior_pressure,
 
                *shift, *lapse, *inv_spatial_metric);
 }
@@ -157,7 +156,6 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*interior_magnetic_field*/,
     const Scalar<DataVector>& /*interior_lorentz_factor*/,
     const Scalar<DataVector>& /*interior_pressure*/,
-    const Scalar<DataVector>& /*interior_specific_enthalpy*/,
 
     // c.f. dg_interior_temporary_tags
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords,

@@ -26,8 +26,8 @@ def error(face_mesh_velocity, outward_directed_normal_covector,
           outward_directed_normal_vector, interior_rest_mass_density,
           interior_electron_fraction, interior_specific_internal_energy,
           interior_spatial_velocity, interior_magnetic_field,
-          interior_lorentz_factor, interior_pressure,
-          interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+          interior_lorentz_factor, interior_pressure, shift, lapse,
+          inv_spatial_metric):
     return None
 
 
@@ -35,8 +35,8 @@ def tilde_d(face_mesh_velocity, outward_directed_normal_covector,
             outward_directed_normal_vector, interior_rest_mass_density,
             interior_electron_fraction, interior_specific_internal_energy,
             interior_spatial_velocity, interior_magnetic_field,
-            interior_lorentz_factor, interior_pressure,
-            interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+            interior_lorentz_factor, interior_pressure, shift, lapse,
+            inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -45,8 +45,7 @@ def tilde_d(face_mesh_velocity, outward_directed_normal_covector,
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_d(interior_rest_mass_density, interior_electron_fraction,
-                        interior_specific_internal_energy,
-                        interior_specific_enthalpy, interior_pressure,
+                        interior_specific_internal_energy, interior_pressure,
                         exterior_spatial_velocity, interior_lorentz_factor,
                         interior_magnetic_field, sqrt_det_spatial_metric,
                         spatial_metric, 0.0)
@@ -56,8 +55,8 @@ def tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
              outward_directed_normal_vector, interior_rest_mass_density,
              interior_electron_fraction, interior_specific_internal_energy,
              interior_spatial_velocity, interior_magnetic_field,
-             interior_lorentz_factor, interior_pressure,
-             interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+             interior_lorentz_factor, interior_pressure, shift, lapse,
+             inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -65,19 +64,20 @@ def tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
     spatial_metric = _spatial_metric(inv_spatial_metric)
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
-    return cons.tilde_ye(
-        interior_rest_mass_density, interior_electron_fraction,
-        interior_specific_internal_energy, interior_specific_enthalpy,
-        interior_pressure, exterior_spatial_velocity, interior_lorentz_factor,
-        interior_magnetic_field, sqrt_det_spatial_metric, spatial_metric, 0.0)
+    return cons.tilde_ye(interior_rest_mass_density,
+                         interior_electron_fraction,
+                         interior_specific_internal_energy, interior_pressure,
+                         exterior_spatial_velocity, interior_lorentz_factor,
+                         interior_magnetic_field, sqrt_det_spatial_metric,
+                         spatial_metric, 0.0)
 
 
 def tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
               outward_directed_normal_vector, interior_rest_mass_density,
               interior_electron_fraction, interior_specific_internal_energy,
               interior_spatial_velocity, interior_magnetic_field,
-              interior_lorentz_factor, interior_pressure,
-              interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+              interior_lorentz_factor, interior_pressure, shift, lapse,
+              inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -85,19 +85,20 @@ def tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
     spatial_metric = _spatial_metric(inv_spatial_metric)
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
-    return cons.tilde_tau(
-        interior_rest_mass_density, interior_electron_fraction,
-        interior_specific_internal_energy, interior_specific_enthalpy,
-        interior_pressure, exterior_spatial_velocity, interior_lorentz_factor,
-        interior_magnetic_field, sqrt_det_spatial_metric, spatial_metric, 0.0)
+    return cons.tilde_tau(interior_rest_mass_density,
+                          interior_electron_fraction,
+                          interior_specific_internal_energy, interior_pressure,
+                          exterior_spatial_velocity, interior_lorentz_factor,
+                          interior_magnetic_field, sqrt_det_spatial_metric,
+                          spatial_metric, 0.0)
 
 
 def tilde_s(face_mesh_velocity, outward_directed_normal_covector,
             outward_directed_normal_vector, interior_rest_mass_density,
             interior_electron_fraction, interior_specific_internal_energy,
             interior_spatial_velocity, interior_magnetic_field,
-            interior_lorentz_factor, interior_pressure,
-            interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+            interior_lorentz_factor, interior_pressure, shift, lapse,
+            inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -106,8 +107,7 @@ def tilde_s(face_mesh_velocity, outward_directed_normal_covector,
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_s(interior_rest_mass_density, interior_electron_fraction,
-                        interior_specific_internal_energy,
-                        interior_specific_enthalpy, interior_pressure,
+                        interior_specific_internal_energy, interior_pressure,
                         exterior_spatial_velocity, interior_lorentz_factor,
                         interior_magnetic_field, sqrt_det_spatial_metric,
                         spatial_metric, 0.0)
@@ -117,8 +117,8 @@ def tilde_b(face_mesh_velocity, outward_directed_normal_covector,
             outward_directed_normal_vector, interior_rest_mass_density,
             interior_electron_fraction, interior_specific_internal_energy,
             interior_spatial_velocity, interior_magnetic_field,
-            interior_lorentz_factor, interior_pressure,
-            interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+            interior_lorentz_factor, interior_pressure, shift, lapse,
+            inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -127,8 +127,7 @@ def tilde_b(face_mesh_velocity, outward_directed_normal_covector,
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_b(interior_rest_mass_density, interior_electron_fraction,
-                        interior_specific_internal_energy,
-                        interior_specific_enthalpy, interior_pressure,
+                        interior_specific_internal_energy, interior_pressure,
                         exterior_spatial_velocity, interior_lorentz_factor,
                         interior_magnetic_field, sqrt_det_spatial_metric,
                         spatial_metric, 0.0)
@@ -138,8 +137,8 @@ def tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
               outward_directed_normal_vector, interior_rest_mass_density,
               interior_electron_fraction, interior_specific_internal_energy,
               interior_spatial_velocity, interior_magnetic_field,
-              interior_lorentz_factor, interior_pressure,
-              interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+              interior_lorentz_factor, interior_pressure, shift, lapse,
+              inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -147,11 +146,12 @@ def tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
     spatial_metric = _spatial_metric(inv_spatial_metric)
     sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
-    return cons.tilde_phi(
-        interior_rest_mass_density, interior_electron_fraction,
-        interior_specific_internal_energy, interior_specific_enthalpy,
-        interior_pressure, exterior_spatial_velocity, interior_lorentz_factor,
-        interior_magnetic_field, sqrt_det_spatial_metric, spatial_metric, 0.0)
+    return cons.tilde_phi(interior_rest_mass_density,
+                          interior_electron_fraction,
+                          interior_specific_internal_energy, interior_pressure,
+                          exterior_spatial_velocity, interior_lorentz_factor,
+                          interior_magnetic_field, sqrt_det_spatial_metric,
+                          spatial_metric, 0.0)
 
 
 def _return_cons_vars(face_mesh_velocity, outward_directed_normal_covector,
@@ -159,8 +159,7 @@ def _return_cons_vars(face_mesh_velocity, outward_directed_normal_covector,
                       interior_rest_mass_density, interior_electron_fraction,
                       interior_specific_internal_energy,
                       interior_spatial_velocity, interior_magnetic_field,
-                      interior_lorentz_factor, interior_pressure,
-                      interior_specific_enthalpy, shift, lapse,
+                      interior_lorentz_factor, interior_pressure, shift, lapse,
                       inv_spatial_metric):
     return {
         "tilde_d":
@@ -168,45 +167,43 @@ def _return_cons_vars(face_mesh_velocity, outward_directed_normal_covector,
                 outward_directed_normal_vector, interior_rest_mass_density,
                 interior_electron_fraction, interior_specific_internal_energy,
                 interior_spatial_velocity, interior_magnetic_field,
-                interior_lorentz_factor, interior_pressure,
-                interior_specific_enthalpy, shift, lapse, inv_spatial_metric),
+                interior_lorentz_factor, interior_pressure, shift, lapse,
+                inv_spatial_metric),
         "tilde_ye":
         tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, interior_rest_mass_density,
                  interior_electron_fraction, interior_specific_internal_energy,
                  interior_spatial_velocity, interior_magnetic_field,
-                 interior_lorentz_factor, interior_pressure,
-                 interior_specific_enthalpy, shift, lapse, inv_spatial_metric),
+                 interior_lorentz_factor, interior_pressure, shift, lapse,
+                 inv_spatial_metric),
         "tilde_tau":
         tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                   outward_directed_normal_vector, interior_rest_mass_density,
                   interior_electron_fraction,
                   interior_specific_internal_energy, interior_spatial_velocity,
                   interior_magnetic_field, interior_lorentz_factor,
-                  interior_pressure, interior_specific_enthalpy, shift, lapse,
-                  inv_spatial_metric),
+                  interior_pressure, shift, lapse, inv_spatial_metric),
         "tilde_s":
         tilde_s(face_mesh_velocity, outward_directed_normal_covector,
                 outward_directed_normal_vector, interior_rest_mass_density,
                 interior_electron_fraction, interior_specific_internal_energy,
                 interior_spatial_velocity, interior_magnetic_field,
-                interior_lorentz_factor, interior_pressure,
-                interior_specific_enthalpy, shift, lapse, inv_spatial_metric),
+                interior_lorentz_factor, interior_pressure, shift, lapse,
+                inv_spatial_metric),
         "tilde_b":
         tilde_b(face_mesh_velocity, outward_directed_normal_covector,
                 outward_directed_normal_vector, interior_rest_mass_density,
                 interior_electron_fraction, interior_specific_internal_energy,
                 interior_spatial_velocity, interior_magnetic_field,
-                interior_lorentz_factor, interior_pressure,
-                interior_specific_enthalpy, shift, lapse, inv_spatial_metric),
+                interior_lorentz_factor, interior_pressure, shift, lapse,
+                inv_spatial_metric),
         "tilde_phi":
         tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
                   outward_directed_normal_vector, interior_rest_mass_density,
                   interior_electron_fraction,
                   interior_specific_internal_energy, interior_spatial_velocity,
                   interior_magnetic_field, interior_lorentz_factor,
-                  interior_pressure, interior_specific_enthalpy, shift, lapse,
-                  inv_spatial_metric),
+                  interior_pressure, shift, lapse, inv_spatial_metric),
     }
 
 
@@ -214,8 +211,8 @@ def flux_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, interior_rest_mass_density,
                  interior_electron_fraction, interior_specific_internal_energy,
                  interior_spatial_velocity, interior_magnetic_field,
-                 interior_lorentz_factor, interior_pressure,
-                 interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+                 interior_lorentz_factor, interior_pressure, shift, lapse,
+                 inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -228,8 +225,8 @@ def flux_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_d_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -244,8 +241,7 @@ def flux_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
                   interior_electron_fraction,
                   interior_specific_internal_energy, interior_spatial_velocity,
                   interior_magnetic_field, interior_lorentz_factor,
-                  interior_pressure, interior_specific_enthalpy, shift, lapse,
-                  inv_spatial_metric):
+                  interior_pressure, shift, lapse, inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -258,8 +254,8 @@ def flux_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_ye_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -274,8 +270,7 @@ def flux_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                    interior_electron_fraction,
                    interior_specific_internal_energy,
                    interior_spatial_velocity, interior_magnetic_field,
-                   interior_lorentz_factor, interior_pressure,
-                   interior_specific_enthalpy, shift, lapse,
+                   interior_lorentz_factor, interior_pressure, shift, lapse,
                    inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
@@ -289,8 +284,8 @@ def flux_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_tau_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -304,8 +299,8 @@ def flux_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, interior_rest_mass_density,
                  interior_electron_fraction, interior_specific_internal_energy,
                  interior_spatial_velocity, interior_magnetic_field,
-                 interior_lorentz_factor, interior_pressure,
-                 interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+                 interior_lorentz_factor, interior_pressure, shift, lapse,
+                 inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -318,8 +313,8 @@ def flux_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_s_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -333,8 +328,8 @@ def flux_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, interior_rest_mass_density,
                  interior_electron_fraction, interior_specific_internal_energy,
                  interior_spatial_velocity, interior_magnetic_field,
-                 interior_lorentz_factor, interior_pressure,
-                 interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+                 interior_lorentz_factor, interior_pressure, shift, lapse,
+                 inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
         outward_directed_normal_covector, outward_directed_normal_vector,
@@ -347,8 +342,8 @@ def flux_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_b_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -363,8 +358,7 @@ def flux_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
                    interior_electron_fraction,
                    interior_specific_internal_energy,
                    interior_spatial_velocity, interior_magnetic_field,
-                   interior_lorentz_factor, interior_pressure,
-                   interior_specific_enthalpy, shift, lapse,
+                   interior_lorentz_factor, interior_pressure, shift, lapse,
                    inv_spatial_metric):
 
     exterior_spatial_velocity = _exterior_spatial_velocity(
@@ -378,8 +372,8 @@ def flux_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_vector, interior_rest_mass_density,
         interior_electron_fraction, interior_specific_internal_energy,
         interior_spatial_velocity, interior_magnetic_field,
-        interior_lorentz_factor, interior_pressure, interior_specific_enthalpy,
-        shift, lapse, inv_spatial_metric)
+        interior_lorentz_factor, interior_pressure, shift, lapse,
+        inv_spatial_metric)
 
     return fluxes.tilde_phi_flux(
         cons_vars["tilde_d"], cons_vars["tilde_ye"], cons_vars["tilde_tau"],
@@ -393,8 +387,8 @@ def lapse(face_mesh_velocity, outward_directed_normal_covector,
           outward_directed_normal_vector, interior_rest_mass_density,
           interior_electron_fraction, interior_specific_internal_energy,
           interior_spatial_velocity, interior_magnetic_field,
-          interior_lorentz_factor, interior_pressure,
-          interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+          interior_lorentz_factor, interior_pressure, shift, lapse,
+          inv_spatial_metric):
     return lapse
 
 
@@ -402,8 +396,8 @@ def shift(face_mesh_velocity, outward_directed_normal_covector,
           outward_directed_normal_vector, interior_rest_mass_density,
           interior_electron_fraction, interior_specific_internal_energy,
           interior_spatial_velocity, interior_magnetic_field,
-          interior_lorentz_factor, interior_pressure,
-          interior_specific_enthalpy, shift, lapse, inv_spatial_metric):
+          interior_lorentz_factor, interior_pressure, shift, lapse,
+          inv_spatial_metric):
     return shift
 
 
@@ -412,7 +406,6 @@ def inv_spatial_metric(face_mesh_velocity, outward_directed_normal_covector,
                        interior_rest_mass_density, interior_electron_fraction,
                        interior_specific_internal_energy,
                        interior_spatial_velocity, interior_magnetic_field,
-                       interior_lorentz_factor, interior_pressure,
-                       interior_specific_enthalpy, shift, lapse,
-                       inv_spatial_metric):
+                       interior_lorentz_factor, interior_pressure, shift,
+                       lapse, inv_spatial_metric):
     return inv_spatial_metric

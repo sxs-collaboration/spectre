@@ -105,8 +105,8 @@ void test_primitive_from_conservative_random(
       make_not_null(&tilde_tau), make_not_null(&tilde_s),
       make_not_null(&tilde_b), make_not_null(&tilde_phi),
       expected_rest_mass_density, expected_electron_fraction,
-      expected_specific_internal_energy, expected_specific_enthalpy,
-      expected_pressure, expected_spatial_velocity, expected_lorentz_factor,
+      expected_specific_internal_energy, expected_pressure,
+      expected_spatial_velocity, expected_lorentz_factor,
       expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
       expected_divergence_cleaning_field);
 
@@ -203,8 +203,8 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
       make_not_null(&tilde_tau), make_not_null(&tilde_s),
       make_not_null(&tilde_b), make_not_null(&tilde_phi),
       expected_rest_mass_density, expected_electron_fraction,
-      expected_specific_internal_energy, expected_specific_enthalpy,
-      expected_pressure, expected_spatial_velocity, expected_lorentz_factor,
+      expected_specific_internal_energy, expected_pressure,
+      expected_spatial_velocity, expected_lorentz_factor,
       expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
       expected_divergence_cleaning_field);
 

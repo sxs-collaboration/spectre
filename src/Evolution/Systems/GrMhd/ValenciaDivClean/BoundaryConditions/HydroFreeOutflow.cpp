@@ -76,7 +76,6 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
     const Scalar<DataVector>& interior_lorentz_factor,
     const Scalar<DataVector>& interior_pressure,
-    const Scalar<DataVector>& interior_specific_enthalpy,
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
     const Scalar<DataVector>& interior_lapse,
@@ -149,8 +148,8 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
   ConservativeFromPrimitive::apply(
       tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
       interior_rest_mass_density, interior_electron_fraction,
-      interior_specific_internal_energy, interior_specific_enthalpy,
-      interior_pressure, exterior_spatial_velocity, interior_lorentz_factor,
+      interior_specific_internal_energy, interior_pressure,
+      exterior_spatial_velocity, interior_lorentz_factor,
       interior_magnetic_field, interior_sqrt_det_spatial_metric,
       interior_spatial_metric, exterior_divergence_cleaning_field);
 

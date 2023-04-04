@@ -203,7 +203,6 @@ class DirichletAnalytic final : public BoundaryCondition {
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values),
         get<hydro::Tags::ElectronFraction<DataVector>>(boundary_values),
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(boundary_values),
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(boundary_values),
         get<hydro::Tags::Pressure<DataVector>>(boundary_values),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values),
         get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values),

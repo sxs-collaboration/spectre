@@ -97,8 +97,7 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>>;
+                 hydro::Tags::Pressure<DataVector>>;
   using dg_gridless_tags = tmpl::list<>;
 
   static std::optional<std::string> dg_ghost(
@@ -142,7 +141,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
       const Scalar<DataVector>& interior_lorentz_factor,
       const Scalar<DataVector>& interior_pressure,
-      const Scalar<DataVector>& interior_specific_enthalpy,
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& /*coords*/,
       const Scalar<DataVector>& interior_gamma1,
@@ -215,7 +213,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
                     Frame::Inertial>& /*interior_magnetic_field*/,
       const Scalar<DataVector>& /*interior_lorentz_factor*/,
       const Scalar<DataVector>& /*interior_pressure*/,
-      const Scalar<DataVector>& /*interior_specific_enthalpy*/,
 
       // c.f. dg_interior_temporary_tags
       const tnsr::I<DataVector, 3, Frame::Inertial>& coords,

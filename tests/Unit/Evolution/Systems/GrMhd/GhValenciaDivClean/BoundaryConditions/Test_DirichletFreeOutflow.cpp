@@ -167,7 +167,6 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         get<hydro::Tags::RestMassDensity<DataVector>>(analytic_vars),
         get<hydro::Tags::ElectronFraction<DataVector>>(analytic_vars),
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(analytic_vars),
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(analytic_vars),
         get<hydro::Tags::Pressure<DataVector>>(analytic_vars),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::LorentzFactor<DataVector>>(analytic_vars),
@@ -237,7 +236,6 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       get<hydro::Tags::MagneticField<DataVector, 3>>(prim_vars),
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::Pressure<DataVector>>(prim_vars),
-      get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars),
 
       coords, interior_gamma1, interior_gamma2, time,
       analytic_solution_or_data);
@@ -275,7 +273,6 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       get<hydro::Tags::MagneticField<DataVector, 3>>(prim_vars),
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::Pressure<DataVector>>(prim_vars),
-      get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars),
 
       shift, lapse, inverse_spatial_metric);
 
