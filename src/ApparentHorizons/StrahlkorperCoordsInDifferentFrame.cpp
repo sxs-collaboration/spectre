@@ -71,20 +71,28 @@ void strahlkorper_coords_in_different_frame(
                                            << ") that is not in any Block.");
     const auto& block =
         domain.blocks()[block_logical_coords[s].value().id.get_index()];
-    if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
-      const auto x_dest = block.moving_mesh_grid_to_inertial_map()(
-          x_src, time, functions_of_time);
-      get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
-      get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
-      get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+    if (block.is_time_dependent()) {
+      if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
+        const auto x_dest = block.moving_mesh_grid_to_inertial_map()(
+            x_src, time, functions_of_time);
+        get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
+        get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
+        get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+      } else {
+        static_assert(std::is_same_v<SrcFrame, ::Frame::Distorted>,
+                      "Src frame must be Distorted if it is not Grid");
+        const auto x_dest = block.moving_mesh_distorted_to_inertial_map()(
+            x_src, time, functions_of_time);
+        get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
+        get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
+        get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+      }
     } else {
-      static_assert(std::is_same_v<SrcFrame, ::Frame::Distorted>,
-                    "Src frame must be Distorted if it is not Grid");
-      const auto x_dest = block.moving_mesh_distorted_to_inertial_map()(
-          x_src, time, functions_of_time);
-      get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
-      get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
-      get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+      // If we get here, then the frames are actually the same, but
+      // they have different frame tags.  So we just copy.
+      get<0>(*dest_cartesian_coords)[s] = get<0>(x_src);
+      get<1>(*dest_cartesian_coords)[s] = get<1>(x_src);
+      get<2>(*dest_cartesian_coords)[s] = get<2>(x_src);
     }
   }
 }

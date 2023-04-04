@@ -23,7 +23,7 @@
 
 namespace {
 
-template<typename SrcFrame>
+template<bool IsTimeDependent, typename SrcFrame>
 void test_strahlkorper_coords_in_different_frame() {
   const size_t grid_points_each_dimension = 5;
 
@@ -45,31 +45,39 @@ void test_strahlkorper_coords_in_different_frame() {
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
       domain::CoordinateMaps::Distribution::Linear};
 
-  // In computing the time_dependence, make sure that src-to-inertial
-  // velocity is (0.01,0.02,0.03) to agree with the analytic checks
-  // below.  If src is distorted frame, then grid-to-distorted
-  // velocity doesn't matter for the value of the check (but does matter
-  // in terms of which points are in which blocks).
-  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-      time_dependence;
-  if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
-    time_dependence = std::make_unique<
-        domain::creators::time_dependence::UniformTranslation<3>>(
-        0.0, std::array<double, 3>({{0.01, 0.02, 0.03}}));
+  std::unique_ptr<DomainCreator<3>> domain_creator;
+  if constexpr (IsTimeDependent) {
+    // In computing the time_dependence, make sure that src-to-inertial
+    // velocity is (0.01,0.02,0.03) to agree with the analytic checks
+    // below.  If src is distorted frame, then grid-to-distorted
+    // velocity doesn't matter for the value of the check (but does matter
+    // in terms of which points are in which blocks).
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence;
+    if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
+      time_dependence = std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array<double, 3>({{0.01, 0.02, 0.03}}));
+    } else {
+      static_assert(std::is_same_v<SrcFrame, ::Frame::Distorted>,
+                    "Src frame must be Distorted if it is not Grid");
+      time_dependence = std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array<double, 3>({{-0.02, -0.01, -0.01}}),
+          std::array<double, 3>({{0.01, 0.02, 0.03}}));
+    }
+    domain_creator = std::make_unique<domain::creators::Sphere>(
+        1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+        grid_points_each_dimension, false, std::nullopt, radial_partitioning,
+        radial_distribution, ShellWedges::All, std::move(time_dependence));
   } else {
-    static_assert(std::is_same_v<SrcFrame, ::Frame::Distorted>,
-                  "Src frame must be Distorted if it is not Grid");
-    time_dependence = std::make_unique<
-        domain::creators::time_dependence::UniformTranslation<3>>(
-        0.0, std::array<double, 3>({{-0.02, -0.01, -0.01}}),
-        std::array<double, 3>({{0.01, 0.02, 0.03}}));
+    domain_creator = std::make_unique<domain::creators::Sphere>(
+        1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
+        grid_points_each_dimension, false, std::nullopt, radial_partitioning,
+        radial_distribution, ShellWedges::All);
   }
-  domain::creators::Sphere domain_creator(
-      1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
-      grid_points_each_dimension, false, std::nullopt, radial_partitioning,
-      radial_distribution, ShellWedges::All, std::move(time_dependence));
-  Domain<3> domain = domain_creator.create_domain();
-  const auto functions_of_time = domain_creator.functions_of_time();
+  Domain<3> domain = domain_creator->create_domain();
+  const auto functions_of_time = domain_creator->functions_of_time();
 
   // Compute strahlkorper coords in the inertial frame.
   const double time = 0.5;
@@ -85,9 +93,15 @@ void test_strahlkorper_coords_in_different_frame() {
       strahlkorper_src, StrahlkorperFunctions::radius(strahlkorper_src),
       StrahlkorperFunctions::rhat(
           StrahlkorperFunctions::theta_phi(strahlkorper_src)));
-  CHECK_ITERABLE_APPROX(get<0>(src_coords) + 0.005, get<0>(inertial_coords));
-  CHECK_ITERABLE_APPROX(get<1>(src_coords) + 0.01, get<1>(inertial_coords));
-  CHECK_ITERABLE_APPROX(get<2>(src_coords) + 0.015, get<2>(inertial_coords));
+  if constexpr (IsTimeDependent) {
+    CHECK_ITERABLE_APPROX(get<0>(src_coords) + 0.005, get<0>(inertial_coords));
+    CHECK_ITERABLE_APPROX(get<1>(src_coords) + 0.01, get<1>(inertial_coords));
+    CHECK_ITERABLE_APPROX(get<2>(src_coords) + 0.015, get<2>(inertial_coords));
+  } else {
+    CHECK_ITERABLE_APPROX(get<0>(src_coords), get<0>(inertial_coords));
+    CHECK_ITERABLE_APPROX(get<1>(src_coords), get<1>(inertial_coords));
+    CHECK_ITERABLE_APPROX(get<2>(src_coords), get<2>(inertial_coords));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperCoordsInDifferentFrame",
@@ -95,8 +109,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperCoordsInDifferentFrame",
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
-  test_strahlkorper_coords_in_different_frame<Frame::Grid>();
-  test_strahlkorper_coords_in_different_frame<Frame::Distorted>();
+  test_strahlkorper_coords_in_different_frame<true, Frame::Grid>();
+  test_strahlkorper_coords_in_different_frame<true, Frame::Distorted>();
+  test_strahlkorper_coords_in_different_frame<false, Frame::Distorted>();
 }
 
 }  // namespace
