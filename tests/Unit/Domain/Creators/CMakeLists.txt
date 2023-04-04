@@ -23,6 +23,7 @@ set(LIBRARY_SOURCES
   Test_RotatedIntervals.cpp
   Test_RotatedRectangles.cpp
   Test_Sphere.cpp
+  Test_SphereTimeDependentMaps.cpp
   )
 
 add_test_library(
