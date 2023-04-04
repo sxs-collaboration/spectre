@@ -57,6 +57,8 @@ SpatialDiscretization:
 #   ExpFilter0:
 #     Alpha: 12
 #     HalfPower: 32
+#     Enable: false
+#     BlocksToFilter: All
 
 EventsAndTriggers:
   - - Times:

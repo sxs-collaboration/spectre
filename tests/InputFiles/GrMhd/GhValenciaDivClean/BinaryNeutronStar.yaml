@@ -116,7 +116,8 @@ Filtering:
   ExpFilter0:
     Alpha: 36
     HalfPower: 64
-    DisableForDebugging: false
+    Enable: true
+    BlocksToFilter: All
 
 EventsAndTriggers:
   # Set time step based on CLF condition

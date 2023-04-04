@@ -97,7 +97,8 @@ Filtering:
   ExpFilter0:
     Alpha: 36.0
     HalfPower: 64
-    DisableForDebugging: False
+    Enable: true
+    BlocksToFilter: All
 
 SpatialDiscretization:
   BoundaryCorrection:

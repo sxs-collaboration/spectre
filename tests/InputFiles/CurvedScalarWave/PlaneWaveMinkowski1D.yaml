@@ -60,7 +60,8 @@ Filtering:
   ExpFilter0:
     Alpha: 12
     HalfPower: 32
-    DisableForDebugging: true
+    Enable: false
+    BlocksToFilter: All
 
 EventsAndTriggers:
   - - Slabs:

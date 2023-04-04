@@ -3,13 +3,13 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "Evolution/Tags/Filter.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "NumericalAlgorithms/LinearOperators/Tags.hpp"
 
 namespace {
 struct SomeType {};
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.LinearOperators.Tags", "[Unit][NumericalAlgorithms]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Tags", "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<Filters::Tags::Filter<SomeType>>("Filter");
 }

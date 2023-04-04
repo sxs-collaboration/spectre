@@ -3,10 +3,15 @@
 
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 
+#include <string>
+#include <unordered_set>
+
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Options.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
@@ -14,12 +19,25 @@
 namespace Filters {
 
 template <size_t FilterIndex>
-Exponential<FilterIndex>::Exponential(const double alpha,
-                                      const unsigned half_power,
-                                      const bool disable_for_debugging)
-    : alpha_(alpha),
-      half_power_(half_power),
-      disable_for_debugging_(disable_for_debugging) {}
+Exponential<FilterIndex>::Exponential(
+    const double alpha, const unsigned half_power, const bool enable,
+    const std::optional<std::vector<std::string>>& blocks_to_filter,
+    const Options::Context& context)
+    : alpha_(alpha), half_power_(half_power), enable_(enable) {
+  if (blocks_to_filter.has_value()) {
+    blocks_to_filter_ = std::unordered_set<std::string>{};
+    for (const std::string& block_name : blocks_to_filter.value()) {
+      if (blocks_to_filter_->count(block_name) != 0) {
+        PARSE_ERROR(context,
+                    "Duplicate block name '"
+                        << block_name
+                        << "' found when creating an Exponential filter.");
+      }
+
+      blocks_to_filter_->emplace(block_name);
+    }
+  }
+}
 
 template <size_t FilterIndex>
 const Matrix& Exponential<FilterIndex>::filter_matrix(
@@ -59,14 +77,16 @@ template <size_t FilterIndex>
 void Exponential<FilterIndex>::pup(PUP::er& p) {
   p | alpha_;
   p | half_power_;
-  p | disable_for_debugging_;
+  p | enable_;
+  p | blocks_to_filter_;
 }
 
 template <size_t LocalFilterIndex>
 bool operator==(const Exponential<LocalFilterIndex>& lhs,
                 const Exponential<LocalFilterIndex>& rhs) {
   return lhs.alpha_ == rhs.alpha_ and lhs.half_power_ == rhs.half_power_ and
-         lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
+         lhs.enable_ == rhs.enable_ and
+         lhs.blocks_to_filter_ == rhs.blocks_to_filter_;
 }
 
 template <size_t FilterIndex>

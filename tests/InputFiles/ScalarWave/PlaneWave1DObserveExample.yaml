@@ -61,9 +61,12 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 # If filtering is enabled in the executable the filter can be controlled using:
-# ExpFilter0:
-#   Alpha: 12
-#   HalfPower: 32
+# Filtering:
+#   ExpFilter0:
+#     Alpha: 12
+#     HalfPower: 32
+#     Enable: false
+#     BlocksToFilter: All
 
 # [observe_event_trigger]
 EventsAndDenseTriggers:
