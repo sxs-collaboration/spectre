@@ -2,10 +2,11 @@
 # See LICENSE.txt for details.
 
 spectre_python_add_module(
-  tools
+  Status
+  MODULE_PATH "tools"
   PYTHON_FILES
-  CharmSimplifyTraces.py
-  CleanOutput.py
+  __init__.py
+  Status.py
 )
 
-add_subdirectory(Status)
+add_subdirectory(ExecutableStatus)

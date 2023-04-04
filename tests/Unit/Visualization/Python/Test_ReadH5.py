@@ -1,12 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Visualization.ReadH5 import available_subfiles
+import os
+import unittest
 
 import h5py
-import os
+import pandas.testing as pdt
 import spectre.Informer as spectre_informer
-import unittest
+import spectre.IO.H5 as spectre_h5
+from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 
 
 class TestReadH5(unittest.TestCase):
@@ -27,6 +29,18 @@ class TestReadH5(unittest.TestCase):
                              [])
             self.assertEqual(available_subfiles(open_file, extension=".vol"),
                              ["element_data.vol"])
+
+    def test_to_dataframe(self):
+        # h5py subfile
+        with h5py.File(os.path.join(self.data_dir, "DatTestData.h5"),
+                       "r") as open_file:
+            df = to_dataframe(open_file["TimeSteps2.dat"])
+            self.assertEqual(df.columns[0], "Time")
+        # SpECTRE subfile
+        with spectre_h5.H5File(os.path.join(self.data_dir, "DatTestData.h5"),
+                               "r") as open_file:
+            df2 = to_dataframe(open_file.get_dat("/TimeSteps2"))
+            pdt.assert_frame_equal(df2, df)
 
 
 if __name__ == '__main__':

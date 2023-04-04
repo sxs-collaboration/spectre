@@ -700,7 +700,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # to create the cache.
       SPECTRE_SPACK_DEPS: >-
         blaze boost brigand catch2 charmpp gsl hdf5 libsharp libxsmm openblas
-        py-h5py py-numpy py-matplotlib py-pybind11 py-scipy py-pyyaml yaml-cpp
+        py-h5py py-humanize py-numpy py-matplotlib py-pandas py-pybind11
+        py-scipy py-pyyaml yaml-cpp
       CCACHE_DIR: $HOME/ccache
       CCACHE_MAXSIZE: 700M
       CCACHE_COMPRESS: 1
