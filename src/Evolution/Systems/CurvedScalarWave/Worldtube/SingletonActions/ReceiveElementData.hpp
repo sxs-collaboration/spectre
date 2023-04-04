@@ -51,7 +51,10 @@ namespace CurvedScalarWave::Worldtube::Actions {
  *                                     Frame::Grid>`
  *    - `Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>`
  *    - `Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
-                                      Frame::Grid>`
+ *                                     Frame::Grid>`
+ *    - `Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>`
+ *    - `Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
+ *                                     Frame::Grid>`
  */
 struct ReceiveElementData {
   static constexpr size_t Dim = 3;
@@ -63,7 +66,9 @@ struct ReceiveElementData {
       Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>,
       Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim, Frame::Grid>,
       Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>,
-      Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
+      Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim, Frame::Grid>,
+      Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>,
+      Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
                            Frame::Grid>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -106,6 +111,8 @@ struct ReceiveElementData {
     const ModalVector dt_psi_ylm_l0(&dt_psi_ylm_coefs[0], 1);
     tnsr::i<double, Dim, Frame::Grid> psi_stf_l1{};
     tnsr::i<double, Dim, Frame::Grid> dt_psi_stf_l1{};
+    tnsr::ii<double, Dim, Frame::Grid> psi_stf_l2{};
+    tnsr::ii<double, Dim, Frame::Grid> dt_psi_stf_l2{};
     if (order > 0) {
       ModalVector psi_ylm_l1(&psi_ylm_coefs[1], 3);
       ModalVector dt_psi_ylm_l1(&dt_psi_ylm_coefs[1], 3);
@@ -113,12 +120,21 @@ struct ReceiveElementData {
       dt_psi_ylm_l1 /= wt_radius;
       psi_stf_l1 = ylm_to_stf_1<Frame::Grid>(psi_ylm_l1);
       dt_psi_stf_l1 = ylm_to_stf_1<Frame::Grid>(dt_psi_ylm_l1);
+      if (order > 1) {
+        ModalVector psi_ylm_l2(&psi_ylm_coefs[4], 5);
+        ModalVector dt_psi_ylm_l2(&dt_psi_ylm_coefs[4], 5);
+        psi_ylm_l2 /= wt_radius * wt_radius;
+        dt_psi_ylm_l2 /= wt_radius * wt_radius;
+        psi_stf_l2 = ylm_to_stf_2<Frame::Grid>(psi_ylm_l2);
+        dt_psi_stf_l2 = ylm_to_stf_2<Frame::Grid>(dt_psi_ylm_l2);
+      }
     }
 
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), ylm_to_stf_0(psi_ylm_l0),
         ylm_to_stf_0(dt_psi_ylm_l0), std::move(psi_stf_l1),
-        std::move(dt_psi_stf_l1));
+        std::move(dt_psi_stf_l1), std::move(psi_stf_l2),
+        std::move(dt_psi_stf_l2));
     inbox.erase(time_step_id);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

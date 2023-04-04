@@ -89,7 +89,11 @@ struct MockWorldtubeSingleton {
                                        Frame::Grid>,
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
-                                       Frame::Grid>>,
+                                       Frame::Grid>,
+                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>,
+                  Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
+                                       Frame::Grid>,
+                  Tags::Psi0>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -160,6 +164,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
     const auto pi_coefs_1 =
         make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
             make_not_null(&generator), dist, 0.);
+    const auto psi_coefs_2 =
+        make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
+    const auto pi_coefs_2 =
+        make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
     const Time dummy_time{{1., 2.}, {1, 2}};
     const TimeStepId dummy_time_step_id{true, 123, dummy_time};
 
@@ -204,11 +214,14 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
         make_not_null(&element_faces_grid_coords), initial_extents,
         initial_refinements, quadrature, shell_domain, excision_sphere);
 
+    // we set Psi0 to psi_coefs_0 which means the monopole does not get a
+    // contribution from the second order trace
     ActionTesting::emplace_singleton_component_and_initialize<worldtube_chare>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
         {element_faces_grid_coords, dummy_time_step_id,
          Scalar<double>(psi_coefs_0), Scalar<double>(pi_coefs_0), psi_coefs_1,
-         pi_coefs_1});
+         pi_coefs_1, psi_coefs_2, pi_coefs_2,
+         Scalar<DataVector>(size_t(1), psi_coefs_0)});
 
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
@@ -242,6 +255,18 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
             expected_solution_psi += psi_coefs_1.get(i) * grid_coords.get(i);
             expected_solution_dt_psi += pi_coefs_1.get(i) * grid_coords.get(i);
           }
+          if (expansion_order > 1) {
+            for (size_t i = 0; i < Dim; ++i) {
+              for (size_t j = 0; j < Dim; ++j) {
+                expected_solution_psi += psi_coefs_2.get(i, j) *
+                                         grid_coords.get(i) *
+                                         grid_coords.get(j);
+                expected_solution_dt_psi += pi_coefs_2.get(i, j) *
+                                            grid_coords.get(i) *
+                                            grid_coords.get(j);
+              }
+            }
+          }
         }
         CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Psi>(inbox_data)),
                               expected_solution_psi);
@@ -264,10 +289,17 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
             get(get<CurvedScalarWave::Tags::Pi>(worldtube_solution)),
             -expected_solution_dt_psi);
         for (size_t i = 0; i < Dim; ++i) {
+          DataVector expected_di_psi(
+              face_size, expansion_order > 0 ? psi_coefs_1.get(i) : 0.);
+          if (expansion_order > 1) {
+            for (size_t j = 0; j < Dim; ++j) {
+              expected_di_psi +=
+                  2. * psi_coefs_2.get(i, j) * grid_coords.get(j);
+            }
+          }
           CHECK_ITERABLE_APPROX(
               get<CurvedScalarWave::Tags::Phi<Dim>>(worldtube_solution).get(i),
-              DataVector(face_size,
-                         expansion_order > 0 ? psi_coefs_1.get(i) : 0.));
+              expected_di_psi);
         }
       } else {
         CHECK(element_inbox.empty());
