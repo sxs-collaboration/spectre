@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Worldtube/Test_Tags.cpp
   Worldtube/ElementActions/Test_SendToWorldtube.cpp
   Worldtube/ElementActions/Test_ReceiveWorldtubeData.cpp
+  Worldtube/ElementActions/Test_InitializeConstraintGammas.cpp
   Worldtube/SingletonActions/Test_ChangeSlabSize.cpp
   Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   Worldtube/SingletonActions/Test_InitializeEvolvedVariables.cpp
