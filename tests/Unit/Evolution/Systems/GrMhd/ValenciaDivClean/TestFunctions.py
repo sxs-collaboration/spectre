@@ -58,23 +58,23 @@ def characteristic_speeds(lapse, shift, spatial_velocity,
 
 # Functions for testing ConservativeFromPrimitive.cpp
 def tilde_d(rest_mass_density, electron_fraction, specific_internal_energy,
-            specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-            magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+            pressure, spatial_velocity, lorentz_factor, magnetic_field,
+            sqrt_det_spatial_metric, spatial_metric,
             divergence_cleaning_field):
     return lorentz_factor * rest_mass_density * sqrt_det_spatial_metric
 
 
 def tilde_ye(rest_mass_density, electron_fraction, specific_internal_energy,
-             specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-             magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+             pressure, spatial_velocity, lorentz_factor, magnetic_field,
+             sqrt_det_spatial_metric, spatial_metric,
              divergence_cleaning_field):
     return lorentz_factor * rest_mass_density * sqrt_det_spatial_metric *\
             electron_fraction
 
 
 def tilde_tau(rest_mass_density, electron_fraction, specific_internal_energy,
-              specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-              magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+              pressure, spatial_velocity, lorentz_factor, magnetic_field,
+              sqrt_det_spatial_metric, spatial_metric,
               divergence_cleaning_field):
     spatial_velocity_squared = vsq(spatial_velocity, spatial_metric)
     return (((
@@ -88,11 +88,12 @@ def tilde_tau(rest_mass_density, electron_fraction, specific_internal_energy,
 
 
 def tilde_s(rest_mass_density, electron_fraction, specific_internal_energy,
-            specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-            magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+            pressure, spatial_velocity, lorentz_factor, magnetic_field,
+            sqrt_det_spatial_metric, spatial_metric,
             divergence_cleaning_field):
     return ((spatial_velocity_one_form(spatial_velocity, spatial_metric) *
-             (lorentz_factor**2 * specific_enthalpy * rest_mass_density +
+             (lorentz_factor**2 * (pressure + rest_mass_density *
+                                   (1.0 + specific_internal_energy)) +
               b_squared(magnetic_field, spatial_metric)) -
              magnetic_field_one_form(magnetic_field, spatial_metric) *
              b_dot_v(magnetic_field, spatial_velocity, spatial_metric)) *
@@ -100,15 +101,15 @@ def tilde_s(rest_mass_density, electron_fraction, specific_internal_energy,
 
 
 def tilde_b(rest_mass_density, electron_fraction, specific_internal_energy,
-            specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-            magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+            pressure, spatial_velocity, lorentz_factor, magnetic_field,
+            sqrt_det_spatial_metric, spatial_metric,
             divergence_cleaning_field):
     return sqrt_det_spatial_metric * magnetic_field
 
 
 def tilde_phi(rest_mass_density, electron_fraction, specific_internal_energy,
-              specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-              magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+              pressure, spatial_velocity, lorentz_factor, magnetic_field,
+              sqrt_det_spatial_metric, spatial_metric,
               divergence_cleaning_field):
     return sqrt_det_spatial_metric * divergence_cleaning_field
 

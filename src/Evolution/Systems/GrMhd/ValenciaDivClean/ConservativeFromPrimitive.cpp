@@ -32,7 +32,6 @@ void ConservativeFromPrimitive::apply(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
@@ -88,13 +87,16 @@ void ConservativeFromPrimitive::apply(
   // Reuse allocation
   Scalar<DataVector>& common_factor =
       get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tensors);
-  get(common_factor) *= get(sqrt_det_spatial_metric);
   get(common_factor) +=
-      get(*tilde_d) * get(lorentz_factor) * get(specific_enthalpy);
+      (get(rest_mass_density) * (1.0 + get(specific_internal_energy)) +
+       get(pressure)) *
+      square(get(lorentz_factor));
+  get(common_factor) *= get(sqrt_det_spatial_metric);
+
+  get(magnetic_field_dot_spatial_velocity) *= get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
     tilde_s->get(i) = get(common_factor) * spatial_velocity_one_form.get(i) -
                       get(magnetic_field_dot_spatial_velocity) *
-                          get(sqrt_det_spatial_metric) *
                           magnetic_field_one_form.get(i);
   }
   for (size_t i = 0; i < 3; ++i) {

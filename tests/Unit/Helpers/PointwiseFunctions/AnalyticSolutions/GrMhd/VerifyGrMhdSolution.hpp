@@ -79,8 +79,6 @@ Variables<valencia_tags> numerical_dt(
     const auto& lorentz_factor =
         get<hydro::Tags::LorentzFactor<DataVector>>(vars);
     const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(vars);
-    const auto& specific_enthalpy =
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(vars);
     const auto& spatial_metric =
         get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
     const auto& sqrt_det_spatial_metric =
@@ -100,9 +98,8 @@ Variables<valencia_tags> numerical_dt(
         make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildePhi>(
             gsl::at(solution_at_six_times, i))),
         rest_mass_density, electron_fraction, specific_internal_energy,
-        specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-        magnetic_field, sqrt_det_spatial_metric, spatial_metric,
-        divergence_cleaning_field);
+        pressure, spatial_velocity, lorentz_factor, magnetic_field,
+        sqrt_det_spatial_metric, spatial_metric, divergence_cleaning_field);
   }
 
   return (-1.0 / (60.0 * delta_time)) * solution_at_six_times[0] +
@@ -210,9 +207,9 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
       make_not_null(&tilde_d), make_not_null(&tilde_ye),
       make_not_null(&tilde_tau), make_not_null(&tilde_s),
       make_not_null(&tilde_b), make_not_null(&tilde_phi), rest_mass_density,
-      electron_fraction, specific_internal_energy, specific_enthalpy, pressure,
-      spatial_velocity, lorentz_factor, magnetic_field, sqrt_det_spatial_metric,
-      spatial_metric, divergence_cleaning_field);
+      electron_fraction, specific_internal_energy, pressure, spatial_velocity,
+      lorentz_factor, magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+      divergence_cleaning_field);
 
   using flux_tags =
       tmpl::list<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,

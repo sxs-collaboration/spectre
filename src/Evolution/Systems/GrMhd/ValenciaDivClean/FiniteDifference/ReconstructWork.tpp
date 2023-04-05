@@ -97,8 +97,8 @@ void compute_conservatives_for_reconstruction(
       make_not_null(
           &get<ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(*vars_on_face)),
       make_not_null(&get<ValenciaDivClean::Tags::TildePhi>(*vars_on_face)),
-      rest_mass_density, electron_fraction, specific_internal_energy,
-      specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
+      rest_mass_density, electron_fraction, specific_internal_energy, pressure,
+      spatial_velocity, lorentz_factor,
       get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
           *vars_on_face),
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face),

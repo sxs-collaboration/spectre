@@ -113,7 +113,6 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<hydro::Tags::RestMassDensity<DataVector>>(prims),
         get<hydro::Tags::ElectronFraction<DataVector>>(prims),
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prims),
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(prims),
         get<hydro::Tags::Pressure<DataVector>>(prims),
         get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
             prims),
