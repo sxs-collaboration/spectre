@@ -44,14 +44,6 @@ class Wedge;
 template <size_t VolumeDim>
 class DiscreteRotation;
 class Frustum;
-namespace TimeDependent {
-template <size_t VolumeDim>
-class CubicScale;
-template <size_t VolumeDim>
-class Rotation;
-template <bool InteriorMap>
-class SphericalCompression;
-}  // namespace TimeDependent
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -144,31 +136,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
 
-  // Time-dependent maps
-  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
-  using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-  using CompressionMap =
-      domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
-
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap>;
-  template <typename SourceFrame, typename TargetFrame>
-  using RotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleAndRotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
-                            RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CompressionMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CompressionMap>;
-  using CompressionAndCubicScaleAndRotationMapForComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                            CubicScaleMap, RotationMap3D>;
-
  public:
-  using maps_list = tmpl::list<
+  using maps_list = tmpl::flatten<tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             Equiangular3D>,
@@ -186,13 +155,7 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Translation>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>,
-      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                            CubicScaleMap, RotationMap3D>>;
+      bco::TimeDependentMapOptions::maps_list>>;
 
   /// Options for an excision region in the domain
   struct Excision {
