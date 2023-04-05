@@ -54,7 +54,7 @@ DomainCreator:
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
-    TimeDependence: None
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       ProductDirichletAnalyticAndDirichletAnalytic:
         GeneralizedHarmonicDirichletAnalytic:

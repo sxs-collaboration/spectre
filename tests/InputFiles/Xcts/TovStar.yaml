@@ -42,7 +42,7 @@ DomainCreator:
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All
-    TimeDependence: None
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       AnalyticSolution:
         ConformalFactor: Dirichlet

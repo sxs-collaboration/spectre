@@ -101,6 +101,7 @@ std::string option_string(
     const std::vector<double>& radial_partitioning,
     const std::vector<CoordinateMaps::Distribution>& radial_distribution,
     const ShellWedges which_wedges, const bool time_dependent,
+    const bool hard_coded_time_dependent_maps,
     const bool with_boundary_conditions) {
   const std::string interior_option =
       [&interior, &with_boundary_conditions]() -> std::string {
@@ -131,12 +132,19 @@ std::string option_string(
                 "    IndexPolarAxis: " +
                 std::to_string(equatorial_compression->index_polar_axis) + "\n"
           : "  EquatorialCompression: None\n";
-  const std::string time_dependence_option =
-      time_dependent ? "  TimeDependence:\n"
-                       "    UniformTranslation:\n"
-                       "      InitialTime: 1.0\n"
-                       "      Velocity: [2.3, -0.3, 0.5]\n"
-                     : "  TimeDependence: None\n";
+  const std::string time_dependent_option =
+      time_dependent ? (hard_coded_time_dependent_maps
+                            ? "  TimeDependentMaps:\n"
+                              "    InitialTime: 1.0\n"
+                              "    SizeMap:\n"
+                              "      InitialValues: [0.5, -0.04, 0.003]\n"
+                              "    ShapeMap:\n"
+                              "      Lmax: 10\n"
+                            : "  TimeDependentMaps:\n"
+                              "    UniformTranslation:\n"
+                              "      InitialTime: 1.0\n"
+                              "      Velocity: [2.3, -0.3, 0.5]\n")
+                     : "  TimeDependentMaps: None\n";
   const std::string outer_bc_option = with_boundary_conditions
                                           ? "  OuterBoundaryCondition:\n"
                                             "    TestBoundaryCondition:\n"
@@ -169,7 +177,7 @@ std::string option_string(
          "  RadialDistribution: " +
          (radial_distribution.size() == 1 ? get_output(radial_distribution[0])
                                           : stringize(radial_distribution)) +
-         "\n" + time_dependence_option + outer_bc_option;
+         "\n" + time_dependent_option + outer_bc_option;
 }
 
 // Calculate block logical coordinates of points residing on corners of the
@@ -230,7 +238,8 @@ void test_sphere_construction(
     const ShellWedges which_wedges = ShellWedges::All,
     const bool expect_boundary_conditions = true,
     const std::vector<double>& times = {0.},
-    const std::array<double, 3>& velocity = {{0., 0., 0.}}) {
+    const std::array<double, 3>& velocity = {{0., 0., 0.}},
+    const std::array<double, 3>& size_values = {{0., 0., 0.}}) {
   // check consistency of domain
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       sphere, expect_boundary_conditions, false, times);
@@ -238,6 +247,12 @@ void test_sphere_construction(
   const auto& blocks = domain.blocks();
   const auto block_names = sphere.block_names();
   const size_t num_blocks = blocks.size();
+  const size_t num_blocks_per_shell =
+      which_wedges == ShellWedges::All
+          ? 6
+          : which_wedges == ShellWedges::FourOnEquator ? 4 : 1;
+  CAPTURE(num_blocks);
+  CAPTURE(num_blocks_per_shell);
   const auto all_boundary_conditions = sphere.external_boundary_conditions();
   const auto functions_of_time = sphere.functions_of_time();
 
@@ -288,8 +303,10 @@ void test_sphere_construction(
       for (const double current_time : times) {
         CAPTURE(current_time);
         const double corner_distance_from_origin =
-            [&block, &coords_on_spherical_partition, &current_time,
-             &functions_of_time, &velocity]() -> double {
+            [&block, &coords_on_spherical_partition, &current_time, &block_id,
+             &num_blocks_per_shell, &inner_radius, &outer_radius,
+             &radial_partitioning, &size_values, &functions_of_time,
+             &velocity]() -> double {
           // use stationary map if independent of time
           if (not block.is_time_dependent()) {
             return get(magnitude(
@@ -302,17 +319,51 @@ void test_sphere_construction(
                         coords_on_spherical_partition, current_time,
                         functions_of_time),
                     current_time, functions_of_time);
-            // origin in inertial frame (need to shift inertial
-            // coord by velocity * (final_time - initial_time))
-            return sqrt(square(get<0>(inertial_location_time_dep) -
-                               velocity[0] * (current_time - 1.0)) +
-                        square(get<1>(inertial_location_time_dep) -
-                               velocity[1] * (current_time - 1.0)) +
-                        square(get<2>(inertial_location_time_dep) -
-                               velocity[2] * (current_time - 1.0)));
-          }   // end time-dependent if/else
-        }();  // end lambda
+            const double target_radius =
+                get(magnitude(inertial_location_time_dep));
+            const double delta_t = current_time - 1.0;
+
+            // Only when using hard coded time dependent maps do we have
+            // distorted maps in the inner shell.
+            if (block.has_distorted_frame()) {
+              CHECK(block_id < num_blocks_per_shell);
+              // This is the calculation of the inverse of the
+              // SphericalCompression map since the shape map is the identity
+              // currently
+              const double min_radius = inner_radius;
+              const double max_radius = radial_partitioning.size() > 0
+                                            ? radial_partitioning[0]
+                                            : outer_radius;
+              const double func =
+                  gsl::at(size_values, 0) + gsl::at(size_values, 1) * delta_t +
+                  0.5 * gsl::at(size_values, 2) * square(delta_t);
+              const double func_Y00 = func / sqrt(4.0 * M_PI);
+              const double max_minus_min = max_radius - min_radius;
+              const double scale =
+                  (max_minus_min + func_Y00 * max_radius / target_radius) /
+                  (max_minus_min + func_Y00);
+
+              return target_radius * scale;
+            } else if (block.moving_mesh_grid_to_inertial_map().is_identity()) {
+              // This happens in our test if we have hard coded time dependent
+              // maps, but we aren't in the first shell. Then it's just the
+              // identity map
+              return target_radius;
+            } else {
+              // This means we are using a translation time dependence.
+              // origin in inertial frame (need to shift inertial
+              // coord by velocity * (final_time - initial_time))
+              return sqrt(square(get<0>(inertial_location_time_dep) -
+                                 velocity[0] * (delta_t)) +
+                          square(get<1>(inertial_location_time_dep) -
+                                 velocity[1] * (delta_t)) +
+                          square(get<2>(inertial_location_time_dep) -
+                                 velocity[2] * (delta_t)));
+            }  // end block.has_distorted_frame if/else-if/else
+          }    // end time-dependent if/else
+        }();   // end lambda
         CAPTURE(corner_distance_from_origin);
+        CAPTURE(expected_corner_radii);
         const auto match_demarcation =
             [&corner_distance_from_origin](const double radius) {
               return corner_distance_from_origin == approx(radius);
@@ -413,7 +464,7 @@ void test_parse_errors() {
       creators::Sphere(inner_radius, 0.5 * inner_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning,
-                       radial_distribution, which_wedges, nullptr, nullptr,
+                       radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Inner radius must be smaller than outer radius"));
@@ -422,7 +473,7 @@ void test_parse_errors() {
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning_unordered,
-                       radial_distribution, which_wedges, nullptr, nullptr,
+                       radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Specify radial partitioning in ascending order."));
@@ -431,7 +482,7 @@ void test_parse_errors() {
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning_low,
-                       radial_distribution, which_wedges, nullptr, nullptr,
+                       radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "First radial partition must be larger than inner"));
@@ -439,7 +490,7 @@ void test_parse_errors() {
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning_high,
-                       radial_distribution, which_wedges, nullptr, nullptr,
+                       radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Last radial partition must be smaller than outer"));
@@ -447,16 +498,16 @@ void test_parse_errors() {
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning,
-                       radial_distribution_too_many, which_wedges, nullptr,
+                       radial_distribution_too_many, which_wedges, std::nullopt,
                        nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Specify a 'RadialDistribution' for every spherical shell. You"));
   CHECK_THROWS_WITH(
-      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
-                       initial_extents, use_equiangular_map,
-                       equatorial_compression, radial_partitioning,
-                       radial_distribution_inner_log, which_wedges, nullptr,
-                       nullptr, Options::Context{false, {}, 1, 1}),
+      creators::Sphere(
+          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
+          use_equiangular_map, equatorial_compression, radial_partitioning,
+          radial_distribution_inner_log, which_wedges, std::nullopt, nullptr,
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The 'RadialDistribution' must be 'Linear' for the"));
 
@@ -464,7 +515,7 @@ void test_parse_errors() {
       creators::Sphere(
           inner_radius, outer_radius, inner_cube, refinement, initial_extents,
           use_equiangular_map, equatorial_compression, radial_partitioning,
-          radial_distribution, which_wedges, nullptr,
+          radial_distribution, which_wedges, std::nullopt,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -474,13 +525,24 @@ void test_parse_errors() {
       creators::Sphere(
           inner_radius, outer_radius, inner_cube, refinement, initial_extents,
           use_equiangular_map, equatorial_compression, radial_partitioning,
-          radial_distribution, which_wedges, nullptr,
+          radial_distribution, which_wedges, std::nullopt,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution, which_wedges,
+                       domain::creators::sphere::TimeDependentMapOptions{
+                           1.0, {0.0, 0.0, 0.0}, 5},
+                       nullptr),
+      Catch::Matchers::Contains(
+          "Currently cannot use hard-coded time dependent maps with an inner "
+          "cube. Use a TimeDependence instead."));
 }
 
 void test_sphere() {
@@ -514,18 +576,21 @@ void test_sphere() {
                            {domain::CoordinateMaps::Distribution::Linear}}};
 
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
+  const std::array<double, 3> size_values{0.5, -0.04, 0.003};
+  const size_t l_max = 10;
   const std::vector<double> times{1., 10.};
 
-  for (const auto& [interior_index, equiangular, equatorial_compression,
-                    array_index, which_wedges, time_dependent,
-                    with_boundary_conditions] :
+  for (auto [interior_index, equiangular, equatorial_compression, array_index,
+             which_wedges, time_dependent, use_hard_coded_time_dep_options,
+             with_boundary_conditions] :
        random_sample<5>(
            cartesian_product(
                make_array(0_st, 1_st, 2_st), make_array(false, true),
                equatorial_compressions, make_array(0_st, 1_st, 2_st),
                make_array(ShellWedges::All, ShellWedges::FourOnEquator,
                           ShellWedges::OneAlongMinusX),
-               make_array(true, false), make_array(true, false)),
+               make_array(true, false), make_array(true, false),
+               make_array(true, false)),
            make_not_null(&gen))) {
     const auto& interior = interiors[interior_index];
     const bool fill_interior =
@@ -537,6 +602,13 @@ void test_sphere() {
     CAPTURE(which_wedges);
     CAPTURE(time_dependent);
     CAPTURE(with_boundary_conditions);
+    // If we aren't time dependent, just set the hard coded option to false to
+    // avoid ambiguity. If we are time dependent but we're filling the interior,
+    // then we can't use hard coded options
+    if ((not time_dependent) or fill_interior) {
+      use_hard_coded_time_dep_options = false;
+    }
+    CAPTURE(use_hard_coded_time_dep_options);
 
     if (which_wedges != ShellWedges::All and with_boundary_conditions) {
       continue;
@@ -547,6 +619,19 @@ void test_sphere() {
       radial_distribution_variant = radial_distribution[array_index][0];
     } else {
       radial_distribution_variant = radial_distribution[array_index];
+    }
+
+    std::optional<creators::Sphere::TimeDepOptionType> time_dependent_options{};
+
+    if (time_dependent) {
+      if (use_hard_coded_time_dep_options) {
+        time_dependent_options =
+            creators::sphere::TimeDependentMapOptions(1.0, size_values, l_max);
+      } else {
+        time_dependent_options = std::make_unique<
+            domain::creators::time_dependence::UniformTranslation<3, 0>>(
+            1.0, velocity);
+      }
     }
 
     const creators::Sphere sphere{
@@ -560,24 +645,22 @@ void test_sphere() {
         radial_partitioning[array_index],
         radial_distribution_variant,
         which_wedges,
-        time_dependent
-            ? std::make_unique<
-                  domain::creators::time_dependence::UniformTranslation<3, 0>>(
-                  1., velocity)
-            : nullptr,
+        std::move(time_dependent_options),
         with_boundary_conditions ? create_boundary_condition(true) : nullptr};
     test_sphere_construction(
         sphere, inner_radius, outer_radius, fill_interior,
         radial_partitioning[array_index], which_wedges,
         with_boundary_conditions,
         time_dependent ? times : std::vector<double>{0.},
-        time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}});
+        time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}},
+        time_dependent ? size_values : std::array<double, 3>{{0., 0., 0.}});
     TestHelpers::domain::creators::test_creation(
         option_string(inner_radius, outer_radius, interior, initial_refinement,
                       initial_extents, equiangular, equatorial_compression,
                       radial_partitioning[array_index],
                       radial_distribution[array_index], which_wedges,
-                      time_dependent, with_boundary_conditions),
+                      time_dependent, use_hard_coded_time_dep_options,
+                      with_boundary_conditions),
         sphere, with_boundary_conditions);
   }
 }
