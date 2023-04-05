@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
+#include "Evolution/DgSubcell/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -366,6 +367,9 @@ struct TimeDerivative {
             }
           });
     }
+
+    evolution::dg::subcell::store_reconstruction_order_in_databox(
+        box, reconstruction_order);
   }
 
  private:

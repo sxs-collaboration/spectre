@@ -15,11 +15,13 @@ spectre_target_headers(
   Inactive.hpp
   Jacobians.hpp
   Mesh.hpp
+  MethodOrder.hpp
   GhostDataForReconstruction.hpp
   ObserverCoordinates.hpp
   ObserverMesh.hpp
   OnSubcellFaces.hpp
   OnSubcells.hpp
+  ReconstructionOrder.hpp
   SubcellOptions.hpp
   SubcellSolver.hpp
   Tags.hpp
@@ -32,5 +34,6 @@ spectre_target_sources(
   PRIVATE
   ObserverMesh.cpp
   Mesh.cpp
+  MethodOrder.cpp
   TciStatus.cpp
   )

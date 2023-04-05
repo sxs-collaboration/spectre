@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -327,6 +328,9 @@ void test(const bool always_use_subcell, const bool interior_element,
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(runner,
                                                                        0));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::ReconstructionOrder<Dim>>(runner,
+                                                                      0));
   CHECK(ActionTesting::get_databox_tag<
             comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
             runner, 0)
