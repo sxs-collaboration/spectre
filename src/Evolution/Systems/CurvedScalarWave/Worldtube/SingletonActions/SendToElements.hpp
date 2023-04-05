@@ -66,7 +66,15 @@ struct SendToElements {
     const auto& dt_psi_l1 =
         get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                  Frame::Grid>>(box);
-
+    const auto& psi_l2 =
+        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>>(box);
+    const auto& dt_psi_l2 =
+        get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
+                                 Frame::Grid>>(box);
+    const auto& psi_0 = get<Tags::Psi0>(box);
+    const double wt_radius = db::get<Tags::ExcisionSphere<Dim>>(box).radius();
+    const double trace_psi_2_over_3 =
+        (get(psi_l0) - get(psi_0).at(0)) / wt_radius / wt_radius;
     for (const auto& [element_id, grid_coords] : faces_grid_coords) {
       const size_t grid_size = get<0>(grid_coords).size();
       Variables<tags_to_send> vars_to_send(grid_size);
@@ -78,6 +86,20 @@ struct SendToElements {
           get(get<dt_psi_tag>(vars_to_send)) +=
               dt_psi_l1.get(i) * grid_coords.get(i);
           get<di_psi_tag>(vars_to_send).get(i) = psi_l1.get(i);
+        }
+        if (order > 1) {
+          for (size_t i = 0; i < Dim; ++i) {
+            get<di_psi_tag>(vars_to_send).get(i) +=
+                2. * trace_psi_2_over_3 * grid_coords.get(i);
+            for (size_t j = 0; j < 3; ++j) {
+              get<psi_tag>(vars_to_send).get() +=
+                  psi_l2.get(i, j) * grid_coords.get(i) * grid_coords.get(j);
+              get<dt_psi_tag>(vars_to_send).get() +=
+                  dt_psi_l2.get(i, j) * grid_coords.get(i) * grid_coords.get(j);
+              get<di_psi_tag>(vars_to_send).get(i) +=
+                  2. * psi_l2.get(i, j) * grid_coords.get(j);
+            }
+          }
         }
       } else {
         for (size_t i = 0; i < Dim; ++i) {

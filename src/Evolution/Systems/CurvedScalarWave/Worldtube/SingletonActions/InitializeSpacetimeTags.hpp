@@ -30,10 +30,10 @@ struct InitializeSpacetimeTags {
   static constexpr size_t Dim = 3;
 
   using compute_tags = tmpl::list<>;
-  using simple_tags_from_options = tmpl::list<Tags::ExcisionSphere<Dim>>;
+  using simple_tags_from_options = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
-  using argument_tags = simple_tags_from_options;
+  using argument_tags = tmpl::list<Tags::ExcisionSphere<Dim>>;
   using simple_tags = tmpl::list<
       gr::Tags::InverseSpacetimeMetric<Dim, Frame::Grid, double>,
       gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame::Grid, double>>;

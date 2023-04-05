@@ -121,6 +121,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
        cartesian_product(std::array<size_t, 2>{0, 1},
                          std::array<size_t, 3>{0, 1, 2},
                          make_array(0.07, 1., 2.8))) {
+    CAPTURE(expansion_order);
     const domain::creators::Sphere shell{worldtube_radius,
                                          3.,
                                          domain::creators::Sphere::Excision{},
@@ -158,6 +159,19 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     const auto pi_coefs_1 =
         make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
             make_not_null(&generator), dist, 0.);
+    auto psi_coefs_2 =
+        make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
+    auto pi_coefs_2 =
+        make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(
+            make_not_null(&generator), dist, 0.);
+    double psi_coefs_2_trace = 0.;
+    double pi_coefs_2_trace = 0.;
+
+    for (size_t i = 0; i < Dim; ++i) {
+      psi_coefs_2_trace += psi_coefs_2.get(i, i);
+      pi_coefs_2_trace += pi_coefs_2.get(i, i);
+    }
     const Time dummy_time{{1., 2.}, {1, 2}};
     const TimeStepId dummy_time_step_id{true, 123, dummy_time};
 
@@ -189,6 +203,16 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
               psi_coefs_1.get(i) * grid_coords.get(i);
           get(get<CurvedScalarWave::Tags::Pi>(evolved_vars)) +=
               pi_coefs_1.get(i) * grid_coords.get(i);
+        }
+      }
+      if (expansion_order > 1) {
+        for (size_t i = 0; i < Dim; ++i) {
+          for (size_t j = 0; j < Dim; ++j) {
+            get(get<CurvedScalarWave::Tags::Psi>(evolved_vars)) +=
+                psi_coefs_2.get(i, j) * grid_coords.get(i) * grid_coords.get(j);
+            get(get<CurvedScalarWave::Tags::Pi>(evolved_vars)) +=
+                pi_coefs_2.get(i, j) * grid_coords.get(i) * grid_coords.get(j);
+          }
         }
       }
       std::optional<puncture_field_type> optional_puncture_field =
@@ -266,8 +290,10 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     // the integral is over a low resolution DG grid which introduces a large
     // error
     Approx apprx = Approx::custom().epsilon(1e-4).scale(1.0);
-    CHECK(get(psi_monopole_worldtube) == apprx(psi_coefs_0));
-    CHECK(get(dt_psi_monopole_worldtube) == -apprx(pi_coefs_0));
+    if (expansion_order < 2) {
+      CHECK(get(psi_monopole_worldtube) == apprx(psi_coefs_0));
+      CHECK(get(dt_psi_monopole_worldtube) == -apprx(pi_coefs_0));
+    }
     if (expansion_order > 0) {
       const auto& psi_dipole_worldtube = ActionTesting::get_databox_tag<
           worldtube_chare,
@@ -280,6 +306,41 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
       CHECK_ITERABLE_CUSTOM_APPROX(psi_dipole_worldtube, psi_coefs_1, apprx);
       for (size_t i = 0; i < Dim; ++i) {
         CHECK(dt_psi_dipole_worldtube.get(i) == apprx(-pi_coefs_1.get(i)));
+      }
+      if (expansion_order > 1) {
+        // the trace of the second order coefficients gets absorbed by the
+        // monopole
+        const double expected_psi_monopole =
+            psi_coefs_0 + square(worldtube_radius) * psi_coefs_2_trace / 3.;
+        const double expected_pi_monopole =
+            pi_coefs_0 + square(worldtube_radius) * pi_coefs_2_trace / 3.;
+        CHECK(get(psi_monopole_worldtube) == apprx(expected_psi_monopole));
+        CHECK(get(dt_psi_monopole_worldtube) == -apprx(expected_pi_monopole));
+        const auto& psi_quadrupole_worldtube = ActionTesting::get_databox_tag<
+            worldtube_chare,
+            Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>>(
+            runner, 0);
+        const auto& dt_psi_quadrupole_worldtube =
+            ActionTesting::get_databox_tag<
+                worldtube_chare,
+                Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
+                                     Frame::Grid>>(runner, 0);
+        tnsr::ii<double, Dim, Frame::Grid> expected_psi_quadrupole{};
+        tnsr::ii<double, Dim, Frame::Grid> expected_dt_psi_quadrupole{};
+        for (size_t i = 0; i < Dim; ++i) {
+          for (size_t j = 0; j < Dim; ++j) {
+            expected_psi_quadrupole.get(i, j) = psi_coefs_2.get(i, j);
+            expected_dt_psi_quadrupole.get(i, j) = -pi_coefs_2.get(i, j);
+          }
+          expected_psi_quadrupole.get(i, i) -=
+              square(worldtube_radius) * psi_coefs_2_trace / 3.;
+          expected_dt_psi_quadrupole.get(i, i) +=
+              square(worldtube_radius) * pi_coefs_2_trace / 3.;
+        }
+        CHECK_ITERABLE_CUSTOM_APPROX(psi_quadrupole_worldtube,
+                                     expected_psi_quadrupole, apprx);
+        CHECK_ITERABLE_CUSTOM_APPROX(dt_psi_quadrupole_worldtube,
+                                     expected_dt_psi_quadrupole, apprx);
       }
     }
   }
