@@ -1,12 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
 import logging
+import os
+
+import click
 import rich.logging
 import rich.traceback
+import yaml
+
 import spectre
-from spectre.support.Machines import this_machine, UnknownMachineError
+from spectre.support.Machines import UnknownMachineError, this_machine
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +101,17 @@ def print_machine(ctx, param, value):
         ctx.exit()
 
 
+def read_config_file(ctx, param, config_file):
+    if not config_file:
+        return
+    config_file = os.path.expanduser(config_file)
+    if not os.path.exists(config_file):
+        return
+    with open(config_file, "r") as open_config_file:
+        config = yaml.safe_load(open_config_file)
+    ctx.default_map = config
+
+
 # Set up CLI entry point
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]),
              help=f"SpECTRE version: {spectre.__version__}",
@@ -129,6 +144,32 @@ def print_machine(ctx, param, value):
                     "The file can be opened by profiling visualization tools "
                     "such as 'pstats' or 'gprof2dot'. "
                     "See the Python 'cProfile' docs for details."))
+@click.option('-c',
+              '--config-file',
+              type=click.Path(file_okay=True, dir_okay=False),
+              callback=read_config_file,
+              default=os.path.expanduser("~/.config/spectre.yaml"),
+              show_default=True,
+              is_eager=True,
+              expose_value=False,
+              envvar="SPECTRE_CONFIG_FILE",
+              help=("Configuration file in YAML format. Can provide defaults "
+                    "for command-line options and additional configuration. "
+                    "To specify options for subcommands, list them in a "
+                    "section with the same name as the subcommand. "
+                    "All options that are listed in the help string for a "
+                    "subcommand are supported. Unless otherwise specified in "
+                    "the help string, use the name of the option with dashes "
+                    "replaced by underscores. Example:\n\n"
+                    "\b\n"
+                    "status:\n"
+                    "  starttime: now-2days\n"
+                    "  state_styles:\n"
+                    "    RUNNING: blink\n"
+                    "plot-dat:\n"
+                    "  stylesheet: path/to/stylesheet.mplstyle\n\n"
+                    "The path of the config file can also be specified by "
+                    "setting the 'SPECTRE_CONFIG_FILE' environment variable."))
 def cli(log_level, profile, output_profile):
     if log_level is None:
         log_level = logging.INFO
