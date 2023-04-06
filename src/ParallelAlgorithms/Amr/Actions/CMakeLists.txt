@@ -7,11 +7,13 @@ spectre_target_headers(
   HEADERS
   Actions.hpp
   Component.hpp
+  CreateChild.hpp
   EvaluateRefinementCriteria.hpp
   Initialization.hpp
   Initialize.hpp
   InitializeChild.hpp
   RunAmrDiagnostics.hpp
   SendAmrDiagnostics.hpp
+  SendDataToChildren.hpp
   UpdateAmrDecision.hpp
   )
