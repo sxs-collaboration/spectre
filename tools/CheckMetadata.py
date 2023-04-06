@@ -11,6 +11,7 @@ import unittest
 import urllib
 
 import git
+import pybtex
 import yaml
 
 VERSION_PATTERN = r'(\d{4})\.(\d{2})\.(\d{2})(\.\d+)?'
@@ -187,6 +188,25 @@ class TestMetadata(unittest.TestCase):
         for affiliation in self.metadata['Affiliations']:
             self.assertIn(affiliation, all_authors_affiliations,
                           f"No author is affiliated with: {affiliation}")
+
+    def test_references(self):
+        # Import the BibTeX to CFF conversion functions from the relase script.
+        # We should probably move the release script into the spectre Python
+        # package so we can share code between them better.
+        import sys
+        sys.path.append(os.path.join(self.repo.working_dir, '.github/scripts'))
+        from Release import to_cff_reference
+
+        # Validate references in the metadata
+        reference_keys = self.metadata["References"]["List"]
+        all_references = pybtex.database.parse_file(
+            os.path.join(self.repo.working_dir,
+                         self.metadata["References"]["BibliographyFile"]))
+        for key in reference_keys:
+            # Check the reference exists in the bib file
+            entry = all_references.entries[key]
+            # Check the entry converts to CFF without error
+            to_cff_reference(entry)
 
 
 if __name__ == "__main__":

@@ -357,3 +357,12 @@ Authors:
         Orcid: 0000-0002-5287-4389
         Affiliations: [*cornell]
         GitHub: DavidWu421
+
+References:
+  Description: |
+    SpECTRE depends on these references. The keys refer to entries in the
+    'BibliographyFile'. We use BibTeX for our references so we can also cite
+    them in publications.
+  BibliographyFile: docs/References.bib
+  List:
+    - charmpp

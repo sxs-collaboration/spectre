@@ -13,6 +13,7 @@ import re
 import tempfile
 import textwrap
 import urllib
+from typing import List
 
 import git
 import pybtex.database
@@ -138,12 +139,16 @@ class Github(uplink.Consumer):
         pass
 
 
-def collect_zenodo_metadata(metadata: dict, github: Github) -> dict:
+def collect_zenodo_metadata(metadata: dict,
+                            references: List[pybtex.database.Entry],
+                            github: Github) -> dict:
     """Produces the metadata that we send to Zenodo
 
     Args:
       metadata: The project metadata read from the YAML file. This is the main
         source of information for this function.
+      references: List of references resolved from 'metadata["References"]'.
+        They will be formatted and sent to Zenodo.
       github: The GitHub API client. We use it to render the description to
         HTML in a way that's consistent with GitHub's rendering.
 
@@ -163,6 +168,16 @@ def collect_zenodo_metadata(metadata: dict, github: Github) -> dict:
             zenodo_creators.append(zenodo_creator)
     # Render the description to HTML
     rendered_description = github.render_markdown_raw(metadata['Description'])
+    # Format references as plain text for Zenodo
+    from pybtext.style.formatting.plain import Style as PlainStyle
+    from pybtex.backends.plaintext import Backend as PlaintextBackend
+    ref_style = PlainStyle()
+    ref_backend = PlaintextBackend()
+    formatted_references = [
+        ref_style.format_entry(label=entry.key,
+                               entry=entry).text.render(ref_backend)
+        for entry in references
+    ]
     # Construct Zenodo metadata
     return dict(title=metadata['Name'],
                 version=metadata['Version'],
@@ -186,19 +201,80 @@ def collect_zenodo_metadata(metadata: dict, github: Github) -> dict:
                 keywords=metadata['Keywords'],
                 license=metadata['License'],
                 upload_type='software',
-                access_right='open')
+                access_right='open',
+                references=formatted_references)
 
 
-def collect_citation_metadata(metadata: dict) -> dict:
+def to_cff_person(person: pybtex.database.Person) -> dict:
+    """BibTeX to CFF conversion for person objects.
+
+    The format is defined here:
+    https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md#definitionsperson
+    """
+    # Map BibTeX to CFF fields
+    name_fields = {
+        "last": "family-names",
+        "bibtex_first": "given-names",
+        "prelast": "name-particle",
+        "lineage": "name-suffix",
+    }
+    return {
+        cff_field: " ".join(person.get_part(bibtex_field))
+        for bibtex_field, cff_field in name_fields.items()
+        if person.get_part(bibtex_field)
+    }
+
+
+def to_cff_reference(bib_entry: pybtex.database.Entry) -> dict:
+    """BibTeX to CFF conversion for references.
+
+    The format is defined here:
+    https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md#definitionsreference
+    """
+    cff_reference = {
+        'type':
+        bib_entry.type,
+        'authors':
+        [to_cff_person(person) for person in bib_entry.persons['author']],
+    }
+    # Map BibTeX to CFF fields. This is just a subset of the most relevant
+    # fields.
+    fields = {
+        "doi": "doi",
+        "edition": "edition",
+        "isbn": "isbn",
+        "license": "license",
+        "month": "month",
+        "number": "number",
+        "pages": "pages",
+        "publisher": "publisher",
+        "title": "title",
+        "url": "url",
+        "version": "version",
+        "volume": "volume",
+        "year": "year",
+    }
+    for bibtex_field, value in bib_entry.fields.items():
+        if bibtex_field in fields:
+            cff_field = fields[bibtex_field]
+            cff_reference[cff_field] = value
+    return cff_reference
+
+
+def collect_citation_metadata(metadata: dict,
+                              references: List[pybtex.database.Entry]) -> dict:
     """Produces the data stored in the CITATION.cff file
 
     Args:
       metadata: The project metadata read from the YAML file. This is the main
         source of information for this function.
+      references: List of references resolved from 'metadata["References"]'.
+        They will be converted to CFF.
 
     Returns:
       Citation data in the [Citation File Format](https://github.com/citation-file-format/citation-file-format)
     """
+    # Author list
     citation_authors = []
     for author_tier in ['Core', 'Developers', 'Contributors']:
         for author in metadata['Authors'][author_tier]['List']:
@@ -214,6 +290,8 @@ def collect_citation_metadata(metadata: dict) -> dict:
                 citation_author['affiliation'] = ' and '.join(
                     author['Affiliations'])
             citation_authors.append(citation_author)
+    # References in CITATION.cff format
+    citation_references = [to_cff_reference(entry) for entry in references]
     return {
         'cff-version':
         "1.1.0",
@@ -239,6 +317,8 @@ def collect_citation_metadata(metadata: dict) -> dict:
         metadata['Keywords'],
         'license':
         metadata['License'],
+        'references':
+        citation_references,
     }
 
 
@@ -284,9 +364,9 @@ def build_bibtex_entry(metadata: dict):
 
 
 def prepare(metadata: dict, version_name: str, metadata_file: str,
-            citation_file: str, bib_file: str, readme_file: str,
-            zenodo: Zenodo, github: Github, update_only: bool,
-            check_only: bool):
+            citation_file: str, bib_file: str, references_file: str,
+            readme_file: str, zenodo: Zenodo, github: Github,
+            update_only: bool, check_only: bool):
     # Validate new version name
     match_version_name = re.match(VERSION_PATTERN + '$', version_name)
     if not match_version_name:
@@ -422,7 +502,10 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
                 open_file.truncate()
 
     # Write the CITATION.cff file
-    citation_data = collect_citation_metadata(metadata)
+    reference_keys = metadata["References"]["List"]
+    all_references = pybtex.database.parse_file(references_file)
+    references = [all_references.entries[key] for key in reference_keys]
+    citation_data = collect_citation_metadata(metadata, references)
     citation_file_content = """# Distributed under the MIT License.
 # See LICENSE.txt for details.
 
@@ -524,7 +607,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
             open_readme_file.truncate()
 
     # Upload the updated metadata to Zenodo
-    zenodo_metadata = collect_zenodo_metadata(metadata, github)
+    zenodo_metadata = collect_zenodo_metadata(metadata, references, github)
     logger.debug("The metadata we'll send to Zenodo are:\n{}".format(
         yaml.safe_dump(zenodo_metadata, allow_unicode=True)))
     if check_only:
@@ -704,6 +787,8 @@ if __name__ == "__main__":
         args.readme_file = os.path.join(repo.working_dir, 'README.md')
         args.citation_file = os.path.join(repo.working_dir, 'CITATION.cff')
         args.bib_file = os.path.join(repo.working_dir, 'citation.bib')
+        args.references_file = os.path.join(
+            repo.working_dir, args.metadata['References']['BibliographyFile'])
 
     # Configure the Zenodo API client
     args.zenodo = Zenodo(
