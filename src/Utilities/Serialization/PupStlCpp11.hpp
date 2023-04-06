@@ -20,7 +20,7 @@ namespace PUP {
 template <typename T>
 void pup(PUP::er& p, std::atomic<T>& d) {  // NOLINT
   T local_d;
-  if(p.isUnpacking()) {
+  if (p.isUnpacking()) {
     p | local_d;
     d.store(std::move(local_d));
   } else {

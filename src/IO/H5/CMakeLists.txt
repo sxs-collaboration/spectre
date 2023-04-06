@@ -56,8 +56,9 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   hdf5::hdf5
-  Utilities
+  Serialization
   Spectral
+  Utilities
   PRIVATE
   Informer
   IO

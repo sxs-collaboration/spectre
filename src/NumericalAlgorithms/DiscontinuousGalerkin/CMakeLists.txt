@@ -39,6 +39,7 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   Options
+  Serialization
   Spectral
   Utilities
   INTERFACE

@@ -14,7 +14,7 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain {
 namespace FunctionsOfTime {

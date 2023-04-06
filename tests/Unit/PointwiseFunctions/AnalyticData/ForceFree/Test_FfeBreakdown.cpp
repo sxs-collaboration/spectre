@@ -10,9 +10,9 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/ForceFree/FfeBreakdown.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE(
   // test move
   test_move_semantics(FfeBreakdown{}, FfeBreakdown{});
   // test derived
-  Parallel::register_classes_with_charm<FfeBreakdown>();
+  register_classes_with_charm<FfeBreakdown>();
   const std::unique_ptr<InitialData> initial_data_ptr =
       std::make_unique<FfeBreakdown>();
   const std::unique_ptr<InitialData> deserialized_initial_data_ptr =

@@ -41,6 +41,7 @@ target_link_libraries(
   ErrorHandling
   H5
   Options
+  Serialization
   )
 
 add_subdirectory(EquationsOfState)

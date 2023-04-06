@@ -10,7 +10,6 @@
 #include <type_traits>
 
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
@@ -18,6 +17,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

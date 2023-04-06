@@ -36,7 +36,6 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
@@ -45,6 +44,7 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 /// \cond
 namespace PUP {
@@ -96,15 +96,14 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Cce::register_initialize_j_with_charm<
         metavariables::uses_partially_flat_cartesian_coordinates,
         metavariables::cce_boundary_component>,
-    &Parallel::register_derived_classes_with_charm<
+    &register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
-    &Parallel::register_derived_classes_with_charm<
+    &register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
-    &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
-    &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>,
-    &Parallel::register_derived_classes_with_charm<
-        Cce::Solutions::WorldtubeData>,
-    &Parallel::register_factory_classes_with_charm<metavariables>};
+    &register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
+    &register_derived_classes_with_charm<intrp::SpanInterpolator>,
+    &register_derived_classes_with_charm<Cce::Solutions::WorldtubeData>,
+    &register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

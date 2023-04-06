@@ -214,7 +214,7 @@ void test_interpolate_quadratic() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ScriPlusInterpolationManager",
                   "[Unit][Evolution]") {
-  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
   test_interpolate_quadratic<DataVector, false>();
   test_interpolate_quadratic<ComplexDataVector, false>();
   test_interpolate_quadratic<DataVector, true>();

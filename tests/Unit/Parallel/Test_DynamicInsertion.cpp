@@ -21,12 +21,12 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 // This executable tests dynamic insertion and deletion of array chare elements.
@@ -342,7 +342,7 @@ struct TestMetavariables {
 };
 
 void register_callback() {
-  Parallel::register_classes_with_charm(
+  register_classes_with_charm(
       tmpl::list<
           Parallel::SimpleActionCallback<
               CreateChild,

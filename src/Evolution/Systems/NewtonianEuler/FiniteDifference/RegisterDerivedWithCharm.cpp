@@ -5,15 +5,12 @@
 
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace NewtonianEuler::fd {
 void register_derived_with_charm() {
-  Parallel::register_classes_with_charm(
-      typename Reconstructor<1>::creatable_classes{});
-  Parallel::register_classes_with_charm(
-      typename Reconstructor<2>::creatable_classes{});
-  Parallel::register_classes_with_charm(
-      typename Reconstructor<3>::creatable_classes{});
+  register_classes_with_charm(typename Reconstructor<1>::creatable_classes{});
+  register_classes_with_charm(typename Reconstructor<2>::creatable_classes{});
+  register_classes_with_charm(typename Reconstructor<3>::creatable_classes{});
 }
 }  // namespace NewtonianEuler::fd

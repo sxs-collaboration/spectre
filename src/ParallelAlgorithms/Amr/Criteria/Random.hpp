@@ -9,10 +9,10 @@
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::Criteria {

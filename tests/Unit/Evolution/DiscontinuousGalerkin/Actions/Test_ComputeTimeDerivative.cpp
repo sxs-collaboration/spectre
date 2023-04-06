@@ -22,7 +22,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace TestHelpers::evolution::dg::Actions {
 namespace {

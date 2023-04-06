@@ -37,7 +37,7 @@
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace domain::creators {
@@ -71,7 +71,7 @@ void register_derived_with_charm() {
   using maps_to_register =
       tmpl::remove_duplicates<tmpl::append<all_maps, maps_to_grid>>;
 
-  Parallel::register_classes_with_charm(maps_to_register{});
+  register_classes_with_charm(maps_to_register{});
 
   domain::CoordinateMaps::ShapeMapTransitionFunctions::
       register_derived_with_charm();

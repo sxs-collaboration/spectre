@@ -14,10 +14,10 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Punctures::AmrCriteria {

@@ -20,7 +20,6 @@
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessArray.hpp"
@@ -29,6 +28,7 @@
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 

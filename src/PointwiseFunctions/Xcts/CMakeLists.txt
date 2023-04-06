@@ -28,6 +28,7 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   LinearOperators
+  Serialization
   Spectral
   Utilities
   INTERFACE

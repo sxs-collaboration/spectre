@@ -37,7 +37,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -50,6 +49,7 @@
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Cce {
 namespace {
@@ -237,9 +237,8 @@ ComplexDataVector compute_expected_field_from_pypp(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<
-      Cce::Solutions::RotatingSchwarzschild>();
-  Parallel::register_classes_with_charm<Cce::Solutions::TeukolskyWave>();
+  register_classes_with_charm<Cce::Solutions::RotatingSchwarzschild>();
+  register_classes_with_charm<Cce::Solutions::TeukolskyWave>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using observation_component = mock_observer<test_metavariables>;
   pypp::SetupLocalPythonEnvironment local_python_env{

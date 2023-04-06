@@ -92,6 +92,7 @@ target_link_libraries(
 
 add_subdirectory(ErrorHandling)
 add_subdirectory(System)
+add_subdirectory(Serialization)
 add_subdirectory(TypeTraits)
 
 if (NOT USE_FORMALINE)

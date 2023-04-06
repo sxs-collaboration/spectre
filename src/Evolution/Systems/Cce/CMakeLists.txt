@@ -67,6 +67,7 @@ target_link_libraries(
   Observer
   Options
   ParallelInterpolation
+  Serialization
   Spectral
   Utilities
   INTERFACE

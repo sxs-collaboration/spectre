@@ -5,11 +5,10 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::ValenciaDivClean::fd {
 void register_derived_with_charm() {
-  Parallel::register_classes_with_charm(
-      typename Reconstructor::creatable_classes{});
+  register_classes_with_charm(typename Reconstructor::creatable_classes{});
 }
 }  // namespace grmhd::ValenciaDivClean::fd

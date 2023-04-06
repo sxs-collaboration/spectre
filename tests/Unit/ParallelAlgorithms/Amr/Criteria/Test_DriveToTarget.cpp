@@ -16,11 +16,11 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -70,7 +70,7 @@ void test(
         std::tuple<std::array<size_t, VolumeDim>, std::array<size_t, VolumeDim>,
                    std::array<amr::Flag, VolumeDim>>>& test_cases,
     const std::string& option_string) {
-  Parallel::register_factory_classes_with_charm<Metavariables<VolumeDim>>();
+  register_factory_classes_with_charm<Metavariables<VolumeDim>>();
 
   const amr::Criteria::DriveToTarget criterion{target_extents, target_levels,
                                                flags_at_target};

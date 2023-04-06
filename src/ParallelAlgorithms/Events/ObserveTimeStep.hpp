@@ -22,7 +22,6 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -31,6 +30,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -12,10 +12,10 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/PupBoost.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Amr/Actions/RunAmrDiagnostics.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
 
 namespace amr::Actions {
 

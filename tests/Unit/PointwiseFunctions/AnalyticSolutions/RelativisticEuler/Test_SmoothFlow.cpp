@@ -19,7 +19,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/ParseOptions.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -27,6 +26,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -104,8 +104,7 @@ void test_solution(const DataType& used_for_size,
                              tmpl::list<gr::Tags::SpatialMetric<
                                  Dim, Frame::Inertial, DataType>>{}))));
 
-  Parallel::register_classes_with_charm<
-      RelativisticEuler::Solutions::SmoothFlow<Dim>>();
+  register_classes_with_charm<RelativisticEuler::Solutions::SmoothFlow<Dim>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,

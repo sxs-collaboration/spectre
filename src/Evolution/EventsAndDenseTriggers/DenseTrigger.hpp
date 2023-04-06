@@ -9,11 +9,11 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 /// \cond
 namespace Parallel {

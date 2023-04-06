@@ -18,7 +18,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
-  Parallel
+  Serialization
   )
 
 add_subdirectory(Tags)

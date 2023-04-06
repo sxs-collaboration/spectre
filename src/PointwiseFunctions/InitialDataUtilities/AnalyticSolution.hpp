@@ -6,9 +6,9 @@
 #include <memory>
 #include <pup.h>
 
-#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace elliptic::analytic_data {
 /*!

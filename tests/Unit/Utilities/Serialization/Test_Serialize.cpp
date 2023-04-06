@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/Serialize.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.Parallel.Serialize", "[Unit][Parallel]") {
   CHECK(size_of_object_in_bytes(std::array<double, 4>{}) == 4 * sizeof(double));

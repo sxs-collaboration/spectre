@@ -17,8 +17,8 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace helpers = TestHelpers::LinearSolver;
 
@@ -301,14 +301,14 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       check_solve(preconditioned_gmres, 1);
       {
         INFO("Check that serialization preserves the preconditioner");
-        Parallel::register_derived_classes_with_charm<LinearSolverFactory>();
+        register_derived_classes_with_charm<LinearSolverFactory>();
         const auto serialized_gmres =
             serialize_and_deserialize(preconditioned_gmres);
         check_solve(serialized_gmres, 1);
       }
       {
         INFO("Check that copying preserves the preconditioner");
-        Parallel::register_derived_classes_with_charm<LinearSolverFactory>();
+        register_derived_classes_with_charm<LinearSolverFactory>();
         // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
         const auto copied_gmres = preconditioned_gmres;
         check_solve(copied_gmres, 1);

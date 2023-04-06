@@ -4,12 +4,12 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace GeneralizedHarmonic::BoundaryCorrections {
 void register_derived_with_charm() {
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection<1>>();
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection<2>>();
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection<3>>();
+  register_derived_classes_with_charm<BoundaryCorrection<1>>();
+  register_derived_classes_with_charm<BoundaryCorrection<2>>();
+  register_derived_classes_with_charm<BoundaryCorrection<3>>();
 }
 }  // namespace GeneralizedHarmonic::BoundaryCorrections

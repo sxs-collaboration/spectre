@@ -51,10 +51,11 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(TypeTraits)
+add_subdirectory(Serialization)
 
 add_test_library(
   ${LIBRARY}
   "Utilities"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;Options;Utilities"
+  "Boost::boost;DataStructures;Options;Serialization;Utilities"
   )

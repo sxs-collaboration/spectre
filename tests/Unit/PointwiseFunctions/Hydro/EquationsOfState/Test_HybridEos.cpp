@@ -11,17 +11,17 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 template <bool IsRelativistic>
 void check_random_polytrope() {
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       EquationsOfState::EquationOfState<true, 2>>();
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       EquationsOfState::EquationOfState<false, 2>>();
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);

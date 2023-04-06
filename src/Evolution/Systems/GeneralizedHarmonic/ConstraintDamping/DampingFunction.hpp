@@ -10,8 +10,8 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 /// \cond
 class DataVector;

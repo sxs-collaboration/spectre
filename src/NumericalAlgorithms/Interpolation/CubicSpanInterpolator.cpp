@@ -3,9 +3,9 @@
 
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 
-#include "Parallel/CharmPupable.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace intrp {
 

@@ -4,11 +4,11 @@
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
 
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace ScalarAdvection::BoundaryCorrections {
 void register_derived_with_charm() {
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection<1>>();
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection<2>>();
+  register_derived_classes_with_charm<BoundaryCorrection<1>>();
+  register_derived_classes_with_charm<BoundaryCorrection<2>>();
 }
 }  // namespace ScalarAdvection::BoundaryCorrections

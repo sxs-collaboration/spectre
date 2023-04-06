@@ -9,11 +9,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/SlabJet.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 struct SlabJetProxy : public ::grmhd::AnalyticData::SlabJet {
@@ -55,7 +55,7 @@ void test(const DataType& used_for_size) {
       ambient_electron_fraction, jet_density, jet_pressure,
       jet_electron_fraction, jet_velocity, inlet_radius, magnetic_field);
 
-  Parallel::register_classes_with_charm<grmhd::AnalyticData::SlabJet>();
+  register_classes_with_charm<grmhd::AnalyticData::SlabJet>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,

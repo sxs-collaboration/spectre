@@ -21,10 +21,10 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -246,7 +246,7 @@ struct TestMetavariables {
 };
 
 void register_callbacks() {
-  Parallel::register_classes_with_charm(
+  register_classes_with_charm(
       tmpl::list<
           Parallel::PerformAlgorithmCallback<
               CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>>,

@@ -17,12 +17,12 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

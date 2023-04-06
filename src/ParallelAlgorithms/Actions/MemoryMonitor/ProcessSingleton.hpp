@@ -14,7 +14,7 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
-#include "Parallel/Serialize.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace mem_monitor {
 /*!

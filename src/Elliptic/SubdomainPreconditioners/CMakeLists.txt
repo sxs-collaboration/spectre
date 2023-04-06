@@ -26,6 +26,7 @@ target_link_libraries(
   Parallel
   ParallelSchwarz
   Poisson
+  Serialization
   Utilities
   INTERFACE
   Convergence

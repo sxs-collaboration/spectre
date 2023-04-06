@@ -6,7 +6,7 @@
 #include <memory>
 #include <pup.h>
 
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace GeneralizedHarmonic {
 /// \brief Gauge conditions for generalized harmonic evolution systems.

@@ -27,7 +27,6 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -35,7 +34,6 @@
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessArray.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessGroups.hpp"
@@ -43,6 +41,8 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

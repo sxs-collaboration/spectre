@@ -12,7 +12,6 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/CcsnCollapse.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -21,6 +20,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::AnalyticData {
 namespace {
@@ -36,7 +36,7 @@ static_assert(
 void test_equality(std::string progenitor_filename, double polytropic_constant,
                    double adiabatic_index, double central_angular_velocity,
                    double diff_rot_parameter, double max_dens_ratio) {
-  Parallel::register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
+  register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
   // Base case for comparison
   const CcsnCollapse ccsn_progenitor_original{
       progenitor_filename,      polytropic_constant, adiabatic_index,
@@ -76,7 +76,7 @@ void test_ccsn_collapse(std::string progenitor_filename,
                         double polytropic_constant, double adiabatic_index,
                         double central_angular_velocity,
                         double diff_rot_parameter, double max_dens_ratio) {
-  Parallel::register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
+  register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
 
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<

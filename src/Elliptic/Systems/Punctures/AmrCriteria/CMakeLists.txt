@@ -29,6 +29,7 @@ target_link_libraries(
   InitialDataUtilities
   Options
   Parallel
+  Serialization
   Utilities
   PRIVATE
   Domain

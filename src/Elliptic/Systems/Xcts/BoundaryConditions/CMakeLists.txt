@@ -30,6 +30,6 @@ target_link_libraries(
   ErrorHandling
   XctsSolutions
   Options
-  Parallel
+  Serialization
   Utilities
   )

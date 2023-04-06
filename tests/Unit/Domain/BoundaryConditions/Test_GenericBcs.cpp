@@ -12,7 +12,7 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace {
 namespace helpers = TestHelpers::domain::BoundaryConditions;

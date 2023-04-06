@@ -12,17 +12,17 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 namespace EquationsOfState {
 namespace {
 
 void check_exact() {
   // Test creation
-  Parallel::register_derived_classes_with_charm<EquationOfState<true, 1>>();
+  register_derived_classes_with_charm<EquationOfState<true, 1>>();
   const auto eos_pointer = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<EquationOfState<true, 1>>>(
           {"Enthalpy(Spectral):\n"

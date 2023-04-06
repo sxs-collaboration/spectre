@@ -16,7 +16,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
@@ -25,6 +24,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -171,7 +171,7 @@ void test_1d() {
       std::array<DataVector, 2>{{-6.0 * omega * kx * u, 6.0 * square(kx) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables<1>>();
+  register_factory_classes_with_charm<Metavariables<1>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -234,7 +234,7 @@ void test_2d() {
           {-6.0 * omega * ky * u, 6.0 * kx * ky * u, 6.0 * square(ky) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables<2>>();
+  register_factory_classes_with_charm<Metavariables<2>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -314,7 +314,7 @@ void test_3d() {
                                  6.0 * ky * kz * u, 6.0 * square(kz) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables<3>>();
+  register_factory_classes_with_charm<Metavariables<3>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,

@@ -12,8 +12,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -21,6 +20,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/ClassicalRungeKutta4.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <initializer_list>
@@ -105,8 +105,8 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.AdvanceTime", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
-                                        TimeSteppers::ClassicalRungeKutta4>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth,
+                              TimeSteppers::ClassicalRungeKutta4>();
   const Slab slab(0., 1.);
   check(std::make_unique<TimeSteppers::ClassicalRungeKutta4>(),
         {0, {1, 2}, {1, 2}, 1}, slab.start(), slab.duration() / 2, false);

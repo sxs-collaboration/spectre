@@ -38,6 +38,7 @@ target_link_libraries(
   FiniteDifference
   Options
   Parallel
+  Serialization
   Utilities
   PRIVATE
   BurgersAnalyticData

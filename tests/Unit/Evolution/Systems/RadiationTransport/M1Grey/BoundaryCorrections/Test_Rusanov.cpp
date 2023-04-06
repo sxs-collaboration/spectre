@@ -17,7 +17,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.BoundaryCorrections.Rusanov",
   using rusanov = RadiationTransport::M1Grey::BoundaryCorrections::Rusanov<
       neutrino_species>;
   PUPable_reg(rusanov);
-  Parallel::register_derived_classes_with_charm<rusanov>();
+  register_derived_classes_with_charm<rusanov>();
 
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections"};

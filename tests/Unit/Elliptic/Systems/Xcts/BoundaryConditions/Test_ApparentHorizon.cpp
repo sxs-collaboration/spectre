@@ -36,12 +36,12 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::BoundaryConditions {
@@ -277,7 +277,7 @@ void test_creation(
     const std::optional<KerrSchild>& solution_for_negative_expansion,
     const std::string& option_string) {
   INFO("Test factory-creation");
-  Parallel::register_factory_classes_with_charm<FactoryMetavars>();
+  register_factory_classes_with_charm<FactoryMetavars>();
   const auto created = TestHelpers::test_creation<
       std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<3>>,
       FactoryMetavars>(option_string);

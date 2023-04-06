@@ -12,10 +12,10 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
 
 template <size_t VolumeDim, typename Fr>
 class MathFunction;
@@ -28,8 +28,7 @@ struct Inertial;
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_sinusoid_random(const DataType& used_for_size) {
-  Parallel::register_classes_with_charm<
-      MathFunctions::Sinusoid<VolumeDim, Fr>>();
+  register_classes_with_charm<MathFunctions::Sinusoid<VolumeDim, Fr>>();
 
   // Generate the amplitude and width
   MAKE_GENERATOR(gen);

@@ -29,6 +29,7 @@ target_link_libraries(
   ErrorHandling
   Python::NumPy
   Python::Python
+  Serialization
   Utilities
   )
 

@@ -13,11 +13,11 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // parts of PiecewisePolytropicFluid
 // choose high or low constants/exponents based on transition
@@ -320,10 +320,8 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.EquationsOfState.PiecewisePolytropicFluid",
     "[Unit][EquationsOfState]") {
   namespace EoS = EquationsOfState;
-  Parallel::register_derived_classes_with_charm<
-      EoS::EquationOfState<true, 1>>();
-  Parallel::register_derived_classes_with_charm<
-      EoS::EquationOfState<false, 1>>();
+  register_derived_classes_with_charm<EoS::EquationOfState<true, 1>>();
+  register_derived_classes_with_charm<EoS::EquationOfState<false, 1>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/Hydro/EquationsOfState/"};
   TestHelpers::EquationsOfState::test_get_clone(

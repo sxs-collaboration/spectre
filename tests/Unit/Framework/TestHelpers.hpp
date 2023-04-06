@@ -21,8 +21,6 @@
 
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
@@ -32,6 +30,8 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
@@ -84,7 +84,7 @@ void test_serialization_via_base(Args&&... args) {
   static_assert(std::is_base_of_v<B, D>,
                 "passed input type is not derived from specified base");
   static_assert(tt::has_equivalence_v<D>, "No operator== for derived class");
-  Parallel::register_classes_with_charm<D>();
+  register_classes_with_charm<D>();
   std::unique_ptr<B> base = std::make_unique<D>(args...);
   std::unique_ptr<B> pupped_base = serialize_and_deserialize(base);
   CHECK_FALSE(nullptr == dynamic_cast<const D*>(pupped_base.get()));

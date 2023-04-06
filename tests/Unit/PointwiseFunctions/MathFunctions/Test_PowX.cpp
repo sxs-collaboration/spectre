@@ -13,10 +13,10 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
-#include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
+#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <size_t VolumeDim, typename Fr>
@@ -30,7 +30,7 @@ struct Inertial;
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_pow_x_random(const DataType& used_for_size) {
-  Parallel::register_classes_with_charm<MathFunctions::PowX<VolumeDim, Fr>>();
+  register_classes_with_charm<MathFunctions::PowX<VolumeDim, Fr>>();
 
   MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{};
   for (int power = -5; power < 6; ++power) {

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain {
 /// \ingroup ComputationalDomainGroup

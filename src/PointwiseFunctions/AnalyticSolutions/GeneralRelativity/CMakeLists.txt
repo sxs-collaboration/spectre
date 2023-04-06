@@ -41,4 +41,5 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   Interpolation
+  Serialization
   )

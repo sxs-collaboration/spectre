@@ -40,8 +40,8 @@ target_link_libraries(
   GrMhdAnalyticData
   InitialDataUtilities
   Options
-  Parallel
   RelativisticEulerSolutions
+  Serialization
   Utilities
   Xcts
   XctsAnalyticData

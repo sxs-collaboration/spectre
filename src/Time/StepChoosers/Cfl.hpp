@@ -11,10 +11,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

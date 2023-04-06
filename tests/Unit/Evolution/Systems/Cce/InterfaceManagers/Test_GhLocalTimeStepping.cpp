@@ -33,7 +33,7 @@ namespace {
 template <typename Generator>
 void test_gh_local_time_stepping_interface_manager(
     const gsl::not_null<Generator*> gen) {
-  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
   // the frequency has to be small to be kind to the time stepper for the ~.1
   // step size in this test
   UniformCustomDistribution<double> value_dist{0.1, 1.0};

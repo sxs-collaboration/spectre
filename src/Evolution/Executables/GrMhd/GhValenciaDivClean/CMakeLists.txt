@@ -45,6 +45,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   RelativisticEulerSolutions
+  Serialization
   Time
   Utilities
   ValenciaDivClean

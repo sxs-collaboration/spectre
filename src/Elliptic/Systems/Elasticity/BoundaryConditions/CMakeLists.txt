@@ -26,9 +26,9 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Options
+  Serialization
   Utilities
   INTERFACE
   Domain
   Elliptic
-  Parallel
   )

@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace TestHelpers::domain::BoundaryConditions {
 template <size_t Dim>
@@ -116,9 +116,9 @@ void test_boundary_conditions(
 }
 
 void register_derived_with_charm() {
-  Parallel::register_derived_classes_with_charm<BoundaryConditionBase<1>>();
-  Parallel::register_derived_classes_with_charm<BoundaryConditionBase<2>>();
-  Parallel::register_derived_classes_with_charm<BoundaryConditionBase<3>>();
+  register_derived_classes_with_charm<BoundaryConditionBase<1>>();
+  register_derived_classes_with_charm<BoundaryConditionBase<2>>();
+  register_derived_classes_with_charm<BoundaryConditionBase<3>>();
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

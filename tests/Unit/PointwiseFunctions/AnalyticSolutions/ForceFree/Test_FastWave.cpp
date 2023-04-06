@@ -10,9 +10,9 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ForceFree/FastWave.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE(
   // test move
   test_move_semantics(FastWave{}, FastWave{});
   // test derived
-  Parallel::register_classes_with_charm<FastWave>();
+  register_classes_with_charm<FastWave>();
   const std::unique_ptr<InitialData> initial_data_ptr =
       std::make_unique<FastWave>();
   const std::unique_ptr<InitialData> deserialized_initial_data_ptr =

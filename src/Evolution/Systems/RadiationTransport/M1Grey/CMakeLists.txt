@@ -37,6 +37,7 @@ target_link_libraries(
   GeneralRelativity
   Hydro
   LinearOperators
+  Serialization
   Utilities
   INTERFACE
   Parallel

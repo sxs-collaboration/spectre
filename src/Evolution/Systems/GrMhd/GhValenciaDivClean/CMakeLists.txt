@@ -35,6 +35,7 @@ target_link_libraries(
   GeneralRelativity
   GeneralizedHarmonic
   Hydro
+  Serialization
   Utilities
   ValenciaDivClean
   INTERFACE

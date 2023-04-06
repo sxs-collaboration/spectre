@@ -21,8 +21,8 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace domain::CoordinateMaps {
 
@@ -31,7 +31,7 @@ void test_composition() {
   INFO("Composition");
 
   using Affine2D = ProductOf2Maps<Affine, Affine>;
-  Parallel::register_classes_with_charm<
+  register_classes_with_charm<
       CoordinateMap<Frame::ElementLogical, Frame::BlockLogical, Affine2D>,
       CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine2D>>();
 
@@ -94,7 +94,7 @@ void test_identity() {
   INFO("Identity");
 
   using Affine3D = ProductOf3Maps<Affine, Affine, Affine>;
-  Parallel::register_classes_with_charm<
+  register_classes_with_charm<
       CoordinateMap<Frame::ElementLogical, Frame::BlockLogical, Affine3D>,
       CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>>();
 

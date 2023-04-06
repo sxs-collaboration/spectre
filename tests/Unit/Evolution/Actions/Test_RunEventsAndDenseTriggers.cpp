@@ -31,10 +31,8 @@
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -48,6 +46,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -697,9 +697,9 @@ struct PostprocessEvolved {
 
 SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndDenseTriggers",
                   "[Unit][Evolution][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
-                                        TimeSteppers::Rk3HesthavenSsp>();
-  Parallel::register_factory_classes_with_charm<Metavariables<tmpl::list<>>>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth,
+                              TimeSteppers::Rk3HesthavenSsp>();
+  register_factory_classes_with_charm<Metavariables<tmpl::list<>>>();
 
   for (const auto time_runs_forward : {true, false}) {
     test<test_cases::NoPostprocessors>(time_runs_forward);

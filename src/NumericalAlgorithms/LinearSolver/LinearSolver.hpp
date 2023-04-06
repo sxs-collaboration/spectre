@@ -13,13 +13,13 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace LinearSolver::Serial {
 

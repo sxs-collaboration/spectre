@@ -33,7 +33,7 @@ target_link_libraries(
   ErrorHandling
   Logging
   Options
-  Parallel
+  Serialization
   PRIVATE
   Lapack
   )

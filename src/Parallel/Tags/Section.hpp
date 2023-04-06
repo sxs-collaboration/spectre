@@ -9,8 +9,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/Section.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace Parallel::Tags {
 

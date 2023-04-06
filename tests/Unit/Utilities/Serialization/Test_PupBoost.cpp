@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/PupBoost.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
 
 SPECTRE_TEST_CASE("Unit.Serialization.PupBoost", "[Unit][Serialization]") {
   boost::rational<size_t> r1(3_st, 4_st);

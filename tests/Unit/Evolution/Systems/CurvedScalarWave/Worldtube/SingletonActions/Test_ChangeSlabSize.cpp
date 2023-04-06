@@ -68,7 +68,7 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
   static constexpr size_t Dim = 3;
   using worldtube_chare = MockWorldtubeSingleton<MockMetavariables<Dim>>;
-  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
+  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   const auto time_stepper = TimeSteppers::Rk3HesthavenSsp{};
   const double slab_1_start = 1.5;

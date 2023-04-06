@@ -50,6 +50,7 @@ target_link_libraries(
   Initialization
   LinearOperators
   Options
+  Serialization
   Spectral
   Utilities
   INTERFACE

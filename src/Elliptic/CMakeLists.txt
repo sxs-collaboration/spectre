@@ -23,6 +23,7 @@ target_link_libraries(
   Domain
   EventsAndTriggers
   LinearOperators
+  Serialization
   Utilities
   )
 

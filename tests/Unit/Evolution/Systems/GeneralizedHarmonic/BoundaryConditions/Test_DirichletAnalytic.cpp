@@ -75,7 +75,7 @@ struct ConvertPlaneWave {
 template <size_t Dim>
 void test() {
   CAPTURE(Dim);
-  Parallel::register_classes_with_charm(
+  register_classes_with_charm(
       GeneralizedHarmonic::Solutions::all_solutions<Dim>{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<

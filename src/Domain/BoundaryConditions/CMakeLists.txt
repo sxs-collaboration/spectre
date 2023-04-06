@@ -26,7 +26,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Options
-  Parallel
+  Serialization
   Utilities
   INTERFACE
   ErrorHandling

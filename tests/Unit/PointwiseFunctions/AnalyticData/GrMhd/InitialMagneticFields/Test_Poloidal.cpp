@@ -16,10 +16,10 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Poloidal.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace grmhd::AnalyticData::InitialMagneticFields {
@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE(
   }
 
   // test derived
-  Parallel::register_classes_with_charm<Poloidal>();
+  register_classes_with_charm<Poloidal>();
   const std::unique_ptr<InitialMagneticField> base_ptr =
       std::make_unique<Poloidal>();
   const std::unique_ptr<InitialMagneticField> deserialized_base_ptr =

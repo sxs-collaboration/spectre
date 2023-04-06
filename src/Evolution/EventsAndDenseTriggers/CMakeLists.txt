@@ -27,6 +27,7 @@ target_link_libraries(
   EventsAndTriggers
   Options
   Parallel
+  Serialization
   Time
   Utilities
   )

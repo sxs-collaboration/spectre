@@ -44,6 +44,7 @@ target_link_libraries(
   H5
   Options
   Parallel
+  Serialization
   Utilities
   INTERFACE
   EventsAndTriggers

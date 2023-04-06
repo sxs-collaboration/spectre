@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 /// Functionality related to solving elliptic partial differential equations
 namespace elliptic {

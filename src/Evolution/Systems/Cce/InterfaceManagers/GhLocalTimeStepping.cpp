@@ -15,12 +15,12 @@
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace Cce::InterfaceManagers {
 

@@ -35,10 +35,10 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -131,7 +131,7 @@ Domain<Dim> make_domain() {
   using Identity = domain::CoordinateMaps::Identity<Dim>;
   using Map =
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Identity>;
-  Parallel::register_classes_with_charm(tmpl::list<Map>{});
+  register_classes_with_charm(tmpl::list<Map>{});
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, Dim>>>
       maps{num_blocks};

@@ -39,7 +39,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -50,6 +49,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -323,7 +323,7 @@ void test_system(
           System::make_test_object(interpolating_mesh)),
       interpolating_mesh, has_analytic_solutions, std::nullopt, section);
   INFO("create/serialize");
-  Parallel::register_factory_classes_with_charm<metavariables>();
+  register_factory_classes_with_charm<metavariables>();
   {
     const std::string creation_string = System::creation_string_for_test +
                                         mesh_creation_string +

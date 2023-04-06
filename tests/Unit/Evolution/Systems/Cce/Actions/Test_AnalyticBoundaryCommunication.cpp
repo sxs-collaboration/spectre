@@ -161,9 +161,8 @@ struct test_metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.AnalyticBoundaryCommunication",
     "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<
-      Cce::Solutions::RotatingSchwarzschild>();
-  Parallel::register_classes_with_charm<TimeSteppers::DormandPrince5>();
+  register_classes_with_charm<Cce::Solutions::RotatingSchwarzschild>();
+  register_classes_with_charm<TimeSteppers::DormandPrince5>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component =
       mock_analytic_worldtube_boundary<test_metavariables>;

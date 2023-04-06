@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// Represents a sequence of times.

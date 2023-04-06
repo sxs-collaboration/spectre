@@ -5,9 +5,9 @@
 
 #include <cstddef>
 
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 namespace EquationsOfState {
 
 template <bool IsRelativistic, size_t ThermodynamicDim>
@@ -15,7 +15,7 @@ void register_derived_subset_with_charm() {
   using derived_equations_of_state =
       typename EquationsOfState::detail::DerivedClasses<IsRelativistic,
                                                         ThermodynamicDim>::type;
-  Parallel::register_classes_with_charm(derived_equations_of_state{});
+  register_classes_with_charm(derived_equations_of_state{});
 }
 
 void register_derived_with_charm() {

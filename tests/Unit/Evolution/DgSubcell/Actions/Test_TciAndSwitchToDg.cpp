@@ -48,7 +48,6 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -59,6 +58,7 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -522,8 +522,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
   // 5. Check if RDMP is not triggered, but tci_mutator is, we stay on subcell
   // 6. check if RDMP & TCI not triggered, switch to DG.
   // 7. check if DidRollBack=True, stay in subcell.
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
-                                        TimeSteppers::Rk3HesthavenSsp>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth,
+                              TimeSteppers::Rk3HesthavenSsp>();
   test<1>();
   test<2>();
   test<3>();

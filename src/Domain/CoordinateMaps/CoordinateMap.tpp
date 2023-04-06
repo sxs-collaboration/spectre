@@ -25,7 +25,7 @@
 #include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"

@@ -40,7 +40,7 @@ void test_move() {
 }
 
 void test_derived() {
-  Parallel::register_classes_with_charm<Kuzmin>();
+  register_classes_with_charm<Kuzmin>();
   const std::unique_ptr<InitialData> initial_data_ptr =
       std::make_unique<Kuzmin>();
   const std::unique_ptr<InitialData> deserialized_initial_data_ptr =

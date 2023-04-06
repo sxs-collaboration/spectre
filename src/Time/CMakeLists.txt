@@ -44,6 +44,7 @@ target_link_libraries(
   ErrorHandling
   EventsAndTriggers
   Options
+  Serialization
   Utilities
   )
 
