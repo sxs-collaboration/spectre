@@ -27,6 +27,11 @@ template <size_t Dim>
 struct TensorI : db::SimpleTag {
   using type = ::tnsr::I<DataVector, Dim>;
 };
+
+template <size_t Dim>
+struct TensorIJ : db::SimpleTag {
+  using type = ::tnsr::IJ<DataVector, Dim>;
+};
 }  // namespace Tags
 
 template <size_t Dim>
@@ -39,13 +44,15 @@ void test() {
       const Index<Dim> volume_extents{num_mesh_pts_1d};
 
       // Create volume tensors and assign values
-      Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>> volume_vars{
-          volume_extents.product()};
+      Variables<
+          tmpl::list<Tags::Scalar, Tags::TensorI<Dim>, Tags::TensorIJ<Dim>>>
+          volume_vars{volume_extents.product()};
       std::iota(volume_vars.data(), volume_vars.data() + volume_vars.size(),
                 0.0);
 
       auto& volume_scalar = get<Tags::Scalar>(volume_vars);
       auto& volume_tensor = get<Tags::TensorI<Dim>>(volume_vars);
+      auto& volume_tensor_IJ = get<Tags::TensorIJ<Dim>>(volume_vars);
 
       for (const auto& direction : Direction<Dim>::all_directions()) {
         // slice data
@@ -53,6 +60,9 @@ void test() {
             volume_scalar, volume_extents, num_ghost_pts, direction);
         auto sliced_tensor = evolution::dg::subcell::slice_tensor_for_subcell(
             volume_tensor, volume_extents, num_ghost_pts, direction);
+        auto sliced_tensor_IJ =
+            evolution::dg::subcell::slice_tensor_for_subcell(
+                volume_tensor_IJ, volume_extents, num_ghost_pts, direction);
 
         Index<Dim> sliced_extents = volume_extents;
         sliced_extents[direction.dimension()] = num_ghost_pts;
@@ -76,6 +86,12 @@ void test() {
               CHECK(*(volume_tensor.get(i_tnsr).data() +
                       volume_it.volume_offset()) ==
                     sliced_tensor.get(i_tnsr)[slice_it.volume_offset()]);
+            }
+            for (size_t i_tnsr = 0; i_tnsr < volume_tensor_IJ.size();
+                 ++i_tnsr) {
+              CHECK(*(volume_tensor_IJ[i_tnsr].data() +
+                      volume_it.volume_offset()) ==
+                    sliced_tensor_IJ[i_tnsr][slice_it.volume_offset()]);
             }
           }
         }

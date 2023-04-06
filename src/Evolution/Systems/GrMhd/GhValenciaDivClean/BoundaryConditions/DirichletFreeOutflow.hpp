@@ -57,6 +57,10 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  * variables.
  */
 class DirichletFreeOutflow final : public BoundaryCondition {
+ private:
+  template <typename T>
+  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -219,6 +223,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>>;
@@ -252,6 +257,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
@@ -304,23 +310,52 @@ class DirichletFreeOutflow final : public BoundaryCondition {
     *pi = get<::GeneralizedHarmonic::Tags::Pi<3>>(boundary_values);
     *phi = get<::GeneralizedHarmonic::Tags::Phi<3>>(boundary_values);
 
+    // Note: Once we support high-order fluxes with GHMHD we will need to
+    // handle this correctly.
+    std::optional<Variables<db::wrap_tags_in<
+        Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>
+        cell_centered_ghost_fluxes{std::nullopt};
+    // Set to zero since it shouldn't be used
+    Scalar<DataVector> specific_internal_energy{};
+    tnsr::I<DataVector, 3> spatial_velocity{};
+    Scalar<DataVector> lorentz_factor{};
+    const tnsr::I<DataVector, 3> interior_shift{};
+    const Scalar<DataVector> interior_lapse{};
+    const tnsr::ii<DataVector, 3> interior_spatial_metric{};
+    tnsr::ii<DataVector, 3> spatial_metric{};
+    tnsr::II<DataVector, 3> inv_spatial_metric{};
+    Scalar<DataVector> sqrt_det_spatial_metric{};
+    Scalar<DataVector> lapse{};
+    tnsr::I<DataVector, 3> shift{};
+
     grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow::
-        fd_ghost_impl(rest_mass_density, electron_fraction, pressure,
-                      lorentz_factor_times_spatial_velocity, magnetic_field,
-                      divergence_cleaning_field,
+        fd_ghost_impl(
+            rest_mass_density, electron_fraction, pressure,
+            make_not_null(&specific_internal_energy),
+            lorentz_factor_times_spatial_velocity,
+            make_not_null(&spatial_velocity), make_not_null(&lorentz_factor),
+            magnetic_field, divergence_cleaning_field,
 
-                      direction,
+            make_not_null(&spatial_metric), make_not_null(&inv_spatial_metric),
+            make_not_null(&sqrt_det_spatial_metric), make_not_null(&lapse),
+            make_not_null(&shift),
 
-                      // fd_interior_temporary_tags
-                      subcell_mesh,
+            direction,
 
-                      // fd_interior_primitive_variables_tags
-                      interior_rest_mass_density, interior_electron_fraction,
-                      interior_pressure, interior_lorentz_factor,
-                      interior_spatial_velocity, interior_magnetic_field,
+            // fd_interior_temporary_tags
+            subcell_mesh,
 
-                      // fd_gridless_tags
-                      reconstructor.ghost_zone_size());
+            // fd_interior_primitive_variables_tags
+            interior_rest_mass_density, interior_electron_fraction,
+            interior_pressure, interior_specific_internal_energy,
+            interior_lorentz_factor, interior_spatial_velocity,
+            interior_magnetic_field,
+            // Note: metric vars are empty because they shouldn't be used
+            interior_spatial_metric, interior_lapse, interior_shift,
+
+            // fd_gridless_tags
+            reconstructor.ghost_zone_size(),
+            cell_centered_ghost_fluxes.has_value());
   }
 };
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

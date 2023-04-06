@@ -8,12 +8,15 @@
 #include <pup.h>
 #include <string>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -65,11 +68,23 @@ class HydroFreeOutflow final : public BoundaryCondition {
   using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
   using DivergenceCleaningField =
       hydro::Tags::DivergenceCleaningField<DataVector>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
+  using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<>;
+  using SpatialMetric = gr::Tags::SpatialMetric<3>;
+  using InvSpatialMetric = gr::Tags::InverseSpatialMetric<3>;
+  using Lapse = gr::Tags::Lapse<>;
+  using Shift = gr::Tags::Shift<3>;
 
   using prim_tags_for_reconstruction =
       tmpl::list<RestMassDensity, ElectronFraction, Pressure,
                  LorentzFactorTimesSpatialVelocity, MagneticField,
                  DivergenceCleaningField>;
+
+  template <typename T>
+  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
 
  public:
   using options = tmpl::list<>;
@@ -106,10 +121,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>>;
-  using dg_interior_temporary_tags = tmpl::list<
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+  using dg_interior_temporary_tags = tmpl::list<Shift, Lapse, InvSpatialMetric>;
   using dg_gridless_tags = tmpl::list<>;
 
   static std::optional<std::string> dg_ghost(
@@ -160,9 +172,11 @@ class HydroFreeOutflow final : public BoundaryCondition {
 
   using fd_interior_evolved_variables_tags = tmpl::list<>;
   using fd_interior_temporary_tags =
-      tmpl::list<evolution::dg::subcell::Tags::Mesh<3>>;
+      tmpl::list<evolution::dg::subcell::Tags::Mesh<3>, Shift, Lapse,
+                 SpatialMetric>;
   using fd_interior_primitive_variables_tags =
       tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>, MagneticField>;
   using fd_gridless_tags = tmpl::list<fd::Tags::Reconstructor>;
@@ -176,15 +190,23 @@ class HydroFreeOutflow final : public BoundaryCondition {
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
       gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
 
+      gsl::not_null<std::optional<Variables<db::wrap_tags_in<
+          Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+          cell_centered_ghost_fluxes,
+
       const Direction<3>& direction,
 
       // interior temporary tags
       const Mesh<3>& subcell_mesh,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
+      const Scalar<DataVector>& interior_lapse,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
 
       // interior prim vars tags
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
@@ -197,10 +219,19 @@ class HydroFreeOutflow final : public BoundaryCondition {
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
       gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
       gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*> spatial_metric,
+      gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          inv_spatial_metric,
+      gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
+      gsl::not_null<Scalar<DataVector>*> lapse,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
 
       const Direction<3>& direction,
 
@@ -211,10 +242,14 @@ class HydroFreeOutflow final : public BoundaryCondition {
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
+      const Scalar<DataVector>& interior_lapse,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
 
-      size_t ghost_zone_size);
+      size_t ghost_zone_size, bool need_tags_for_fluxes);
 };
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

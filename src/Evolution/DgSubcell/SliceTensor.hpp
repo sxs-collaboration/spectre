@@ -53,14 +53,14 @@ void slice_tensor_for_subcell(
   directions_to_slice[direction] = true;
 
   for (size_t i = 0; i < volume_tensor.size(); i++) {
-    auto& ti = volume_tensor.get(i);
+    auto& ti = volume_tensor[i];
 
     auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(ti.data(), ti.size()), subcell_extents,
         number_of_ghost_points, directions_to_slice, 0)[direction];
 
     std::copy(sliced_data.begin(), sliced_data.end(),
-              (*sliced_tensor).get(i).data());
+              (*sliced_tensor)[i].data());
   }
 }
 
