@@ -112,16 +112,18 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
   domain::creators::register_derived_with_charm();
   using element_chare = MockElementArray<metavars>;
   using worldtube_chare = MockWorldtubeSingleton<metavars>;
-  const size_t initial_extent = 5;
+  const size_t initial_extent = 10;
   const size_t face_size = initial_extent * initial_extent;
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   // we create several differently refined shells so a different number of
   // elements sends data
   for (const auto& [expansion_order, initial_refinement, worldtube_radius] :
-       cartesian_product(std::array<size_t, 2>{0, 1},
-                         std::array<size_t, 3>{0, 1, 2},
+       cartesian_product(std::array<size_t, 3>{0, 1, 2},
+                         std::array<size_t, 2>{0, 1},
                          make_array(0.07, 1., 2.8))) {
     CAPTURE(expansion_order);
+    CAPTURE(worldtube_radius);
+    CAPTURE(initial_refinement);
     const domain::creators::Sphere shell{worldtube_radius,
                                          3.,
                                          domain::creators::Sphere::Excision{},
@@ -289,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
                                               Dim, Frame::Grid>>(runner, 0);
     // the integral is over a low resolution DG grid which introduces a large
     // error
-    Approx apprx = Approx::custom().epsilon(1e-4).scale(1.0);
+    Approx apprx = Approx::custom().epsilon(1e-8).scale(1.0);
     if (expansion_order < 2) {
       CHECK(get(psi_monopole_worldtube) == apprx(psi_coefs_0));
       CHECK(get(dt_psi_monopole_worldtube) == -apprx(pi_coefs_0));
@@ -332,10 +334,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
             expected_psi_quadrupole.get(i, j) = psi_coefs_2.get(i, j);
             expected_dt_psi_quadrupole.get(i, j) = -pi_coefs_2.get(i, j);
           }
-          expected_psi_quadrupole.get(i, i) -=
-              square(worldtube_radius) * psi_coefs_2_trace / 3.;
-          expected_dt_psi_quadrupole.get(i, i) +=
-              square(worldtube_radius) * pi_coefs_2_trace / 3.;
+          expected_psi_quadrupole.get(i, i) -= psi_coefs_2_trace / 3.;
+          expected_dt_psi_quadrupole.get(i, i) += pi_coefs_2_trace / 3.;
         }
         CHECK_ITERABLE_CUSTOM_APPROX(psi_quadrupole_worldtube,
                                      expected_psi_quadrupole, apprx);
