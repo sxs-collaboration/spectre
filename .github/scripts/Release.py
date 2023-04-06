@@ -5,18 +5,19 @@
 
 import datetime
 import difflib
-import git
 import logging
 import operator
 import os
 import pathlib
-import pybtex.database
 import re
-import requests
 import tempfile
 import textwrap
-import uplink
 import urllib
+
+import git
+import pybtex.database
+import requests
+import uplink
 import yaml
 
 logger = logging.getLogger(__name__)

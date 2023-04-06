@@ -4,12 +4,13 @@
 # See LICENSE.txt for details.
 
 import datetime
-import git
 import os
 import re
 import unicodedata
 import unittest
 import urllib
+
+import git
 import yaml
 
 VERSION_PATTERN = r'(\d{4})\.(\d{2})\.(\d{2})(\.\d+)?'
