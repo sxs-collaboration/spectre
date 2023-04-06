@@ -518,6 +518,20 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
                : nullptr;
   }
 
+  // This does not create a new MockDistributedObject as dynamically
+  // creating/destroying MockDistributedObjects is not supported; it must be
+  // called on an existing MockDistrubtedObject.
+  template <typename CacheProxy>
+  void insert(const CacheProxy& /*global_cache_proxy*/,
+              Parallel::Phase /*current_phase*/,
+              const std::unique_ptr<Parallel::Callback>& callback) {
+    callback->invoke();
+  }
+
+  // This does nothing as dynamically creating/destroying MockDistributedObjects
+  // is not supported; the mock object will still exist...
+  void ckDestroy() {}
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {
     ERROR(
