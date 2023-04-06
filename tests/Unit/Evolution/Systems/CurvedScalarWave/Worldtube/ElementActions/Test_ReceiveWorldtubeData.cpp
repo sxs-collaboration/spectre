@@ -126,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
   // we create several differently refined shells so a different number of
   // elements sends data
   for (const auto& [expansion_order, initial_refinement, worldtube_radius] :
-       cartesian_product(std::array<size_t, 2>{0, 1},
+       cartesian_product(std::array<size_t, 3>{0, 1, 2},
                          std::array<size_t, 3>{0, 1, 2},
                          make_array(0.07, 1., 2.8))) {
     const domain::creators::Sphere shell{worldtube_radius,
