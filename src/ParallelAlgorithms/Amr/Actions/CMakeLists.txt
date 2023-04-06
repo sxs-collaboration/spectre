@@ -10,6 +10,7 @@ spectre_target_headers(
   EvaluateRefinementCriteria.hpp
   Initialization.hpp
   Initialize.hpp
+  InitializeChild.hpp
   RunAmrDiagnostics.hpp
   SendAmrDiagnostics.hpp
   UpdateAmrDecision.hpp
