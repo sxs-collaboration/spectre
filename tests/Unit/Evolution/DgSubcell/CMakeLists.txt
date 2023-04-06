@@ -54,6 +54,7 @@ target_link_libraries(
   DgSubcell
   DgSubcellHelpers
   ErrorHandling
+  FiniteDifference
   Parallel
   Spectral
   )
