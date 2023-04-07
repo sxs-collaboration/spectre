@@ -8,6 +8,7 @@
 
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/QueueTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"

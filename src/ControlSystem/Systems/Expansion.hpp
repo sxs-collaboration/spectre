@@ -18,6 +18,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/UpdateControlSystem.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"

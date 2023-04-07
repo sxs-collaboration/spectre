@@ -32,45 +32,18 @@ namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
 }  // namespace control_system
-namespace domain {
-enum class ObjectLabel;
-namespace OptionTags {
+namespace domain::OptionTags {
 template <size_t Dim>
 struct DomainCreator;
-}  // namespace OptionTags
-}  // namespace domain
+}  // namespace domain::OptionTags
 namespace OptionTags {
 struct InitialTime;
 }  // namespace OptionTags
 /// \endcond
 
-namespace control_system {
-/// \ingroup ControlSystemGroup
-/// All tags that will be used in the LinkedMessageQueue's within control
-/// systems.
-///
-/// These tags will be used to retrieve the results of the measurements that
-/// were sent to the control system which have been placed inside a
-/// LinkedMessageQueue.
-namespace QueueTags {
-/// \ingroup ControlSystemGroup
-/// Holds the centers of each horizon from measurements as DataVectors
-template <::domain::ObjectLabel Horizon>
-struct Center {
-  using type = DataVector;
-};
-
-/// \ingroup ControlSystemGroup
-/// Holds a full strahlkorper from measurements
-template <typename Frame>
-struct Strahlkorper {
-  using type = ::Strahlkorper<Frame>;
-};
-}  // namespace QueueTags
-
 /// \ingroup ControlSystemGroup
 /// All DataBox tags related to the control system
-namespace Tags {
+namespace control_system::Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for writing control system data to disk
@@ -260,5 +233,4 @@ struct MeasurementsPerUpdate : db::SimpleTag {
 struct CurrentNumberOfMeasurements : db::SimpleTag {
   using type = int;
 };
-}  // namespace Tags
-}  // namespace control_system
+}  // namespace control_system::Tags

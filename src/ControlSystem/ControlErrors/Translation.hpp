@@ -12,6 +12,7 @@
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/QueueTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"

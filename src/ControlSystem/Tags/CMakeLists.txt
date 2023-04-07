@@ -15,4 +15,5 @@ spectre_target_headers(
   IsActive.hpp
   MeasurementTimescales.hpp
   OptionTags.hpp
+  QueueTags.hpp
   )

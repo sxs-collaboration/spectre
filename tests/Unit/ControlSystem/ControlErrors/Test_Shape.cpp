@@ -20,6 +20,7 @@
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
