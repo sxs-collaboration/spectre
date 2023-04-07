@@ -6,8 +6,8 @@
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2023.03.09-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2023.03.09)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.7713393.svg)](https://doi.org/10.5281/zenodo.7713393)
+[![release](https://img.shields.io/badge/release-v2023.04.07-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2023.04.07)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.7809262.svg)](https://doi.org/10.5281/zenodo.7809262)
 
 ## What is SpECTRE?
 
@@ -29,7 +29,7 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.7713393](https://doi.org/10.5281/zenodo.7713393)
+- DOI: [10.5281/zenodo.7809262](https://doi.org/10.5281/zenodo.7809262)
 
 You can cite this BibTeX entry in your publication:
 
@@ -39,20 +39,20 @@ You can cite this BibTeX entry in your publication:
 @software{spectrecode,
     author = "Deppe, Nils and Throwe, William and Kidder, Lawrence E. and Vu,
 Nils L. and H\'ebert, Fran\c{c}ois and Moxon, Jordan and Armaza, Crist\'obal and
-Bonilla, Gabriel S. and Kim, Yoonsoo and Kumar, Prayush and Lovelace, Geoffrey
+Bonilla, Marceline S. and Kim, Yoonsoo and Kumar, Prayush and Lovelace, Geoffrey
 and Macedo, Alexandra and Nelli, Kyle C. and O'Shea, Eamonn and Pfeiffer, Harald
 P. and Scheel, Mark A. and Teukolsky, Saul A. and Wittek, Nikolas A. and
 others",
-    title = "\texttt{SpECTRE v2023.03.09}",
-    version = "2023.03.09",
+    title = "\texttt{SpECTRE v2023.04.07}",
+    version = "2023.04.07",
     publisher = "Zenodo",
-    doi = "10.5281/zenodo.7713393",
+    doi = "10.5281/zenodo.7809262",
     url = "https://spectre-code.org",
     howpublished =
-"\href{https://doi.org/10.5281/zenodo.7713393}{10.5281/zenodo.7713393}",
+"\href{https://doi.org/10.5281/zenodo.7809262}{10.5281/zenodo.7809262}",
     license = "MIT",
     year = "2023",
-    month = "3"
+    month = "4"
 }
 ```
 <!-- BIBTEX ENTRY -->

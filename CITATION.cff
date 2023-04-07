@@ -40,10 +40,11 @@ authors:
   family-names: Armaza
   given-names: Cristóbal
   orcid: https://orcid.org/0000-0002-1791-0743
-- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
-    Ithaca, New York 14853, USA
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
   family-names: Bonilla
-  given-names: Gabriel S.
+  given-names: Marceline S.
   orcid: https://orcid.org/0000-0003-4502-528X
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
@@ -183,6 +184,11 @@ authors:
   family-names: Most
   given-names: Elias R.
   orcid: https://orcid.org/0000-0002-0491-1210
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Nee
+  given-names: Peter James
+  orcid: https://orcid.org/0000-0002-2362-5420
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Pajkos
@@ -238,8 +244,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2023-03-09
-doi: 10.5281/zenodo.7713393
+date-released: 2023-04-07
+doi: 10.5281/zenodo.7809262
 keywords:
 - Software
 - Astrophysics
@@ -257,4 +263,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.03.09
+version: 2023.04.07
