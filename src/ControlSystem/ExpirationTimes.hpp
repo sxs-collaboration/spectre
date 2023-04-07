@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "ControlSystem/CalculateMeasurementTimescales.hpp"
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Utilities/TMPL.hpp"

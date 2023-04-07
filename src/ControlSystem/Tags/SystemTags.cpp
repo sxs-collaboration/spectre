@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

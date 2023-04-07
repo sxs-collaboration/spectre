@@ -9,8 +9,8 @@
 #include <string>
 
 #include "ControlSystem/Protocols/ControlError.hpp"
-#include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"

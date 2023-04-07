@@ -8,8 +8,8 @@
 
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
-#include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"

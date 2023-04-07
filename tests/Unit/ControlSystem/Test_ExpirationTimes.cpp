@@ -12,7 +12,7 @@
 #include "ControlSystem/CalculateMeasurementTimescales.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"

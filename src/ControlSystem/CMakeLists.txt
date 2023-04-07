@@ -13,7 +13,6 @@ spectre_target_sources(
   Controller.cpp
   DataVectorHelpers.cpp
   ExpirationTimes.cpp
-  Tags.cpp
   TimescaleTuner.cpp
   )
 
@@ -31,7 +30,6 @@ spectre_target_headers(
   Metafunctions.hpp
   NamespaceDocs.hpp
   RunCallbacks.hpp
-  Tags.hpp
   TimescaleTuner.hpp
   Trigger.hpp
   UpdateControlSystem.hpp

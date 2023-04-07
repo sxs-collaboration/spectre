@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FunctionsOfTimeInitialize.cpp
+  SystemTags.cpp
   )
 
 spectre_target_headers(
@@ -16,4 +17,5 @@ spectre_target_headers(
   MeasurementTimescales.hpp
   OptionTags.hpp
   QueueTags.hpp
+  SystemTags.hpp
   )

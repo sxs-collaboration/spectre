@@ -12,7 +12,7 @@
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/WriteData.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"

@@ -9,9 +9,9 @@
 
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
-#include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
