@@ -10,6 +10,7 @@
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"

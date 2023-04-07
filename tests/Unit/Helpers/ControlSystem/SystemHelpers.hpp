@@ -30,6 +30,7 @@
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateControlSystem.hpp"

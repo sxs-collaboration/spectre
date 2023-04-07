@@ -10,6 +10,7 @@
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
