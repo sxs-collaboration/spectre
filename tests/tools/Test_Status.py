@@ -37,8 +37,9 @@ class TestExecutableStatus(unittest.TestCase):
                 "/TimeSteps",
                 legend=["Time", "Minimum Walltime", "Maximum Walltime"],
                 version=0)
-            time_subfile.append([0., 1., 2.])
+            time_subfile.append([0., 0.5, 1.0])
             time_subfile.append([1., 2., 3.])
+            time_subfile.append([2., 3., 4.])
             open_h5_file.close_current_object()
             # Control systems data
             rotation_subfile = open_h5_file.insert_dat(
@@ -76,14 +77,14 @@ class TestExecutableStatus(unittest.TestCase):
     def test_evolution_status(self):
         executable_status = match_executable_status("EvolveSomething")
         status = executable_status.status(self.input_file, self.work_dir)
-        self.assertEqual(status, {"Time": 1., "Speed": 3600.})
+        self.assertEqual(status, {"Time": 2., "Speed": 3600.})
         self.assertEqual(executable_status.format("Time", 1.5), "1.5")
         self.assertEqual(executable_status.format("Speed", 1.2), "1.2")
 
     def test_evolve_bbh_status(self):
         executable_status = match_executable_status("EvolveGhBinaryBlackHole")
         status = executable_status.status(self.input_file, self.work_dir)
-        self.assertEqual(status["Time"], 1.)
+        self.assertEqual(status["Time"], 2.)
         self.assertEqual(status["Speed"], 3600.)
         self.assertEqual(status["Orbits"], 0.5)
         self.assertEqual(status["Separation"], 2.)
@@ -92,7 +93,7 @@ class TestExecutableStatus(unittest.TestCase):
     def test_evolve_single_bh_status(self):
         executable_status = match_executable_status("EvolveGhSingleBlackHole")
         status = executable_status.status(self.input_file, self.work_dir)
-        self.assertEqual(status["Time"], 1.)
+        self.assertEqual(status["Time"], 2.)
         self.assertEqual(status["Speed"], 3600.)
         self.assertEqual(status["Constraint Energy"], 1.e-3)
 
