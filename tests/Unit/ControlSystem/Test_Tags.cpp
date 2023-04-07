@@ -19,6 +19,7 @@
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Framework/TestCreation.hpp"

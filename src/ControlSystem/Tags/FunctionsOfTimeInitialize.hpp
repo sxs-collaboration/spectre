@@ -11,6 +11,7 @@
 
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/OptionTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"

@@ -13,4 +13,5 @@ spectre_target_headers(
   HEADERS
   FunctionsOfTimeInitialize.hpp
   MeasurementTimescales.hpp
+  OptionTags.hpp
   )

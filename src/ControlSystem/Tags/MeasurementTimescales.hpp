@@ -15,6 +15,7 @@
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
+#include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
