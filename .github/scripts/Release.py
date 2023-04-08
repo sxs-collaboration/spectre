@@ -20,6 +20,8 @@ import pybtex.database
 import requests
 import uplink
 import yaml
+from pybtex.backends.plaintext import Backend as PlaintextBackend
+from pybtex.style.formatting.plain import Style as PlainStyle
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +141,19 @@ class Github(uplink.Consumer):
         pass
 
 
+def to_plaintext_reference(
+    bib_entry: pybtex.database.Entry,
+    style=PlainStyle(),
+    backend=PlaintextBackend()
+) -> str:
+    # pybtex doesn't support 'software' bibtex types for some reason:
+    # https://bitbucket.org/pybtex-devs/pybtex/issues/157/support-for-software-and-patent-entries-in
+    if bib_entry.type == "software":
+        bib_entry.type = "misc"
+    return style.format_entry(label=bib_entry.key,
+                              entry=bib_entry).text.render(backend)
+
+
 def collect_zenodo_metadata(metadata: dict,
                             references: List[pybtex.database.Entry],
                             github: Github) -> dict:
@@ -169,14 +184,8 @@ def collect_zenodo_metadata(metadata: dict,
     # Render the description to HTML
     rendered_description = github.render_markdown_raw(metadata['Description'])
     # Format references as plain text for Zenodo
-    from pybtext.style.formatting.plain import Style as PlainStyle
-    from pybtex.backends.plaintext import Backend as PlaintextBackend
-    ref_style = PlainStyle()
-    ref_backend = PlaintextBackend()
     formatted_references = [
-        ref_style.format_entry(label=entry.key,
-                               entry=entry).text.render(ref_backend)
-        for entry in references
+        to_plaintext_reference(entry) for entry in references
     ]
     # Construct Zenodo metadata
     return dict(title=metadata['Name'],

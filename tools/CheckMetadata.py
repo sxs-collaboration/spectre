@@ -195,18 +195,45 @@ class TestMetadata(unittest.TestCase):
         # package so we can share code between them better.
         import sys
         sys.path.append(os.path.join(self.repo.working_dir, '.github/scripts'))
-        from Release import to_cff_reference
+        from Release import to_cff_reference, to_plaintext_reference
 
         # Validate references in the metadata
         reference_keys = self.metadata["References"]["List"]
         all_references = pybtex.database.parse_file(
             os.path.join(self.repo.working_dir,
                          self.metadata["References"]["BibliographyFile"]))
+        charmpp_ref = (
+            "Laxmikant Kale, Bilge Acun, Seonmyeong Bak, Aaron Becker, Milind "
+            "Bhandarkar, Nitin Bhat, Abhinav Bhatele, Eric Bohm, Cyril "
+            "Bordage, Robert Brunner, Ronak Buch, Sayantan Chakravorty, "
+            "Kavitha Chandrasekar, Jaemin Choi, Michael Denardo, Jayant "
+            "DeSouza, Matthias Diener, Harshit Dokania, Isaac Dooley, Wayne "
+            "Fenton, Juan Galvez, Fillipo Gioachin, Abhishek Gupta, Gagan "
+            "Gupta, Manish Gupta, Attila Gursoy, Vipul Harsh, Fang Hu, Chao "
+            "Huang, Narain Jagathesan, Nikhil Jain, Pritish Jetley, Prateek "
+            "Jindal, Raghavendra Kanakagiri, Greg Koenig, Sanjeev Krishnan, "
+            "Sameer Kumar, David Kunzman, Michael Lang, Akhil Langer, Orion "
+            "Lawlor, Chee Wai Lee, Jonathan Lifflander, Karthik Mahesh, Celso "
+            "Mendes, Harshitha Menon, Chao Mei, Esteban Meneses, Eric Mikida, "
+            "Phil Miller, Ryan Mokos, Venkatasubrahmanian Narayanan, Xiang "
+            "Ni, Kevin Nomura, Sameer Paranjpye, Parthasarathy Ramachandran, "
+            "Balkrishna Ramkumar, Evan Ramos, Michael Robson, Neelam Saboo, "
+            "Vikram Saletore, Osman Sarood, Karthik Senthil, Nimish Shah, "
+            "Wennie Shu, Amitabh B. Sinha, Yanhua Sun, Zehra Sura, Ehsan "
+            "Totoni, Krishnan Varadarajan, Ramprasad Venkataraman, Jackie "
+            "Wang, Lukasz Wesolowski, Sam White, Terry Wilmarth, Jeff Wright, "
+            "Joshua Yelon, and Gengbin Zheng. The Charm++ Parallel "
+            "Programming System. Aug 2019. URL: "
+            "https://charm.cs.illinois.edu, doi:10.5281/zenodo.3370873.")
         for key in reference_keys:
             # Check the reference exists in the bib file
             entry = all_references.entries[key]
             # Check the entry converts to CFF without error
             to_cff_reference(entry)
+            # Check the entry formats to plaintext without error
+            ref_text = to_plaintext_reference(entry)
+            if key == "charmpp":
+                self.assertEqual(ref_text, charmpp_ref)
 
 
 if __name__ == "__main__":
