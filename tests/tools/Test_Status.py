@@ -87,6 +87,13 @@ class TestExecutableStatus(unittest.TestCase):
         self.assertEqual(status["Separation"], 2.)
         self.assertEqual(status["Constraint Energy"], 1.e-3)
 
+    def test_evolve_single_bh_status(self):
+        executable_status = match_executable_status("EvolveGhSingleBlackHole")
+        status = executable_status.status(self.input_file, self.work_dir)
+        self.assertEqual(status["Time"], 1.)
+        self.assertEqual(status["Speed"], 3600.)
+        self.assertEqual(status["Constraint Energy"], 1.e-3)
+
 
 class TestStatus(unittest.TestCase):
     def setUp(self):
