@@ -113,6 +113,11 @@ EventsAndTriggers:
 Worldtube:
   ExcisionSphere: ExcisionSphereA
   ExpansionOrder: 2
+  ObserveCoefficientsTrigger:
+    Slabs:
+      EvenlySpaced:
+        Interval: 200
+        Offset: 0
 
 InterpolationTargets:
   PsiAlongAxis1:

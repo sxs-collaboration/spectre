@@ -266,7 +266,8 @@ struct EvolutionMetavars {
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
       Tags::AnalyticData<InitialData>,
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
-      CurvedScalarWave::Worldtube::Tags::ExpansionOrder>;
+      CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
+      CurvedScalarWave::Worldtube::Tags::ObserveCoefficientsTrigger>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
