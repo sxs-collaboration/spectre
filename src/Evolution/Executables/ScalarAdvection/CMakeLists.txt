@@ -18,6 +18,7 @@ set(LIBS_TO_LINK
   PhaseControl
   ScalarAdvection
   ScalarAdvectionSolutions
+  Serialization
   Time
   Utilities
   )

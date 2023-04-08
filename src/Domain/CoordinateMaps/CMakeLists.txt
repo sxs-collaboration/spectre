@@ -92,8 +92,8 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   GSL::gsl
-  Parallel
   RootFinding
+  Serialization
   SphericalHarmonics
   )
 

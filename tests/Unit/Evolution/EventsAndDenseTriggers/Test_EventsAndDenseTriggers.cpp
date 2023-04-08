@@ -14,7 +14,6 @@
 #include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -23,6 +22,7 @@
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -317,7 +317,7 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers",
                   "[Unit][Evolution]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
 
   do_test(true, false);
   do_test(false, false);

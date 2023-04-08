@@ -8,9 +8,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedSide.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
 
 namespace domain::CoordinateMaps {
 

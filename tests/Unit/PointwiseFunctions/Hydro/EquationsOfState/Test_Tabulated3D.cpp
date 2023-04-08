@@ -24,10 +24,10 @@
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Tabulated3d.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                   "[Unit][EquationsOfState]") {
@@ -40,9 +40,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   // For now, we will construct the internal state of
   // the EoS manually.
 
-  // Parallel::register_derived_classes_with_charm<
+  // register_derived_classes_with_charm<
   //     EoS::EquationOfState<true, 2>>();
-  // Parallel::register_derived_classes_with_charm<
+  // register_derived_classes_with_charm<
   //     EoS::EquationOfState<false, 2>>();
   // pypp::SetupLocalPythonEnvironment local_python_env{
   //     "PointwiseFunctions/Hydro/EquationsOfState/"};

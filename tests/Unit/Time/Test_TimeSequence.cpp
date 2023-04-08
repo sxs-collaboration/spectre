@@ -12,8 +12,8 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/TimeSequence.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 void test_evenly_spaced() {
@@ -138,9 +138,8 @@ void test_specified() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSequence", "[Unit][Time]") {
-  Parallel::register_classes_with_charm(
-      TimeSequences::all_time_sequences<double>{});
-  Parallel::register_classes_with_charm(
+  register_classes_with_charm(TimeSequences::all_time_sequences<double>{});
+  register_classes_with_charm(
       TimeSequences::all_time_sequences<std::uint64_t>{});
 
   test_evenly_spaced();

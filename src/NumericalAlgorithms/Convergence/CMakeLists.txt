@@ -30,7 +30,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Options
+  Serialization
   Utilities
-  PRIVATE
-  Parallel
   )

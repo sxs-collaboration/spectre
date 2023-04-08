@@ -784,12 +784,12 @@ void test_reduced_spec_worldtube_buffer_updater(
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       Cce::WorldtubeBufferUpdater<cce_metric_input_tags>>();
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       Cce::WorldtubeBufferUpdater<cce_bondi_input_tags>>();
-  Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>();
-  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
+  register_derived_classes_with_charm<Cce::WorldtubeDataManager>();
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
   {
     INFO("Testing buffer updaters");

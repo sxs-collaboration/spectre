@@ -24,8 +24,8 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test_strahlkorper() {

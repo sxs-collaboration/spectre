@@ -75,7 +75,7 @@ void test_solution() {
   const MathFunction<Dim> solution{
       std::make_unique<MathFunctions::Gaussian<Dim, Frame::Inertial>>(
           gaussian)};
-  Parallel::register_factory_classes_with_charm<Metavariables<Dim>>();
+  register_factory_classes_with_charm<Metavariables<Dim>>();
   {
     INFO("Option-creation");
     const auto created =

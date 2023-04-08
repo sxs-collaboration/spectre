@@ -33,6 +33,7 @@ target_link_libraries(
   Charmxx::charmxx
   Options
   Parallel
+  Serialization
   Utilities
   )
 

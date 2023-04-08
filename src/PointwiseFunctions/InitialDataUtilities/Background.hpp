@@ -5,7 +5,7 @@
 
 #include <pup.h>
 
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace elliptic::analytic_data {
 /*!

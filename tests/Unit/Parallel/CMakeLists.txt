@@ -19,6 +19,7 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Parallel
   ParallelHelpers
   PhaseControl
+  Serialization
   Spectral
   SystemUtilities
   Time
@@ -162,11 +163,7 @@ set(LIBRARY_SOURCES
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
   Test_Phase.cpp
-  Test_PupBoost.cpp
-  Test_PupStlCpp11.cpp
-  Test_PupStlCpp17.cpp
   Test_ResourceInfo.cpp
-  Test_Serialize.cpp
   Test_TypeTraits.cpp
   )
 
@@ -189,6 +186,7 @@ target_link_libraries(
   ObserverHelpers
   Options
   Parallel
+  Serialization
   SystemUtilities
   Utilities
 )

@@ -11,7 +11,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
@@ -19,6 +18,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -33,7 +33,7 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Triggers.SlabCompares", "[Unit][Time]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
 
   const auto trigger =
       TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(

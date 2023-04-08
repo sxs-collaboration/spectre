@@ -11,10 +11,10 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 void check_bounds() {
@@ -31,8 +31,7 @@ void check_bounds() {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
                   "[Unit][EquationsOfState]") {
   namespace EoS = EquationsOfState;
-  Parallel::register_derived_classes_with_charm<
-      EoS::EquationOfState<true, 2>>();
+  register_derived_classes_with_charm<EoS::EquationOfState<true, 2>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/Hydro/EquationsOfState/"};
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();

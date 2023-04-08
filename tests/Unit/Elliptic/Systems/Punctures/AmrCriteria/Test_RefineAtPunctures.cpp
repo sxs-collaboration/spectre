@@ -18,11 +18,11 @@
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "PointwiseFunctions/AnalyticData/Punctures/MultiplePunctures.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Punctures::AmrCriteria {
@@ -44,7 +44,7 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
                   "[Unit][ParallelAlgorithms]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
 
   const auto created =
       TestHelpers::test_creation<std::unique_ptr<amr::Criterion>,

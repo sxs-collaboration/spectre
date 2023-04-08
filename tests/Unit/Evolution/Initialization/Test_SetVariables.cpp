@@ -31,7 +31,6 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -43,6 +42,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -437,7 +437,7 @@ void test_impl() {
 
 template <size_t Dim>
 void test() {
-  Parallel::register_classes_with_charm<
+  register_classes_with_charm<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<Dim>>,
       domain::CoordinateMap<
@@ -451,8 +451,7 @@ void test() {
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
                   "[Unit][Evolution][Actions]") {
   domain::FunctionsOfTime::register_derived_with_charm();
-  Parallel::register_classes_with_charm<SystemAnalyticData,
-                                        SystemAnalyticSolution>();
+  register_classes_with_charm<SystemAnalyticData, SystemAnalyticSolution>();
   test<1>();
   test<2>();
   test<3>();

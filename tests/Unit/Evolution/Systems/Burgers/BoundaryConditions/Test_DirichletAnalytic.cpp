@@ -90,8 +90,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
   const auto box_analytic_data = db::create<db::AddSimpleTags<
       Tags::Time, Tags::AnalyticData<Burgers::AnalyticData::Sinusoid>>>(
       0.4, Burgers::AnalyticData::Sinusoid{});
-  Parallel::register_classes_with_charm<Burgers::Solutions::Step,
-                                        Burgers::AnalyticData::Sinusoid>();
+  register_classes_with_charm<Burgers::Solutions::Step,
+                              Burgers::AnalyticData::Sinusoid>();
 
   helpers::test_boundary_condition_with_python<
       Burgers::BoundaryConditions::DirichletAnalytic,

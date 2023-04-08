@@ -41,7 +41,6 @@
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -61,6 +60,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 /// \cond
 namespace Frame {
@@ -268,9 +268,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Cce::register_initialize_j_with_charm<
         metavariables::uses_partially_flat_cartesian_coordinates,
         metavariables::cce_boundary_component>,
-    &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
-    &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>,
-    &Parallel::register_factory_classes_with_charm<metavariables>};
+    &register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
+    &register_derived_classes_with_charm<intrp::SpanInterpolator>,
+    &register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

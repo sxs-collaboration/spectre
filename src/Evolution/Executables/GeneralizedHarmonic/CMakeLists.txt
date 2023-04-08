@@ -42,6 +42,7 @@ set(LIBS_TO_LINK
   Parallel
   ParallelInterpolation
   PhaseControl
+  Serialization
   Time
   Utilities
   )

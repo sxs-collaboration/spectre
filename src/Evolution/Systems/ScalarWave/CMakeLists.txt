@@ -47,6 +47,7 @@ target_link_libraries(
   INTERFACE
   Initialization
   Parallel
+  Serialization
   PRIVATE
   WaveEquationSolutions
   )

@@ -48,7 +48,7 @@ target_link_libraries(
   Limiters
   LinearOperators
   Options
-  Parallel
+  Serialization
   Utilities
   VariableFixing
   PRIVATE

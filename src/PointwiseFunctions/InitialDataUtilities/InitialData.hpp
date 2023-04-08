@@ -6,7 +6,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace evolution {
 /*!

@@ -81,9 +81,8 @@ struct ConvertPlaneWave {
 
 template <size_t Dim>
 void test() {
-  Parallel::register_classes_with_charm(
-      ScalarWave::Solutions::all_solutions<Dim>{});
-  Parallel::register_classes_with_charm(
+  register_classes_with_charm(ScalarWave::Solutions::all_solutions<Dim>{});
+  register_classes_with_charm(
       MathFunctions::all_math_functions<1, Frame::Inertial>{});
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);

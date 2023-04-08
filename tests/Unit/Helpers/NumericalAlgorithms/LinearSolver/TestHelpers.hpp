@@ -12,8 +12,8 @@
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace TestHelpers::LinearSolver {
 

@@ -42,7 +42,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -52,6 +51,7 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -326,7 +326,7 @@ void test_observe_system(
   }
   {
     INFO("Testing create/serialize for Dim = " << VolumeDim);
-    Parallel::register_factory_classes_with_charm<metavariables>();
+    register_factory_classes_with_charm<metavariables>();
     const auto factory_event =
         TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
             "ObserveVolumeIntegrals:\n"

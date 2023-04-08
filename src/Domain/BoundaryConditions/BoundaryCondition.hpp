@@ -7,7 +7,7 @@
 #include <pup.h>
 #include <string>
 
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 /// \ingroup ComputationalDomainGroup
 /// \brief %Domain support for applying boundary conditions

@@ -10,7 +10,6 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -20,6 +19,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::AnalyticData {
 namespace {
@@ -34,10 +34,8 @@ static_assert(
 using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
 
 void test_equality() {
-  Parallel::register_classes_with_charm<
-      grmhd::AnalyticData::MagnetizedTovStar>();
-  Parallel::register_classes_with_charm<
-      EquationsOfState::PolytropicFluid<true>>();
+  register_classes_with_charm<grmhd::AnalyticData::MagnetizedTovStar>();
+  register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
   const MagnetizedTovStar mag_tov_original{
       1.28e-3,
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
@@ -85,10 +83,8 @@ void test_equality() {
 }
 
 void test_magnetized_tov_star(const TovCoordinates coord_system) {
-  Parallel::register_classes_with_charm<
-      grmhd::AnalyticData::MagnetizedTovStar>();
-  Parallel::register_classes_with_charm<
-      EquationsOfState::PolytropicFluid<true>>();
+  register_classes_with_charm<grmhd::AnalyticData::MagnetizedTovStar>();
+  register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,

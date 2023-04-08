@@ -42,7 +42,7 @@ target_link_libraries(
   Evolution
   FiniteDifference
   Options
-  Parallel
+  Serialization
   Spectral
   Utilities
   )

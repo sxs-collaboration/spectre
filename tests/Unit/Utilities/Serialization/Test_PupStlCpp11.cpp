@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
-#include "Parallel/Serialize.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Test_Classes {

@@ -52,12 +52,12 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -360,7 +360,7 @@ void test(const bool always_use_subcell, const bool interior_element,
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                   "[Evolution][Unit]") {
-  Parallel::register_classes_with_charm<
+  register_classes_with_charm<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<1>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,

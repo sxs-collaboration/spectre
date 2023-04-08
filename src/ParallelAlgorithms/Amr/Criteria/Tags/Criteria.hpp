@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criteria.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::Criteria {

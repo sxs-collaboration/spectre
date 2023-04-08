@@ -34,5 +34,6 @@ target_link_libraries(
   MathFunctions
   Options
   Poisson
+  Serialization
   Utilities
   )

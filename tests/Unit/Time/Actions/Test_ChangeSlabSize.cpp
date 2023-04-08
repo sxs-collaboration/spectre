@@ -17,7 +17,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -26,6 +25,7 @@
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -68,7 +68,7 @@ struct Component {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
+  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};

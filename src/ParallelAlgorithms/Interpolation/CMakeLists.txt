@@ -45,6 +45,7 @@ target_link_libraries(
   Logging
   Options
   Parallel
+  Serialization
   Spectral
   SphericalHarmonics
   Time

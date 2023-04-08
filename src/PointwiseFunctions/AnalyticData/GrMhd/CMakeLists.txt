@@ -47,6 +47,7 @@ target_link_libraries(
   Hydro
   Options
   RelativisticEulerSolutions
+  Serialization
   )
 
 add_subdirectory(InitialMagneticFields)

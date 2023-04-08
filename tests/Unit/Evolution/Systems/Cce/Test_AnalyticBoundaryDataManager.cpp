@@ -102,8 +102,7 @@ struct metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
                   "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<
-      Cce::Solutions::LinearizedBondiSachs>();
+  register_classes_with_charm<Cce::Solutions::LinearizedBondiSachs>();
   // set up the analytic data parameters
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{7, 10};

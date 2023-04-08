@@ -10,8 +10,8 @@
 #include <tuple>
 #include <utility>
 
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace Parallel {
 /// An abstract base class, whose derived class holds a function that

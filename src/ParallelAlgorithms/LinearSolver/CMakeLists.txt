@@ -23,6 +23,7 @@ target_link_libraries(
   Logging
   Observer
   Parallel
+  Serialization
   SystemUtilities
   Utilities
   )

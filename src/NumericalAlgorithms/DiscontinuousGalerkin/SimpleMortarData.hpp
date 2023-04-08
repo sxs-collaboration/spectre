@@ -8,8 +8,8 @@
 #include <pup.h>  // IWYU pragma: keep
 #include <utility>
 
-#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace dg {
 

@@ -16,11 +16,11 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -105,7 +105,7 @@ void test_always_do_nothing() {
 
 template <size_t VolumeDim>
 void test() {
-  Parallel::register_factory_classes_with_charm<Metavariables<VolumeDim>>();
+  register_factory_classes_with_charm<Metavariables<VolumeDim>>();
   test_always_change_refinement<VolumeDim>();
   test_always_do_nothing<VolumeDim>();
   const amr::Criteria::Random random_criterion(0.8, 5);

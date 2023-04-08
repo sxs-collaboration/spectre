@@ -14,7 +14,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Slab.hpp"
@@ -28,6 +27,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <pup.h>
@@ -167,8 +167,8 @@ void check(const bool time_runs_forward,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
-  Parallel::register_factory_classes_with_charm<Metavariables<>>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
+  register_factory_classes_with_charm<Metavariables<>>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   for (auto reject_step : {true, false}) {

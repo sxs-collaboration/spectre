@@ -24,7 +24,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -36,8 +35,8 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/OptionalHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-
 
 namespace Events {
 /// @{

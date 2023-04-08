@@ -11,10 +11,10 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce::InitializeJ {

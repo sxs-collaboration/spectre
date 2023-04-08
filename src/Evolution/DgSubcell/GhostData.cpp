@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace evolution::dg::subcell {
 GhostData::GhostData(const size_t number_of_buffers)

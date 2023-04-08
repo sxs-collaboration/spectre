@@ -29,13 +29,13 @@
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -142,7 +142,7 @@ struct metavariables {
 
 template <bool EvolvePartiallyFlatCartesianCoordinates>
 void test_InitializeFirstHypersurface() {
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       InitializeJ::InitializeJ<EvolvePartiallyFlatCartesianCoordinates>>();
 
   MAKE_GENERATOR(gen);

@@ -21,9 +21,9 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -61,7 +61,7 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
-  Parallel::register_classes_with_charm<
+  register_classes_with_charm<
       domain::FunctionsOfTime::PiecewisePolynomial<2>>();
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using component = Component<Metavariables>;

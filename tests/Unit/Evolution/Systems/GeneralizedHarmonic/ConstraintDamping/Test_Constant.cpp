@@ -8,19 +8,19 @@
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Constant.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_constant_random(const DataType& used_for_size) {
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>>();
 
   // Generate the amplitude and width

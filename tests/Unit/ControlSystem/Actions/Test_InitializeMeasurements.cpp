@@ -36,12 +36,12 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <typename Id>
@@ -180,8 +180,8 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
                   "[ControlSystem][Unit]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
-  Parallel::register_classes_with_charm<
+  register_factory_classes_with_charm<Metavariables>();
+  register_classes_with_charm<
       domain::FunctionsOfTime::PiecewisePolynomial<0>>();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;

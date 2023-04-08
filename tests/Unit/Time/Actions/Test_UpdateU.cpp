@@ -17,8 +17,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -26,6 +25,7 @@
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Time/History.hpp"
@@ -226,7 +226,7 @@ void test_stepper_error() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
+  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   test_integration<SingleVariableSystem, false>();
   test_integration<TwoVariableSystem, true>();

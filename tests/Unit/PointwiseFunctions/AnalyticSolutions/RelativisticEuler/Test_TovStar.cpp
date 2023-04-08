@@ -19,13 +19,13 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace RelativisticEuler::Solutions {
@@ -68,10 +68,8 @@ void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
 }
 
 void test_tov_star(const TovCoordinates coord_system) {
-  Parallel::register_classes_with_charm<
-      RelativisticEuler::Solutions::TovStar>();
-  Parallel::register_classes_with_charm<
-      EquationsOfState::PolytropicFluid<true>>();
+  register_classes_with_charm<RelativisticEuler::Solutions::TovStar>();
+  register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,

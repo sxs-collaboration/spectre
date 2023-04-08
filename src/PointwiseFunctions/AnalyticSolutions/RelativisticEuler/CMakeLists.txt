@@ -37,6 +37,7 @@ target_link_libraries(
   Hydro
   HydroSolutions
   Options
+  Serialization
   )
 
 add_subdirectory(Python)

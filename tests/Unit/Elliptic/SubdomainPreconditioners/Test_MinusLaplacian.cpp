@@ -30,10 +30,10 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -288,7 +288,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     constexpr size_t Dim = 2;
     using LinearSolverType = ::LinearSolver::Serial::LinearSolver<tmpl::list<
         Registrars::MinusLaplacian<Dim, OptionsGroup, TestSolver<Dim>>>>;
-    Parallel::register_derived_classes_with_charm<LinearSolverType>();
+    register_derived_classes_with_charm<LinearSolverType>();
     const auto created =
         TestHelpers::test_creation<std::unique_ptr<LinearSolverType>>(
             "MinusLaplacian:\n"
@@ -417,7 +417,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     constexpr size_t Dim = 2;
     using LinearSolverType = ::LinearSolver::Serial::LinearSolver<
         tmpl::list<Registrars::MinusLaplacian<Dim, OptionsGroup>>>;
-    Parallel::register_derived_classes_with_charm<LinearSolverType>();
+    register_derived_classes_with_charm<LinearSolverType>();
     elliptic::subdomain_preconditioners::register_derived_with_charm();
     const auto created =
         TestHelpers::test_creation<std::unique_ptr<LinearSolverType>>(

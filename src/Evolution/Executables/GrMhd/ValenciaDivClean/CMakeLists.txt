@@ -34,6 +34,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   PhaseControl
+  Serialization
   Time
   Utilities
   ValenciaDivClean

@@ -22,7 +22,10 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  PUBLIC Utilities
+  INTERFACE
+  DataStructures
+  ErrorHandling
+  PUBLIC
+  Serialization
+  Utilities
   )

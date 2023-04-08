@@ -24,8 +24,8 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain {
 namespace {

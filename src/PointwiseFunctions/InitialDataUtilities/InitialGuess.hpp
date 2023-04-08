@@ -5,7 +5,7 @@
 
 #include <pup.h>
 
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 /// Items related to pointwise analytic data for elliptic solves, such as
 /// initial guesses, analytic solutions, and background quantities in elliptic

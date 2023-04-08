@@ -9,7 +9,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
-#include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond

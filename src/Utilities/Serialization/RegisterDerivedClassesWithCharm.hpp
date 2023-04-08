@@ -9,11 +9,10 @@
 #include <pup.h>
 #include <typeinfo>
 
-#include "Parallel/CharmPupable.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Parallel {
 /// Register specified classes.  This function can either take classes
 /// to register as template arguments or take a `tmpl::list` of
 /// classes as a function argument.
@@ -58,4 +57,3 @@ void register_factory_classes_with_charm() {
               typename Metavariables::factory_creation::factory_classes>>,
           std::is_base_of<PUP::able, tmpl::_1>>{});
 }
-}  // namespace Parallel

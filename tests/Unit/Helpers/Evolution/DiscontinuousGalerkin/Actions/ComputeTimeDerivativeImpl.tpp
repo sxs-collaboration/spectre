@@ -62,7 +62,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
@@ -1019,8 +1019,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
                                  UseMovingMesh, HasPrims, PassVariables>;
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
-  Parallel::register_factory_classes_with_charm<metavars>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
+  register_factory_classes_with_charm<metavars>();
 
   using system = typename metavars::system;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -1985,9 +1985,9 @@ void test() {
   //   though the mesh velocity and boundary contributions are not the correct
   //   DG values
 
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       BoundaryCorrection<Dim, true>>();
-  Parallel::register_derived_classes_with_charm<
+  register_derived_classes_with_charm<
       BoundaryCorrection<Dim, false>>();
 
   const auto invoke_tests_with_quadrature_and_formulation =

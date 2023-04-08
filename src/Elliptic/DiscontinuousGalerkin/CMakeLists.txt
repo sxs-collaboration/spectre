@@ -42,6 +42,7 @@ target_link_libraries(
   LinearOperators
   Options
   Parallel
+  Serialization
   SystemUtilities
   )
 

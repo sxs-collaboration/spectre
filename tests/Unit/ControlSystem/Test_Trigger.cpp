@@ -25,10 +25,10 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -77,7 +77,7 @@ using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
 using component = Component<Metavariables>;
 
 void test_trigger_no_replace() {
-  Parallel::register_classes_with_charm<MeasurementFoT>();
+  register_classes_with_charm<MeasurementFoT>();
   const component* const component_p = nullptr;
 
   control_system::Tags::MeasurementTimescales::type measurement_timescales{};
@@ -183,7 +183,7 @@ void test_trigger_no_replace() {
 }
 
 void test_trigger_with_replace() {
-  Parallel::register_classes_with_charm<MeasurementFoT>();
+  register_classes_with_charm<MeasurementFoT>();
   const component* const component_p = nullptr;
 
   control_system::Tags::MeasurementTimescales::type measurement_timescales{};

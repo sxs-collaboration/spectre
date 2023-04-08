@@ -22,7 +22,7 @@
 #include "Domain/Creators/TimeDependence/SphericalCompression.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace domain::creators::time_dependence {
@@ -41,7 +41,7 @@ void register_maps_with_charm() {
           domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                 CoordinateMaps::Identity<Dim>>>>>;
 
-  Parallel::register_classes_with_charm(maps_to_register{});
+  register_classes_with_charm(maps_to_register{});
 }
 }  // namespace
 

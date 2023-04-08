@@ -26,6 +26,7 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
+  Serialization
   Utilities
   )
 

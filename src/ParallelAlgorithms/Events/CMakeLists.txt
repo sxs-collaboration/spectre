@@ -33,6 +33,7 @@ target_link_libraries(
   Observer
   Options
   Parallel
+  Serialization
   Spectral
   Time
   Utilities

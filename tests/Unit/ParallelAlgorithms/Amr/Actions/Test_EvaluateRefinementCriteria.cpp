@@ -20,12 +20,12 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -274,7 +274,7 @@ void check_split_while_join_is_avoided() {
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
                   "[Unit][ParallelAlgorithms]") {
-  Parallel::register_factory_classes_with_charm<Metavariables<2>>();
+  register_factory_classes_with_charm<Metavariables<2>>();
   std::vector<std::unique_ptr<amr::Criterion>> criteria;
   // Run the test 3 times, twice with a single criterion that give known
   // decisions, and then once with two criteria, one of which always produces

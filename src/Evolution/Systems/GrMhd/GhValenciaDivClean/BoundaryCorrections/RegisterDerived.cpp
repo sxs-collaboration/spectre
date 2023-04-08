@@ -4,10 +4,10 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/Factory.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryCorrections {
 void register_derived_with_charm() {
-  Parallel::register_derived_classes_with_charm<BoundaryCorrection>();
+  register_derived_classes_with_charm<BoundaryCorrection>();
 }
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

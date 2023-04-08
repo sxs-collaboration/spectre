@@ -26,7 +26,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainOperator.hpp"
@@ -34,6 +33,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -205,7 +205,7 @@ struct Metavariables {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &domain::creators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
+    &register_derived_classes_with_charm<
         Metavariables::linear_solver::subdomain_solver>,
     &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{

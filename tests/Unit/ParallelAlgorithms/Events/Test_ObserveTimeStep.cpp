@@ -31,7 +31,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -39,6 +38,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -260,7 +260,7 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
 
   for (const bool print_to_terminal : {true, false}) {
     const Events::ObserveTimeStep<typename Metavariables::system> observer(

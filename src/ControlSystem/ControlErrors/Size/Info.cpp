@@ -7,7 +7,7 @@
 #include <pup_stl.h>
 
 #include "ControlSystem/ControlErrors/Size/State.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace control_system::size {
 

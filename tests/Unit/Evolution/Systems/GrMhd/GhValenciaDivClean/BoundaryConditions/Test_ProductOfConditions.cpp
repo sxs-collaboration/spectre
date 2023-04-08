@@ -411,7 +411,7 @@ void test_boundary_condition_combination(
 SPECTRE_TEST_CASE(
     "Unit.GhValenciaDivClean.BoundaryConditions.ProductOfConditions",
     "[Unit][Evolution]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
   // scoped to separate out each product combination
   {
     INFO("Product condition of DirichletAnalytic in each system");

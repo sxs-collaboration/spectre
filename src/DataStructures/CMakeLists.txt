@@ -75,6 +75,7 @@ target_link_libraries(
   Charmxx::pup
   ErrorHandling
   Options
+  Serialization
   Utilities
   )
 

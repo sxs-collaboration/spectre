@@ -30,7 +30,7 @@ target_link_libraries(
   Elasticity
   ErrorHandling
   Options
-  Parallel
+  Serialization
   Utilities
   PRIVATE
   ElasticityPointwiseFunctions

@@ -75,6 +75,7 @@ target_link_libraries(
   PRIVATE
   Blas
   ErrorHandling
+  Serialization
   Utilities
   )
 

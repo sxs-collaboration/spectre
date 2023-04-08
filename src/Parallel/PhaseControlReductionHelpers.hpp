@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Parallel/Reduction.hpp"
-#include "Parallel/Serialize.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

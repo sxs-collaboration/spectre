@@ -9,11 +9,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/KhInstability.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
 struct KhInstabilityProxy : public ::grmhd::AnalyticData::KhInstability {
@@ -56,7 +56,7 @@ void test(const DataType& used_for_size) {
       strip_velocity, background_density, background_velocity, pressure,
       perturbation_amplitude, perturbation_width, magnetic_field);
 
-  Parallel::register_classes_with_charm<grmhd::AnalyticData::KhInstability>();
+  register_classes_with_charm<grmhd::AnalyticData::KhInstability>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,

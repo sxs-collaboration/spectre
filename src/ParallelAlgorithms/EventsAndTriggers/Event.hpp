@@ -4,10 +4,10 @@
 #pragma once
 
 #include "DataStructures/DataBox/ObservationBox.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup EventsAndTriggersGroup

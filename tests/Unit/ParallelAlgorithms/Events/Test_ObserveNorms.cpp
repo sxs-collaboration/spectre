@@ -29,12 +29,12 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -304,7 +304,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                          Spectral::Quadrature::GaussLobatto, "Section0");
 
   INFO("create/serialize");
-  Parallel::register_factory_classes_with_charm<Metavariables<3, void>>();
+  register_factory_classes_with_charm<Metavariables<3, void>>();
   const auto factory_event = TestHelpers::test_creation<std::unique_ptr<Event>,
                                                         Metavariables<3, void>>(
       // [input_file_examples]

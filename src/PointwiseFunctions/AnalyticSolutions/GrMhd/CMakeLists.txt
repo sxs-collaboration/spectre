@@ -34,4 +34,5 @@ target_link_libraries(
   Hydro
   Options
   RelativisticEulerSolutions
+  Serialization
   )

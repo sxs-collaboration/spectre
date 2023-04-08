@@ -8,7 +8,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 

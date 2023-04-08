@@ -32,6 +32,7 @@ target_link_libraries(
   PUBLIC
   Options
   Parallel
+  Serialization
   Utilities
   )
 

@@ -37,6 +37,7 @@ target_link_libraries(
   Domain
   ErrorHandling
   GeneralRelativity
+  Serialization
   Utilities
   )
 

@@ -14,10 +14,10 @@
 #include "DataStructures/Variables.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Schwarz {

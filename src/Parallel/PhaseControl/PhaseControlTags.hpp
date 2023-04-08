@@ -11,8 +11,8 @@
 #include "Options/Options.hpp"
 #include "Parallel/ExitCode.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
-#include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PhaseControl {

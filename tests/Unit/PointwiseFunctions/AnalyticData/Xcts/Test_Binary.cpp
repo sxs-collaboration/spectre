@@ -16,10 +16,10 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -72,7 +72,7 @@ void test_data(const std::array<double, 2>& x_coords,
                const std::string& options_string) {
   using IsolatedObjectBase = elliptic::analytic_data::AnalyticSolution;
   using IsolatedObjectClasses = tmpl::list<Xcts::Solutions::Schwarzschild>;
-  Parallel::register_classes_with_charm<Xcts::Solutions::Schwarzschild>();
+  register_classes_with_charm<Xcts::Solutions::Schwarzschild>();
   const auto created = TestHelpers::test_creation<
       std::unique_ptr<elliptic::analytic_data::Background>, Metavariables>(
       options_string);

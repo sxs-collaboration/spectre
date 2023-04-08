@@ -9,11 +9,11 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/MathWrapper.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 /// \cond
 class TimeDelta;

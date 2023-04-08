@@ -13,16 +13,16 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/ExitCode.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/Triggers/Slabs.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -97,7 +97,7 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
                   "[Unit][Parallel]") {
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables>();
 
   TestHelpers::db::test_simple_tag<PhaseControl::Tags::PhaseChangeAndTriggers>(
       "PhaseChangeAndTriggers");

@@ -7,19 +7,18 @@
 #include "NumericalAlgorithms/LinearSolver/ExplicitInverse.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
 template <size_t Dim>
 void register_derived_with_charm_impl() {
-  Parallel::register_derived_classes_with_charm<
-      LinearSolver::Serial::LinearSolver<
-          tmpl::list<::LinearSolver::Serial::Registrars::Gmres<
-                         ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-                             Dim, tmpl::list<Poisson::Tags::Field>>>,
-                     ::LinearSolver::Serial::Registrars::ExplicitInverse>>>();
+  register_derived_classes_with_charm<LinearSolver::Serial::LinearSolver<
+      tmpl::list<::LinearSolver::Serial::Registrars::Gmres<
+                     ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
+                         Dim, tmpl::list<Poisson::Tags::Field>>>,
+                 ::LinearSolver::Serial::Registrars::ExplicitInverse>>>();
 }
 }  // namespace
 

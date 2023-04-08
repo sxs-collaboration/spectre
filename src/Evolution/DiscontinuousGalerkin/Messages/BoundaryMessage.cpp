@@ -6,9 +6,9 @@
 #include <ios>
 #include <pup.h>
 
-#include "Parallel/Serialize.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg {
 template <size_t Dim>
