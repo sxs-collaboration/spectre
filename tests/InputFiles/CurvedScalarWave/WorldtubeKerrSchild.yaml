@@ -97,9 +97,9 @@ EventsAndTriggers:
           Offset: 0
     - - PsiAlongAxis1
       - PsiAlongAxis2
-  - - Times:
-        Specified:
-          Values: &FinalTime [2000.]
+  - - TimeCompares:
+        Comparison: GreaterThan
+        Value: 2000.
     - - Completion
   - - Slabs:
         Specified:
@@ -109,20 +109,6 @@ EventsAndTriggers:
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.35
-  - - TimeCompares:
-        Comparison: GreaterThan
-        Value: 1999.9
-    - - ChangeSlabSize:
-          DelayChange: 0
-          StepChoosers:
-            # Prevent step size increase size we only want to decrease to arrive
-            # at the final time.
-            - Increase:
-                Factor: 1
-            - StepToTimes:
-                Times:
-                  Specified:
-                    Values: *FinalTime
 
 Worldtube:
   ExcisionSphere: ExcisionSphereA
