@@ -17,6 +17,7 @@ spectre_target_headers(
   InitializeElementFacesGridCoordinates.hpp
   InitializeEvolvedVariables.hpp
   InitializeSpacetimeTags.hpp
+  ObserveWorldtubeSolution.hpp
   ReceiveElementData.hpp
   SendToElements.hpp
   TimeDerivative.hpp
