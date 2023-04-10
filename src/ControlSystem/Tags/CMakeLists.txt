@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FunctionsOfTimeInitialize.cpp
+  SystemTags.cpp
   )
 
 spectre_target_headers(
@@ -12,5 +13,9 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FunctionsOfTimeInitialize.hpp
+  IsActive.hpp
   MeasurementTimescales.hpp
+  OptionTags.hpp
+  QueueTags.hpp
+  SystemTags.hpp
   )

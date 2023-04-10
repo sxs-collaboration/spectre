@@ -11,8 +11,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
