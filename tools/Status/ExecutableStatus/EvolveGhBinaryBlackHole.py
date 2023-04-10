@@ -36,9 +36,12 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
             # Number of orbits. We use the rotation control system for this.
             try:
                 rotation_z = to_dataframe(
-                    open_reductions_file["ControlSystems/Rotation/z.dat"])
-                covered_angle = np.diff(
-                    rotation_z["FunctionOfTime"].iloc[[0, -1]])[0]
+                    open_reductions_file["ControlSystems/Rotation/z.dat"],
+                    slice=np.s_[-1:])
+                # Assume the initial rotation angle is 0 for now. We can update
+                # this to read the initial rotation angle once we can read
+                # previous segments / checkpoints of a simulation.
+                covered_angle = rotation_z["FunctionOfTime"].iloc[-1]
                 result["Orbits"] = covered_angle / (2. * np.pi)
             except:
                 logger.debug("Unable to extract orbits.", exc_info=True)
