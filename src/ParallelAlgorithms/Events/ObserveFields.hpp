@@ -416,7 +416,7 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       PARSE_ERROR(
           context,
           name << " is not an available variable.  Available variables:\n"
-               << (std::vector<std::string>{db::tag_name<Tensors>()...}));
+               << valid_tensors);
     }
     if (alg::count(variables_to_observe, name) != 1) {
       PARSE_ERROR(context, name << " specified multiple times");
