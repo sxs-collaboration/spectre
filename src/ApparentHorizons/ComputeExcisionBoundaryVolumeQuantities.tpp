@@ -65,12 +65,7 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     target_vars->initialize(src_vars.number_of_grid_points());
   }
 
-  get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(*target_vars) =
-    get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars);
-
-  const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars);
-
+  using spacetime_metric_tag = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using spatial_metric_tag = gr::Tags::SpatialMetric<3, Frame::Inertial>;
   using inv_spatial_metric_tag =
     gr::Tags::InverseSpatialMetric<3, Frame::Inertial>;
@@ -82,13 +77,14 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).
   using full_temp_tags_list =
-      tmpl::list<spatial_metric_tag, inv_spatial_metric_tag,
-                 lapse_tag, shift_tag, constraint_gamma1_tag>;
+      tmpl::list<spacetime_metric_tag, spatial_metric_tag,
+                 inv_spatial_metric_tag, lapse_tag, shift_tag,
+                 constraint_gamma1_tag>;
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
       tmpl::list_difference<full_temp_tags_list, DestTagList>;
-  TempBuffer<temp_tags_list> buffer(get<0, 0>(spacetime_metric).size());
+  TempBuffer<temp_tags_list> buffer(src_vars.number_of_grid_points());
 
   // These may or may not be temporaries
   auto& lapse = *(get<lapse_tag>(
@@ -97,12 +93,17 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
       target_vars, make_not_null(&buffer)));
   auto& spatial_metric = *(get<spatial_metric_tag>(
       target_vars, make_not_null(&buffer)));
+  auto& spacetime_metric = *(get<spacetime_metric_tag>(
+      target_vars, make_not_null(&buffer)));
   auto& inv_spatial_metric = *(get<inv_spatial_metric_tag>(
       target_vars, make_not_null(&buffer)));
   auto& constraint_gamma1 = *(get<constraint_gamma1_tag>(
       target_vars, make_not_null(&buffer)));
 
   // Actual computation starts here
+  const auto& src_spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars);
+  spacetime_metric = src_spacetime_metric;
 
   gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
   // put determinant of 3-metric temporarily into lapse to save memory.
