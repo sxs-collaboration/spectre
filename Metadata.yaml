@@ -363,6 +363,21 @@ References:
     SpECTRE depends on these references. The keys refer to entries in the
     'BibliographyFile'. We use BibTeX for our references so we can also cite
     them in publications.
-  BibliographyFile: docs/References.bib
+  BibliographyFile: docs/Dependencies.bib
   List:
-    - charmpp
+    - Blaze1
+    - Blaze2
+    - Charmpp1
+    - Charmpp2
+    - Charmpp3
+    - Gsl
+    - Hdf5
+    - Libsharp
+    - Libxsmm
+    - MatplotLib1
+    - MatplotLib2
+    - NumPy
+    - Paraview1
+    - Paraview2
+    - Pybind11
+    - Yamlcpp

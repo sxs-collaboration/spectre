@@ -86,7 +86,8 @@ function correctly. Use Doxygen version 1.9.3 or higher.")
       "${Python_EXECUTABLE} \
 ${CMAKE_SOURCE_DIR}/docs/config/postprocess_docs.py \
 --html-dir ${PROJECT_BINARY_DIR}/docs/html \
---references-file ${CMAKE_SOURCE_DIR}/docs/References.bib"
+--references-files ${CMAKE_SOURCE_DIR}/docs/References.bib \
+${CMAKE_SOURCE_DIR}/docs/Dependencies.bib"
       )
     # Append postprocessing to doxygen commands
     # The commands are supposed to run the postprocessing even if the doc
