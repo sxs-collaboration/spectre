@@ -82,12 +82,36 @@ void prepare_neighbor_data(
       db::get<evolution::dg::Tags::NeighborMesh<Dim>>(*box);
   const subcell::RdmpTciData& rdmp_data =
       db::get<subcell::Tags::DataForRdmpTci>(*box);
+  const ::fd::DerivativeOrder fd_derivative_order =
+      get<evolution::dg::subcell::Tags::SubcellOptions<Dim>>(*box)
+          .finite_difference_derivative_order();
   const size_t rdmp_size = rdmp_data.max_variables_values.size() +
                            rdmp_data.min_variables_values.size();
+  const size_t extra_size_for_ghost_data =
+      (fd_derivative_order == ::fd::DerivativeOrder::Two
+           ? 0
+           : volume_fluxes.size());
 
-  if (DataVector ghost_variables = db::mutate_apply(
-          typename Metavariables::SubcellOptions::GhostVariables{}, box,
-          rdmp_size);
+  if (DataVector ghost_variables =
+          [&box, &extra_size_for_ghost_data, &rdmp_size, &volume_fluxes]() {
+            if (extra_size_for_ghost_data == 0) {
+              return db::mutate_apply(
+                  typename Metavariables::SubcellOptions::GhostVariables{}, box,
+                  rdmp_size);
+            } else {
+              DataVector ghost_vars = db::mutate_apply(
+                  typename Metavariables::SubcellOptions::GhostVariables{}, box,
+                  rdmp_size + extra_size_for_ghost_data);
+              std::copy(
+                  volume_fluxes.data(),
+                  std::next(volume_fluxes.data(),
+                            static_cast<std::ptrdiff_t>(volume_fluxes.size())),
+                  std::prev(ghost_vars.end(),
+                            static_cast<std::ptrdiff_t>(
+                                rdmp_size + extra_size_for_ghost_data)));
+              return ghost_vars;
+            }
+          }();
       alg::all_of(neighbor_meshes,
                   [](const auto& directional_element_id_and_mesh) {
                     ASSERT(directional_element_id_and_mesh.second.basis(0) !=
