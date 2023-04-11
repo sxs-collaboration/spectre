@@ -29,7 +29,8 @@ def available_subfiles(h5file: h5py.File, extension: str) -> List[str]:
     return subfiles
 
 
-def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"]):
+def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"],
+                 slice=None) -> "pandas.DataFrame":
     """Convert a '.dat' subfile to a Pandas DataFrame
 
     This function isn't particularly complex, but it allows to convert a
@@ -40,9 +41,14 @@ def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"]):
     Without this function, you would have to store the subfile in an extra
     variable to access its "Legend" attribute.
 
+    You can optionally pass a slice object which will slice the data for you
+    so the entire dataset isn't read in
+
     Arguments:
       open_subfile: An open h5py subfile representing a SpECTRE dat file,
         or a spectre.IO.H5.H5Dat subfile, typically from a reductions file.
+      slice: A numpy slice object to choose specific rows. Defaults to None. If
+        you try to slice columns, an error will occur.
 
     Returns: Pandas DataFrame with column names read from the "Legend"
       attribute of the dat file.
@@ -50,8 +56,14 @@ def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"]):
     import pandas as pd
     try:
         # SpECTRE H5 dat subfile
-        return pd.DataFrame(np.asarray(open_subfile.get_data()),
-                            columns=open_subfile.get_legend())
+        data = np.asarray(open_subfile.get_data())
+        legend = open_subfile.get_legend()
     except AttributeError:
         # h5py subfile
-        return pd.DataFrame(open_subfile, columns=open_subfile.attrs["Legend"])
+        data = open_subfile
+        legend = open_subfile.attrs["Legend"]
+
+    if slice:
+        data = data[slice]
+
+    return pd.DataFrame(data, columns=legend)
