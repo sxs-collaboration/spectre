@@ -50,6 +50,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
@@ -157,10 +158,7 @@ struct EvolutionMetavars {
                                   non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  Parallel::Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<
             RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
                 metavariables::neutrino_species>,

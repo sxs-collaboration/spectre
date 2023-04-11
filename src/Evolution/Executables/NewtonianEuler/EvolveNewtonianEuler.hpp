@@ -76,6 +76,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
@@ -219,12 +220,7 @@ struct EvolutionMetavars {
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
-        tmpl::pair<
-            PhaseChange,
-            tmpl::list<
-                PhaseControl::VisitAndReturn<Parallel::Phase::LoadBalancing>,
-                PhaseControl::VisitAndReturn<Parallel::Phase::WriteCheckpoint>,
-                PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

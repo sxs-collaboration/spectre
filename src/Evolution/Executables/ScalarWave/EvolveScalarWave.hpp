@@ -51,6 +51,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -173,10 +174,7 @@ struct EvolutionMetavars {
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  Parallel::Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             ScalarWave::BoundaryConditions::standard_boundary_conditions<
