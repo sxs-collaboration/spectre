@@ -191,6 +191,7 @@ namespace TimeSteppers {
  */
 class AdamsBashforth : public LtsTimeStepper {
  public:
+  static constexpr const size_t minimum_order = 1;
   static constexpr const size_t maximum_order = 8;
 
   struct Order {
