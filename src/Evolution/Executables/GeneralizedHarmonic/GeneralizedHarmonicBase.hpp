@@ -62,6 +62,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -309,10 +310,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<evolution::initial_data::InitialData,
                  GeneralizedHarmonic::Solutions::all_solutions<volume_dim>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-      tmpl::pair<PhaseChange,
-                 tmpl::list<PhaseControl::VisitAndReturn<
-                                Parallel::Phase::LoadBalancing>,
-                            PhaseControl::CheckpointAndExitAfterWallclock>>,
+      tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
       tmpl::pair<

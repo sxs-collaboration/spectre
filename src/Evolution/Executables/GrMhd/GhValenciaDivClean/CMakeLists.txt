@@ -44,6 +44,7 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  PhaseControl
   RelativisticEulerSolutions
   Serialization
   Time
