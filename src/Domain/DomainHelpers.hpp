@@ -162,6 +162,10 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
  * \param radial_distribution Select the radial distribution of grid points in
  * the spherical shells.
  * \param which_wedges Select a subset of wedges.
+ * \param opening_angle sets the combined opening angle of the two half wedges
+ * that open up along the y-z plane. The endcap wedges are then given an angle
+ * of pi minus this opening angle. This parameter only has an effect if
+ * `use_half_wedges` is set to `true`.
  */
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
@@ -170,7 +174,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
-    ShellWedges which_wedges = ShellWedges::All);
+    ShellWedges which_wedges = ShellWedges::All, double opening_angle = M_PI_2);
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -183,11 +187,17 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// that moves the center of the two joined inner cubes away from the origin
 /// and to `-origin_preimage`. `projective_scale_factor` acts to change the
 /// gridpoint distribution in the radial direction. \see Frustum for details.
+/// The value for `sphericity` determines whether the outer surface is a cube
+/// (value of 0), a sphere (value of 1) or somewhere in between.
+/// The value for `opening_angle` determines the gridpoint distribution used
+/// in the Frustums such that they conform to the outer sphere of Wedges with
+/// the same value for `opening_angle`.
 std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
-    double projective_scale_factor = 1.0, double sphericity = 0.0);
+    double projective_scale_factor = 1.0, double sphericity = 0.0,
+    double opening_angle = M_PI_2);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.

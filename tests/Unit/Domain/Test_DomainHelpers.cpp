@@ -353,11 +353,12 @@ void test_all_frustum_directions() {
   const double projective_scale_factor = 0.3;
   const double sphericity = 0.;
   for (const bool use_equiangular_map : {true, false}) {
+    const double stretch = tan(0.5 * M_PI_2);
     const auto expected_coord_maps = make_vector(
         FrustumMap{
             {{{{-2.0 * lower - displacement1[0], -lower - displacement1[1]}},
               {{-displacement1[0], lower - displacement1[1]}},
-              {{-top, -top}},
+              {{-stretch * top, -top}},
               {{0.0, top}}}},
             lower - displacement1[2],
             top,
@@ -371,7 +372,7 @@ void test_all_frustum_directions() {
             {{{{-displacement2[0], -lower - displacement2[1]}},
               {{2.0 * lower - displacement2[0], lower - displacement2[1]}},
               {{0.0, -top}},
-              {{top, top}}}},
+              {{stretch * top, top}}}},
             lower - displacement2[2],
             top,
             OrientationMap<3>{},
@@ -383,7 +384,7 @@ void test_all_frustum_directions() {
         FrustumMap{
             {{{{-2.0 * lower - displacement3[0], -lower - displacement3[1]}},
               {{-displacement3[0], lower - displacement3[1]}},
-              {{-top, -top}},
+              {{-stretch * top, -top}},
               {{0.0, top}}}},
             lower - displacement3[2],
             top,
@@ -399,7 +400,7 @@ void test_all_frustum_directions() {
             {{{{-displacement4[0], -lower - displacement4[1]}},
               {{2.0 * lower - displacement4[0], lower - displacement4[1]}},
               {{0.0, -top}},
-              {{top, top}}}},
+              {{stretch * top, top}}}},
             lower - displacement4[2],
             top,
             OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -413,7 +414,7 @@ void test_all_frustum_directions() {
         FrustumMap{
             {{{{-2.0 * lower - displacement5[0], -lower - displacement5[1]}},
               {{-displacement5[0], lower - displacement5[1]}},
-              {{-top, -top}},
+              {{-stretch * top, -top}},
               {{0.0, top}}}},
             lower - displacement5[2],
             top,
@@ -429,7 +430,7 @@ void test_all_frustum_directions() {
             {{{{-displacement6[0], -lower - displacement6[1]}},
               {{2.0 * lower - displacement6[0], lower - displacement6[1]}},
               {{0.0, -top}},
-              {{top, top}}}},
+              {{stretch * top, top}}}},
             lower - displacement6[2],
             top,
             OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -443,7 +444,7 @@ void test_all_frustum_directions() {
         FrustumMap{
             {{{{-2.0 * lower - displacement7[0], -lower - displacement7[1]}},
               {{-displacement7[0], lower - displacement7[1]}},
-              {{-top, -top}},
+              {{-stretch * top, -top}},
               {{0.0, top}}}},
             lower - displacement7[2],
             top,
@@ -459,7 +460,7 @@ void test_all_frustum_directions() {
             {{{{-displacement8[0], -lower - displacement8[1]}},
               {{2.0 * lower - displacement8[0], lower - displacement8[1]}},
               {{0.0, -top}},
-              {{top, top}}}},
+              {{stretch * top, top}}}},
             lower - displacement8[2],
             top,
             OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -476,7 +477,7 @@ void test_all_frustum_directions() {
                      {{-top, -top}},
                      {{top, top}}}},
                    2.0 * lower - displacement9[2],
-                   top,
+                   stretch * top,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                         Direction<3>::upper_eta()}}},
@@ -488,7 +489,7 @@ void test_all_frustum_directions() {
                      {{-top, -top}},
                      {{top, top}}}},
                    2.0 * lower - displacement10[2],
-                   top,
+                   stretch * top,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
