@@ -108,20 +108,22 @@ void test_connectivity() {
 
   // Misc.:
   constexpr size_t grid_points = 3;
+  constexpr bool use_equiangular_map = true;
 
   for (const auto& [with_boundary_conditions, excise_interiorA,
-                    excise_interiorB, use_equiangular_map,
+                    excise_interiorB, opening_angle,
                     radial_distribution_outer_shell] :
        random_sample<5>(
            cartesian_product(
                make_array(true, false), make_array(true, false),
-               make_array(true, false), make_array(true, false),
+               make_array(true, false), make_array(60.0, 90.0, 120.0),
                make_array(Distribution::Linear, Distribution::Logarithmic,
                           Distribution::Inverse)),
            make_not_null(&gen))) {
     CAPTURE(with_boundary_conditions);
     CAPTURE(excise_interiorA);
     CAPTURE(excise_interiorB);
+    CAPTURE(opening_angle);
     std::unordered_map<std::string, std::array<size_t, 3>> refinement{
         {"ObjectAShell", {{1, 1, 1}}},
         {"ObjectACube", {{1, 1, 1}}},
@@ -136,7 +138,6 @@ void test_connectivity() {
     if (not excise_interiorB) {
       refinement["ObjectBInterior"] = std::array<size_t, 3>{{1, 1, 1}};
     }
-    CAPTURE(use_equiangular_map);
     CAPTURE(radial_distribution_outer_shell);
     const domain::creators::BinaryCompactObject binary_compact_object{
         Object{inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
@@ -160,6 +161,7 @@ void test_connectivity() {
         use_equiangular_map,
         use_projective_map,
         radial_distribution_outer_shell,
+        opening_angle,
         with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
 
     const auto domain = TestHelpers::domain::creators::test_domain_creator(
@@ -271,7 +273,8 @@ void test_connectivity() {
                   false},
               envelope_radius, outer_radius, refinement, grid_points,
               use_equiangular_map, use_projective_map,
-              radial_distribution_outer_shell, std::make_unique<PeriodicBc>(),
+              radial_distribution_outer_shell, opening_angle,
+              std::make_unique<PeriodicBc>(),
               Options::Context{false, {}, 1, 1}),
           Catch::Matchers::Contains("Cannot have periodic boundary "
                                     "conditions with a binary domain"));
@@ -292,7 +295,7 @@ void test_connectivity() {
                        false},
                 envelope_radius, outer_radius, refinement, grid_points,
                 use_equiangular_map, use_projective_map,
-                radial_distribution_outer_shell,
+                radial_distribution_outer_shell, opening_angle,
                 create_outer_boundary_condition(),
                 Options::Context{false, {}, 1, 1}),
             Catch::Matchers::Contains("Cannot have periodic boundary "
@@ -313,7 +316,7 @@ void test_connectivity() {
                     false},
                 envelope_radius, outer_radius, refinement, grid_points,
                 use_equiangular_map, use_projective_map,
-                radial_distribution_outer_shell, nullptr,
+                radial_distribution_outer_shell, opening_angle, nullptr,
                 Options::Context{false, {}, 1, 1}),
             Catch::Matchers::Contains(
                 "Must specify either both inner and outer boundary "
@@ -332,7 +335,7 @@ void test_connectivity() {
                        false},
                 envelope_radius, outer_radius, refinement, grid_points,
                 use_equiangular_map, use_projective_map,
-                radial_distribution_outer_shell,
+                radial_distribution_outer_shell, opening_angle,
                 create_outer_boundary_condition(),
                 Options::Context{false, {}, 1, 1}),
             Catch::Matchers::Contains(
@@ -345,14 +348,12 @@ void test_connectivity() {
 
 std::string stringize(const bool t) { return t ? "true" : "false"; }
 
-std::string create_option_string(const bool excise_A, const bool excise_B,
-                                 const bool add_time_dependence,
-                                 const bool use_logarithmic_map_AB,
-                                 const bool use_equiangular_map,
-                                 const size_t additional_refinement_outer,
-                                 const size_t additional_refinement_A,
-                                 const size_t additional_refinement_B,
-                                 const bool add_boundary_condition) {
+std::string create_option_string(
+    const bool excise_A, const bool excise_B, const bool add_time_dependence,
+    const bool use_logarithmic_map_AB, const bool use_equiangular_map,
+    const size_t additional_refinement_outer,
+    const size_t additional_refinement_A, const size_t additional_refinement_B,
+    const double opening_angle, const bool add_boundary_condition) {
   const std::string time_dependence{
       add_time_dependence ? "  TimeDependentMaps:\n"
                             "    InitialTime: 1.0\n"
@@ -414,6 +415,7 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          "  OuterShell:\n"
          "    Radius: 25.0\n"
          "    RadialDistribution: Linear\n" +
+         "    OpeningAngle: " + std::to_string(opening_angle) + "\n" +
          outer_boundary_condition + "  InitialRefinement:\n" +
          (excise_A ? "" : "    ObjectAInterior: [1, 1, 1]\n") +
          (excise_B ? "" : "    ObjectBInterior: [1, 1, 1]\n") +
@@ -451,6 +453,7 @@ void test_bns_domain_with_cubes() {
 
   // Outer shell:
   constexpr double outer_radius = 32.4;
+  constexpr double opening_angle = 90.0;
 
   // Misc.:
   constexpr size_t grid_points = 3;
@@ -473,6 +476,7 @@ void test_bns_domain_with_cubes() {
       use_equiangular_map,
       use_projective_map,
       radial_distribution_outer_shell,
+      opening_angle,
       create_outer_boundary_condition()};
 
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
@@ -526,12 +530,12 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
     if (with_boundary_conditions) {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, true>>(
-          create_option_string(true, true, true, false, true, 0, 0, 0,
+          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
                                with_boundary_conditions));
     } else {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, false>>(
-          create_option_string(true, true, true, false, true, 0, 0, 0,
+          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
                                with_boundary_conditions));
     }
   }();
@@ -563,12 +567,15 @@ void test_binary_factory() {
   const bool add_time_dependence = false;
   for (const auto& [excise_A, excise_B, use_log_maps, use_equiangular_map,
                     additional_refinement_outer, additional_refinement_A,
-                    additional_refinement_B, with_boundary_conds] :
+                    additional_refinement_B, opening_angle,
+                    with_boundary_conds] :
        random_sample<5>(
            cartesian_product(make_array(true, false), make_array(true, false),
                              make_array(true, false), make_array(true, false),
                              make_array(0_st, 1_st), make_array(0_st, 2_st),
-                             make_array(0_st, 3_st), make_array(true, false)),
+                             make_array(0_st, 3_st),
+                             make_array(60.0, 90.0, 120.0),
+                             make_array(true, false)),
            make_not_null(&gen))) {
     if (use_log_maps and not(excise_A and excise_B)) {
       // Log maps in the object interiors only work with excisions
@@ -576,9 +583,9 @@ void test_binary_factory() {
     }
     check_impl(create_option_string(
                    excise_A, excise_B, add_time_dependence, use_log_maps,
-                   use_equiangular_map, additional_refinement_outer,
-                   additional_refinement_A, additional_refinement_B,
-                   with_boundary_conds),
+                   opening_angle == 90.0 ? use_equiangular_map : true,
+                   additional_refinement_outer, additional_refinement_A,
+                   additional_refinement_B, opening_angle, with_boundary_conds),
                with_boundary_conds);
   }
 }
@@ -588,7 +595,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectA's center is expected to be positive."));
@@ -596,7 +603,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectB's center is expected to be negative."));
@@ -604,7 +611,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("The radius for the enveloping cube is too "
                                 "small! The Frustums will be malformed."));
@@ -612,7 +619,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectB's inner radius must be less than its outer radius."));
@@ -620,7 +627,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectA's inner radius must be less than its outer radius."));
@@ -628,8 +635,8 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, std::nullopt, true}, 25.5, 32.4, 2_st, 6_st,
-          true, true, Distribution::Linear, create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          true, true, Distribution::Linear, 120.0,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object B requires excising the interior "
@@ -638,7 +645,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, std::nullopt, true},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear,
+          25.5, 32.4, 2_st, 6_st, true, true, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
@@ -649,7 +656,7 @@ void test_parse_errors() {
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
           25.5, 32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true, true,
-          Distribution::Linear, create_outer_boundary_condition(),
+          Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
@@ -657,7 +664,7 @@ void test_parse_errors() {
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
           25.5, 32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true, true,
-          Distribution::Linear, create_outer_boundary_condition(),
+          Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialGridPoints'"));
   // Note: the boundary condition-related parse errors are checked in the

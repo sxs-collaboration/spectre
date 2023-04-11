@@ -59,6 +59,7 @@ DomainCreator:
     OuterShell:
       Radius: 400.
       RadialDistribution: Linear
+      OpeningAngle: 90.0
       BoundaryCondition: ConstraintPreservingSphericalRadiation
     TimeDependentMaps:
       InitialTime: 0.

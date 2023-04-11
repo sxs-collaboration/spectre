@@ -63,6 +63,7 @@ DomainCreator:
     OuterShell:
       Radius: &outer_radius 300.
       RadialDistribution: &outer_shell_distribution Inverse
+      OpeningAngle: 90.0
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     # This h-refinement is set up so spherical wedges have equal angular size.
