@@ -29,6 +29,7 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   std::uniform_real_distribution<> upper_bound_lower_base_dis(3, 7);
   std::uniform_real_distribution<> lower_bound_upper_base_dis(-13.5, -9);
   std::uniform_real_distribution<> upper_bound_upper_base_dis(9, 13.5);
+  std::uniform_real_distribution<> angle_dis(55.0, 125.0);
 
   const double lower_x_lower_base = lower_bound_lower_base_dis(gen);
   CAPTURE(lower_x_lower_base);
@@ -50,6 +51,8 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   CAPTURE(upper_z);
   const double lower_z = -1.0;
   CAPTURE(lower_z);
+  const double opening_angle = angle_dis(gen) * M_PI / 180.0;
+  CAPTURE(opening_angle * 180.0 / M_PI);
 
   // For diagnostic purposes, compute other Frustum quantities:
   // Frustum cross factor is small when the diagonals across each of the bases
@@ -101,9 +104,9 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
     // of the longer base to the height of the Frustum is at most 7:1. Frustums
     // with larger ratios cannot be bulged out without the root find beginning
     // to fail in extreme cases.
-    const CoordinateMaps::Frustum frustum_map(face_vertices, lower_z, upper_z,
-                                              map_i(), with_equiangular_map,
-                                              1.2, false, 1.0, 1.0);
+    const CoordinateMaps::Frustum frustum_map(
+        face_vertices, lower_z, upper_z, map_i(), with_equiangular_map, 1.2,
+        false, 1.0, 1.0, opening_angle);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
