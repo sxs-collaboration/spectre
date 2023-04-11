@@ -2,10 +2,10 @@
 # See LICENSE.txt for details.
 
 if (BUILD_PYTHON_BINDINGS)
-  add_test(NAME "support.Python.main"
+  add_test(NAME "support.Python.Cli"
     COMMAND ${CMAKE_BINARY_DIR}/bin/spectre --version)
   set_tests_properties(
-    "support.Python.main" PROPERTIES
+    "support.Python.Cli" PROPERTIES
     PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
     LABELS "python")
 
@@ -22,4 +22,10 @@ spectre_add_python_bindings_test(
   "support.Machines"
   Test_Machines.py
   "Machines"
+  None)
+
+spectre_add_python_bindings_test(
+  "support.Python.Main"
+  Test_Main.py
+  "Python"
   None)
