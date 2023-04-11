@@ -254,6 +254,8 @@ ApparentHorizons:
     Verbosity: Verbose
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
+  ControlSystemCharSpeedAhA: *AhA
+  ControlSystemCharSpeedAhB: *AhB
 
 InterpolationTargets:
   BondiSachsInterpolation:
@@ -261,16 +263,18 @@ InterpolationTargets:
     Radius: [100, 150, 200]
     Center: [0, 0, 0]
     AngularOrdering: Cce
-  ObservationExcisionBoundaryA:
+  ObservationExcisionBoundaryA: &ExBdryA
     LMax: *LMax
     Radius: *RadiusA
     Center: *CenterA
     AngularOrdering: Strahlkorper
-  ObservationExcisionBoundaryB:
+  ObservationExcisionBoundaryB: &ExBdryB
     LMax: *LMax
     Radius: *RadiusB
     Center: *CenterB
     AngularOrdering: Strahlkorper
+  ControlSystemCharSpeedExcisionA: *ExBdryA
+  ControlSystemCharSpeedExcisionB: *ExBdryB
 
 Cce:
   BondiSachsOutputFilePrefix: "BondiSachs"
@@ -319,7 +323,7 @@ ControlSystems:
     Controller:
       UpdateFraction: 0.03
     TimescaleTuner:
-      InitialTimescales: 0.2
+      InitialTimescales: 2.0
       MinTimescale: 1.0e-2
       MaxTimescale: 10.0
       IncreaseThreshold: 2.5e-4
@@ -328,6 +332,33 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   ShapeB: *ShapeControl
+  SizeA: &SizeControl
+    IsActive: true
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: true
+    Controller:
+      UpdateFraction: 0.06
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-4
+      MaxTimescale: 20.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 1.0
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      SmootherTuner:
+        InitialTimescales: [0.2]
+        MinTimescale: 1.0e-4
+        MaxTimescale: 20.0
+        IncreaseThreshold: 2.5e-4
+        DecreaseThreshold: 1.0e-3
+        IncreaseFactor: 1.01
+        DecreaseFactor: 0.9
+  SizeB: *SizeControl
 
 # initial_data.h5 should contain numerical initial data on a grid that covers
 # the domain given above
