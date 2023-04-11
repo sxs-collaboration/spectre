@@ -49,7 +49,8 @@ std::optional<double> SphereTransition::original_radius_over_radius(
   }
   const double original_radius = (mag + distorted_radius * b_) / denom;
 
-  return original_radius >= r_min_ and original_radius <= r_max_
+  return (original_radius + eps_) >= r_min_ and
+                 (original_radius - eps_) <= r_max_
              ? std::optional<double>{original_radius / mag}
              : std::nullopt;
 }
@@ -115,10 +116,9 @@ bool SphereTransition::operator!=(
 template <typename T>
 void SphereTransition::check_magnitudes([[maybe_unused]] const T& mag) const {
 #ifdef SPECTRE_DEBUG
-  const double eps = std::numeric_limits<double>::epsilon() * 100;
   for (size_t i = 0; i < get_size(mag); ++i) {
-    if (get_element(mag, i) + eps < r_min_ or
-        get_element(mag, i) - eps > r_max_) {
+    if (get_element(mag, i) + eps_ < r_min_ or
+        get_element(mag, i) - eps_ > r_max_) {
       ERROR(
           "The sphere transition map was called with coordinates outside the "
           "set minimum and maximum radius. The minimum radius is "
