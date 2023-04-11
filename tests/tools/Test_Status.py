@@ -42,7 +42,9 @@ class TestExecutableStatus(unittest.TestCase):
             open_h5_file.close_current_object()
             # Control systems data
             rotation_subfile = open_h5_file.insert_dat(
-                "/ControlSystems/Rotation/z", legend=["Lambda"], version=0)
+                "/ControlSystems/Rotation/z",
+                legend=["FunctionOfTime"],
+                version=0)
             rotation_subfile.append([0.])
             rotation_subfile.append([np.pi])
             open_h5_file.close_current_object()

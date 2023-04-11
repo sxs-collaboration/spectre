@@ -37,7 +37,8 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
             try:
                 rotation_z = to_dataframe(
                     open_reductions_file["ControlSystems/Rotation/z.dat"])
-                covered_angle = np.diff(rotation_z["Lambda"].iloc[[0, -1]])[0]
+                covered_angle = np.diff(
+                    rotation_z["FunctionOfTime"].iloc[[0, -1]])[0]
                 result["Orbits"] = covered_angle / (2. * np.pi)
             except:
                 logger.debug("Unable to extract orbits.", exc_info=True)
