@@ -32,7 +32,8 @@ class ExecutableStatus:
     executable_name_patterns: List[str] = []
     fields: Dict[str, Optional[str]] = {}
 
-    def status(self, input_file: dict, work_dir: str) -> dict:
+    def status(self, input_file: Optional[dict],
+               work_dir: Optional[str]) -> dict:
         """Provide status information of an executable run.
 
         Arguments:
