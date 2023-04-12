@@ -908,32 +908,32 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     // The 0th block always exists and will only need an expansion + rotation
     // map from the grid to inertial frame. No maps to the distorted frame
     grid_to_inertial_block_maps[0] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Grid>();
+        time_dependent_options_
+            ->grid_to_inertial_map<domain::ObjectLabel::None>(false);
 
     // Because we require that both objects have inner shells, object A
     // corresponds to blocks 46-59 and object B corresponds to blocks 60-73. If
     // we have extra outer shells, those will have the same maps as
     // block 0, and will start at block 74. The `true` being passed to
-    // everything_grid_to_inertial_map specifies that the size map *should* be
-    // included in the distorted frame. The `false` being passed to
-    // grid_to_distorted_map specifies that this map is *not* the identity.
+    // the functions specifies that the size map *should* be included in the
+    // distorted frame.
     grid_to_inertial_block_maps[46] =
-        time_dependent_options_
-            ->everything_grid_to_inertial_map<domain::ObjectLabel::A>(true);
+        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::A>(
+            true);
     grid_to_distorted_block_maps[46] =
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
-            false);
+            true);
     distorted_to_inertial_block_maps[46] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
+        time_dependent_options_->distorted_to_inertial_map(true);
 
     grid_to_inertial_block_maps[60] =
-        time_dependent_options_
-            ->everything_grid_to_inertial_map<domain::ObjectLabel::B>(true);
+        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::B>(
+            true);
     grid_to_distorted_block_maps[60] =
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
-            false);
+            true);
     distorted_to_inertial_block_maps[60] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
+        time_dependent_options_->distorted_to_inertial_map(true);
 
     for (size_t block = 1; block < number_of_blocks_; ++block) {
       if (block == 46 or block == 60) {
@@ -941,17 +941,21 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       } else if (block > 46 and block < 60) {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[46]->get_clone();
-        grid_to_distorted_block_maps[block] =
-            grid_to_distorted_block_maps[46]->get_clone();
-        distorted_to_inertial_block_maps[block] =
-            distorted_to_inertial_block_maps[46]->get_clone();
+        if (grid_to_distorted_block_maps[46] != nullptr) {
+          grid_to_distorted_block_maps[block] =
+              grid_to_distorted_block_maps[46]->get_clone();
+          distorted_to_inertial_block_maps[block] =
+              distorted_to_inertial_block_maps[46]->get_clone();
+        }
       } else if (block > 60 and block < 74) {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[60]->get_clone();
-        grid_to_distorted_block_maps[block] =
-            grid_to_distorted_block_maps[60]->get_clone();
-        distorted_to_inertial_block_maps[block] =
-            distorted_to_inertial_block_maps[60]->get_clone();
+        if (grid_to_distorted_block_maps[60] != nullptr) {
+          grid_to_distorted_block_maps[block] =
+              grid_to_distorted_block_maps[60]->get_clone();
+          distorted_to_inertial_block_maps[block] =
+              distorted_to_inertial_block_maps[60]->get_clone();
+        }
       } else {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[0]->get_clone();

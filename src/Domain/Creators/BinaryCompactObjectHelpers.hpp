@@ -73,40 +73,25 @@ struct TimeDependentMapOptions {
       domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
 
   template <typename SourceFrame, typename TargetFrame>
-  using IdentityForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, IdentityMap>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap>;
-  template <typename SourceFrame, typename TargetFrame>
-  using RotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
   using CubicScaleAndRotationMapForComposition =
       domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
                             RotationMap3D>;
-  template <typename SourceFrame, typename TargetFrame>
-  using CompressionMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CompressionMap>;
-  using EverythingMapForComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                            CubicScaleMap, RotationMap3D>;
-  using EverythingMapNoDistortedForComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, IdentityMap,
-                            CubicScaleMap, RotationMap3D>;
-
- public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>,
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, IdentityMap>,
-      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, CubicScaleMap,
-                            RotationMap3D>,
+  using DistortedToInertialComposition =
+      CubicScaleAndRotationMapForComposition<Frame::Distorted, Frame::Inertial>;
+  using GridToDistortedComposition =
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CompressionMap>;
+  template <bool IncludeDistortedMap>
+  using GridToInertialComposition = tmpl::conditional_t<
+      IncludeDistortedMap,
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
                             CubicScaleMap, RotationMap3D>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, IdentityMap,
-                            CubicScaleMap, RotationMap3D>>;
+      CubicScaleAndRotationMapForComposition<Frame::Grid, Frame::Inertial>>;
+
+ public:
+  using maps_list =
+      tmpl::list<GridToDistortedComposition, DistortedToInertialComposition,
+                 GridToInertialComposition<false>,
+                 GridToInertialComposition<true>>;
 
   /// \brief The initial time of the functions of time.
   struct InitialTime {
@@ -231,35 +216,38 @@ struct TimeDependentMapOptions {
       double domain_outer_radius);
 
   /*!
-   * \brief This will make a composition of an `CubicScale` and `Rotation` map
-   * from the templated frame `SourceFrame` to the `Frame::Inertial` frame.
+   * \brief This will construct the map from `Frame::Distorted` to
+   * `Frame::Inertial`
+   *
+   * If the argument `include_distorted_map` is true, then this will be a
+   * composition of an `CubicScale` and `Rotation` map. If it is false, this
+   * returns a `nullptr`.
    */
-  template <typename SourceFrame>
-  MapType<SourceFrame, Frame::Inertial> frame_to_inertial_map() const;
+  MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
+      bool include_distorted_map) const;
 
   /*!
    * \brief This will construct the maps from the `Frame::Grid` to the
    * `Frame::Distorted`.
    *
-   * If the argument `use_identity` is true, then this will be an identity map.
-   * If it is false, this currently adds a `SphericalCompression` map for the
-   * templated `Object`.
+   * If the argument `include_distorted_map` is true, then this will be a
+   * `SphericalCompression` map for the templated `Object`. If it is false, then
+   * this returns a `nullptr`.
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Distorted> grid_to_distorted_map(
-      bool use_identity) const;
+      bool include_distorted_map) const;
 
   /*!
    * \brief This will construct the entire map from the `Frame::Grid` to the
    * `Frame::Inertial`.
    *
-   * If the argument `include_distorted` is true, then this map will have a
-   * `SphericalCompression` map from the `Frame::Grid` to the `Frame::Distorted`
-   * frame. If it is false, there no grid to distorted maps will be added
-   * (effectively the identity between the grid and distorted frame).
+   * If the argument `include_distorted_map` is true, then this map will have a
+   * composition of a `SphericalCompression`, `CubicScale`, and `Rotation` map.
+   * If it is false, there will only be `CubicScale` and `Rotation` maps.
    */
   template <domain::ObjectLabel Object>
-  MapType<Frame::Grid, Frame::Inertial> everything_grid_to_inertial_map(
+  MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
       bool include_distorted_map) const;
 
   // Names are public because they need to be used when constructing maps in the
@@ -271,8 +259,7 @@ struct TimeDependentMapOptions {
   inline static const std::array<std::string, 2> size_names{{"SizeA", "SizeB"}};
 
  private:
-  template <domain::ObjectLabel Object>
-  size_t get_index() const;
+  static size_t get_index(domain::ObjectLabel object);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   ExpansionMapOptions expansion_map_options_{};

@@ -129,76 +129,63 @@ void TimeDependentMapOptions::build_maps(
   }
 }
 
-template <typename SourceFrame>
-TimeDependentMapOptions::MapType<SourceFrame, Frame::Inertial>
-TimeDependentMapOptions::frame_to_inertial_map() const {
-  return std::make_unique<
-      CubicScaleAndRotationMapForComposition<SourceFrame, Frame::Inertial>>(
-      expansion_map_, rotation_map_);
+TimeDependentMapOptions::MapType<Frame::Distorted, Frame::Inertial>
+TimeDependentMapOptions::distorted_to_inertial_map(
+    const bool include_distorted_map) const {
+  if (include_distorted_map) {
+    return std::make_unique<DistortedToInertialComposition>(expansion_map_,
+                                                            rotation_map_);
+  } else {
+    return nullptr;
+  }
 }
 
 template <domain::ObjectLabel Object>
 TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>
-TimeDependentMapOptions::grid_to_distorted_map(const bool use_identity) const {
-  if (use_identity) {
-    return std::make_unique<
-        IdentityForComposition<Frame::Grid, Frame::Distorted>>(IdentityMap{});
-  } else {
-    const size_t index = get_index<Object>();
-    return std::make_unique<
-        CompressionMapForComposition<Frame::Grid, Frame::Distorted>>(
+TimeDependentMapOptions::grid_to_distorted_map(
+    const bool include_distorted_map) const {
+  if (include_distorted_map) {
+    const size_t index = get_index(Object);
+    return std::make_unique<GridToDistortedComposition>(
         gsl::at(size_maps_, index));
+  } else {
+    return nullptr;
   }
 }
 
 template <domain::ObjectLabel Object>
 TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>
-TimeDependentMapOptions::everything_grid_to_inertial_map(
+TimeDependentMapOptions::grid_to_inertial_map(
     const bool include_distorted_map) const {
   if (include_distorted_map) {
-    const size_t index = get_index<Object>();
-    return std::make_unique<EverythingMapForComposition>(
+    const size_t index = get_index(Object);
+    return std::make_unique<GridToInertialComposition<true>>(
         gsl::at(size_maps_, index), expansion_map_, rotation_map_);
   } else {
-    return std::make_unique<EverythingMapNoDistortedForComposition>(
-        IdentityMap{}, expansion_map_, rotation_map_);
+    return std::make_unique<GridToInertialComposition<false>>(expansion_map_,
+                                                              rotation_map_);
   }
 }
 
-template <domain::ObjectLabel Object>
-size_t TimeDependentMapOptions::get_index() const {
-  ASSERT(Object == domain::ObjectLabel::A or Object == domain::ObjectLabel::B,
-         "Object label for TimeDependentMapOptions must be either A or B, not"
-             << Object);
-  return Object == domain::ObjectLabel::A ? 0_st : 1_st;
+size_t TimeDependentMapOptions::get_index(const domain::ObjectLabel object) {
+  ASSERT(object == domain::ObjectLabel::A or object == domain::ObjectLabel::B,
+         "object label for TimeDependentMapOptions must be either A or B, not"
+             << object);
+  return object == domain::ObjectLabel::A ? 0_st : 1_st;
 }
 
 #define OBJECT(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>     \
-  TimeDependentMapOptions::grid_to_distorted_map<OBJECT(data)>(bool) const;    \
-  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>      \
-  TimeDependentMapOptions::everything_grid_to_inertial_map<OBJECT(data)>(bool) \
-      const;                                                                   \
-  template size_t TimeDependentMapOptions::get_index<OBJECT(data)>() const;
+#define INSTANTIATE(_, data)                                                \
+  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>  \
+  TimeDependentMapOptions::grid_to_distorted_map<OBJECT(data)>(bool) const; \
+  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>   \
+  TimeDependentMapOptions::grid_to_inertial_map<OBJECT(data)>(bool) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
-                        (domain::ObjectLabel::A, domain::ObjectLabel::B))
+                        (domain::ObjectLabel::A, domain::ObjectLabel::B,
+                         domain::ObjectLabel::None))
 
 #undef OBJECT
 #undef INSTANTIATE
-
-#define SOURCE_FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
-
-#define INSTANTIATE(_, data)                                    \
-  template TimeDependentMapOptions::MapType<SOURCE_FRAME(data), \
-                                            Frame::Inertial>    \
-  TimeDependentMapOptions::frame_to_inertial_map<SOURCE_FRAME(data)>() const;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Distorted))
-
-#undef SOURCE_FRAME
-#undef INSTANTIATE
-
 }  // namespace domain::creators::bco

@@ -146,39 +146,45 @@ void test() {
 
     const auto grid_to_distorted_map_A =
         time_dep_options.grid_to_distorted_map<domain::ObjectLabel::A>(
-            not include_size_A);
+            include_size_A);
     const auto grid_to_distorted_map_B =
         time_dep_options.grid_to_distorted_map<domain::ObjectLabel::B>(
-            not include_size_B);
-    const auto everything_map_A =
-        time_dep_options
-            .everything_grid_to_inertial_map<domain::ObjectLabel::A>(
-                include_size_A);
-    const auto everything_map_B =
-        time_dep_options
-            .everything_grid_to_inertial_map<domain::ObjectLabel::B>(
-                include_size_B);
-    const auto grid_to_inertial_map =
-        time_dep_options.frame_to_inertial_map<Frame::Grid>();
-    const auto dist_to_inertial_map =
-        time_dep_options.frame_to_inertial_map<Frame::Distorted>();
+            include_size_B);
+    const auto grid_to_inertial_map_A =
+        time_dep_options.grid_to_inertial_map<domain::ObjectLabel::A>(
+            include_size_A);
+    const auto grid_to_inertial_map_B =
+        time_dep_options.grid_to_inertial_map<domain::ObjectLabel::B>(
+            include_size_B);
+    // Even though the distorted to inertial map is not tied to a specific
+    // object, we use `include_size_?` to determine if the distorted map is
+    // included just for testing.
+    const auto distorted_to_inertial_map_A =
+        time_dep_options.distorted_to_inertial_map(include_size_A);
+    const auto distorted_to_inertial_map_B =
+        time_dep_options.distorted_to_inertial_map(include_size_B);
 
     // All of these maps are tested individually. Rather than going through the
     // effort of coming up with a source coordinate and calculating analytically
-    // what we would get after it's mapped, we just check that it's not the
-    // identity and that the jacobians are time dependent.
-    const auto check_map = [](const auto& map, const bool is_identity = false) {
-      CHECK(map->is_identity() == is_identity);
-      CHECK(map->inv_jacobian_is_time_dependent() == not is_identity);
-      CHECK(map->jacobian_is_time_dependent() == not is_identity);
+    // what we would get after it's mapped, we just check whether it's supposed
+    // to be a nullptr and if it's not that it's not the identity and that the
+    // jacobians are time dependent.
+    const auto check_map = [](const auto& map, const bool is_null) {
+      if (is_null) {
+        CHECK(map == nullptr);
+      } else {
+        CHECK_FALSE(map->is_identity());
+        CHECK(map->inv_jacobian_is_time_dependent());
+        CHECK(map->jacobian_is_time_dependent());
+      }
     };
 
     check_map(grid_to_distorted_map_A, not include_size_A);
     check_map(grid_to_distorted_map_B, not include_size_B);
-    check_map(everything_map_A);
-    check_map(everything_map_B);
-    check_map(grid_to_inertial_map);
-    check_map(dist_to_inertial_map);
+    check_map(grid_to_inertial_map_A, false);
+    check_map(grid_to_inertial_map_B, false);
+    check_map(distorted_to_inertial_map_A, not include_size_A);
+    check_map(distorted_to_inertial_map_B, not include_size_B);
   }
 }
 }  // namespace
