@@ -30,6 +30,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Clenshaw.hpp
   ComplexDataView.hpp
   Filtering.hpp
   LogicalCoordinates.hpp

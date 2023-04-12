@@ -10,11 +10,29 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "NumericalAlgorithms/Spectral/Clenshaw.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+namespace {
+
+double evaluate_cosine_series(const std::vector<double>& coefficients,
+                              const double& cosx) {
+  // cos(nx) = cos((n-1)*x)*2*cosx - 1* cos((n-2)*x)
+  return Spectral::evaluate_clenshaw(coefficients, 2.0 * cosx, -1.0, cosx,
+                                     2.0 * cosx * cosx - 1.0);
+}
+double evaluate_sine_series(const std::vector<double>& coefficients, double x,
+                            const double& cosx) {
+  // sin(nx) = sin((n-1)*x) * 2*cos(x) - 1 * sin((n-2)x)
+  auto sinx = sin(x);
+  return Spectral::evaluate_clenshaw(coefficients, 2.0 * cosx, -1.0, sinx,
+                                     2.0 * cosx * sinx);
+}
+}  // namespace
 
 namespace EquationsOfState {
 template <typename LowDensityEoS>
@@ -324,35 +342,36 @@ template <typename LowDensityEoS>
 double Enthalpy<LowDensityEoS>::evaluate_coefficients(
     const Enthalpy<LowDensityEoS>::Coefficients& coefficients, const double x,
     const double exponential_prefactor) {
-  // Not as good as Horner's rule, so don't use for polynomials
-  // The basis_function should be a family of functions indexed by
-  // an integer
-  auto evaluate_with_function_basis =
-      [](const auto& basis_function, const double evaluation_point,
-         const std::vector<double>& basis_coefficients, const double initial) {
-        double sum = initial;
-        for (size_t index = 0; index < basis_coefficients.size(); index++) {
-          sum = std::fma(basis_coefficients[index],
-                         basis_function(evaluation_point, index), sum);
-        }
-        return sum;
-      };
   const double k_times_x = coefficients.trig_scale * x;
   const double polynomial_contribution =
       evaluate_polynomial(coefficients.polynomial_coefficients, x);
-  const double sin_contribution = evaluate_with_function_basis(
-      [](double u, int n) { return sin((n + 1) * u); }, k_times_x,
-      coefficients.sin_coefficients, 0.0);
-  const double cos_contribution = evaluate_with_function_basis(
-      [](double u, int n) { return cos((n + 1) * u); }, k_times_x,
-      coefficients.cos_coefficients, 0.0);
-  double value =
-      polynomial_contribution + (sin_contribution + cos_contribution);
+  double value = polynomial_contribution;
+  // A couple of edge cases
+  switch (coefficients.sin_coefficients.size()) {
+    case 0:
+      break;
+    case 1: {
+      // One sine and one cosine term
+      value += (coefficients.sin_coefficients[0] * sin(k_times_x) +
+                coefficients.cos_coefficients[0] * cos(k_times_x));
+      break;
+    }
+    default: {
+      // Use Clenshaw's method to evaluate
+      const double coskx = cos(k_times_x);
+      const double sin_contribution =
+          evaluate_sine_series(coefficients.sin_coefficients, k_times_x, coskx);
+      const double cos_contribution =
+          evaluate_cosine_series(coefficients.cos_coefficients, coskx);
+      value += (sin_contribution + cos_contribution);
+      break;
+    }
+  }
   if (coefficients.has_exponential_prefactor) {
     // multiply by some constant, typically rho(x) = rho_0 * exp(x)
-    value *= exponential_prefactor;
     // add an additional constant external to the previous prefactor
-    value += coefficients.exponential_external_constant;
+    return value * exponential_prefactor +
+           coefficients.exponential_external_constant;
   }
   return value;
 }
