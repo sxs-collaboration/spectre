@@ -16,6 +16,9 @@ import humanize
 import pandas as pd
 import rich.console
 import rich.table
+import rich.rule
+import rich.live
+import time
 import yaml
 from spectre.Visualization.ReadInputFile import get_executable
 
@@ -170,40 +173,8 @@ def _format(field: str, value: Any) -> str:
         return str(value)
 
 
-@click.command()
-@click.option("-u",
-              "--uid",
-              "--user",
-              "user",
-              show_default="you",
-              help=("User name or user ID. "
-                    "See documentation for 'sacct -u' for details."))
-@click.option("-a",
-              "--allusers",
-              is_flag=True,
-              help=("Show jobs for all users. "
-                    "See documentation for 'sacct -a' for details."))
-@click.option("-p",
-              "--show-paths",
-              is_flag=True,
-              help=("Show job working directory and input file paths."))
-@click.option("-U",
-              "--show-unidentified",
-              is_flag=True,
-              help=("Also show jobs that were not identified "
-                    "as SpECTRE executables."))
-@click.option("-s",
-              "--state",
-              help=("Show only jobs with this state, "
-                    "e.g. running (r) or completed (cd). "
-                    "See documentation for 'sacct -s' for details."))
-@click.option("-S",
-              "--starttime",
-              show_default="start of today",
-              help=("Show jobs eligible after this time, e.g. 'now-2days'. "
-                    "See documentation for 'sacct -S' for details."))
-def status_command(show_paths, show_unidentified, **kwargs):
-    """Gives an overview of simulations running on this machine."""
+@rich.console.group()
+def render_status(show_paths, show_unidentified, **kwargs):
     job_data = fetch_job_data([
         "JobID",
         "User",
@@ -240,9 +211,6 @@ def status_command(show_paths, show_unidentified, **kwargs):
     # Add metadata so jobs can be grouped by state
     job_data["StateOrder"] = job_data["State"].apply(_state_order)
 
-    # Start printing things
-    console = rich.console.Console()
-
     # We'll print these columns
     standard_fields = [
         "State",
@@ -268,8 +236,9 @@ def status_command(show_paths, show_unidentified, **kwargs):
         if first_section:
             first_section = False
         else:
-            console.print("")
-        console.rule(f"[bold]{executable_name}", align="left")
+            yield ""
+        yield rich.rule.Rule(f"[bold]{executable_name}", align="left")
+        yield ""
         executable_status = match_executable_status(executable_name)
 
         extra_columns = [(field + f" [{unit}]") if unit else field
@@ -308,25 +277,87 @@ def status_command(show_paths, show_unidentified, **kwargs):
 
                 # Print paths if requested
                 if show_paths:
-                    console.print(table)
+                    yield table
                     # Print WorkDir in its own line so it wraps nicely in the
                     # terminal and can be copied
-                    console.print(" [bold]WorkDir:[/bold] " + row['WorkDir'])
-                    console.print(" [bold]InputFile:[/bold] " +
-                                  row['InputFile'])
+                    yield " [bold]WorkDir:[/bold] " + row['WorkDir']
+                    yield " [bold]InputFile:[/bold] " + row['InputFile']
                     table = rich.table.Table(*columns, box=None)
         if not show_paths:
-            console.print(table)
+            yield table
 
     # Output jobs that couldn't be parsed
     unidentified_jobs = job_data[job_data["ExecutableName"].isnull()]
     if len(unidentified_jobs) > 0 and show_unidentified:
-        console.print("")
-        console.rule("[bold]Unidentified Jobs", align="left")
+        yield ""
+        yield rich.rule.Rule("[bold]Unidentified Jobs", align="left")
+        yield ""
         table = rich.table.Table(*standard_columns, box=None)
         for i, row in unidentified_jobs.iterrows():
             row_formatted = [
                 _format(field, row[field]) for field in standard_fields
             ]
             table.add_row(*row_formatted)
-        console.print(table)
+        yield table
+
+
+@click.command()
+@click.option("-u",
+              "--uid",
+              "--user",
+              "user",
+              show_default="you",
+              help=("User name or user ID. "
+                    "See documentation for 'sacct -u' for details."))
+@click.option("-a",
+              "--allusers",
+              is_flag=True,
+              help=("Show jobs for all users. "
+                    "See documentation for 'sacct -a' for details."))
+@click.option("-p",
+              "--show-paths",
+              is_flag=True,
+              help=("Show job working directory and input file paths."))
+@click.option("-U",
+              "--show-unidentified",
+              is_flag=True,
+              help=("Also show jobs that were not identified "
+                    "as SpECTRE executables."))
+@click.option("-s",
+              "--state",
+              help=("Show only jobs with this state, "
+                    "e.g. running (r) or completed (cd). "
+                    "See documentation for 'sacct -s' for details."))
+@click.option("-S",
+              "--starttime",
+              show_default="start of today",
+              help=("Show jobs eligible after this time, e.g. 'now-2days'. "
+                    "See documentation for 'sacct -S' for details."))
+@click.option("-w",
+              "--watch",
+              "refresh_rate",
+              type=float,
+              default=None,
+              help=("On a new screen, refresh jobs every 'watch' number "
+                    "of seconds. Exit out with Ctl+C."))
+def status_command(refresh_rate, **kwargs):
+    """Gives an overview of simulations running on this machine."""
+
+    # Start printing things
+    console = rich.console.Console()
+
+    if not refresh_rate:
+        console.print(render_status(**kwargs))
+        return
+
+    try:
+        logging.disable()
+        with rich.live.Live(render_status(**kwargs),
+                            console=console,
+                            auto_refresh=False,
+                            screen=True) as live:
+            while True:
+                time.sleep(refresh_rate)
+                live.update(render_status(**kwargs), refresh=True)
+    except KeyboardInterrupt:
+        pass
