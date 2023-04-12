@@ -6,6 +6,7 @@ set(LIBRARY Test_ForceFree)
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  FiniteDifference/Test_Tags.cpp
   Test_Characteristics.cpp
   Test_ElectricCurrentDensity.cpp
   Test_Fluxes.cpp
