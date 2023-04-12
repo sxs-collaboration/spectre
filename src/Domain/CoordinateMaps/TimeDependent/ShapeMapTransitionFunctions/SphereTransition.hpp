@@ -70,5 +70,6 @@ class SphereTransition final : public ShapeMapTransitionFunction {
   double r_max_{};
   double a_{};
   double b_{};
+  static constexpr double eps_ = std::numeric_limits<double>::epsilon() * 100;
 };
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

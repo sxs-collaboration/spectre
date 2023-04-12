@@ -481,6 +481,56 @@ void test_analytical_jacobian(const TransitionFunction& transition_func,
       transition_func);
   CHECK_ITERABLE_APPROX(mapped_jacobian, analytical_jacobian);
 }
+
+template <typename Generator>
+void test_inverse(const gsl::not_null<Generator*> generator) {
+  using TransitionFunc =
+      CoordinateMaps::ShapeMapTransitionFunctions::SphereTransition;
+  const double time = 1.0;
+  const TransitionFunc sphere_transition{1.0, 1.5};
+  CoordinateMaps::TimeDependent::Shape shape{
+      std::array{0.0, 0.0, 0.0}, 10, 10,
+      std::make_unique<TransitionFunc>(sphere_transition), "Shape"};
+
+  DataVector coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
+  DataVector dt_coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
+  DataVector d2t_coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
+
+  const double factor = sqrt(2.0 / M_PI);
+
+  coefs[0] = 0.5 * factor;
+  dt_coefs[0] = -0.04 * factor;
+  d2t_coefs[0] = 0.003 * factor;
+
+  FunctionsOfTimeMap functions_of_time{};
+  functions_of_time["Shape"] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+          time, std::array{coefs, dt_coefs, d2t_coefs}, time + 3.0);
+
+  std::uniform_real_distribution<double> dist_phi{0.0, 2.0 * M_PI};
+  std::uniform_real_distribution<double> dist_theta{0.0, M_PI};
+
+  for (const double radius : std::array{1.0, 1.2, 1.5}) {
+    const double theta = dist_theta(*generator);
+    const double phi = dist_phi(*generator);
+
+    // Random point on a sphere of that radius
+    const double x = radius * sin(theta) * cos(phi);
+    const double y = radius * sin(theta) * sin(phi);
+    const double z = radius * cos(theta);
+    const std::array<double, 3> grid_coords{x, y, z};
+
+    const auto inertial_coords = shape(grid_coords, time, functions_of_time);
+
+    const auto mapped_coords =
+        shape.inverse(inertial_coords, time, functions_of_time);
+    CHECK(mapped_coords.has_value());
+    const double mapped_radius = magnitude(mapped_coords.value());
+
+    CHECK_ITERABLE_APPROX(grid_coords, mapped_coords.value());
+    CHECK(radius == approx(mapped_radius));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Shape",
@@ -491,6 +541,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Shape",
       sphere_transition{1e-7, 100.};
 
   MAKE_GENERATOR(generator);
+
+  test_inverse(make_not_null(&generator));
+
   for (const auto include_size : make_array(false, true)) {
     CAPTURE(include_size);
     {
