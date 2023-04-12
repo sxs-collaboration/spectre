@@ -5,6 +5,7 @@ import os
 import unittest
 
 import h5py
+import numpy as np
 import pandas.testing as pdt
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
@@ -36,11 +37,26 @@ class TestReadH5(unittest.TestCase):
                        "r") as open_file:
             df = to_dataframe(open_file["TimeSteps2.dat"])
             self.assertEqual(df.columns[0], "Time")
+
+            df_one_row = to_dataframe(open_file["TimeSteps2.dat"],
+                                      slice=np.s_[1:])
+            num_rows, num_cols = df_one_row.shape
+            self.assertEqual(num_rows, 1)
+            self.assertEqual(num_cols, df.shape[1])
         # SpECTRE subfile
         with spectre_h5.H5File(os.path.join(self.data_dir, "DatTestData.h5"),
                                "r") as open_file:
             df2 = to_dataframe(open_file.get_dat("/TimeSteps2"))
+            open_file.close_current_object()
             pdt.assert_frame_equal(df2, df)
+            open_file.close_current_object()
+
+            df2_one_row = to_dataframe(open_file.get_dat("/TimeSteps2"),
+                                       slice=np.s_[1:])
+            num_rows, num_cols = df2_one_row.shape
+            self.assertEqual(num_rows, 1)
+            self.assertEqual(num_cols, df2.shape[1])
+            pdt.assert_frame_equal(df2_one_row, df_one_row)
 
 
 if __name__ == '__main__':

@@ -101,7 +101,8 @@ class EvolutionStatus(ExecutableStatus):
         subfile_name = observe_time_event["SubfileName"] + ".dat"
         logger.debug(f"Reading time steps from subfile: '{subfile_name}'")
         try:
-            time_steps = to_dataframe(open_reductions_file[subfile_name])
+            time_steps = to_dataframe(open_reductions_file[subfile_name],
+                                      slice=np.s_[-2:])
         except:
             logger.debug("Unable to read time steps.", exc_info=True)
             return {}
