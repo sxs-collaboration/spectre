@@ -147,7 +147,9 @@ def get_executable_name(comment: Optional[str],
 
 
 def _state_order(state):
-    order = ["RUNNING", "PENDING", "COMPLETED", "TIMEOUT", "FAILED"]
+    order = [
+        "RUNNING", "PENDING", "COMPLETED", "TIMEOUT", "FAILED", "CANCELLED"
+    ]
     try:
         return order.index(state)
     except ValueError:
@@ -162,6 +164,7 @@ def _format(field: str, value: Any) -> str:
             "PENDING": "[magenta]",
             "FAILED": "[red]",
             "TIMEOUT": "[red]",
+            "CANCELLED": "[red]",
         }
         return style.get(value, "") + str(value)
     elif field in ["Start", "End"]:
@@ -220,6 +223,10 @@ def render_status(show_paths, show_unidentified, **kwargs):
         job_data.loc[(job_data["WorkDir"] == work_dir) &
                      (job_data["JobID"] != latest_job_id),
                      ["WorkDir", "NewJobID"]] = [None, latest_job_id]
+
+    # Normalize "cancelled" job state (remove "by X")
+    job_data.loc[job_data["State"].str.contains("CANCELLED"),
+                 "State"] = "CANCELLED"
 
     # Add metadata so jobs can be grouped by state
     job_data["StateOrder"] = job_data["State"].apply(_state_order)
