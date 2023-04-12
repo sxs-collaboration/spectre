@@ -27,12 +27,6 @@ class ZeroCrossingPredictor {
   ZeroCrossingPredictor(size_t min_size, size_t max_size);
 
   ZeroCrossingPredictor() = default;
-  ZeroCrossingPredictor(const ZeroCrossingPredictor& /*rhs*/) = delete;
-  ZeroCrossingPredictor& operator=(const ZeroCrossingPredictor& /*rhs*/) =
-      delete;
-  ZeroCrossingPredictor(ZeroCrossingPredictor&& /*rhs*/) = default;
-  ZeroCrossingPredictor& operator=(ZeroCrossingPredictor&& rhs) = default;
-  ~ZeroCrossingPredictor() = default;
 
   /// Adds a data point at time t to the ZeroCrossingPredictor.
   void add(double t, DataVector data_at_time_t);
