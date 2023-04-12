@@ -21,16 +21,18 @@ template <typename T>
 using OrderVector = boost::container::static_vector<T, maximum_order>;
 
 /// The standard Adams-Bashforth coefficients for constant step size,
-/// as one would find in a reference table.
+/// ordered from oldest to newest time, as one would find in a
+/// reference table (except likely in the opposite order).
 OrderVector<double> constant_adams_bashforth_coefficients(size_t order);
 
 /// \brief Generate coefficients for an Adams step.
 ///
 /// The coefficients are for a step using derivatives at \p
-/// control_times.  The step is taken from the last time in \p
-/// control_times to 0.  The result includes the overall factor of
-/// step size, so, for example, the coefficients for Euler's method
-/// (`control_times = {-dt}`) would be `{dt}`, not `{1}`.
+/// control_times, with the entries in the result vector corresponding
+/// to the passed times in order.  The step is taken from the last
+/// time in \p control_times to 0.  The result includes the overall
+/// factor of step size, so, for example, the coefficients for Euler's
+/// method (`control_times = {-dt}`) would be `{dt}`, not `{1}`.
 ///
 /// No requirements are imposed on \p control_times, except that the
 /// entries are all distinct.
@@ -45,8 +47,9 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times);
 /// Arguments are an iterator pair to past times (of type `Time`),
 /// with the most recent last, and the time step to take as a type
 /// with a `value()` method returning `double`.  The returned
-/// coefficients include the factor of the step size, so, for example,
-/// the coefficients for Euler's method would be `{step.value()}`, not
+/// coefficients correspond to the passed times in order.  They
+/// include the factor of the step size, so, for example, the
+/// coefficients for Euler's method would be `{step.value()}`, not
 /// `{1}`.
 template <typename Iterator, typename Delta>
 OrderVector<double> coefficients(const Iterator& times_begin,

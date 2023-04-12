@@ -16,25 +16,25 @@ OrderVector<double> constant_adams_bashforth_coefficients(const size_t order) {
     case 1:
       return {1.};
     case 2:
-      return {1.5, -0.5};
+      return {-0.5, 1.5};
     case 3:
-      return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
+      return {5.0 / 12.0, -4.0 / 3.0, 23.0 / 12.0};
     case 4:
-      return {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0};
+      return {-3.0 / 8.0, 37.0 / 24.0, -59.0 / 24.0, 55.0 / 24.0};
     case 5:
-      return {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0, -637.0 / 360.0,
-              251.0 / 720.0};
+      return {251.0 / 720.0, -637.0 / 360.0, 109.0 / 30.0, -1387.0 / 360.0,
+              1901.0 / 720.0};
     case 6:
-      return {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0,
-              -3649.0 / 720.0, 959.0 / 480.0,   -95.0 / 288.0};
+      return {-95.0 / 288.0,  959.0 / 480.0,   -3649.0 / 720.0,
+              4991.0 / 720.0, -2641.0 / 480.0, 4277.0 / 1440.0};
     case 7:
-      return {198721.0 / 60480.0, -18637.0 / 2520.0,  235183.0 / 20160.0,
-              -10754.0 / 945.0,   135713.0 / 20160.0, -5603.0 / 2520.0,
-              19087.0 / 60480.0};
+      return {19087.0 / 60480.0, -5603.0 / 2520.0,   135713.0 / 20160.0,
+              -10754.0 / 945.0,  235183.0 / 20160.0, -18637.0 / 2520.0,
+              198721.0 / 60480.0};
     case 8:
-      return {16083.0 / 4480.0,    -1152169.0 / 120960.0, 242653.0 / 13440.0,
-              -296053.0 / 13440.0, 2102243.0 / 120960.0,  -115747.0 / 13440.0,
-              32863.0 / 13440.0,   -5257.0 / 17280.0};
+      return {-5257.0 / 17280.0,     32863.0 / 13440.0,   -115747.0 / 13440.0,
+              2102243.0 / 120960.0,  -296053.0 / 13440.0, 242653.0 / 13440.0,
+              -1152169.0 / 120960.0, 16083.0 / 4480.0};
     default:
       ERROR("Bad order: " << order);
   }
@@ -59,13 +59,11 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
       if (m == j) {
         continue;
       }
-      const T denom =
-          1 / (control_times[order - m - 1] - control_times[order - j - 1]);
+      const T denom = 1 / (control_times[m] - control_times[j]);
       for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
-        poly[i] =
-            (poly[i - 1] + poly[i] * control_times[order - m - 1]) * denom;
+        poly[i] = (poly[i - 1] + poly[i] * control_times[m]) * denom;
       }
-      poly[0] *= control_times[order - m - 1] * denom;
+      poly[0] *= control_times[m] * denom;
     }
 
     // Integrate p(t), term by term.  We choose the constant of

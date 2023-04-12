@@ -89,14 +89,14 @@ void test_rational_computation() {
         ac::OrderVector<Rational>{1});
   // AB3
   CHECK(ac::variable_coefficients(ac::OrderVector<Rational>{-3, -2, -1}) ==
-        ac::OrderVector<Rational>{{23, 12}, {-4, 3}, {5, 12}});
+        ac::OrderVector<Rational>{{5, 12}, {-4, 3}, {23, 12}});
   // AB3 backwards
   CHECK(ac::variable_coefficients(ac::OrderVector<Rational>{3, 2, 1}) ==
-        ac::OrderVector<Rational>{{-23, 12}, {4, 3}, {-5, 12}});
+        ac::OrderVector<Rational>{{-5, 12}, {4, 3}, {-23, 12}});
   // Variable step case
   CHECK(
       ac::variable_coefficients(ac::OrderVector<Rational>{{-5, 2}, {-2, 3}}) ==
-      ac::OrderVector<Rational>{{26, 33}, {-4, 33}});
+      ac::OrderVector<Rational>{{-4, 33}, {26, 33}});
 }
 }  // namespace
 

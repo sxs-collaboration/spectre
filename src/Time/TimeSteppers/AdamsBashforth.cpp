@@ -91,10 +91,8 @@ double AdamsBashforth::stable_step() const {
   const auto& coefficients =
       adams_coefficients::constant_adams_bashforth_coefficients(order_);
   double invstep = 0.;
-  double sign = 1.;
   for (const auto coef : coefficients) {
-    invstep += sign * coef;
-    sign = -sign;
+    invstep = coef - invstep;
   }
   return 1. / invstep;
 }
@@ -161,7 +159,7 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
                                        time_step);
 
   *u = *history.back().value;
-  auto coefficient = coefficients.rbegin();
+  auto coefficient = coefficients.begin();
   for (auto history_entry = history_start;
        history_entry != history.end();
        ++history_entry, ++coefficient) {
@@ -423,8 +421,8 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
 
     auto local_it = local_begin;
     auto remote_it = coupling.remote_end() - order_s;
-    for (auto coefficients_it = coefficients.rbegin();
-         coefficients_it != coefficients.rend();
+    for (auto coefficients_it = coefficients.begin();
+         coefficients_it != coefficients.end();
          ++coefficients_it, ++local_it, ++remote_it) {
       *result += *coefficients_it * *coupling(local_it, remote_it);
     }
@@ -485,24 +483,24 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
 
   // Sum over the small steps that contribute to this step, doing the
   // appropriate interpolation for each.
-  size_t current_step_minus_contributing_step = current_order - 1;
-  for (; contributing_small_step != SmallStepIterator<T>{};
-       ++contributing_small_step, --current_step_minus_contributing_step) {
+  for (size_t contributing_step_index = 0;
+       contributing_small_step != SmallStepIterator<T>{};
+       ++contributing_small_step, ++contributing_step_index) {
     if (contributing_small_step.side() != SmallStepIterator<T>::Side::Local) {
       double overall_prefactor = 0.0;
-      auto small_step_within_current_step = static_cast<size_t>(std::max(
-          -static_cast<difference_type>(current_step_minus_contributing_step),
-          static_cast<difference_type>(0)));
+      auto small_step_within_current_step = static_cast<size_t>(
+          std::max(static_cast<difference_type>(contributing_step_index + 1 -
+                                                current_order),
+                   static_cast<difference_type>(0)));
       const size_t small_step_within_current_step_end =
-          std::min(small_step_coefficients.size(),
-                   current_order - current_step_minus_contributing_step);
+          std::min(small_step_coefficients.size(), contributing_step_index + 1);
       for (;
            small_step_within_current_step < small_step_within_current_step_end;
            ++small_step_within_current_step) {
         overall_prefactor +=
             small_step_coefficients[small_step_within_current_step]
-                                   [small_step_within_current_step +
-                                    current_step_minus_contributing_step];
+                                   [contributing_step_index -
+                                    small_step_within_current_step];
       }
       if (contributing_small_step.side() == SmallStepIterator<T>::Side::Both) {
         *result += overall_prefactor *
@@ -586,8 +584,8 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
           coefficient +=
               lagrange_factor *
               small_step_coefficients[small_step_within_current_step_index]
-                                     [small_step_within_current_step_index +
-                                      current_step_minus_contributing_step];
+                                     [contributing_step_index -
+                                      small_step_within_current_step_index];
         }
         *result +=
             coefficient * *coupling(contributing_small_step.local_iterator(),
