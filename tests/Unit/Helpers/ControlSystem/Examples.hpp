@@ -12,6 +12,7 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
+#include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
@@ -107,7 +108,8 @@ struct ExampleControlError
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... QueueTags>
-  DataVector operator()(const Parallel::GlobalCache<Metavariables>& cache,
+  DataVector operator()(const ::TimescaleTuner& tuner,
+                        const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& function_of_time_name,
                         const tuples::TaggedTuple<QueueTags...>& measurements) {
@@ -118,6 +120,8 @@ struct ExampleControlError
     const double measured_value = 0.0;
     // Would do something like get<QueueTag>(measurements) here
     (void)measurements;
+    // Size control needs the timescale tuner
+    (void)tuner;
 
     return {current_map_value - measured_value};
   }

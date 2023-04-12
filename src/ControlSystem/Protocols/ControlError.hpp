@@ -12,6 +12,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+struct TimescaleTuner;
+
 namespace control_system::protocols {
 /// \brief Definition of a control error
 ///
@@ -46,6 +48,7 @@ struct ControlError {
         std::is_same_v<
             DataVector,
             decltype(ConformingType{}(
+                std::declval<const ::TimescaleTuner&>(),
                 std::declval<
                     const Parallel::GlobalCache<DummyMetavariables>&>(),
                 std::declval<const double>(),

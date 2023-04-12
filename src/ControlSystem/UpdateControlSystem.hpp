@@ -123,7 +123,7 @@ struct UpdateControlSystem {
 
     // Compute control error
     const DataVector Q =
-        control_error(cache, time, function_of_time_name, data);
+        control_error(tuner, cache, time, function_of_time_name, data);
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
       Parallel::printf(
