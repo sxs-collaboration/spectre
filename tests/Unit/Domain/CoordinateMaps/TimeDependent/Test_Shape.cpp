@@ -124,10 +124,16 @@ auto dphi = [](size_t l, size_t m) {
 auto evaluate_harmonic_expansion =
     [](auto function, double theta, double phi,
        const std::vector<std::vector<std::complex<double>>>& coefs,
-       size_t l_max, size_t m_max) {
+       const std::optional<double>& lambda_00_coef, size_t l_max,
+       size_t m_max) {
       std::complex<double> res = 0.;
       for (size_t l = 0; l <= l_max; ++l) {
-        res += gsl::at(gsl::at(coefs, l), 0) * function(l, 0)(theta, phi);
+        if (l == 0 and lambda_00_coef.has_value()) {
+          CHECK(coefs[0][0] == 0.0);
+          res += lambda_00_coef.value() * function(l, 0)(theta, phi);
+        } else {
+          res += gsl::at(gsl::at(coefs, l), 0) * function(l, 0)(theta, phi);
+        }
         for (size_t m = 1; m <= std::min(l, m_max); ++m) {
           res += 2. * (std::real(gsl::at(gsl::at(coefs, l), m)) *
                            std::real(function(l, m)(theta, phi)) -
@@ -169,6 +175,11 @@ std::vector<std::vector<std::complex<double>>> generate_random_coefs(
   return coefs;
 }
 
+double generate_random_00_coef(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<double> coef_dist{0., 1.};
+  return coef_dist(*generator);
+}
+
 // converts complex coefficients to format expected by spherepack
 DataVector convert_coefs_to_spherepack(
     const std::vector<std::vector<std::complex<double>>>& coefs, size_t l_max,
@@ -204,41 +215,64 @@ void generate_random_map_time_and_f_of_time(
     const gsl::not_null<FunctionsOfTimeMap*> functions_of_time,
     const size_t l_max, const size_t m_max, const std::array<double, 3>& center,
     const TransitionFunction& transition_func, const DataVector& ylm_coefs,
-    const bool const_f_of_t, gsl::not_null<std::mt19937*> generator) {
-  const std::string f_of_t_name{"test_coefs"};
+    const std::optional<double>& lambda_00_coef, const bool const_f_of_t,
+    gsl::not_null<std::mt19937*> generator) {
+  const std::string shape_f_of_t_name{"Shape"};
+  const std::optional<std::string> size_f_of_t_name{"Size"};
 
   *map = CoordinateMaps::TimeDependent::Shape(
       center, l_max, m_max,
-      std::make_unique<TransitionFunction>(transition_func), f_of_t_name);
+      std::make_unique<TransitionFunction>(transition_func), shape_f_of_t_name,
+      lambda_00_coef.has_value() ? size_f_of_t_name : std::nullopt);
   // Choose a random time for evaluating the FunctionOfTime
   std::uniform_real_distribution<double> time_dist{-1.0, 1.0};
   *time = time_dist(*generator);
 
-  DataVector dtcoefs{ylm_coefs.size(), 0.};
-  DataVector ddtcoefs{ylm_coefs.size(), 0.};
-
-  if (not const_f_of_t) {
-    const auto dt_random_coefs = generate_random_coefs(l_max, m_max, generator);
-    dtcoefs = convert_coefs_to_spherepack(dt_random_coefs, l_max, m_max);
-    const auto ddt_random_coefs =
-        generate_random_coefs(l_max, m_max, generator);
-    ddtcoefs = convert_coefs_to_spherepack(ddt_random_coefs, l_max, m_max);
-  }
-
-  const std::array<DataVector, 3> initial_coefficients = {ylm_coefs, dtcoefs,
-                                                          ddtcoefs};
-
   std::uniform_real_distribution<> dt_dis{0.1, 0.5};
   const double initial_time{*time - dt_dis(*generator)};
   const double expiration_time{*time + dt_dis(*generator)};
-  (*functions_of_time)[f_of_t_name] =
+
+  DataVector shape_dtcoefs{ylm_coefs.size(), 0.};
+  DataVector shape_ddtcoefs{ylm_coefs.size(), 0.};
+
+  if (not const_f_of_t) {
+    const auto dt_random_coefs = generate_random_coefs(l_max, m_max, generator);
+    shape_dtcoefs = convert_coefs_to_spherepack(dt_random_coefs, l_max, m_max);
+    const auto ddt_random_coefs =
+        generate_random_coefs(l_max, m_max, generator);
+    shape_ddtcoefs =
+        convert_coefs_to_spherepack(ddt_random_coefs, l_max, m_max);
+  }
+
+  if (lambda_00_coef.has_value()) {
+    DataVector size_dtcoefs{1, 0.};
+    DataVector size_ddtcoefs{1, 0.};
+    if (not const_f_of_t) {
+      size_dtcoefs[0] = generate_random_00_coef(generator);
+      size_ddtcoefs[0] = generate_random_00_coef(generator);
+    }
+    const std::array<DataVector, 3> initial_size_coefficients = {
+        DataVector{lambda_00_coef.value()}, size_dtcoefs, size_ddtcoefs};
+    (*functions_of_time)[size_f_of_t_name.value()] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time, initial_size_coefficients, expiration_time);
+
+    shape_dtcoefs[0] = 0.0;
+    shape_ddtcoefs[0] = 0.0;
+  }
+
+  const std::array<DataVector, 3> initial_shape_coefficients = {
+      ylm_coefs, shape_dtcoefs, shape_ddtcoefs};
+
+  (*functions_of_time)[shape_f_of_t_name] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, initial_coefficients, expiration_time);
+          initial_time, initial_shape_coefficients, expiration_time);
 }
 
 template <typename TransitionFunction>
 void test_map_helpers(const TransitionFunction& transition_func, size_t l_max,
-                      size_t m_max, gsl::not_null<std::mt19937*> generator) {
+                      size_t m_max, const bool include_size,
+                      gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution dist{-10., 10.};
   const auto center =
       make_with_random_values<std::array<double, 3>>(generator, dist, 3);
@@ -246,13 +280,19 @@ void test_map_helpers(const TransitionFunction& transition_func, size_t l_max,
   FunctionsOfTimeMap functions_of_time{};
   double time{};
   auto map = CoordinateMaps::TimeDependent::Shape{};
-  const auto random_coefs = generate_random_coefs(l_max, m_max, generator);
-  const auto spherepack_coefs =
+  auto random_coefs = generate_random_coefs(l_max, m_max, generator);
+  DataVector spherepack_coefs =
       convert_coefs_to_spherepack(random_coefs, l_max, m_max);
+  std::optional<double> random_00_coef{};
+  if (include_size) {
+    spherepack_coefs[0] = 0.0;
+    random_00_coef = generate_random_00_coef(generator);
+  }
+
   generate_random_map_time_and_f_of_time(
       make_not_null(&map), make_not_null(&time),
       make_not_null(&functions_of_time), l_max, m_max, center, transition_func,
-      spherepack_coefs, false, generator);
+      spherepack_coefs, random_00_coef, false, generator);
 
   const auto random_point =
       make_with_random_values<std::array<double, 3>>(generator, dist, 3);
@@ -275,6 +315,7 @@ std::array<DataVector, 3> calculate_analytical_map(
     std::array<DataVector, 3> target_points, std::array<double, 3> center,
     size_t l_max, size_t m_max,
     const std::vector<std::vector<std::complex<double>>>& coefs,
+    const std::optional<double>& lambda_00_coef,
     const CoordinateMaps::ShapeMapTransitionFunctions::
         ShapeMapTransitionFunction& transition_func) {
   const size_t num_points = target_points[0].size();
@@ -290,7 +331,7 @@ std::array<DataVector, 3> calculate_analytical_map(
   for (size_t i = 0; i < num_points; ++i) {
     angular_part[i] = evaluate_harmonic_expansion(
         identity, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs,
-        l_max, m_max);
+        lambda_00_coef, l_max, m_max);
   }
   const auto spatial_part = transition_func(centered_coords);
   return target_points - centered_coords * angular_part * spatial_part;
@@ -298,7 +339,8 @@ std::array<DataVector, 3> calculate_analytical_map(
 
 template <typename TransitionFunction>
 void test_analytical_solution(const TransitionFunction& transition_func,
-                              size_t l_max, size_t m_max, size_t num_points,
+                              size_t l_max, size_t m_max,
+                              const bool include_size, size_t num_points,
                               gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution dist{-10., 10.};
   const auto center =
@@ -306,20 +348,29 @@ void test_analytical_solution(const TransitionFunction& transition_func,
   const auto target_data = make_with_random_values<std::array<DataVector, 3>>(
       generator, dist, num_points);
 
-  const auto random_coefs = generate_random_coefs(l_max, m_max, generator);
+  auto random_coefs = generate_random_coefs(l_max, m_max, generator);
 
   FunctionsOfTimeMap functions_of_time{};
   double time{};
   auto map = CoordinateMaps::TimeDependent::Shape{};
-  const auto spherepack_coefs =
+
+  DataVector spherepack_coefs =
       convert_coefs_to_spherepack(random_coefs, l_max, m_max);
+  std::optional<double> random_00_coef{};
+  if (include_size) {
+    random_coefs[0][0] = 0.0;
+    spherepack_coefs[0] = 0.0;
+    random_00_coef = generate_random_00_coef(generator);
+  }
+
   generate_random_map_time_and_f_of_time(
       make_not_null(&map), make_not_null(&time),
       make_not_null(&functions_of_time), l_max, m_max, center, transition_func,
-      spherepack_coefs, true, generator);
+      spherepack_coefs, random_00_coef, true, generator);
   const auto mapped_result = map(target_data, time, functions_of_time);
-  const auto analytical_result = calculate_analytical_map(
-      target_data, center, l_max, m_max, random_coefs, transition_func);
+  const auto analytical_result =
+      calculate_analytical_map(target_data, center, l_max, m_max, random_coefs,
+                               random_00_coef, transition_func);
   CHECK_ITERABLE_APPROX(mapped_result, analytical_result);
 }
 
@@ -328,6 +379,7 @@ tnsr::Ij<DataVector, 3, Frame::NoFrame> calculate_analytical_jacobian(
     const std::array<DataVector, 3>& target_points,
     const std::array<double, 3>& center, size_t l_max, size_t m_max,
     const std::vector<std::vector<std::complex<double>>>& coefs,
+    const std::optional<double>& lambda_00_coef,
     const CoordinateMaps::ShapeMapTransitionFunctions::
         ShapeMapTransitionFunction& transition_func) {
   const size_t num_points = target_points[0].size();
@@ -341,13 +393,13 @@ tnsr::Ij<DataVector, 3, Frame::NoFrame> calculate_analytical_jacobian(
   for (size_t i = 0; i < num_points; ++i) {
     angular_part.at(i) = evaluate_harmonic_expansion(
         identity, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs,
-        l_max, m_max);
+        lambda_00_coef, l_max, m_max);
     theta_gradient.at(i) = evaluate_harmonic_expansion(
         dtheta, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs,
-        l_max, m_max);
+        lambda_00_coef, l_max, m_max);
     phi_gradient.at(i) = evaluate_harmonic_expansion(
-        dphi, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs, l_max,
-        m_max);
+        dphi, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs,
+        lambda_00_coef, l_max, m_max);
   }
   // multiply angular gradient by inverse jacobian to get cartesian gradient
   std::array<DataVector, 3> cartesian_gradient{};
@@ -381,7 +433,8 @@ tnsr::Ij<DataVector, 3, Frame::NoFrame> calculate_analytical_jacobian(
 
 template <typename TransitionFunction>
 void test_analytical_jacobian(const TransitionFunction& transition_func,
-                              size_t l_max, size_t m_max, size_t num_points,
+                              size_t l_max, size_t m_max,
+                              const bool include_size, size_t num_points,
                               gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution dist{-10., 10.};
   const auto center =
@@ -402,64 +455,72 @@ void test_analytical_jacobian(const TransitionFunction& transition_func,
     }
   }
 
-  const auto random_coefs = generate_random_coefs(l_max, m_max, generator);
+  auto random_coefs = generate_random_coefs(l_max, m_max, generator);
 
   FunctionsOfTimeMap functions_of_time{};
   double time{};
   auto map = CoordinateMaps::TimeDependent::Shape{};
-  const auto spherepack_coefs =
+
+  DataVector spherepack_coefs =
       convert_coefs_to_spherepack(random_coefs, l_max, m_max);
+  std::optional<double> random_00_coef{};
+  if (include_size) {
+    random_coefs[0][0] = 0.0;
+    spherepack_coefs[0] = 0.0;
+    random_00_coef = generate_random_00_coef(generator);
+  }
+
   generate_random_map_time_and_f_of_time(
       make_not_null(&map), make_not_null(&time),
       make_not_null(&functions_of_time), l_max, m_max, center, transition_func,
-      spherepack_coefs, true, generator);
+      spherepack_coefs, random_00_coef, true, generator);
   const auto mapped_jacobian =
       map.jacobian(target_data, time, functions_of_time);
   const auto analytical_jacobian = calculate_analytical_jacobian(
-      target_data, center, l_max, m_max, random_coefs, transition_func);
+      target_data, center, l_max, m_max, random_coefs, random_00_coef,
+      transition_func);
   CHECK_ITERABLE_APPROX(mapped_jacobian, analytical_jacobian);
 }
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Shape",
                   "[Domain][Unit]") {
   domain::CoordinateMaps::ShapeMapTransitionFunctions::
       register_derived_with_charm();
+  const CoordinateMaps::ShapeMapTransitionFunctions::SphereTransition
+      sphere_transition{1e-7, 100.};
 
   MAKE_GENERATOR(generator);
-  {
-    const CoordinateMaps::ShapeMapTransitionFunctions::SphereTransition
-        sphere_transition{1e-7, 100.};
-    INFO("Testing MapHelpers");
-    for (size_t l_max = 2; l_max < 12; ++l_max) {
-      for (size_t m_max = 2; m_max <= l_max; ++m_max) {
-        CAPTURE(l_max, m_max);
-        test_map_helpers(sphere_transition, l_max, m_max,
-                         make_not_null(&generator));
+  for (const auto include_size : make_array(false, true)) {
+    CAPTURE(include_size);
+    {
+      INFO("Testing MapHelpers");
+      for (size_t l_max = 2; l_max < 12; ++l_max) {
+        for (size_t m_max = 2; m_max <= l_max; ++m_max) {
+          CAPTURE(l_max, m_max);
+          test_map_helpers(sphere_transition, l_max, m_max, include_size,
+                           make_not_null(&generator));
+        }
       }
     }
-  }
-  {
-    INFO("Testing analytical solution");
-    const CoordinateMaps::ShapeMapTransitionFunctions::SphereTransition
-        sphere_transition{1e-7, 100.};
-    for (size_t l_max = 2; l_max <= 3; ++l_max) {
-      for (size_t m_max = 2; m_max <= l_max; ++m_max) {
-        CAPTURE(l_max, m_max);
-        test_analytical_solution(sphere_transition, l_max, m_max, 1000,
-                                 make_not_null(&generator));
+    {
+      INFO("Testing analytical solution");
+      for (size_t l_max = 2; l_max <= 3; ++l_max) {
+        for (size_t m_max = 2; m_max <= l_max; ++m_max) {
+          CAPTURE(l_max, m_max);
+          test_analytical_solution(sphere_transition, l_max, m_max,
+                                   include_size, 1000,
+                                   make_not_null(&generator));
+        }
       }
     }
-  }
-  {
-    INFO("Testing analytical gradient");
-    const CoordinateMaps::ShapeMapTransitionFunctions::SphereTransition
-        sphere_transition{1e-7, 100.};
-    const size_t l_max = 2;
-    const size_t m_max = 2;
-    test_analytical_jacobian(sphere_transition, l_max, m_max, 1000,
-                             make_not_null(&generator));
+    {
+      INFO("Testing analytical gradient");
+      const size_t l_max = 2;
+      const size_t m_max = 2;
+      test_analytical_jacobian(sphere_transition, l_max, m_max, include_size,
+                               1000, make_not_null(&generator));
+    }
   }
 }
 }  // namespace domain

@@ -22,6 +22,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace domain::CoordinateMaps::TimeDependent {
@@ -36,8 +37,10 @@ Shape::Shape(
     const std::array<double, 3>& center, const size_t l_max, const size_t m_max,
     std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
         transition_func,
-    std::string function_of_time_name)
-    : f_of_t_name_(std::move(function_of_time_name)),
+    std::string shape_function_of_time_name,
+    std::optional<std::string> size_function_of_time_name)
+    : shape_f_of_t_name_(std::move(shape_function_of_time_name)),
+      size_f_of_t_name_(std::move(size_function_of_time_name)),
       center_(center),
       l_max_(l_max),
       m_max_(m_max),
@@ -51,7 +54,8 @@ Shape::Shape(
 
 Shape& Shape::operator=(const Shape& rhs) {
   if (*this != rhs) {
-    f_of_t_name_ = rhs.f_of_t_name_;
+    shape_f_of_t_name_ = rhs.shape_f_of_t_name_;
+    size_f_of_t_name_ = rhs.size_f_of_t_name_;
     center_ = rhs.center_;
     l_max_ = rhs.l_max_;
     m_max_ = rhs.m_max_;
@@ -67,15 +71,17 @@ template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+  ASSERT(functions_of_time.find(shape_f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << shape_f_of_t_name_
+             << "' in functions of time. Known functions are "
              << keys_of(functions_of_time));
 
   const auto centered_coords = center_coordinates(source_coords);
   auto theta_phis = cartesian_to_spherical(centered_coords);
   const auto interpolation_info = ylm_.set_up_interpolation_info(theta_phis);
-  const DataVector coefs = functions_of_time.at(f_of_t_name_)->func(time)[0];
+  DataVector coefs = functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
+  check_size(make_not_null(&coefs), functions_of_time, time, false);
   check_coefficients(coefs);
   // re-use allocation
   auto& distorted_radii = get<0>(theta_phis);
@@ -106,16 +112,18 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 std::optional<std::array<double, 3>> Shape::inverse(
     const std::array<double, 3>& target_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+  ASSERT(functions_of_time.find(shape_f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << shape_f_of_t_name_
+             << "' in functions of time. Known functions are "
              << keys_of(functions_of_time));
 
   const std::array<double, 3> centered_coords =
       center_coordinates(target_coords);
   const std::array<double, 2> theta_phis =
       cartesian_to_spherical(centered_coords);
-  const DataVector coefs = functions_of_time.at(f_of_t_name_)->func(time)[0];
+  DataVector coefs = functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
+  check_size(make_not_null(&coefs), functions_of_time, time, false);
   check_coefficients(coefs);
   const double distorted_radii = ylm_.interpolate_from_coefs(coefs, theta_phis);
   const std::optional<double> original_radius_over_radius =
@@ -131,15 +139,17 @@ template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+  ASSERT(functions_of_time.find(shape_f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << shape_f_of_t_name_
+             << "' in functions of time. Known functions are "
              << keys_of(functions_of_time));
   const auto centered_coords = center_coordinates(source_coords);
   auto theta_phis = cartesian_to_spherical(centered_coords);
   const auto interpolation_info = ylm_.set_up_interpolation_info(theta_phis);
-  const auto coef_derivs =
-      functions_of_time.at(f_of_t_name_)->func_and_deriv(time)[1];
+  DataVector coef_derivs =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_deriv(time)[1];
+  check_size(make_not_null(&coef_derivs), functions_of_time, time, true);
   check_coefficients(coef_derivs);
   // re-use allocation
   auto& radii_velocities = get<0>(theta_phis);
@@ -153,9 +163,10 @@ template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+  ASSERT(functions_of_time.find(shape_f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << shape_f_of_t_name_
+             << "' in functions of time. Known functions are "
              << keys_of(functions_of_time));
 
   const auto centered_coords = center_coordinates(source_coords);
@@ -171,7 +182,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   const auto interpolation_info =
       extended_ylm.set_up_interpolation_info(theta_phis);
 
-  const DataVector coefs = functions_of_time.at(f_of_t_name_)->func(time)[0];
+  const DataVector coefs =
+      functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
   check_coefficients(coefs);
   DataVector extended_coefs(extended_ylm.spectral_size(), 0.);
 
@@ -188,6 +200,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
       extended_coefs[extended_iter()] = coefs[iter()];
     }
   }
+
+  check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
 
   // Re-use allocation
   auto& distorted_radii = get<0>(theta_phis);
@@ -317,9 +331,46 @@ void Shape::check_coefficients([[maybe_unused]] const DataVector& coefs) const {
 #endif  // SPECTRE_DEBUG
 }
 
+void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
+                       const FunctionsOfTimeMap& functions_of_time,
+                       const double time, const bool use_deriv) const {
+  if (size_f_of_t_name_.has_value()) {
+    ASSERT(functions_of_time.find(size_f_of_t_name_.value()) !=
+               functions_of_time.end(),
+           "Could not find function of time: '"
+               << size_f_of_t_name_.value()
+               << "' in functions of time. Known functions are "
+               << keys_of(functions_of_time));
+    ASSERT((*coefs)[0] == 0.0,
+           "When using a size function of time, the l=0 "
+               << (use_deriv ? "derivative" : "component")
+               << " of the shape "
+                  "function of time must be zero. Currently it is "
+               << (*coefs)[0]);
+
+    double l0m0_spherical_harmonic_coef =
+        std::numeric_limits<double>::signaling_NaN();
+    if (use_deriv) {
+      l0m0_spherical_harmonic_coef =
+          functions_of_time.at(size_f_of_t_name_.value())
+              ->func_and_deriv(time)[1][0];
+    } else {
+      l0m0_spherical_harmonic_coef =
+          functions_of_time.at(size_f_of_t_name_.value())->func(time)[0][0];
+    }
+
+    // Size holds the *actual* \lambda_00 spherical harmonic coefficient, but
+    // shape holds Spherepack coefficients so we must convert between the two.
+    // Need to multiply lambda_00 by sqrt(2/pi)
+    (*coefs)[0] = M_SQRT1_2 * M_2_SQRTPI * l0m0_spherical_harmonic_coef;
+  }
+}
+
 bool operator==(const Shape& lhs, const Shape& rhs) {
-  return lhs.f_of_t_name_ == rhs.f_of_t_name_ and lhs.center_ == rhs.center_ and
-         lhs.l_max_ == rhs.l_max_ and lhs.m_max_ == rhs.m_max_ and
+  return lhs.shape_f_of_t_name_ == rhs.shape_f_of_t_name_ and
+         lhs.size_f_of_t_name_ == rhs.size_f_of_t_name_ and
+         lhs.center_ == rhs.center_ and lhs.l_max_ == rhs.l_max_ and
+         lhs.m_max_ == rhs.m_max_ and
          (lhs.transition_func_ == nullptr) ==
              (rhs.transition_func_ == nullptr) and
          ((lhs.transition_func_ == nullptr and
@@ -333,7 +384,8 @@ void Shape::pup(PUP::er& p) {
   p | l_max_;
   p | m_max_;
   p | center_;
-  p | f_of_t_name_;
+  p | shape_f_of_t_name_;
+  p | size_f_of_t_name_;
   p | transition_func_;
 
   if (p.isUnpacking()) {

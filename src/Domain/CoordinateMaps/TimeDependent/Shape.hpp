@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
@@ -39,15 +40,34 @@ namespace domain::CoordinateMaps::TimeDependent {
  * The shape map distorts the distance \f$r\f$ between the point and the center
  * while leaving the angles \f$\theta\f$, \f$\phi\f$ between them preserved by
  * applying a spherical harmonic expansion with time-dependent coefficients
- * \f$\lambda_{lm}(t)\f$. An additional domain-dependent transition function
- * \f$f(r, \theta, \phi)\f$ ensures that the distortion falls off correctly to
- * zero at the boundary of the domain. The shape map maps the unmapped
- * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
+ * \f$\lambda_{lm}(t)\f$. There are two ways to specify the time-dependent
+ * coefficients \f$\lambda_{lm}(t)\f$:
  *
- * \note The quantities stored in the FunctionOfTime are not the
- * complex spherical-harmonic coefficients \f$\lambda_{lm}(t)\f$, but
- * instead are the real-valued SPHEREPACK coefficients
- * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack.  The
+ * 1. A single FunctionOfTime which specifies all coefficients. This
+ *    FunctionOfTime should have `YlmSpherepack::spectral_size()` number of
+ *    components. These are in Spherepack order and should be the Spherepack
+ *    coefficients, *not* the spherical harmonic coefficients. See the note
+ *    below. To use this, set the `size_function_of_time_name` argument of the
+ *    constructor to `std::nullopt`.
+ * 2. Two different FunctionOfTime%s. The first is similar to 1.) in that it
+ *    should have the same number of components, be in Spherepack order, and be
+ *    the Spherepack coefficients. The only difference is that the \f$l = 0\f$
+ *    coefficient should be identically 0. The second FunctionOfTime should have
+ *    a single component which will be the \f$l = 0\f$ coefficient. This
+ *    component should be stored as the spherical harmonic coefficient and *not*
+ *    a Spherepack coefficient. See the note below. To use this method, set the
+ *    `size_function_of_time_name` argument of the constructor to the name of
+ *    the FunctionOfTime that's in the cache. This method is useful if we have
+ *    control systems because we have a separate control system controlling a
+ *    separate function of time for the \f$l = 0\f$ coefficient than we do for
+ *    the other coefficients.
+ *
+ * \note The quantities stored in the "shape" FunctionOfTime (the
+ * `shape_function_of_time_name` argument in the constructor that must always be
+ * specified) are ***not*** the complex spherical-harmonic coefficients
+ * \f$\lambda_{lm}(t)\f$, but instead are the real-valued SPHEREPACK
+ * coefficients \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack. This
+ * is the same for both methods of specifying FunctionOfTime%s above. The
  * relationship between these two sets of coefficients is
  * \f{align}
  * a_{l0} & = \sqrt{\frac{2}{\pi}}\lambda_{l0}&\qquad l\geq 0,\\
@@ -56,17 +76,37 @@ namespace domain::CoordinateMaps::TimeDependent {
  * b_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Im}(\lambda_{lm})
  * &\qquad l\geq 1, m\geq 1.
  * \f}
- * The FunctionOfTime stores coefficients only for non-negative \f$m\f$;
+ * The "shape" FunctionOfTime stores coefficients only for non-negative \f$m\f$;
  * this is because the function we are expanding is real, so the
  * coefficients for \f$m<0\f$ can be obtained from \f$m>0\f$ coefficients by
- * complex conjugation.  Here and below we write the equations in
- * terms of \f$\lambda_{lm}(t)\f$ instead of \f$a_{lm}(t)\f$ and
- * \f$b_{lm}(t)\f$ because the resulting expressions are much shorter.
+ * complex conjugation.
+ * If the `size_function_of_time_name` argument is given to the constructor,
+ * then it is asserted that the \f$l=0\f$ coefficient of the "shape" function of
+ * time is exactly 0. The \f$l=0\f$ coefficient is then controlled by the "size"
+ * FunctionOfTime. Unlike the "shape" FunctionOfTime, the quantity in the
+ * "size" FunctionOfTime ***is*** the "complex" spherical harmonic coefficient
+ * \f$\lambda_{00}(t)\f$, and not the SPHEREPACK coefficient \f$a_{00}(t)\f$
+ * ("complex" is in quotes because all \f$m=0\f$ coefficients are always real.)
+ * Here and below we write the equations in terms of \f$\lambda_{lm}(t)\f$
+ * instead of \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$, regardless of which
+ * FunctionOfTime representation we are using, because the resulting expressions
+ * are much shorter.
+ *
+ * An additional domain-dependent transition function
+ * \f$f(r, \theta, \phi)\f$ ensures that the distortion falls off correctly to
+ * zero at the boundary of the domain.
+ *
+ * ### Mapped coordinates
+ *
+ * The shape map maps the unmapped
+ * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
  *
  * \f{equation}{
  * x^i = \xi^i - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
  * \lambda_{lm}(t)Y_{lm}(\theta, \phi).
  * \f}
+ *
+ * ### Inverse map
  *
  * The inverse map is given by:
  * \f{equation}{
@@ -76,11 +116,15 @@ namespace domain::CoordinateMaps::TimeDependent {
  * transition map. For more details, see
  * ShapeMapTransitionFunction::original_radius_over_radius .
  *
+ * ### Frame velocity
+ *
  * The frame velocity \f$v^i\ = dx^i / dt\f$ is calculated trivially:
  * \f{equation}{
  * v^i = - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
  * \dot{\lambda}_{lm}(t)Y_{lm}(\theta, \phi).
  * \f}
+ *
+ * ### Jacobian
  *
  * The Jacobian is given by:
  * \f{equation}{
@@ -90,6 +134,8 @@ namespace domain::CoordinateMaps::TimeDependent {
  * \lambda_{lm}(t)Y_{lm}(\theta, \phi) + f(r, \theta, \phi) \sum_{lm}
  * \lambda_{lm}(t) \frac{\partial}{\partial \xi^j} Y_{lm}(\theta, \phi) \right).
  * \f}
+ *
+ * ### Inverse Jacobian
  *
  * The inverse Jacobian is computed by numerically inverting the Jacobian.
  *
@@ -110,7 +156,8 @@ class Shape {
       const std::array<double, 3>& center, size_t l_max, size_t m_max,
       std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
           transition_func,
-      std::string function_of_time_name);
+      std::string shape_function_of_time_name,
+      std::optional<std::string> size_function_of_time_name = std::nullopt);
 
   Shape() = default;
   ~Shape() = default;
@@ -149,7 +196,8 @@ class Shape {
   static constexpr size_t dim = 3;
 
  private:
-  std::string f_of_t_name_;
+  std::string shape_f_of_t_name_;
+  std::optional<std::string> size_f_of_t_name_;
   std::array<double, 3> center_{};
   size_t l_max_ = 2;
   size_t m_max_ = 2;
@@ -163,6 +211,10 @@ class Shape {
     return {coords[0] - center_[0], coords[1] - center_[1],
             coords[2] - center_[2]};
   }
+
+  void check_size(const gsl::not_null<DataVector*>& coefs,
+                  const FunctionsOfTimeMap& functions_of_time, double time,
+                  bool use_deriv) const;
 
   // Checks that the vector of coefficients has the right size and that the
   // monopole and dipole coefficients are zero.
