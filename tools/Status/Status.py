@@ -111,7 +111,7 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
         return yaml_files[0]
     else:
         logger.debug("No input file found. "
-                     "Didn't find a single YAML file in '{work_dir}'. "
+                     f"Didn't find a single YAML file in '{work_dir}'. "
                      f"YAML files found: {yaml_files}")
         return None
 
