@@ -46,8 +46,8 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
             try:
                 ah_centers = [
                     to_dataframe(open_reductions_file[
-                        f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"]).
-                    iloc[-1] for ab in "AB"
+                        f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"],
+                                 slice=np.s_[-1:]).iloc[-1] for ab in "AB"
                 ]
                 ah_separation = np.sqrt(
                     sum((ah_centers[0]["InertialCenter" + xyz] -
@@ -58,7 +58,8 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
                 logger.debug("Unable to extract separation.", exc_info=True)
             # Norms
             try:
-                norms = to_dataframe(open_reductions_file["Norms.dat"])
+                norms = to_dataframe(open_reductions_file["Norms.dat"],
+                                     slice=np.s_[-1:])
                 result["Constraint Energy"] = norms.iloc[-1][
                     "L2Norm(ConstraintEnergy)"]
             except:
