@@ -16,6 +16,17 @@ namespace control_system::size {
 
 /// Holds information that is saved between calls of SizeControl.
 struct Info {
+  Info() = default;
+  Info(const Info& rhs);
+  Info& operator=(const Info& rhs);
+  Info(Info&& rhs) = default;
+  Info& operator=(Info&& rhs) = default;
+
+  Info(std::unique_ptr<State> in_state, double in_damping_time,
+       double in_target_char_speed, double in_target_drift_velocity,
+       double in_suggested_time_scale,
+       bool in_discontinuous_change_has_occurred);
+
   // Info needs to be serializable because it will be
   // stored inside of a ControlError.
   void pup(PUP::er& p);
@@ -38,6 +49,9 @@ struct Info {
   /// State::update if it changes anything in such a way that
   /// the control signal jumps discontinuously in time.
   bool discontinuous_change_has_occurred;
+
+ private:
+  void set_all_but_state(const Info& info);
 };
 
 /// Holds information about crossing times, as computed by

@@ -54,6 +54,9 @@ void do_test(const TestParams& test_params,
 
   // Check serialization of info
   const auto info_copy = serialize_and_deserialize(info);
+  CHECK_FALSE(info.state == nullptr);
+  const auto info_copy2 = info_copy;
+  CHECK_FALSE(info_copy2.state == nullptr);
   // Note that there is no equality operator for info.state, because the
   // state contains no data; so here we check that the state can be cast to
   // the type it should be.
