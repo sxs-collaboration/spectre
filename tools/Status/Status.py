@@ -154,7 +154,7 @@ def _state_order(state):
         return None
 
 
-def _format(field: str, value: Any) -> str:
+def _format(field: str, value: Any, state_styles: dict) -> str:
     if field == "State":
         style = {
             "RUNNING": "[blue]",
@@ -163,6 +163,7 @@ def _format(field: str, value: Any) -> str:
             "FAILED": "[red]",
             "TIMEOUT": "[red]",
         }
+        style.update(state_styles)
         return style.get(value, "") + str(value)
     elif field in ["Start", "End"]:
         if pd.isnull(value):
@@ -174,7 +175,7 @@ def _format(field: str, value: Any) -> str:
 
 
 @rich.console.group()
-def render_status(show_paths, show_unidentified, **kwargs):
+def render_status(show_paths, show_unidentified, state_styles, **kwargs):
     job_data = fetch_job_data([
         "JobID",
         "User",
@@ -252,7 +253,8 @@ def render_status(show_paths, show_unidentified, **kwargs):
 
                 # Extract job status and format row for output
                 row_formatted = [
-                    _format(field, row[field]) for field in standard_fields
+                    _format(field, row[field], state_styles)
+                    for field in standard_fields
                 ]
                 with open(row["InputFile"], "r") as open_input_file:
                     try:
@@ -295,7 +297,8 @@ def render_status(show_paths, show_unidentified, **kwargs):
         table = rich.table.Table(*standard_columns, box=None)
         for i, row in unidentified_jobs.iterrows():
             row_formatted = [
-                _format(field, row[field]) for field in standard_fields
+                _format(field, row[field], state_styles)
+                for field in standard_fields
             ]
             table.add_row(*row_formatted)
         yield table
@@ -340,6 +343,20 @@ def render_status(show_paths, show_unidentified, **kwargs):
               default=None,
               help=("On a new screen, refresh jobs every 'watch' number "
                     "of seconds. Exit out with Ctl+C."))
+@click.option("--state-styles",
+              type=dict,
+              default={},
+              help=("Dictionary between sacct states and rich modifiers for "
+                    "how the state will be printed. Rather than always having "
+                    "to specify a dict on the command line, you can add this "
+                    "to the spectre config file. \n\n"
+                    "An example for the config file would be\n\n"
+                    "\b\n"
+                    "status:\n"
+                    "  state_styles:\n"
+                    "    RUNNING: '[green]'\n"
+                    "    COMPLETED: '[bold][red]'\n\n"
+                    "See `spectre -h` for its path."))
 def status_command(refresh_rate, **kwargs):
     """Gives an overview of simulations running on this machine."""
 
