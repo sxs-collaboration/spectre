@@ -111,7 +111,7 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
         return yaml_files[0]
     else:
         logger.debug("No input file found. "
-                     "Didn't find a single YAML file in '{work_dir}'. "
+                     f"Didn't find a single YAML file in '{work_dir}'. "
                      f"YAML files found: {yaml_files}")
         return None
 
@@ -147,7 +147,9 @@ def get_executable_name(comment: Optional[str],
 
 
 def _state_order(state):
-    order = ["RUNNING", "PENDING", "COMPLETED", "TIMEOUT", "FAILED"]
+    order = [
+        "RUNNING", "PENDING", "COMPLETED", "TIMEOUT", "FAILED", "CANCELLED"
+    ]
     try:
         return order.index(state)
     except ValueError:
@@ -162,6 +164,7 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
             "PENDING": "[magenta]",
             "FAILED": "[red]",
             "TIMEOUT": "[red]",
+            "CANCELLED": "[red]",
         }
         style.update(state_styles)
         return style.get(value, "") + str(value)
@@ -208,6 +211,23 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                             input_file) for comment, input_file in zip(
                                 job_data["Comment"], job_data["InputFile"])
     ]
+
+    # Invalidate older jobs that ran in the same work dir because they would
+    # report wrong information (that of the newer job).
+    for work_dir in pd.unique(job_data["WorkDir"]):
+        duplicate_jobs = job_data[job_data["WorkDir"] == work_dir]
+        if len(duplicate_jobs) == 1:
+            continue
+        # Jobs are already sorted by JobID, so just keep the latest job
+        # associated and invalidate the others.
+        latest_job_id = duplicate_jobs.iloc[0]["JobID"]
+        job_data.loc[(job_data["WorkDir"] == work_dir) &
+                     (job_data["JobID"] != latest_job_id),
+                     ["WorkDir", "NewJobID"]] = [None, latest_job_id]
+
+    # Normalize "cancelled" job state (remove "by X")
+    job_data.loc[job_data["State"].str.contains("CANCELLED"),
+                 "State"] = "CANCELLED"
 
     # Add metadata so jobs can be grouped by state
     job_data["StateOrder"] = job_data["State"].apply(_state_order)
@@ -256,13 +276,12 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                     _format(field, row[field], state_styles)
                     for field in standard_fields
                 ]
-                with open(row["InputFile"], "r") as open_input_file:
-                    try:
+                try:
+                    with open(row["InputFile"], "r") as open_input_file:
                         input_file = yaml.safe_load(open_input_file)
-                    except:
-                        logger.debug("Unable to load input file.",
-                                     exc_info=True)
-                        input_file = None
+                except:
+                    logger.debug("Unable to load input file.", exc_info=True)
+                    input_file = None
                 try:
                     status = executable_status.status(input_file,
                                                       row["WorkDir"])
@@ -282,8 +301,10 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                     yield table
                     # Print WorkDir in its own line so it wraps nicely in the
                     # terminal and can be copied
-                    yield " [bold]WorkDir:[/bold] " + row['WorkDir']
-                    yield " [bold]InputFile:[/bold] " + row['InputFile']
+                    yield (" [bold]WorkDir:[/bold] " +
+                           (row['WorkDir'] if row['WorkDir'] else
+                            f"[italic]Same as job {row['NewJobID']}[/italic]"))
+                    yield " [bold]InputFile:[/bold] " + str(row['InputFile'])
                     table = rich.table.Table(*columns, box=None)
         if not show_paths:
             yield table

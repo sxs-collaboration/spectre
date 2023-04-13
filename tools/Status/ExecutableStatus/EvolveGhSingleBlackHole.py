@@ -33,7 +33,8 @@ class EvolveGhSingleBlackHole(EvolutionStatus):
             result = self.time_status(input_file, open_reductions_file)
             # Norms
             try:
-                norms = to_dataframe(open_reductions_file["Norms.dat"])
+                norms = to_dataframe(open_reductions_file["Norms.dat"],
+                                     slice=np.s_[-1:])
                 result["Constraint Energy"] = norms.iloc[-1][
                     "L2Norm(ConstraintEnergy)"]
             except:
