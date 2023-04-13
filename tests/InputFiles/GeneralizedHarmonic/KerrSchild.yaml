@@ -61,7 +61,7 @@ DomainCreator:
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
     WhichWedges: All
-    TimeDependence: None
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       DirichletAnalytic:
         AnalyticPrescription: *InitialData

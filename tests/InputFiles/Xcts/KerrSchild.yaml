@@ -43,7 +43,7 @@ DomainCreator:
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
-    TimeDependence: None
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       AnalyticSolution:
         ConformalFactor: Dirichlet

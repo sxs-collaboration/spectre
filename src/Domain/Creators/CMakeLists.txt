@@ -24,6 +24,7 @@ spectre_target_sources(
   RotatedIntervals.cpp
   RotatedRectangles.cpp
   Sphere.cpp
+  SphereTimeDependentMaps.cpp
   )
 
 spectre_target_headers(
@@ -52,6 +53,7 @@ spectre_target_headers(
   RotatedIntervals.hpp
   RotatedRectangles.hpp
   Sphere.hpp
+  SphereTimeDependentMaps.hpp
   )
 
 target_link_libraries(

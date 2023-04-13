@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <variant>
@@ -77,8 +78,7 @@ Sphere::Sphere(
     std::vector<double> radial_partitioning,
     const typename RadialDistribution::type& radial_distribution,
     ShellWedges which_wedges,
-    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dependence,
+    std::optional<TimeDepOptionType> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -90,7 +90,7 @@ Sphere::Sphere(
       equatorial_compression_(equatorial_compression),
       radial_partitioning_(std::move(radial_partitioning)),
       which_wedges_(which_wedges),
-      time_dependence_(std::move(time_dependence)),
+      time_dependent_options_(std::move(time_dependent_options)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   if (inner_radius_ > outer_radius_) {
     PARSE_ERROR(context,
@@ -149,11 +149,11 @@ Sphere::Sphere(
   }
 
   // Determine number of blocks
-  const size_t num_blocks_per_shell =
+  num_blocks_per_shell_ =
       which_wedges_ == ShellWedges::All
           ? 6
           : which_wedges_ == ShellWedges::FourOnEquator ? 4 : 1;
-  num_blocks_ = num_blocks_per_shell * num_shells_ + (fill_interior_ ? 1 : 0);
+  num_blocks_ = num_blocks_per_shell_ * num_shells_ + (fill_interior_ ? 1 : 0);
 
   // Create block names and groups
   static std::array<std::string, 6> wedge_directions{
@@ -244,9 +244,27 @@ Sphere::Sphere(
         "domain creator.");
   }
 
-  if (time_dependence_ == nullptr) {
-    time_dependence_ =
-        std::make_unique<domain::creators::time_dependence::None<3>>();
+  if (time_dependent_options_.has_value()) {
+    use_hard_coded_maps_ =
+        std::holds_alternative<sphere::TimeDependentMapOptions>(
+            time_dependent_options_.value());
+
+    if (use_hard_coded_maps_) {
+      if (fill_interior_) {
+        PARSE_ERROR(context,
+                    "Currently cannot use hard-coded time dependent maps with "
+                    "an inner cube. Use a TimeDependence instead.");
+      }
+
+      // Build the maps. We only apply the maps in the inner-most shell. The
+      // inner radius is what's passed in, but the outer radius is the outer
+      // radius of the inner-most shell so we have to see how many shells we
+      // have
+      std::get<sphere::TimeDependentMapOptions>(time_dependent_options_.value())
+          .build_maps(std::array{0.0, 0.0, 0.0}, inner_radius_,
+                      radial_partitioning_.empty() ? outer_radius_
+                                                   : radial_partitioning_[0]);
+    }
   }
 }
 
@@ -323,13 +341,49 @@ Domain<3> Sphere::create_domain() const {
              << num_blocks_ << " but created " << domain.blocks().size()
              << ".");
 
-  if (not time_dependence_->is_none()) {
-    auto block_maps_grid_to_inertial =
-        time_dependence_->block_maps_grid_to_inertial(num_blocks_);
-    auto block_maps_grid_to_distorted =
-        time_dependence_->block_maps_grid_to_distorted(num_blocks_);
-    auto block_maps_distorted_to_inertial =
-        time_dependence_->block_maps_distorted_to_inertial(num_blocks_);
+  if (time_dependent_options_.has_value()) {
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
+        block_maps_grid_to_inertial{num_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+        block_maps_grid_to_distorted{num_blocks_};
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+        block_maps_distorted_to_inertial{num_blocks_};
+
+    if (use_hard_coded_maps_) {
+      const auto& hard_coded_options =
+          std::get<sphere::TimeDependentMapOptions>(
+              time_dependent_options_.value());
+
+      // First shell gets the distorted maps.
+      for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
+        const bool include_distorted_map_in_first_shell =
+            block_id < num_blocks_per_shell_;
+        block_maps_grid_to_distorted[block_id] =
+            hard_coded_options.grid_to_distorted_map(
+                include_distorted_map_in_first_shell);
+        block_maps_distorted_to_inertial[block_id] =
+            hard_coded_options.distorted_to_inertial_map(
+                include_distorted_map_in_first_shell);
+        block_maps_grid_to_inertial[block_id] =
+            hard_coded_options.grid_to_inertial_map(
+                include_distorted_map_in_first_shell);
+      }
+    } else {
+      const auto& time_dependence = std::get<std::unique_ptr<
+          domain::creators::time_dependence::TimeDependence<3>>>(
+          time_dependent_options_.value());
+
+      block_maps_grid_to_inertial =
+          time_dependence->block_maps_grid_to_inertial(num_blocks_);
+      block_maps_grid_to_distorted =
+          time_dependence->block_maps_grid_to_distorted(num_blocks_);
+      block_maps_distorted_to_inertial =
+          time_dependence->block_maps_distorted_to_inertial(num_blocks_);
+    }
+
     for (size_t block_id = 0; block_id < num_blocks_; ++block_id) {
       domain.inject_time_dependent_map_for_block(
           block_id, std::move(block_maps_grid_to_inertial[block_id]),
@@ -377,14 +431,24 @@ Sphere::external_boundary_conditions() const {
   }
   return boundary_conditions;
 }
+
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 Sphere::functions_of_time(const std::unordered_map<std::string, double>&
                               initial_expiration_times) const {
-  if (time_dependence_->is_none()) {
-    return {};
+  if (time_dependent_options_.has_value()) {
+    if (use_hard_coded_maps_) {
+      return std::get<sphere::TimeDependentMapOptions>(
+                 time_dependent_options_.value())
+          .create_functions_of_time(initial_expiration_times);
+    } else {
+      return std::get<std::unique_ptr<
+          domain::creators::time_dependence::TimeDependence<3>>>(
+                 time_dependent_options_.value())
+          ->functions_of_time(initial_expiration_times);
+    }
   } else {
-    return time_dependence_->functions_of_time(initial_expiration_times);
+    return {};
   }
 }
 }  // namespace domain::creators

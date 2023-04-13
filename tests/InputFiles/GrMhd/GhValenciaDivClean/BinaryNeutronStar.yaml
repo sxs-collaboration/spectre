@@ -34,7 +34,7 @@ DomainCreator:
     RadialDistribution: [Linear]
     EquatorialCompression: None
     WhichWedges: All
-    TimeDependence: None
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       ConstraintPreservingFreeOutflow:
         Type: ConstraintPreservingPhysical

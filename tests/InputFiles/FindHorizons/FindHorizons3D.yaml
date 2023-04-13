@@ -23,7 +23,7 @@ DomainCreator:
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
-    TimeDependence: None
+    TimeDependentMaps: None
 
 Importers:
   VolumeData:

@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -15,9 +16,11 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/SphereTimeDependentMaps.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -125,10 +128,40 @@ namespace domain::creators {
  * \image html WedgeOrientations.png "The orientation of each wedge in a cubed
  * sphere."
  *
- * \par Inner cube sphericity
+ * #### Inner cube sphericity
  * The inner cube is a BulgedCube except if the inner cube sphericity is
  * exactly 0. Then an Equiangular or Affine map is used (depending on if it's
  * equiangular or not) to avoid a root find in the BulgedCube map.
+ *
+ * #### Time dependent maps
+ * There are two ways to add time dependent maps to the Sphere domain
+ * creator. In the input file, these are specified under the
+ * `TimeDependentMaps:` block.
+ *
+ * ##### TimeDependence
+ * You can use a simple TimeDependence (e.g.
+ * `domain::creators::time_dependence::UniformTranslation` or
+ * `domain::creators::time_dependence::RotationAboutZAxis`) to add time
+ * dependent maps. This method will add the same maps to all blocks in the
+ * domain. This method can be used with an inner cube or with an excision
+ * surface.
+ *
+ * ##### Hard-coded time dependent maps
+ * The Sphere domain creator also has the option to use some hard coded time
+ * dependent maps that may be useful in certain scenarios. This method adds the
+ * maps in `domain::creators::sphere::TimeDependentMapOptions` to the domain.
+ * Currently, the first (inner-most) shell has maps between `Frame::Grid`,
+ * `Frame::Distorted`, and `Frame::Inertial` while all subsequent shells only
+ * have maps between `Frame::Grid` and `Frame::Inertial`.
+ *
+ * \note You can only use hard-coded time dependent maps if you have an excision
+ * surface. You cannot have a inner cube.
+ *
+ * ##### None
+ * To not have any time dependent maps, pass a `std::nullopt` to appropriate
+ * argument in the constructor. In the input file, simple have
+ * `TimeDependentMaps: None`.
+ *
  */
 class Sphere : public DomainCreator<3> {
  private:
@@ -140,18 +173,21 @@ class Sphere : public DomainCreator<3> {
   using BulgedCube = CoordinateMaps::BulgedCube;
 
  public:
-  using maps_list = tmpl::list<
-      // Inner cube
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, BulgedCube>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            Equiangular3D>,
-      // Wedges
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::Wedge<3>>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::Wedge<3>,
-                            CoordinateMaps::EquatorialCompression>>;
+  using maps_list = tmpl::append<
+      tmpl::list<
+          // Inner cube
+          domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                                BulgedCube>,
+          domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
+          domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                                Equiangular3D>,
+          // Wedges
+          domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                                CoordinateMaps::Wedge<3>>,
+          domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                                CoordinateMaps::Wedge<3>,
+                                CoordinateMaps::EquatorialCompression>>,
+      typename sphere::TimeDependentMapOptions::maps_list>;
 
   struct InnerRadius {
     using type = double;
@@ -275,11 +311,16 @@ class Sphere : public DomainCreator<3> {
     static constexpr type suggested_value() { return ShellWedges::All; }
   };
 
-  struct TimeDependence {
-    using type =
-        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+  using TimeDepOptionType = std::variant<
+      sphere::TimeDependentMapOptions,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>>;
+
+  struct TimeDependentMaps {
+    using type = Options::Auto<TimeDepOptionType, Options::AutoLabel::None>;
     static constexpr Options::String help = {
-        "The time dependence of the moving mesh domain."};
+        "The options for time dependent maps. This can either be a "
+        "TimeDependence or hard coded time dependent options. Specify `None` "
+        "for no time dependent maps."};
   };
 
   template <typename BoundaryConditionsBase>
@@ -293,7 +334,7 @@ class Sphere : public DomainCreator<3> {
       tmpl::list<InnerRadius, OuterRadius, Interior, InitialRefinement,
                  InitialGridPoints, UseEquiangularMap, EquatorialCompression,
                  RadialPartitioning, RadialDistribution, WhichWedges,
-                 TimeDependence>;
+                 TimeDependentMaps>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -324,8 +365,7 @@ class Sphere : public DomainCreator<3> {
       const typename RadialDistribution::type& radial_distribution =
           domain::CoordinateMaps::Distribution::Linear,
       ShellWedges which_wedges = ShellWedges::All,
-      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-          time_dependence = nullptr,
+      std::optional<TimeDepOptionType> time_dependent_options = std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -377,12 +417,13 @@ class Sphere : public DomainCreator<3> {
   std::vector<double> radial_partitioning_{};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
   ShellWedges which_wedges_ = ShellWedges::All;
-  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-      time_dependence_;
+  std::optional<TimeDepOptionType> time_dependent_options_{};
+  bool use_hard_coded_maps_{false};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
   size_t num_shells_;
   size_t num_blocks_;
+  size_t num_blocks_per_shell_;
   std::vector<std::string> block_names_{};
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_{};
