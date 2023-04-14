@@ -11,6 +11,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeEvolvedVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeSpacetimeTags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ObserveWorldtubeSolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/TimeDerivative.hpp"
@@ -33,6 +34,17 @@
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace CurvedScalarWave::Worldtube {
+
+struct Registration {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
+                const ArrayIndex& /*array_index*/) {
+    return {observers::TypeOfObservation::Reduction,
+            observers::ObservationKey{"/Worldtube"}};
+  }
+};
 
 /*!
  * \brief The singleton component that represents the worldtube.
@@ -76,10 +88,15 @@ struct WorldtubeSingleton {
       Parallel::PhaseActions<
           Parallel::Phase::InitializeTimeStepperHistory,
           SelfStart::self_start_procedure<step_actions, worldtube_system>>,
-      Parallel::PhaseActions<Parallel::Phase::Register,
-                             tmpl::list<Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<Parallel::Phase::Evolve,
-                             tmpl::list<step_actions, ::Actions::AdvanceTime>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Register,
+          tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
+                         Registration>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Evolve,
+          tmpl::list<step_actions, Actions::ObserveWorldtubeSolution,
+                     ::Actions::AdvanceTime>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

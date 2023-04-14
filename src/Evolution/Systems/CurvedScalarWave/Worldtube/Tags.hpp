@@ -25,10 +25,12 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace CurvedScalarWave::Worldtube {
 /*!
@@ -49,6 +51,18 @@ struct ExcisionSphere {
   using type = std::string;
   static constexpr Options::String help{
       "The name of the excision sphere as returned by the domain."};
+  using group = Worldtube;
+};
+
+/*!
+ * \brief Triggers at which to write the coefficients of the worldtube's
+ * internal Taylor series to file.
+ */
+struct ObserveCoefficientsTrigger {
+  using type = std::unique_ptr<Trigger>;
+  static constexpr Options::String help{
+      "Specifies a non-dense trigger in which the coefficients of the internal "
+      "regular field expansion are written to file."};
   using group = Worldtube;
 };
 
@@ -152,6 +166,20 @@ struct ExcisionSphere : db::SimpleTag {
             << keys_of(excision_spheres));
     }
     return excision_spheres.at(excision_sphere);
+  }
+};
+
+/*!
+ * \brief Triggers at which to write the coefficients of the worldtube's
+ * internal Taylor series to file.
+ */
+struct ObserveCoefficientsTrigger : db::SimpleTag {
+  using type = std::unique_ptr<Trigger>;
+  using option_tags = tmpl::list<OptionTags::ObserveCoefficientsTrigger>;
+  static constexpr bool pass_metavariables = false;
+  static std::unique_ptr<Trigger> create_from_options(
+      const std::unique_ptr<Trigger>& trigger) {
+    return deserialize<type>(serialize<type>(trigger).data());
   }
 };
 

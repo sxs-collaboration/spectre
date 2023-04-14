@@ -26,6 +26,7 @@ set(LIBRARY_SOURCES
   Worldtube/SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   Worldtube/SingletonActions/Test_InitializeEvolvedVariables.cpp
   Worldtube/SingletonActions/Test_InitializeSpacetimeTags.cpp
+  Worldtube/SingletonActions/Test_ObserveWorldtubeSolution.cpp
   Worldtube/SingletonActions/Test_TimeDerivative.cpp
   )
 
