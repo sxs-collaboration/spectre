@@ -9,8 +9,8 @@
 #include <iterator>
 
 #include "Time/Time.hpp"
+#include "Time/Utilities.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
 
 /// Helpers for calculating Adams coefficients
 namespace TimeSteppers::adams_coefficients {
@@ -51,27 +51,32 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times);
 template <typename Iterator, typename Delta>
 OrderVector<double> coefficients(const Iterator& times_begin,
                                  const Iterator& times_end, const Delta& step) {
+  if (times_begin == times_end) {
+    return {};
+  }
+  const double step_size = step.value();
   bool constant_step_size = true;
-  OrderVector<double> control_times;
-  for (auto t = times_begin; t != times_end; ++t) {
-    // Ideally we would also include the slab size in the scale of the
-    // roundoff comparison, but there's no good way to get it here,
-    // and it should only matter for slabs near time zero.
-    if (constant_step_size and not control_times.empty() and
-        not equal_within_roundoff(
-            t->value() - control_times.back(), step.value(),
-            100.0 * std::numeric_limits<double>::epsilon(), abs(t->value()))) {
+  // We shift the control times to be near zero, which gives smaller
+  // errors from the variable_coefficients function.
+  OrderVector<double> control_times{0.0};
+  Time previous_time = *times_begin;
+  for (auto t = std::next(times_begin); t != times_end; ++t) {
+    const Time this_time = *t;
+    const double this_step = (this_time - previous_time).value();
+    control_times.push_back(control_times.back() + this_step);
+    if (constant_step_size and
+        std::abs(this_step - step_size) > slab_rounding_error(this_time)) {
       constant_step_size = false;
     }
-    control_times.push_back(t->value());
+    previous_time = this_time;
   }
   if (constant_step_size) {
     auto result = constant_adams_bashforth_coefficients(control_times.size());
-    alg::for_each(result, [&](double& coef) { coef *= step.value(); });
+    alg::for_each(result, [&](double& coef) { coef *= step_size; });
     return result;
   }
 
-  const double goal_time = control_times.back() + step.value();
+  const double goal_time = control_times.back() + step_size;
   for (auto& t : control_times) {
     t -= goal_time;
   }
