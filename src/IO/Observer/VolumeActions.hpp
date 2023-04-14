@@ -357,8 +357,7 @@ struct ContributeVolumeDataToWriter {
         auto& volume_file =
             h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
 
-        // Serialize domain, ignoring versioning for now. See issue:
-        // https://github.com/sxs-collaboration/spectre/issues/3937
+        // Serialize domain. See `Domain` docs for details on the serialization.
         // The domain is retrieved from the global cache using the standard
         // domain tag. If more flexibility is required here later, then the
         // domain can be passed along with the `ContributeVolumeData` action.
