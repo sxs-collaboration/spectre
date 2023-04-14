@@ -59,10 +59,17 @@ std::array<DataVector, MaxDerivReturned + 1> FixedSpeedCubic::func_and_derivs(
 
 void FixedSpeedCubic::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  p | initial_function_value_;
-  p | initial_time_;
-  p | velocity_;
-  p | squared_decay_timescale_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | initial_function_value_;
+    p | initial_time_;
+    p | velocity_;
+    p | squared_decay_timescale_;
+  }
 }
 
 bool operator==(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {

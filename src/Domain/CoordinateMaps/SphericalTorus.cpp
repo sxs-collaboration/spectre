@@ -297,10 +297,17 @@ SphericalTorus::derivative_of_inv_jacobian(
 }
 
 void SphericalTorus::pup(PUP::er& p) {
-  p | r_min_;
-  p | r_max_;
-  p | pi_over_2_minus_theta_min_;
-  p | fraction_of_torus_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | r_min_;
+    p | r_max_;
+    p | pi_over_2_minus_theta_min_;
+    p | fraction_of_torus_;
+  }
 }
 
 template <typename T>

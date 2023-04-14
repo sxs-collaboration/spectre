@@ -368,10 +368,17 @@ CubicScale<Dim>::inv_jacobian(
 
 template <size_t Dim>
 void CubicScale<Dim>::pup(PUP::er& p) {
-  p | f_of_t_a_;
-  p | f_of_t_b_;
-  p | one_over_outer_boundary_;
-  p | functions_of_time_equal_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | f_of_t_a_;
+    p | f_of_t_b_;
+    p | one_over_outer_boundary_;
+    p | functions_of_time_equal_;
+  }
 }
 
 template <size_t Dim>

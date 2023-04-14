@@ -481,25 +481,32 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
 }
 
 void Frustum::pup(PUP::er& p) {
-  p | orientation_of_frustum_;
-  p | with_equiangular_map_;
-  p | is_identity_;
-  p | with_projective_map_;
-  p | sigma_x_;
-  p | delta_x_zeta_;
-  p | delta_x_xi_;
-  p | delta_x_xi_zeta_;
-  p | sigma_y_;
-  p | delta_y_zeta_;
-  p | delta_y_eta_;
-  p | delta_y_eta_zeta_;
-  p | sigma_z_;
-  p | delta_z_zeta_;
-  p | w_plus_;
-  p | w_minus_;
-  p | sphericity_;
-  p | radius_;
-  p | phi_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | orientation_of_frustum_;
+    p | with_equiangular_map_;
+    p | is_identity_;
+    p | with_projective_map_;
+    p | sigma_x_;
+    p | delta_x_zeta_;
+    p | delta_x_xi_;
+    p | delta_x_xi_zeta_;
+    p | sigma_y_;
+    p | delta_y_zeta_;
+    p | delta_y_eta_;
+    p | delta_y_eta_zeta_;
+    p | sigma_z_;
+    p | delta_z_zeta_;
+    p | w_plus_;
+    p | w_minus_;
+    p | sphericity_;
+    p | radius_;
+    p | phi_;
+  }
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) {

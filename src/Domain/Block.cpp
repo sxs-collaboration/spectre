@@ -122,7 +122,7 @@ void Block<VolumeDim>::pup(PUP::er& p) {
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
-  // whenever possible.
+  // whenever possible. See `Domain` docs for details.
   if (version >= 0) {
     p | stationary_map_;
     p | moving_mesh_logical_to_grid_map_;

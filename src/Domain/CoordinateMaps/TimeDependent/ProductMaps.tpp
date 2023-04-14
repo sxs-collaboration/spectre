@@ -221,8 +221,15 @@ ProductOf2Maps<Map1, Map2>::jacobian(
 
 template <typename Map1, typename Map2>
 void ProductOf2Maps<Map1, Map2>::pup(PUP::er& p) {
-  p | map1_;
-  p | map2_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | map1_;
+    p | map2_;
+  }
 }
 
 template <typename Map1, typename Map2>

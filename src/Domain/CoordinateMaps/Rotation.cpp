@@ -68,9 +68,16 @@ Rotation<2>::inv_jacobian(const std::array<T, 2>& source_coords) const {
 }
 
 void Rotation<2>::pup(PUP::er& p) {
-  p | rotation_angle_;
-  p | rotation_matrix_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | rotation_angle_;
+    p | rotation_matrix_;
+    p | is_identity_;
+  }
 }
 
 bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) {

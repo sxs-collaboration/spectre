@@ -173,8 +173,15 @@ void KerrHorizonConforming::stretch_factor_square(
 }
 
 void KerrHorizonConforming::pup(PUP::er& p) {
-  p | spin_parameter_;
-  p | spin_mag_sq_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | spin_parameter_;
+    p | spin_mag_sq_;
+  }
 }
 
 bool operator==(const KerrHorizonConforming& lhs,

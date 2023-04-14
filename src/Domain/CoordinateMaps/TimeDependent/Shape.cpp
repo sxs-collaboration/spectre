@@ -381,12 +381,19 @@ bool operator==(const Shape& lhs, const Shape& rhs) {
 bool operator!=(const Shape& lhs, const Shape& rhs) { return not(lhs == rhs); }
 
 void Shape::pup(PUP::er& p) {
-  p | l_max_;
-  p | m_max_;
-  p | center_;
-  p | shape_f_of_t_name_;
-  p | size_f_of_t_name_;
-  p | transition_func_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | l_max_;
+    p | m_max_;
+    p | center_;
+    p | shape_f_of_t_name_;
+    p | size_f_of_t_name_;
+    p | transition_func_;
+  }
 
   if (p.isUnpacking()) {
     ylm_ = YlmSpherepack(l_max_, m_max_);

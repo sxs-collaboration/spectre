@@ -37,8 +37,15 @@ std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  p | stored_quaternions_and_times_;
-  p | angle_f_of_t_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | stored_quaternions_and_times_;
+    p | angle_f_of_t_;
+  }
 }
 
 template <size_t MaxDeriv>

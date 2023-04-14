@@ -58,11 +58,18 @@ std::array<DataVector, MaxDerivReturned + 1> SettleToConstant::func_and_derivs(
 
 void SettleToConstant::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  p | coef_a_;
-  p | coef_b_;
-  p | coef_c_;
-  p | match_time_;
-  p | inv_decay_time_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | coef_a_;
+    p | coef_b_;
+    p | coef_c_;
+    p | match_time_;
+    p | inv_decay_time_;
+  }
 }
 
 bool operator==(const SettleToConstant& lhs, const SettleToConstant& rhs) {

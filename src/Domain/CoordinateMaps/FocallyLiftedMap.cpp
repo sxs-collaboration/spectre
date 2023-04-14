@@ -336,11 +336,18 @@ std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
 
 template <typename InnerMap>
 void FocallyLiftedMap<InnerMap>::pup(PUP::er& p) {
-  p | center_;
-  p | proj_center_;
-  p | radius_;
-  p | source_is_between_focus_and_target_;
-  p | inner_map_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | center_;
+    p | proj_center_;
+    p | radius_;
+    p | source_is_between_focus_and_target_;
+    p | inner_map_;
+  }
 }
 
 template <typename InnerMap>

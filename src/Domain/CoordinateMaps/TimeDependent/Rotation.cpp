@@ -166,7 +166,14 @@ Rotation<Dim>::inv_jacobian(
 
 template <size_t Dim>
 void Rotation<Dim>::pup(PUP::er& p) {
-  p | f_of_t_name_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | f_of_t_name_;
+  }
 }
 
 template <size_t Dim>

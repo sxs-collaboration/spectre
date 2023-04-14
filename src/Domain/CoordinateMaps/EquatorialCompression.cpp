@@ -159,10 +159,17 @@ EquatorialCompression::inv_jacobian(
 }
 
 void EquatorialCompression::pup(PUP::er& p) {
-  p | aspect_ratio_;
-  p | inverse_aspect_ratio_;
-  p | index_pole_axis_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | aspect_ratio_;
+    p | inverse_aspect_ratio_;
+    p | index_pole_axis_;
+    p | is_identity_;
+  }
 }
 
 bool operator==(const EquatorialCompression& lhs,

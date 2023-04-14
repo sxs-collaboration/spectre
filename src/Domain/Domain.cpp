@@ -141,7 +141,7 @@ void Domain<VolumeDim>::pup(PUP::er& p) {
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
-  // whenever possible.
+  // whenever possible. See `Domain` docs for details.
   if (version >= 0) {
     p | blocks_;
     p | excision_spheres_;

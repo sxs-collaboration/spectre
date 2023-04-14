@@ -100,8 +100,15 @@ OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const {
 
 template <size_t VolumeDim>
 void OrientationMap<VolumeDim>::pup(PUP::er& p) {
-  p | mapped_directions_;
-  p | is_aligned_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | mapped_directions_;
+    p | is_aligned_;
+  }
 }
 
 template <>

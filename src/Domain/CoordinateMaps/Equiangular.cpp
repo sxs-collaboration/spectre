@@ -74,16 +74,23 @@ Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const {
 }
 
 void Equiangular::pup(PUP::er& p) {
-  p | A_;
-  p | B_;
-  p | a_;
-  p | b_;
-  p | length_of_domain_over_m_pi_4_;
-  p | length_of_range_;
-  p | m_pi_4_over_length_of_domain_;
-  p | one_over_length_of_range_;
-  p | linear_jacobian_times_m_pi_4_;
-  p | linear_inverse_jacobian_over_m_pi_4_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | A_;
+    p | B_;
+    p | a_;
+    p | b_;
+    p | length_of_domain_over_m_pi_4_;
+    p | length_of_range_;
+    p | m_pi_4_over_length_of_domain_;
+    p | one_over_length_of_range_;
+    p | linear_jacobian_times_m_pi_4_;
+    p | linear_inverse_jacobian_over_m_pi_4_;
+  }
 }
 
 bool operator==(const CoordinateMaps::Equiangular& lhs,
