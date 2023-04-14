@@ -29,10 +29,10 @@ OrderVector<double> constant_adams_bashforth_coefficients(size_t order);
 ///
 /// The coefficients are for a step using derivatives at \p
 /// control_times, with the entries in the result vector corresponding
-/// to the passed times in order.  The step is taken from the last
-/// time in \p control_times to 0.  The result includes the overall
+/// to the passed times in order.  The result includes the overall
 /// factor of step size, so, for example, the coefficients for Euler's
-/// method (`control_times = {-dt}`) would be `{dt}`, not `{1}`.
+/// method (`control_times = {0}, step_start=0, step_end=dt`) would be
+/// `{dt}`, not `{1}`.
 ///
 /// No requirements are imposed on \p control_times, except that the
 /// entries are all distinct.
@@ -40,7 +40,8 @@ OrderVector<double> constant_adams_bashforth_coefficients(size_t order);
 /// Only `T = double` is used by the time steppers, but `T = Rational`
 /// can be used to generate coefficient tables.
 template <typename T>
-OrderVector<T> variable_coefficients(const OrderVector<T>& control_times);
+OrderVector<T> variable_coefficients(OrderVector<T> control_times,
+                                     const T& step_start, const T& step_end);
 
 /// \brief Get coefficients for a time step.
 ///
@@ -79,11 +80,7 @@ OrderVector<double> coefficients(const Iterator& times_begin,
     return result;
   }
 
-  const double goal_time = control_times.back() + step_size;
-  for (auto& t : control_times) {
-    t -= goal_time;
-  }
-
-  return variable_coefficients(control_times);
+  return variable_coefficients(control_times, control_times.back(),
+                               control_times.back() + step_size);
 }
 }  // namespace TimeSteppers::adams_coefficients

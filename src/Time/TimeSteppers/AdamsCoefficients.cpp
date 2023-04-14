@@ -3,6 +3,7 @@
 
 #include "Time/TimeSteppers/AdamsCoefficients.hpp"
 
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Math.hpp"
@@ -41,10 +42,14 @@ OrderVector<double> constant_adams_bashforth_coefficients(const size_t order) {
 }
 
 template <typename T>
-OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
+OrderVector<T> variable_coefficients(OrderVector<T> control_times,
+                                     const T& step_start, const T& step_end) {
   // The coefficients are, for each j,
-  // \int_0^{step} dt ell_j(t; -control_times),
-  // where the step size is step=-control_times.back().
+  // \int_{step_start}^{step_end} dt ell_j(t; control_times),
+
+  // Shift the step to be near zero to minimize the roundoff error
+  // from the final polynomial evaluations.
+  alg::for_each(control_times, [&](T& t) { t -= step_start; });
 
   const size_t order = control_times.size();
   OrderVector<T> result;
@@ -59,11 +64,11 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
       if (m == j) {
         continue;
       }
-      const T denom = 1 / (control_times[m] - control_times[j]);
+      const T denom = 1 / (control_times[j] - control_times[m]);
       for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
-        poly[i] = (poly[i - 1] + poly[i] * control_times[m]) * denom;
+        poly[i] = (poly[i - 1] - poly[i] * control_times[m]) * denom;
       }
-      poly[0] *= control_times[m] * denom;
+      poly[0] *= -control_times[m] * denom;
     }
 
     // Integrate p(t), term by term.  We choose the constant of
@@ -74,17 +79,18 @@ OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
     for (size_t m = 0; m < order; ++m) {
       poly[m] /= m + 1;
     }
-    result.push_back(-control_times.back() *
-                     evaluate_polynomial(poly, -control_times.back()));
+    result.push_back((step_end - step_start) *
+                     evaluate_polynomial(poly, step_end - step_start));
   }
   return result;
 }
 
 #define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                              \
-  template OrderVector<TYPE(data)> variable_coefficients( \
-      const OrderVector<TYPE(data)>& control_times);
+#define INSTANTIATE(_, data)                                                \
+  template OrderVector<TYPE(data)> variable_coefficients(                   \
+      OrderVector<TYPE(data)> control_times, const TYPE(data) & step_start, \
+      const TYPE(data) & step_end);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, Rational))
 
