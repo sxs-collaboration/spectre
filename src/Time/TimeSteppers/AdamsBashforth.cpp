@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <boost/container/small_vector.hpp>
-#include <boost/container/static_vector.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <iterator>
@@ -21,16 +20,23 @@
 #include "Time/SelfStart.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/AdamsCoefficients.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"
 
 namespace TimeSteppers {
 
+// Don't include AdamsCoefficients.hpp in the header just to get one
+// constant.
+static_assert(adams_coefficients::maximum_order ==
+              AdamsBashforth::maximum_order);
+
 namespace {
+template <typename T>
+using OrderVector = adams_coefficients::OrderVector<T>;
+
 template <typename Iter>
 struct TimeFromRecord {
   Time operator()(typename std::iterator_traits<Iter>::reference record) const {
@@ -43,119 +49,6 @@ struct TimeFromRecord {
 template <typename Iter>
 auto history_time_iterator(const Iter& it) {
   return boost::transform_iterator(it, TimeFromRecord<Iter>{});
-}
-
-// A vector holding one entry per order of integration.
-template <typename T>
-using OrderVector =
-    boost::container::static_vector<T, AdamsBashforth::maximum_order>;
-
-OrderVector<double> constant_coefficients(const size_t order) {
-  switch (order) {
-    case 0: return {};
-    case 1: return {1.};
-    case 2: return {1.5, -0.5};
-    case 3: return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
-    case 4: return {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0};
-    case 5: return {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0,
-          -637.0 / 360.0, 251.0 / 720.0};
-    case 6: return {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0,
-          -3649.0 / 720.0, 959.0 / 480.0, -95.0 / 288.0};
-    case 7: return {198721.0 / 60480.0, -18637.0 / 2520.0, 235183.0 / 20160.0,
-          -10754.0 / 945.0, 135713.0 / 20160.0, -5603.0 / 2520.0,
-          19087.0 / 60480.0};
-    case 8: return {16083.0 / 4480.0, -1152169.0 / 120960.0, 242653.0 / 13440.0,
-          -296053.0 / 13440.0, 2102243.0 / 120960.0, -115747.0 / 13440.0,
-          32863.0 / 13440.0, -5257.0 / 17280.0};
-    default:
-      ERROR("Bad order: " << order);
-  }
-}
-
-// This includes the overall factor of step size.
-//
-// Only T=double is used, but this can be used with T=Rational to
-// generate coefficient tables.
-template <typename T>
-OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
-  // The argument vector contains the control times for a step from
-  // the last time in the list to t=0.
-
-  // The coefficients are, for each j,
-  // \int_0^{step} dt ell_j(t; -control_times),
-  // where the step size is step=-control_times.back().
-
-  const size_t order = control_times.size();
-  OrderVector<T> result;
-  for (size_t j = 0; j < order; ++j) {
-    // Calculate coefficients of the Lagrange interpolating polynomials,
-    // in the standard a_0 + a_1 t + a_2 t^2 + ... form.
-    OrderVector<T> poly(order, 0);
-
-    poly[0] = 1;
-
-    for (size_t m = 0; m < order; ++m) {
-      if (m == j) {
-        continue;
-      }
-      const T denom =
-          1 / (control_times[order - m - 1] - control_times[order - j - 1]);
-      for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
-        poly[i] =
-            (poly[i - 1] + poly[i] * control_times[order - m - 1]) * denom;
-      }
-      poly[0] *= control_times[order - m - 1] * denom;
-    }
-
-    // Integrate p(t), term by term.  We choose the constant of
-    // integration so the indefinite integral is zero at t=0.  We do
-    // not adjust the indexing, so the t^n term in the integral is in
-    // the (n-1)th entry of the vector (as opposed to the nth entry
-    // before integrating).
-    for (size_t m = 0; m < order; ++m) {
-      poly[m] /= m + 1;
-    }
-    result.push_back(-control_times.back() *
-                     evaluate_polynomial(poly, -control_times.back()));
-  }
-  return result;
-}
-
-// Get coefficients for a time step.  Arguments are an iterator pair
-// to past times, oldest to newest, and the time step to take.  The
-// returned coefficients include the factor of the step size, so, for
-// example, the coefficients for Euler's method would be {size}, not
-// {1}.
-template <typename Iterator, typename Delta>
-OrderVector<double> get_coefficients(const Iterator& times_begin,
-                                     const Iterator& times_end,
-                                     const Delta& step) {
-  bool constant_step_size = true;
-  OrderVector<double> control_times;
-  for (auto t = times_begin; t != times_end; ++t) {
-    // Ideally we would also include the slab size in the scale of the
-    // roundoff comparison, but there's no good way to get it here,
-    // and it should only matter for slabs near time zero.
-    if (constant_step_size and not control_times.empty() and
-        not equal_within_roundoff(
-            t->value() - control_times.back(), step.value(),
-            100.0 * std::numeric_limits<double>::epsilon(), abs(t->value()))) {
-      constant_step_size = false;
-    }
-    control_times.push_back(t->value());
-  }
-  if (constant_step_size) {
-    auto result = constant_coefficients(control_times.size());
-    alg::for_each(result, [&](double& coef) { coef *= step.value(); });
-    return result;
-  }
-
-  const double goal_time = control_times.back() + step.value();
-  for (auto& t : control_times) {
-    t -= goal_time;
-  }
-
-  return variable_coefficients(control_times);
 }
 
 template <typename T>
@@ -193,8 +86,10 @@ double AdamsBashforth::stable_step() const {
 
   // This is the condition that the characteristic polynomial of the
   // recurrence relation defined by the method has the correct sign at
-  // -1.  It is not clear whether this is actually sufficient.
-  const auto& coefficients = constant_coefficients(order_);
+  // -1.  It is not clear whether this is sufficient for all orders,
+  // but it is for the ones we support.
+  const auto& coefficients =
+      adams_coefficients::constant_adams_bashforth_coefficients(order_);
   double invstep = 0.;
   double sign = 1.;
   for (const auto coef : coefficients) {
@@ -261,8 +156,9 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
       history.end() -
       static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
   const auto coefficients =
-      get_coefficients(history_time_iterator(history_start),
-                       history_time_iterator(history.end()), time_step);
+      adams_coefficients::coefficients(history_time_iterator(history_start),
+                                       history_time_iterator(history.end()),
+                                       time_step);
 
   *u = *history.back().value;
   auto coefficient = coefficients.rbegin();
@@ -522,8 +418,8 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
   if (std::equal(local_begin, coupling.local_end(),
                  coupling.remote_end() - order_s)) {
     // No local time-stepping going on.
-    const auto coefficients =
-        get_coefficients(local_begin, coupling.local_end(), time_step);
+    const auto coefficients = adams_coefficients::coefficients(
+        local_begin, coupling.local_end(), time_step);
 
     auto local_it = local_begin;
     auto remote_it = coupling.remote_end() - order_s;
@@ -579,7 +475,7 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
       const double next_time = next_end == SmallStepIterator<T>{}
                                    ? end_time.value()
                                    : next_end->value();
-      small_step_coefficients.push_back(get_coefficients(
+      small_step_coefficients.push_back(adams_coefficients::coefficients(
           coefficient_eval_begin, next_end,
           ApproximateTimeDelta{next_time - coefficient_eval_end->value()}));
       ++coefficient_eval_begin;
