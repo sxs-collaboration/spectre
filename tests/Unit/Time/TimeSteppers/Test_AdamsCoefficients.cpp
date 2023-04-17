@@ -104,6 +104,18 @@ void check_adams_bashforth_consistency() {
   }
 }
 
+void check_adams_moulton_consistency() {
+  ac::OrderVector<Time> standard_am_control_times{};
+  for (size_t order = 1; order <= ac::maximum_order; ++order) {
+    standard_am_control_times.insert(
+        standard_am_control_times.begin(),
+        Slab::with_duration_from_start(-static_cast<double>(order), 1.0)
+            .end());
+    check_consistency(standard_am_control_times,
+                      ac::constant_adams_moulton_coefficients(order));
+  }
+}
+
 void test_rational_computation() {
   // Check a few known cases
 
@@ -154,6 +166,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsCoefficients", "[Unit][Time]") {
   // These tests just do consistency checks in the various functions.
   // The actual values are tested by the time stepper tests.
   check_adams_bashforth_consistency();
+  check_adams_moulton_consistency();
 
   test_rational_computation();
   test_unaligned_step();

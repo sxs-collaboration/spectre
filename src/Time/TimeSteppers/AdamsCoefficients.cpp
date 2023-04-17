@@ -41,6 +41,37 @@ OrderVector<double> constant_adams_bashforth_coefficients(const size_t order) {
   }
 }
 
+OrderVector<double> constant_adams_moulton_coefficients(const size_t order) {
+  switch (order) {
+    case 0:
+      return {};
+    case 1:
+      return {1.0};
+    case 2:
+      return {0.5, 0.5};
+    case 3:
+      return {-1.0 / 12.0, 2.0 / 3.0, 5.0 / 12.0};
+    case 4:
+      return {1.0 / 24.0, -5.0 / 24.0, 19.0 / 24.0, 3.0 / 8.0};
+    case 5:
+      return {-19.0 / 720.0, 53.0 / 360.0, -11.0 / 30.0, 323.0 / 360.0,
+              251.0 / 720.0};
+    case 6:
+      return {3.0 / 160.0,    -173.0 / 1440.0, 241.0 / 720.0,
+              -133.0 / 240.0, 1427.0 / 1440.0, 95.0 / 288.0};
+    case 7:
+      return {-863.0 / 60480.0, 263.0 / 2520.0,     -6737.0 / 20160.0,
+              586.0 / 945.0,    -15487.0 / 20160.0, 2713.0 / 2520.0,
+              19087.0 / 60480.0};
+    case 8:
+      return {275.0 / 24192.0,     -11351.0 / 120960.0, 1537.0 / 4480.0,
+              -88547.0 / 120960.0, 123133.0 / 120960.0, -4511.0 / 4480.0,
+              139849.0 / 120960.0, 5257.0 / 17280.0};
+    default:
+      ERROR("Bad order: " << order);
+  }
+}
+
 template <typename T>
 OrderVector<T> variable_coefficients(OrderVector<T> control_times,
                                      const T& step_start, const T& step_end) {

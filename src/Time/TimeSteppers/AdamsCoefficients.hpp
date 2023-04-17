@@ -30,6 +30,11 @@ using OrderVector = boost::container::static_vector<T, maximum_order>;
 /// reference table (except likely in the opposite order).
 OrderVector<double> constant_adams_bashforth_coefficients(size_t order);
 
+/// The standard Adams-Moulton coefficients for constant step size,
+/// ordered from oldest to newest time, as one would find in a
+/// reference table (except likely in the opposite order).
+OrderVector<double> constant_adams_moulton_coefficients(size_t order);
+
 /// \brief Generate coefficients for an Adams step.
 ///
 /// The coefficients are for a step using derivatives at \p
@@ -84,6 +89,10 @@ OrderVector<double> coefficients(const Iterator& times_begin,
   }
   if (constant_step_size and step_start == previous_time) {
     auto result = constant_adams_bashforth_coefficients(control_times.size());
+    alg::for_each(result, [&](double& coef) { coef *= step_size; });
+    return result;
+  } else if (constant_step_size and step_end == previous_time) {
+    auto result = constant_adams_moulton_coefficients(control_times.size());
     alg::for_each(result, [&](double& coef) { coef *= step_size; });
     return result;
   }
