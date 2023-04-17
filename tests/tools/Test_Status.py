@@ -8,6 +8,7 @@ import unittest
 
 import numpy as np
 import spectre.IO.H5 as spectre_h5
+import yaml
 from spectre.Informer import unit_test_build_path
 
 from spectre.tools.Status.Status import get_input_file, get_executable_name
@@ -106,9 +107,7 @@ class TestStatus(unittest.TestCase):
         self.input_file_path = os.path.join(self.work_dir, "InputFile.yaml")
         os.makedirs(self.work_dir, exist_ok=True)
         with open(self.input_file_path, "w") as open_input_file:
-            open_input_file.write("# Some comment\n\n"
-                                  "# Executable: MyExec\n"
-                                  "Key: Value\n")
+            yaml.safe_dump_all([{"Executable": "MyExec"}, {}], open_input_file)
 
     def tearDown(self):
         shutil.rmtree(self.work_dir, ignore_errors=True)

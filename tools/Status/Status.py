@@ -20,7 +20,6 @@ import rich.rule
 import rich.live
 import time
 import yaml
-from spectre.Visualization.ReadInputFile import get_executable
 
 from .ExecutableStatus import match_executable_status
 
@@ -139,11 +138,14 @@ def get_executable_name(comment: Optional[str],
         else:
             logger.debug("Could not find 'SPECTRE_EXECUTABLE' "
                          "in Slurm comment:\n" + comment)
-    # Fallback: Look for a comment like "# Executable: ..." in the input file
+    # Fallback: See if the executable is specified in the input file metadata
     if not input_file_path:
         return None
-    executable = get_executable(pathlib.Path(input_file_path).read_text())
-    return os.path.basename(executable) if executable else None
+    with open(input_file_path, "r") as open_input_file:
+        metadata = next(yaml.safe_load_all(open_input_file))
+    if metadata and "Executable" in metadata:
+        return os.path.basename(metadata["Executable"])
+    return None
 
 
 def _state_order(state):

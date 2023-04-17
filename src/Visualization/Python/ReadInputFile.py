@@ -7,7 +7,13 @@ PyYAML or ruaml.yaml:
 
     import yaml
     with open(input_file_path) as open_input_file:
-        input_file = yaml.safe_load(open_input_file)
+        metadata, input_file = yaml.safe_load_all(open_input_file)
+
+It's also possible to load just the metadata without the overhead of parsing the
+full input file:
+
+    with open(input_file_path) as open_input_file:
+        metadata = next(yaml.safe_load_all(open_input_file))
 
 The functions in this module provide additional functionality to work with input
 files.
@@ -15,25 +21,6 @@ files.
 
 import re
 from typing import Optional
-
-
-def get_executable(input_file_content: str) -> Optional[str]:
-    """Extract the executable the input file is supposed to run with.
-
-    The executable is parsed from a comment like this in the input file:
-
-        # Executable: EvolveScalarWave
-
-    Arguments:
-      input_file_contents: The full input file read in as a string.
-
-    Returns: The executable ("EvolveScalarWave" in the example above), or None
-      if no executable was found.
-    """
-    match = re.search(r'#\s+Executable:\s+(.+)', input_file_content)
-    if not match:
-        return None
-    return match.group(1)
 
 
 def find_event(event_name: str, input_file: dict) -> dict:
