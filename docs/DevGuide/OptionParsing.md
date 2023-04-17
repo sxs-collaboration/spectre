@@ -11,6 +11,39 @@ placed in the Parallel::GlobalCache and options passed to the
 parallel components.  The types necessary to mark objects for parsing
 are declared in `Options/Options.hpp`.
 
+## Metadata and options
+
+YAML input files begin with a metadata section, terminated by `---`, and
+followed by the executable options:
+
+```yaml
+# Metadata here
+Description: |
+  Briefly describe the configuration and link to papers for details.
+---
+# Options start here
+```
+
+The metadata section may also be empty:
+
+```yaml
+---
+---
+# Options start here
+```
+
+You only need the leading `---` marker if the metadata section is empty. This is
+YAML's "document start marker" (see the [YAML spec](https://yaml.org/spec/1.2)).
+Any metadata fields at the beginning of the file also imply the start of a
+document, so you don't need the first `---` marker.
+
+Metadata provide information for tools, whereas options provide information to
+the executable. See tools like `CheckOutputFiles` for details on the metadata
+fields that they use. Metadata can also provide information on how to run the
+input file, such as the name and version of the executable, and a description
+that may refer to published papers for details on the configuration.
+Options are defined by the executable and detailed below.
+
 ## General option format
 
 An option is defined by an "option tag", represented by a `struct`.  At minimum,
