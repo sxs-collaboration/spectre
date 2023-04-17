@@ -7,6 +7,8 @@
 
 std::string link_date() { return "Unavailable in Python bindings"; }
 
+std::string executable_name() { return "Unavailable in Python bindings"; }
+
 std::string git_description() { return "Unavailable in Python bindings"; }
 
 std::string git_branch() { return "Unavailable in Python bindings"; }

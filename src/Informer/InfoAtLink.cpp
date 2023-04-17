@@ -12,6 +12,10 @@
 
 std::string link_date() { return std::string(__TIMESTAMP__); }
 
+std::string executable_name() {
+  return std::string(BOOST_PP_STRINGIZE(EXECUTABLE_NAME));
+}
+
 std::string git_description() {
   return std::string(BOOST_PP_STRINGIZE(GIT_DESCRIPTION));
 }
