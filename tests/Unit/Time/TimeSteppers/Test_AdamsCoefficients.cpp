@@ -16,20 +16,26 @@ namespace ac = TimeSteppers::adams_coefficients;
 
 void check_consistency(const ac::OrderVector<Time>& control_times,
                        const ac::OrderVector<double>& standard_coefficients) {
+  // Need step_start to be compatible with input.
+  ASSERT(control_times.front().slab().duration().value() == 1.0 and
+             (control_times.front().slab().start().fraction() == 0 or
+              control_times.front().slab().start().fraction() == 1),
+         "Unexpected slabs in input");
+  const Time step_start = Slab(-1.0, 0.0).start();
+
   ac::OrderVector<double> control_times_for_variable{};
   for (const Time& t : control_times) {
     control_times_for_variable.push_back(t.value());
   }
 
   CHECK_ITERABLE_APPROX(
-      ac::variable_coefficients(control_times_for_variable,
-                                control_times_for_variable.back(), 0.0),
+      ac::variable_coefficients(control_times_for_variable, -1.0, 0.0),
       standard_coefficients);
   // This should be exact, because the function should detect the
   // constant step case and forward to that function.  (And then
   // multiply by 1, but that's also exact.)
-  CHECK(ac::coefficients(control_times.begin(), control_times.end(),
-                         ApproximateTimeDelta{1.0}) == standard_coefficients);
+  CHECK(ac::coefficients(control_times.begin(), control_times.end(), step_start,
+                         ApproximateTime{0.0}) == standard_coefficients);
 
   // Test offset times
   {
@@ -43,13 +49,18 @@ void check_consistency(const ac::OrderVector<Time>& control_times,
       offset_control_times_for_variable.push_back(
           offset_control_times.back().value());
     }
+    const Time offset_start(Slab(step_start.slab().start().value() + offset,
+                                 step_start.slab().end().value() + offset),
+                            step_start.fraction());
+
     CHECK(ac::coefficients(offset_control_times.begin(),
-                           offset_control_times.end(),
-                           ApproximateTimeDelta{1.0}) == standard_coefficients);
-    CHECK_ITERABLE_APPROX(ac::variable_coefficients(
-                              offset_control_times_for_variable,
-                              offset_control_times_for_variable.back(), offset),
-                          standard_coefficients);
+                           offset_control_times.end(), offset_start,
+                           ApproximateTime{offset}) ==
+          standard_coefficients);
+    CHECK_ITERABLE_APPROX(
+        ac::variable_coefficients(offset_control_times_for_variable,
+                                  offset - 1.0, offset),
+        standard_coefficients);
   }
 
   // Test scaling with time step
@@ -65,12 +76,14 @@ void check_consistency(const ac::OrderVector<Time>& control_times,
       scaled_control_times_for_variable.push_back(
           scaled_control_times.back().value());
     }
+    const Time scaled_start(Slab(step_start.slab().start().value() * time_step,
+                                 step_start.slab().end().value() * time_step),
+                            step_start.fraction());
     const auto scaled_coefficients = ac::coefficients(
-        scaled_control_times.begin(), scaled_control_times.end(),
-        ApproximateTimeDelta{time_step});
+        scaled_control_times.begin(), scaled_control_times.end(), scaled_start,
+        ApproximateTime{0.0});
     const auto scaled_variable_coefficients = ac::variable_coefficients(
-        scaled_control_times_for_variable,
-        scaled_control_times_for_variable.back(), 0.0);
+        scaled_control_times_for_variable, -time_step, 0.0);
     for (size_t i = 0; i < standard_coefficients.size(); ++i) {
       CHECK(scaled_coefficients[i] == time_step * standard_coefficients[i]);
       CHECK(scaled_variable_coefficients[i] ==
@@ -123,6 +136,18 @@ void test_rational_computation() {
   CHECK(ac::variable_coefficients<Rational>({{1, 2}, {3, 4}}, {1, 3}, 1) ==
         ac::OrderVector<Rational>{{2, 9}, {4, 9}});
 }
+
+void test_unaligned_step() {
+  // Check ac::coefficients with the step not aligned with the control
+  // times.  This is done for the exact math in
+  // test_rational_computation.
+  const Slab slab(0.0, 1.0);
+  const std::array control_times{Time(slab, {1, 2}), Time(slab, {3, 4})};
+  CHECK_ITERABLE_APPROX(
+      ac::coefficients(control_times.begin(), control_times.end(),
+                       Time(slab, {1, 3}), Time{slab, 1}),
+      (ac::OrderVector<double>{2.0 / 9.0, 4.0 / 9.0}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsCoefficients", "[Unit][Time]") {
@@ -131,4 +156,5 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsCoefficients", "[Unit][Time]") {
   check_adams_bashforth_consistency();
 
   test_rational_computation();
+  test_unaligned_step();
 }

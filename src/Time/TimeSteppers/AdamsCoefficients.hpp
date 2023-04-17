@@ -7,10 +7,15 @@
 #include <cmath>
 #include <cstddef>
 #include <iterator>
+#include <type_traits>
 
 #include "Time/Time.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Algorithm.hpp"
+
+/// \cond
+struct ApproximateTime;
+/// \endcond
 
 /// Helpers for calculating Adams coefficients
 namespace TimeSteppers::adams_coefficients {
@@ -46,19 +51,22 @@ OrderVector<T> variable_coefficients(OrderVector<T> control_times,
 /// \brief Get coefficients for a time step.
 ///
 /// Arguments are an iterator pair to past times (of type `Time`),
-/// with the most recent last, and the time step to take as a type
-/// with a `value()` method returning `double`.  The returned
-/// coefficients correspond to the passed times in order.  They
-/// include the factor of the step size, so, for example, the
-/// coefficients for Euler's method would be `{step.value()}`, not
-/// `{1}`.
-template <typename Iterator, typename Delta>
+/// with the most recent last, and the start and end of the time step
+/// to take, with the end a `Time` or `ApproximateTime`.  This
+/// performs the same calculation as `variable_coefficients`, except
+/// that it works with `Time`s and will detect and optimize the
+/// constant-step-size case.
+template <typename Iterator, typename TimeType>
 OrderVector<double> coefficients(const Iterator& times_begin,
-                                 const Iterator& times_end, const Delta& step) {
+                                 const Iterator& times_end,
+                                 const Time& step_start,
+                                 const TimeType& step_end) {
+  static_assert(std::is_same_v<TimeType, Time> or
+                std::is_same_v<TimeType, ApproximateTime>);
   if (times_begin == times_end) {
     return {};
   }
-  const double step_size = step.value();
+  const double step_size = (step_end - step_start).value();
   bool constant_step_size = true;
   // We shift the control times to be near zero, which gives smaller
   // errors from the variable_coefficients function.
@@ -74,13 +82,15 @@ OrderVector<double> coefficients(const Iterator& times_begin,
     }
     previous_time = this_time;
   }
-  if (constant_step_size) {
+  if (constant_step_size and step_start == previous_time) {
     auto result = constant_adams_bashforth_coefficients(control_times.size());
     alg::for_each(result, [&](double& coef) { coef *= step_size; });
     return result;
   }
 
-  return variable_coefficients(control_times, control_times.back(),
-                               control_times.back() + step_size);
+  return variable_coefficients(
+      control_times,
+      control_times.back() + (step_start - previous_time).value(),
+      control_times.back() + (step_end - previous_time).value());
 }
 }  // namespace TimeSteppers::adams_coefficients

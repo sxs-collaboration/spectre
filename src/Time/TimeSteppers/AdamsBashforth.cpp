@@ -153,10 +153,11 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
   const auto history_start =
       history.end() -
       static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
-  const auto coefficients =
-      adams_coefficients::coefficients(history_time_iterator(history_start),
-                                       history_time_iterator(history.end()),
-                                       time_step);
+  const auto coefficients = adams_coefficients::coefficients(
+      history_time_iterator(history_start),
+      history_time_iterator(history.end()),
+      history.back().time_step_id.step_time(),
+      history.back().time_step_id.step_time() + time_step);
 
   *u = *history.back().value;
   auto coefficient = coefficients.begin();
@@ -417,7 +418,7 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
                  coupling.remote_end() - order_s)) {
     // No local time-stepping going on.
     const auto coefficients = adams_coefficients::coefficients(
-        local_begin, coupling.local_end(), time_step);
+        local_begin, coupling.local_end(), start_time, end_time);
 
     auto local_it = local_begin;
     auto remote_it = coupling.remote_end() - order_s;
@@ -474,8 +475,8 @@ void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
                                    ? end_time.value()
                                    : next_end->value();
       small_step_coefficients.push_back(adams_coefficients::coefficients(
-          coefficient_eval_begin, next_end,
-          ApproximateTimeDelta{next_time - coefficient_eval_end->value()}));
+          coefficient_eval_begin, next_end, *coefficient_eval_end,
+          ApproximateTime{next_time}));
       ++coefficient_eval_begin;
       coefficient_eval_end = std::move(next_end);
     }
