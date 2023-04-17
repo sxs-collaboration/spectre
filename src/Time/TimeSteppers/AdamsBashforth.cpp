@@ -10,11 +10,11 @@
 #include <cstddef>
 #include <iterator>
 #include <limits>
-#include <ostream>
 #include <pup.h>
 #include <utility>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
+#include "Time/ApproximateTime.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
@@ -44,37 +44,6 @@ template <typename Iter>
 auto history_time_iterator(const Iter& it) {
   return boost::transform_iterator(it, TimeFromRecord<Iter>{});
 }
-
-// TimeDelta-like interface to a double used for dense output
-struct ApproximateTimeDelta {
-  double delta = std::numeric_limits<double>::signaling_NaN();
-  double value() const { return delta; }
-  bool is_positive() const { return delta > 0.; }
-};
-
-// Time-like interface to a double used for dense output
-struct ApproximateTime {
-  double time = std::numeric_limits<double>::signaling_NaN();
-  double value() const { return time; }
-
-  // Only the operators that are actually used are defined.
-  friend ApproximateTimeDelta operator-(const ApproximateTime& a,
-                                        const Time& b) {
-    return {a.value() - b.value()};
-  }
-
-  friend bool operator<(const Time& a, const ApproximateTime& b) {
-    return a.value() < b.value();
-  }
-
-  friend bool operator<(const ApproximateTime& a, const Time& b) {
-    return a.value() < b.value();
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const ApproximateTime& t) {
-    return s << t.value();
-  }
-};
 
 // A vector holding one entry per order of integration.
 template <typename T>
