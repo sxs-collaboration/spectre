@@ -101,200 +101,59 @@ SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
 
   // Output
   CHECK(get_output(Slab(0.5, 1.5)) == "Slab[0.5,1.5]");
-}
 
-SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
-                  "[Unit][Time][Serialization]") {
-  const Slab slab(1.7, 2.4);
+  // Serialization
   test_serialization(slab);
-}
 
-// Failure tests
+  // Failure tests
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wunused-comparison"
 #endif
 
-// [[OutputRegex, Backwards Slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.0", "[Unit][Time]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Slab(1., 0.);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Slab(1., 0.), Catch::Contains("Backwards Slab"));
+  CHECK_THROWS_WITH(Slab::with_duration_from_start(0., -1.),
+                    Catch::Contains("Backwards Slab"));
+  CHECK_THROWS_WITH(Slab::with_duration_to_end(0., -1.),
+                    Catch::Contains("Backwards Slab"));
 
-// [[OutputRegex, Backwards Slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab::with_duration_from_start(0., -1.);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(slab.advance_towards(0 * slab.duration()),
+                    Catch::Contains("Can't advance along a zero time vector"));
 
-// [[OutputRegex, Backwards Slab]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab::with_duration_to_end(0., -1.);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(-0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(-0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
 
-// [[OutputRegex, Can't advance along a zero time vector]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Advance0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const Slab slab(0., 1.);
-  slab.advance_towards(0 * slab.duration());
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(-0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(-0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
 
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) < Slab(0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(-0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(-0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
 
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) < Slab(0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) < Slab(-0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.3", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) < Slab(-0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) > Slab(0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) > Slab(0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) > Slab(-0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.3", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) > Slab(-0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.0", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) <= Slab(0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.1", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) <= Slab(0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.2", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) <= Slab(-0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.3", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) <= Slab(-0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.0",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) >= Slab(0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.1",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) >= Slab(0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.2",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) >= Slab(-0.1, 0.9);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.3",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Slab(0., 1.) >= Slab(-0.1, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(-0.1, 0.9),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(-0.1, 1.1),
+                    Catch::Contains("Cannot compare overlapping slabs"));
+#endif /*SPECTRE_DEBUG*/
 }
