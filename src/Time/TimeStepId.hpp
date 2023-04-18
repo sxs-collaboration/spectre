@@ -33,11 +33,6 @@ class TimeStepId {
   /// starting at time `step_time`.
   TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
              uint64_t substep, double substep_time);
-  /// Create a TimeStepId at a substep, given the relative location of
-  /// the substep within the step.
-  TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
-             uint64_t substep, const TimeDelta& step_size,
-             double step_fraction);
 
   bool time_runs_forward() const { return time_runs_forward_; }
   int64_t slab_number() const { return slab_number_; }

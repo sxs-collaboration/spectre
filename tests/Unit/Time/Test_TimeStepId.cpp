@@ -48,11 +48,6 @@ void check(const bool time_runs_forward) {
   CHECK(TimeStepId(time_runs_forward, 5, end).step_time().slab() ==
         slab.advance_towards(step));
 
-  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 2, step / 4,
-                   1.0 / 8.0) == TimeStepId(time_runs_forward, 4,
-                                            start + step / 2, 2,
-                                            (start + step * 17 / 32).value()));
-
   CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, end.value())
             .next_step(step / 4) ==
         TimeStepId(time_runs_forward, 4, start + step * 3 / 4));
