@@ -244,12 +244,12 @@ void test_impl(
           ::fd::DerivativeOrder::Two},
       TestCreator<Dim>{}}}};
 
-  TimeStepId time_step_id{true, self_starting ? -1 : 1,
-                          Time{Slab{1.0, 2.0}, {0, 10}}};
+  TimeStepId time_step_id{false, self_starting ? -1 : 1,
+                          Slab{1.0, 2.0}.end()};
   if (in_substep) {
     // We are in the middle of a time step with a substep method, so update
     // time_step_id to signal it is in a substep.
-    time_step_id = TimeStepId{true, 1, Time{Slab{1.0, 2.0}, {0, 10}}, 1, 1.1};
+    time_step_id = TimeStepId{false, 1, Slab{1.0, 2.0}.end(), 1, 1.1};
   }
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};

@@ -286,8 +286,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{subcell_options}};
 
-  const TimeStepId time_step_id{true, self_starting ? -1 : 1,
-                                Time{Slab{1.0, 2.0}, {0, 10}}};
+  const TimeStepId time_step_id{false, self_starting ? -1 : 1,
+                                Slab{1.0, 2.0}.end()};
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
