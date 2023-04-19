@@ -43,16 +43,16 @@ struct get_action_list_compute_tags {
 };
 
 template <typename Pdal>
-using get_pdal_simple_tags =
-    tmpl::flatten<tmpl::transform<Pdal, get_action_list_simple_tags<tmpl::_1>>>;
+using get_pdal_simple_tags = tmpl::remove_duplicates<tmpl::flatten<
+    tmpl::transform<Pdal, get_action_list_simple_tags<tmpl::_1>>>>;
 
 template <typename Pdal>
-using get_pdal_compute_tags = tmpl::flatten<
-    tmpl::transform<Pdal, get_action_list_compute_tags<tmpl::_1>>>;
+using get_pdal_compute_tags = tmpl::remove_duplicates<tmpl::flatten<
+    tmpl::transform<Pdal, get_action_list_compute_tags<tmpl::_1>>>>;
 
 template <typename ParallelComponent>
-using action_list_simple_tags = tmpl::remove_duplicates<get_pdal_simple_tags<
-    typename ParallelComponent::phase_dependent_action_list>>;
+using action_list_simple_tags = get_pdal_simple_tags<
+    typename ParallelComponent::phase_dependent_action_list>;
 
 template <typename ParallelComponent>
 using action_list_compute_tags = tmpl::remove_duplicates<get_pdal_compute_tags<
