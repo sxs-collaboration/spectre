@@ -23,6 +23,7 @@
 
 namespace {
 void test_options_empty() {
+  INFO("Empty");
   {
     // Check for no error.
     Options::Parser<tmpl::list<>> opts("");
@@ -46,6 +47,7 @@ void test_options_empty() {
 }
 
 void test_options_syntax_error() {
+  INFO("Syntax error");
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<>> opts("");
@@ -74,6 +76,7 @@ struct NamedSimple {
 };
 
 void test_options_simple() {
+  INFO("Simple");
   {
     Options::Parser<tmpl::list<Simple>> opts("");
     opts.parse("Simple: -4");
@@ -1574,6 +1577,42 @@ void test_options_serialization() {
     });
   }
 }
+
+void test_load_and_check_yaml() {
+  INFO("Load and check YAML");
+  {
+    const auto options = Options::detail::load_and_check_yaml("X: 1", false);
+    CHECK(options["X"].as<size_t>() == 1);
+  }
+  CHECK_THROWS_WITH(
+      []() { Options::detail::load_and_check_yaml("X: 1", true); }(),
+      Catch::Contains("Missing metadata"));
+  {
+    const auto options = Options::detail::load_and_check_yaml(
+        "---\n"
+        "---\n"
+        "X: 1\n",
+        true);
+    CHECK(options["X"].as<size_t>() == 1);
+  }
+  {
+    const auto options = Options::detail::load_and_check_yaml(
+        "Executable: RunTests\n"
+        "---\n"
+        "X: 1\n",
+        true);
+    CHECK(options["X"].as<size_t>() == 1);
+  }
+  CHECK_THROWS_WITH(
+      []() {
+        Options::detail::load_and_check_yaml(
+            "Executable: MyExec\n"
+            "---\n"
+            "X: 1\n",
+            true);
+      }(),
+      Catch::Contains("the running executable is"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -1599,4 +1638,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_alternatives();
   test_options_overlay();
   test_options_serialization();
+  test_load_and_check_yaml();
 }

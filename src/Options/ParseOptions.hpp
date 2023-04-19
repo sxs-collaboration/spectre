@@ -375,6 +375,11 @@ Parser<OptionList, Group>::Parser(std::string help_text)
   });
 }
 
+namespace detail {
+YAML::Node load_and_check_yaml(const std::string& options,
+                               bool require_metadata);
+}
+
 template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse(std::string options) {
   context_.append("In string");

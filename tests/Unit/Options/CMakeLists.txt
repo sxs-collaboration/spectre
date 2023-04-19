@@ -17,5 +17,12 @@ add_test_library(
   ${LIBRARY}
   "Options/"
   "${LIBRARY_SOURCES}"
-  "Options;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Options
+  Utilities
+)
