@@ -46,13 +46,19 @@ struct get_const_global_cache_tags_from_parallel_struct<
   using type = typename ParallelStruct::const_global_cache_tags;
 };
 
-template <class Component>
+template <class PhaseDependentActionList>
 struct get_const_global_cache_tags_from_pdal {
   using type = tmpl::join<tmpl::transform<
       tmpl::flatten<tmpl::transform<
-          typename Component::phase_dependent_action_list,
+          PhaseDependentActionList,
           get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
       get_const_global_cache_tags_from_parallel_struct<tmpl::_1>>>;
+};
+
+template <class Component>
+struct get_const_global_cache_tags_from_component {
+  using type = typename get_const_global_cache_tags_from_pdal<
+      typename Component::phase_dependent_action_list>::type;
 };
 
 template <class ParallelStruct, class = std::void_t<>>
@@ -67,13 +73,19 @@ struct get_mutable_global_cache_tags_from_parallel_struct<
   using type = typename ParallelStruct::mutable_global_cache_tags;
 };
 
-template <class Component>
+template <class PhaseDependentActionList>
 struct get_mutable_global_cache_tags_from_pdal {
   using type = tmpl::join<tmpl::transform<
       tmpl::flatten<tmpl::transform<
-          typename Component::phase_dependent_action_list,
+                      PhaseDependentActionList,
           get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
       get_mutable_global_cache_tags_from_parallel_struct<tmpl::_1>>>;
+};
+
+template <class Component>
+struct get_mutable_global_cache_tags_from_component {
+  using type = typename get_mutable_global_cache_tags_from_pdal<
+      typename Component::phase_dependent_action_list>::type;
 };
 
 }  // namespace detail
@@ -115,7 +127,7 @@ using get_const_global_cache_tags =
             detail::get_const_global_cache_tags_from_parallel_struct<tmpl::_1>>,
         tmpl::transform<
             typename Metavariables::component_list,
-            detail::get_const_global_cache_tags_from_pdal<tmpl::_1>>>>>;
+            detail::get_const_global_cache_tags_from_component<tmpl::_1>>>>>;
 
 /*!
  * \ingroup ParallelGroup
@@ -133,7 +145,7 @@ using get_mutable_global_cache_tags =
                 tmpl::_1>>,
         tmpl::transform<
             typename Metavariables::component_list,
-            detail::get_mutable_global_cache_tags_from_pdal<tmpl::_1>>>>>;
+            detail::get_mutable_global_cache_tags_from_component<tmpl::_1>>>>>;
 
 /*!
  * \ingroup ParallelGroup
