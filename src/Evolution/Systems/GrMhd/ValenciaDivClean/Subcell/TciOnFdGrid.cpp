@@ -155,6 +155,6 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     return {+10, rdmp_tci_data};
   }
 
-  return {false, rdmp_tci_data};
+  return {0, rdmp_tci_data};
 }
 }  // namespace grmhd::ValenciaDivClean::subcell
