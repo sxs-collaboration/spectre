@@ -53,7 +53,8 @@ void test_gh_lockstep_interface_manager(const gsl::not_null<Generator*> gen) {
     const double substep_time{
         static_cast<double>(step) + 0.5 * substep_numerator};
     const TimeStepId time_id{true, static_cast<int64_t>(step), step_time,
-                             substep, substep_time};
+                             substep, step_time.slab().duration(),
+                             substep_time};
     fill_with_random_values(make_not_null(&spacetime_metric), gen,
                             make_not_null(&value_dist));
     fill_with_random_values(make_not_null(&phi), gen,

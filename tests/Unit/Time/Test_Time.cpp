@@ -275,6 +275,11 @@ void test_time_delta() {
   CHECK(TimeDelta(slab.retreat(), -rational_t(1, 3)) + Time(slab, 0) ==
         Time(slab.retreat(), rational_t(2, 3)));
 
+  // Hashing
+  std::hash<TimeDelta> h;
+  CHECK(h(Slab(0.0, 1.0).duration()) != h(Slab(0.0, 2.0).duration()));
+  CHECK(h(Slab(0.0, 1.0).duration()) != h(Slab(0.0, 1.0).duration() / 2));
+
   // Output
   const std::string slab_str = get_output(slab);
   CHECK(get_output(TimeDelta(slab, 0)) == slab_str + ":0/1");

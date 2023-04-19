@@ -202,7 +202,7 @@ void test_slab_limits() {
 
   db::mutate<Tags::TimeStepId>(
       make_not_null(&box), [&](const gsl::not_null<TimeStepId*> id) {
-        *id = TimeStepId(true, 0, start, 1, start.value());
+        *id = TimeStepId(true, 0, start, 1, slab.duration(), start.value());
       });
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
   CHECK(not ActionTesting::get_terminate<my_component>(runner, 0));

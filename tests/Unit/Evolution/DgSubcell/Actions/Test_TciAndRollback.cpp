@@ -288,6 +288,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   const TimeStepId time_step_id{false, self_starting ? -1 : 1,
                                 Slab{1.0, 2.0}.end()};
+  const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -372,9 +373,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{
       history_size};
   {
-    Time step_time{};
+    Time step_time{Slab{1.0, 2.0}, {6, 10}};
     for (size_t i = 0; i < history_size; ++i) {
-      step_time = Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}};
+      step_time += step_size;
       Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
       get(get<Tags::dt<Var1>>(dt_vars)) =
           (i + 20.0) * get<0>(logical_coordinates(dg_mesh));
@@ -386,8 +387,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       get(get<Tags::dt<Var1>>(dt_vars)) =
           (i + 40.0) * get<0>(logical_coordinates(dg_mesh));
       time_stepper_history.insert(
-          {false, 1, step_time, i + 1, step_time.value()}, -i * evolved_vars,
-          dt_vars);
+          {false, 1, step_time, i + 1, step_size, step_time.value()},
+          -i * evolved_vars, dt_vars);
     }
     time_stepper_history.discard_value(time_stepper_history[2].time_step_id);
     time_stepper_history.discard_value(

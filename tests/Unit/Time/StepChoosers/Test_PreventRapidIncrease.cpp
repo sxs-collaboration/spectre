@@ -158,10 +158,10 @@ void check_substep_methods() {
   typename history_tag::type history{};
 
   history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-  history.insert(TimeStepId(true, 0, slab.start(), 1,
+  history.insert(TimeStepId(true, 0, slab.start(), 1, slab.duration(),
                             (slab.start() + slab.duration() / 3).value()),
                  0.0, 0.0);
-  history.insert(TimeStepId(true, 0, slab.start(), 2,
+  history.insert(TimeStepId(true, 0, slab.start(), 2, slab.duration(),
                             (slab.start() + slab.duration() / 2).value()),
                  0.0, 0.0);
   const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};

@@ -77,7 +77,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
       {TimeStepId(time_step.is_positive(), 8, start),
        substeps.size() == 1
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
-           : TimeStepId(time_step.is_positive(), 8, start, 1,
+           : TimeStepId(time_step.is_positive(), 8, start, 1, time_step,
                         (start + substep_offsets[1]).value()),
        time_step, time_step, start.value(), using_error_control,
        AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}});
@@ -90,7 +90,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
           (step_start + gsl::at(substep_offsets, substep)).value();
       CHECK(db::get<Tags::TimeStepId>(box) ==
             TimeStepId(time_step.is_positive(), 8, step_start, substep,
-                       substep_time));
+                       time_step, substep_time));
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
       CHECK(db::get<Tags::Time>(box) ==
             db::get<Tags::TimeStepId>(box).substep_time());

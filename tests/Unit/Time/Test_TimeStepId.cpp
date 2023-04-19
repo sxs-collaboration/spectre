@@ -23,21 +23,21 @@ void check(const bool time_runs_forward) {
   const TimeDelta step = end - start;
 
   CHECK(TimeStepId(time_runs_forward, 4, start + step / 3) ==
-        TimeStepId(time_runs_forward, 4, start + step / 3, 0,
+        TimeStepId(time_runs_forward, 4, start + step / 3, 0, step,
                    (start + step / 3).value()));
 
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start + step / 3, 2,
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start + step / 3, 2, step,
                          (start + step / 2).value())
                   .is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, start.value())
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, step, start.value())
                   .is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, end.value())
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, step, end.value())
                   .is_at_slab_boundary());
   CHECK_FALSE(
       TimeStepId(time_runs_forward, 4, start + step / 3).is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 1, start.value())
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 1, step, start.value())
                   .is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 1, end.value())
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 1, step, end.value())
                   .is_at_slab_boundary());
   CHECK(TimeStepId(time_runs_forward, 4, start).is_at_slab_boundary());
   CHECK(TimeStepId(time_runs_forward, 4, end).is_at_slab_boundary());
@@ -48,16 +48,22 @@ void check(const bool time_runs_forward) {
   CHECK(TimeStepId(time_runs_forward, 5, end).step_time().slab() ==
         slab.advance_towards(step));
 
-  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, end.value())
+  CHECK(
+      TimeStepId(time_runs_forward, 4, start + step / 2).next_step(step / 4) ==
+      TimeStepId(time_runs_forward, 4, start + step * 3 / 4));
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, step / 4,
+                   end.value())
             .next_step(step / 4) ==
         TimeStepId(time_runs_forward, 4, start + step * 3 / 4));
-  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, end.value())
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, step / 4,
+                   end.value())
             .next_substep(step / 4, 1.0 / 8.0) ==
-        TimeStepId(time_runs_forward, 4, start + step / 2, 2,
+        TimeStepId(time_runs_forward, 4, start + step / 2, 2, step / 4,
                    (start + step * 17 / 32).value()));
 
-  const TimeStepId id(time_runs_forward, 4, start + step / 3, 2,
+  const TimeStepId id(time_runs_forward, 4, start + step / 3, 2, step / 2,
                       (start + step / 2).value());
+  CHECK(id.step_size() == step / 2);
 
   CHECK(id == id);
   CHECK_FALSE(id != id);
@@ -71,6 +77,7 @@ void check(const bool time_runs_forward) {
                          id.slab_number() + slab_delta,
                          id.step_time() + step_time_delta,
                          id.substep() + static_cast<uint64_t>(substep_delta),
+                         id.step_size(),
                          id.substep_time() + substep_time_delta.value());
     check_cmp(id, id2);
     CHECK(Hash{}(id) != Hash{}(id2));
@@ -88,6 +95,14 @@ void check(const bool time_runs_forward) {
   check_comparisons(0, 0 * step, 1, -step / 8);
 
   test_serialization(id);
+
+  {
+    const TimeStepId id2(id.time_runs_forward(), id.slab_number() + 1,
+                         id.step_time());
+    check_cmp(id, id2);
+    CHECK(Hash{}(id) != Hash{}(id2));
+    test_serialization(id2);
+  }
 
   CHECK(get_output(id) == "4:" + get_output(id.step_time()) +
                               ":2:" + get_output(id.substep_time()));
