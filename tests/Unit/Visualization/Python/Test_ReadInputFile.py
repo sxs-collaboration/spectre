@@ -20,7 +20,7 @@ class TestReadInputFile(unittest.TestCase):
 
     def test_find_event(self):
         with self.input_file.open() as open_input_file:
-            input_file = yaml.safe_load(open_input_file)
+            _, input_file = yaml.safe_load_all(open_input_file)
         self.assertEqual(
             find_event("ChangeSlabSize", input_file)["DelayChange"], 5)
         self.assertIsNone(find_event("NonexistentEvent", input_file))

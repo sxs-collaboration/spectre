@@ -4,6 +4,7 @@
 import os
 import shutil
 import unittest
+import yaml
 from click.testing import CliRunner
 from spectre import Informer
 from spectre.tools.CleanOutput import (clean_output, clean_output_command,
@@ -19,11 +20,9 @@ class TestCleanOutput(unittest.TestCase):
         self.volume_file_path = os.path.join(self.test_dir, "Volume0.h5")
         os.makedirs(self.test_dir, exist_ok=True)
         with open(self.input_file_path, "w") as open_file:
-            open_file.write("""
-# ExpectedOutput:
-#   Reduction.h5
-#   Volume0.h5
-""")
+            yaml.safe_dump_all([{
+                "ExpectedOutput": ["Reduction.h5", "Volume0.h5"]
+            }, {}], open_file)
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)

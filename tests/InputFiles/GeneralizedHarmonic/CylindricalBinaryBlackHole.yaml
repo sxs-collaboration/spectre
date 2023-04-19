@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhBinaryBlackHole
-# Check: parse
+Executable: EvolveGhBinaryBlackHole
+Testing:
+  Check: parse
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

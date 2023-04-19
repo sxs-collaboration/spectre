@@ -1,18 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhSingleBlackHole
-# Check: parse;execute_check_output
-# Timeout: 8
-# ExpectedOutput:
-#   GhKerrSchildVolume0.h5
-#   GhKerrSchildReductions.h5
-#   GhKerrSchildSurfaces.h5
-# OutputFileChecks:
-#   - Label: "check_horizon_find"
-#     Subfile: "/AhA.dat"
-#     FileGlob: "GhKerrSchildReductions.h5"
-#     AbsoluteTolerance: 1e2
+Executable: EvolveGhSingleBlackHole
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 8
+ExpectedOutput:
+  - GhKerrSchildVolume0.h5
+  - GhKerrSchildReductions.h5
+  - GhKerrSchildSurfaces.h5
+OutputFileChecks:
+  - Label: "check_horizon_find"
+    Subfile: "/AhA.dat"
+    FileGlob: "GhKerrSchildReductions.h5"
+    AbsoluteTolerance: 1e2
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

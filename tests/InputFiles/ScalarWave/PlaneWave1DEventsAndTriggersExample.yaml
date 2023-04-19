@@ -1,10 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWave1D
-# Check: parse
-# ExpectedOutput:
-#   ScalarWavePlaneWave1DEventsAndTriggersExampleVolume.h5
+Executable: EvolveScalarWave1D
+Testing:
+  Check: parse
+ExpectedOutput:
+  - ScalarWavePlaneWave1DEventsAndTriggersExampleVolume.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

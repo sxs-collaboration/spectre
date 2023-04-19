@@ -106,29 +106,29 @@ function(add_input_file_tests INPUT_FILE_DIR)
   foreach(INPUT_FILE ${INPUT_FILE_LIST})
     file(READ ${INPUT_FILE} INPUT_FILE_CONTENTS)
     # Check if the executable name is present
-    string(REGEX MATCH "#[ ]*Executable:[^\n]+"
+    string(REGEX MATCH "Executable:[^\n]+"
       INPUT_FILE_EXECUTABLE "${INPUT_FILE_CONTENTS}")
     if("${INPUT_FILE_EXECUTABLE}" STREQUAL "")
       message(FATAL_ERROR "Could not find the executable in input "
         "file ${INPUT_FILE}. You must supply a line of the form:"
-        "'# Executable: EXECUTABLE_NAME'")
+        "'Executable: EXECUTABLE_NAME'")
     endif()
     # Extract executable name, and remove trailing white space
-    string(REGEX REPLACE "#[ ]*Executable:[ ]*" ""
+    string(REGEX REPLACE "Executable:[ ]*" ""
       INPUT_FILE_EXECUTABLE "${INPUT_FILE_EXECUTABLE}")
     string(STRIP "${INPUT_FILE_EXECUTABLE}" INPUT_FILE_EXECUTABLE)
 
-    string(REGEX MATCH "#[ ]*CommandLineArgs:[^\n]+"
+    string(REGEX MATCH "CommandLineArgs:[^\n]+"
       COMMAND_LINE_ARGS "${INPUT_FILE_CONTENTS}")
-    string(REGEX REPLACE "#[ ]*CommandLineArgs:[ ]*" ""
+    string(REGEX REPLACE "CommandLineArgs:[ ]*" ""
       COMMAND_LINE_ARGS "${COMMAND_LINE_ARGS}")
     string(STRIP "${COMMAND_LINE_ARGS}" COMMAND_LINE_ARGS)
 
     # Read what tests to do. Currently "execute" and "parse" are available.
-    string(REGEX MATCH "#[ ]*Check:[^\n]+"
+    string(REGEX MATCH "Check:[^\n]+"
       INPUT_FILE_CHECKS "${INPUT_FILE_CONTENTS}")
     # Extract list of checks to perform
-    string(REGEX REPLACE "#[ ]*Check:[ ]*" ""
+    string(REGEX REPLACE "Check:[ ]*" ""
       INPUT_FILE_CHECKS "${INPUT_FILE_CHECKS}")
     string(STRIP "${INPUT_FILE_CHECKS}" INPUT_FILE_CHECKS)
     set(INPUT_FILE_CHECKS "${INPUT_FILE_CHECKS}")
@@ -153,12 +153,12 @@ function(add_input_file_tests INPUT_FILE_DIR)
 
     # Read the timeout duration specified in input file, empty is accepted.
     # The default duration is 2 seconds.
-    string(REGEX MATCH "#[ ]*Timeout:[^\n]+"
+    string(REGEX MATCH "Timeout:[^\n]+"
       INPUT_FILE_TIMEOUT "${INPUT_FILE_CONTENTS}")
     if("${INPUT_FILE_TIMEOUT}" STREQUAL "")
       set(INPUT_FILE_TIMEOUT "${TIMEOUT}")
     else()
-      string(REGEX REPLACE "#[ ]*Timeout:[ ]*" ""
+      string(REGEX REPLACE "Timeout:[ ]*" ""
         INPUT_FILE_TIMEOUT "${INPUT_FILE_TIMEOUT}")
       string(STRIP "${INPUT_FILE_TIMEOUT}" INPUT_FILE_TIMEOUT)
     endif()

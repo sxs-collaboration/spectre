@@ -1,18 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolveXcts
-# Check: parse;execute_check_output
-# Timeout: 40
-# ExpectedOutput:
-#   TovStarReductions.h5
-#   TovStarVolume0.h5
-# OutputFileChecks:
-#   - Label: Discretization error
-#     Subfile: /ErrorNorms.dat
-#     FileGlob: TovStarReductions.h5
-#     SkipColumns: [0, 1, 2]
-#     AbsoluteTolerance: 1e-6
+Executable: SolveXcts
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 40
+ExpectedOutput:
+  - TovStarReductions.h5
+  - TovStarVolume0.h5
+OutputFileChecks:
+  - Label: Discretization error
+    Subfile: /ErrorNorms.dat
+    FileGlob: TovStarReductions.h5
+    SkipColumns: [0, 1, 2]
+    AbsoluteTolerance: 1e-6
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

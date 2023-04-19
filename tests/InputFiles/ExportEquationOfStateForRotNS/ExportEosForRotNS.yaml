@@ -1,10 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: ExportEquationOfStateForRotNS
-# Check: parse;execute
-# ExpectedOutput:
-#   EOS.GN
+Executable: ExportEquationOfStateForRotNS
+Testing:
+  Check: parse;execute
+ExpectedOutput:
+  - EOS.GN
+
+---
 
 EquationOfState:
   # This equation of state is what is used in https://arxiv.org/abs/2301.13818

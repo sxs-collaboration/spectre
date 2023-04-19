@@ -1,18 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveCurvedScalarWavePlaneWaveMinkowski3D
-# Check: parse;execute_check_output
-# Timeout: 15
-# ExpectedOutput:
-#   PlaneWaveMinkowski3DVolume0.h5
-#   PlaneWaveMinkowski3DReductions.h5
-# OutputFileChecks:
-#   - Label: constraint violations
-#     Subfile: /Norms.dat
-#     FileGlob: PlaneWaveMinkowski3DReductions.h5
-#     SkipColumns: [0, 1, 2]
-#     AbsoluteTolerance: 0.02
+Executable: EvolveCurvedScalarWavePlaneWaveMinkowski3D
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 15
+ExpectedOutput:
+  - PlaneWaveMinkowski3DVolume0.h5
+  - PlaneWaveMinkowski3DReductions.h5
+OutputFileChecks:
+  - Label: constraint violations
+    Subfile: /Norms.dat
+    FileGlob: PlaneWaveMinkowski3DReductions.h5
+    SkipColumns: [0, 1, 2]
+    AbsoluteTolerance: 0.02
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

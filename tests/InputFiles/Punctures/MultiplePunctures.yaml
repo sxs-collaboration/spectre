@@ -1,12 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolvePunctures
-# Check: parse;execute
-# Timeout: 20
-# ExpectedOutput:
-#   PuncturesReductions.h5
-#   PuncturesVolume0.h5
+Executable: SolvePunctures
+Testing:
+  Check: parse;execute
+  Timeout: 20
+ExpectedOutput:
+  - PuncturesReductions.h5
+  - PuncturesVolume0.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

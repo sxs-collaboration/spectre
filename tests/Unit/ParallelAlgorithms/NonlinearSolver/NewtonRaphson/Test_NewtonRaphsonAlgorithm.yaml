@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+---
+---
+
 # Finding the roots of x^3 - x - b, where b is the `Source`
 Source: [1, 2, 3]
 InitialGuess: [0.6, 0.7, 0.8]

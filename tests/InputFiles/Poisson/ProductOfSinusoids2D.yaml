@@ -1,18 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolvePoisson2D
-# Check: parse;execute_check_output
-# Timeout: 10
-# ExpectedOutput:
-#   PoissonProductOfSinusoids2DReductions.h5
-#   PoissonProductOfSinusoids2DVolume0.h5
-# OutputFileChecks:
-#   - Label: Discretization error
-#     Subfile: /ErrorNorms.dat
-#     FileGlob: PoissonProductOfSinusoids2DReductions.h5
-#     SkipColumns: [0, 1, 2]
-#     AbsoluteTolerance: 0.007
+Executable: SolvePoisson2D
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 10
+ExpectedOutput:
+  - PoissonProductOfSinusoids2DReductions.h5
+  - PoissonProductOfSinusoids2DVolume0.h5
+OutputFileChecks:
+  - Label: Discretization error
+    Subfile: /ErrorNorms.dat
+    FileGlob: PoissonProductOfSinusoids2DReductions.h5
+    SkipColumns: [0, 1, 2]
+    AbsoluteTolerance: 0.007
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

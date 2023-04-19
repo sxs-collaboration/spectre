@@ -1,8 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# This test problem is the same as detailed in `Test_MultigridAlgorithmMassive.yaml`,
-# but the multigrid solver is used to precondition a GMRES solver.
+Description: |
+  This test problem is the same as detailed in
+  `Test_MultigridAlgorithmMassive.yaml`, but the multigrid solver is used to
+  precondition a GMRES solver.
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

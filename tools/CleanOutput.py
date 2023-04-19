@@ -4,7 +4,7 @@
 import click
 import logging
 import os
-import re
+import yaml
 
 
 class MissingExpectedOutputError(Exception):
@@ -21,54 +21,34 @@ def clean_output(input_file, output_dir, force):
     Deletes output files specified in the `input_file` from the `output_dir`,
     raising an error if the expected output files were not found.
 
-    The `input_file` must list its expected output files in a comment, with the
-    list of files indented by two spaces:
+    The `input_file` must list its expected output files in the metadata:
 
     \b
     ```yaml
-    # ExpectedOutput:
-    #   Reduction.h5
-    #   Volume0.h5
+    ExpectedOutput:
+      - Reduction.h5
+      - Volume0.h5
     ```
     """
-    found_indentation = None
-    missing_files = []
-
     with open(input_file, 'r') as open_input_file:
-        for line in open_input_file:
-            # Iterate through the file until we find the `ExpectedOutput`
-            # comment
-            if found_indentation is None:
-                matched_indentation = re.match('#([ ]*)ExpectedOutput:', line)
-                if matched_indentation is not None:
-                    found_indentation = matched_indentation.groups()[0] + '  '
-            else:
-                # Now collect the output files listed in the comment.
-                # We look for lines that are indented by two spaces relative to
-                # the preceding `ExpectedOutput` comment
-                matched_output_file = re.match(
-                    '#' + found_indentation + '(.+)', line)
-                if matched_output_file is None:
-                    logging.debug("Reached end of expected output file list.")
-                    break
-                else:
-                    expected_output_file = os.path.join(
-                        output_dir,
-                        matched_output_file.groups()[0])
-                    logging.debug("Attempting to remove file {}...".format(
-                        expected_output_file))
-                    if os.path.exists(expected_output_file):
-                        os.remove(expected_output_file)
-                        logging.info(
-                            "Removed file {}.".format(expected_output_file))
-                    elif not force:
-                        missing_files.append(expected_output_file)
-                        logging.error("Expected file {} was not found.".format(
-                            expected_output_file))
-    if found_indentation is None:
+        metadata = next(yaml.safe_load_all(open_input_file))
+
+    if "ExpectedOutput" not in metadata:
         logging.warning(
-            "Input file {} does not list `ExpectedOutput` files.".format(
-                input_file))
+            f"Input file {input_file} does not list 'ExpectedOutput' files.")
+        return
+
+    missing_files = []
+    for expected_output_file in metadata["ExpectedOutput"]:
+        expected_output_file = os.path.join(output_dir, expected_output_file)
+        logging.debug(f"Attempting to remove file {expected_output_file}...")
+        if os.path.exists(expected_output_file):
+            os.remove(expected_output_file)
+            logging.info(f"Removed file {expected_output_file}.")
+        elif not force:
+            missing_files.append(expected_output_file)
+            logging.error(
+                f"Expected file {expected_output_file} was not found.")
     # Raise an error if expected files were not found
     if len(missing_files) > 0:
         raise MissingExpectedOutputError(missing_files)

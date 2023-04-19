@@ -1,17 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: AnalyticTestCharacteristicExtract
-# Check: parse;execute_check_output
-# Timeout: 10
-# ExpectedOutput:
-#   CharacteristicExtractReduction.h5
-# OutputFileChecks:
-#   - Label: "check_news"
-#     Subfile: "/Cce/News.dat"
-#     FileGlob: "CharacteristicExtractReduction.h5"
-#     ExpectedDataSubfile: "/Cce/News_expected.dat"
-#     AbsoluteTolerance: 5e-10
+Executable: AnalyticTestCharacteristicExtract
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 10
+ExpectedOutput:
+  - CharacteristicExtractReduction.h5
+OutputFileChecks:
+  - Label: "check_news"
+    Subfile: "/Cce/News.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    ExpectedDataSubfile: "/Cce/News_expected.dat"
+    AbsoluteTolerance: 5e-10
+
+---
 
 Evolution:
   InitialTimeStep: 0.1

@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: FindHorizons3D
-# Check: parse
+Executable: FindHorizons3D
+Testing:
+  Check: parse
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false
