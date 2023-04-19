@@ -59,6 +59,8 @@ TciOnDgGrid<RecoveryScheme>::apply(
       [&temp_buffer, &offset_into_temp_buffer](
           const gsl::not_null<Scalar<DataVector>*> to_assign,
           const size_t size) {
+        ASSERT(offset_into_temp_buffer + size <= temp_buffer.size(),
+               "Trying to assign data out of allocated memory size");
         get(*to_assign)
             .set_data_ref(temp_buffer.data() + offset_into_temp_buffer, size);
         offset_into_temp_buffer += size;
