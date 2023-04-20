@@ -199,6 +199,8 @@ struct BoundaryCorrectionAndGhostCellsInbox {
 
     return ss.str();
   }
+
+  void pup(PUP::er& /*p*/) {}
 };
 
 /*!
