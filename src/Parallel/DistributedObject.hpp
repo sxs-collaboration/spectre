@@ -332,6 +332,9 @@ class DistributedObject<ParallelComponent,
   /// where the previous execution of the same phase left off.
   void start_phase(const Parallel::Phase next_phase);
 
+  /// Get the current phase
+  Phase phase() const { return phase_; }
+
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
   /// the algorithm has terminated. An algorithm can be restarted by passing
