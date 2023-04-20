@@ -18,8 +18,6 @@ struct SomeTag : db::SimpleTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DG.Tags", "[Unit][NumericalAlgorithms]") {
-  TestHelpers::db::test_simple_tag<
-      Tags::SimpleMortarData<SomeType, SomeType, SomeType>>("SimpleMortarData");
   TestHelpers::db::test_prefix_tag<Tags::Mortars<SomeTag, 3>>(
       "Mortars(SomeTag)");
   TestHelpers::db::test_simple_tag<Tags::MortarSize<2>>("MortarSize");

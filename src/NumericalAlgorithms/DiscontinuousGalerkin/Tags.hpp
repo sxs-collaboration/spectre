@@ -25,14 +25,6 @@ namespace dg {}
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
-/// \brief Simple boundary communication data
-template <typename TemporalId, typename LocalData, typename RemoteData>
-struct SimpleMortarData : db::SimpleTag {
-  using type = dg::SimpleMortarData<TemporalId, LocalData, RemoteData>;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup DiscontinuousGalerkinGroup
 /// Data on mortars, indexed by (Direction, ElementId) pairs
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
