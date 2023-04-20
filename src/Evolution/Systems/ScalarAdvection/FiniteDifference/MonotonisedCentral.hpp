@@ -55,9 +55,6 @@ namespace ScalarAdvection::fd {
 template <size_t Dim>
 class MonotonisedCentral : public Reconstructor<Dim> {
  private:
-  using face_vars_tags =
-      tmpl::list<Tags::U,
-                 ::Tags::Flux<Tags::U, tmpl::size_t<Dim>, Frame::Inertial>>;
   using volume_vars_tags = tmpl::list<Tags::U>;
 
  public:
