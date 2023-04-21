@@ -133,11 +133,13 @@ Filtering:
 
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:
           - Name: Lapse
@@ -152,11 +154,13 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 20
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - Lapse
@@ -168,22 +172,28 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - ObservationAhA
+    Events:
+      - ObservationAhA
       - ObservationAhB
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 100
           Offset: 0
-    - - MonitorMemory:
+    Events:
+      - MonitorMemory:
           ComponentsToMonitor: All
-  - - TimeCompares:
+  - Trigger:
+      TimeCompares:
         Comparison: GreaterThan
         Value: 0.02
-    - - Completion
+    Events:
+      - Completion
 
 Observers:
   VolumeFileName: "GhBinaryBlackHoleVolumeData"

@@ -76,25 +76,31 @@ Filtering:
     BlocksToFilter: All
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [30]
-    - - Completion
-  - - Slabs:
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
         Specified:
           Values: [0, 15]
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumePsi0And25
           VariablesToObserve: ["Psi"]
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeVarsConstraintsEvery10Slabs
           VariablesToObserve:
             - Psi
@@ -105,11 +111,13 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:
             - Name: PointwiseL2Norm(OneIndexConstraint)

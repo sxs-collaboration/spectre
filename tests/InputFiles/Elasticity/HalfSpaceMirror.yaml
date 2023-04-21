@@ -102,8 +102,9 @@ LinearSolver:
     ObservePerCoreReductions: False
 
 EventsAndTriggers:
-  - - HasConverged
-    - - ObserveNorms:
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms:
           SubfileName: ErrorNorms
           TensorsToObserve:
             - Name: Error(Displacement)

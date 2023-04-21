@@ -182,10 +182,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
 
   using phase_change_and_triggers = PhaseControl::Tags::PhaseChangeAndTriggers;
   phase_change_and_triggers::type vector_of_triggers_and_phase_changes;
-  vector_of_triggers_and_phase_changes.emplace_back(
-      static_cast<std::unique_ptr<Trigger>>(
-          std::make_unique<Triggers::Always>()),
-      std::move(phase_change_vector));
+  vector_of_triggers_and_phase_changes.push_back(
+      {static_cast<std::unique_ptr<Trigger>>(
+           std::make_unique<Triggers::Always>()),
+       std::move(phase_change_vector)});
 
   Parallel::MutableGlobalCache<Metavariables> mutable_cache{};
   Parallel::GlobalCache<Metavariables> global_cache{

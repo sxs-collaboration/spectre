@@ -70,10 +70,12 @@ SpatialDiscretization:
 
 # [observe_event_trigger]
 EventsAndDenseTriggers:
-  - - Times:
+  - Trigger:
+      Times:
         Specified:
           Values: [0.0, 1.0]
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(Psi)
@@ -87,15 +89,19 @@ EventsAndDenseTriggers:
               Components: Sum
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [100]
-    - - Completion
-  - - Slabs:
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 50
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumePsiPiPhiEvery50Slabs
           VariablesToObserve: ["Psi", "Pi", "Phi"]
           InterpolateToMesh: None

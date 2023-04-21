@@ -52,25 +52,13 @@ consistently over the entire domain.
 ### Input file syntax
 
 The `%EventsAndTriggers` (and `%EventsAndDenseTriggers`) sections of
-the \ref dev_guide_option_parsing "input file" are parsed as several
-nested YAML lists representing vectors and pairs.  The outermost list
-is a vector with one entry for each trigger.  The entries in this
-vector are two-element lists representing pairs whose first elements
-are triggers and whose second elements are a third level of list
-containing the events.
+the \ref dev_guide_option_parsing "input file" are parsed as a list of
+Trigger/Events pairs:
 
 \snippet PlaneWave1DEventsAndTriggersExample.yaml multiple_events
 
 In this example, we are using the \ref Triggers::Slabs "Slabs" trigger
-to run two events every 10 slabs: ObserveFields and \ref
-::Events::ObserveNorms "ObserveNorms".
-
-If an event and trigger both took no options, the syntax
-
-\snippet PlaneWave1DEventsAndTriggersExample.yaml no_arguments
-
-could be written in the more familiar form
-
-\snippet PlaneWave1DEventsAndTriggersExample.yaml no_arguments_single_line
-
-but we recommend always using the expanded form for consistency.
+to run two events every 10 slabs: ObserveFields and
+\ref ::Events::ObserveNorms "ObserveNorms". We also run the
+\ref ::Events::Completion "Completion" event at the
+\ref ::Triggers::Always "Always" trigger, so the run will terminate immediately.

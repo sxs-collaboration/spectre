@@ -23,11 +23,13 @@ Evolution:
       Order: 3
 
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 
 DomainCreator:
   Interval:
@@ -69,8 +71,9 @@ SpatialDiscretization:
     Reconstructor: MonotonisedCentral
 
 EventsAndTriggers:
-  - - Always
-    - - ChangeSlabSize:
+  - Trigger: Always
+    Events:
+      - ChangeSlabSize:
           DelayChange: 5
           StepChoosers:
             - Cfl:
@@ -79,10 +82,12 @@ EventsAndTriggers:
                 Factor: 2.0
 
 EventsAndDenseTriggers:
-  - - Times:
+  - Trigger:
+      Times:
         Specified:
           Values: [0.123456]
-    - - Completion
+    Events:
+      - Completion
 
 Observers:
   VolumeFileName: "BurgersStepVolume"

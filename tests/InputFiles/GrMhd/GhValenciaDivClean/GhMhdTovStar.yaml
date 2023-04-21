@@ -19,11 +19,13 @@ Evolution:
       Order: 3
 
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1000
           Offset: 5
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 
 AnalyticSolution: &InitialData
   TovStar:
@@ -134,22 +136,26 @@ Filtering:
 
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5
           Offset: 0
-    - - ChangeSlabSize:
+    Events:
+      - ChangeSlabSize:
           DelayChange: 5
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.6
             - Increase:
                 Factor: 1.5
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(SpacetimeMetric)
@@ -185,11 +191,13 @@ EventsAndTriggers:
             - Name: Error(SpecificEnthalpy)
               NormType: L2Norm
               Components: Sum
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 2
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
@@ -201,10 +209,12 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [3]
-    - - Completion
+    Events:
+      - Completion
 
 Observers:
   VolumeFileName: "GhMhdTovStarVolume"

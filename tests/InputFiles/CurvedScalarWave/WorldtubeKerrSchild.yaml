@@ -78,11 +78,13 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5000
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: Volume
           VariablesToObserve:
             - Psi
@@ -91,20 +93,26 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1000
           Offset: 0
-    - - PsiAlongAxis1
+    Events:
+      - PsiAlongAxis1
       - PsiAlongAxis2
-  - - TimeCompares:
+  - Trigger:
+      TimeCompares:
         Comparison: GreaterThan
         Value: 2000.
-    - - Completion
-  - - Slabs:
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
         Specified:
           Values: [0]
-    - - ChangeSlabSize:
+    Events:
+      - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
             - Cfl:

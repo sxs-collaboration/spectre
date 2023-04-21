@@ -60,10 +60,12 @@ AnalyticSolution:
     PressureStarTol: 1e-9
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [10]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

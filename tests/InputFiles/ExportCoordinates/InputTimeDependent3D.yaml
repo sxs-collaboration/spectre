@@ -70,10 +70,12 @@ Evolution:
       Order: 1
 
 EventsAndTriggers:
-  - - TimeCompares:
+  - Trigger:
+      TimeCompares:
         Comparison: GreaterThanOrEqualTo
         Value: 0.5
-    - - Completion
+    Events:
+      - Completion
 
 Observers:
   VolumeFileName: "ExportTimeDependentCoordinates3DVolume"

@@ -28,10 +28,12 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 EventsAndTriggers:
-  - - TimeCompares:
+  - Trigger:
+      TimeCompares:
         Comparison: GreaterThanOrEqualTo
         Value: 1.0
-    - - Completion
+    Events:
+      - Completion
 
 Evolution:
   InitialTime: 0.0

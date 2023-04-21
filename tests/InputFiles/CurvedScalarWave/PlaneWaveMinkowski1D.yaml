@@ -64,10 +64,12 @@ Filtering:
     BlocksToFilter: All
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [100]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

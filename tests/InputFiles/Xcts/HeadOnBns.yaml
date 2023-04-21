@@ -155,8 +155,9 @@ RadiallyCompressedCoordinates:
   Compression: *outer_shell_distribution
 
 EventsAndTriggers:
-  - - HasConverged
-    - - ObserveNorms:
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:
             - Name: ConformalFactor

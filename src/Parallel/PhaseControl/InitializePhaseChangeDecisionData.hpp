@@ -25,10 +25,8 @@ void initialize_phase_change_decision_data(
                                              Tags::PhaseChangeAndTriggers>) {
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
-    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-      // avoid unused variable warning
-      (void)trigger;
-      for (const auto& phase_change : phase_changes) {
+    for (const auto& trigger_and_phase_changes : phase_change_and_triggers) {
+      for (const auto& phase_change : trigger_and_phase_changes.phase_changes) {
         phase_change->template initialize_phase_data<Metavariables>(
             phase_change_decision_data);
       }

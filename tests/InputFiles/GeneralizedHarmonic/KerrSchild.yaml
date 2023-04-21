@@ -32,12 +32,14 @@ Evolution:
       Order: 1
 
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
        EvenlySpaced:
          # Current implementation checks wallclock at these global syncs
          Interval: 100
          Offset: 0
-    - - CheckpointAndExitAfterWallclock:
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
           WallclockHours: None
 
 InitialData: &InitialData
@@ -108,11 +110,13 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 2
           Offset: 0
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(SpacetimeMetric)
@@ -124,11 +128,7 @@ EventsAndTriggers:
             - Name: Error(Phi)
               NormType: L2Norm
               Components: Sum
-  - - Slabs:
-        EvenlySpaced:
-          Interval: 2
-          Offset: 0
-    - - ObserveNorms:
+      - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:
           - Name: Lapse
@@ -143,11 +143,13 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
@@ -161,20 +163,20 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5
           Offset: 2
-    - - AhA
-  - - Slabs:
-        EvenlySpaced:
-          Interval: 5
-          Offset: 2
-    - - ExcisionBoundaryA
-  - - Slabs:
+    Events:
+      - AhA
+      - ExcisionBoundaryA
+  - Trigger:
+      Slabs:
         Specified:
           Values: [3]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

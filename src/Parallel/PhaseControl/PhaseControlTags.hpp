@@ -16,6 +16,30 @@
 #include "Utilities/TMPL.hpp"
 
 namespace PhaseControl {
+
+/// Option-creatable pair of a trigger and associated phase change objects.
+struct TriggerAndPhaseChanges {
+  struct Trigger {
+    using type = std::unique_ptr<::Trigger>;
+    static constexpr Options::String help =
+        "Determines when the phase changes are evaluated.";
+  };
+  struct PhaseChanges {
+    using type = std::vector<std::unique_ptr<::PhaseChange>>;
+    static constexpr Options::String help =
+        "These phase changes are evaluated when the Trigger fires.";
+  };
+  static constexpr Options::String help =
+      "Phase changes that are evaluated when the Trigger fires.";
+  using options = tmpl::list<Trigger, PhaseChanges>;
+  void pup(PUP::er& p) {
+    p | trigger;
+    p | phase_changes;
+  }
+  std::unique_ptr<::Trigger> trigger;
+  std::vector<std::unique_ptr<::PhaseChange>> phase_changes;
+};
+
 namespace OptionTags {
 /// Option tag for the collection of triggers that indicate synchronization
 /// points at which phase changes should be considered, and the associated
@@ -27,19 +51,6 @@ namespace OptionTags {
 /// first trigger, in order, then those associated with the second trigger,
 /// etc.). The order therefore determines the order of resolution of
 /// simultaneous requests.
-///
-/// \note The nested collection types for this option tag gives the yaml
-/// format the slightly unusual form:
-///
-/// ```
-/// PhaseChangeAndTriggers:
-///   - - Trigger1
-///     - - PhaseChange1
-///       - PhaseChange2
-///   - - Trigger2
-///     - - PhaseChange3
-///       - PhaseChange4
-/// ```
 struct PhaseChangeAndTriggers {
   static constexpr Options::String help{
       "A collection of pairs of triggers and collections of phase change "
@@ -47,9 +58,7 @@ struct PhaseChangeAndTriggers {
       "the phase change objects determines the order of the requests processed "
       "by the Main chare during phase change arbitration."};
 
-  using type =
-      std::vector<std::pair<std::unique_ptr<Trigger>,
-                            std::vector<std::unique_ptr<PhaseChange>>>>;
+  using type = std::vector<TriggerAndPhaseChanges>;
 };
 }  // namespace OptionTags
 
@@ -58,9 +67,7 @@ namespace Tags {
 /// which phase changes should be considered, and the associated `PhaseChange`
 /// objects for making the phase change decisions.
 struct PhaseChangeAndTriggers : db::SimpleTag {
-  using type =
-      std::vector<std::pair<std::unique_ptr<Trigger>,
-                            std::vector<std::unique_ptr<PhaseChange>>>>;
+  using type = std::vector<TriggerAndPhaseChanges>;
 
   using option_tags = tmpl::list<OptionTags::PhaseChangeAndTriggers>;
   static constexpr bool pass_metavariables = false;

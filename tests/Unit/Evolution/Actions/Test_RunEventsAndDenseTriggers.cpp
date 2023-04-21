@@ -346,11 +346,11 @@ void test(const bool time_runs_forward) {
         events_and_dense_triggers.reserve(triggers.size());
         for (auto [trigger_time, is_triggered, next_trigger,
                    needs_evolved_variables] : triggers) {
-          events_and_dense_triggers.emplace_back(
-              std::make_unique<TestTrigger>(start_time, trigger_time,
-                                            is_triggered, next_trigger),
-              make_vector<std::unique_ptr<Event>>(
-                  std::make_unique<TestEvent>(needs_evolved_variables)));
+          events_and_dense_triggers.push_back(
+              {std::make_unique<TestTrigger>(start_time, trigger_time,
+                                             is_triggered, next_trigger),
+               make_vector<std::unique_ptr<Event>>(
+                   std::make_unique<TestEvent>(needs_evolved_variables))});
         }
 
         tmpl::as_pack<extra_data>([&](auto... tags_v) {

@@ -329,10 +329,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
-              "- - Always:\n"
-              "  - - Completion\n"
-              "- - Always:\n"
-              "  - - Completion\n"
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion\n"
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion\n"
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
@@ -352,10 +354,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
-              "- - Always:\n"
-              "  - - Completion\n"
-              "- - Always:\n"
-              "  - - Completion\n"
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion\n"
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion\n"
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
@@ -369,10 +373,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
-              "- - Always:\n"
-              "  - - Completion\n"
-              "- - Always:\n"
-              "  - - Completion");
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion\n"
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - Completion");
         });
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::EventsAndTriggers>(

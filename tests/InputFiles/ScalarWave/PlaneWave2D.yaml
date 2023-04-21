@@ -67,17 +67,21 @@ Filtering:
     BlocksToFilter: All
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [5]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
   # Test LTS dense output at the initial time
-  - - Times:
+  - Trigger:
+      Times:
         Specified:
           Values: [*initial_time]
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(Psi)
