@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Flag.cpp
   Test_Helpers.cpp
   Test_NeighborsOfChild.cpp
+  Test_NeighborsOfParent.cpp
   Test_NewNeighborIds.cpp
   Test_Tags.cpp
   Test_UpdateAmrDecision.cpp
