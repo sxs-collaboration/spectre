@@ -18,6 +18,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ObservationId", "[Unit][Observers]") {
   ObservationId id3(8., "subtype3");
   CHECK(id0 == id0);
   CHECK(id0.hash() == id0.hash());
+  // Make sure the hash function doesn't change under our feet
+  // (see https://github.com/sxs-collaboration/spectre/issues/4944)
+  CHECK(id0.hash() == 1721708090011444335);
   CHECK(id0.observation_key() == id0.observation_key());
   CHECK(id0 == ObservationId(4., "ObservationType1"));
   CHECK(id0 != id1);
