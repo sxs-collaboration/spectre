@@ -1,7 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(NumericalFluxes)
 add_subdirectory(Tags)
 
 set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
@@ -14,7 +13,6 @@ set(LIBRARY_SOURCES
   Test_MetricIdentityJacobian.cpp
   Test_MortarHelpers.cpp
   Test_NormalDotFlux.cpp
-  Test_Protocols.cpp
   Test_SimpleBoundaryData.cpp
   Test_SimpleMortarData.cpp
   Test_Tags.cpp
