@@ -4,7 +4,9 @@
 set(LIBRARY "Test_ParallelAmr")
 
 set(LIBRARY_SOURCES
+  Actions/Test_CollectDataFromChildren.cpp
   Actions/Test_CreateChild.cpp
+  Actions/Test_CreateParent.cpp
   Actions/Test_EvaluateRefinementCriteria.cpp
   Actions/Test_Initialize.cpp
   Actions/Test_InitializeChild.cpp
