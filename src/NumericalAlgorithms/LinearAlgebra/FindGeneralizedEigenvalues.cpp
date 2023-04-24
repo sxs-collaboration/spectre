@@ -4,6 +4,7 @@
 #include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <ostream>
 #include <vector>
 
@@ -75,11 +76,10 @@ void find_generalized_eigenvalues(
   // found by dividing the unnormalized results by the normalization.
   DataVector eigenvalue_normalization(number_of_rows, 0.0);
 
-  // Lapack uses a work vector, that should have a size 8N
-  // for doing eigenvalue problems with NxN matrices
-  // Note: a non-const int, not size_t, because lapack wants a non-const int
-  int work_size = number_of_rows * 8;
-  std::vector<double> lapack_work(static_cast<size_t>(work_size), 0.0);
+  // Lapack uses a work vector.  -1 indicates a query for the optimal
+  // size.
+  int work_size = -1;
+  double optimal_work_size = std::numeric_limits<double>::signaling_NaN();
 
   //  Lapack uses an integer called info to return its status
   //  info = 0 : success
@@ -90,6 +90,24 @@ void find_generalized_eigenvalues(
   int matrix_a_spacing = matrix_a.spacing();
   int matrix_b_spacing = matrix_b.spacing();
   int eigenvectors_spacing = eigenvectors->spacing();
+
+  // Query for the work size
+  dggev_(&compute_left_eigenvectors, &compute_right_eigenvectors,
+         &matrix_and_vector_size, matrix_a.data(), &matrix_a_spacing,
+         matrix_b.data(), &matrix_b_spacing, eigenvalues_real_part->data(),
+         eigenvalues_imaginary_part->data(), eigenvalue_normalization.data(),
+         eigenvectors->data(), &eigenvectors_spacing, eigenvectors->data(),
+         &eigenvectors_spacing, &optimal_work_size, &work_size, &info, 1, 1);
+
+  if (UNLIKELY(info != 0)) {
+    ERROR(
+        "Lapack failed to compute workspace requirements. Lapack's dggev "
+        "INFO = "
+        << info);
+  }
+
+  work_size = static_cast<int>(optimal_work_size);
+  std::vector<double> lapack_work(static_cast<size_t>(work_size), 0.0);
 
   dggev_(&compute_left_eigenvectors, &compute_right_eigenvectors,
          &matrix_and_vector_size, matrix_a.data(), &matrix_a_spacing,
