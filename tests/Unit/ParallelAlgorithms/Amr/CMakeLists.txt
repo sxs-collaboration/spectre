@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelAmr")
 
 set(LIBRARY_SOURCES
+  Actions/Test_AdjustDomain.cpp
   Actions/Test_CollectDataFromChildren.cpp
   Actions/Test_CreateChild.cpp
   Actions/Test_CreateParent.cpp
