@@ -223,9 +223,11 @@ void test_individual_tags() {
       std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
                                     1);
 
-  CHECK_THROWS_WITH(control_error_tag::create_from_options<MetavarsEmpty>(
-                        holder, creator_error_0),
-                    Catch::Contains("ExcisionSphereA' or 'ExcisionSphereB"));
+  CHECK_THROWS_WITH(
+      control_error_tag::create_from_options<MetavarsEmpty>(holder,
+                                                            creator_error_0),
+      Catch::Contains(
+          "ExcisionSphereA' or 'ExcisionSphereB' or 'ExcisionSphere"));
   CHECK_THROWS_WITH(control_error_tag2::create_from_options<MetavarsEmpty>(
                         holder2, creator_error_1),
                     Catch::Contains("'ExcisionSphereB'"));
