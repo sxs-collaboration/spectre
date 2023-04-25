@@ -185,10 +185,13 @@ class BadCreator : public DomainCreator<1> {
     // Mimick a domain creator that has improperly set the expiration time for
     // one of the functions of time
     const auto& function_to_replace = functions_of_time.begin()->second;
-    functions_of_time[initial_expiration_times.begin()->first] =
-        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time, function_to_replace->func_and_2_derivs(initial_time),
-            std::numeric_limits<double>::infinity());
+    if (not initial_expiration_times.empty()) {
+      functions_of_time[initial_expiration_times.begin()->first] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+              initial_time,
+              function_to_replace->func_and_2_derivs(initial_time),
+              std::numeric_limits<double>::infinity());
+    }
 
     return functions_of_time;
   }
@@ -411,71 +414,81 @@ void test_functions_of_time_tag() {
   }
 }
 
+using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
+using Creator = std::unique_ptr<::DomainCreator<1>>;
+
+void not_controlling(const bool is_active) {
+  const Creator creator = std::make_unique<TestCreator>(true);
+
+  const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3, 1.0e-2,
+                             1.0e-4, 1.01, 0.99);
+  const Averager<1> averager(0.25, true);
+  const double update_fraction = 0.3;
+  const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError<1> control_error{};
+
+  OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
+                                 control_error);
+  OptionHolder<2> option_holder2(is_active, averager, controller, tuner,
+                                 control_error);
+  OptionHolder<3> option_holder3(is_active, averager, controller, tuner,
+                                 control_error);
+  OptionHolder<4> option_holder4(is_active, averager, controller, tuner,
+                                 control_error);
+
+  const double initial_time_step = 1.0;
+  [[maybe_unused]] fot_tag::type functions_of_time =
+      fot_tag::create_from_options<Metavariables>(
+          measurements_per_update, creator, initial_time, initial_time_step,
+          option_holder1, option_holder2, option_holder3, option_holder4);
+}
+
+void incompatible(const bool is_active) {
+  const Creator creator = std::make_unique<BadCreator>();
+
+  const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3, 1.0e-2,
+                             1.0e-4, 1.01, 0.99);
+  const Averager<1> averager(0.25, true);
+  const double update_fraction = 0.3;
+  const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError<1> control_error{};
+
+  OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
+                                 control_error);
+  OptionHolder<2> option_holder2(is_active, averager, controller, tuner,
+                                 control_error);
+  OptionHolder<3> option_holder3(is_active, averager, controller, tuner,
+                                 control_error);
+
+  const double initial_time_step = 1.0;
+  [[maybe_unused]] fot_tag::type functions_of_time =
+      fot_tag::create_from_options<Metavariables>(
+          measurements_per_update, creator, initial_time, initial_time_step,
+          option_holder1, option_holder2, option_holder3);
+}
+
+void test_errors(const bool is_active) {
+  if (is_active) {
+    CHECK_THROWS_WITH(
+        not_controlling(is_active),
+        Catch::Contains(
+            "is not controlling a function of time. Check that the "
+            "DomainCreator you have chosen uses all of the control systems in "
+            "the executable. The existing functions of time are"));
+    CHECK_THROWS_WITH(
+        incompatible(is_active),
+        Catch::Contains("It is possible that the DomainCreator you are using "
+                        "isn't compatible with the control systems"));
+  } else {
+    CHECK_NOTHROW(not_controlling(is_active));
+    CHECK_NOTHROW(incompatible(is_active));
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
                   "[ControlSystem][Unit]") {
   test_functions_of_time_tag();
-
-  using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  using Creator = std::unique_ptr<::DomainCreator<1>>;
-
-  CHECK_THROWS_WITH(
-      []() {
-        const Creator creator = std::make_unique<TestCreator>(true);
-
-        const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
-                                   1.0e-2, 1.0e-4, 1.01, 0.99);
-        const Averager<1> averager(0.25, true);
-        const double update_fraction = 0.3;
-        const Controller<2> controller(update_fraction);
-        const control_system::TestHelpers::ControlError<1> control_error{};
-
-        OptionHolder<1> option_holder1(true, averager, controller, tuner,
-                                       control_error);
-        OptionHolder<2> option_holder2(true, averager, controller, tuner,
-                                       control_error);
-        OptionHolder<3> option_holder3(true, averager, controller, tuner,
-                                       control_error);
-        OptionHolder<4> option_holder4(true, averager, controller, tuner,
-                                       control_error);
-
-        const double initial_time_step = 1.0;
-        fot_tag::type functions_of_time =
-            fot_tag::create_from_options<Metavariables>(
-                measurements_per_update, creator, initial_time,
-                initial_time_step, option_holder1, option_holder2,
-                option_holder3, option_holder4);
-      }(),
-      Catch::Contains(
-          "is not controlling a function of time. Check that the DomainCreator "
-          "you have chosen uses all of the control systems in the executable. "
-          "The existing functions of time are"));
-
-  CHECK_THROWS_WITH(
-      []() {
-        const Creator creator = std::make_unique<BadCreator>();
-
-        const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
-                                   1.0e-2, 1.0e-4, 1.01, 0.99);
-        const Averager<1> averager(0.25, true);
-        const double update_fraction = 0.3;
-        const Controller<2> controller(update_fraction);
-        const control_system::TestHelpers::ControlError<1> control_error{};
-
-        OptionHolder<1> option_holder1(true, averager, controller, tuner,
-                                       control_error);
-        OptionHolder<2> option_holder2(true, averager, controller, tuner,
-                                       control_error);
-        OptionHolder<3> option_holder3(true, averager, controller, tuner,
-                                       control_error);
-
-        const double initial_time_step = 1.0;
-        fot_tag::type functions_of_time =
-            fot_tag::create_from_options<Metavariables>(
-                measurements_per_update, creator, initial_time,
-                initial_time_step, option_holder1, option_holder2,
-                option_holder3);
-      }(),
-      Catch::Contains("It is possible that the DomainCreator you are using "
-                      "isn't compatible with the control systems"));
+  test_errors(true);
+  test_errors(false);
 }
 }  // namespace
