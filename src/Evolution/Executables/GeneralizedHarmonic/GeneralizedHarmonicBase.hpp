@@ -15,6 +15,7 @@
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteristicSpeeds.hpp"
@@ -330,7 +331,6 @@ template <template <size_t, bool> class EvolutionMetavarsDerived,
           size_t VolumeDim, bool UseNumericalInitialData>
 struct GeneralizedHarmonicTemplateBase<
     EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>> {
-
   using derived_metavars =
       EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>;
   static constexpr size_t volume_dim = VolumeDim;
@@ -375,8 +375,9 @@ struct GeneralizedHarmonicTemplateBase<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
-                         tmpl::list<evolution::dg::ApplyBoundaryCorrections<
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor,
+                         evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false>>,
@@ -395,10 +396,11 @@ struct GeneralizedHarmonicTemplateBase<
                              GeneralizedHarmonic::Tags::Phi<
                                  volume_dim, Frame::Inertial>>>>>>;
 
+  template <bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<volume_dim>,
+          evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
