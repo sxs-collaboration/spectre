@@ -12,31 +12,42 @@ void initialize_tuner(
     const gsl::not_null<::TimescaleTuner*> tuner,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const double initial_time, const std::string& name) {
-  if (not tuner->timescales_have_been_set()) {
-    // We get the functions of time in order to get the number of components
-    // so we can resize the number of timescales. Since we are only concerned
-    // with the number of components, we don't care about the initial
-    // expiration times. Rotation is special because the number of components in
-    // the function of time is 4 (quaternion) but the number of components
-    // controlled is 3 (omega), so we hardcode this value.
-    const auto functions_of_time = domain_creator->functions_of_time();
-    const auto& function_of_time = functions_of_time.at(name);
+  // We get the functions of time in order to get the number of components
+  // so we can resize the number of timescales. Since we are only concerned
+  // with the number of components, we don't care about the initial
+  // expiration times. Rotation is special because the number of components in
+  // the function of time is 4 (quaternion) but the number of components
+  // controlled is 3 (omega), so we hardcode this value.
+  const auto functions_of_time = domain_creator->functions_of_time();
 
-    const auto* casted_quat_fot_2 =
-        dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<2>*>(
-            function_of_time.get());
-    const auto* casted_quat_fot_3 =
-        dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
-            function_of_time.get());
+  // The only reason the functions of time wouldn't have this control system is
+  // if the control system is inactive. Once we remove the ability to read in
+  // SpEC control systems, this can be handled outside of this function
+  if (functions_of_time.count(name) == 1) {
+    if (not tuner->timescales_have_been_set()) {
+      const auto& function_of_time = functions_of_time.at(name);
 
-    size_t num_components = 0;
-    if (casted_quat_fot_2 != nullptr or casted_quat_fot_3 != nullptr) {
-      num_components = 3;
-    } else {
-      num_components = function_of_time->func(initial_time)[0].size();
+      const auto* casted_quat_fot_2 =
+          dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<2>*>(
+              function_of_time.get());
+      const auto* casted_quat_fot_3 =
+          dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
+              function_of_time.get());
+
+      size_t num_components = 0;
+      if (casted_quat_fot_2 != nullptr or casted_quat_fot_3 != nullptr) {
+        num_components = 3;
+      } else {
+        num_components = function_of_time->func(initial_time)[0].size();
+      }
+
+      tuner->resize_timescales(num_components);
     }
-
-    tuner->resize_timescales(num_components);
+  } else {
+    if (not tuner->timescales_have_been_set()) {
+      // The control system isn't active so just set it to one component
+      tuner->resize_timescales(1);
+    }
   }
 }
 
