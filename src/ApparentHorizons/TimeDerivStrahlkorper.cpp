@@ -46,6 +46,14 @@ void time_deriv_of_strahlkorper(
   std::deque<const DataVector*> coefficients{};
 
   for (const auto& [time, strahlkorper] : previous_strahlkorpers) {
+    // This only happens toward the beginning because the first time is NaN and
+    // if that happens we can't actually take a derivative
+    if (UNLIKELY(std::isnan(time))) {
+      time_deriv->coefficients() =
+          DataVector{strahlkorper.coefficients().size(), 0.0};
+      return;
+    }
+
     times.emplace_back(time);
     coefficients.emplace_back(&strahlkorper.coefficients());
   }

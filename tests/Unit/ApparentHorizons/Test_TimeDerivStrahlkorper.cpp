@@ -30,8 +30,12 @@ void test_time_deriv_strahlkorper() {
 
     // Set all strahlkorpers to be the same
     for (size_t i = 0; i < num_times; i++) {
-      previous_strahlkorpers.emplace_front(
-          std::make_pair(static_cast<double>(i), strahlkorper));
+      // If num_times = 3, set one of the times == NaN to test that we get back
+      // zero
+      previous_strahlkorpers.emplace_front(std::make_pair(
+          (num_times == 3 and i == 0) ? std::numeric_limits<double>::quiet_NaN()
+                                      : static_cast<double>(i),
+          strahlkorper));
     }
 
     auto time_deriv = strahlkorper;
@@ -41,8 +45,8 @@ void test_time_deriv_strahlkorper() {
 
     const DataVector& time_deriv_strahlkorper_coefs = time_deriv.coefficients();
 
-    // Since we made all the Strahlkorpers the same, the time deriv should be
-    // zero.
+    // Since we made all the Strahlkorpers the same (or there is a NaN time),
+    // the time deriv should be zero.
     CHECK_ITERABLE_APPROX(
         time_deriv_strahlkorper_coefs,
         (DataVector{time_deriv_strahlkorper_coefs.size(), 0.0}));
