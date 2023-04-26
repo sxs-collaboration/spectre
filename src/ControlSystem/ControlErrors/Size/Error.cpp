@@ -27,7 +27,7 @@
 namespace control_system::size {
 
 template <typename Frame>
-double control_error(
+ErrorDiagnostics control_error(
     const gsl::not_null<Info*> info,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
@@ -221,18 +221,35 @@ double control_error(
                        comoving_char_speed_crossing_time,
                        delta_radius_crossing_time});
 
-  // Return the control error.
-  return info->state->control_error(
+  const double control_error = info->state->control_error(
       *info, ControlErrorArgs{min_char_speed, control_error_delta_r,
                               avg_distorted_normal_dot_unit_coord_vector,
                               dt_lambda_00});
+
+  return ErrorDiagnostics{control_error,
+                          info->state->number(),
+                          lambda_00,
+                          dt_lambda_00,
+                          horizon_00,
+                          dt_horizon_00,
+                          control_error_delta_r,
+                          min_char_speed,
+                          min_comoving_char_speed,
+                          char_speed_crossing_time,
+                          comoving_char_speed_crossing_time,
+                          delta_radius_crossing_time,
+                          info->target_char_speed,
+                          info->suggested_time_scale,
+                          info->damping_time,
+                          info->discontinuous_change_has_occurred};
 }
 }  // namespace control_system::size
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template double control_system::size::control_error(                         \
+  template control_system::size::ErrorDiagnostics                              \
+  control_system::size::control_error(                                         \
       const gsl::not_null<control_system::size::Info*> info,                   \
       const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed, \
       const gsl::not_null<intrp::ZeroCrossingPredictor*>                       \

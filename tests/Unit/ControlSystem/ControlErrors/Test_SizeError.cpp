@@ -124,7 +124,7 @@ void test_size_error_one_step(
   // Here we merely check that control_error does the correct
   // thing for a few cases.
   CHECK(dynamic_cast<FinalState*>(info.state.get()) != nullptr);
-  CHECK(error == approx(expected_error));
+  CHECK(error.control_error == approx(expected_error));
 }
 
 template <typename InitialState, typename FinalState>
