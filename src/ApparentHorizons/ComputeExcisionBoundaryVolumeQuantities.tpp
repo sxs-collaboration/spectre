@@ -124,7 +124,9 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     /*jac_logical_to_target*/,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
     /*invjac_logical_to_target*/,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity) {
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity,
+    const tnsr::I<DataVector, 3, TargetFrame>&
+        /*grid_to_target_frame_mesh_velocity*/) {
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,

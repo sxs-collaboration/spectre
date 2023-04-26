@@ -212,8 +212,7 @@ void test_compute_excision_boundary_volume_quantities() {
         std::get<3>(coords_frame_velocity_jacobians);
     inv_jacobian_target_to_inertial =
         std::get<1>(coords_frame_velocity_jacobians);
-    jacobian_target_to_inertial =
-        std::get<2>(coords_frame_velocity_jacobians);
+    jacobian_target_to_inertial = std::get<2>(coords_frame_velocity_jacobians);
 
     // Now compute metric variables and transform them into the
     // inertial frame.  We transform lapse, shift, 3-metric.  Then we
@@ -253,7 +252,8 @@ void test_compute_excision_boundary_volume_quantities() {
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
-        inv_jacobian_logical_to_target, frame_velocity_grid_to_inertial);
+        inv_jacobian_logical_to_target, frame_velocity_grid_to_inertial,
+        tnsr::I<DataVector, 3, TargetFrame>{});
   } else {
     // time-independent.
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
@@ -335,8 +335,8 @@ SPECTRE_TEST_CASE(
   static_assert(
       tt::assert_conforms_to_v<ah::ComputeExcisionBoundaryVolumeQuantities,
                                intrp::protocols::ComputeVarsToInterpolate>);
-    // time-independent.
-    // All possible tags.
+  // time-independent.
+  // All possible tags.
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
