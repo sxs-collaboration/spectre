@@ -28,6 +28,7 @@
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -148,7 +149,8 @@ struct Component {
                           additional_history_tag, tmpl::list<>>,
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
       Tags::Next<Tags::TimeStep>, Tags::Time,
-      Tags::IsUsingTimeSteppingErrorControl>>;
+      Tags::IsUsingTimeSteppingErrorControl,
+      Tags::AdaptiveSteppingDiagnostics>>;
   using compute_tags = db::AddComputeTags<>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -188,7 +190,8 @@ void emplace_component_and_initialize(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false});
+       std::numeric_limits<double>::signaling_NaN(), false,
+       Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -205,7 +208,8 @@ void emplace_component_and_initialize<true, false>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false});
+       std::numeric_limits<double>::signaling_NaN(), false,
+       Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -222,7 +226,8 @@ void emplace_component_and_initialize<false, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false});
+       std::numeric_limits<double>::signaling_NaN(), false,
+       Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -239,7 +244,8 @@ void emplace_component_and_initialize<true, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false});
+       std::numeric_limits<double>::signaling_NaN(), false,
+       Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 using not_self_start_action = std::negation<std::disjunction<

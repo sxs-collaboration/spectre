@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <limits>
 
 #include "Time/Time.hpp"
 
@@ -63,7 +64,7 @@ class TimeStepId {
   void canonicalize();
 
   bool time_runs_forward_{false};
-  int64_t slab_number_{0};
+  int64_t slab_number_{std::numeric_limits<int64_t>::lowest()};
   Time step_time_{};
   uint64_t substep_{0};
   double substep_time_{};

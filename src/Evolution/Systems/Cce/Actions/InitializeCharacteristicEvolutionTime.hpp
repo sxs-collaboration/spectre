@@ -17,6 +17,7 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -44,7 +45,7 @@ namespace Actions {
  *  - `Tags::Next<Tags::TimeStepId>`
  *  - `Tags::TimeStep`
  *  - `Tags::Time`
- *  -
+ *  - `Tags::AdaptiveSteppingDiagnostics`
  * ```
  * Tags::HistoryEvolvedVariables<
  * metavariables::evolved_coordinates_variables_tag,
@@ -75,6 +76,7 @@ struct InitializeCharacteristicEvolutionTime {
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
   using compute_tags = tmpl::list<>;

@@ -25,8 +25,10 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -192,17 +194,20 @@ struct ChangeSlabSize {
         time_stepper.next_time_id(new_time_step_id, new_step);
 
     db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-               ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId>(
+               ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId,
+               ::Tags::AdaptiveSteppingDiagnostics>(
         make_not_null(&box),
         [&new_next_time_step_id, &new_step, &new_time_step_id](
             const gsl::not_null<TimeStepId*> next_time_step_id,
             const gsl::not_null<TimeDelta*> time_step,
             const gsl::not_null<TimeDelta*> next_time_step,
-            const gsl::not_null<TimeStepId*> local_time_step_id) {
+            const gsl::not_null<TimeStepId*> local_time_step_id,
+            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
           *next_time_step_id = new_next_time_step_id;
           *time_step = new_step;
           *next_time_step = new_step;
           *local_time_step_id = new_time_step_id;
+          ++diags->number_of_slab_size_changes;
         });
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

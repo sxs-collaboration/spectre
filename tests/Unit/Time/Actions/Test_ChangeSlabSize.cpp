@@ -7,6 +7,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <unordered_map>
@@ -18,8 +19,10 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
@@ -55,9 +58,10 @@ struct Component {
 
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
 
-  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                                 Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-                                 Tags::HistoryEvolvedVariables<Var>>;
+  using simple_tags =
+      tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+                 Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>,
+                 Tags::AdaptiveSteppingDiagnostics>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<
                      Parallel::Phase::Initialization,
@@ -101,18 +105,20 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     };
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Next<Tags::TimeStep>>(
+               Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics>(
         make_not_null(&box),
         [&get_step, &start_time, &time_runs_forward](
             const gsl::not_null<TimeStepId*> id,
             const gsl::not_null<TimeStepId*> next_id,
             const gsl::not_null<TimeDelta*> step,
             const gsl::not_null<TimeDelta*> next_step,
+            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
             const TimeStepper& stepper) {
           *id = TimeStepId(time_runs_forward, 3, start_time);
           *step = get_step(*id);
           *next_step = get_step(*id);
           *next_id = stepper.next_time_id(*id, *step);
+          *diags = AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5};
         },
         db::get<Tags::TimeStepper<>>(box));
 
@@ -121,18 +127,21 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     using NewSize = ChangeSlabSize_detail::NewSlabSizeInbox;
     auto& inboxes = runner.inboxes<Component>().at(0);
 
-    const auto check_box = [&box, &get_step](const TimeStepId& id) {
+    const auto check_box = [&box, &get_step](const TimeStepId& id,
+                                             const uint64_t changes) {
       CHECK(db::get<Tags::TimeStepId>(box) == id);
       CHECK(db::get<Tags::TimeStep>(box) == get_step(id));
       CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
             db::get<Tags::TimeStepper<>>(box).next_time_id(
                 db::get<Tags::TimeStepId>(box), db::get<Tags::TimeStep>(box)));
+      CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+            AdaptiveSteppingDiagnostics{1, 2 + changes, 3, 4, 5});
     };
 
     // Nothing to do
     {
       runner.next_action<Component>(0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time));
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 0);
     }
 
     // Simple case
@@ -143,7 +152,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<NewSize>(inboxes)[3].insert(1.0);
       runner.next_action<Component>(0);
       resize_slab(1.0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time));
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 1);
       CHECK(get<ExpectedMessages>(inboxes).empty());
       CHECK(get<NewSize>(inboxes).empty());
       get<ExpectedMessages>(inboxes).clear();
@@ -167,7 +176,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<NewSize>(inboxes)[3].insert(3.0);
       runner.next_action<Component>(0);
       resize_slab(2.0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time));
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 2);
       CHECK(get<ExpectedMessages>(inboxes).size() == 1);
       CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
       CHECK(get<NewSize>(inboxes).size() == 1);
@@ -192,7 +201,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
       runner.next_action<Component>(0);
-      check_box(initial_id);
+      check_box(initial_id, 2);
       CHECK(get<ExpectedMessages>(inboxes).size() == 2);
       CHECK(get<ExpectedMessages>(inboxes).count(3) == 1);
       CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
@@ -200,7 +209,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<NewSize>(inboxes)[3].insert(0.1);
       get<NewSize>(inboxes)[4].insert(0.1);
       runner.next_action<Component>(0);
-      check_box(initial_id);
+      check_box(initial_id, 2);
       get<ExpectedMessages>(inboxes).clear();
       get<NewSize>(inboxes).clear();
     }
@@ -225,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
       runner.next_action<Component>(0);
-      check_box(initial_id);
+      check_box(initial_id, 2);
       CHECK(get<ExpectedMessages>(inboxes).size() == 2);
       CHECK(get<ExpectedMessages>(inboxes).count(3) == 1);
       CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
@@ -233,7 +242,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<NewSize>(inboxes)[3].insert(0.1);
       get<NewSize>(inboxes)[4].insert(0.1);
       runner.next_action<Component>(0);
-      check_box(initial_id);
+      check_box(initial_id, 2);
       get<ExpectedMessages>(inboxes).clear();
       get<NewSize>(inboxes).clear();
     }

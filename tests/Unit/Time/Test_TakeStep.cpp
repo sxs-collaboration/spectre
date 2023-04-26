@@ -17,12 +17,14 @@
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/TakeStep.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -162,7 +164,8 @@ void test_lts() {
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-          ::Tags::IsUsingTimeSteppingErrorControl, Tags::StepperErrorUpdated>,
+          ::Tags::IsUsingTimeSteppingErrorControl, Tags::StepperErrorUpdated,
+          Tags::AdaptiveSteppingDiagnostics>,
       db::AddComputeTags<typename Metavariables::system::
                              compute_largest_characteristic_speed>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
@@ -172,7 +175,8 @@ void test_lts() {
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),
-      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), true, false);
+      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), true, false,
+      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
@@ -187,6 +191,8 @@ void test_lts() {
                         initial_values * exp(0.0025));
   CHECK_ITERABLE_APPROX(db::get<Tags::dt<EvolvedVariable>>(box),
                         1.0e-2 * initial_values);
+  CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+        AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   // advance time
   db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
@@ -224,6 +230,8 @@ void test_lts() {
                         initial_values * exp(0.00375));
   CHECK_ITERABLE_APPROX(db::get<Tags::dt<EvolvedVariable>>(box),
                         1.0e-2 * initial_values * exp(0.0025));
+  CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+        AdaptiveSteppingDiagnostics{1, 2, 3, 5, 6});
 }
 }  // namespace
 
