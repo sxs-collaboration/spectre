@@ -3,7 +3,13 @@
 
 set(LIBRARY Events)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  ObserveAdaptiveSteppingDiagnostics.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -11,6 +17,7 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   MonitorMemory.hpp
+  ObserveAdaptiveSteppingDiagnostics.hpp
   ObserveAtExtremum.hpp
   ObserveFields.hpp
   ObserveNorms.hpp
@@ -21,6 +28,14 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PUBLIC
+  Charmxx::pup
+  Observer
+  Options
+  Parallel
+  Serialization
+  Time
+  Utilities
   INTERFACE
   DataStructures
   Domain
@@ -30,11 +45,5 @@ target_link_libraries(
   H5
   Interpolation
   LinearOperators
-  Observer
-  Options
-  Parallel
-  Serialization
   Spectral
-  Time
-  Utilities
   )
