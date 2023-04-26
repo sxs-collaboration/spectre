@@ -369,6 +369,16 @@ void test_compute_excision_boundary_volume_quantities() {
     CHECK_ITERABLE_APPROX(shift, numerical_shift);
   }
 
+  if constexpr (tmpl::list_contains_v<
+                    DestTags,
+                    gr::Tags::ShiftyQuantity<DataVector, 3, TargetFrame>>) {
+    const auto& numerical_shifty_quantity =
+        get<gr::Tags::ShiftyQuantity<DataVector, 3, TargetFrame>>(dest_vars);
+    const auto shifty_quantity = tenex::evaluate<ti::I>(
+        shift(ti::I) + frame_velocity_grid_to_target(ti::I));
+    CHECK_ITERABLE_APPROX(shifty_quantity, numerical_shifty_quantity);
+  }
+
   // If TargetFrame is not the same as Inertial frame, we allow
   // (optional) computation of destination quantities in the inertial frame.
   // Test these here.
@@ -471,6 +481,7 @@ SPECTRE_TEST_CASE(
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Distorted>,
                  gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
                  gr::Tags::Lapse<DataVector>,
+                 gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
                  gr::Tags::Shift<DataVector, 3, Frame::Distorted>>>();
 
   // Leave out a few tags.
