@@ -5,6 +5,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ComputeFluxes.hpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
