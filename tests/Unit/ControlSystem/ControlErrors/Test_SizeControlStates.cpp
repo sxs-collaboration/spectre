@@ -395,6 +395,19 @@ void test_clone_and_serialization() {
   CHECK(dynamic_cast<State*>(state->get_clone().get()) != nullptr);
 }
 
+void test_name_and_number() {
+  const control_system::size::States::Initial initial{};
+  const control_system::size::States::AhSpeed ah_speed{};
+  const control_system::size::States::DeltaR delta_r{};
+
+  CHECK(initial.name() == "Initial"s);
+  CHECK(initial.number() == 0_st);
+  CHECK(ah_speed.name() == "AhSpeed"s);
+  CHECK(ah_speed.number() == 1_st);
+  CHECK(delta_r.name() == "DeltaR"s);
+  CHECK(delta_r.number() == 2_st);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeControlStates", "[Domain][Unit]") {
@@ -404,4 +417,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeControlStates", "[Domain][Unit]") {
   test_clone_and_serialization<control_system::size::States::Initial>();
   test_clone_and_serialization<control_system::size::States::AhSpeed>();
   test_clone_and_serialization<control_system::size::States::DeltaR>();
+  test_name_and_number();
 }

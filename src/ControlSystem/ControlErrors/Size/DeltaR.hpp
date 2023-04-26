@@ -13,6 +13,8 @@ namespace control_system::size::States {
 class DeltaR : public State {
  public:
   DeltaR() = default;
+  std::string name() const override { return "DeltaR"; }
+  size_t number() const override { return 2; }
   std::unique_ptr<State> get_clone() const override;
   void update(const gsl::not_null<Info*> info,
               const StateUpdateArgs& update_args,
