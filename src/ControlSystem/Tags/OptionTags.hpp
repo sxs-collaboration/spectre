@@ -10,6 +10,7 @@
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -148,6 +149,18 @@ struct MeasurementsPerUpdate {
       "How many AH measurements are to be done between control system "
       "updates."};
   static int lower_bound() { return 1; }
+  using group = ControlSystemGroup;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup ControlSystemGroup
+/// Verbosity tag for printing diagnostics about the control system algorithm.
+/// This does not control when data is written to disk.
+struct Verbosity {
+  using type = ::Verbosity;
+  static constexpr Options::String help = {
+      "Verbosity of control system algorithm. Determines verbosity for all "
+      "control systems."};
   using group = ControlSystemGroup;
 };
 }  // namespace OptionTags

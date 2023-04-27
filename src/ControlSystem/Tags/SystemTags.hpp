@@ -233,4 +233,18 @@ struct MeasurementsPerUpdate : db::SimpleTag {
 struct CurrentNumberOfMeasurements : db::SimpleTag {
   using type = int;
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag that holds the verbosity used to print info about the control
+/// system algorithm.
+struct Verbosity : db::SimpleTag {
+  using type = ::Verbosity;
+
+  using option_tags = tmpl::list<OptionTags::Verbosity>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const ::Verbosity verbosity) {
+    return verbosity;
+  }
+};
 }  // namespace control_system::Tags
