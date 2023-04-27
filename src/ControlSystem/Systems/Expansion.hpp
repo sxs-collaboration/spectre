@@ -106,7 +106,7 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(
-        measurements::BothHorizons::FindHorizon<Horizon> /*meta*/,
+        measurements::BothHorizons::FindHorizon<Horizon> submeasurement,
         const Strahlkorper<Frame::Distorted>& horizon_strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
@@ -121,14 +121,21 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::Center<Horizon>, MeasurementQueue,
           UpdateControlSystem<Expansion>>>(control_sys_proxy, measurement_id,
                                            center);
+
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+        Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
+                         name(), measurement_id.id,
+                         pretty_type::name(submeasurement));
+      }
     }
 
     template <typename Metavariables>
-    static void apply(measurements::BothNSCenters::FindTwoCenters /*meta*/,
-                      const std::array<double, 3> center_a,
-                      const std::array<double, 3> center_b,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const LinkedMessageId<double>& measurement_id) {
+    static void apply(
+        measurements::BothNSCenters::FindTwoCenters submeasurement,
+        const std::array<double, 3> center_a,
+        const std::array<double, 3> center_b,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
           ControlComponent<Metavariables, Expansion<DerivOrder, Measurement>>>(
           cache);
@@ -143,6 +150,12 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
           UpdateControlSystem<Expansion>>>(control_sys_proxy, measurement_id,
                                            center_b_dv);
+
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+        Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
+                         name(), measurement_id.id,
+                         pretty_type::name(submeasurement));
+      }
     }
   };
 };

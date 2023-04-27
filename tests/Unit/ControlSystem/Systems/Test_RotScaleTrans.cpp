@@ -159,7 +159,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, false,
+      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
        tnsr::I<double, 3, Frame::Grid>{{0.5 * initial_separation, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{{-0.5 * initial_separation, 0.0, 0.0}}},
       {std::move(initial_functions_of_time),

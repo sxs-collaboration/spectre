@@ -8,11 +8,13 @@
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -44,6 +46,7 @@ struct MockControlSystemComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
+  using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
   using simple_tags_from_options = tmpl::list<
       control_system::TestHelpers::ExampleControlSystem::MeasurementQueue,
       control_system::TestHelpers::MeasurementResultTime,
@@ -61,7 +64,6 @@ struct Metavariables {
     using factory_classes =
         tmpl::map<tmpl::pair<Event, tmpl::list<MeasureEvent>>>;
   };
-
 };
 }  // namespace
 
@@ -74,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   using control_system_component = MockControlSystemComponent<Metavariables>;
   const element_component* const element_component_p = nullptr;
 
-  MockRuntimeSystem runner{{}};
+  MockRuntimeSystem runner{{::Verbosity::Silent}};
   ActionTesting::emplace_array_component<element_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);

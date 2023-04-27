@@ -11,7 +11,10 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/GetOutput.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,6 +30,9 @@ struct Time;
 namespace evolution::Tags {
 struct PreviousTriggerTime;
 }  // namespace evolution::Tags
+namespace control_system::Tags {
+struct Verbosity;
+}  // namespace control_system::Tags
 /// \endcond
 
 namespace control_system {
@@ -53,8 +59,7 @@ class Event : public ::Event {
   static_assert(tmpl::all<ControlSystems,
                           std::is_same<metafunctions::measurement<tmpl::_1>,
                                        tmpl::pin<measurement>>>::value);
-  static_assert(
-      tt::assert_conforms_to_v<measurement, protocols::Measurement>);
+  static_assert(tt::assert_conforms_to_v<measurement, protocols::Measurement>);
 
   template <typename ControlSystem>
   using process_measurement_for_control_system =
@@ -97,6 +102,13 @@ class Event : public ::Event {
           using Submeasurement = tmpl::type_from<decltype(submeasurement)>;
           db::apply<Submeasurement>(box, measurement_id, cache, array_index,
                                     component, ControlSystems{});
+          if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+            Parallel::printf(
+                "%s, time = %s: Running control system events for measurement "
+                "'%s'.\n",
+                get_output(array_index), measurement_id,
+                pretty_type::name<Submeasurement>());
+          }
         });
   }
 
@@ -110,8 +122,16 @@ class Event : public ::Event {
     // measurement is being made for.  We need all of them to access
     // coordinate-dependent quantities, which almost all control
     // measurements will need.
-    return domain::functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
-        cache, array_index, component, time);
+    const bool ready =
+        domain::functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
+            cache, array_index, component, time);
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+      Parallel::printf("%s, time = %.16f: Control system events are%s ready.\n",
+                       get_output(array_index), time, (ready ? "" : " not"));
+    }
+
+    return ready;
   }
 
   bool needs_evolved_variables() const override { return true; }

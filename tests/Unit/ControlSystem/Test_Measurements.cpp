@@ -7,10 +7,12 @@
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Measurements/CharSpeed.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
@@ -125,6 +127,7 @@ template <typename Metavariables>
 struct MockControlSystemComponent {
   using component_being_mocked =
       ControlComponent<Metavariables, MockControlSystem>;
+  using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
@@ -176,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using control_system_component = MockControlSystemComponent<Metavariables>;
 
-  MockRuntimeSystem runner{{}};
+  MockRuntimeSystem runner{{::Verbosity::Silent}};
   ActionTesting::emplace_singleton_component<control_system_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0});

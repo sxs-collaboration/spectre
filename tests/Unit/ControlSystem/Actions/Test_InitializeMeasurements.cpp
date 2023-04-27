@@ -17,6 +17,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -33,6 +34,7 @@
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -154,6 +156,7 @@ struct Component {
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
   using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
       ::domain::Tags::FunctionsOfTimeInitialize>>;
+  using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
@@ -205,7 +208,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   functions.emplace("B", timescale->get_clone());
   functions.emplace("C", timescale->get_clone());
 
-  MockRuntimeSystem runner{{}, {std::move(functions), std::move(timescales)}};
+  MockRuntimeSystem runner{{::Verbosity::Silent},
+                           {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0,

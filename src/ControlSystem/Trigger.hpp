@@ -18,7 +18,10 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -32,6 +35,7 @@ struct Time;
 }  // namespace Tags
 namespace control_system::Tags {
 struct MeasurementTimescales;
+struct Verbosity;
 }  // namespace control_system::Tags
 /// \endcond
 
@@ -77,8 +81,8 @@ class Trigger : public DenseTrigger {
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<bool> is_triggered(
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* /*component*/,
       const double time,
       const std::unordered_map<
           std::string,
@@ -99,6 +103,15 @@ class Trigger : public DenseTrigger {
       } else {
         next_trigger_ = time;
       }
+    }
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+      Parallel::printf(
+          "%s, time = %.16f: Trigger for control systems (%s) is%s "
+          "triggered.\n",
+          get_output(array_index), time,
+          pretty_type::list_of_names<ControlSystems>(),
+          (time == *next_trigger_ ? "" : " not"));
     }
 
     return time == *next_trigger_;
@@ -126,12 +139,22 @@ class Trigger : public DenseTrigger {
                   tmpl::type_from<decltype(control_systems)>::name()...});
         });
     if (not is_ready) {
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+        Parallel::printf(
+            "%s, time = %.16f: Trigger - Cannot calculate next_check_time\n",
+            get_output(array_index), time);
+      }
       return std::nullopt;
     }
 
     const bool triggered = time == *next_trigger_;
     if (triggered) {
       *next_trigger_ = next_measurement(time, measurement_timescales);
+    }
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+      Parallel::printf("%s, time = %.16f: Trigger - next check time is %.16f\n",
+                       get_output(array_index), time, *next_trigger_);
     }
     return *next_trigger_;
   }
