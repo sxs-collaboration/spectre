@@ -55,6 +55,10 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
    */
   template <::domain::ObjectLabel Horizon>
   struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
+    static std::string name() {
+      return "BothHorizons::FindHorizon" + ::domain::name(Horizon);
+    }
+
    private:
     template <typename ControlSystems>
     struct InterpolationTarget

@@ -90,6 +90,7 @@ void center_of_mass_integral_on_element(
 /// center of mass of the two neutron stars in a BNS merger).
 struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
   struct FindTwoCenters : tt::ConformsTo<protocols::Submeasurement> {
+    static std::string name() { return "BothNSCenters::FindTwoCenters"; }
     /// Unused tag needed to conform to the submeasurement protocol.
     template <typename ControlSystems>
     using interpolation_target_tag = void;
