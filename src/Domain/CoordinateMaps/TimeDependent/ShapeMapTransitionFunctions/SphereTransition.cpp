@@ -131,10 +131,17 @@ void SphereTransition::check_magnitudes([[maybe_unused]] const T& mag) const {
 
 void SphereTransition::pup(PUP::er& p) {
   ShapeMapTransitionFunction::pup(p);
-  p | r_min_;
-  p | r_max_;
-  p | a_;
-  p | b_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | r_min_;
+    p | r_max_;
+    p | a_;
+    p | b_;
+  }
 }
 
 SphereTransition::SphereTransition(CkMigrateMessage* const msg)

@@ -447,19 +447,26 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
 
 template <size_t Dim>
 void Wedge<Dim>::pup(PUP::er& p) {
-  p | radius_inner_;
-  p | radius_outer_;
-  p | sphericity_inner_;
-  p | sphericity_outer_;
-  p | orientation_of_wedge_;
-  p | with_equiangular_map_;
-  p | halves_to_use_;
-  p | radial_distribution_;
-  p | scaled_frustum_zero_;
-  p | sphere_zero_;
-  p | scaled_frustum_rate_;
-  p | sphere_rate_;
-  p | half_opening_angle_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | radius_inner_;
+    p | radius_outer_;
+    p | sphericity_inner_;
+    p | sphericity_outer_;
+    p | orientation_of_wedge_;
+    p | with_equiangular_map_;
+    p | halves_to_use_;
+    p | radial_distribution_;
+    p | scaled_frustum_zero_;
+    p | sphere_zero_;
+    p | scaled_frustum_rate_;
+    p | sphere_rate_;
+    p | half_opening_angle_;
+  }
 }
 
 template <size_t Dim>

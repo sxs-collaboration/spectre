@@ -40,9 +40,61 @@ class CoordinateMapBase;
 namespace domain {}
 
 /*!
- *  \ingroup ComputationalDomainGroup
- *  \brief A wrapper around a vector of Blocks that represent the computational
+ * \ingroup ComputationalDomainGroup
+ * \brief A wrapper around a vector of Blocks that represent the computational
  * domain.
+ *
+ * ### Serialization and versioning
+ *
+ * The domain will be serialized and written to output files so it can be used
+ * for interpolations, as are `domain::FunctionOfTime` classes. To be able to
+ * read in domains written by older versions of the code the `pup` function in
+ * this class and all `pup` functions it invokes support lightweight versioning.
+ * A `version` integer is written alongside the data when serializing, and read
+ * back in when deserializing. Increment the version number every time you make
+ * changes to the `pup` function. Retain support for unpacking data written by
+ * previous versions whenever possible. When adding a new field to serialize,
+ * you can simply pack/unpack the new field only for newer versions like this:
+ *
+ * ```cpp
+ * void pup(PUP::er& p) {
+ *   size_t version = 1;  // Incremented from 0 to 1
+ *   p | version;
+ *   if (version >= 0) {
+ *     p | some_data_;
+ *   }
+ *   if (version >= 1) {
+ *     p | added_data_;
+ *   } else if (p.isUnpacking()) {
+ *     // You may have to initialize added_data_ here if default-construction
+ *     // isn't sufficient.
+ *   }
+ * }
+ * ```
+ *
+ * When removing or changing a field, make sure to deserialize old data
+ * consistent with how it was written:
+ *
+ * ```cpp
+ * void pup(PUP::er& p) {
+ *   size_t version = 2;  // Incremented from 1 to 2
+ *   p | version;
+ *   if (version < 2) {
+ *     // The field some_data_ was changed in version 2
+ *     OldDataType old_some_data_;
+ *     p | old_some_data_;
+ *     // Possibly use the old deserialized data to initialize the changed field
+ *     some_data_ = old_some_data_ * 2.;
+ *   } else {
+ *     p | some_data_;
+ *   }
+ *   // ...
+ * }
+ * ```
+ *
+ * Make sure that all data types you serialize in the `pup` function also
+ * support versioning. Also make sure to keep all factory-creatable classes
+ * registered that were written by old versions of the code.
  */
 template <size_t VolumeDim>
 class Domain {

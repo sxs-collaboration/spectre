@@ -159,7 +159,14 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::get_to_grid_frame()
 template <typename Frames, size_t Dim, size_t... Is>
 void Composition<Frames, Dim, std::index_sequence<Is...>>::pup(PUP::er& p) {
   Base::pup(p);
-  p | maps_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | maps_;
+  }
 }
 
 template <typename Frames, size_t Dim, size_t... Is>

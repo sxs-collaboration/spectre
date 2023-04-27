@@ -238,9 +238,16 @@ void FlatSide::deriv_lambda_tilde(
 }
 
 void FlatSide::pup(PUP::er& p) {
-  p | center_;
-  p | inner_radius_;
-  p | outer_radius_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | center_;
+    p | inner_radius_;
+    p | outer_radius_;
+  }
 }
 
 bool operator==(const FlatSide& lhs, const FlatSide& rhs) {

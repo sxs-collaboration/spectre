@@ -105,8 +105,15 @@ SpecialMobius::inv_jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 void SpecialMobius::pup(PUP::er& p) {
-  p | mu_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | mu_;
+    p | is_identity_;
+  }
 }
 
 bool operator==(const SpecialMobius& lhs, const SpecialMobius& rhs) {

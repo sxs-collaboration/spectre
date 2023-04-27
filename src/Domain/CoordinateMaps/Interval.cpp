@@ -227,13 +227,20 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Interval::inv_jacobian(
 }
 
 void Interval::pup(PUP::er& p) {
-  p | A_;
-  p | B_;
-  p | a_;
-  p | b_;
-  p | distribution_;
-  p | singularity_pos_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | A_;
+    p | B_;
+    p | a_;
+    p | b_;
+    p | distribution_;
+    p | singularity_pos_;
+    p | is_identity_;
+  }
 }
 
 bool operator==(const CoordinateMaps::Interval& lhs,

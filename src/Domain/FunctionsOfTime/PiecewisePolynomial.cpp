@@ -137,8 +137,15 @@ void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  p | deriv_info_at_update_times_;
-  p | expiration_time_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | deriv_info_at_update_times_;
+    p | expiration_time_;
+  }
 }
 
 template <size_t MaxDeriv>

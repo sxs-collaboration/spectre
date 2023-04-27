@@ -80,8 +80,15 @@ DiscreteRotation<VolumeDim>::inv_jacobian(
 
 template <size_t VolumeDim>
 void DiscreteRotation<VolumeDim>::pup(PUP::er& p) {
-  p | orientation_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | orientation_;
+    p | is_identity_;
+  }
 }
 
 template class DiscreteRotation<1>;

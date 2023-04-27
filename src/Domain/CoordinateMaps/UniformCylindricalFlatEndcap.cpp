@@ -685,12 +685,19 @@ UniformCylindricalFlatEndcap::inv_jacobian(
 }
 
 void UniformCylindricalFlatEndcap::pup(PUP::er& p) {
-  p | center_one_;
-  p | center_two_;
-  p | radius_one_;
-  p | radius_two_;
-  p | z_plane_one_;
-  p | theta_max_one_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | center_one_;
+    p | center_two_;
+    p | radius_one_;
+    p | radius_two_;
+    p | z_plane_one_;
+    p | theta_max_one_;
+  }
 }
 
 bool operator==(const UniformCylindricalFlatEndcap& lhs,

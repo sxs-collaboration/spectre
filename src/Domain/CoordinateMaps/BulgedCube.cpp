@@ -275,10 +275,17 @@ BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 void BulgedCube::pup(PUP::er& p) {
-  p | radius_;
-  p | sphericity_;
-  p | use_equiangular_map_;
-  p | is_identity_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | radius_;
+    p | sphericity_;
+    p | use_equiangular_map_;
+    p | is_identity_;
+  }
 }
 
 bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) {

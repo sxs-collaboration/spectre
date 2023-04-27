@@ -780,14 +780,21 @@ UniformCylindricalSide::inv_jacobian(
 }
 
 void UniformCylindricalSide::pup(PUP::er& p) {
-  p | center_one_;
-  p | center_two_;
-  p | radius_one_;
-  p | radius_two_;
-  p | z_plane_plus_one_;
-  p | z_plane_minus_one_;
-  p | z_plane_plus_two_;
-  p | z_plane_minus_two_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | center_one_;
+    p | center_two_;
+    p | radius_one_;
+    p | radius_two_;
+    p | z_plane_plus_one_;
+    p | z_plane_minus_one_;
+    p | z_plane_plus_two_;
+    p | z_plane_minus_two_;
+  }
 }
 
 bool operator==(const UniformCylindricalSide& lhs,
