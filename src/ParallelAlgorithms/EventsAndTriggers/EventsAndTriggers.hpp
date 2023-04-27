@@ -36,8 +36,28 @@ class EventsAndTriggers {
   };
 
  public:
-  using Storage = std::vector<
-      std::pair<std::unique_ptr<Trigger>, std::vector<std::unique_ptr<Event>>>>;
+  struct TriggerAndEvents {
+    struct Trigger {
+      using type = std::unique_ptr<::Trigger>;
+      static constexpr Options::String help = "Determines when the Events run.";
+    };
+    struct Events {
+      using type = std::vector<std::unique_ptr<::Event>>;
+      static constexpr Options::String help =
+          "These events run when the Trigger fires.";
+    };
+    static constexpr Options::String help =
+        "Events that run when the Trigger fires.";
+    using options = tmpl::list<Trigger, Events>;
+    void pup(PUP::er& p) {
+      p | trigger;
+      p | events;
+    }
+    std::unique_ptr<::Trigger> trigger;
+    std::vector<std::unique_ptr<::Event>> events;
+  };
+
+  using Storage = std::vector<TriggerAndEvents>;
 
   EventsAndTriggers() = default;
   explicit EventsAndTriggers(Storage events_and_triggers)
@@ -58,8 +78,8 @@ class EventsAndTriggers {
     std::optional<decltype(make_observation_box<compute_tags>(box))>
         observation_box{};
     for (const auto& trigger_and_events : events_and_triggers_) {
-      const auto& trigger = trigger_and_events.first;
-      const auto& events = trigger_and_events.second;
+      const auto& trigger = trigger_and_events.trigger;
+      const auto& events = trigger_and_events.events;
       if (trigger->is_triggered(box)) {
         if (not observation_box.has_value()) {
           observation_box = make_observation_box<compute_tags>(box);
@@ -77,7 +97,7 @@ class EventsAndTriggers {
   template <typename F>
   void for_each_event(F&& f) const {
     for (const auto& trigger_and_events : events_and_triggers_) {
-      for (const auto& event : trigger_and_events.second) {
+      for (const auto& event : trigger_and_events.events) {
         f(*event);
       }
     }

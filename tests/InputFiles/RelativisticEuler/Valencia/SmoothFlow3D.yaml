@@ -61,16 +61,20 @@ VariableFixing:
     MaxVelocityMagnitude: 1.0e-4
 
 EventsAndTriggers:
-  # - - Slabs:
+  # - Trigger:
+  #     Slabs:
   #       EvenlySpaced:
   #         Interval: 100
   #         Offset: 0
-  #   - - ObserveFields:
+  #   Events:
+  #     - ObserveFields:
   #         VariablesToObserve: [RestMassDensity]
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [10]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

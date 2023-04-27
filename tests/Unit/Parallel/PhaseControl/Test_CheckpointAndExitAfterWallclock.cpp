@@ -41,8 +41,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
       PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
-      " - - Always:\n"
-      "   - - CheckpointAndExitAfterWallclock:\n"
+      " - Trigger: Always\n"
+      "   PhaseChanges:\n"
+      "     - CheckpointAndExitAfterWallclock:\n"
       "         WallclockHours: 0.0");
 
   Parallel::GlobalCache<Metavariables> cache{};

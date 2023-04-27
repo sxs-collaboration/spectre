@@ -82,9 +82,9 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
           trigger_string);
 
   EventsAndTriggers::Storage events_and_triggers_input;
-  events_and_triggers_input.emplace_back(
-      std::move(trigger), make_vector<std::unique_ptr<Event>>(
-                              std::make_unique<Events::Completion>()));
+  events_and_triggers_input.push_back(
+      {std::move(trigger), make_vector<std::unique_ptr<Event>>(
+                               std::make_unique<Events::Completion>())});
   const EventsAndTriggers events_and_triggers(
       std::move(events_and_triggers_input));
 
@@ -153,25 +153,31 @@ void test_basic_triggers() {
 void test_factory() {
   const auto events_and_triggers =
       TestHelpers::test_creation<EventsAndTriggers, Metavariables<>>(
-          "- - Not: Always\n"
-          "  - - Completion\n"
-          "- - Or:\n"
-          "    - Not: Always\n"
-          "    - Always\n"
-          "  - - Completion\n"
+          "- Trigger:\n"
+          "    Not: Always\n"
+          "  Events:\n"
           "    - Completion\n"
-          "- - Not: Always\n"
-          "  - - Completion\n");
+          "- Trigger:\n"
+          "    Or:\n"
+          "      - Not: Always\n"
+          "      - Always\n"
+          "  Events:\n"
+          "    - Completion\n"
+          "    - Completion\n"
+          "- Trigger:\n"
+          "    Not: Always\n"
+          "  Events:\n"
+          "    - Completion\n");
 
   run_events_and_triggers(events_and_triggers, true);
 }
 
 void test_slab_limits() {
   EventsAndTriggers::Storage events_and_triggers_input;
-  events_and_triggers_input.emplace_back(
-      std::make_unique<Triggers::Always>(),
-      make_vector<std::unique_ptr<Event>>(
-          std::make_unique<Events::Completion>()));
+  events_and_triggers_input.push_back(
+      {std::make_unique<Triggers::Always>(),
+       make_vector<std::unique_ptr<Event>>(
+           std::make_unique<Events::Completion>())});
 
   const Slab slab(0.0, 1.0);
   const auto start = slab.start();

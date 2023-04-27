@@ -69,10 +69,12 @@ SpatialDiscretization:
 #     BlocksToFilter: All
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [5]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

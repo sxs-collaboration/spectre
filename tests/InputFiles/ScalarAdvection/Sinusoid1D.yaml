@@ -58,15 +58,19 @@ InitialData:
   Sinusoid:
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [10]
-    - - Completion
-  - - Slabs:
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve: [U, TciStatus]
           InterpolateToMesh: None

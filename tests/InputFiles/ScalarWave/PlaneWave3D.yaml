@@ -61,12 +61,15 @@ SpatialDiscretization:
 #     BlocksToFilter: All
 
 EventsAndTriggers:
-  - - Times:
+  - Trigger:
+      Times:
         Specified:
           Values: [&final_time -0.05]
-    - - Completion
-  - - Always
-    - - ChangeSlabSize:
+    Events:
+      - Completion
+  - Trigger: Always
+    Events:
+      - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
             - Increase:

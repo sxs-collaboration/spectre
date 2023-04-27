@@ -55,11 +55,13 @@ EventsAndDenseTriggers:
 
 # [multiple_events]
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: Fields
           VariablesToObserve: [Psi]
           InterpolateToMesh: None
@@ -78,15 +80,10 @@ EventsAndTriggers:
             - Name: Error(Pi)
               NormType: L2Norm
               Components: Sum
+  - Trigger: Always
+    Events:
+      - Completion
 # [multiple_events]
-
-# [no_arguments]
-  - - Always
-    - - Completion
-# [no_arguments]
-# [no_arguments_single_line]
-  - [Always, [Completion]]
-# [no_arguments_single_line]
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DEventsAndTriggersExampleVolume"

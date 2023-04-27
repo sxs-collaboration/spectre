@@ -23,11 +23,13 @@ Evolution:
       Order: 3
 
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1000
           Offset: 5
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 
 AnalyticSolution: &InitialData
   BondiMichel:
@@ -118,22 +120,26 @@ SpatialDiscretization:
       Rusanov:
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5
           Offset: 0
-    - - ChangeSlabSize:
+    Events:
+      - ChangeSlabSize:
           DelayChange: 5
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.6
             - Increase:
                 Factor: 1.5
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(SpacetimeMetric)
@@ -169,11 +175,13 @@ EventsAndTriggers:
             - Name: Error(SpecificEnthalpy)
               NormType: L2Norm
               Components: Sum
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 2
           Offset: 0
-    - - ObserveFields:
+    Events:
+      - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
@@ -185,15 +193,19 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
           OverrideObservationValue: None
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 5
           Offset: 3
-    - - AhA
-  - - Slabs:
+    Events:
+      - AhA
+  - Trigger:
+      Slabs:
         Specified:
           Values: [2]
-    - - Completion
+    Events:
+      - Completion
 
 ApparentHorizons:
   AhA:

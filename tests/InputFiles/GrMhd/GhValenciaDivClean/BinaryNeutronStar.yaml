@@ -121,19 +121,23 @@ Filtering:
 
 EventsAndTriggers:
   # Set time step based on CLF condition
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [0]
-    - - ChangeSlabSize:
+    Events:
+      - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.5
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
-    - - ObserveTimeStep:
+    Events:
+      - ObserveTimeStep:
             SubfileName: TimeSteps
             PrintTimeToTerminal: True
             ObservePerCore: False
@@ -162,10 +166,12 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           OverrideObservationValue: None
-  - - TimeCompares:
+  - Trigger:
+      TimeCompares:
         Comparison: GreaterThan
         Value: 1.5
-    - - Completion
+    Events:
+      - Completion
 
 Observers:
   VolumeFileName: "GhMhdVolume"

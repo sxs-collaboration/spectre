@@ -20,11 +20,15 @@ class TestExecutableStatus(unittest.TestCase):
             "Observers": {
                 "ReductionFileName": "Reductions"
             },
-            "EventsAndTriggers": [("Always", [{
-                "ObserveTimeStep": {
-                    "SubfileName": "TimeSteps"
-                }
-            }])]
+            "EventsAndTriggers": [{
+                "Trigger":
+                "Always",
+                "Events": [{
+                    "ObserveTimeStep": {
+                        "SubfileName": "TimeSteps"
+                    }
+                }]
+            }]
         }
         self.work_dir = os.path.join(unit_test_build_path(),
                                      "tools/ExecutableStatus")

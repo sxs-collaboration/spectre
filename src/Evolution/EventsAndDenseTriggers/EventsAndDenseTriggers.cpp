@@ -24,8 +24,8 @@ EventsAndDenseTriggers::EventsAndDenseTriggers(
   for (auto& events_and_trigger : events_and_triggers) {
     events_and_triggers_.push_back(TriggerRecord{
         std::numeric_limits<double>::signaling_NaN(), std::optional<bool>{}, 0,
-        std::move(events_and_trigger.first),
-        std::move(events_and_trigger.second)});
+        std::move(events_and_trigger.trigger),
+        std::move(events_and_trigger.events)});
   }
 }
 

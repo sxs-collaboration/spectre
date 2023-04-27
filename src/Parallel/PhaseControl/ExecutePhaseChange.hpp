@@ -64,8 +64,10 @@ struct ExecutePhaseChange {
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool should_halt = false;
-    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
+    for (const auto& trigger_and_phase_changes : phase_change_and_triggers) {
+      const auto& trigger = trigger_and_phase_changes.trigger;
       if (trigger->is_triggered(box)) {
+        const auto& phase_changes = trigger_and_phase_changes.phase_changes;
         for (const auto& phase_change : phase_changes) {
           phase_change->template contribute_phase_data<ParallelComponent>(
               make_not_null(&box), cache, array_index);
@@ -135,10 +137,8 @@ typename std::optional<Parallel::Phase> arbitrate_phase_change(
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool phase_chosen = false;
-    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-      // avoid unused variable warning
-      (void)trigger;
-      for (const auto& phase_change : phase_changes) {
+    for (const auto& trigger_and_phase_changes : phase_change_and_triggers) {
+      for (const auto& phase_change : trigger_and_phase_changes.phase_changes) {
         const auto phase_result = phase_change->arbitrate_phase_change(
             phase_change_decision_data, current_phase, cache);
         if (phase_result.has_value()) {

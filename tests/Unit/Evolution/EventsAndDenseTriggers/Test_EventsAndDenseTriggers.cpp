@@ -151,12 +151,14 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   const int* component = nullptr;
 
   std::string creation_string =
-      "- - BoxTrigger<A>\n"
-      "  - - TestEvent<A>\n";
+      "- Trigger: BoxTrigger<A>\n"
+      "  Events:\n"
+      "    - TestEvent<A>\n";
   if (not add_event) {
     creation_string +=
-        "- - BoxTrigger<B>\n"
-        "  - - TestEvent<B>\n"
+        "- Trigger: BoxTrigger<B>\n"
+        "  Events:\n"
+        "    - TestEvent<B>\n"
         "    - TestEvent<C>\n";
   }
 

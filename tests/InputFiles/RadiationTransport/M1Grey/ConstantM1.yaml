@@ -50,11 +50,13 @@ Limiter:
     DisableForDebugging: false
 
 EventsAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 3
           Offset: 5
-    - - ObserveNorms:
+    Events:
+      - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
             - Name: Error(TildeE_ElectronNeutrinos1)
@@ -63,10 +65,12 @@ EventsAndTriggers:
             - Name: Error(TildeS_ElectronNeutrinos1)
               NormType: L2Norm
               Components: Sum
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [10]
-    - - Completion
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
 

@@ -77,10 +77,12 @@ the problem:
   been carefully tested. To do this, use an input file similar to
 ```
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [5, 10, 15]
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 ```
 - Use `LBTurnInstrumentOff` and `LBTurnInstrumentOn` to specifically exclude
   setup procedures from the LB instrumentation. First attempts indicate that
@@ -132,10 +134,12 @@ evolutions, it may be worth experimenting to see whether 1-3 applications of
 performance for the system, for instance by using the input file:
 ```
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         Specified:
           Values: [5, 10, 15]
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 ```
 and command-line args `+balancer RecBipartLB` (or `ScotchLB` when its
 bugs are fixed). This may be particularly relevant for cases with numeric
@@ -151,11 +155,13 @@ balancer. It is likely worth attempting the evolution with a
 periodically-applied centralized communication-aware balancer, e.g.:
 ```
 PhaseChangeAndTriggers:
-  - - Slabs:
+  - Trigger:
+      Slabs:
         EvenlySpaced:
           Interval: 1000
           Offset: 5
-    - - VisitAndReturn(LoadBalancing)
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
 ```
 paired with command-line args `+balancer RecBipartLB` (or `ScotchLB` when its
 bugs are fixed).

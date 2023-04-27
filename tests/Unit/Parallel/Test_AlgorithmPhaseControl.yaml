@@ -4,10 +4,12 @@
 # note that this is a vector of pairs, so has the peculiar '- -' for the
 # elements
 PhaseChangeAndTriggers:
-  - - RegisterTrigger:
-    - - VisitAndReturn(Register)
-  - - SolveTrigger:
-    - - VisitAndReturn(Solve)
+  - Trigger: RegisterTrigger
+    PhaseChanges:
+      - VisitAndReturn(Register)
+  - Trigger: SolveTrigger
+    PhaseChanges:
+      - VisitAndReturn(Solve)
 
 ResourceInfo:
   AvoidGlobalProc0: false

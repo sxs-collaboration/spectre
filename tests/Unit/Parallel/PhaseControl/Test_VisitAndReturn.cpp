@@ -47,14 +47,15 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
       PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
-      " - - Always:\n"
-      "   - - VisitAndReturn(Evolve):\n"
-      "     - VisitAndReturn(Execute):");
+      " - Trigger: Always\n"
+      "   PhaseChanges:\n"
+      "     - VisitAndReturn(Evolve)\n"
+      "     - VisitAndReturn(Execute)");
   using PhaseChangeDecisionData = tuples::tagged_tuple_from_typelist<
       PhaseControl::get_phase_change_tags<Metavariables>>;
 
-  const auto& first_phase_change = created_phase_changes[0].second[0];
-  const auto& second_phase_change = created_phase_changes[0].second[1];
+  const auto& first_phase_change = created_phase_changes[0].phase_changes[0];
+  const auto& second_phase_change = created_phase_changes[0].phase_changes[1];
   {
     INFO("Test initialize phase change decision data");
     PhaseChangeDecisionData phase_change_decision_data{

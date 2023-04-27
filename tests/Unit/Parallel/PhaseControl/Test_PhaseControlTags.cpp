@@ -104,17 +104,19 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
       PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
-      " - - Slabs:\n"
+      " - Trigger:\n"
+      "     Slabs:\n"
       "       EvenlySpaced:\n"
       "         Interval: 2\n"
       "         Offset: 0\n"
-      "   - - TestCreatable(1):\n"
+      "   PhaseChanges:\n"
+      "     - TestCreatable(1):\n"
       "         IntOption: 4\n"
       "     - TestCreatable(2):\n"
       "         IntOption: 2");
   CHECK(created_phase_changes.size() == 1_st);
-  const auto& first_creatable = created_phase_changes[0].second[0];
-  const auto& second_creatable = created_phase_changes[0].second[1];
+  const auto& first_creatable = created_phase_changes[0].phase_changes[0];
+  const auto& second_creatable = created_phase_changes[0].phase_changes[1];
   REQUIRE(dynamic_cast<TestCreatable<1_st>*>(first_creatable.get()) != nullptr);
   CHECK(dynamic_cast<TestCreatable<1_st>*>(first_creatable.get())
             ->option_value_ == 4);
