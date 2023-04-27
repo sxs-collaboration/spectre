@@ -719,6 +719,7 @@ struct name_helper<T, std::void_t<decltype(T::name())>> {
 };
 }  // namespace detail
 
+/// @{
 /*!
  * \ingroup PrettyTypeGroup
  * \brief Return the result of the `name()` member of a class. If a class
@@ -732,4 +733,10 @@ template <typename T>
 std::string name() {
   return detail::name_helper<T>::name();
 }
+
+template <typename T>
+std::string name(const T& /*unused*/) {
+  return name<T>();
+}
+/// @}
 }  // namespace pretty_type

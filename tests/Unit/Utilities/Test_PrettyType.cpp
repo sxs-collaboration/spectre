@@ -206,6 +206,7 @@ struct ShortName {
 struct Name {
   template <typename TestType>
   static std::string name() {
+    CHECK(pretty_type::name<TestType>() == pretty_type::name(TestType{}));
     return pretty_type::name<TestType>();
   }
 };
