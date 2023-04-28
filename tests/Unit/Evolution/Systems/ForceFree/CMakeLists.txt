@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_Tags.cpp
   Subcell/Test_ComputeFluxes.cpp
+  Subcell/Test_InitialDataTci.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
   Test_Characteristics.cpp

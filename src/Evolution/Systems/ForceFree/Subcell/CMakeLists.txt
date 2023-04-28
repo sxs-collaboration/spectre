@@ -6,6 +6,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ComputeFluxes.hpp
+  InitialDataTci.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
@@ -14,6 +15,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  InitialDataTci.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
