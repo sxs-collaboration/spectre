@@ -59,6 +59,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
 
     CHECK(stepper.order() == order);
     CHECK(stepper.error_estimate_order() == order - 1);
+
+    TimeStepperTestUtils::stability_test(stepper);
   }
 
   const Slab slab(0., 1.);
@@ -149,14 +151,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Backwards",
   CHECK_FALSE(can_change(mid, end, start));
   CHECK_FALSE(can_change(end, start, mid));
   CHECK(can_change(end, mid, start));
-}
-
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Stability",
-                  "[Unit][Time]") {
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    TimeStepperTestUtils::stability_test(TimeSteppers::AdamsBashforth(order));
-  }
 }
 
 namespace {
