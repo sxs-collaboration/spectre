@@ -62,9 +62,15 @@ class SphericalCompression final : public TimeDependence<3> {
       domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
 
  public:
-  using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       SphericalCompressionMap>>;
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            SphericalCompressionMap>,
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted,
+                            SphericalCompressionMap>,
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial,
+                            SphericalCompressionMap>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            SphericalCompressionMap, SphericalCompressionMap>>;
 
   static constexpr size_t mesh_dim = 3;
 
@@ -113,9 +119,18 @@ class SphericalCompression final : public TimeDependence<3> {
         "Spherical compression initial radial acceleration."};
   };
 
-  using GridToInertialMap =
-        detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
-                                          tmpl::list<SphericalCompressionMap>>;
+  using GridToInertialMapSimple =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                        tmpl::list<SphericalCompressionMap>>;
+  using GridToInertialMapCombined = detail::generate_coordinate_map_t<
+      Frame::Grid, Frame::Inertial,
+      tmpl::list<SphericalCompressionMap, SphericalCompressionMap>>;
+  using GridToDistortedMap =
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Distorted,
+                                        tmpl::list<SphericalCompressionMap>>;
+  using DistortedToInertialMap =
+      detail::generate_coordinate_map_t<Frame::Distorted, Frame::Inertial,
+                                        tmpl::list<SphericalCompressionMap>>;
 
   using options =
       tmpl::list<InitialTime, MinRadius, MaxRadius, Center, InitialValue,
@@ -130,10 +145,31 @@ class SphericalCompression final : public TimeDependence<3> {
   SphericalCompression& operator=(const SphericalCompression&) = delete;
   SphericalCompression& operator=(SphericalCompression&&) = default;
 
+  /// If SphericalCompression is created using the constructor that
+  /// takes a single (value,velocity,acceleration), then there is no
+  /// distorted frame (so block_maps_grid_to_distorted() and
+  /// block_maps_distorted_to_inertial() contain nullptrs), and the
+  /// given params go from Frame::Grid to Frame::Inertial.
   SphericalCompression(double initial_time, double min_radius,
                        double max_radius, std::array<double, 3> center,
                        double initial_value, double initial_velocity,
                        double initial_acceleration,
+                       const Options::Context& context = {});
+
+  /// If SphericalCompression is created using the constructor that
+  /// takes two triplets (value,velocity,acceleration), then the first
+  /// triplet describes a map from Frame::Grid to Frame::Distorted,
+  /// and the second triple describes a map that goes from
+  /// Frame::Distorted to Frame::Inertial.  In this case there are
+  /// also two FunctionsOfTime, one for each of the two maps.
+  SphericalCompression(double initial_time, double min_radius,
+                       double max_radius, std::array<double, 3> center,
+                       double initial_value_grid_to_distorted,
+                       double initial_velocity_grid_to_distorted,
+                       double initial_acceleration_grid_to_distorted,
+                       double initial_value_distorted_to_inertial,
+                       double initial_velocity_distorted_to_inertial,
+                       double initial_acceleration_distorted_to_inertial,
                        const Options::Context& context = {});
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
@@ -144,19 +180,11 @@ class SphericalCompression final : public TimeDependence<3> {
 
   auto block_maps_grid_to_distorted(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Grid, Frame::Distorted, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Grid, Frame::Distorted, mesh_dim>>> override;
 
   auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Distorted, Frame::Inertial, mesh_dim>>> override {
-    using ptr_type =
-        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, mesh_dim>;
-    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
-  }
+          Frame::Distorted, Frame::Inertial, mesh_dim>>> override;
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -169,16 +197,35 @@ class SphericalCompression final : public TimeDependence<3> {
   friend bool operator==(const SphericalCompression& lhs,
                          const SphericalCompression& rhs);
 
-  GridToInertialMap grid_to_inertial_map() const;
+  GridToInertialMapSimple grid_to_inertial_map_simple() const;
+  GridToInertialMapCombined grid_to_inertial_map_combined() const;
+  GridToDistortedMap grid_to_distorted_map() const;
+  DistortedToInertialMap distorted_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   double min_radius_{std::numeric_limits<double>::signaling_NaN()};
   double max_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> center_{};
-  double initial_value_{std::numeric_limits<double>::signaling_NaN()};
-  double initial_velocity_{std::numeric_limits<double>::signaling_NaN()};
-  double initial_acceleration_{std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::string function_of_time_name_{"Size"};
+  // If distorted and inertial frames are equal, then
+  // BLA_grid_to_distorted_ is the parameter BLA for the grid-to-inertial map,
+  // and BLA_distorted_to_inertial_ is unused.
+  double initial_value_grid_to_distorted_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_velocity_grid_to_distorted_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_acceleration_grid_to_distorted_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_value_distorted_to_inertial_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_velocity_distorted_to_inertial_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_acceleration_distorted_to_inertial_{
+      std::numeric_limits<double>::signaling_NaN()};
+  bool distorted_and_inertial_frames_are_equal_{true};
+  inline static const std::string function_of_time_name_grid_to_distorted_{
+      "Size"};
+  inline static const std::string function_of_time_name_distorted_to_inertial_{
+      "SizeDistortedToInertial"};
 };
 
 bool operator!=(const SphericalCompression& lhs,
