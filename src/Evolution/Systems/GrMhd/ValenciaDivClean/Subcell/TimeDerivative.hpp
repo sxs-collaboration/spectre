@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
@@ -58,7 +59,6 @@ namespace grmhd::ValenciaDivClean::subcell {
  * The code makes the following unchecked assumptions:
  * - Assumes Cartesian coordinates with a diagonal Jacobian matrix
  * from the logical to the inertial frame
- * - Assumes the mesh is not moving (grid and inertial frame are the same)
  */
 struct TimeDerivative {
   template <typename DbTagsList>
@@ -78,6 +78,7 @@ struct TimeDerivative {
 
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box);
+    const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(*box);
     ASSERT(
         subcell_mesh == Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
                                 subcell_mesh.quadrature(0)),
@@ -99,6 +100,12 @@ struct TimeDerivative {
           1.0 / (get<0>(cell_centered_logical_coords)[1] -
                  get<0>(cell_centered_logical_coords)[0]);
     }
+
+    // Velocity of the moving mesh on the DG grid, if applicable.
+    const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
+        mesh_velocity = db::get<domain::Tags::MeshVelocity<3>>(*box);
+    const std::optional<Scalar<DataVector>>& div_mesh_velocity =
+        db::get<domain::Tags::DivMeshVelocity>(*box);
 
     const grmhd::ValenciaDivClean::fd::Reconstructor& recons =
         db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(*box);
@@ -237,6 +244,47 @@ struct TimeDerivative {
             grmhd::ValenciaDivClean::subcell::compute_fluxes(
                 make_not_null(&vars_lower_face));
 
+            // Add moving mesh corrections to the fluxes, if needed
+            if (mesh_velocity.has_value()) {
+              // Build extents of mesh shifted by half a grid cell in direction
+              // i
+              const unsigned long& num_subcells_1d = subcell_mesh.extents(0);
+              Index<3> face_mesh_extents(std::array<size_t, 3>{
+                  num_subcells_1d, num_subcells_1d, num_subcells_1d});
+              face_mesh_extents[i] = num_subcells_1d + 1;
+              // Project mesh velocity on face mesh. We only need the component
+              // orthogonal to the face.
+              const DataVector& mesh_velocity_on_face =
+                  evolution::dg::subcell::fd::project_to_face(
+                      mesh_velocity.value().get(i), dg_mesh, face_mesh_extents,
+                      i);
+
+              tmpl::for_each<evolved_vars_tags>([&vars_upper_face,
+                                                 &vars_lower_face,
+                                                 &mesh_velocity_on_face,
+                                                 &i](auto tag_v) {
+                using tag = tmpl::type_from<decltype(tag_v)>;
+                using flux_tag =
+                    ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+                using FluxTensor = typename flux_tag::type;
+                const auto& var_upper = get<tag>(vars_upper_face);
+                const auto& var_lower = get<tag>(vars_lower_face);
+                auto& flux_upper = get<flux_tag>(vars_upper_face);
+                auto& flux_lower = get<flux_tag>(vars_lower_face);
+                for (size_t storage_index = 0; storage_index < var_upper.size();
+                     ++storage_index) {
+                  const auto tensor_index =
+                      var_upper.get_tensor_index(storage_index);
+                  const auto flux_storage_index =
+                      FluxTensor::get_storage_index(prepend(tensor_index, i));
+                  flux_upper[flux_storage_index] -=
+                      mesh_velocity_on_face * var_upper[storage_index];
+                  flux_lower[flux_storage_index] -=
+                      mesh_velocity_on_face * var_lower[storage_index];
+                }
+              });
+            }
+
             // Normal vectors in curved spacetime normalized by inverse
             // spatial metric. Since we assume a Cartesian grid, this is
             // relatively easy. Note that we use the sign convention on
@@ -319,6 +367,27 @@ struct TimeDerivative {
         dt_vars_ptr, *box, grmhd_source_tags{},
         typename grmhd::ValenciaDivClean::ComputeSources::argument_tags{});
 
+    // Correction to source terms due to moving mesh
+    if (div_mesh_velocity.has_value()) {
+      const DataVector div_mesh_velocity_subcell =
+          evolution::dg::subcell::fd::project(div_mesh_velocity.value().get(),
+                                              dg_mesh, subcell_mesh.extents());
+      const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
+
+      tmpl::for_each<typename variables_tag::tags_list>(
+          [&dt_vars_ptr, &div_mesh_velocity_subcell,
+           &evolved_vars](auto evolved_var_tag_v) {
+            using evolved_var_tag =
+                tmpl::type_from<decltype(evolved_var_tag_v)>;
+            using dt_tag = ::Tags::dt<evolved_var_tag>;
+            auto& dt_var = get<dt_tag>(*dt_vars_ptr);
+            const auto& evolved_var = get<evolved_var_tag>(evolved_vars);
+            for (size_t i = 0; i < dt_var.size(); ++i) {
+              dt_var[i] -= div_mesh_velocity_subcell * evolved_var[i];
+            }
+          });
+    }
+
     std::optional<std::array<Variables<evolved_vars_tags>, 3>>
         high_order_corrections{};
     ::fd::cartesian_high_order_flux_corrections(
@@ -359,7 +428,6 @@ struct TimeDerivative {
                   dt_var[i] = 0.0;
                 }
               }
-
               evolution::dg::subcell::add_cartesian_flux_divergence(
                   make_not_null(&dt_var[i]), inverse_delta,
                   component_inverse_jacobian, var_correction[i],

@@ -267,6 +267,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
   // initialized.
   Domain<3> dummy_domain{};
   std::optional<tnsr::I<DataVector, 3>> dummy_volume_mesh_velocity{};
+  std::optional<Scalar<DataVector>> dummy_volume_div_mesh_velocity{};
   typename evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type
       dummy_normal_covector_and_magnitude{};
   const double dummy_time{0.0};
@@ -293,7 +294,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
-          fd::Tags::Reconstructor,
+          domain::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
           hydro::Tags::EquationOfState<EquationsOfState::PolytropicFluid<true>>,
           typename System::spacetime_variables_tag,
@@ -308,6 +309,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
                                                       Frame::Inertial>,
           domain::Tags::Domain<3>,
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
+          domain::Tags::DivMeshVelocity,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
@@ -316,7 +318,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
           evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
-      element, subcell_mesh,
+      element, subcell_mesh, dg_mesh,
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
           std::make_unique<std::decay_t<decltype(recons)>>(recons)},
       std::unique_ptr<
@@ -337,8 +339,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
       std::move(dummy_domain), dummy_volume_mesh_velocity,
-      dummy_normal_covector_and_magnitude, dummy_time,
-      clone_unique_ptrs(dummy_functions_of_time),
+      dummy_volume_div_mesh_velocity, dummy_normal_covector_and_magnitude,
+      dummy_time, clone_unique_ptrs(dummy_functions_of_time),
       grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
       cell_centered_fluxes,
       evolution::dg::subcell::SubcellOptions{
