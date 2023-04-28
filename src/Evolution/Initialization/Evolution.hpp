@@ -175,8 +175,11 @@ struct TimeStepperHistory {
     // Will be overwritten before use
     dt_vars->initialize(mesh.number_of_grid_points());
 
+    // All steppers we have that need to start at low order require
+    // one additional point per order, so this is the order that
+    // requires no initial past steps.
     const size_t starting_order =
-        time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
+        time_stepper.order() - time_stepper.number_of_past_steps();
     history->integration_order(starting_order);
   }
 };
