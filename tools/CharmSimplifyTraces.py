@@ -243,4 +243,4 @@ def simplify_traces_command(projections_file, output_file, in_place,
 
 
 if __name__ == "__main__":
-    simplify_traces_command(help_option_name=["-h", "--help"])
+    simplify_traces_command(help_option_names=["-h", "--help"])
