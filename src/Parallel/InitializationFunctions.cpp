@@ -18,7 +18,7 @@ void setup_error_handling() {
         std::rethrow_exception(exception);
       } catch (std::exception& ex) {
         std::ostringstream os;
-        os << "Terminated due to an uncaught exception:\n " << ex.what();
+        os << "Terminated due to an uncaught exception:\n" << ex.what();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
         CkError("%s\n", os.str().c_str());
       } catch (...) {

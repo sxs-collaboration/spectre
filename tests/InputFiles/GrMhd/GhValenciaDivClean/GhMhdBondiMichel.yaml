@@ -1,12 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhValenciaDivCleanBondiMichel
-# Check: parse;execute
-# Timeout: 8
-# ExpectedOutput:
-#   GhMhdBondiMichelVolume0.h5
-#   GhMhdBondiMichelReductions.h5
+Executable: EvolveGhValenciaDivCleanBondiMichel
+Testing:
+  Check: parse;execute
+  Timeout: 8
+ExpectedOutput:
+  - GhMhdBondiMichelVolume0.h5
+  - GhMhdBondiMichelReductions.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

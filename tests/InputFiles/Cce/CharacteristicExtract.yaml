@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: CharacteristicExtract
-# Check: parse
+Executable: CharacteristicExtract
+Testing:
+  Check: parse
+
+---
 
 Evolution:
   InitialTimeStep: 0.25

@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Comparator.cpp
+  ParseOptions.cpp
   )
 
 spectre_target_headers(
@@ -32,6 +33,8 @@ target_link_libraries(
   ErrorHandling
   Utilities
   YamlCpp
+  PRIVATE
+  Informer
   )
 
 add_subdirectory(Protocols)

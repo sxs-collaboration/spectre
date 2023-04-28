@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveWorldtubeCurvedScalarWaveKerrSchild3D
-# Check: parse
+Executable: EvolveWorldtubeCurvedScalarWaveKerrSchild3D
+Testing:
+  Check: parse
+
+---
 
 AnalyticData:
   PlaneWave:

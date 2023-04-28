@@ -1,12 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhNoBlackHole3D
-# Check: parse;execute
-# Timeout: 8
-# ExpectedOutput:
-#   GhGaugeWave3DVolume0.h5
-#   GhGaugeWave3DReductions.h5
+Executable: EvolveGhNoBlackHole3D
+Testing:
+  Check: parse;execute
+  Timeout: 8
+ExpectedOutput:
+  - GhGaugeWave3DVolume0.h5
+  - GhGaugeWave3DReductions.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

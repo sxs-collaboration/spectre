@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveCurvedScalarWavePlaneWaveMinkowski2D
-# Check: parse;execute
+Executable: EvolveCurvedScalarWavePlaneWaveMinkowski2D
+Testing:
+  Check: parse;execute
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

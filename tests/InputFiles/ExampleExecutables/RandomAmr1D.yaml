@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: RandomAmr1D
-# Check: parse;execute
+Executable: RandomAmr1D
+Testing:
+  Check: parse;execute
+
+---
 
 DomainCreator:
   Interval:

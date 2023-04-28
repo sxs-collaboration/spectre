@@ -41,6 +41,7 @@ if(CMAKE_VERSION GREATER_EQUAL 3.13)
     "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_branch>"
     "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_description>"
     "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_link_date>"
+    "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_executable_name>"
     )
 endif()
 

@@ -1,18 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolveXcts
-# Check: parse;execute_check_output
-# Timeout: 40
-# ExpectedOutput:
-#   KerrSchildReductions.h5
-#   KerrSchildVolume0.h5
-# OutputFileChecks:
-#   - Label: Discretization error
-#     Subfile: /ErrorNorms.dat
-#     FileGlob: KerrSchildReductions.h5
-#     SkipColumns: [0, 1, 2]
-#     AbsoluteTolerance: 0.08
+Executable: SolveXcts
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 40
+ExpectedOutput:
+  - KerrSchildReductions.h5
+  - KerrSchildVolume0.h5
+OutputFileChecks:
+  - Label: Discretization error
+    Subfile: /ErrorNorms.dat
+    FileGlob: KerrSchildReductions.h5
+    SkipColumns: [0, 1, 2]
+    AbsoluteTolerance: 0.08
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

@@ -35,6 +35,11 @@ std::string info_from_build();
 extern "C" std::string link_date();
 /*!
  * \ingroup LoggingGroup
+ * \brief Name of the linked executable
+ */
+extern "C" std::string executable_name();
+/*!
+ * \ingroup LoggingGroup
  * \brief The git description at the time the executable was linked
  */
 extern "C" std::string git_description();

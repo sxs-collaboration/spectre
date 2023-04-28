@@ -1,11 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: ExportCoordinates3D
-# Check: parse;execute
-# ExpectedOutput:
-#   ExportCoordinates3DVolume0.h5
-#   ExportCoordinates3DReductions.h5
+Executable: ExportCoordinates3D
+Testing:
+  Check: parse;execute
+ExpectedOutput:
+  - ExportCoordinates3DVolume0.h5
+  - ExportCoordinates3DReductions.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

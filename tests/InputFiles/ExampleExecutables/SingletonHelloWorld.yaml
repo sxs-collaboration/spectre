@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SingletonHelloWorld
-# Check: parse;execute
+Executable: SingletonHelloWorld
+Testing:
+  Check: parse;execute
+
+---
 
 Name: Albert Einstein
 

@@ -1,12 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhValenciaDivCleanTovStar
-# Check: parse;execute
-# Timeout: 8
-# ExpectedOutput:
-#   GhMhdTovStarVolume0.h5
-#   GhMhdTovStarReductions.h5
+Executable: EvolveGhValenciaDivCleanTovStar
+Testing:
+  Check: parse;execute
+  Timeout: 8
+ExpectedOutput:
+  - GhMhdTovStarVolume0.h5
+  - GhMhdTovStarReductions.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

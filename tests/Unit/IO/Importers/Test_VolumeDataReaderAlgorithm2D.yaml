@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+---
+---
+
 SourceDomainCreator: &source_domain
   Disk:
     InnerRadius: 1.

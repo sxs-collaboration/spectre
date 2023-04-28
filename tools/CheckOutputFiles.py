@@ -180,28 +180,6 @@ class H5Check:
                 "\nFiles and entities:\n" + files_and_entities)
 
 
-def read_h5_checks_config_lines(input_filename):
-    """Parse the OutputFileChecks lines into a yaml string
-    """
-    with open(input_filename, 'r') as input_file:
-        lines = input_file.readlines()
-        found_config = False
-        for i, line in enumerate(lines):
-            if line.strip() == '# OutputFileChecks:':
-                found_config = True
-                yield line[2:]
-                continue
-            if found_config:
-                if line.startswith('#   '):
-                    yield line[2:]
-                else:
-                    return
-        raise RuntimeError(
-            "Could not find '# OutputFileChecks:' in input file. Please"
-            " specify the h5 fields to check in the test yaml."
-            " See tools/CheckOutputFiles.py for syntax details.")
-
-
 class H5CheckTestCase(unittest.TestCase):
     """The unit test object for performing all H5 checks for a given input file
 
@@ -210,31 +188,28 @@ class H5CheckTestCase(unittest.TestCase):
     input file. The second argument is the directory in which to find the
     run's.h5 files.
 
-    The H5 checks and arguments are parsed from the yaml file comments
-    we require a format like:
+    The H5 checks and arguments are parsed from the "OutputFileChecks" in the
+    input file metadata:
+
+    ```yaml
+    OutputFileChecks:
+      - Label: "label"
+        Subfile: "/h5_name.dat"
+        FileGlob: "VolumeData*.h5"
+        AbsoluteTolerance: 1e-12
+      - Label: "another_label"
+        Subfile: "/h5_group_name"
+        FileGlob: "ReductionData*.h5"
+        ExpectedDataSubfile: "/expected_h5_group_name"
+        AbsoluteTolerance: 1e-11
+        RelativeTolerance: 1e-6
+        SkipColumns: [0, 1]
     ```
-    # OutputFileChecks:
-    #   - Label: "label"
-    #     Subfile: "/h5_name.dat"
-    #     FileGlob: "VolumeData*.h5"
-    #     AbsoluteTolerance: 1e-12
-    #   - Label: "another_label"
-    #     Subfile: "/h5_group_name"
-    #     FileGlob: "ReductionData*.h5"
-    #     ExpectedDataSubfile: "/expected_h5_group_name"
-    #     AbsoluteTolerance: 1e-11
-    #     RelativeTolerance: 1e-6
-    #     SkipColumns: [0, 1]
-    ```
-    In particular, the entire comment block starting from `# OutputFileChecks:`
-    and ending where the indentation or comment breaks must be parsable as yaml.
-    `SkipColumns` must be a list in brackets of the indices of columns to omit
-    from the test.
     """
     def test_h5_output(self):
         h5_check_list = []
-        config_lines = read_h5_checks_config_lines(self.input_filename)
-        parsed_yaml = yaml.safe_load(''.join(config_lines))
+        with open(self.input_filename, "r") as open_input_file:
+            parsed_yaml = next(yaml.safe_load_all(open_input_file))
         for check_block in parsed_yaml['OutputFileChecks']:
             logging.info("Parsed File check : " + check_block.get("Label"))
             h5_check_list.append(

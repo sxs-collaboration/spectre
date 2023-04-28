@@ -1,12 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: ExportTimeDependentCoordinates3D
-# Check: parse;execute
-# Timeout: 10
-# ExpectedOutput:
-#   ExportTimeDependentCoordinates3DVolume0.h5
-#   ExportTimeDependentCoordinates3DReductions.h5
+Executable: ExportTimeDependentCoordinates3D
+Testing:
+  Check: parse;execute
+  Timeout: 10
+ExpectedOutput:
+  - ExportTimeDependentCoordinates3DVolume0.h5
+  - ExportTimeDependentCoordinates3DReductions.h5
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

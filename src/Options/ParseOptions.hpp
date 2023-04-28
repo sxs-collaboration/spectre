@@ -375,12 +375,17 @@ Parser<OptionList, Group>::Parser(std::string help_text)
   });
 }
 
+namespace detail {
+YAML::Node load_and_check_yaml(const std::string& options,
+                               bool require_metadata);
+}
+
 template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse(std::string options) {
   context_.append("In string");
   input_source_.push_back(std::move(options));
   try {
-    parse(YAML::Load(input_source_.back()));
+    parse(detail::load_and_check_yaml(input_source_.back(), false));
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }
@@ -411,7 +416,7 @@ void Parser<OptionList, Group>::parse_file(const std::string& file_name) {
   auto input = Options_detail::open_file(file_name);
   input_source_.push_back(std::string(std::istreambuf_iterator(input), {}));
   try {
-    parse(YAML::Load(input_source_.back()));
+    parse(detail::load_and_check_yaml(input_source_.back(), true));
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }
@@ -424,7 +429,8 @@ void Parser<OptionList, Group>::overlay(std::string options) {
   context_.append("In string");
   input_source_.push_back(std::move(options));
   try {
-    overlay<OverlayOptions>(YAML::Load(input_source_.back()));
+    overlay<OverlayOptions>(
+        detail::load_and_check_yaml(input_source_.back(), false));
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }
@@ -438,7 +444,8 @@ void Parser<OptionList, Group>::overlay_file(const std::string& file_name) {
   auto input = Options_detail::open_file(file_name);
   input_source_.push_back(std::string(std::istreambuf_iterator(input), {}));
   try {
-    overlay<OverlayOptions>(YAML::Load(input_source_.back()));
+    overlay<OverlayOptions>(
+        detail::load_and_check_yaml(input_source_.back(), false));
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }

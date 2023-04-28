@@ -1,17 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: AnalyticTestCharacteristicExtract
-# Check: parse;execute_check_output
-# Timeout: 20
-# ExpectedOutput:
-#   CharacteristicExtractVolume0.h5
-# OutputFileChecks:
-#   - Label: "check_news"
-#     Subfile: "/News_Noninertial.dat"
-#     FileGlob: "CharacteristicExtractVolume*.h5"
-#     ExpectedDataSubfile: "/News_Noninertial_expected.dat"
-#     AbsoluteTolerance: 5e-11
+Executable: AnalyticTestCharacteristicExtract
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 20
+ExpectedOutput:
+  - CharacteristicExtractVolume0.h5
+OutputFileChecks:
+  - Label: "check_news"
+    Subfile: "/News_Noninertial.dat"
+    FileGlob: "CharacteristicExtractVolume*.h5"
+    ExpectedDataSubfile: "/News_Noninertial_expected.dat"
+    AbsoluteTolerance: 5e-11
+
+---
 
 Evolution:
   InitialTimeStep: 0.1

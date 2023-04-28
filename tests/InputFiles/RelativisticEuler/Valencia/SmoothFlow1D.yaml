@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveValenciaSmoothFlow1D
-# Check: parse;execute
+Executable: EvolveValenciaSmoothFlow1D
+Testing:
+  Check: parse;execute
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

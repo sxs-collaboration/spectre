@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveNewtonianEulerRiemannProblem2D
-# Check: parse;execute
+Executable: EvolveNewtonianEulerRiemannProblem2D
+Testing:
+  Check: parse;execute
+
+---
 
 ResourceInfo:
   AvoidGlobalProc0: false

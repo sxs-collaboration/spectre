@@ -24,9 +24,11 @@ void Informer::print_startup_info(CkArgMsg* msg) {
   Parallel::printf(
       "\n"
       "Executing '%s' using %d processors.\n"
+      "Launch command line: %s\n"
       "Charm++ startup time in seconds: %f\n"
       "Date and time at startup: %s\n",
-      ss.str(), sys::number_of_procs(),  // NOLINT
+      executable_name(), sys::number_of_procs(),
+      ss.str(),  // NOLINT
       sys::wall_time(), current_date_and_time());
 
   Parallel::printf("%s\n", info_from_build());
