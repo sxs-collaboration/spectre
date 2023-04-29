@@ -48,7 +48,7 @@ def fetch_job_data(fields: Sequence[str],
     Returns: Pandas DataFrame with the job data.
     """
     completed_process = subprocess.run(
-        ["sacct", "-P", "--format", ",".join(fields)] +
+        ["sacct", "-PX", "--format", ",".join(fields)] +
         (["-u", user] if user else []) + (["-a"] if allusers else []) +
         (["-s", state] if state else []) +
         (["-S", starttime] if starttime else []),
@@ -61,10 +61,6 @@ def fetch_job_data(fields: Sequence[str],
     job_data = pd.read_table(StringIO(completed_process.stdout),
                              sep="|",
                              keep_default_na=False)
-    # Filter out some derived jobs. Not sure what these jobs are.
-    job_data = job_data[~job_data["JobName"].
-                        isin(["batch", "extern", "pmi_proxy", "orted"])]
-    job_data = job_data[job_data["User"] != ""]
     # Parse dates and times. Do this in postprocessing because
     # `pd.read_table(parse_dates=...)` doesn't handle NaN values well.
     date_cols = set(fields).intersection({"Start", "End"})
