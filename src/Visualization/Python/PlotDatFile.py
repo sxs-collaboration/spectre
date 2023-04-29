@@ -211,4 +211,4 @@ def plot_dat_command(h5_file, subfile_name, output, legend_only, functions,
 
 
 if __name__ == "__main__":
-    plot_dat_command(help_option_name=["-h", "--help"])
+    plot_dat_command(help_option_names=["-h", "--help"])

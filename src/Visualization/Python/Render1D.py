@@ -417,4 +417,4 @@ def render_1d_command(h5_files, subfile_name, list_vars, vars, output, x_label,
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    render_1d_command(help_option_name=["-h", "--help"])
+    render_1d_command(help_option_names=["-h", "--help"])
