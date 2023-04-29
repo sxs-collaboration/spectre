@@ -206,6 +206,9 @@ struct ShortName {
 struct Name {
   template <typename TestType>
   static std::string name() {
+    if constexpr (std::is_constructible_v<TestType>) {
+      CHECK(pretty_type::name<TestType>() == pretty_type::name(TestType{}));
+    }
     return pretty_type::name<TestType>();
   }
 };
@@ -460,12 +463,26 @@ void test_name_func() {
   CHECK(NameFunc::template name<tmpl::range<int, 0, 1000>>() == "list");
 }
 
+void test_list_of_names() {
+  using empty_list = tmpl::list<>;
+  using one_element_list = tmpl::list<Type1Containing2Digits3>;
+  using three_element_list =
+      tmpl::list<TestType, Type1Containing2Digits3, NonTemplateWithName>;
+
+  CHECK(pretty_type::list_of_names<empty_list>() == "");
+  CHECK(pretty_type::list_of_names<one_element_list>() ==
+        "Type1Containing2Digits3");
+  CHECK(pretty_type::list_of_names<three_element_list>() ==
+        "TestType, Type1Containing2Digits3, UniqueNonTemplateWithName");
+}
+
 SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.name_and_short_name",
                   "[Utilities][Unit]") {
   test_name_func<ShortName>();
   // For all these types without a name() member, the results should be
   // identical to that of pretty_type::short_name()
   test_name_func<Name>();
+  test_list_of_names();
 
   CHECK(NonTemplateWithName::name() == "UniqueNonTemplateWithName");
   CHECK(TemplateWithName<int>::name() == "UniqueTemplateWithName");

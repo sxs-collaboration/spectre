@@ -207,6 +207,7 @@ struct MockControlComponent {
   using const_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementsPerUpdate,
                  control_system::Tags::WriteDataToDisk,
+                 control_system::Tags::Verbosity,
                  domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
                  domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
 

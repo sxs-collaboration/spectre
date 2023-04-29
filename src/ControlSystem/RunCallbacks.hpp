@@ -9,7 +9,10 @@
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -18,6 +21,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace control_system::Tags {
+struct Verbosity;
+}  // namespace control_system::Tags
 /// \endcond
 
 namespace control_system {
@@ -62,6 +68,14 @@ struct RunCallbacks
               },
               box);
         });
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+      Parallel::printf(
+          "time = %.16f: For the '%s' measurement, calling process_measurement "
+          "for the following control systems: (%s).\n",
+          measurement_id.id, pretty_type::name<Submeasurement>(),
+          pretty_type::list_of_names<ControlSystems>());
+    }
   }
 };
 }  // namespace control_system

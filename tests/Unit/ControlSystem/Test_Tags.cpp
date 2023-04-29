@@ -58,6 +58,8 @@ void test_all_tags() {
   TestHelpers::db::test_simple_tag<controller_tag>("Controller");
   using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
   TestHelpers::db::test_simple_tag<fot_tag>("FunctionsOfTime");
+  using verbosity_tag = control_system::Tags::Verbosity;
+  TestHelpers::db::test_simple_tag<verbosity_tag>("Verbosity");
 
   using control_error_tag = control_system::Tags::ControlError<system>;
   TestHelpers::db::test_simple_tag<control_error_tag>("ControlError");

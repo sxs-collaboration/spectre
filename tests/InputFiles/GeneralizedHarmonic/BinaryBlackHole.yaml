@@ -295,6 +295,7 @@ Cce:
 ControlSystems:
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
+  Verbosity: Silent
   Expansion:
     IsActive: true
     Averager:

@@ -110,11 +110,11 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>>;
 
     template <typename Metavariables>
-    static void apply(
-        typename measurements::SingleHorizon<Horizon>::Submeasurement /*meta*/,
-        const Strahlkorper<Frame::Distorted>& strahlkorper,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const LinkedMessageId<double>& measurement_id) {
+    static void apply(typename measurements::SingleHorizon<
+                          Horizon>::Submeasurement submeasurement,
+                      const Strahlkorper<Frame::Distorted>& strahlkorper,
+                      Parallel::GlobalCache<Metavariables>& cache,
+                      const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
           ControlComponent<Metavariables, Shape>>(cache);
 
@@ -122,11 +122,17 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
           UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                        strahlkorper);
+
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+        Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
+                         name(), measurement_id.id,
+                         pretty_type::name(submeasurement));
+      }
     }
 
     template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
     static void apply(
-        measurements::BothHorizons::FindHorizon<MeasureHorizon> /*meta*/,
+        measurements::BothHorizons::FindHorizon<MeasureHorizon> submeasurement,
         const Strahlkorper<Frame::Distorted>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
@@ -141,6 +147,12 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
             QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
             UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                          strahlkorper);
+
+        if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+          Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
+                           name(), measurement_id.id,
+                           pretty_type::name(submeasurement));
+        }
       } else {
         (void)strahlkorper;
         (void)cache;

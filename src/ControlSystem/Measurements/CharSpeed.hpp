@@ -54,6 +54,8 @@ namespace control_system::measurements {
  */
 template <::domain::ObjectLabel Object>
 struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
+  static std::string name() { return "CharSpeed" + ::domain::name(Object); }
+
   /*!
    * \brief A `control_system::protocols::Submeasurement` that does an
    * interpolation to the excision boundary for this `Object` from the elements.
@@ -61,6 +63,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
    * This does not go through the interpolation framework.
    */
   struct Excision : tt::ConformsTo<protocols::Submeasurement> {
+    static std::string name() { return CharSpeed::name() + "::Excision"; }
+
    private:
     template <typename ControlSystems>
     struct InterpolationTarget
@@ -136,6 +140,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
    * horizon.
    */
   struct Horizon : tt::ConformsTo<protocols::Submeasurement> {
+    static std::string name() { return CharSpeed::name() + "::Horizon"; }
+
    private:
     template <typename ControlSystems>
     struct InterpolationTarget

@@ -48,12 +48,18 @@ namespace control_system::measurements {
  */
 template <::domain::ObjectLabel Horizon>
 struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
+  static std::string name() {
+    return "SingleHorizon" + ::domain::name(Horizon);
+  }
+
   /*!
    * \brief A `control_system::protocols::Submeasurement` that starts the
    * interpolation to the interpolation target in order to find the apparent
    * horizon.
    */
   struct Submeasurement : tt::ConformsTo<protocols::Submeasurement> {
+    static std::string name() { return SingleHorizon::name(); }
+
    private:
     template <typename ControlSystems>
     struct InterpolationTarget

@@ -47,6 +47,7 @@ target_link_libraries(
   ErrorHandling
   FiniteDifference
   FunctionsOfTime
+  Logging
   Serialization
   INTERFACE
   Observer

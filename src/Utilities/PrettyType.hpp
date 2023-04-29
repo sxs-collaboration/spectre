@@ -719,6 +719,7 @@ struct name_helper<T, std::void_t<decltype(T::name())>> {
 };
 }  // namespace detail
 
+/// @{
 /*!
  * \ingroup PrettyTypeGroup
  * \brief Return the result of the `name()` member of a class. If a class
@@ -731,5 +732,40 @@ struct name_helper<T, std::void_t<decltype(T::name())>> {
 template <typename T>
 std::string name() {
   return detail::name_helper<T>::name();
+}
+
+template <typename T>
+std::string name(const T& /*unused*/) {
+  return name<T>();
+}
+/// @}
+
+/*!
+ * \ingroup PrettyTypeGroup
+ * \brief Return a comma separated list of the `pretty_type::name` of every type
+ * in a `tmpl::list`.
+ *
+ * \note The `tmpl::list` must be flattened.
+ */
+template <typename List>
+std::string list_of_names() {
+  static_assert(tt::is_a_v<tmpl::list, List>);
+  std::stringstream ss{};
+  bool first_element = true;
+  tmpl::for_each<List>([&first_element, &ss](auto v) {
+    using type = tmpl::type_from<decltype(v)>;
+    static_assert(not tt::is_a_v<tmpl::list, type>,
+                  "The tmpl::list provided to pretty_type::list_of_names must "
+                  "be flattened.");
+    if (not first_element) {
+      ss << ", ";
+    } else {
+      first_element = false;
+    }
+
+    ss << pretty_type::name<type>();
+  });
+
+  return ss.str();
 }
 }  // namespace pretty_type
