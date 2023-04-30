@@ -350,7 +350,8 @@ void test_all_frustum_directions() {
           .inverse_map(),
       origin_preimage);
 
-  const double projective_scale_factor = 0.3;
+  const CoordinateMaps::Distribution radial_distribution =
+      CoordinateMaps::Distribution::Projective;
   const double sphericity = 0.;
   for (const bool use_equiangular_map : {true, false}) {
     const double stretch = tan(0.5 * M_PI_2);
@@ -364,8 +365,8 @@ void test_all_frustum_directions() {
             top,
             OrientationMap<3>{},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             -1.},
         FrustumMap{
@@ -377,8 +378,8 @@ void test_all_frustum_directions() {
             top,
             OrientationMap<3>{},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             1.},
         FrustumMap{
@@ -392,8 +393,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             -1.},
         FrustumMap{
@@ -407,8 +408,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             1.},
         FrustumMap{
@@ -422,8 +423,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             -1.},
         FrustumMap{
@@ -437,8 +438,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             1.},
         FrustumMap{
@@ -452,8 +453,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             -1.},
         FrustumMap{
@@ -467,8 +468,8 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
             use_equiangular_map,
-            projective_scale_factor,
-            false,
+            radial_distribution,
+            std::nullopt,
             sphericity,
             1.},
         // Frustum on right half in the +x direction
@@ -482,7 +483,7 @@ void test_all_frustum_directions() {
                        {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map,
-                   projective_scale_factor},
+                   radial_distribution},
         // Frustum on left half in the -x direction
         FrustumMap{{{{{-lower - displacement10[0], -lower - displacement10[1]}},
                      {{lower - displacement10[0], lower - displacement10[1]}},
@@ -494,10 +495,11 @@ void test_all_frustum_directions() {
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map,
-                   projective_scale_factor});
+                   radial_distribution});
 
     const auto maps = frustum_coordinate_maps(
-        2.0 * lower, 2.0 * top, use_equiangular_map, origin_preimage, 0.3);
+        2.0 * lower, 2.0 * top, use_equiangular_map, origin_preimage,
+        CoordinateMaps::Distribution::Projective);
     CHECK(maps == expected_coord_maps);
   }
 }

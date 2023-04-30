@@ -688,7 +688,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     const double length_inner_cube, const double length_outer_cube,
     const bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage,
-    const double projective_scale_factor, const double sphericity,
+    const domain::CoordinateMaps::Distribution radial_distribution,
+    const std::optional<double> distribution_value, const double sphericity,
     const double opening_angle) {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
@@ -730,8 +731,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
         top,
         gsl::at(frustum_orientations, i),
         use_equiangular_map,
-        projective_scale_factor,
-        false,
+        radial_distribution,
+        distribution_value,
         sphericity,
         -1.0,
         opening_angle});
@@ -746,8 +747,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                   top,
                                   gsl::at(frustum_orientations, i),
                                   use_equiangular_map,
-                                  projective_scale_factor,
-                                  false,
+                                  radial_distribution,
+                                  distribution_value,
                                   sphericity,
                                   1.0,
                                   opening_angle});
@@ -765,8 +766,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                 stretch * top,
                                 frustum_orientations[4],
                                 use_equiangular_map,
-                                projective_scale_factor,
-                                false,
+                                radial_distribution,
+                                distribution_value,
                                 sphericity,
                                 0.0,
                                 M_PI_2});
@@ -783,8 +784,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                 stretch * top,
                                 frustum_orientations[5],
                                 use_equiangular_map,
-                                projective_scale_factor,
-                                false,
+                                radial_distribution,
+                                distribution_value,
                                 sphericity,
                                 0.0,
                                 M_PI_2});

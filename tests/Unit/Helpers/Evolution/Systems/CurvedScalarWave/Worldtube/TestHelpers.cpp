@@ -48,7 +48,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    UseLogarithmicMap: false\n"
       "  Envelope:\n"
       "    Radius: 30.0\n"
-      "    UseProjectiveMap: false\n"
+      "    RadialDistribution: Linear\n"
       "  OuterShell:\n"
       "    Radius: 50.0\n"
       "    RadialDistribution: Linear\n"

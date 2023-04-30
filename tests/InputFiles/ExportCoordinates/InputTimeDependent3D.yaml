@@ -34,7 +34,7 @@ DomainCreator:
       UseLogarithmicMap: true
     Envelope:
       Radius: 100.0
-      UseProjectiveMap: false
+      RadialDistribution: Linear
     OuterShell:
       Radius: 300.0
       RadialDistribution: Linear

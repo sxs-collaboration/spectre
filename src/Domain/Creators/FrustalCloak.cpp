@@ -74,11 +74,11 @@ FrustalCloak::FrustalCloak(
 Domain<3> FrustalCloak::create_domain() const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-      coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                           Frame::Inertial, 3>(
-          frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
-                                  use_equiangular_map_, origin_preimage_,
-                                  projection_factor_));
+      coord_maps = domain::make_vector_coordinate_map_base<
+          Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
+          length_inner_cube_, length_outer_cube_, use_equiangular_map_,
+          origin_preimage_, domain::CoordinateMaps::Distribution::Projective,
+          projection_factor_));
   return Domain<3>{std::move(coord_maps),
                    corners_for_biradially_layered_domains(
                        0, 1, false, false, {{1, 2, 3, 4, 5, 6, 7, 8}})};

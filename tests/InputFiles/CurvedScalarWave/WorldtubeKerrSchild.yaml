@@ -54,7 +54,7 @@ DomainCreator:
         ExciseWithBoundaryCondition: Worldtube
       UseLogarithmicMap: false
     Envelope:
-      UseProjectiveMap: false
+      RadialDistribution: Linear
       Radius: 50.
     OuterShell:
       Radius: 400.

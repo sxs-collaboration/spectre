@@ -49,7 +49,7 @@ DomainCreator:
       UseLogarithmicMap: False
     Envelope:
       Radius: &outer_shell_inner_radius 120.
-      UseProjectiveMap: True
+      RadialDistribution: Projective
     OuterShell:
       Radius: &outer_radius 600.
       RadialDistribution: &outer_shell_distribution Inverse

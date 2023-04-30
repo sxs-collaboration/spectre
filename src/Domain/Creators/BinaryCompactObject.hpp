@@ -356,11 +356,13 @@ class BinaryCompactObject : public DomainCreator<3> {
     static bool suggested_value() { return true; }
   };
 
-  struct UseProjectiveMap {
+  struct RadialDistributionEnvelope {
     using group = Envelope;
-    using type = bool;
+    static std::string name() { return "RadialDistribution"; }
+    using type = CoordinateMaps::Distribution;
     static constexpr Options::String help = {
-        "Use projective scaling on the frustums in the envelope."};
+        "The distribution of radial grid points in the envelope, the layer "
+        "made of ten bulged Frustums."};
   };
 
   struct RadialDistributionOuterShell {
@@ -391,7 +393,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   using time_independent_options = tmpl::append<
       tmpl::list<ObjectA, ObjectB, EnvelopeRadius, OuterRadius,
                  InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 UseProjectiveMap, RadialDistributionOuterShell, OpeningAngle>,
+                 RadialDistributionEnvelope, RadialDistributionOuterShell,
+                 OpeningAngle>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -443,7 +446,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
-      bool use_equiangular_map = true, bool use_projective_map = true,
+      bool use_equiangular_map = true,
+      CoordinateMaps::Distribution radial_distribution_envelope =
+          CoordinateMaps::Distribution::Projective,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
@@ -461,7 +466,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
-      bool use_equiangular_map = true, bool use_projective_map = true,
+      bool use_equiangular_map = true,
+      CoordinateMaps::Distribution radial_distribution_envelope =
+          CoordinateMaps::Distribution::Projective,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
@@ -512,10 +519,10 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_{};
   std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
   bool use_equiangular_map_ = true;
-  bool use_projective_map_ = true;
+  CoordinateMaps::Distribution radial_distribution_envelope_ =
+      CoordinateMaps::Distribution::Projective;
   CoordinateMaps::Distribution radial_distribution_outer_shell_ =
       CoordinateMaps::Distribution::Linear;
-  double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};
   double length_outer_cube_{};

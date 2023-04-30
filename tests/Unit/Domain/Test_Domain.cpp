@@ -452,7 +452,8 @@ void test_versioning() {
                                                     true},
       100., 300.,
       // Initial refinement and num points don't matter
-      1_st, 3_st, true, false, CoordinateMaps::Distribution::Linear, 90.};
+      1_st, 3_st, true, CoordinateMaps::Distribution::Linear,
+      CoordinateMaps::Distribution::Linear, 90.};
   CHECK(domain == expected_domain_creator.create_domain());
   // Also check that we can deserialize the functions of time.
   const auto serialized_fot = *volfile.get_functions_of_time(obs_id);

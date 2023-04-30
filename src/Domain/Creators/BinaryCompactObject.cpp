@@ -60,7 +60,8 @@ BinaryCompactObject::BinaryCompactObject(
     const double envelope_radius, const double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    const bool use_equiangular_map, const bool use_projective_map,
+    const bool use_equiangular_map,
+    const CoordinateMaps::Distribution radial_distribution_envelope,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -71,7 +72,7 @@ BinaryCompactObject::BinaryCompactObject(
       envelope_radius_(envelope_radius),
       outer_radius_(outer_radius),
       use_equiangular_map_(use_equiangular_map),
-      use_projective_map_(use_projective_map),
+      radial_distribution_envelope_(radial_distribution_envelope),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
@@ -96,11 +97,6 @@ BinaryCompactObject::BinaryCompactObject(
   length_inner_cube_ = abs(x_coord_a_ - x_coord_b_);
   length_outer_cube_ =
       2.0 * envelope_radius_ / sqrt(2.0 + square(tan_half_opening_angle));
-  if (use_projective_map_) {
-    projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
-  } else {
-    projective_scale_factor_ = 1.0;
-  }
 
   // Calculate number of blocks
   // Object cubes and shells have 6 blocks each, for a total for 24 blocks.
@@ -291,18 +287,19 @@ BinaryCompactObject::BinaryCompactObject(
     double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    const bool use_equiangular_map, const bool use_projective_map,
+    const bool use_equiangular_map,
+    const CoordinateMaps::Distribution radial_distribution_envelope,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
-    : BinaryCompactObject(std::move(object_A), std::move(object_B),
-                          envelope_radius, outer_radius, initial_refinement,
-                          initial_number_of_grid_points, use_equiangular_map,
-                          use_projective_map, radial_distribution_outer_shell,
-                          opening_angle_in_degrees,
-                          std::move(outer_boundary_condition), context) {
+    : BinaryCompactObject(
+          std::move(object_A), std::move(object_B), envelope_radius,
+          outer_radius, initial_refinement, initial_number_of_grid_points,
+          use_equiangular_map, radial_distribution_envelope,
+          radial_distribution_outer_shell, opening_angle_in_degrees,
+          std::move(outer_boundary_condition), context) {
   time_dependent_options_ = std::move(time_dependent_options);
 
   const std::optional<double> inner_radius_A =
@@ -436,10 +433,14 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // the origin to account for their center of mass, the enveloping frustums are
   // centered at the origin.
   Maps maps_frustums = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(
-      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
-                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
-                              projective_scale_factor_, 1.0, opening_angle_));
+      Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
+      length_inner_cube_, length_outer_cube_, use_equiangular_map_,
+      {{-translation_, 0.0, 0.0}}, radial_distribution_envelope_,
+      radial_distribution_envelope_ ==
+              domain::CoordinateMaps::Distribution::Projective
+          ? std::optional<double>(length_inner_cube_ / length_outer_cube_)
+          : std::nullopt,
+      1.0, opening_angle_));
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
@@ -645,7 +646,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
           std::move(distorted_to_inertial_block_maps[block]));
     }
   }
-
   return domain;
 }
 
