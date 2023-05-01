@@ -21,14 +21,18 @@ extern "C" {
 double ddot_(const int& N, const double* X, const int& INCX, const double* Y,
              const int& INCY);
 
+// The final two arguments are the "hidden" lengths of the first two.
+// https://gcc.gnu.org/onlinedocs/gfortran/Argument-passing-conventions.html
 void dgemm_(const char& TRANSA, const char& TRANSB, const int& M, const int& N,
             const int& K, const double& ALPHA, const double* A, const int& LDA,
             const double* B, const int& LDB, const double& BETA,
-            const double* C, const int& LDC);
+            const double* C, const int& LDC, size_t, size_t);
 
+// The final argument is the "hidden" length of the first one.
+// https://gcc.gnu.org/onlinedocs/gfortran/Argument-passing-conventions.html
 void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
             const double* A, const int& LDA, const double* X, const int& INCX,
-            const double& BETA, double* Y, const int& INCY);
+            const double& BETA, double* Y, const int& INCY, size_t);
 }  // extern "C"
 }  // namespace blas_detail
 
@@ -113,7 +117,7 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
   blas_detail::dgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
-      gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC));
+      gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);
 }
 
 // libxsmm is disabled in DEBUG builds because backtraces (from, for
@@ -184,6 +188,6 @@ inline void dgemv_(const char& TRANS, const size_t& M, const size_t& N,
   blas_detail::dgemv_(TRANS, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
                       ALPHA, A, gsl::narrow_cast<int>(LDA), X,
                       gsl::narrow_cast<int>(INCX), BETA, Y,
-                      gsl::narrow_cast<int>(INCY));
+                      gsl::narrow_cast<int>(INCY), 1);
 }
 /// @}

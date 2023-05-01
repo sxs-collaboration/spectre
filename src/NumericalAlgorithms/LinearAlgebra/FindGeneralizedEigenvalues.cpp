@@ -15,9 +15,11 @@
 
 // LAPACK routine to do the generalized eigenvalue problem
 extern "C" {
+// The final two arguments are the "hidden" lengths of the first two.
+// https://gcc.gnu.org/onlinedocs/gfortran/Argument-passing-conventions.html
 extern void dggev_(char*, char*, int*, double*, int*, double*, int*, double*,
                    double*, double*, double*, int*, double*, int*, double*,
-                   int*, int*);
+                   int*, int*, size_t, size_t);
 }
 
 void find_generalized_eigenvalues(
@@ -94,7 +96,7 @@ void find_generalized_eigenvalues(
          matrix_b.data(), &matrix_b_spacing, eigenvalues_real_part->data(),
          eigenvalues_imaginary_part->data(), eigenvalue_normalization.data(),
          eigenvectors->data(), &eigenvectors_spacing, eigenvectors->data(),
-         &eigenvectors_spacing, lapack_work.data(), &work_size, &info);
+         &eigenvectors_spacing, lapack_work.data(), &work_size, &info, 1, 1);
 
   if (UNLIKELY(info != 0)) {
     ERROR(
