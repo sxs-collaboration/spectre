@@ -77,7 +77,10 @@ class EvolutionStatus(ExecutableStatus):
         "Speed": "1/h",
     }
 
-    def time_status(self, input_file: dict, open_reductions_file) -> dict:
+    def time_status(self,
+                    input_file: dict,
+                    open_reductions_file,
+                    avg_num_slabs: int = 50) -> dict:
         """Report the simulation time and speed.
 
         Uses the 'ObserveTimeStep' event, so the status information is only as
@@ -92,18 +95,24 @@ class EvolutionStatus(ExecutableStatus):
         Arguments:
           input_file: The input file read in as a dictionary.
           open_reductions_file: The open h5py reductions data file.
+          avg_num_slabs: Number of slabs to average over for estimating the
+            simulation speed (at least 2).
 
         Returns: Status fields "Time" in code units and "Speed" in simulation
           time per hour.
         """
+        assert avg_num_slabs >= 2, (
+            "Need at least 'avg_num_slabs >= 2' to estimate simulation speed.")
         observe_time_event = find_event("ObserveTimeStep", input_file)
         if observe_time_event is None:
             return {}
         subfile_name = observe_time_event["SubfileName"] + ".dat"
         logger.debug(f"Reading time steps from subfile: '{subfile_name}'")
         try:
+            # Time steps are sampled at most once per slab, so we load data
+            # going back `avg_num_slabs`
             time_steps = to_dataframe(open_reductions_file[subfile_name],
-                                      slice=np.s_[-2:])
+                                      slice=np.s_[-avg_num_slabs:])
         except:
             logger.debug("Unable to read time steps.", exc_info=True)
             return {}
@@ -112,11 +121,18 @@ class EvolutionStatus(ExecutableStatus):
         }
         # Estimate simulation speed
         try:
-            dt_sim = time_steps.iloc[-1]["Time"] - time_steps.iloc[-2]["Time"]
-            dt_wall_min = (time_steps.iloc[-1]["Minimum Walltime"] -
-                           time_steps.iloc[-2]["Minimum Walltime"])
-            dt_wall_max = (time_steps.iloc[-1]["Maximum Walltime"] -
-                           time_steps.iloc[-2]["Maximum Walltime"])
+            # Average over the last `avg_num_slabs` slabs, but at least the last
+            # two observations
+            start_time = min(
+                time_steps.iloc[-1]["Time"] -
+                time_steps.iloc[-1]["Slab size"] * (avg_num_slabs - 1),
+                time_steps.iloc[-2]["Time"])
+            time_window = time_steps[time_steps["Time"] >= start_time]
+            dt_sim = time_window.iloc[-1]["Time"] - time_window.iloc[0]["Time"]
+            dt_wall_min = (time_window.iloc[-1]["Minimum Walltime"] -
+                           time_window.iloc[0]["Minimum Walltime"])
+            dt_wall_max = (time_window.iloc[-1]["Maximum Walltime"] -
+                           time_window.iloc[0]["Maximum Walltime"])
             speed = (dt_sim / dt_wall_min +
                      dt_sim / dt_wall_max) / 2. * 60. * 60.
             result["Speed"] = speed
