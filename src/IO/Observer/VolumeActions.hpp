@@ -362,7 +362,8 @@ struct ContributeVolumeDataToWriter {
         // domain tag. If more flexibility is required here later, then the
         // domain can be passed along with the `ContributeVolumeData` action.
         const auto serialized_domain = serialize(
-            db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box));
+            Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(
+                cache));
         const auto serialized_functions_of_time =
             [&cache]() -> std::optional<std::vector<char>> {
           // Functions-of-time are in the _mutable_ global cache, so they aren't
