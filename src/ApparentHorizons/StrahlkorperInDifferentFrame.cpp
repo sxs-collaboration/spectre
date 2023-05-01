@@ -39,27 +39,23 @@ void coords_to_different_frame(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const double time) {
+  // If we ever want a source in a different frame than Grid, we
+  // need to add 'if constexpr's for that case.
+  static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
+                "Source frame must currently be Grid frame");
   // We wish to map src_cartesian_coords to the destination frame.
   // Each Block will have a different map, so the mapping must be done
   // Block by Block.
-  for (const auto& block : domain.blocks()) {
-    // Once there are more possible source frames than the grid frame
-    // (i.e. the distorted frame), then this static_assert will change,
-    // and there will be an `if constexpr` below to treat the different
-    // possible source frames.
-    static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
-                  "Source frame must currently be Grid frame");
-    static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
-                  "Destination frame must currently be Inertial frame");
-    const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
-    const auto& logical_to_grid_map = block.moving_mesh_logical_to_grid_map();
-    // Fill only those dest_cartesian_coords that are in this Block.
-    // Determine which coords are in this Block by checking if the
-    // inverse grid-to-logical map yields logical coords between -1 and 1.
-    for (size_t s = 0; s < get<0>(src_cartesian_coords).size(); ++s) {
-      const tnsr::I<double, 3, SrcFrame> x_src{
-          {get<0>(src_cartesian_coords)[s], get<1>(src_cartesian_coords)[s],
-           get<2>(src_cartesian_coords)[s]}};
+  // Note that if a point is on the boundary of two or more
+  // Blocks, it might get filled twice, but that's ok.
+  tnsr::I<double, 3, DestFrame> x_dest{};
+  tnsr::I<double, 3, SrcFrame> x_src{};
+  for (size_t s = 0; s < get<0>(src_cartesian_coords).size(); ++s) {
+    get<0>(x_src) = get<0>(src_cartesian_coords)[s];
+    get<1>(x_src) = get<1>(src_cartesian_coords)[s];
+    get<2>(x_src) = get<2>(src_cartesian_coords)[s];
+    for (const auto& block : domain.blocks()) {
+      const auto& logical_to_grid_map = block.moving_mesh_logical_to_grid_map();
       const auto x_logical = logical_to_grid_map.inverse(x_src);
       // x_logical might be an empty std::optional.
       if (x_logical.has_value() and get<0>(x_logical.value()) <= 1.0 and
@@ -68,13 +64,27 @@ void coords_to_different_frame(
           get<1>(x_logical.value()) >= -1.0 and
           get<2>(x_logical.value()) <= 1.0 and
           get<2>(x_logical.value()) >= -1.0) {
-        const auto x_dest =
-            grid_to_inertial_map(x_src, time, functions_of_time);
+        // If we get here (that is, if the logical coords are between -1 and
+        // +1), then the point is in this block. So we map it.
+        if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted>) {
+          if (not block.has_distorted_frame()) {
+            throw std::runtime_error(
+                "Strahlkorper lies outside of distorted-frame region");
+          }
+          const auto& grid_to_distorted_map =
+              block.moving_mesh_grid_to_distorted_map();
+          x_dest = grid_to_distorted_map(x_src, time, functions_of_time);
+        } else {
+          static_assert(
+              std::is_same_v<DestFrame, ::Frame::Inertial>,
+              "Destination frame must currently be Distorted or Inertial");
+          const auto& grid_to_inertial_map =
+              block.moving_mesh_grid_to_inertial_map();
+          x_dest = grid_to_inertial_map(x_src, time, functions_of_time);
+        }
         get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
         get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
         get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
-        // Note that if a point is on the boundary of two or more
-        // Blocks, it might get filled twice, but that's ok.
       }
     }
   }
@@ -223,7 +233,7 @@ void strahlkorper_in_different_frame(
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 7 && __GNUC__ < 10
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif   // defined(__GNUC__)&&!defined(__clang__)&&__GNUC__>7&&__GNUC__<10
+#endif  // defined(__GNUC__)&&!defined(__clang__)&&__GNUC__>7&&__GNUC__<10
     return {};
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 7 && __GNUC__ < 10
 #pragma GCC diagnostic pop
@@ -363,7 +373,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATEGENERAL, (::Frame::Grid),
       const double time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATEALIGNED, (::Frame::Grid),
-                        (::Frame::Inertial))
+                        (::Frame::Distorted, ::Frame::Inertial))
 
 #undef INSTANTIATEGENERAL
 #undef INSTANTIATEALIGNED
