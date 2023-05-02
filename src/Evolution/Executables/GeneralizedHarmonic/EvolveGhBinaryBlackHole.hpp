@@ -44,7 +44,6 @@
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
-#include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
@@ -129,6 +128,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -179,7 +179,6 @@ struct EvolutionMetavars {
 
   static constexpr size_t volume_dim = 3;
   static constexpr bool use_damped_harmonic_rollon = false;
-  using initial_data = evolution::NumericInitialData;
   using system = gh::System<volume_dim>;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
@@ -373,6 +372,8 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::list<gh::NumericInitialData>>,
         tmpl::pair<DenseTrigger,
                    tmpl::flatten<tmpl::list<
                        control_system::control_system_triggers<control_systems>,
@@ -501,13 +502,10 @@ struct EvolutionMetavars {
               Parallel::Phase::RegisterWithElementDataReader,
               tmpl::list<importers::Actions::RegisterWithElementDataReader,
                          Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::ImportInitialData,
-              tmpl::list<gh::Actions::ReadNumericInitialData<
-                             evolution::OptionTags::NumericInitialData>,
-                         gh::Actions::SetNumericInitialData<
-                             evolution::OptionTags::NumericInitialData>,
-                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<Parallel::Phase::ImportInitialData,
+                                 tmpl::list<gh::Actions::ReadNumericInitialData,
+                                            gh::Actions::SetNumericInitialData,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,

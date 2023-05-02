@@ -31,7 +31,6 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
-#include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -107,6 +106,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -274,7 +274,8 @@ struct ObserverTags {
                                      non_tensor_compute_tags>;
 };
 
-template <size_t volume_dim, bool LocalTimeStepping>
+template <size_t volume_dim, bool LocalTimeStepping,
+          bool UseNumericalInitialData>
 struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using system = gh::System<volume_dim>;
 
@@ -291,7 +292,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
           gh::BoundaryConditions::standard_boundary_conditions<volume_dim>>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
       tmpl::pair<evolution::initial_data::InitialData,
-                 gh::Solutions::all_solutions<volume_dim>>,
+                 tmpl::conditional_t<UseNumericalInitialData,
+                                     tmpl::list<gh::NumericInitialData>,
+                                     gh::Solutions::all_solutions<volume_dim>>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -323,7 +326,8 @@ struct GeneralizedHarmonicTemplateBase<
   void pup(PUP::er& /*p*/) {}
 
   using factory_creation =
-      detail::FactoryCreation<volume_dim, local_time_stepping>;
+      detail::FactoryCreation<volume_dim, local_time_stepping,
+                              UseNumericalInitialData>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<

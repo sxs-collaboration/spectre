@@ -180,9 +180,8 @@ struct InitialRefinementLevels : db::SimpleTag {
 }  // namespace Tags
 
 /// [option_group]
-struct VolumeDataOptions {
-  using group = importers::OptionTags::Group;
-  static std::string name() { return "VolumeData"; }
+struct OptionsGroup {
+  static std::string name() { return "Importers"; }
   static constexpr Options::String help = "Numeric volume data";
 };
 /// [option_group]
@@ -283,13 +282,13 @@ struct WriteTestData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    clean_test_data<false>(
-        get<importers::Tags::FileGlob<VolumeDataOptions>>(box));
+    const auto& options =
+        db::get<importers::Tags::ImporterOptions<OptionsGroup>>(box);
+    clean_test_data<false>(get<importers::OptionTags::FileGlob>(options));
     write_test_data<Dim>(
-        get<importers::Tags::FileGlob<VolumeDataOptions>>(box),
-        get<importers::Tags::Subgroup<VolumeDataOptions>>(box),
-        std::get<double>(
-            get<importers::Tags::ObservationValue<VolumeDataOptions>>(box)),
+        get<importers::OptionTags::FileGlob>(options),
+        get<importers::OptionTags::Subgroup>(options),
+        std::get<double>(get<importers::OptionTags::ObservationValue>(options)),
         db::get<Tags::Domain<Dim, SourceOrTarget::Source>>(box),
         db::get<Tags::FunctionsOfTime<Dim, SourceOrTarget::Source>>(box),
         db::get<Tags::InitialRefinementLevels<Dim, SourceOrTarget::Source>>(
@@ -309,8 +308,9 @@ struct CleanTestData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    clean_test_data<true>(
-        get<importers::Tags::FileGlob<VolumeDataOptions>>(box));
+    const auto& options =
+        db::get<importers::Tags::ImporterOptions<OptionsGroup>>(box);
+    clean_test_data<true>(get<importers::OptionTags::FileGlob>(options));
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
@@ -361,8 +361,10 @@ struct InitializeElement {
         db::get<Tags::Domain<Dim, SourceOrTarget::Target>>(box);
     const auto& functions_of_time =
         db::get<Tags::FunctionsOfTime<Dim, SourceOrTarget::Target>>(box);
-    const double time = std::get<double>(
-        get<importers::Tags::ObservationValue<VolumeDataOptions>>(box));
+    const auto& options =
+        db::get<importers::Tags::ImporterOptions<OptionsGroup>>(box);
+    const double time =
+        std::get<double>(get<importers::OptionTags::ObservationValue>(options));
     const auto& initial_extents =
         db::get<Tags::InitialExtents<Dim, SourceOrTarget::Target>>(box);
     const auto mesh = domain::Initialization::create_initial_mesh(
@@ -414,12 +416,12 @@ struct ElementArray {
           Parallel::Phase::Register,
           tmpl::list<importers::Actions::RegisterWithElementDataReader,
                      Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<Parallel::Phase::ImportInitialData,
-                             tmpl::list<importers::Actions::ReadVolumeData<
-                                            VolumeDataOptions, import_fields>,
-                                        importers::Actions::ReceiveVolumeData<
-                                            VolumeDataOptions, import_fields>,
-                                        Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::ImportInitialData,
+          tmpl::list<
+              importers::Actions::ReadVolumeData<OptionsGroup, import_fields>,
+              importers::Actions::ReceiveVolumeData<import_fields>,
+              Parallel::Actions::TerminatePhase>>,
       /// [import_actions]
       Parallel::PhaseActions<
           Parallel::Phase::Testing,

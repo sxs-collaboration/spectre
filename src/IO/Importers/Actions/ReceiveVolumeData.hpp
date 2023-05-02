@@ -27,10 +27,9 @@ namespace importers::Actions {
  *
  * \see Dev guide on \ref dev_guide_importing
  */
-template <typename ImporterOptionsGroup, typename FieldTagsList>
+template <typename FieldTagsList>
 struct ReceiveVolumeData {
-  using inbox_tags =
-      tmpl::list<Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>;
+  using inbox_tags = tmpl::list<Tags::VolumeData<FieldTagsList>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -40,9 +39,7 @@ struct ReceiveVolumeData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto& inbox =
-        tuples::get<Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
-            inboxes);
+    auto& inbox = tuples::get<Tags::VolumeData<FieldTagsList>>(inboxes);
     // Using `0` for the temporal ID since we only read the volume data once, so
     // there's no need to keep track of the temporal ID.
     const auto received_data = inbox.find(0_st);

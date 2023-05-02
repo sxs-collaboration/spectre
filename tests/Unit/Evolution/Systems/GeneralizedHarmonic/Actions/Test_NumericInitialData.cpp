@@ -33,15 +33,11 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.tpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace gh {
 namespace {
-
-struct TestOptionGroup {
-  using group = importers::OptionTags::Group;
-  static constexpr Options::String help = "halp";
-};
 
 using gh_system_vars = gh::System<3>::variables_tag::tags_list;
 
@@ -59,10 +55,9 @@ struct MockElementArray {
               tmpl::list<domain::Tags::Mesh<3>,
                          domain::Tags::InverseJacobian<3, Frame::ElementLogical,
                                                        Frame::Inertial>>>>>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::Testing,
-          tmpl::list<gh::Actions::ReadNumericInitialData<TestOptionGroup>,
-                     gh::Actions::SetNumericInitialData<TestOptionGroup>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<gh::Actions::ReadNumericInitialData,
+                                        gh::Actions::SetNumericInitialData>>>;
 };
 
 struct MockReadVolumeData {
@@ -71,12 +66,16 @@ struct MockReadVolumeData {
   static void apply(
       DataBox& /*box*/, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
-      tuples::tagged_tuple_from_typelist<
-          db::wrap_tags_in<importers::Tags::Selected, detail::all_numeric_vars>>
+      const importers::ImporterOptions& options, const size_t volume_data_id,
+      tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
+          importers::Tags::Selected, NumericInitialData::all_vars>>
           selected_fields) {
-    const auto selected_vars =
-        get<detail::Tags::NumericInitialDataVariables<TestOptionGroup>>(cache);
-    if (std::holds_alternative<detail::GeneralizedHarmonic>(selected_vars)) {
+    const auto& initial_data = dynamic_cast<const NumericInitialData&>(
+        get<evolution::initial_data::Tags::InitialData>(cache));
+    CHECK(options == initial_data.importer_options());
+    CHECK(volume_data_id == initial_data.volume_data_id());
+    const auto selected_vars = initial_data.selected_variables();
+    if (std::holds_alternative<NumericInitialData::GhVars>(selected_vars)) {
       CHECK(get<importers::Tags::Selected<
                 gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields) ==
             "CustomSpacetimeMetric");
@@ -90,10 +89,8 @@ struct MockReadVolumeData {
       CHECK_FALSE(
           get<importers::Tags::Selected<gr::Tags::Shift<DataVector, 3>>>(
               selected_fields));
-      CHECK_FALSE(
-          get<importers::Tags::Selected<
-              gr::Tags::ExtrinsicCurvature<DataVector, 3>>>(selected_fields));
-    } else if (std::holds_alternative<detail::Adm>(selected_vars)) {
+    } else if (std::holds_alternative<NumericInitialData::AdmVars>(
+                   selected_vars)) {
       CHECK(get<importers::Tags::Selected<
                 gr::Tags::SpatialMetric<DataVector, 3>>>(selected_fields) ==
             "CustomSpatialMetric");
@@ -125,7 +122,7 @@ struct MockVolumeDataReader {
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using replace_these_simple_actions =
       tmpl::list<importers::Actions::ReadAllVolumeDataAndDistribute<
-          metavariables::volume_dim, TestOptionGroup, detail::all_numeric_vars,
+          metavariables::volume_dim, NumericInitialData::all_vars,
           MockElementArray<Metavariables>>>;
   using with_these_simple_actions = tmpl::list<MockReadVolumeData>;
 };
@@ -134,26 +131,30 @@ struct Metavariables {
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<NumericInitialData>>>;
+  };
 };
 
-void test_numeric_initial_data(
-    const typename detail::Tags::NumericInitialDataVariables<
-        TestOptionGroup>::type& selected_vars,
-    const std::string& option_string) {
-  CHECK(TestHelpers::test_option_tag<
-            detail::OptionTags::NumericInitialDataVariables<TestOptionGroup>>(
-            option_string) == selected_vars);
+void test_numeric_initial_data(const NumericInitialData& initial_data,
+                               const std::string& option_string) {
+  {
+    INFO("Factory creation");
+    const auto created = TestHelpers::test_creation<
+        std::unique_ptr<evolution::initial_data::InitialData>, Metavariables>(
+        option_string);
+    CHECK(dynamic_cast<const NumericInitialData&>(*created) == initial_data);
+  }
 
   using reader_component = MockVolumeDataReader<Metavariables>;
   using element_array = MockElementArray<Metavariables>;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<
-      importers::Tags::FileGlob<TestOptionGroup>,
-      importers::Tags::Subgroup<TestOptionGroup>,
-      importers::Tags::ObservationValue<TestOptionGroup>,
-      importers::Tags::EnableInterpolation<TestOptionGroup>,
-      detail::Tags::NumericInitialDataVariables<TestOptionGroup>>{
-      "TestInitialData.h5", "VolumeData", 0., false, selected_vars}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      initial_data.get_clone()};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -194,18 +195,20 @@ void test_numeric_initial_data(
 
   // Insert KerrSchild data into the inbox
   auto& inbox = ActionTesting::get_inbox_tag<
-      element_array,
-      importers::Tags::VolumeData<TestOptionGroup, detail::all_numeric_vars>,
-      Metavariables>(make_not_null(&runner), element_id)[0];
+      element_array, importers::Tags::VolumeData<NumericInitialData::all_vars>,
+      Metavariables>(make_not_null(&runner),
+                     element_id)[initial_data.volume_data_id()];
   gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr{
       1., {{0., 0., 0.}}, {{0., 0., 0.}}};
   const auto kerr_gh_vars = kerr.variables(coords, 0., gh_system_vars{});
-  if (std::holds_alternative<detail::GeneralizedHarmonic>(selected_vars)) {
+  const auto& selected_vars = initial_data.selected_variables();
+  if (std::holds_alternative<NumericInitialData::GhVars>(selected_vars)) {
     get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
     get<Tags::Pi<3, Frame::Inertial>>(inbox) =
         get<Tags::Pi<3, Frame::Inertial>>(kerr_gh_vars);
-  } else if (std::holds_alternative<detail::Adm>(selected_vars)) {
+  } else if (std::holds_alternative<NumericInitialData::AdmVars>(
+                 selected_vars)) {
     const auto kerr_adm_vars = kerr.variables(
         coords, 0.,
         tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
@@ -244,17 +247,34 @@ void test_numeric_initial_data(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
                   "[Unit][Evolution]") {
+  register_factory_classes_with_charm<Metavariables>();
   test_numeric_initial_data(
-      detail::GeneralizedHarmonic{"CustomSpacetimeMetric", "CustomPi"},
-      "SpacetimeMetric: CustomSpacetimeMetric\n"
-      "Pi: CustomPi\n");
+      NumericInitialData{
+          "TestInitialData.h5", "VolumeData", 0., false,
+          NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"}},
+      "NumericInitialData:\n"
+      "  FileGlob: TestInitialData.h5\n"
+      "  Subgroup: VolumeData\n"
+      "  ObservationValue: 0.\n"
+      "  Interpolate: False\n"
+      "  Variables:\n"
+      "    SpacetimeMetric: CustomSpacetimeMetric\n"
+      "    Pi: CustomPi\n");
   test_numeric_initial_data(
-      detail::Adm{"CustomSpatialMetric", "CustomLapse", "CustomShift",
-                  "CustomExtrinsicCurvature"},
-      "SpatialMetric: CustomSpatialMetric\n"
-      "Lapse: CustomLapse\n"
-      "Shift: CustomShift\n"
-      "ExtrinsicCurvature: CustomExtrinsicCurvature");
+      NumericInitialData{"TestInitialData.h5", "VolumeData", 0., false,
+                         NumericInitialData::AdmVars{
+                             "CustomSpatialMetric", "CustomLapse",
+                             "CustomShift", "CustomExtrinsicCurvature"}},
+      "NumericInitialData:\n"
+      "  FileGlob: TestInitialData.h5\n"
+      "  Subgroup: VolumeData\n"
+      "  ObservationValue: 0.\n"
+      "  Interpolate: False\n"
+      "  Variables:\n"
+      "    SpatialMetric: CustomSpatialMetric\n"
+      "    Lapse: CustomLapse\n"
+      "    Shift: CustomShift\n"
+      "    ExtrinsicCurvature: CustomExtrinsicCurvature");
 }
 
 }  // namespace gh

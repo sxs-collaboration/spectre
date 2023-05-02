@@ -20,9 +20,6 @@ template <size_t Dim>
 struct GaugeWave;
 }  // namespace Solutions
 }  // namespace gr
-namespace evolution {
-struct NumericInitialData;
-}  // namespace evolution
 
 template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars;

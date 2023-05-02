@@ -15,7 +15,7 @@
 
 namespace {
 struct ExampleVolumeData {
-  using group = importers::OptionTags::Group;
+  static std::string name() { return "Example"; }
   static constexpr Options::String help = "Example volume data";
 };
 }  // namespace
@@ -26,49 +26,33 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   TestHelpers::db::test_simple_tag<importers::Tags::ElementDataAlreadyRead>(
       "ElementDataAlreadyRead");
   TestHelpers::db::test_simple_tag<
-      importers::Tags::FileGlob<ExampleVolumeData>>(
-      "FileGlob(ExampleVolumeData)");
-  TestHelpers::db::test_simple_tag<
-      importers::Tags::Subgroup<ExampleVolumeData>>(
-      "Subgroup(ExampleVolumeData)");
-  TestHelpers::db::test_simple_tag<
-      importers::Tags::ObservationValue<ExampleVolumeData>>(
-      "ObservationValue(ExampleVolumeData)");
-  TestHelpers::db::test_simple_tag<
-      importers::Tags::EnableInterpolation<ExampleVolumeData>>(
-      "EnableInterpolation(ExampleVolumeData)");
+      importers::Tags::ImporterOptions<ExampleVolumeData>>("VolumeData");
 
   Options::Parser<
-      tmpl::list<importers::OptionTags::FileGlob<ExampleVolumeData>,
-                 importers::OptionTags::Subgroup<ExampleVolumeData>,
-                 importers::OptionTags::ObservationValue<ExampleVolumeData>,
-                 importers::OptionTags::EnableInterpolation<ExampleVolumeData>>>
+      tmpl::list<importers::Tags::ImporterOptions<ExampleVolumeData>>>
       opts("");
   opts.parse(
-      "Importers:\n"
-      "  ExampleVolumeData:\n"
+      "Example:\n"
+      "  VolumeData:\n"
       "    FileGlob: File.name\n"
       "    Subgroup: data.group\n"
       "    ObservationValue: 1.\n"
       "    Interpolate: True");
-  CHECK(opts.get<importers::OptionTags::FileGlob<ExampleVolumeData>>() ==
-        "File.name");
-  CHECK(opts.get<importers::OptionTags::Subgroup<ExampleVolumeData>>() ==
-        "data.group");
-  CHECK(
-      std::get<double>(
-          opts.get<
-              importers::OptionTags::ObservationValue<ExampleVolumeData>>()) ==
-      1.);
-  CHECK(opts.get<
-        importers::OptionTags::EnableInterpolation<ExampleVolumeData>>());
+  const auto& options =
+      opts.get<importers::Tags::ImporterOptions<ExampleVolumeData>>();
+  using tuples::get;
+  CHECK(get<importers::OptionTags::FileGlob>(options) == "File.name");
+  CHECK(get<importers::OptionTags::Subgroup>(options) == "data.group");
+  CHECK(std::get<double>(
+            get<importers::OptionTags::ObservationValue>(options)) == 1.);
+  CHECK(get<importers::OptionTags::EnableInterpolation>(options));
 
-  CHECK(std::get<importers::ObservationSelector>(
-            TestHelpers::test_option_tag<
-                importers::OptionTags::ObservationValue<ExampleVolumeData>>(
-                "First")) == importers::ObservationSelector::First);
-  CHECK(std::get<importers::ObservationSelector>(
-            TestHelpers::test_option_tag<
-                importers::OptionTags::ObservationValue<ExampleVolumeData>>(
-                "Last")) == importers::ObservationSelector::Last);
+  CHECK(
+      std::get<importers::ObservationSelector>(
+          TestHelpers::test_option_tag<importers::OptionTags::ObservationValue>(
+              "First")) == importers::ObservationSelector::First);
+  CHECK(
+      std::get<importers::ObservationSelector>(
+          TestHelpers::test_option_tag<importers::OptionTags::ObservationValue>(
+              "Last")) == importers::ObservationSelector::Last);
 }

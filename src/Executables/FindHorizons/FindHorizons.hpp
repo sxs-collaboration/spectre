@@ -72,10 +72,9 @@ namespace FindHorizons {
 
 namespace OptionTags {
 struct VolumeDataGroup {
-  static std::string name() { return "VolumeData"; }
+  static std::string name() { return "Importers"; }
   static constexpr Options::String help =
       "Volume data to load and find horizons in";
-  using group = importers::OptionTags::Group;
 };
 }  // namespace OptionTags
 
@@ -102,14 +101,16 @@ struct InitializeFields {
     // the importer will have to send information about the observation value it
     // read from the file, as well as the available observation IDs/values in
     // the file.
+    const auto& options =
+        db::get<importers::Tags::ImporterOptions<OptionTags::VolumeDataGroup>>(
+            box);
     const double observation_time = std::visit(
         Overloader{
             [](const double local_obs_value) { return local_obs_value; },
             [](const importers::ObservationSelector /*local_obs_selector*/) {
               return 0.;
             }},
-        db::get<importers::Tags::ObservationValue<OptionTags::VolumeDataGroup>>(
-            box));
+        get<importers::OptionTags::ObservationValue>(options));
     ::Initialization::mutate_assign<tmpl::list<::Tags::Time>>(
         make_not_null(&box), observation_time);
     // Nothing to do to initialize the fields. They will be read from the
@@ -278,8 +279,7 @@ struct Metavariables {
               tmpl::list<
                   importers::Actions::ReadVolumeData<
                       OptionTags::VolumeDataGroup, adm_vars>,
-                  importers::Actions::ReceiveVolumeData<
-                      OptionTags::VolumeDataGroup, adm_vars>,
+                  importers::Actions::ReceiveVolumeData<adm_vars>,
                   Actions::DispatchApparentHorizonFinder<AhA>,
                   tmpl::conditional_t<
                       two_horizons, Actions::DispatchApparentHorizonFinder<AhB>,

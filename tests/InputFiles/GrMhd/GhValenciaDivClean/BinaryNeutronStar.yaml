@@ -187,23 +187,18 @@ EventsAndDenseTriggers:
 
 EventsRunAtCleanup:
 
-Importers:
-  GrNumericInitialData:
+InitialData:
+  NumericInitialData:
     FileGlob: BnsVolume*.h5
     Subgroup: VolumeData
     ObservationValue: Last
     Interpolate: True
-    Variables:
+    GhVariables:
       Lapse: Lapse
       Shift: ShiftExcess
       SpatialMetric: SpatialMetric
       ExtrinsicCurvature: ExtrinsicCurvature
-  HydroNumericInitialData:
-    FileGlob: BnsVolume*.h5
-    Subgroup: VolumeData
-    ObservationValue: Last
-    Interpolate: True
-    Variables:
+    HydroVariables:
       RestMassDensity: RestMassDensity
       LowerSpatialFourVelocity: LowerSpatialFourVelocity
       ElectronFraction: 0.15

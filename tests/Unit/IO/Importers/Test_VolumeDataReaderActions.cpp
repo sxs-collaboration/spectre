@@ -49,9 +49,7 @@ struct TensorTag : db::SimpleTag {
 
 using import_tags_list = tmpl::list<VectorTag, TensorTag>;
 
-struct TestVolumeData {
-  using group = importers::OptionTags::Group;
-};
+struct TestVolumeData {};
 
 using ElementIdType = ElementId<2>;
 
@@ -72,8 +70,7 @@ struct MockElementArray {
           Parallel::Phase::Testing,
           tmpl::list<importers::Actions::ReadVolumeData<TestVolumeData,
                                                         import_tags_list>,
-                     importers::Actions::ReceiveVolumeData<TestVolumeData,
-                                                           import_tags_list>>>>;
+                     importers::Actions::ReceiveVolumeData<import_tags_list>>>>;
 };
 
 template <typename Metavariables>
@@ -100,7 +97,8 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   using element_array = MockElementArray<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {"TestVolumeData*.h5", "element_data", observation_selection, false}};
+      {importers::ImporterOptions{"TestVolumeData*.h5", "element_data",
+                                  observation_selection, false}}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(

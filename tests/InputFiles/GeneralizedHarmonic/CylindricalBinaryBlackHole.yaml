@@ -304,7 +304,7 @@ ControlSystems:
 #   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
 #   In this case, set `Interpolate: False` because the data is already given
 #   on this exact grid.
-Importers:
+InitialData:
   NumericInitialData:
     FileGlob: "/path/to/initial_data.h5"
     Subgroup: "VolumeData"
