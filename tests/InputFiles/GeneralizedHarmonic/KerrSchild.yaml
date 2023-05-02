@@ -221,6 +221,7 @@ InterpolationTargets:
 ControlSystems:
   WriteDataToDisk: false
   MeasurementsPerUpdate: 4
+  Verbosity: Silent
   Shape:
     IsActive: false
     Averager:
