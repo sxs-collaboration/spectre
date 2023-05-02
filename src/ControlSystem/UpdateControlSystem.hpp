@@ -169,7 +169,7 @@ struct UpdateControlSystem {
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf(
             "%s, time = %.16f: current measurement = %d is not at "
-            "measurements_per_update = %s. Waiting for more data.\n",
+            "measurements_per_update = %d. Waiting for more data.\n",
             function_of_time_name, time, current_measurement,
             measurements_per_update);
       }
