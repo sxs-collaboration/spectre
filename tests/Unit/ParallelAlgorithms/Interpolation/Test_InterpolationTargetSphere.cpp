@@ -114,7 +114,7 @@ void test_interpolation_target_sphere(
           "Radius: " +
           radii_str +
           "\n"
-          "Lmax: 18\n"
+          "LMax: 18\n"
           "AngularOrdering: " +
           std::string(MakeString{} << angular_ordering));
   CHECK(created_opts == sphere_opts);
@@ -192,7 +192,7 @@ void test_sphere_errors() {
             TestHelpers::test_creation<intrp::OptionHolders::Sphere>(
                 "Center: [0.05, 0.06, 0.07]\n"
                 "Radius: [1.0, 1.0]\n"
-                "Lmax: 18\n"
+                "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
       Catch::Contains("into radii for Sphere interpolation target. It already "
@@ -203,7 +203,7 @@ void test_sphere_errors() {
             TestHelpers::test_creation<intrp::OptionHolders::Sphere>(
                 "Center: [0.05, 0.06, 0.07]\n"
                 "Radius: [-1.0]\n"
-                "Lmax: 18\n"
+                "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
       Catch::Contains("Radius must be positive"));
@@ -213,7 +213,7 @@ void test_sphere_errors() {
             TestHelpers::test_creation<intrp::OptionHolders::Sphere>(
                 "Center: [0.05, 0.06, 0.07]\n"
                 "Radius: -1.0\n"
-                "Lmax: 18\n"
+                "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
       Catch::Contains("Radius must be positive"));

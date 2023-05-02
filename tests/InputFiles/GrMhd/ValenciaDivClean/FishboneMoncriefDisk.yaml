@@ -148,7 +148,7 @@ Interpolator:
 
 InterpolationTargets:
   KerrHorizon:
-    Lmax: 10
+    LMax: 10
     Center: [0.0, 0.0, 0.0]
     Mass: *BhMass
     DimensionlessSpin: [0.0, 0.0, *BhDimlessSpin]

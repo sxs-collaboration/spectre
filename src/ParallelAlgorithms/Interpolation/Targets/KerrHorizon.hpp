@@ -50,14 +50,14 @@ namespace OptionHolders {
 /// Kerr-Schild coordinates.
 ///
 /// \details In addition to the parameters for the Kerr black hole, this holder
-/// contains the `Lmax` which encodes the angular resolution of the spherical
+/// contains the `LMax` which encodes the angular resolution of the spherical
 /// harmonic basis and `AngularOrdering` which encodes the collocation
 /// ordering.
 struct KerrHorizon {
-  struct Lmax {
+  struct LMax {
     using type = size_t;
     static constexpr Options::String help = {
-        "KerrHorizon is expanded in Ylms up to l=Lmax"};
+        "KerrHorizon is expanded in Ylms up to l=LMax"};
   };
   struct Center {
     using type = std::array<double, 3>;
@@ -78,7 +78,7 @@ struct KerrHorizon {
         "Chooses theta,phi ordering in 2d array"};
   };
   using options =
-      tmpl::list<Lmax, Center, Mass, DimensionlessSpin, AngularOrdering>;
+      tmpl::list<LMax, Center, Mass, DimensionlessSpin, AngularOrdering>;
   static constexpr Options::String help = {
       "A Strahlkorper conforming to the horizon (in Kerr-Schild coordinates)"
       " of a Kerr black hole with a specified center, mass, and spin."};
@@ -145,8 +145,8 @@ namespace TargetPoints {
 /// \note The returned points are not actually on the horizon;
 /// instead, they are collocation points of a Strahlkorper whose
 /// spectral representation matches the horizon shape up to order
-/// Lmax, where Lmax is the spherical-harmonic order specified in the
-/// options.  As Lmax increases, the returned points converge to the
+/// LMax, where LMax is the spherical-harmonic order specified in the
+/// options.  As LMax increases, the returned points converge to the
 /// horizon.
 ///
 /// Conforms to the intrp::protocols::ComputeTargetPoints protocol

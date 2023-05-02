@@ -88,14 +88,14 @@ struct TimeDependentMapOptions {
         "domain."};
   };
 
-  struct ShapeMapLmax {
-    static std::string name() { return "Lmax"; }
+  struct ShapeMapLMax {
+    static std::string name() { return "LMax"; }
     using type = size_t;
-    static constexpr Options::String help = {"Initial Lmax for the shape map."};
+    static constexpr Options::String help = {"Initial LMax for the shape map."};
     using group = ShapeMapOptions;
   };
 
-  using options = tmpl::list<InitialTime, SizeMapInitialValues, ShapeMapLmax>;
+  using options = tmpl::list<InitialTime, SizeMapInitialValues, ShapeMapLMax>;
   static constexpr Options::String help{
       "The options for all the hard-coded time dependent maps in the Sphere "
       "domain."};

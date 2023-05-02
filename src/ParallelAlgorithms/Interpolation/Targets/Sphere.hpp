@@ -48,14 +48,14 @@ namespace intrp {
 namespace OptionHolders {
 /// A series of concentric spherical surfaces.
 ///
-/// \details The parameter `Lmax` sets the number of collocation points on
+/// \details The parameter `LMax` sets the number of collocation points on
 /// each spherical surface equal to `(l_max + 1) * (2 * l_max + 1)`. The
 /// parameter `AngularOrdering` encodes the collocation ordering. For example,
 /// the apparent horizon finder relies on spherepack routines that require
 /// `Strahlkorper` for `AngularOrdering`, and using these surfaces for a CCE
 /// worldtube requires `Cce` for `AngularOrdering`.
 struct Sphere {
-  struct Lmax {
+  struct LMax {
     using type = size_t;
     static constexpr Options::String help = {
         "The number of collocation points on each sphere will be equal to "
@@ -74,7 +74,7 @@ struct Sphere {
     static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };
-  using options = tmpl::list<Lmax, Center, Radius, AngularOrdering>;
+  using options = tmpl::list<LMax, Center, Radius, AngularOrdering>;
   static constexpr Options::String help = {
       "An arbitrary number of spherical surface."};
   Sphere(const size_t l_max_in, const std::array<double, 3> center_in,

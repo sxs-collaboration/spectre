@@ -20,10 +20,10 @@ class er;
 template <typename Frame>
 class Strahlkorper {
  public:
-  struct Lmax {
+  struct LMax {
     using type = size_t;
     static constexpr Options::String help = {
-        "Strahlkorper is expanded in Ylms up to l=Lmax"};
+        "Strahlkorper is expanded in Ylms up to l=LMax"};
   };
   struct Radius {
     using type = double;
@@ -35,13 +35,13 @@ class Strahlkorper {
     static constexpr Options::String help = {
         "Center of spherical Strahlkorper"};
   };
-  using options = tmpl::list<Lmax, Radius, Center>;
+  using options = tmpl::list<LMax, Radius, Center>;
 
   static constexpr Options::String help{
       "A star-shaped surface expressed as an expansion in spherical "
       "harmonics.\n"
       "Currently only a spherical Strahlkorper can be constructed from\n"
-      "Options.  To do this, specify parameters Center, Radius, and Lmax."};
+      "Options.  To do this, specify parameters Center, Radius, and LMax."};
 
   // Pup needs default constructor
   Strahlkorper() = default;
