@@ -21,8 +21,7 @@ namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_gaussian_plus_constant_random(const DataType& used_for_size) {
   register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<VolumeDim,
-                                                                   Fr>>();
+      gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>>();
 
   // Generate the amplitude and width
   MAKE_GENERATOR(gen);
@@ -41,22 +40,20 @@ void test_gaussian_plus_constant_random(const DataType& used_for_size) {
     gsl::at(center, i) = real_dis(gen);
   }
 
-  GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>
-      gauss_plus_const{constant, amplitude, width, center};
+  gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr> gauss_plus_const{
+      constant, amplitude, width, center};
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
+  TestHelpers::gh::ConstraintDamping::check(
       std::move(gauss_plus_const), "gaussian_plus_constant", used_for_size,
       {{{-1.0, 1.0}}}, {"IgnoredFunctionOfTime"}, constant, amplitude, width,
       center);
 
-  std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-      VolumeDim, Fr>>
-      gauss_plus_const_unique_ptr =
-          std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                               GaussianPlusConstant<VolumeDim, Fr>>(
-              constant, amplitude, width, center);
+  std::unique_ptr<gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>>
+      gauss_plus_const_unique_ptr = std::make_unique<
+          gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>>(
+          constant, amplitude, width, center);
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
+  TestHelpers::gh::ConstraintDamping::check(
       std::move(gauss_plus_const_unique_ptr->get_clone()),
       "gaussian_plus_constant", used_for_size, {{{-1.0, 1.0}}},
       {"IgnoredFunctionOfTime"}, constant, amplitude, width, center);
@@ -84,9 +81,8 @@ SPECTRE_TEST_CASE(
     });
   });
 
-  TestHelpers::test_creation<
-      std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          1, Frame::Inertial>>>(
+  TestHelpers::test_creation<std::unique_ptr<
+      gh::ConstraintDamping::DampingFunction<1, Frame::Inertial>>>(
       "GaussianPlusConstant:\n"
       "  Constant: 4.0\n"
       "  Amplitude: 3.0\n"
@@ -97,25 +93,23 @@ SPECTRE_TEST_CASE(
   const double amplitude_3d{4.0};
   const double width_3d{1.5};
   const std::array<double, 3> center_3d{{1.1, -2.2, 3.3}};
-  const GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-      3, Frame::Inertial>
+  const gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>
       gauss_plus_const_3d{constant_3d, amplitude_3d, width_3d, center_3d};
-  const auto created_gauss_plus_const =
-      TestHelpers::test_creation<GeneralizedHarmonic::ConstraintDamping::
-                                     GaussianPlusConstant<3, Frame::Inertial>>(
-          "Constant: 5.0\n"
-          "Amplitude: 4.0\n"
-          "Width: 1.5\n"
-          "Center: [1.1, -2.2, 3.3]");
+  const auto created_gauss_plus_const = TestHelpers::test_creation<
+      gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>>(
+      "Constant: 5.0\n"
+      "Amplitude: 4.0\n"
+      "Width: 1.5\n"
+      "Center: [1.1, -2.2, 3.3]");
   CHECK(created_gauss_plus_const == gauss_plus_const_3d);
-  const auto created_gauss_gh_damping_function = TestHelpers::test_creation<
-      std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          3, Frame::Inertial>>>(
-      "GaussianPlusConstant:\n"
-      "  Constant: 5.0\n"
-      "  Amplitude: 4.0\n"
-      "  Width: 1.5\n"
-      "  Center: [1.1, -2.2, 3.3]");
+  const auto created_gauss_gh_damping_function =
+      TestHelpers::test_creation<std::unique_ptr<
+          gh::ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
+          "GaussianPlusConstant:\n"
+          "  Constant: 5.0\n"
+          "  Amplitude: 4.0\n"
+          "  Width: 1.5\n"
+          "  Center: [1.1, -2.2, 3.3]");
 
   test_serialization(gauss_plus_const_3d);
 }

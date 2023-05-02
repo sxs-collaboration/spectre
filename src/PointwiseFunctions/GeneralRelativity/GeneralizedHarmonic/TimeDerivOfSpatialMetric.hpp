@@ -30,7 +30,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -96,4 +96,4 @@ struct TimeDerivSpatialMetricCompute
       ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

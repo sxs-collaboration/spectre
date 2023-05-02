@@ -20,7 +20,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 
 template <size_t Dim, typename Frame>
 void characteristic_speeds(
@@ -192,34 +192,31 @@ void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
   *speed = std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),
                     max(get(shift_magnitude) + get(lapse)));
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATION(_, data)                                                 \
-  template void GeneralizedHarmonic::characteristic_speeds(                    \
+  template void gh::characteristic_speeds(                                     \
       const gsl::not_null<std::array<DataVector, 4>*> char_speeds,             \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,      \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>& unit_normal_one_form, \
       const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
           mesh_velocity);                                                      \
-  template std::array<DataVector, 4>                                           \
-  GeneralizedHarmonic::characteristic_speeds(                                  \
+  template std::array<DataVector, 4> gh::characteristic_speeds(                \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,      \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>& unit_normal_one_form, \
       const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
           mesh_velocity);                                                      \
-  template struct GeneralizedHarmonic::CharacteristicSpeedsCompute<            \
-      DIM(data), FRAME(data)>;                                                 \
-  template struct GeneralizedHarmonic::                                        \
-      CharacteristicSpeedsOnStrahlkorperCompute<DIM(data), FRAME(data)>;       \
-  template void GeneralizedHarmonic::characteristic_fields(                    \
-      const gsl::not_null<                                                     \
-          typename GeneralizedHarmonic::Tags::CharacteristicFields<            \
-              DIM(data), FRAME(data)>::type*>                                  \
+  template struct gh::CharacteristicSpeedsCompute<DIM(data), FRAME(data)>;     \
+  template struct gh::CharacteristicSpeedsOnStrahlkorperCompute<DIM(data),     \
+                                                                FRAME(data)>;  \
+  template void gh::characteristic_fields(                                     \
+      const gsl::not_null<typename gh::Tags::CharacteristicFields<             \
+          DIM(data), FRAME(data)>::type*>                                      \
           char_fields,                                                         \
       const Scalar<DataVector>& gamma_2,                                       \
       const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
@@ -229,24 +226,23 @@ void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
       const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
           unit_normal_one_form);                                               \
-  template typename GeneralizedHarmonic::Tags::CharacteristicFields<           \
-      DIM(data), FRAME(data)>::type                                            \
-  GeneralizedHarmonic::characteristic_fields(                                  \
-      const Scalar<DataVector>& gamma_2,                                       \
-      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
-          inverse_spatial_metric,                                              \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
-      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
-      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
-          unit_normal_one_form);                                               \
-  template struct GeneralizedHarmonic::CharacteristicFieldsCompute<            \
-      DIM(data), FRAME(data)>;                                                 \
-  template void                                                                \
-  GeneralizedHarmonic::evolved_fields_from_characteristic_fields(              \
-      const gsl::not_null<typename GeneralizedHarmonic::Tags::                 \
-                              EvolvedFieldsFromCharacteristicFields<           \
-                                  DIM(data), FRAME(data)>::type*>              \
+  template                                                                     \
+      typename gh::Tags::CharacteristicFields<DIM(data), FRAME(data)>::type    \
+      gh::characteristic_fields(                                               \
+          const Scalar<DataVector>& gamma_2,                                   \
+          const tnsr::II<DataVector, DIM(data), FRAME(data)>&                  \
+              inverse_spatial_metric,                                          \
+          const tnsr::aa<DataVector, DIM(data), FRAME(data)>&                  \
+              spacetime_metric,                                                \
+          const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,              \
+          const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,            \
+          const tnsr::i<DataVector, DIM(data), FRAME(data)>&                   \
+              unit_normal_one_form);                                           \
+  template struct gh::CharacteristicFieldsCompute<DIM(data), FRAME(data)>;     \
+  template void gh::evolved_fields_from_characteristic_fields(                 \
+      const gsl::not_null<                                                     \
+          typename gh::Tags::EvolvedFieldsFromCharacteristicFields<            \
+              DIM(data), FRAME(data)>::type*>                                  \
           evolved_fields,                                                      \
       const Scalar<DataVector>& gamma_2,                                       \
       const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_psi,               \
@@ -255,20 +251,20 @@ void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
       const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_minus,             \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
           unit_normal_one_form);                                               \
-  template typename GeneralizedHarmonic::Tags::                                \
-      EvolvedFieldsFromCharacteristicFields<DIM(data), FRAME(data)>::type      \
-      GeneralizedHarmonic::evolved_fields_from_characteristic_fields(          \
-          const Scalar<DataVector>& gamma_2,                                   \
-          const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_psi,           \
-          const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& u_zero,         \
-          const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_plus,          \
-          const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_minus,         \
-          const tnsr::i<DataVector, DIM(data), FRAME(data)>&                   \
-              unit_normal_one_form);                                           \
-  template struct GeneralizedHarmonic::                                        \
-      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>;    \
-  template struct GeneralizedHarmonic::Tags::                                  \
-      ComputeLargestCharacteristicSpeed<DIM(data), FRAME(data)>;
+  template typename gh::Tags::EvolvedFieldsFromCharacteristicFields<           \
+      DIM(data), FRAME(data)>::type                                            \
+  gh::evolved_fields_from_characteristic_fields(                               \
+      const Scalar<DataVector>& gamma_2,                                       \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_psi,               \
+      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& u_zero,             \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_plus,              \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_minus,             \
+      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
+          unit_normal_one_form);                                               \
+  template struct gh::EvolvedFieldsFromCharacteristicFieldsCompute<            \
+      DIM(data), FRAME(data)>;                                                 \
+  template struct gh::Tags::ComputeLargestCharacteristicSpeed<DIM(data),       \
+                                                              FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (Frame::Inertial, Frame::Grid))

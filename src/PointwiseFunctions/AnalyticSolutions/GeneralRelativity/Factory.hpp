@@ -13,7 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::Solutions {
+namespace gh::Solutions {
 /// \brief List of all analytic solutions
 template <size_t Dim>
 using all_solutions =
@@ -25,4 +25,4 @@ using all_solutions =
                                 WrappedGr<gr::Solutions::KerrSchild>,
                                 WrappedGr<gr::Solutions::SphericalKerrSchild>>,
                      tmpl::list<>>>;
-}  // namespace GeneralizedHarmonic::Solutions
+}  // namespace gh::Solutions

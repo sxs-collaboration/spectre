@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void gauge_source(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
@@ -78,14 +78,14 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
                trace_extrinsic_curvature, trace_christoffel_last_indices);
   return gauge_source_h;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                                 \
-  template void GeneralizedHarmonic::gauge_source(                           \
+  template void gh::gauge_source(                                            \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>     \
           gauge_source_h,                                                    \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse, \
@@ -97,8 +97,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
       const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                  \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
           trace_christoffel_last_indices);                                   \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::gauge_source(                                         \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)> gh::gauge_source(    \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse, \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,       \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,             \

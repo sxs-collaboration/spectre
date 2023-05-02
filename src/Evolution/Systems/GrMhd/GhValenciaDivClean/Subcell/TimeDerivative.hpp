@@ -103,11 +103,10 @@ struct ComputeTimeDerivImpl<
         deriv_lapse, deriv_shift, deriv_spatial_metric,
         gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
     using temporary_tags = tmpl::remove_duplicates<tmpl::append<
-        typename GeneralizedHarmonic::TimeDerivative<3_st>::temporary_tags,
-        tmpl::push_front<
-            typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
-                temporary_tags,
-            ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0>,
+        typename gh::TimeDerivative<3_st>::temporary_tags,
+        tmpl::push_front<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
+                             temporary_tags,
+                         ::gh::ConstraintDamping::Tags::ConstraintGamma0>,
         extra_tags_for_grmhd,
         tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
                    Tags::ComovingMagneticFieldOneForm>>>;
@@ -121,21 +120,18 @@ struct ComputeTimeDerivImpl<
     const auto& grid_coords =
         db::get<evolution::dg::subcell::Tags::Coordinates<3, Frame::Grid>>(
             *box);
-    db::get<GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-        3, Frame::Grid>> (*box)(
-        get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0>(
-            temp_tags_ptr),
-        grid_coords, time, functions_of_time);
-    db::get<GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-        3, Frame::Grid>> (*box)(
-        get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
-            temp_tags_ptr),
-        grid_coords, time, functions_of_time);
-    db::get<GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-        3, Frame::Grid>> (*box)(
-        get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
-            temp_tags_ptr),
-        grid_coords, time, functions_of_time);
+    db::get<
+        gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>> (
+        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma0>(temp_tags_ptr),
+              grid_coords, time, functions_of_time);
+    db::get<
+        gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>> (
+        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma1>(temp_tags_ptr),
+              grid_coords, time, functions_of_time);
+    db::get<
+        gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>> (
+        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma2>(temp_tags_ptr),
+              grid_coords, time, functions_of_time);
 
     using variables_tag = typename System::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
@@ -152,14 +148,14 @@ struct ComputeTimeDerivImpl<
     const auto& primitive_vars = db::get<primitives_tag>(*box);
     const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
 
-    GeneralizedHarmonic::TimeDerivative<3_st>::apply(
+    gh::TimeDerivative<3_st>::apply(
         get<::Tags::dt<GhDtTags>>(dt_vars_ptr)...,
         get<GhTemporaries>(temp_tags_ptr)...,
         get<::Tags::deriv<GhGradientTags, tmpl::size_t<3>, Frame::Inertial>>(
             gh_derivs)...,
         get<GhExtraTags>(evolved_vars, temp_tags)...,
 
-        db::get<::GeneralizedHarmonic::gauges::Tags::GaugeCondition>(*box),
+        db::get<::gh::gauges::Tags::GaugeCondition>(*box),
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box), time,
         inertial_coords, cell_centered_logical_to_inertial_inv_jacobian,
         db::get<domain::Tags::MeshVelocity<3>>(*box));
@@ -170,10 +166,9 @@ struct ComputeTimeDerivImpl<
       // FLOPs.
       const auto& lapse = get<gr::Tags::Lapse<DataVector>>(temp_tags);
       const auto& half_phi_two_normals =
-          get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>>(temp_tags);
-      const auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(evolved_vars);
-      const auto& phi_one_normal =
-          get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(temp_tags);
+          get<gh::Tags::HalfPhiTwoNormals<3>>(temp_tags);
+      const auto& phi = get<gh::Tags::Phi<3>>(evolved_vars);
+      const auto& phi_one_normal = get<gh::Tags::PhiOneNormal<3>>(temp_tags);
       const auto& spacetime_normal_vector =
           get<gr::Tags::SpacetimeNormalVector<3>>(temp_tags);
       const auto& inverse_spacetime_metric =
@@ -214,7 +209,7 @@ struct ComputeTimeDerivImpl<
       }
 
       // Compute extrinsic curvature
-      const auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(evolved_vars);
+      const auto& pi = get<gh::Tags::Pi<3>>(evolved_vars);
       for (size_t i = 0; i < 3; ++i) {
         for (size_t j = i; j < 3; ++j) {
           get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
@@ -298,7 +293,7 @@ struct ComputeTimeDerivImpl<
         get<gr::Tags::Lapse<>>(evolved_vars, temp_tags, primitive_vars));
 
     add_stress_energy_term_to_dt_pi(
-        get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3>>>(dt_vars_ptr),
+        get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars_ptr),
         get<Tags::TraceReversedStressEnergy>(temp_tags),
         get<gr::Tags::Lapse<>>(temp_tags));
 
@@ -626,12 +621,12 @@ struct TimeDerivative {
         typename System::gh_system::variables_tag::tags_list;
     using gh_gradient_tags = typename TimeDerivativeTerms::gh_gradient_tags;
     using gh_temporary_tags = typename TimeDerivativeTerms::gh_temp_tags;
-    using gh_extra_tags = tmpl::list<
-        gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Pi<3>,
-        GeneralizedHarmonic::Tags::Phi<3>,
-        ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
-        ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-        ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
+    using gh_extra_tags =
+        tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>,
+                   gh::Tags::Phi<3>,
+                   ::gh::ConstraintDamping::Tags::ConstraintGamma0,
+                   ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                   ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
     using grmhd_source_tags =
         tmpl::transform<ValenciaDivClean::ComputeSources::return_tags,
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>;

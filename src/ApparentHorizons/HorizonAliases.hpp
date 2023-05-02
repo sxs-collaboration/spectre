@@ -21,13 +21,13 @@ struct DataVector;
 
 namespace ah {
 template <size_t Dim>
-using source_vars = tmpl::list<
-    gr::Tags::SpacetimeMetric<Dim, ::Frame::Inertial>,
-    GeneralizedHarmonic::Tags::Pi<Dim, ::Frame::Inertial>,
-    GeneralizedHarmonic::Tags::Phi<Dim, ::Frame::Inertial>,
-    ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-    GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+using source_vars =
+    tmpl::list<gr::Tags::SpacetimeMetric<Dim, ::Frame::Inertial>,
+               gh::Tags::Pi<Dim, ::Frame::Inertial>,
+               gh::Tags::Phi<Dim, ::Frame::Inertial>,
+               ::Tags::deriv<gh::Tags::Phi<Dim, Frame::Inertial>,
+                             tmpl::size_t<Dim>, Frame::Inertial>,
+               gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
 template <size_t Dim, typename Frame>
 using vars_to_interpolate_to_target =

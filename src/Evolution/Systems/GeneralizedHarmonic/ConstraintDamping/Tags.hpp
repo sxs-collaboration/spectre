@@ -11,38 +11,38 @@
 #include "Options/Options.hpp"
 
 /// \cond
-namespace GeneralizedHarmonic::OptionTags {
+namespace gh::OptionTags {
 struct Group;
-}  // namespace GeneralizedHarmonic::OptionTags
+}  // namespace gh::OptionTags
 /// \endcond
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 namespace OptionTags {
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma0 {
-  using type = std::unique_ptr<
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
+  using type =
+      std::unique_ptr<::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
   static constexpr Options::String help{
       "DampingFunction for damping parameter gamma0"};
-  using group = GeneralizedHarmonic::OptionTags::Group;
+  using group = gh::OptionTags::Group;
 };
 
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma1 {
-  using type = std::unique_ptr<
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
+  using type =
+      std::unique_ptr<::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
   static constexpr Options::String help{
       "DampingFunction for damping parameter gamma1"};
-  using group = GeneralizedHarmonic::OptionTags::Group;
+  using group = gh::OptionTags::Group;
 };
 
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma2 {
-  using type = std::unique_ptr<
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
+  using type =
+      std::unique_ptr<::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>>;
   static constexpr Options::String help{
       "DampingFunction for damping parameter gamma2"};
-  using group = GeneralizedHarmonic::OptionTags::Group;
+  using group = gh::OptionTags::Group;
 };
 }  // namespace OptionTags
 
@@ -78,11 +78,11 @@ struct ConstraintGamma2 : db::SimpleTag {
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma0 : db::SimpleTag {
   using DampingFunctionType =
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
+      ::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
   using type = std::unique_ptr<DampingFunctionType>;
   using option_tags =
-      tmpl::list<::GeneralizedHarmonic::ConstraintDamping::OptionTags::
-                     DampingFunctionGamma0<VolumeDim, Fr>>;
+      tmpl::list<::gh::ConstraintDamping::OptionTags::DampingFunctionGamma0<
+          VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& damping_function) {
@@ -97,11 +97,11 @@ struct DampingFunctionGamma0 : db::SimpleTag {
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma1 : db::SimpleTag {
   using DampingFunctionType =
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
+      ::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
   using type = std::unique_ptr<DampingFunctionType>;
   using option_tags =
-      tmpl::list<::GeneralizedHarmonic::ConstraintDamping::OptionTags::
-                     DampingFunctionGamma1<VolumeDim, Fr>>;
+      tmpl::list<::gh::ConstraintDamping::OptionTags::DampingFunctionGamma1<
+          VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& damping_function) {
@@ -116,11 +116,11 @@ struct DampingFunctionGamma1 : db::SimpleTag {
 template <size_t VolumeDim, typename Fr>
 struct DampingFunctionGamma2 : db::SimpleTag {
   using DampingFunctionType =
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
+      ::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
   using type = std::unique_ptr<DampingFunctionType>;
   using option_tags =
-      tmpl::list<::GeneralizedHarmonic::ConstraintDamping::OptionTags::
-                     DampingFunctionGamma2<VolumeDim, Fr>>;
+      tmpl::list<::gh::ConstraintDamping::OptionTags::DampingFunctionGamma2<
+          VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& damping_function) {
@@ -128,4 +128,4 @@ struct DampingFunctionGamma2 : db::SimpleTag {
   }
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping

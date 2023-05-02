@@ -17,7 +17,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct D4gBuffer;
@@ -105,20 +105,19 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::a<DataType, SpatialDim, Frame> d4_det_spatial_metric{};
-  GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame,
-                                                             DataType>(
+  gh::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame, DataType>(
       make_not_null(&d4_det_spatial_metric), sqrt_det_spatial_metric,
       inverse_spatial_metric, dt_spatial_metric, phi);
   return d4_det_spatial_metric;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template void GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(   \
+  template void gh::spacetime_deriv_of_det_spatial_metric(                    \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
           d4_det_spatial_metric,                                              \
       const Scalar<DTYPE(data)>& det_spatial_metric,                          \
@@ -127,7 +126,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(                 \
+  gh::spacetime_deriv_of_det_spatial_metric(                                  \
       const Scalar<DTYPE(data)>& det_spatial_metric,                          \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
           inverse_spatial_metric,                                             \

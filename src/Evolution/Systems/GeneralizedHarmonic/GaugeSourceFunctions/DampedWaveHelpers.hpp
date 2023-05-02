@@ -8,7 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace gauges {
 namespace DampedHarmonicGauge_detail {
 /*
@@ -136,4 +136,4 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
 
 }  // namespace DampedHarmonicGauge_detail
 }  // namespace gauges
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

@@ -16,7 +16,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(const DirichletAnalytic& rhs)
     : BoundaryCondition<Dim>{dynamic_cast<const BoundaryCondition<Dim>&>(rhs)},
@@ -97,10 +97,8 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
   *spacetime_metric =
       get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
           boundary_values);
-  *pi =
-      get<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(boundary_values);
-  *phi = get<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(
-      boundary_values);
+  *pi = get<gh::Tags::Pi<Dim, Frame::Inertial>>(boundary_values);
+  *phi = get<gh::Tags::Phi<Dim, Frame::Inertial>>(boundary_values);
 
   // Now compute lapse and shift...
   lapse_shift_and_inv_spatial_metric(lapse, shift, inv_spatial_metric,
@@ -133,4 +131,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

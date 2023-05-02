@@ -24,18 +24,17 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
-                   tmpl::list<GeneralizedHarmonic::gauges::Harmonic>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<gh::gauges::GaugeCondition,
+                             tmpl::list<gh::gauges::Harmonic>>>;
   };
 };
 
 template <size_t Dim>
 void test() {
   const auto gauge_condition = serialize_and_deserialize(
-      TestHelpers::test_creation<
-          std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>,
-          Metavariables>("Harmonic:")
+      TestHelpers::test_creation<std::unique_ptr<gh::gauges::GaugeCondition>,
+                                 Metavariables>("Harmonic:")
           ->get_clone());
 
   const size_t num_points = 5;
@@ -47,10 +46,9 @@ void test() {
 
   // Used dispatch with defaulted arguments that we don't need for Harmonic
   // gauge.
-  GeneralizedHarmonic::gauges::dispatch(
-      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
-      {}, {}, {}, {}, {}, {}, {}, Mesh<Dim>{}, time, inertial_coords, {},
-      *gauge_condition);
+  gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
+                       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, Mesh<Dim>{},
+                       time, inertial_coords, {}, *gauge_condition);
   CHECK(gauge_h == tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
   CHECK(d4_gauge_h ==
         tnsr::ab<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
@@ -59,7 +57,7 @@ void test() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.Harmonic",
                   "[Unit][Evolution]") {
-  GeneralizedHarmonic::gauges::register_derived_with_charm();
+  gh::gauges::register_derived_with_charm();
   test<1>();
   test<2>();
   test<3>();

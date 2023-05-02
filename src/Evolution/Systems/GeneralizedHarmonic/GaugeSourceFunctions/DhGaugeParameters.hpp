@@ -14,7 +14,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 /*!
  * \brief A struct holding the parameters for initializing damped harmonic gauge
  *
@@ -137,4 +137,4 @@ struct DhGaugeParameters<false> {
   void pup(PUP::er& p);
 };
 /// \endcond
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

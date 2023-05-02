@@ -67,16 +67,14 @@ void test_rollon_function(const DataType& used_for_size) {
   INFO("Test rollon function");
   // roll_on_function
   pypp::check_with_random_values<1>(
-      &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
-          roll_on_function,
+      &::gh::gauges::DampedHarmonicGauge_detail::roll_on_function,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "roll_on_function", {{{std::numeric_limits<double>::denorm_min(), 1.}}},
       used_for_size);
   // time_deriv_of_roll_on_function
   pypp::check_with_random_values<1>(
-      &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
-          time_deriv_of_roll_on_function,
+      &::gh::gauges::DampedHarmonicGauge_detail::time_deriv_of_roll_on_function,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "time_deriv_roll_on_function",
@@ -115,16 +113,16 @@ void wrap_damped_harmonic_rollon(
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   tnsr::abb<DataVector, SpatialDim, Frame> d4_spacetime_metric{};
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
   tnsr::i<DataVector, SpatialDim, Frame> half_phi_two_normals{get(lapse).size(),
                                                               0.0};
-  GeneralizedHarmonic::gauges::half_pi_and_phi_two_normals(
-      make_not_null(&half_pi_two_normals), make_not_null(&half_phi_two_normals),
-      spacetime_normal_vector, pi, phi);
+  gh::gauges::half_pi_and_phi_two_normals(make_not_null(&half_pi_two_normals),
+                                          make_not_null(&half_phi_two_normals),
+                                          spacetime_normal_vector, pi, phi);
 
-  GeneralizedHarmonic::gauges::damped_harmonic_rollon(
+  gh::gauges::damped_harmonic_rollon(
       gauge_h, d4_gauge_h, gauge_h_init, dgauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, spacetime_normal_vector,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
@@ -160,16 +158,16 @@ void wrap_damped_harmonic(
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   tnsr::abb<DataVector, SpatialDim, Frame> d4_spacetime_metric{};
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
   tnsr::i<DataVector, SpatialDim, Frame> half_phi_two_normals{get(lapse).size(),
                                                               0.0};
-  GeneralizedHarmonic::gauges::half_pi_and_phi_two_normals(
-      make_not_null(&half_pi_two_normals), make_not_null(&half_phi_two_normals),
-      spacetime_normal_vector, pi, phi);
+  gh::gauges::half_pi_and_phi_two_normals(make_not_null(&half_pi_two_normals),
+                                          make_not_null(&half_phi_two_normals),
+                                          spacetime_normal_vector, pi, phi);
 
-  GeneralizedHarmonic::gauges::damped_harmonic(
+  gh::gauges::damped_harmonic(
       gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
       spacetime_normal_vector, sqrt_det_spatial_metric, inverse_spatial_metric,
       d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
@@ -204,9 +202,9 @@ template <size_t Dim>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
-                   tmpl::list<GeneralizedHarmonic::gauges::DampedHarmonic>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<gh::gauges::GaugeCondition,
+                             tmpl::list<gh::gauges::DampedHarmonic>>>;
   };
 };
 
@@ -215,12 +213,12 @@ void test_derived_class(const Mesh<Dim>& mesh) {
   CAPTURE(Dim);
 
   const auto gauge_condition = serialize_and_deserialize(
-      TestHelpers::test_creation<
-          std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>,
-          Metavariables<Dim>>("DampedHarmonic:\n"
-                              "  SpatialDecayWidth: 100.0\n"
-                              "  Amplitudes: [0.5, 1.5, 2.5]\n"
-                              "  Exponents: [2, 4, 6]\n")
+      TestHelpers::test_creation<std::unique_ptr<gh::gauges::GaugeCondition>,
+                                 Metavariables<Dim>>(
+          "DampedHarmonic:\n"
+          "  SpatialDecayWidth: 100.0\n"
+          "  Amplitudes: [0.5, 1.5, 2.5]\n"
+          "  Exponents: [2, 4, 6]\n")
           ->get_clone());
 
   const size_t num_points = mesh.number_of_grid_points();
@@ -264,20 +262,19 @@ void test_derived_class(const Mesh<Dim>& mesh) {
           make_not_null(&gen), make_not_null(&coords_dist), num_points);
 
   tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
 
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
   tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
       get(lapse).size(), 0.0};
-  GeneralizedHarmonic::gauges::half_pi_and_phi_two_normals(
-      make_not_null(&half_pi_two_normals), make_not_null(&half_phi_two_normals),
-      spacetime_normal_vector, pi, phi);
+  gh::gauges::half_pi_and_phi_two_normals(make_not_null(&half_pi_two_normals),
+                                          make_not_null(&half_phi_two_normals),
+                                          spacetime_normal_vector, pi, phi);
 
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
-  dynamic_cast<const GeneralizedHarmonic::gauges::DampedHarmonic&>(
-      *gauge_condition)
+  dynamic_cast<const gh::gauges::DampedHarmonic&>(*gauge_condition)
       .gauge_and_spacetime_derivative(
           make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
           spacetime_normal_one_form, spacetime_normal_vector,
@@ -287,7 +284,7 @@ void test_derived_class(const Mesh<Dim>& mesh) {
 
   // Used dispatch with defaulted arguments that we don't need for
   // DampedHarmonic gauge.
-  GeneralizedHarmonic::gauges::dispatch(
+  gh::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       spacetime_normal_one_form, spacetime_normal_vector,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
@@ -296,7 +293,7 @@ void test_derived_class(const Mesh<Dim>& mesh) {
 
   tnsr::a<DataVector, Dim, Frame::Inertial> expected_gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> expected_d4_gauge_h(num_points);
-  GeneralizedHarmonic::gauges::damped_harmonic(
+  gh::gauges::damped_harmonic(
       make_not_null(&expected_gauge_h), make_not_null(&expected_d4_gauge_h),
       lapse, shift, spacetime_normal_one_form, spacetime_normal_vector,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
@@ -328,7 +325,7 @@ SPECTRE_TEST_CASE(
   test_with_python<3, Frame::Inertial>(used_for_size);
 
   // Check the derived class for input file creation works.
-  GeneralizedHarmonic::gauges::register_derived_with_charm();
+  gh::gauges::register_derived_with_charm();
   for (const auto& basis_and_quadrature :
        {std::pair{Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto},

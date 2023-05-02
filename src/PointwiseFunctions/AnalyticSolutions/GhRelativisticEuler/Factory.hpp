@@ -8,14 +8,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::Solutions {
+namespace gh::Solutions {
 /// Relativistic hydro solutions wrapped for GH
 namespace RelativisticEuler {
 /// \brief List of all analytic solutions
-using all_solutions =
-    tmpl::list<GeneralizedHarmonic::Solutions::WrappedGr<
-                   ::RelativisticEuler::Solutions::FishboneMoncriefDisk>,
-               GeneralizedHarmonic::Solutions::WrappedGr<
-                   ::RelativisticEuler::Solutions::TovStar>>;
+using all_solutions = tmpl::list<
+    gh::Solutions::WrappedGr<
+        ::RelativisticEuler::Solutions::FishboneMoncriefDisk>,
+    gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::TovStar>>;
 }  // namespace grmhd
-}  // namespace GeneralizedHarmonic::Solutions
+}  // namespace gh::Solutions

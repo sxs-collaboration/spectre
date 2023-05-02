@@ -24,7 +24,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace gauges {
 /*!
  * \brief Damped harmonic gauge source function and its spacetime derivative.
@@ -307,4 +307,4 @@ double time_deriv_of_roll_on_function(double time, double t_start,
                                       double sigma_t);
 }  // namespace DampedHarmonicGauge_detail
 }  // namespace gauges
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

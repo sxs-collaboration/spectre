@@ -143,11 +143,9 @@ void test(const BoundaryConditionType& boundary_condition) {
 
   const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
 
-  const GeneralizedHarmonic::Solutions::WrappedGr solution{
-      RelativisticEuler::Solutions::TovStar{
-          1.28e-3,
-          EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
-          RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
+  const gh::Solutions::WrappedGr solution{RelativisticEuler::Solutions::TovStar{
+      1.28e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
   using SolutionForTest = std::decay_t<decltype(solution)>;
 
   // Below are tags used for testing Outflow boundary condition
@@ -159,8 +157,8 @@ void test(const BoundaryConditionType& boundary_condition) {
       logical_to_grid_map(subcell_logical_coords), time, functions_of_time);
 
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3>;
-  using Pi = GeneralizedHarmonic::Tags::Pi<3>;
-  using Phi = GeneralizedHarmonic::Tags::Phi<3>;
+  using Pi = gh::Tags::Pi<3>;
+  using Phi = gh::Tags::Phi<3>;
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;

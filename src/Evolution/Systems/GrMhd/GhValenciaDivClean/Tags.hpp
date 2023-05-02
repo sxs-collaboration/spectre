@@ -71,8 +71,7 @@ using primitive_grmhd_reconstruction_tags =
 /// \brief Tags sent for spacetime evolution. All tags sent are the
 /// reconstruciton+spacetime tags
 using spacetime_reconstruction_tags =
-    tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Pi<3>,
-               GeneralizedHarmonic::Tags::Phi<3>>;
+    tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>, gh::Tags::Phi<3>>;
 
 /// \brief All tags sent for primitive reconstruction, both GRMHD and spacetime
 /// evolution tags.

@@ -75,10 +75,11 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
       using temporal_id = ::Tags::TimeAndPrevious;
 
-      using vars_to_interpolate_to_target = tmpl::list<
-          gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
-          gr::Tags::SpatialMetric<3, Frame::Grid>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+      using vars_to_interpolate_to_target =
+          tmpl::list<gr::Tags::Lapse<DataVector>,
+                     gr::Tags::Shift<3, Frame::Grid>,
+                     gr::Tags::SpatialMetric<3, Frame::Grid>,
+                     gh::ConstraintDamping::Tags::ConstraintGamma1>;
       using compute_vars_to_interpolate =
           ah::ComputeExcisionBoundaryVolumeQuantities;
       using compute_items_on_source = tmpl::list<>;
@@ -88,8 +89,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
           StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, Frame::Grid,
                                                            DataVector>,
           StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
-          GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
-              3, Frame::Grid>>>;
+          gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
       using compute_target_points =
           intrp::TargetPoints::Sphere<InterpolationTarget, ::Frame::Grid>;
       using post_interpolation_callback =

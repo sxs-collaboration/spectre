@@ -29,7 +29,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -75,7 +75,7 @@ namespace Tags {
  * \brief Compute item the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime
  * metric \f$ g_{ab} \f$.
  *
- * \details See `pi()`. Can be retrieved using `GeneralizedHarmonic::Tags::Pi`.
+ * \details See `pi()`. Can be retrieved using `gh::Tags::Pi`.
  */
 template <size_t SpatialDim, typename Frame>
 struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
@@ -102,4 +102,4 @@ struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
   using base = Pi<SpatialDim, Frame>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

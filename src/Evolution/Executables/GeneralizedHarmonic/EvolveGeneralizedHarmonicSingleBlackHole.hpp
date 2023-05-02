@@ -102,24 +102,23 @@ struct EvolutionMetavars
   struct ExcisionBoundaryA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using tags_to_observe = tmpl::list<
-        gr::Tags::Lapse<DataVector>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorper<Frame::Grid>>;
+    using tags_to_observe =
+        tmpl::list<gr::Tags::Lapse<DataVector>,
+                   gh::ConstraintDamping::Tags::ConstraintGamma1,
+                   gh::CharacteristicSpeedsOnStrahlkorper<Frame::Grid>>;
     using compute_vars_to_interpolate =
         ah::ComputeExcisionBoundaryVolumeQuantities;
-    using vars_to_interpolate_to_target = tmpl::list<
-        gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
-        gr::Tags::SpatialMetric<3, Frame::Grid>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+    using vars_to_interpolate_to_target =
+        tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
+                   gr::Tags::SpatialMetric<3, Frame::Grid>,
+                   gh::ConstraintDamping::Tags::ConstraintGamma1>;
     using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::append<tmpl::list<
         gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Grid, DataVector>,
         StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, Frame::Grid,
                                                          DataVector>,
         StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
-        GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
-            3, Frame::Grid>>>;
+        gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
     using post_interpolation_callback =
@@ -203,12 +202,11 @@ struct EvolutionMetavars
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
                       Parallel::Phase::ImportInitialData,
-                      tmpl::list<
-                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          GeneralizedHarmonic::Actions::SetNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          Parallel::Actions::TerminatePhase>>>,
+                      tmpl::list<gh::Actions::ReadNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 gh::Actions::SetNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
@@ -251,9 +249,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
+    &gh::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
-    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &gh::ConstraintDamping::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

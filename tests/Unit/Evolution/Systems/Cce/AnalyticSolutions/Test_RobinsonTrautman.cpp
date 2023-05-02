@@ -51,12 +51,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.RobinsonTrautman",
 
   const auto boundary_data = boundary_solution.variables(
       l_max, time,
-      tmpl::list<
-          Tags::Dr<Tags::CauchyCartesianCoords>,
-          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-          ::Tags::dt<
-              gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>, Tags::News>{});
+      tmpl::list<Tags::Dr<Tags::CauchyCartesianCoords>,
+                 gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
+                 ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
+                                                      DataVector>>,
+                 gh::Tags::Phi<3, ::Frame::Inertial>, Tags::News>{});
 
   const auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
@@ -81,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.RobinsonTrautman",
   boundary_solution.dr_inverse_jacobian(make_not_null(&dr_inverse_jacobian),
                                         l_max);
   const auto& d_spacetime_metric =
-      get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(boundary_data);
+      get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_data);
   const auto& dr_cartesian_coordinates =
       get<Tags::Dr<Tags::CauchyCartesianCoords>>(boundary_data);
   tnsr::aa<DataVector, 3> dr_spacetime_metric{

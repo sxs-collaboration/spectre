@@ -9,19 +9,19 @@
 #include "Options/Options.hpp"
 
 /// \cond
-namespace GeneralizedHarmonic::OptionTags {
+namespace gh::OptionTags {
 struct Group;
-}  // namespace GeneralizedHarmonic::OptionTags
+}  // namespace gh::OptionTags
 /// \endcond
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 namespace OptionTags {
 template <bool UseRollon>
 struct DhGaugeParameters {
-  using type = GeneralizedHarmonic::gauges::DhGaugeParameters<UseRollon>;
+  using type = gh::gauges::DhGaugeParameters<UseRollon>;
   static constexpr Options::String help{
       "Parameters for initializing damped harmonic gauge."};
-  using group = GeneralizedHarmonic::OptionTags::Group;
+  using group = gh::OptionTags::Group;
 };
 }  // namespace OptionTags
 
@@ -29,11 +29,10 @@ namespace Tags {
 /// \brief Input option tags for the generalized harmonic evolution system
 template <bool UseRollon>
 struct DhGaugeParameters : db::SimpleTag {
-  using ParametersType =
-      GeneralizedHarmonic::gauges::DhGaugeParameters<UseRollon>;
+  using ParametersType = gh::gauges::DhGaugeParameters<UseRollon>;
   using type = ParametersType;
-  using option_tags = tmpl::list<
-      GeneralizedHarmonic::gauges::OptionTags::DhGaugeParameters<UseRollon>>;
+  using option_tags =
+      tmpl::list<gh::gauges::OptionTags::DhGaugeParameters<UseRollon>>;
 
   static constexpr bool pass_metavariables = false;
   static ParametersType create_from_options(const ParametersType& parameters) {
@@ -41,4 +40,4 @@ struct DhGaugeParameters : db::SimpleTag {
   }
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

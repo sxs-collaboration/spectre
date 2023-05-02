@@ -129,7 +129,7 @@ compute_prim_solution(
       }
     }
   }
-  auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(vars);
+  auto& phi = get<gh::Tags::Phi<3>>(vars);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t a = 0; a < 4; ++a) {
       for (size_t b = a; b < 4; ++b) {
@@ -138,7 +138,7 @@ compute_prim_solution(
     }
   }
 
-  auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(vars);
+  auto& pi = get<gh::Tags::Pi<3>>(vars);
   for (size_t a = 0; a < 4; ++a) {
     for (size_t b = a; b < 4; ++b) {
       pi.get(a, b) = (500 * a + 10000 * b + 1) * get<0>(coords);
@@ -248,10 +248,9 @@ void test_prim_reconstructor_impl(
           prims_tags,
           hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
       flux_tags,
-      tmpl::list<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-                 GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-                 Lapse, Shift, SpatialMetric, SqrtDetSpatialMetric,
-                 InverseSpatialMetric,
+      tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 gh::ConstraintDamping::Tags::ConstraintGamma2, Lapse, Shift,
+                 SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
                  evolution::dg::Actions::detail::NormalVector<3>>>>;
 
   std::array<Variables<fd_package_data_argument_tags>, 3> vars_on_lower_face =
@@ -290,10 +289,10 @@ void test_prim_reconstructor_impl(
         get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
     get<gr::Tags::SpacetimeMetric<3>>(volume_spacetime_vars) =
         get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
-    get<GeneralizedHarmonic::Tags::Phi<3>>(volume_spacetime_vars) =
-        get<GeneralizedHarmonic::Tags::Phi<3>>(volume_prims_for_recons);
-    get<GeneralizedHarmonic::Tags::Pi<3>>(volume_spacetime_vars) =
-        get<GeneralizedHarmonic::Tags::Pi<3>>(volume_prims_for_recons);
+    get<gh::Tags::Phi<3>>(volume_spacetime_vars) =
+        get<gh::Tags::Phi<3>>(volume_prims_for_recons);
+    get<gh::Tags::Pi<3>>(volume_spacetime_vars) =
+        get<gh::Tags::Pi<3>>(volume_prims_for_recons);
   }
 
   // Now we have everything to call the reconstruction

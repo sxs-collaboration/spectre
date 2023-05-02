@@ -53,8 +53,8 @@ using remove_periodic_conditions_t =
 using standard_boundary_conditions = tmpl::push_back<
     typename detail::AllProductConditions<
         detail::remove_periodic_conditions_t<
-            typename GeneralizedHarmonic::BoundaryConditions::
-                standard_boundary_conditions<3_st>>,
+            typename gh::BoundaryConditions::standard_boundary_conditions<
+                3_st>>,
         detail::remove_periodic_conditions_t<
             typename grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>>::type,

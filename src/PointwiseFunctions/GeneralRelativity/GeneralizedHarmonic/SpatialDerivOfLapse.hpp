@@ -30,7 +30,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -104,4 +104,4 @@ struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                              tmpl::size_t<SpatialDim>, Frame>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

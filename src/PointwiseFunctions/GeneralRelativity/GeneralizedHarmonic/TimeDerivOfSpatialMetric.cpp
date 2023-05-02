@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void time_deriv_of_spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>
@@ -44,19 +44,18 @@ tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::ii<DataType, SpatialDim, Frame> dt_spatial_metric{};
-  GeneralizedHarmonic::time_deriv_of_spatial_metric<SpatialDim, Frame,
-                                                    DataType>(
+  gh::time_deriv_of_spatial_metric<SpatialDim, Frame, DataType>(
       make_not_null(&dt_spatial_metric), lapse, shift, phi, pi);
   return dt_spatial_metric;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                              \
-  template void GeneralizedHarmonic::time_deriv_of_spatial_metric(        \
+  template void gh::time_deriv_of_spatial_metric(                         \
       const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*> \
           dt_spatial_metric,                                              \
       const Scalar<DTYPE(data)>& lapse,                                   \
@@ -64,7 +63,7 @@ tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);           \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::time_deriv_of_spatial_metric(                      \
+  gh::time_deriv_of_spatial_metric(                                       \
       const Scalar<DTYPE(data)>& lapse,                                   \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \

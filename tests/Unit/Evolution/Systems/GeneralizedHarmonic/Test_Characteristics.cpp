@@ -49,12 +49,12 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Pi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Phi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VSpacetimeMetric
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VZero
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VMinus
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VPlus
+// IWYU pragma: no_forward_declare gh::Tags::Pi
+// IWYU pragma: no_forward_declare gh::Tags::Phi
+// IWYU pragma: no_forward_declare gh::Tags::VSpacetimeMetric
+// IWYU pragma: no_forward_declare gh::Tags::VZero
+// IWYU pragma: no_forward_declare gh::Tags::VMinus
+// IWYU pragma: no_forward_declare gh::Tags::VPlus
 // IWYU pragma: no_forward_declare Tags::dt
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -65,8 +65,8 @@ Scalar<DataVector> speed_with_index(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal) {
-  return Scalar<DataVector>{GeneralizedHarmonic::characteristic_speeds(
-      gamma_1, lapse, shift, normal, {})[Index]};
+  return Scalar<DataVector>{
+      gh::characteristic_speeds(gamma_1, lapse, shift, normal, {})[Index]};
 }
 
 template <size_t Dim, typename Frame>
@@ -75,15 +75,14 @@ Scalar<DataVector> char_speed_upsi_with_moving_mesh(
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal,
     const tnsr::I<DataVector, Dim, Frame>& mesh_velocity) {
-  return Scalar<DataVector>{GeneralizedHarmonic::characteristic_speeds(
+  return Scalar<DataVector>{gh::characteristic_speeds(
       gamma_1, lapse, shift, normal, {mesh_velocity})[0]};
 }
 
 template <size_t Dim, typename Frame>
 void test_characteristic_speeds() {
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::CharacteristicSpeedsCompute<Dim, Frame>>(
-      "CharacteristicSpeeds");
+      gh::CharacteristicSpeedsCompute<Dim, Frame>>("CharacteristicSpeeds");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
                                     "TestFunctions", "char_speed_upsi",
@@ -106,11 +105,10 @@ void test_characteristic_speeds() {
 template <size_t Dim, typename Frame>
 void test_characteristic_speeds_on_strahlkorper() {
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorper<Frame>>(
+      gh::CharacteristicSpeedsOnStrahlkorper<Frame>>(
       "CharacteristicSpeedsOnStrahlkorper");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<Dim,
-                                                                     Frame>>(
+      gh::CharacteristicSpeedsOnStrahlkorperCompute<Dim, Frame>>(
       "CharacteristicSpeedsOnStrahlkorper");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
@@ -188,10 +186,9 @@ void test_characteristic_speeds_analytic(
 
   // Check that locally computed fields match returned ones
   std::array<DataVector, 4> char_speeds_from_func{};
-  GeneralizedHarmonic::
-      CharacteristicSpeedsCompute<spatial_dim, Frame::Inertial>::function(
-          make_not_null(&char_speeds_from_func), gamma_1, lapse, shift,
-          unit_normal_one_form, {});
+  gh::CharacteristicSpeedsCompute<spatial_dim, Frame::Inertial>::function(
+      make_not_null(&char_speeds_from_func), gamma_1, lapse, shift,
+      unit_normal_one_form, {});
   const auto& upsi_speed_from_func = char_speeds_from_func[0];
   const auto& uzero_speed_from_func = char_speeds_from_func[1];
   const auto& uplus_speed_from_func = char_speeds_from_func[2];
@@ -206,10 +203,9 @@ void test_characteristic_speeds_analytic(
   // Note that CharacteristicSpeedsOnStrahlkorperCompute has a different
   // return type than CharacteristicSpeedsCompute.
   tnsr::a<DataVector, 3, Frame::Inertial> char_speeds_from_strahlkorper{};
-  GeneralizedHarmonic::CharacteristicSpeedsOnStrahlkorperCompute<
-      spatial_dim,
-      Frame::Inertial>::function(make_not_null(&char_speeds_from_strahlkorper),
-                                 gamma_1, lapse, shift, unit_normal_one_form);
+  gh::CharacteristicSpeedsOnStrahlkorperCompute<spatial_dim, Frame::Inertial>::
+      function(make_not_null(&char_speeds_from_strahlkorper), gamma_1, lapse,
+               shift, unit_normal_one_form);
   const auto& upsi_speed_from_strahlkorper = char_speeds_from_strahlkorper[0];
   const auto& uzero_speed_from_strahlkorper = char_speeds_from_strahlkorper[1];
   const auto& uplus_speed_from_strahlkorper = char_speeds_from_strahlkorper[2];
@@ -231,42 +227,40 @@ typename Tag::type field_with_tag(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
-  return get<Tag>(GeneralizedHarmonic::characteristic_fields(
-      gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
-      normal_one_form));
+  return get<Tag>(gh::characteristic_fields(gamma_2, inverse_spatial_metric,
+                                            spacetime_metric, pi, phi,
+                                            normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
 void test_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>>(
-      "CharacteristicFields");
+      gh::CharacteristicFieldsCompute<Dim, Frame>>("CharacteristicFields");
   const DataVector used_for_size(5);
   // VSpacetimeMetric
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame>,
-                     Dim, Frame>,
+      field_with_tag<gh::Tags::VSpacetimeMetric<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "char_field_upsi", {{{-2., 2.}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::VZero<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uzero", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VZero<Dim, Frame>, Dim, Frame>, "TestFunctions",
+      "char_field_uzero", {{{-2., 2.}}}, used_for_size,
       1.e-9);  // last argument loosens tolerance from
                // default of 1.0e-12 to avoid occasional
                // failures of this test, suspected from
                // accumulated roundoff error
   // VPlus
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::VPlus<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uplus", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VPlus<Dim, Frame>, Dim, Frame>, "TestFunctions",
+      "char_field_uplus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
                 // accumulated roundoff error
   // VMinus
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::VMinus<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uminus", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VMinus<Dim, Frame>, Dim, Frame>, "TestFunctions",
+      "char_field_uminus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -325,10 +319,10 @@ void test_characteristic_fields_analytic(
       determinant_and_inverse(spatial_metric).second;
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
-                                            spatial_metric, d_spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+  const auto phi =
+      gh::phi(lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
   const auto normal_one_form =
       gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
@@ -383,22 +377,18 @@ void test_characteristic_fields_analytic(
   }
 
   // Check that locally computed fields match returned ones
-  const auto uvars = GeneralizedHarmonic::characteristic_fields(
-      gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
-      unit_normal_one_form);
+  const auto uvars = gh::characteristic_fields(gamma_2, inverse_spatial_metric,
+                                               spacetime_metric, pi, phi,
+                                               unit_normal_one_form);
 
   const auto& upsi_from_func =
-      get<GeneralizedHarmonic::Tags::VSpacetimeMetric<spatial_dim,
-                                                      Frame::Inertial>>(uvars);
+      get<gh::Tags::VSpacetimeMetric<spatial_dim, Frame::Inertial>>(uvars);
   const auto& uzero_from_func =
-      get<GeneralizedHarmonic::Tags::VZero<spatial_dim, Frame::Inertial>>(
-          uvars);
+      get<gh::Tags::VZero<spatial_dim, Frame::Inertial>>(uvars);
   const auto& uplus_from_func =
-      get<GeneralizedHarmonic::Tags::VPlus<spatial_dim, Frame::Inertial>>(
-          uvars);
+      get<gh::Tags::VPlus<spatial_dim, Frame::Inertial>>(uvars);
   const auto& uminus_from_func =
-      get<GeneralizedHarmonic::Tags::VMinus<spatial_dim, Frame::Inertial>>(
-          uvars);
+      get<gh::Tags::VMinus<spatial_dim, Frame::Inertial>>(uvars);
 
   CHECK_ITERABLE_APPROX(upsi, upsi_from_func);
   CHECK_ITERABLE_APPROX(uzero, uzero_from_func);
@@ -416,16 +406,14 @@ typename Tag::type evol_field_with_tag(
     const tnsr::aa<DataVector, Dim, Frame>& u_plus,
     const tnsr::aa<DataVector, Dim, Frame>& u_minus,
     const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
-  return get<Tag>(
-      GeneralizedHarmonic::evolved_fields_from_characteristic_fields(
-          gamma_2, u_psi, u_zero, u_plus, u_minus, normal_one_form));
+  return get<Tag>(gh::evolved_fields_from_characteristic_fields(
+      gamma_2, u_psi, u_zero, u_plus, u_minus, normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
 void test_evolved_from_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<Dim,
-                                                                        Frame>>(
+      gh::EvolvedFieldsFromCharacteristicFieldsCompute<Dim, Frame>>(
       "EvolvedFieldsFromCharacteristicFields");
   const DataVector used_for_size(5);
   // Psi
@@ -434,13 +422,11 @@ void test_evolved_from_characteristic_fields() {
       "TestFunctions", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<GeneralizedHarmonic::Tags::Pi<Dim, Frame>, Dim,
-                          Frame>,
+      evol_field_with_tag<gh::Tags::Pi<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "evol_field_pi", {{{-2., 2.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<GeneralizedHarmonic::Tags::Phi<Dim, Frame>, Dim,
-                          Frame>,
+      evol_field_with_tag<gh::Tags::Phi<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "evol_field_phi", {{{-2., 2.}}}, used_for_size);
 }
 
@@ -496,10 +482,10 @@ void test_evolved_from_characteristic_fields_analytic(
       determinant_and_inverse(spatial_metric).second;
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
-                                            spatial_metric, d_spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+  const auto phi =
+      gh::phi(lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
   const auto normal_one_form =
       gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
@@ -553,16 +539,14 @@ void test_evolved_from_characteristic_fields_analytic(
                            get(gamma_2) * spacetime_metric.get(mu, nu);
     }
   }
-  const auto ffields =
-      GeneralizedHarmonic::evolved_fields_from_characteristic_fields(
-          gamma_2, upsi, uzero, uplus, uminus, unit_normal_one_form);
+  const auto ffields = gh::evolved_fields_from_characteristic_fields(
+      gamma_2, upsi, uzero, uplus, uminus, unit_normal_one_form);
   const auto& psi_from_func =
       get<gr::Tags::SpacetimeMetric<spatial_dim, Frame::Inertial>>(ffields);
   const auto& pi_from_func =
-      get<GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::Inertial>>(ffields);
+      get<gh::Tags::Pi<spatial_dim, Frame::Inertial>>(ffields);
   const auto& phi_from_func =
-      get<GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::Inertial>>(
-          ffields);
+      get<gh::Tags::Phi<spatial_dim, Frame::Inertial>>(ffields);
 
   CHECK_ITERABLE_APPROX(spacetime_metric, psi_from_func);
   CHECK_ITERABLE_APPROX(pi, pi_from_func);
@@ -655,9 +639,8 @@ void check_max_char_speed(const DataVector& used_for_size) {
   const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&gen), make_not_null(&gamma_1_dist), used_for_size);
   double max_char_speed = std::numeric_limits<double>::signaling_NaN();
-  GeneralizedHarmonic::Tags::ComputeLargestCharacteristicSpeed<
-      Dim, Frame::Inertial>::function(make_not_null(&max_char_speed), gamma_1,
-                                      lapse, shift, spatial_metric);
+  gh::Tags::ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>::function(
+      make_not_null(&max_char_speed), gamma_1, lapse, shift, spatial_metric);
 
   double maximum_observed = -std::numeric_limits<double>::infinity();
   for (size_t i = 0; i < trials; ++i) {
@@ -665,8 +648,7 @@ void check_max_char_speed(const DataVector& used_for_size) {
         random_unit_normal(&gen, spatial_metric), spatial_metric);
 
     const auto characteristic_speeds =
-        GeneralizedHarmonic::characteristic_speeds(gamma_1, lapse, shift,
-                                                   unit_one_form, {});
+        gh::characteristic_speeds(gamma_1, lapse, shift, unit_one_form, {});
     double max_speed_in_chosen_direction = 0.0;
     for (const auto& speed : characteristic_speeds) {
       max_speed_in_chosen_direction =

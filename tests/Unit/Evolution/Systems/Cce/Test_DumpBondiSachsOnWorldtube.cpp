@@ -40,8 +40,8 @@ struct test_metavariables {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
-                   GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-                   GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>;
+                   gh::Tags::Pi<3, ::Frame::Inertial>,
+                   gh::Tags::Phi<3, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<Target, ::Frame::Inertial>;
     using post_interpolation_callback =

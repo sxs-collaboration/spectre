@@ -37,7 +37,7 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
   using grmhd_system = grmhd::ValenciaDivClean::System;
-  using gh_system = GeneralizedHarmonic::System<3_st>;
+  using gh_system = gh::System<3_st>;
 
   static_assert(std::is_same_v<Tags::spacetime_reconstruction_tags,
                                typename gh_system::variables_tag::tags_list>);

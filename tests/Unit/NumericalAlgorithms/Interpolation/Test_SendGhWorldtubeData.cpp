@@ -75,12 +75,11 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using const_global_cache_tags =
       tmpl::list<intrp::Tags::Sphere<InterpolationTargetTag>>;
-  using simple_tags =
-      tmpl::list<::Tags::Variables<tmpl::list<
-                     ::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                     GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                     GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>,
-                 ::Tags::Time>;
+  using simple_tags = tmpl::list<
+      ::Tags::Variables<tmpl::list<
+          ::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+          gh::Tags::Phi<3, Frame::Inertial>, gh::Tags::Pi<3, Frame::Inertial>>>,
+      ::Tags::Time>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags, tmpl::list<>>>>>;
@@ -132,8 +131,8 @@ void test_callback_function(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<double> value_distribution{0.1, 1.0};
   using spacetime_tags =
       tmpl::list<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>;
+                 gh::Tags::Phi<3, Frame::Inertial>,
+                 gh::Tags::Pi<3, Frame::Inertial>>;
   using target = typename test_metavariables<LocalTimeStepping>::Target;
   const intrp::AngularOrdering angular_ordering = intrp::AngularOrdering::Cce;
   const double radius = 3.6;
@@ -170,10 +169,10 @@ void test_callback_function(const gsl::not_null<Generator*> gen) {
   // through to the replaced simple action that stores them in the globals)
   CHECK(get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(
             spacetime_variables) == received_spacetime_metric);
-  CHECK(get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
-            spacetime_variables) == received_phi);
-  CHECK(get<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(
-            spacetime_variables) == received_pi);
+  CHECK(get<gh::Tags::Phi<3, Frame::Inertial>>(spacetime_variables) ==
+        received_phi);
+  CHECK(get<gh::Tags::Pi<3, Frame::Inertial>>(spacetime_variables) ==
+        received_pi);
 
   // Error test
   intrp::OptionHolders::Sphere sphere_opts2(

@@ -11,7 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 template <size_t Dim, typename Frame>
 void half_pi_and_phi_two_normals(
     const gsl::not_null<Scalar<DataVector>*> half_pi_two_normals,
@@ -65,4 +65,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial, Frame::Grid))
 #undef INSTANTIATE
 #undef FRAME
 #undef DIM
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

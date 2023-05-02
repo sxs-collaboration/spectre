@@ -22,28 +22,26 @@ namespace grmhd::GhValenciaDivClean::Tags {
  * \brief Compute item to get the F-constraint for the generalized harmonic
  * evolution system with an MHD stress-energy source.
  *
- * \details See `GeneralizedHarmonic::f_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::FConstraint`.
+ * \details See `gh::f_constraint()`. Can be retrieved using
+ * `gh::Tags::FConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct FConstraintCompute
-    : GeneralizedHarmonic::Tags::FConstraint<SpatialDim, Frame>,
-      db::ComputeTag {
+struct FConstraintCompute : gh::Tags::FConstraint<SpatialDim, Frame>,
+                            db::ComputeTag {
   using argument_tags = tmpl::list<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>,
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>,
+      gh::Tags::GaugeH<SpatialDim, Frame>,
+      gh::Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
       gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
       gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
-      GeneralizedHarmonic::Tags::Pi<SpatialDim, Frame>,
-      GeneralizedHarmonic::Tags::Phi<SpatialDim, Frame>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<SpatialDim, Frame>,
-                    tmpl::size_t<SpatialDim>, Frame>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<SpatialDim, Frame>,
-                    tmpl::size_t<SpatialDim>, Frame>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraint<SpatialDim, Frame>,
+      gh::Tags::Pi<SpatialDim, Frame>, gh::Tags::Phi<SpatialDim, Frame>,
+      ::Tags::deriv<gh::Tags::Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      ::Tags::deriv<gh::Tags::Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::ThreeIndexConstraint<SpatialDim, Frame>,
       Tags::TraceReversedStressEnergy>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
@@ -63,8 +61,8 @@ struct FConstraintCompute
       const Scalar<DataVector>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
-      &GeneralizedHarmonic::f_constraint<SpatialDim, Frame, DataVector>);
+      &gh::f_constraint<SpatialDim, Frame, DataVector>);
 
-  using base = GeneralizedHarmonic::Tags::FConstraint<SpatialDim, Frame>;
+  using base = gh::Tags::FConstraint<SpatialDim, Frame>;
 };
 }  // namespace grmhd::GhValenciaDivClean::Tags

@@ -62,14 +62,14 @@ struct ExtrinsicCurvatureCompute : gr::Tags::ExtrinsicCurvature<Dim, Frame>,
       const tnsr::II<DataVector, Dim, Frame>& inv_g) {
     const auto shift = gr::shift(psi, inv_g);
     destructive_resize_components(result, psi.begin()->size());
-    GeneralizedHarmonic::extrinsic_curvature(
+    gh::extrinsic_curvature(
         result, gr::spacetime_normal_vector(gr::lapse(shift, psi), shift), pi,
         phi);
   }
-  using argument_tags = tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>,
-                                   GeneralizedHarmonic::Tags::Pi<Dim, Frame>,
-                                   GeneralizedHarmonic::Tags::Phi<Dim, Frame>,
-                                   gr::Tags::InverseSpatialMetric<Dim, Frame>>;
+  using argument_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>,
+                 gh::Tags::Pi<Dim, Frame>, gh::Tags::Phi<Dim, Frame>,
+                 gr::Tags::InverseSpatialMetric<Dim, Frame>>;
   using base = gr::Tags::ExtrinsicCurvature<Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
@@ -83,12 +83,10 @@ struct SpatialChristoffelSecondKindCompute
       const tnsr::II<DataVector, Dim, Frame>& inv_g) {
     destructive_resize_components(result, phi.begin()->size());
     raise_or_lower_first_index(
-        result,
-        gr::christoffel_first_kind(
-            GeneralizedHarmonic::deriv_spatial_metric(phi)),
+        result, gr::christoffel_first_kind(gh::deriv_spatial_metric(phi)),
         inv_g);
   }
-  using argument_tags = tmpl::list<GeneralizedHarmonic::Tags::Phi<Dim, Frame>,
+  using argument_tags = tmpl::list<gh::Tags::Phi<Dim, Frame>,
                                    gr::Tags::InverseSpatialMetric<Dim, Frame>>;
   using base = ::gr::Tags::SpatialChristoffelSecondKind<Dim, Frame>;
 };

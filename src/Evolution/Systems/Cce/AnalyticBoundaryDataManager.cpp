@@ -24,15 +24,13 @@ bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
   const auto boundary_tuple = generator_->variables(
       l_max_, time,
       tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-                 GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>{});
+                 gh::Tags::Pi<3, ::Frame::Inertial>,
+                 gh::Tags::Phi<3, ::Frame::Inertial>>{});
   const auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
           boundary_tuple);
-  const auto& pi =
-      get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
-  const auto& phi =
-      get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
+  const auto& pi = get<gh::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
+  const auto& phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
   create_bondi_boundary_data(boundary_data_variables, phi, pi, spacetime_metric,
                              extraction_radius_, l_max_);
   return true;

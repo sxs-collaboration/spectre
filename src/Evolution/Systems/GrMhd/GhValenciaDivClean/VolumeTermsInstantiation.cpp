@@ -52,7 +52,7 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::aa<DataVector, 3>& pi, const tnsr::iaa<DataVector, 3>& phi,
     const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2,
-    const ::GeneralizedHarmonic::gauges::GaugeCondition& gauge_condition,
+    const ::gh::gauges::GaugeCondition& gauge_condition,
     const Mesh<3>& mesh_for_rhs, const double& time,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,

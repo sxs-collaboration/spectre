@@ -22,7 +22,7 @@ namespace {
 template <typename DataType>
 void test_triple_gaussian_random(const DataType& used_for_size) {
   register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>();
+      gh::ConstraintDamping::TimeDependentTripleGaussian>();
 
   // Generate the amplitude and width
   MAKE_GENERATOR(gen);
@@ -53,24 +53,23 @@ void test_triple_gaussian_random(const DataType& used_for_size) {
   // in the TimeDependentTripleGaussian
   const std::string function_of_time_for_scaling{"Expansion"s};
 
-  GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian
-      triple_gauss{constant, amplitude_1, width_1,     center_1, amplitude_2,
-                   width_2,  center_2,    amplitude_3, width_3,  center_3};
+  gh::ConstraintDamping::TimeDependentTripleGaussian triple_gauss{
+      constant, amplitude_1, width_1,     center_1, amplitude_2,
+      width_2,  center_2,    amplitude_3, width_3,  center_3};
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
+  TestHelpers::gh::ConstraintDamping::check(
       std::move(triple_gauss), "time_dependent_triple_gaussian", used_for_size,
       {{{-1.0, 1.0}}}, {function_of_time_for_scaling}, constant, amplitude_1,
       width_1, center_1, amplitude_2, width_2, center_2, amplitude_3, width_3,
       center_3);
 
-  std::unique_ptr<
-      GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>
-      triple_gauss_unique_ptr = std::make_unique<
-          GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>(
-          constant, amplitude_1, width_1, center_1, amplitude_2, width_2,
-          center_2, amplitude_3, width_3, center_3);
+  std::unique_ptr<gh::ConstraintDamping::TimeDependentTripleGaussian>
+      triple_gauss_unique_ptr =
+          std::make_unique<gh::ConstraintDamping::TimeDependentTripleGaussian>(
+              constant, amplitude_1, width_1, center_1, amplitude_2, width_2,
+              center_2, amplitude_3, width_3, center_3);
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
+  TestHelpers::gh::ConstraintDamping::check(
       std::move(triple_gauss_unique_ptr->get_clone()),
       "time_dependent_triple_gaussian", used_for_size, {{{-1.0, 1.0}}},
       {function_of_time_for_scaling}, constant, amplitude_1, width_1, center_1,
@@ -101,13 +100,11 @@ SPECTRE_TEST_CASE(
   const double width_3_3d{1.0};
   const std::array<double, 3> center_3_3d{{7.7, -8.8, 9.9}};
 
-  const GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian
-      triple_gauss_3d{constant_3d, amplitude_1_3d, width_1_3d,
-                      center_1_3d, amplitude_2_3d, width_2_3d,
-                      center_2_3d, amplitude_3_3d, width_3_3d,
-                      center_3_3d};
+  const gh::ConstraintDamping::TimeDependentTripleGaussian triple_gauss_3d{
+      constant_3d, amplitude_1_3d, width_1_3d,     center_1_3d, amplitude_2_3d,
+      width_2_3d,  center_2_3d,    amplitude_3_3d, width_3_3d,  center_3_3d};
   const auto created_triple_gauss = TestHelpers::test_creation<
-      GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>(
+      gh::ConstraintDamping::TimeDependentTripleGaussian>(
       "Constant: 5.0\n"
       "Gaussian1:\n"
       "  Amplitude: 4.0\n"
@@ -124,9 +121,8 @@ SPECTRE_TEST_CASE(
   CHECK(created_triple_gauss == triple_gauss_3d);
   CHECK_FALSE(created_triple_gauss != triple_gauss_3d);
   const auto created_triple_gauss_gh_damping_function =
-      TestHelpers::test_creation<
-          std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::
-                              DampingFunction<3, Frame::Grid>>>(
+      TestHelpers::test_creation<std::unique_ptr<
+          gh::ConstraintDamping::DampingFunction<3, Frame::Grid>>>(
           "TimeDependentTripleGaussian:\n"
           "  Constant: 5.0\n"
           "  Gaussian1:\n"

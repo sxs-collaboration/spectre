@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void time_derivative_of_spacetime_metric(
     const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>
@@ -45,7 +45,7 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
                                       lapse, shift, pi, phi);
   return dt_spacetime_metric;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -53,12 +53,12 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
 
 #define INSTANTIATE(_, data)                                              \
   template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::time_derivative_of_spacetime_metric(               \
+  gh::time_derivative_of_spacetime_metric(                                \
       const Scalar<DTYPE(data)>& lapse,                                   \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
-  template void GeneralizedHarmonic::time_derivative_of_spacetime_metric( \
+  template void gh::time_derivative_of_spacetime_metric(                  \
       const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*> \
           dt_spacetime_metric,                                            \
       const Scalar<DTYPE(data)>& lapse,                                   \

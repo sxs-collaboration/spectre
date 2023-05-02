@@ -51,12 +51,11 @@ struct EvolutionMetavars
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
                       Parallel::Phase::ImportInitialData,
-                      tmpl::list<
-                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          GeneralizedHarmonic::Actions::SetNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          Parallel::Actions::TerminatePhase>>>,
+                      tmpl::list<gh::Actions::ReadNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 gh::Actions::SetNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
@@ -99,9 +98,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
+    &gh::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
-    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &gh::ConstraintDamping::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

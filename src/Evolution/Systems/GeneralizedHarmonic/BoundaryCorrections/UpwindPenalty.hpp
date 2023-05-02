@@ -28,7 +28,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace GeneralizedHarmonic::BoundaryCorrections {
+namespace gh::BoundaryCorrections {
 /*!
  * \brief Computes the generalized harmonic upwind multipenalty boundary
  * correction.
@@ -218,11 +218,11 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
                  Tags::VPlus<Dim, Frame::Inertial>,
                  Tags::VMinus<Dim, Frame::Inertial>, NormalTimesVPlus,
                  NormalTimesVMinus, Gamma2VSpacetimeMetric, CharSpeedsTensor>;
-  using dg_package_data_temporary_tags = tmpl::list<
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+  using dg_package_data_temporary_tags =
+      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
   using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
 
@@ -299,4 +299,4 @@ template <size_t Dim>
 bool operator==(const UpwindPenalty<Dim>& lhs, const UpwindPenalty<Dim>& rhs);
 template <size_t Dim>
 bool operator!=(const UpwindPenalty<Dim>& lhs, const UpwindPenalty<Dim>& rhs);
-}  // namespace GeneralizedHarmonic::BoundaryCorrections
+}  // namespace gh::BoundaryCorrections

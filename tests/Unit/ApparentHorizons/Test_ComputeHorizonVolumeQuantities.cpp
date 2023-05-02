@@ -215,13 +215,11 @@ void test_compute_horizon_volume_quantities() {
 
     get<::gr::Tags::SpacetimeMetric<3, TargetFrame>>(src_vars) =
         gr::spacetime_metric(lapse, shift, spatial_metric);
-    get<::GeneralizedHarmonic::Tags::Phi<3, TargetFrame>>(src_vars) =
-        GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, spatial_metric,
-                                 d_spatial_metric);
-    get<::GeneralizedHarmonic::Tags::Pi<3, TargetFrame>>(src_vars) =
-        GeneralizedHarmonic::pi(
-            lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric,
-            get<::GeneralizedHarmonic::Tags::Phi<3, TargetFrame>>(src_vars));
+    get<::gh::Tags::Phi<3, TargetFrame>>(src_vars) = gh::phi(
+        lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
+    get<::gh::Tags::Pi<3, TargetFrame>>(src_vars) = gh::pi(
+        lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric,
+        get<::gh::Tags::Phi<3, TargetFrame>>(src_vars));
   } else {
     static_assert(std::is_same_v<TargetFrame, Frame::Grid>,
                   "TargetFrame must be the Grid frame");
@@ -302,19 +300,16 @@ void test_compute_horizon_volume_quantities() {
     // Now fill src_vars
     get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars) =
         gr::spacetime_metric(lapse, shift_inertial, lower_metric_inertial);
-    get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(src_vars) =
-        GeneralizedHarmonic::phi(lapse, inertial_d_lapse, shift_inertial,
-                                 inertial_d_shift, lower_metric_inertial,
-                                 inertial_d_spatial_metric);
+    get<::gh::Tags::Phi<3, Frame::Inertial>>(src_vars) =
+        gh::phi(lapse, inertial_d_lapse, shift_inertial, inertial_d_shift,
+                lower_metric_inertial, inertial_d_spatial_metric);
 
     // Compute Pi from extrinsic curvature and Phi.  Fill in NaN
     // for zero components of Pi, since they won't be used at all.
     const auto spacetime_normal_vector =
         gr::spacetime_normal_vector(lapse, shift_inertial);
-    auto& Pi =
-        get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(src_vars);
-    const auto& Phi =
-        get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(src_vars);
+    auto& Pi = get<::gh::Tags::Pi<3, Frame::Inertial>>(src_vars);
+    const auto& Phi = get<::gh::Tags::Phi<3, Frame::Inertial>>(src_vars);
     for (size_t i = 0; i < 3; ++i) {
       Pi.get(i + 1, 0) = std::numeric_limits<double>::signaling_NaN();
       for (size_t j = i; j < 3; ++j) {  // symmetry
@@ -329,8 +324,7 @@ void test_compute_horizon_volume_quantities() {
   }
 
   if constexpr (tmpl::list_contains_v<
-                    SrcTags, Tags::deriv<GeneralizedHarmonic::Tags::Phi<
-                                             3, Frame::Inertial>,
+                    SrcTags, Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
                                          tmpl::size_t<3>, Frame::Inertial>>) {
     // Need to compute numerical deriv of Phi.
     // The partial_derivatives function allows differentiating only a
@@ -340,24 +334,21 @@ void test_compute_horizon_volume_quantities() {
     // this is only a test, we just create new Variables and copy.
 
     // vars to be differentiated
-    using phi_tag_list =
-        tmpl::list<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
+    using phi_tag_list = tmpl::list<::gh::Tags::Phi<3, Frame::Inertial>>;
     Variables<phi_tag_list> vars_before_differentiation(
         mesh.number_of_grid_points());
-    get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
-        vars_before_differentiation) =
-        get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(src_vars);
+    get<::gh::Tags::Phi<3, Frame::Inertial>>(vars_before_differentiation) =
+        get<::gh::Tags::Phi<3, Frame::Inertial>>(src_vars);
 
     // differentiate
     const auto vars_after_differentiation = partial_derivatives<phi_tag_list>(
         vars_before_differentiation, mesh, inv_jacobian_logical_to_inertial);
 
     // copy to src_vars.
-    get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>>(src_vars) =
-        get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                        tmpl::size_t<3>, Frame::Inertial>>(
-            vars_after_differentiation);
+    get<Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                    Frame::Inertial>>(src_vars) =
+        get<Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars_after_differentiation);
   }
 
   // Compute dest_vars
@@ -487,9 +478,8 @@ void test_compute_horizon_volume_quantities() {
                                         gr::Tags::SpatialChristoffelSecondKind<
                                             3, Frame::Inertial>>) {
       const auto expected_inertial_christoffel_second_kind =
-          GeneralizedHarmonic::christoffel_second_kind(
-              get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
-                  src_vars),
+          gh::christoffel_second_kind(
+              get<::gh::Tags::Phi<3, Frame::Inertial>>(src_vars),
               get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(
                   dest_vars));
       const auto& inertial_christoffel_second_kind =
@@ -501,10 +491,10 @@ void test_compute_horizon_volume_quantities() {
 
     if constexpr (tmpl::list_contains_v<
                       DestTags, gr::Tags::SpatialRicci<3, Frame::Inertial>>) {
-      const auto expected_ricci = GeneralizedHarmonic::spatial_ricci_tensor(
-          get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(src_vars),
-          get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                          tmpl::size_t<3>, Frame::Inertial>>(src_vars),
+      const auto expected_ricci = gh::spatial_ricci_tensor(
+          get<gh::Tags::Phi<3, Frame::Inertial>>(src_vars),
+          get<Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                          Frame::Inertial>>(src_vars),
           get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(dest_vars));
       const auto& ricci =
           get<gr::Tags::SpatialRicci<3, Frame::Inertial>>(dest_vars);
@@ -523,10 +513,10 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
   test_compute_horizon_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                             tmpl::size_t<3>, Frame::Inertial>>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>,
+                 Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                             Frame::Inertial>>,
       tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
@@ -536,16 +526,16 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
   test_compute_horizon_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>>,
       tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
                  gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>>();
   test_compute_horizon_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>>,
       tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
                  gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>>();
@@ -555,10 +545,10 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
   test_compute_horizon_volume_quantities<
       std::true_type, Frame::Grid,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                             tmpl::size_t<3>, Frame::Inertial>>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>,
+                 Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                             Frame::Inertial>>,
       tmpl::list<gr::Tags::SpatialMetric<3, Frame::Grid>,
                  gr::Tags::InverseSpatialMetric<3, Frame::Grid>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Grid>,
@@ -573,8 +563,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
   test_compute_horizon_volume_quantities<
       std::true_type, Frame::Grid,
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>>,
       tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Grid>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Grid>,
                  gr::Tags::SpatialChristoffelSecondKind<3, Frame::Grid>>>();

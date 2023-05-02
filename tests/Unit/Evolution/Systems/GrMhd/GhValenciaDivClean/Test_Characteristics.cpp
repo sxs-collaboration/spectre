@@ -28,9 +28,8 @@ void check_max_char_speed(const DataVector& used_for_size) {
                                  spatial_metric);
 
   double gh_max_char_speed = std::numeric_limits<double>::signaling_NaN();
-  GeneralizedHarmonic::Tags::ComputeLargestCharacteristicSpeed<
-      3, Frame::Inertial>::function(make_not_null(&gh_max_char_speed), gamma_1,
-                                    lapse, shift, spatial_metric);
+  gh::Tags::ComputeLargestCharacteristicSpeed<3, Frame::Inertial>::function(
+      make_not_null(&gh_max_char_speed), gamma_1, lapse, shift, spatial_metric);
   CHECK(max_char_speed == gh_max_char_speed);
 }
 }  // namespace

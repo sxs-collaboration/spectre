@@ -96,8 +96,7 @@ void test_boundary_correction_combination(
   CHECK(derived_product_correction.gh_correction() == derived_gh_correction);
   CHECK(derived_product_correction.valencia_correction() ==
         derived_valencia_correction);
-  using gh_variables_tags =
-      typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
+  using gh_variables_tags = typename gh::System<3_st>::variables_tag::tags_list;
   using valencia_variables_tags =
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
   using evolved_variables_type =
@@ -110,9 +109,9 @@ void test_boundary_correction_combination(
   using packaged_variables_type = Variables<
       typename derived_product_correction_type::dg_package_field_tags>;
 
-  using gh_flux_tags = db::wrap_tags_in<
-      ::Tags::Flux, typename GeneralizedHarmonic::System<3_st>::flux_variables,
-      tmpl::size_t<3_st>, Frame::Inertial>;
+  using gh_flux_tags =
+      db::wrap_tags_in<::Tags::Flux, typename gh::System<3_st>::flux_variables,
+                       tmpl::size_t<3_st>, Frame::Inertial>;
   using valencia_flux_tags =
       db::wrap_tags_in<::Tags::Flux,
                        typename grmhd::ValenciaDivClean::System::flux_variables,
@@ -272,21 +271,20 @@ SPECTRE_TEST_CASE(
   {
     INFO("Product correction UpwindPenalty and Rusanov");
     grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov valencia_correction{};
-    GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<3_st>
-        gh_correction{};
+    gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
     TestHelpers::test_creation<std::unique_ptr<
         grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
         "ProductUpwindPenaltyAndRusanov:\n"
         "  UpwindPenalty:\n"
         "  Rusanov:");
     grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
-        GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<3_st>,
+        gh::BoundaryCorrections::UpwindPenalty<3_st>,
         grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>
         product_boundary_correction{gh_correction, valencia_correction};
     for (const auto formulation :
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
       test_boundary_correction_combination<
-          GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<3_st>,
+          gh::BoundaryCorrections::UpwindPenalty<3_st>,
           grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>(
           gh_correction, valencia_correction, product_boundary_correction,
           formulation);

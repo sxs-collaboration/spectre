@@ -12,7 +12,7 @@
 class DataVector;
 /// \endcond
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 /*!
  * \brief Compute \f$0.5 n^a n^b \Pi_{ab}\f$ and \f$0.5 n^a n^b \Phi_{iab}\f$
  */
@@ -23,4 +23,4 @@ void half_pi_and_phi_two_normals(
     const tnsr::A<DataVector, Dim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi);
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

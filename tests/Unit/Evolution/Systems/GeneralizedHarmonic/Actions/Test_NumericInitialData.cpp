@@ -35,7 +35,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace {
 
 struct TestOptionGroup {
@@ -43,7 +43,7 @@ struct TestOptionGroup {
   static constexpr Options::String help = "halp";
 };
 
-using gh_system_vars = GeneralizedHarmonic::System<3>::variables_tag::tags_list;
+using gh_system_vars = gh::System<3>::variables_tag::tags_list;
 
 template <typename Metavariables>
 struct MockElementArray {
@@ -61,10 +61,8 @@ struct MockElementArray {
                                                        Frame::Inertial>>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<GeneralizedHarmonic::Actions::ReadNumericInitialData<
-                         TestOptionGroup>,
-                     GeneralizedHarmonic::Actions::SetNumericInitialData<
-                         TestOptionGroup>>>>;
+          tmpl::list<gh::Actions::ReadNumericInitialData<TestOptionGroup>,
+                     gh::Actions::SetNumericInitialData<TestOptionGroup>>>>;
 };
 
 struct MockReadVolumeData {
@@ -202,7 +200,7 @@ void test_numeric_initial_data(
       element_array,
       importers::Tags::VolumeData<TestOptionGroup, detail::all_numeric_vars>,
       Metavariables>(make_not_null(&runner), element_id)[0];
-  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr{
+  gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr{
       1., {{0., 0., 0.}}, {{0., 0., 0.}}};
   const auto kerr_gh_vars = kerr.variables(coords, 0., gh_system_vars{});
   if (std::holds_alternative<detail::GeneralizedHarmonic>(selected_vars)) {
@@ -269,4 +267,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "ExtrinsicCurvature: CustomExtrinsicCurvature");
 }
 
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

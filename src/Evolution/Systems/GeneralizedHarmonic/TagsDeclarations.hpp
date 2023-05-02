@@ -7,7 +7,7 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 
 /// \brief Tags for the generalized harmonic formulation of Einstein equations
 namespace Tags {
@@ -59,4 +59,4 @@ struct ConstraintEnergy;
 namespace OptionTags {
 struct Group;
 }  // namespace OptionTags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

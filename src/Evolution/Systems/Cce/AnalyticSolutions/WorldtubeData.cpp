@@ -65,11 +65,9 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> pi, const size_t output_l_max,
     const double time,
-    tmpl::type_<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>> /*meta*/)
-    const {
+    tmpl::type_<gh::Tags::Pi<3, ::Frame::Inertial>> /*meta*/) const {
   const auto& d_spacetime_metric =
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time);
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time);
   const auto& dt_spacetime_metric = cache_or_compute<
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
       output_l_max, time);
@@ -127,8 +125,7 @@ void WorldtubeData::variables_impl(
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);
   const auto& d_spacetime_metric =
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time);
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
       dr_spatial_metric->get(i, j) = get<0>(dr_cartesian_coordinates) *
@@ -167,7 +164,7 @@ void WorldtubeData::variables_impl(
   const auto& shift =
       cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
           output_l_max, time);
-  GeneralizedHarmonic::time_deriv_of_shift(
+  gh::time_deriv_of_shift(
       dt_shift, lapse, shift,
       determinant_and_inverse(
           cache_or_compute<
@@ -175,10 +172,8 @@ void WorldtubeData::variables_impl(
               output_l_max, time))
           .second,
       gr::spacetime_normal_vector(lapse, shift),
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time),
-      cache_or_compute<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
-          output_l_max, time));
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time),
+      cache_or_compute<gh::Tags::Pi<3, ::Frame::Inertial>>(output_l_max, time));
 }
 
 void WorldtubeData::variables_impl(
@@ -192,7 +187,7 @@ void WorldtubeData::variables_impl(
   const auto& shift =
       cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
           output_l_max, time);
-  const auto d_shift = GeneralizedHarmonic::spatial_deriv_of_shift(
+  const auto d_shift = gh::spatial_deriv_of_shift(
       lapse,
       gr::inverse_spacetime_metric(
           lapse, shift,
@@ -202,8 +197,8 @@ void WorldtubeData::variables_impl(
                   output_l_max, time))
               .second),
       gr::spacetime_normal_vector(lapse, shift),
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time));
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max,
+                                                            time));
   const auto& dr_cartesian_coordinates =
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);
@@ -237,12 +232,10 @@ void WorldtubeData::variables_impl(
   const auto& shift =
       cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
           output_l_max, time);
-  GeneralizedHarmonic::time_deriv_of_lapse(
+  gh::time_deriv_of_lapse(
       dt_lapse, lapse, shift, gr::spacetime_normal_vector(lapse, shift),
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time),
-      cache_or_compute<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
-          output_l_max, time));
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time),
+      cache_or_compute<gh::Tags::Pi<3, ::Frame::Inertial>>(output_l_max, time));
 }
 
 void WorldtubeData::variables_impl(
@@ -254,10 +247,10 @@ void WorldtubeData::variables_impl(
   const auto& shift =
       cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
           output_l_max, time);
-  const auto d_lapse = GeneralizedHarmonic::spatial_deriv_of_lapse(
+  const auto d_lapse = gh::spatial_deriv_of_lapse(
       lapse, gr::spacetime_normal_vector(lapse, shift),
-      cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-          output_l_max, time));
+      cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max,
+                                                            time));
   const auto& dr_cartesian_coordinates =
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);

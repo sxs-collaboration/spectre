@@ -30,7 +30,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 AnalyticChristoffel::AnalyticChristoffel(const AnalyticChristoffel& rhs)
     : GaugeCondition{dynamic_cast<const GaugeCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
@@ -73,8 +73,8 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative(
   ASSERT(analytic_prescription_ != nullptr,
          "The analytic prescription cannot be nullptr.");
   using solution_tags = tmpl::list<
-      GeneralizedHarmonic::Tags::Pi<SpatialDim, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Phi<SpatialDim, Frame::Inertial>,
+      gh::Tags::Pi<SpatialDim, Frame::Inertial>,
+      gh::Tags::Phi<SpatialDim, Frame::Inertial>,
       gr::Tags::SpacetimeMetric<SpatialDim, Frame::Inertial, DataVector>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
@@ -131,9 +131,9 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative(
                                 lapse);
   gr::spacetime_normal_vector(make_not_null(&spacetime_normal_vector), lapse,
                               shift);
-  GeneralizedHarmonic::trace_christoffel(
-      gauge_h, spacetime_normal_one_form, spacetime_normal_vector,
-      inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
+  gh::trace_christoffel(gauge_h, spacetime_normal_one_form,
+                        spacetime_normal_vector, inverse_spatial_metric,
+                        inverse_spacetime_metric, pi, phi);
   for (auto& component : *gauge_h) {
     component *= -1.0;
   }
@@ -172,4 +172,4 @@ PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

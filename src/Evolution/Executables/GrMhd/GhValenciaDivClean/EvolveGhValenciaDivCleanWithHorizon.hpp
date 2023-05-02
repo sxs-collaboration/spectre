@@ -104,8 +104,8 @@ struct EvolutionMetavars
   using interpolation_target_tags = tmpl::list<AhA>;
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, domain_frame>,
-                 GeneralizedHarmonic::Tags::Pi<volume_dim, domain_frame>,
-                 GeneralizedHarmonic::Tags::Phi<volume_dim, domain_frame>>;
+                 gh::Tags::Pi<volume_dim, domain_frame>,
+                 gh::Tags::Phi<volume_dim, domain_frame>>;
 
   using observe_fields =
       typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
@@ -129,18 +129,18 @@ struct EvolutionMetavars
                                               use_dg_subcell>::initial_data_tag;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
-      GeneralizedHarmonic::gauges::Tags::GaugeCondition,
+      gh::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       typename GhValenciaDivCleanTemplateBase<
           EvolutionMetavars, use_dg_subcell>::equation_of_state_tag,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>>>;
+      gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
+                                                         Frame::Grid>>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
@@ -172,7 +172,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &grmhd::GhValenciaDivClean::BoundaryCorrections::
         register_derived_with_charm,
-    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &gh::ConstraintDamping::register_derived_with_charm,
     &EquationsOfState::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
 

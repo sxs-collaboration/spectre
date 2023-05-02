@@ -19,9 +19,8 @@ void test() {
   CAPTURE(Dim);
   helpers::test_periodic_condition<
       domain::BoundaryConditions::Periodic<
-          GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>>,
-      GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>>(
-      "Periodic:\n");
+          gh::BoundaryConditions::BoundaryCondition<Dim>>,
+      gh::BoundaryConditions::BoundaryCondition<Dim>>("Periodic:\n");
 }
 }  // namespace
 

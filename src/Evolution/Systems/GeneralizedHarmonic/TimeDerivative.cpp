@@ -25,7 +25,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
@@ -92,8 +92,8 @@ void TimeDerivative<Dim>::apply(
   gr::lapse(lapse, *shift, spacetime_metric);
   gr::inverse_spacetime_metric(inverse_spacetime_metric, *lapse, *shift,
                                *inverse_spatial_metric);
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
-      da_spacetime_metric, *lapse, *shift, pi, phi);
+  gh::spacetime_derivative_of_spacetime_metric(da_spacetime_metric, *lapse,
+                                               *shift, pi, phi);
   gr::christoffel_first_kind(christoffel_first_kind, *da_spacetime_metric);
   raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
                              *inverse_spacetime_metric);
@@ -344,7 +344,7 @@ void TimeDerivative<Dim>::apply(
     }
   }
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 // Explicit instantiations of structs defined in `Equations.cpp` as well as of
 // `partial_derivatives` function for use in the computation of spatial
@@ -356,23 +356,21 @@ using derivative_frame = Frame::Inertial;
 
 template <size_t Dim>
 using derivative_tags_initial_gauge =
-    tmpl::list<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, derivative_frame>>;
+    tmpl::list<gh::Tags::InitialGaugeH<Dim, derivative_frame>>;
 
 template <size_t Dim>
 using variables_tags_initial_gauge =
-    tmpl::list<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, derivative_frame>>;
+    tmpl::list<gh::Tags::InitialGaugeH<Dim, derivative_frame>>;
 
 template <size_t Dim>
-using derivative_tags =
-    typename GeneralizedHarmonic::System<Dim>::gradients_tags;
+using derivative_tags = typename gh::System<Dim>::gradients_tags;
 
 template <size_t Dim>
-using variables_tags =
-    typename GeneralizedHarmonic::System<Dim>::variables_tag::tags_list;
+using variables_tags = typename gh::System<Dim>::variables_tag::tags_list;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                                 \
-  template struct GeneralizedHarmonic::TimeDerivative<DIM(data)>;            \
+  template struct gh::TimeDerivative<DIM(data)>;                             \
   template Variables<                                                        \
       db::wrap_tags_in<::Tags::deriv, derivative_tags<DIM(data)>,            \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \

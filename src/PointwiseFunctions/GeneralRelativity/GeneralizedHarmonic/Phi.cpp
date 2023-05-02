@@ -12,7 +12,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
          const Scalar<DataType>& lapse,
@@ -58,19 +58,19 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
   tnsr::iaa<DataType, SpatialDim, Frame> var_phi{};
-  GeneralizedHarmonic::phi<SpatialDim, Frame, DataType>(
-      make_not_null(&var_phi), lapse, deriv_lapse, shift, deriv_shift,
-      spatial_metric, deriv_spatial_metric);
+  gh::phi<SpatialDim, Frame, DataType>(make_not_null(&var_phi), lapse,
+                                       deriv_lapse, shift, deriv_shift,
+                                       spatial_metric, deriv_spatial_metric);
   return var_phi;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::phi(                                  \
+  template void gh::phi(                                                   \
       const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*> \
           var_phi,                                                         \
       const Scalar<DTYPE(data)>& lapse,                                    \
@@ -80,8 +80,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric, \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
           deriv_spatial_metric);                                           \
-  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::phi(                                                \
+  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)> gh::phi(         \
       const Scalar<DTYPE(data)>& lapse,                                    \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,     \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,           \

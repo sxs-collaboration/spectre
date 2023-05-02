@@ -39,8 +39,7 @@ namespace grmhd::GhValenciaDivClean {
  */
 struct SetPiFromGauge {
  public:
-  using return_tags =
-      tmpl::list<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>;
+  using return_tags = tmpl::list<gh::Tags::Pi<3, Frame::Inertial>>;
   using argument_tags = tmpl::list<
       ::Tags::Time, domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
@@ -51,12 +50,10 @@ struct SetPiFromGauge {
       domain::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
       gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-      GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-      GeneralizedHarmonic::gauges::Tags::GaugeCondition,
+      gh::Tags::Phi<3, Frame::Inertial>, gh::gauges::Tags::GaugeCondition,
       evolution::dg::subcell::Tags::ActiveGrid>;
 
-  using const_global_cache_tags =
-      tmpl::list<GeneralizedHarmonic::gauges::Tags::GaugeCondition>;
+  using const_global_cache_tags = tmpl::list<gh::gauges::Tags::GaugeCondition>;
 
   static void apply(
       const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -75,15 +72,15 @@ struct SetPiFromGauge {
           subcell_logical_coordinates,
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
-      const GeneralizedHarmonic::gauges::GaugeCondition& gauge_condition,
+      const gh::gauges::GaugeCondition& gauge_condition,
       const evolution::dg::subcell::ActiveGrid active_grid) {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      GeneralizedHarmonic::gauges::SetPiFromGauge<3>::apply(
+      gh::gauges::SetPiFromGauge<3>::apply(
           pi, initial_time, dg_mesh, logical_to_grid_map, grid_to_inertial_map,
           functions_of_time, dg_logical_coordinates, spacetime_metric, phi,
           gauge_condition);
     } else {
-      GeneralizedHarmonic::gauges::SetPiFromGauge<3>::apply(
+      gh::gauges::SetPiFromGauge<3>::apply(
           pi, initial_time, subcell_mesh, logical_to_grid_map,
           grid_to_inertial_map, functions_of_time, subcell_logical_coordinates,
           spacetime_metric, phi, gauge_condition);

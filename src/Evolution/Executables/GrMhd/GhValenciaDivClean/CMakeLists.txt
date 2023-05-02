@@ -60,30 +60,30 @@ add_ghmhd_executable(
 
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>
+  gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>
   "${LIBS_TO_LINK}"
   )
 
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>
+  gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>
   "${LIBS_TO_LINK}"
   )
 
 add_ghmhd_with_horizon_executable(
   BondiMichel
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
+  gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
   "${LIBS_TO_LINK};ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   FishboneMoncriefDisk
-  GeneralizedHarmonic::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>
+  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>
   "${LIBS_TO_LINK}"
   )
 
 add_ghmhd_executable(
   TovStar
-  GeneralizedHarmonic::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>
+  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>
   "${LIBS_TO_LINK}"
   )

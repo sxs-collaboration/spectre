@@ -19,7 +19,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct D0LowerShiftBuffer;
@@ -71,11 +71,10 @@ void time_deriv_of_lower_shift(
   // get \partial_0 N^j
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
-  GeneralizedHarmonic::time_deriv_of_shift<SpatialDim, Frame, DataType>(
+  gh::time_deriv_of_shift<SpatialDim, Frame, DataType>(
       make_not_null(&buffer.dt_shift), lapse, shift, inverse_spatial_metric,
       spacetime_unit_normal, phi, pi);
-  GeneralizedHarmonic::time_deriv_of_spatial_metric<SpatialDim, Frame,
-                                                    DataType>(
+  gh::time_deriv_of_spatial_metric<SpatialDim, Frame, DataType>(
       make_not_null(&buffer.dt_spatial_metric), lapse, shift, phi, pi);
   for (size_t i = 0; i < SpatialDim; ++i) {
     dt_lower_shift->get(i) = spatial_metric.get(i, 0) * buffer.dt_shift.get(0) +
@@ -99,19 +98,19 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::i<DataType, SpatialDim, Frame> dt_lower_shift{};
-  GeneralizedHarmonic::time_deriv_of_lower_shift<SpatialDim, Frame, DataType>(
+  gh::time_deriv_of_lower_shift<SpatialDim, Frame, DataType>(
       make_not_null(&dt_lower_shift), lapse, shift, spatial_metric,
       spacetime_unit_normal, phi, pi);
   return dt_lower_shift;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::time_deriv_of_lower_shift(            \
+  template void gh::time_deriv_of_lower_shift(                             \
       const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>   \
           dt_lower_shift,                                                  \
       const Scalar<DTYPE(data)>& lapse,                                    \
@@ -122,7 +121,7 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);            \
   template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                    \
-  GeneralizedHarmonic::time_deriv_of_lower_shift(                          \
+  gh::time_deriv_of_lower_shift(                                           \
       const Scalar<DTYPE(data)>& lapse,                                    \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric, \

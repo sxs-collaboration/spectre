@@ -29,7 +29,7 @@ namespace grmhd::GhValenciaDivClean {
  * spacetime terms in the GH equation should be computed before passing the
  * `dt_pi` to this function for updating.
  *
- * \see `GeneralizedHarmonic::TimeDerivative` for details about the spacetime
+ * \see `gh::TimeDerivative` for details about the spacetime
  * part of the time derivative calculation.
  */
 void add_stress_energy_term_to_dt_pi(

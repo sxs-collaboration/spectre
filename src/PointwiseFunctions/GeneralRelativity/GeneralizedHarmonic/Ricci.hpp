@@ -19,7 +19,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -129,4 +129,4 @@ tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric);
 /// @}
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

@@ -43,8 +43,8 @@ DataVector PrimitiveGhostVariables::apply(
         get(get<hydro::Tags::LorentzFactor<DataVector>>(prims));
   }
   get<gr::Tags::SpacetimeMetric<3>>(vars_to_reconstruct) = spacetime_metric;
-  get<GeneralizedHarmonic::Tags::Phi<3>>(vars_to_reconstruct) = phi;
-  get<GeneralizedHarmonic::Tags::Pi<3>>(vars_to_reconstruct) = pi;
+  get<gh::Tags::Phi<3>>(vars_to_reconstruct) = phi;
+  get<gh::Tags::Pi<3>>(vars_to_reconstruct) = pi;
   return buffer;
 }
 }  // namespace grmhd::GhValenciaDivClean::subcell

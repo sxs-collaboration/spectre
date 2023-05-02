@@ -60,7 +60,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
 
   std::uniform_real_distribution<> dist(0.1, 1.0);
 
-  const GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
+  const gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
       analytic_solution{1.0, 4.0, 0.1, 2.0, 0.01};
 
   const auto interior_gamma1 = make_with_random_values<Scalar<DataVector>>(
@@ -77,8 +77,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       db::wrap_tags_in<::Tags::Flux,
                        grmhd::GhValenciaDivClean::System::flux_variables,
                        tmpl::size_t<3_st>, Frame::Inertial>,
-      tmpl::list<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-                 GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 gh::ConstraintDamping::Tags::ConstraintGamma2,
                  gr::Tags::Lapse<>, gr::Tags::Shift<3>,
                  gr::Tags::InverseSpatialMetric<3>>>>;
   using PrimVars =
@@ -123,8 +123,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         gr::Tags::SqrtDetSpatialMetric<DataVector>, gr::Tags::Lapse<DataVector>,
         gr::Tags::Shift<3, Frame::Inertial, DataVector>,
         gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-        ::GeneralizedHarmonic::Tags::Pi<3>,
-        ::GeneralizedHarmonic::Tags::Phi<3>>;
+        ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -133,8 +132,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     spacetime_metric =
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             analytic_vars);
-    pi = get<::GeneralizedHarmonic::Tags::Pi<3>>(analytic_vars);
-    phi = get<::GeneralizedHarmonic::Tags::Phi<3>>(analytic_vars);
+    pi = get<::gh::Tags::Pi<3>>(analytic_vars);
+    phi = get<::gh::Tags::Phi<3>>(analytic_vars);
     lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
     shift = get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(analytic_vars);
     inverse_spatial_metric =
@@ -214,8 +213,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Pi<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<3>>(expected_vars),
+                  get<gh::Tags::Phi<3>>(expected_vars),
 
                   get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
                   get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
@@ -274,12 +273,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
               .dg_time_derivative(
                   make_not_null(
                       &get<::Tags::dt<gr::Tags::SpacetimeMetric<3>>>(dt_vars)),
-                  make_not_null(
-                      &get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3>>>(
-                          dt_vars)),
-                  make_not_null(
-                      &get<::Tags::dt<GeneralizedHarmonic::Tags::Phi<3>>>(
-                          dt_vars)),
+                  make_not_null(&get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars)),
+                  make_not_null(&get<::Tags::dt<gh::Tags::Phi<3>>>(dt_vars)),
                   make_not_null(
                       &get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeD>>(
                           dt_vars)),
@@ -302,8 +297,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Pi<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<3>>(expected_vars),
+                  get<gh::Tags::Phi<3>>(expected_vars),
 
                   get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
                   get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
@@ -376,26 +371,24 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
 
   // Test constraint-preserving BC
   DtVars expected_dt_vars{num_points, 0.0};
-  GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<3> gh_cp{
-      GeneralizedHarmonic::BoundaryConditions::detail::
-          ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
+  gh::BoundaryConditions::ConstraintPreservingBjorhus<3> gh_cp{
+      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType::
+          ConstraintPreservingPhysical};
   CHECK(
       not gh_cp
               .dg_time_derivative(
                   make_not_null(&get<::Tags::dt<gr::Tags::SpacetimeMetric<3>>>(
                       expected_dt_vars)),
                   make_not_null(
-                      &get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3>>>(
-                          expected_dt_vars)),
+                      &get<::Tags::dt<gh::Tags::Pi<3>>>(expected_dt_vars)),
                   make_not_null(
-                      &get<::Tags::dt<GeneralizedHarmonic::Tags::Phi<3>>>(
-                          expected_dt_vars)),
+                      &get<::Tags::dt<gh::Tags::Phi<3>>>(expected_dt_vars)),
 
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Pi<3>>(expected_vars),
-                  get<GeneralizedHarmonic::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<3>>(expected_vars),
+                  get<gh::Tags::Phi<3>>(expected_vars),
 
                   coords, interior_gamma1, interior_gamma2,
                   get<gr::Tags::Lapse<DataVector>>(expected_vars),

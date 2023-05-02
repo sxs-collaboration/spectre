@@ -13,7 +13,7 @@ template <size_t Dim>
 class Mesh;
 /// \endcond
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 /*!
  * \brief Dispatch to the derived gauge condition.
  *
@@ -43,4 +43,4 @@ void dispatch(
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>& inverse_jacobian,
     const GaugeCondition& gauge_condition);
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

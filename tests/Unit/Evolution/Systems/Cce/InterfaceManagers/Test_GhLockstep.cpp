@@ -65,8 +65,8 @@ void test_gh_lockstep_interface_manager(const gsl::not_null<Generator*> gen) {
         get<0, 0>(spacetime_metric).size()};
     get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(vars) =
         spacetime_metric;
-    get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(vars) = pi;
-    get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(vars) = phi;
+    get<gh::Tags::Pi<3, ::Frame::Inertial>>(vars) = pi;
+    get<gh::Tags::Phi<3, ::Frame::Inertial>>(vars) = phi;
     expected_gh_data[i] = std::make_tuple(time_id, std::move(vars));
     running_total += timestep_dist(*gen);
   }

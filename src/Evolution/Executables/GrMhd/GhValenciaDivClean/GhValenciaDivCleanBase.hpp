@@ -290,10 +290,10 @@ struct GhValenciaDivCleanDefaults {
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
+      gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Actions::MutateApply<tmpl::conditional_t<
           UseDgSubcell, grmhd::GhValenciaDivClean::SetPiFromGauge,
-          GeneralizedHarmonic::gauges::SetPiFromGauge<3>>>,
+          gh::gauges::SetPiFromGauge<3>>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
               volume_dim, domain_frame, DataVector>>>,
@@ -391,7 +391,7 @@ struct GhValenciaDivCleanTemplateBase<
       hydro::Tags::EquationOfState<std::unique_ptr<
           EquationsOfState::EquationOfState<true, thermodynamic_dim>>>>;
 
-  using initial_data_list = GeneralizedHarmonic::solutions_including_matter<3>;
+  using initial_data_list = gh::solutions_including_matter<3>;
 
   using initial_data_tag =
       tmpl::conditional_t<is_analytic_solution_v<initial_data>,
@@ -418,11 +418,9 @@ struct GhValenciaDivCleanTemplateBase<
                          volume_dim, domain_frame, DataVector>,
                      gr::Tags::InverseSpacetimeMetricCompute<
                          volume_dim, domain_frame, DataVector>,
-                     GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-                         volume_dim, domain_frame>,
+                     gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
                      ::Tags::PointwiseL2NormCompute<
-                         GeneralizedHarmonic::Tags::GaugeConstraint<
-                             volume_dim, domain_frame>>>,
+                         gh::Tags::GaugeConstraint<volume_dim, domain_frame>>>,
           tmpl::conditional_t<use_dg_subcell,
                               tmpl::list<evolution::dg::subcell::Tags::
                                              TciStatusCompute<volume_dim>>,
@@ -462,8 +460,7 @@ struct GhValenciaDivCleanTemplateBase<
                          Frame::ElementLogical, Frame::Inertial>>>,
       tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                           tmpl::list<analytic_compute, error_compute>>,
-      tmpl::list<GeneralizedHarmonic::gauges::Tags::GaugeAndDerivativeCompute<
-          volume_dim>>>;
+      tmpl::list<gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -499,8 +496,7 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
-        tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
-                   GeneralizedHarmonic::gauges::all_gauges>,
+        tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
@@ -532,17 +528,17 @@ struct GhValenciaDivCleanTemplateBase<
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
-      GeneralizedHarmonic::gauges::Tags::GaugeCondition,
+      gh::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                           initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       equation_of_state_tag,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>>>;
+      gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
+                                                         Frame::Grid>>>;
 
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
@@ -605,8 +601,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       dg::Actions::Filter<::Filters::Exponential<0>,
                           tmpl::list<gr::Tags::SpacetimeMetric<3>,
-                                     GeneralizedHarmonic::Tags::Pi<3>,
-                                     GeneralizedHarmonic::Tags::Phi<3>>>,
+                                     gh::Tags::Pi<3>, gh::Tags::Phi<3>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
@@ -691,11 +686,11 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::list<
               // Load GH data first, then MHD data. Possible optimization:
               // combine into one action for GH+MHD data.
-              GeneralizedHarmonic::Actions::ReadNumericInitialData<
+              gh::Actions::ReadNumericInitialData<
                   detail::OptionTags::GrNumericInitialData>,
               grmhd::ValenciaDivClean::Actions::ReadNumericInitialData<
                   detail::OptionTags::HydroNumericInitialData>,
-              GeneralizedHarmonic::Actions::SetNumericInitialData<
+              gh::Actions::SetNumericInitialData<
                   detail::OptionTags::GrNumericInitialData>,
               grmhd::ValenciaDivClean::Actions::SetNumericInitialData<
                   detail::OptionTags::HydroNumericInitialData>,

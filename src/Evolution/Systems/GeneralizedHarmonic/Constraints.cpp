@@ -929,7 +929,7 @@ void f_constraint_add_stress_energy_term(
 }
 }  // namespace
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
@@ -1334,216 +1334,213 @@ void constraint_energy(
     }
   }
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 // Explicit Instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                   \
-  GeneralizedHarmonic::three_index_constraint(                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          d_spacetime_metric,                                               \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
-  template void GeneralizedHarmonic::three_index_constraint(                \
-      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>  \
-          constraint,                                                       \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          d_spacetime_metric,                                               \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::gauge_constraint(                                    \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
-  template void GeneralizedHarmonic::gauge_constraint(                      \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          constraint,                                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
-  template tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>                    \
-  GeneralizedHarmonic::two_index_constraint(                                \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint);                                          \
-  template void GeneralizedHarmonic::two_index_constraint(                  \
-      const gsl::not_null<tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>*>   \
-          constraint,                                                       \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint);                                          \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::f_constraint(                                        \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint);                                          \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::f_constraint(                                        \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint,                                           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          trace_reversed_stress_energy);                                    \
-  template void GeneralizedHarmonic::f_constraint(                          \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          constraint,                                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint);                                          \
-  template void GeneralizedHarmonic::f_constraint(                          \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          constraint,                                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
-      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_d_gauge_function,                                       \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_one_form,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_normal_vector,                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spacetime_metric,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,           \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
-      const Scalar<DTYPE(data)>& gamma2,                                    \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint,                                           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          trace_reversed_stress_energy);                                    \
-  template Scalar<DTYPE(data)> GeneralizedHarmonic::constraint_energy(      \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint, \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,     \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          two_index_constraint,                                             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          four_index_constraint,                                            \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const Scalar<DTYPE(data)>& spatial_metric_determinant,                \
-      double gauge_constraint_multiplier,                                   \
-      double two_index_constraint_multiplier,                               \
-      double three_index_constraint_multiplier,                             \
-      double four_index_constraint_multiplier);                             \
-  template void GeneralizedHarmonic::constraint_energy(                     \
-      const gsl::not_null<Scalar<DTYPE(data)>*> energy,                     \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint, \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,     \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          two_index_constraint,                                             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          four_index_constraint,                                            \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          inverse_spatial_metric,                                           \
-      const Scalar<DTYPE(data)>& spatial_metric_determinant,                \
-      double gauge_constraint_multiplier,                                   \
-      double two_index_constraint_multiplier,                               \
-      double three_index_constraint_multiplier,                             \
+#define INSTANTIATE(_, data)                                                  \
+  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \
+  gh::three_index_constraint(                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          d_spacetime_metric,                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
+  template void gh::three_index_constraint(                                   \
+      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>    \
+          constraint,                                                         \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          d_spacetime_metric,                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)> gh::gauge_constraint( \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
+  template void gh::gauge_constraint(                                         \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          constraint,                                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
+  template tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>                      \
+  gh::two_index_constraint(                                                   \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint);                                            \
+  template void gh::two_index_constraint(                                     \
+      const gsl::not_null<tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          constraint,                                                         \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint);                                            \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)> gh::f_constraint(     \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint);                                            \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)> gh::f_constraint(     \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint,                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          trace_reversed_stress_energy);                                      \
+  template void gh::f_constraint(                                             \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          constraint,                                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint);                                            \
+  template void gh::f_constraint(                                             \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          constraint,                                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,     \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_d_gauge_function,                                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_one_form,                                          \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spacetime_metric,                                           \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const Scalar<DTYPE(data)>& gamma2,                                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint,                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          trace_reversed_stress_energy);                                      \
+  template Scalar<DTYPE(data)> gh::constraint_energy(                         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint,   \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,       \
+      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          two_index_constraint,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint,                                             \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          four_index_constraint,                                              \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const Scalar<DTYPE(data)>& spatial_metric_determinant,                  \
+      double gauge_constraint_multiplier,                                     \
+      double two_index_constraint_multiplier,                                 \
+      double three_index_constraint_multiplier,                               \
+      double four_index_constraint_multiplier);                               \
+  template void gh::constraint_energy(                                        \
+      const gsl::not_null<Scalar<DTYPE(data)>*> energy,                       \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint,   \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,       \
+      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          two_index_constraint,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          three_index_constraint,                                             \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          four_index_constraint,                                              \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const Scalar<DTYPE(data)>& spatial_metric_determinant,                  \
+      double gauge_constraint_multiplier,                                     \
+      double two_index_constraint_multiplier,                                 \
+      double three_index_constraint_multiplier,                               \
       double four_index_constraint_multiplier);
 
 #define INSTANTIATE_ONLY_3D(_, data)                                       \
   template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::four_index_constraint(                              \
+  gh::four_index_constraint(                                               \
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);       \
-  template void GeneralizedHarmonic::four_index_constraint(                \
+  template void gh::four_index_constraint(                                 \
       const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*> \
           constraint,                                                      \
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);

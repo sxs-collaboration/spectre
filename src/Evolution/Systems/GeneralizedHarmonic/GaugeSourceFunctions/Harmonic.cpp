@@ -12,7 +12,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 Harmonic::Harmonic(CkMigrateMessage* const msg) : GaugeCondition(msg) {}
 
 void Harmonic::pup(PUP::er& p) { GaugeCondition::pup(p); }
@@ -56,4 +56,4 @@ PUP::able::PUP_ID Harmonic::my_PUP_ID = 0;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

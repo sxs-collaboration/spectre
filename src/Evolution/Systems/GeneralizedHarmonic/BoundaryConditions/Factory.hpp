@@ -13,11 +13,11 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 /// Typelist of standard BoundaryConditions
 template <size_t Dim>
 using standard_boundary_conditions =
     tmpl::list<ConstraintPreservingBjorhus<Dim>, DemandOutgoingCharSpeeds<Dim>,
                DirichletAnalytic<Dim>, DirichletMinkowski<Dim>,
                domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

@@ -33,7 +33,7 @@ struct Coordinates;
 }  // namespace domain::Tags
 /// \endcond
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 /*!
  * \brief Sets Dirichlet boundary conditions to a Minkowski spacetime.
  */
@@ -67,9 +67,9 @@ class DirichletMinkowski final : public BoundaryCondition<Dim> {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
-  using dg_interior_temporary_tags = tmpl::list<
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
+  using dg_interior_temporary_tags =
+      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_ghost(
@@ -90,4 +90,4 @@ class DirichletMinkowski final : public BoundaryCondition<Dim> {
       const Scalar<DataVector>& interior_gamma1,
       const Scalar<DataVector>& interior_gamma2) const;
 };
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

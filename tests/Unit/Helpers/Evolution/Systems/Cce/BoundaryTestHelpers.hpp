@@ -113,10 +113,10 @@ void create_fake_time_varying_gh_nodal_data(
           kerr_schild_variables);
 
   gr::spacetime_metric(spacetime_metric, lapse, shift, spatial_metric);
-  GeneralizedHarmonic::phi(phi, lapse, d_lapse, shift, d_shift, spatial_metric,
-                           d_spatial_metric);
-  GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
-                          dt_spatial_metric, *phi);
+  gh::phi(phi, lapse, d_lapse, shift, d_shift, spatial_metric,
+          d_spatial_metric);
+  gh::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
+         dt_spatial_metric, *phi);
 }
 
 template <typename AnalyticSolution>

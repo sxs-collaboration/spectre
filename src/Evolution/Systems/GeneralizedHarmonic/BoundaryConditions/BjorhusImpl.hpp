@@ -17,7 +17,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 /// \brief Detailed implementation of Bjorhus-type boundary corrections
 namespace Bjorhus {
 /*!
@@ -295,4 +295,4 @@ void add_physical_terms_to_dt_v_minus(
     const std::array<DataType, 4>& char_speeds);
 }  // namespace detail
 }  // namespace Bjorhus
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

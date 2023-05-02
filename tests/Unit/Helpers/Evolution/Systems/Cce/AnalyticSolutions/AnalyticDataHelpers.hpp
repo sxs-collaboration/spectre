@@ -213,11 +213,10 @@ void check_adm_metric_quantities(
   CHECK_ITERABLE_APPROX(shift, expected_shift);
   CHECK_ITERABLE_APPROX(lapse, expected_lapse);
 
-  const auto& pi =
-      get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
+  const auto& pi = get<gh::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
   const auto dt_spacetime_metric_from_pi =
-      GeneralizedHarmonic::time_derivative_of_spacetime_metric(
-          expected_lapse, expected_shift, pi, expected_d_spacetime_metric);
+      gh::time_derivative_of_spacetime_metric(expected_lapse, expected_shift,
+                                              pi, expected_d_spacetime_metric);
   CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric,
                         dt_spacetime_metric_from_pi);
   // Check that the time derivative values are consistent with the Generalized
@@ -231,15 +230,14 @@ void check_adm_metric_quantities(
   const auto& dt_spatial_metric = get<
       ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
       boundary_tuple);
-  const auto expected_dt_spatial_metric =
-      GeneralizedHarmonic::time_deriv_of_spatial_metric(
-          expected_lapse, expected_shift, expected_d_spacetime_metric, pi);
+  const auto expected_dt_spatial_metric = gh::time_deriv_of_spatial_metric(
+      expected_lapse, expected_shift, expected_d_spacetime_metric, pi);
   const auto expected_spacetime_unit_normal =
       gr::spacetime_normal_vector(expected_lapse, expected_shift);
-  const auto expected_dt_lapse = GeneralizedHarmonic::time_deriv_of_lapse(
+  const auto expected_dt_lapse = gh::time_deriv_of_lapse(
       expected_lapse, expected_shift, expected_spacetime_unit_normal,
       expected_d_spacetime_metric, pi);
-  const auto expected_dt_shift = GeneralizedHarmonic::time_deriv_of_shift(
+  const auto expected_dt_shift = gh::time_deriv_of_shift(
       expected_lapse, expected_shift, expected_inverse_spatial_metric,
       expected_spacetime_unit_normal, expected_d_spacetime_metric, pi);
   CHECK_ITERABLE_APPROX(dt_lapse, expected_dt_lapse);
@@ -255,15 +253,13 @@ void check_adm_metric_quantities(
       get<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
           boundary_tuple);
   const auto expected_spatial_derivative_of_lapse =
-      GeneralizedHarmonic::spatial_deriv_of_lapse(
-          expected_lapse, expected_spacetime_unit_normal,
-          expected_d_spacetime_metric);
+      gh::spatial_deriv_of_lapse(expected_lapse, expected_spacetime_unit_normal,
+                                 expected_d_spacetime_metric);
   const auto expected_inverse_spacetime_metric = gr::inverse_spacetime_metric(
       expected_lapse, expected_shift, expected_inverse_spatial_metric);
-  const auto expected_spatial_derivative_of_shift =
-      GeneralizedHarmonic::spatial_deriv_of_shift(
-          expected_lapse, expected_inverse_spacetime_metric,
-          expected_spacetime_unit_normal, expected_d_spacetime_metric);
+  const auto expected_spatial_derivative_of_shift = gh::spatial_deriv_of_shift(
+      expected_lapse, expected_inverse_spacetime_metric,
+      expected_spacetime_unit_normal, expected_d_spacetime_metric);
   DataVector expected_buffer =
       get<0>(dr_cartesian_coordinates) *
           get<0>(expected_spatial_derivative_of_lapse) +

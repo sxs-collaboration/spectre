@@ -7,7 +7,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-GeneralizedHarmonic::gauges::DhGaugeParameters<true>::DhGaugeParameters(
+gh::gauges::DhGaugeParameters<true>::DhGaugeParameters(
     const double start, const double window, const double width,
     const std::array<double, 3>& amps, const std::array<int, 3>& exps)
     : rollon_start(start),
@@ -16,13 +16,13 @@ GeneralizedHarmonic::gauges::DhGaugeParameters<true>::DhGaugeParameters(
       amplitudes(amps),
       exponents(exps) {}
 
-GeneralizedHarmonic::gauges::DhGaugeParameters<false>::DhGaugeParameters(
+gh::gauges::DhGaugeParameters<false>::DhGaugeParameters(
     const double width, const std::array<double, 3>& amps,
     const std::array<int, 3>& exps)
     : spatial_decay_width(width), amplitudes(amps), exponents(exps) {}
 
 // NOLINTNEXTLINE(google-runtime-references)
-void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(PUP::er& p) {
+void gh::gauges::DhGaugeParameters<true>::pup(PUP::er& p) {
   p | rollon_start;
   p | rollon_window;
   p | spatial_decay_width;
@@ -31,7 +31,7 @@ void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(PUP::er& p) {
 }
 
 // NOLINTNEXTLINE(google-runtime-references)
-void GeneralizedHarmonic::gauges::DhGaugeParameters<false>::pup(PUP::er& p) {
+void gh::gauges::DhGaugeParameters<false>::pup(PUP::er& p) {
   p | spatial_decay_width;
   p | amplitudes;
   p | exponents;

@@ -32,7 +32,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 template <size_t Dim>
 void SetPiFromGauge<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
@@ -83,10 +83,9 @@ void SetPiFromGauge<Dim>::apply(
                     Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<Dim>, gr::Tags::TraceExtrinsicCurvature<>,
       gr::Tags::SpatialChristoffelFirstKind<Dim>,
-      gr::Tags::TraceSpatialChristoffelFirstKind<Dim>,
-      GeneralizedHarmonic::Tags::GaugeH<Dim>,
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>,
-      ::Tags::dt<gr::Tags::Lapse<>>, ::Tags::dt<gr::Tags::Shift<Dim>>,
+      gr::Tags::TraceSpatialChristoffelFirstKind<Dim>, gh::Tags::GaugeH<Dim>,
+      gh::Tags::SpacetimeDerivGaugeH<Dim>, ::Tags::dt<gr::Tags::Lapse<>>,
+      ::Tags::dt<gr::Tags::Shift<Dim>>,
       ::Tags::dt<gr::Tags::SpatialMetric<Dim>>>>
       buffer(get<0, 0>(spacetime_metric).size());
 
@@ -130,7 +129,7 @@ void SetPiFromGauge<Dim>::apply(
   // Here we use `derivatives_of_spacetime_metric` to get \f$ \partial_a
   // g_{bc}\f$ instead, and use only the derivatives of \f$ g_{bi}\f$.
   tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, *pi, phi);
 
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
@@ -190,8 +189,8 @@ void SetPiFromGauge<Dim>::apply(
 
   time_deriv_of_spatial_metric(make_not_null(&dt_spatial_metric), lapse, shift,
                                phi, *pi);
-  GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
-                          dt_spatial_metric, phi);
+  gh::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
+         dt_spatial_metric, phi);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -202,4 +201,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

@@ -131,7 +131,7 @@ void cartesian_lapse_and_derivatives_from_unnormalized_spec_modes(
  * - `cartesian_spatial_metric_and_derivatives_from_unnormalized_spec_modes()`
  * - `cartesian_shift_and_derivatives_from_unnormalized_spec_modes()`
  * - `cartesian_lapse_and_derivatives_from_unnormalized_spec_modes()`
- * - `GeneralizedHarmonic::phi()`
+ * - `gh::phi()`
  * - `gr::time_derivative_of_spacetime_metric`
  * - `gr::spacetime_metric`
  * - `generalized_harmonic_quantities()`
@@ -194,9 +194,9 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
       ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-      GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>,
-      Tags::detail::WorldtubeNormal, ::Tags::dt<Tags::detail::WorldtubeNormal>,
-      Tags::detail::NullL, ::Tags::dt<Tags::detail::NullL>,
+      gh::Tags::Phi<3, ::Frame::Inertial>, Tags::detail::WorldtubeNormal,
+      ::Tags::dt<Tags::detail::WorldtubeNormal>, Tags::detail::NullL,
+      ::Tags::dt<Tags::detail::NullL>,
       // for the detail function called at the end
       gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>,
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>,
@@ -316,17 +316,16 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
       lapse_coefficients, dr_lapse_coefficients, dt_lapse_coefficients,
       inverse_cartesian_to_spherical_jacobian, radial_correction_factor, l_max);
 
-  auto& phi = get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-      computation_variables);
+  auto& phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(computation_variables);
   auto& dt_spacetime_metric = get<
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
       computation_variables);
   auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
           computation_variables);
-  GeneralizedHarmonic::phi(
-      make_not_null(&phi), cartesian_lapse, d_cartesian_lapse, cartesian_shift,
-      d_cartesian_shift, cartesian_spatial_metric, d_cartesian_spatial_metric);
+  gh::phi(make_not_null(&phi), cartesian_lapse, d_cartesian_lapse,
+          cartesian_shift, d_cartesian_shift, cartesian_spatial_metric,
+          d_cartesian_spatial_metric);
   gr::time_derivative_of_spacetime_metric(
       make_not_null(&dt_spacetime_metric), cartesian_lapse, dt_cartesian_lapse,
       cartesian_shift, dt_cartesian_shift, cartesian_spatial_metric,

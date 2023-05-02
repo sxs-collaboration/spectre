@@ -60,7 +60,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         register_derived_with_charm,
     &grmhd::GhValenciaDivClean::fd::register_derived_with_charm,
     &EquationsOfState::register_derived_with_charm,
-    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &gh::ConstraintDamping::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void time_deriv_of_lapse(
     const gsl::not_null<Scalar<DataType>*> dt_lapse,
@@ -54,31 +54,31 @@ Scalar<DataType> time_deriv_of_lapse(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   Scalar<DataType> dt_lapse{};
-  GeneralizedHarmonic::time_deriv_of_lapse<SpatialDim, Frame, DataType>(
+  gh::time_deriv_of_lapse<SpatialDim, Frame, DataType>(
       make_not_null(&dt_lapse), lapse, shift, spacetime_unit_normal, phi, pi);
   return dt_lapse;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                             \
-  template void GeneralizedHarmonic::time_deriv_of_lapse(                \
-      const gsl::not_null<Scalar<DTYPE(data)>*> dt_lapse,                \
-      const Scalar<DTYPE(data)>& lapse,                                  \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,         \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
-          spacetime_unit_normal,                                         \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);          \
-  template Scalar<DTYPE(data)> GeneralizedHarmonic::time_deriv_of_lapse( \
-      const Scalar<DTYPE(data)>& lapse,                                  \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,         \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
-          spacetime_unit_normal,                                         \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
+#define INSTANTIATE(_, data)                                     \
+  template void gh::time_deriv_of_lapse(                         \
+      const gsl::not_null<Scalar<DTYPE(data)>*> dt_lapse,        \
+      const Scalar<DTYPE(data)>& lapse,                          \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift, \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&        \
+          spacetime_unit_normal,                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi, \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);  \
+  template Scalar<DTYPE(data)> gh::time_deriv_of_lapse(          \
+      const Scalar<DTYPE(data)>& lapse,                          \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift, \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&        \
+          spacetime_unit_normal,                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

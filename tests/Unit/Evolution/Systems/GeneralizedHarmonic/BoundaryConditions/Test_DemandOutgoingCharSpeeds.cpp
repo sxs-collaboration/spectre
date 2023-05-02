@@ -28,17 +28,16 @@ void test() {
   MAKE_GENERATOR(gen);
 
   helpers::test_boundary_condition_with_python<
-      GeneralizedHarmonic::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
-      GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
-      GeneralizedHarmonic::System<Dim>,
-      tmpl::list<GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>>>(
+      gh::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
+      gh::BoundaryConditions::BoundaryCondition<Dim>, gh::System<Dim>,
+      tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>>(
       make_not_null(&gen), "DemandOutgoingCharSpeeds",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
       "DemandOutgoingCharSpeeds:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
       db::DataBox<tmpl::list<>>{},
-      tuples::TaggedTuple<helpers::Tags::Range<
-          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>>{
+      tuples::TaggedTuple<
+          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma1>>{
           std::array{0.0, 1.0}});
 }
 }  // namespace

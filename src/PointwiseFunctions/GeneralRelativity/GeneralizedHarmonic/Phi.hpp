@@ -29,7 +29,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -73,7 +73,7 @@ namespace Tags {
  * generalized harmonic formulation of Einstein's equations.
  *
  * \details See `phi()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::Phi`.
+ * `gh::Tags::Phi`.
  */
 template <size_t SpatialDim, typename Frame>
 struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
@@ -102,4 +102,4 @@ struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
   using base = Phi<SpatialDim, Frame>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

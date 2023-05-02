@@ -243,9 +243,7 @@ struct SphericalMetricData : public WorldtubeData {
   void variables_impl(
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric, size_t l_max,
       double time,
-      tmpl::type_<
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-      const override;
+      tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const override;
 
   /// Must be overriden in the derived class; should compute the spacetime
   /// metric of the analytic solution in spherical coordinates.

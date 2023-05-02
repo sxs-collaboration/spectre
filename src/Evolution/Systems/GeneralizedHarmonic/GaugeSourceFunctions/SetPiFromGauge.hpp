@@ -24,7 +24,7 @@
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 /*!
  * \brief Set \f$\Pi_{ab}\f$ from the gauge source function.
  *
@@ -34,8 +34,7 @@ namespace GeneralizedHarmonic::gauges {
 template <size_t Dim>
 struct SetPiFromGauge {
  public:
-  using return_tags =
-      tmpl::list<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>;
+  using return_tags = tmpl::list<gh::Tags::Pi<Dim, Frame::Inertial>>;
   using argument_tags =
       tmpl::list<::Tags::Time, domain::Tags::Mesh<Dim>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
@@ -44,11 +43,10 @@ struct SetPiFromGauge {
                  domain::Tags::FunctionsOfTime,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-                 GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>,
-                 GeneralizedHarmonic::gauges::Tags::GaugeCondition>;
+                 gh::Tags::Phi<Dim, Frame::Inertial>,
+                 gh::gauges::Tags::GaugeCondition>;
 
-  using const_global_cache_tags =
-      tmpl::list<GeneralizedHarmonic::gauges::Tags::GaugeCondition>;
+  using const_global_cache_tags = tmpl::list<gh::gauges::Tags::GaugeCondition>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
@@ -66,4 +64,4 @@ struct SetPiFromGauge {
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
       const gauges::GaugeCondition& gauge_condition);
 };
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

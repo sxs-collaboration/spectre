@@ -32,7 +32,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 
 namespace detail {
 namespace OptionTags {
@@ -118,7 +118,7 @@ namespace Actions {
 /*!
  * \brief Dispatch loading numeric initial data from files.
  *
- * Place this action before GeneralizedHarmonic::Actions::SetNumericInitialData
+ * Place this action before gh::Actions::SetNumericInitialData
  * in the action list. See importers::Actions::ReadAllVolumeDataAndDistribute
  * for details, which is invoked by this action.
  *
@@ -181,17 +181,17 @@ struct ReadNumericInitialData {
 
 /*!
  * \brief Receive numeric initial data loaded by
- * GeneralizedHarmonic::Actions::ReadNumericInitialData.
+ * gh::Actions::ReadNumericInitialData.
  *
  * Place this action in the action list after
- * GeneralizedHarmonic::Actions::ReadNumericInitialData to wait until the data
+ * gh::Actions::ReadNumericInitialData to wait until the data
  * for this element has arrived, and then transform the data to GH variables and
  * store it in the DataBox to be used as initial data.
  *
  * This action modifies the following tags in the DataBox:
  * - gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>
- * - GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>
- * - GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>
+ * - gh::Tags::Pi<3, Frame::Inertial>
+ * - gh::Tags::Phi<3, Frame::Inertial>
  *
  * \tparam ImporterOptionsGroup Option group in which options are placed.
  */
@@ -293,21 +293,20 @@ struct SetNumericInitialData {
                     deriv_spatial_metric, extrinsic_curvature);
             gr::spacetime_metric(spacetime_metric, lapse, shift,
                                  spatial_metric);
-            GeneralizedHarmonic::phi(phi, lapse, deriv_lapse, shift,
-                                     deriv_shift, spatial_metric,
-                                     deriv_spatial_metric);
-            GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift,
-                                    spatial_metric, dt_spatial_metric, *phi);
+            gh::phi(phi, lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
+                    deriv_spatial_metric);
+            gh::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                   dt_spatial_metric, *phi);
           });
     } else {
       ERROR(
           "These initial data variables are not implemented yet. Please add "
           "an implementation to "
-          "GeneralizedHarmonic::Actions::SetNumericInitialData.");
+          "gh::Actions::SetNumericInitialData.");
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
 }  // namespace Actions
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

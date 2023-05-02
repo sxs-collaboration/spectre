@@ -35,7 +35,7 @@ struct Coordinates;
 }  // namespace domain::Tags
 /// \endcond
 
-namespace GeneralizedHarmonic::BoundaryConditions::detail {
+namespace gh::BoundaryConditions::detail {
 enum class ConstraintPreservingBjorhusType {
   ConstraintPreserving,
   ConstraintPreservingPhysical
@@ -44,9 +44,9 @@ enum class ConstraintPreservingBjorhusType {
 ConstraintPreservingBjorhusType
 convert_constraint_preserving_bjorhus_type_from_yaml(
     const Options::Option& options);
-}  // namespace GeneralizedHarmonic::BoundaryConditions::detail
+}  // namespace gh::BoundaryConditions::detail
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 /*!
  * \brief Sets constraint preserving boundary conditions using the Bjorhus
  * method.
@@ -280,16 +280,16 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
   detail::ConstraintPreservingBjorhusType type_{
       detail::ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
 };
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions
 
 template <>
-struct Options::create_from_yaml<GeneralizedHarmonic::BoundaryConditions::
-                                     detail::ConstraintPreservingBjorhusType> {
+struct Options::create_from_yaml<
+    gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType> {
   template <typename Metavariables>
-  static typename GeneralizedHarmonic::BoundaryConditions::detail::
-      ConstraintPreservingBjorhusType
+  static
+      typename gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType
       create(const Options::Option& options) {
-    return GeneralizedHarmonic::BoundaryConditions::detail::
+    return gh::BoundaryConditions::detail::
         convert_constraint_preserving_bjorhus_type_from_yaml(options);
   }
 };

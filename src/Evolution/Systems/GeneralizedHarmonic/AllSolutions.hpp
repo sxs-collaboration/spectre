@@ -11,19 +11,18 @@
 #include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /*!
  * \brief All solutions, including matter ones from GRMHD, etc. Used by
  * e.g. boundary conditions.
  */
 template <size_t Dim>
 using solutions_including_matter = tmpl::append<
-    GeneralizedHarmonic::Solutions::all_solutions<Dim>,
+    gh::Solutions::all_solutions<Dim>,
     tmpl::conditional_t<
         Dim == 3,
-        tmpl::append<
-            GeneralizedHarmonic::Solutions::RelativisticEuler::all_solutions,
-            GeneralizedHarmonic::Solutions::grmhd::all_solutions,
-            GeneralizedHarmonic::AnalyticData::grmhd::all_analytic_data>,
+        tmpl::append<gh::Solutions::RelativisticEuler::all_solutions,
+                     gh::Solutions::grmhd::all_solutions,
+                     gh::AnalyticData::grmhd::all_analytic_data>,
         tmpl::list<>>>;
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
