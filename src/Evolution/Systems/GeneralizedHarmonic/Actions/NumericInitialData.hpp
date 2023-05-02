@@ -17,15 +17,10 @@
 #include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
-#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpatialMetric.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -33,6 +28,27 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace gh {
+
+/*!
+ * \brief Compute initial GH variables from ADM variables
+ *
+ * - The spacetime metric is assembled from the spatial metric, lapse, and
+ *   shift. See `gr::spacetime_metric` for details.
+ * - Phi is set to the numerical derivative of the spacetime metric. This
+ *   ensures that the 3-index constraint is initially satisfied.
+ * - Pi is computed by choosing the time derivatives of lapse and shift to be
+ *   zero. The `gh::gauges::SetPiFromGauge` mutator exists to override Pi later
+ *   in the algorithm (it should be combined with this function).
+ */
+void initial_gh_variables_from_adm(
+    const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
+    const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
+    const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi,
+    const tnsr::ii<DataVector, 3>& spatial_metric,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
+    const tnsr::ii<DataVector, 3>& extrinsic_curvature, const Mesh<3>& mesh,
+    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>& inv_jacobian);
 
 namespace detail {
 namespace OptionTags {
@@ -216,6 +232,11 @@ struct SetNumericInitialData {
     }
     auto numeric_initial_data = std::move(inbox.extract(0_st).mapped());
 
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    const auto& inv_jacobian =
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                              Frame::Inertial>>(box);
+
     const auto& selected_initial_data_vars =
         get<detail::Tags::NumericInitialDataVariables<ImporterOptionsGroup>>(
             box);
@@ -225,10 +246,6 @@ struct SetNumericInitialData {
       // data for spacetime_metric and Pi into the DataBox directly, with no
       // conversion needed. Set Phi to the spatial derivative of the spacetime
       // metric to enforce the 3-index constraint.
-      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-      const auto& inv_jacobian =
-          db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                Frame::Inertial>>(box);
       db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
           make_not_null(&box),
@@ -257,43 +274,10 @@ struct SetNumericInitialData {
           get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(
               numeric_initial_data);
 
-      // Take numerical derivatives
-      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-      const auto& inv_jacobian =
-          db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                Frame::Inertial>>(box);
-      const auto deriv_spatial_metric =
-          partial_derivative(spatial_metric, mesh, inv_jacobian);
-      const auto deriv_lapse = partial_derivative(lapse, mesh, inv_jacobian);
-      const auto deriv_shift = partial_derivative(
-          get<gr::Tags::Shift<DataVector, 3>>(numeric_initial_data), mesh,
-          inv_jacobian);
-
-      // Compute GH variables
       db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
-          make_not_null(&box),
-          [&spatial_metric, &deriv_spatial_metric, &lapse, &deriv_lapse, &shift,
-           &deriv_shift, &extrinsic_curvature](
-              const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
-              const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
-              const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi) {
-            // Choose dt_lapse = 0 and dt_shift = 0 (for now)
-            const auto dt_lapse =
-                make_with_value<Scalar<DataVector>>(lapse, 0.);
-            const auto dt_shift =
-                make_with_value<tnsr::I<DataVector, 3>>(shift, 0.);
-            const auto dt_spatial_metric =
-                gr::time_derivative_of_spatial_metric(
-                    lapse, shift, deriv_shift, spatial_metric,
-                    deriv_spatial_metric, extrinsic_curvature);
-            gr::spacetime_metric(spacetime_metric, lapse, shift,
-                                 spatial_metric);
-            gh::phi(phi, lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
-                    deriv_spatial_metric);
-            gh::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
-                   dt_spatial_metric, *phi);
-          });
+          make_not_null(&box), &initial_gh_variables_from_adm, spatial_metric,
+          lapse, shift, extrinsic_curvature, mesh, inv_jacobian);
     } else {
       ERROR(
           "These initial data variables are not implemented yet. Please add "
