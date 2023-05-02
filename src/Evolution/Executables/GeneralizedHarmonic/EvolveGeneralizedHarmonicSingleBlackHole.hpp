@@ -25,7 +25,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Options/FactoryHelpers.hpp"
@@ -65,13 +65,10 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
-template <size_t VolumeDim, bool UseNumericalInitialData>
-struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<VolumeDim,
-                                             UseNumericalInitialData> {
+template <size_t VolumeDim>
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
   static constexpr size_t volume_dim = VolumeDim;
-  static constexpr bool use_numeric_id = UseNumericalInitialData;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
 
@@ -195,19 +192,15 @@ struct EvolutionMetavars
       tmpl::flatten<tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          tmpl::conditional_t<
-              use_numeric_id,
-              tmpl::list<Parallel::PhaseActions<
-                             Parallel::Phase::RegisterWithElementDataReader,
-                             tmpl::list<importers::Actions::
-                                            RegisterWithElementDataReader,
-                                        Parallel::Actions::TerminatePhase>>,
-                         Parallel::PhaseActions<
-                             Parallel::Phase::ImportInitialData,
-                             tmpl::list<gh::Actions::ReadNumericInitialData,
-                                        gh::Actions::SetNumericInitialData,
-                                        Parallel::Actions::TerminatePhase>>>,
-              tmpl::list<>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::RegisterWithElementDataReader,
+              tmpl::list<importers::Actions::RegisterWithElementDataReader,
+                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::ImportInitialData,
+              tmpl::list<gh::Actions::SetInitialData,
+                         gh::Actions::ReceiveNumericInitialData,
+                         Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
@@ -235,10 +228,8 @@ struct EvolutionMetavars
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
-      std::conditional_t<use_numeric_id,
-                         importers::ElementDataReader<EvolutionMetavars>,
-                         tmpl::list<>>,
-      gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
+      importers::ElementDataReader<EvolutionMetavars>, gh_dg_element_array,
+      intrp::Interpolator<EvolutionMetavars>,
       control_system::control_components<EvolutionMetavars, control_systems>,
       tmpl::transform<interpolation_target_tags,
                       tmpl::bind<intrp::InterpolationTarget,

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>

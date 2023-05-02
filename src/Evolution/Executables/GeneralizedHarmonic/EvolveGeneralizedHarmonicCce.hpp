@@ -57,7 +57,6 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -74,14 +73,11 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t VolumeDim, bool UseNumericalInitialData>
-struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<VolumeDim,
-                                             UseNumericalInitialData>,
-      public CharacteristicExtractDefaults<false> {
+template <size_t VolumeDim>
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
+                           public CharacteristicExtractDefaults<false> {
   static constexpr size_t volume_dim = VolumeDim;
-  static constexpr bool use_numeric_id = UseNumericalInitialData;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
 
@@ -149,10 +145,6 @@ struct EvolutionMetavars
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      std::conditional_t<
-          use_numeric_id, tmpl::list<>,
-          evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
           typename system::variables_tag,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
@@ -173,19 +165,15 @@ struct EvolutionMetavars
       tmpl::flatten<tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          tmpl::conditional_t<
-              use_numeric_id,
-              tmpl::list<Parallel::PhaseActions<
-                             Parallel::Phase::RegisterWithElementDataReader,
-                             tmpl::list<importers::Actions::
-                                            RegisterWithElementDataReader,
-                                        Parallel::Actions::TerminatePhase>>,
-                         Parallel::PhaseActions<
-                             Parallel::Phase::ImportInitialData,
-                             tmpl::list<gh::Actions::ReadNumericInitialData,
-                                        gh::Actions::SetNumericInitialData,
-                                        Parallel::Actions::TerminatePhase>>>,
-              tmpl::list<>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::RegisterWithElementDataReader,
+              tmpl::list<importers::Actions::RegisterWithElementDataReader,
+                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::ImportInitialData,
+              tmpl::list<gh::Actions::SetInitialData,
+                         gh::Actions::ReceiveNumericInitialData,
+                         Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
@@ -236,10 +224,8 @@ struct EvolutionMetavars
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
-      std::conditional_t<use_numeric_id,
-                         importers::ElementDataReader<EvolutionMetavars>,
-                         tmpl::list<>>,
-      gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
+      importers::ElementDataReader<EvolutionMetavars>, gh_dg_element_array,
+      intrp::Interpolator<EvolutionMetavars>,
       tmpl::transform<interpolation_target_tags,
                       tmpl::bind<intrp::InterpolationTarget,
                                  tmpl::pin<EvolutionMetavars>, tmpl::_1>>,

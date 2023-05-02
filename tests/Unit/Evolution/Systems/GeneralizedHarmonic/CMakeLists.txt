@@ -7,7 +7,7 @@ add_subdirectory(ConstraintDamping)
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
-  Actions/Test_NumericInitialData.cpp
+  Actions/Test_SetInitialData.cpp
   BoundaryConditions/Test_Bjorhus.cpp
   BoundaryConditions/Test_BjorhusImpl.cpp
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp

@@ -26,6 +26,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Time/Tags.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -261,13 +263,17 @@ class NumericInitialData : public evolution::initial_data::InitialData {
 namespace Actions {
 
 /*!
- * \brief Dispatch loading numeric initial data from files.
+ * \brief Dispatch loading numeric initial data from files or set analytic
+ * initial data.
  *
- * Place this action before gh::Actions::SetNumericInitialData
- * in the action list. See importers::Actions::ReadAllVolumeDataAndDistribute
- * for details, which is invoked by this action.
+ * Place this action before
+ * gh::Actions::ReceiveNumericInitialData in the action list.
+ * See importers::Actions::ReadAllVolumeDataAndDistribute for details, which is
+ * invoked by this action.
+ * Analytic initial data is set directly by this action and terminates the
+ * phase.
  */
-struct ReadNumericInitialData {
+struct SetInitialData {
   using const_global_cache_tags =
       tmpl::list<evolution::initial_data::Tags::InitialData>;
 
@@ -279,11 +285,31 @@ struct ReadNumericInitialData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const parallel_component) {
+    // Dispatch to the correct `apply` overload based on type of initial data
+    using initial_data_classes =
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 evolution::initial_data::InitialData>;
+    return call_with_dynamic_type<Parallel::iterable_action_return_t,
+                                  initial_data_classes>(
+        &db::get<evolution::initial_data::Tags::InitialData>(box),
+        [&box, &cache, &parallel_component](const auto* const initial_data) {
+          return apply(make_not_null(&box), *initial_data, cache,
+                       parallel_component);
+        });
+  }
+
+ private:
+  // Numeric initial data
+  template <typename DbTagsList, typename Metavariables,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
+      const NumericInitialData& initial_data,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ParallelComponent* const /*meta*/) {
     // Select the subset of the available variables that we want to read from
     // the volume data file
-    const auto& initial_data = dynamic_cast<const NumericInitialData&>(
-        db::get<evolution::initial_data::Tags::InitialData>(box));
     tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
         importers::Tags::Selected, NumericInitialData::all_vars>>
         selected_fields{};
@@ -299,14 +325,54 @@ struct ReadNumericInitialData {
         initial_data.volume_data_id(), std::move(selected_fields));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
+
+  // "AnalyticData"-type initial data
+  template <typename DbTagsList, typename InitialData, typename Metavariables,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      const gsl::not_null<db::DataBox<DbTagsList>*> box,
+      const InitialData& initial_data,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ParallelComponent* const /*meta*/) {
+    static constexpr size_t Dim = Metavariables::volume_dim;
+
+    // Get ADM variables from analytic data / solution
+    const auto& x =
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box);
+    const auto adm_vars = evolution::Initialization::initial_data(
+        initial_data, x, db::get<::Tags::Time>(*box),
+        tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
+                   gr::Tags::Lapse<DataVector>,
+                   gr::Tags::Shift<DataVector, Dim>,
+                   gr::Tags::ExtrinsicCurvature<DataVector, Dim>>{});
+    const auto& spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, Dim>>(adm_vars);
+    const auto& lapse = get<gr::Tags::Lapse<DataVector>>(adm_vars);
+    const auto& shift = get<gr::Tags::Shift<DataVector, Dim>>(adm_vars);
+    const auto& extrinsic_curvature =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, Dim>>(adm_vars);
+
+    // Compute GH vars from ADM vars
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+    const auto& inv_jacobian =
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                              Frame::Inertial>>(*box);
+    db::mutate<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+               Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>(
+        box, &gh::initial_gh_variables_from_adm<Dim>, spatial_metric, lapse,
+        shift, extrinsic_curvature, mesh, inv_jacobian);
+
+    // No need to import numeric initial data, so we terminate the phase by
+    // pausing the algorithm on this element
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+  }
 };
 
 /*!
- * \brief Receive numeric initial data loaded by
- * gh::Actions::ReadNumericInitialData.
+ * \brief Receive numeric initial data loaded by gh::Actions::SetInitialData.
  *
  * Place this action in the action list after
- * gh::Actions::ReadNumericInitialData to wait until the data
+ * gh::Actions::SetInitialData to wait until the data
  * for this element has arrived, and then transform the data to GH variables and
  * store it in the DataBox to be used as initial data.
  *
@@ -315,7 +381,7 @@ struct ReadNumericInitialData {
  * - gh::Tags::Pi<DataVector, 3>
  * - gh::Tags::Phi<DataVector, 3>
  */
-struct SetNumericInitialData {
+struct ReceiveNumericInitialData {
   static constexpr size_t Dim = 3;
   using inbox_tags =
       tmpl::list<importers::Tags::VolumeData<NumericInitialData::all_vars>>;

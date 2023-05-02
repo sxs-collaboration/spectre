@@ -46,7 +46,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
@@ -504,10 +504,11 @@ struct EvolutionMetavars {
               Parallel::Phase::RegisterWithElementDataReader,
               tmpl::list<importers::Actions::RegisterWithElementDataReader,
                          Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<Parallel::Phase::ImportInitialData,
-                                 tmpl::list<gh::Actions::ReadNumericInitialData,
-                                            gh::Actions::SetNumericInitialData,
-                                            Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::ImportInitialData,
+              tmpl::list<gh::Actions::SetInitialData,
+                         gh::Actions::ReceiveNumericInitialData,
+                         Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,

@@ -22,13 +22,10 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
-template <size_t VolumeDim, bool UseNumericalInitialData>
-struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<VolumeDim,
-                                             UseNumericalInitialData> {
+template <size_t VolumeDim>
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
   static constexpr size_t volume_dim = VolumeDim;
-  static constexpr bool use_numeric_id = UseNumericalInitialData;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::dg_registration_list;
   using initialization_actions =
@@ -44,19 +41,18 @@ struct EvolutionMetavars
       tmpl::flatten<tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          tmpl::conditional_t<
-              use_numeric_id,
-              tmpl::list<Parallel::PhaseActions<
-                             Parallel::Phase::RegisterWithElementDataReader,
-                             tmpl::list<importers::Actions::
-                                            RegisterWithElementDataReader,
-                                        Parallel::Actions::TerminatePhase>>,
-                         Parallel::PhaseActions<
-                             Parallel::Phase::ImportInitialData,
-                             tmpl::list<gh::Actions::ReadNumericInitialData,
-                                        gh::Actions::SetNumericInitialData,
-                                        Parallel::Actions::TerminatePhase>>>,
-              tmpl::list<>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::RegisterWithElementDataReader,
+              tmpl::list<importers::Actions::RegisterWithElementDataReader,
+                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::ImportInitialData,
+              tmpl::list<
+                  gh::Actions::SetInitialData,
+                  tmpl::conditional_t<VolumeDim == 3,
+                                      gh::Actions::ReceiveNumericInitialData,
+                                      tmpl::list<>>,
+                  Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
@@ -79,14 +75,12 @@ struct EvolutionMetavars
         dg_registration_list, tmpl::list<>>;
   };
 
-  using component_list = tmpl::flatten<tmpl::list<
-      observers::Observer<EvolutionMetavars>,
-      observers::ObserverWriter<EvolutionMetavars>,
-      mem_monitor::MemoryMonitor<EvolutionMetavars>,
-      std::conditional_t<use_numeric_id,
-                         importers::ElementDataReader<EvolutionMetavars>,
-                         tmpl::list<>>,
-      gh_dg_element_array>>;
+  using component_list =
+      tmpl::flatten<tmpl::list<observers::Observer<EvolutionMetavars>,
+                               observers::ObserverWriter<EvolutionMetavars>,
+                               mem_monitor::MemoryMonitor<EvolutionMetavars>,
+                               importers::ElementDataReader<EvolutionMetavars>,
+                               gh_dg_element_array>>;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "

@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
