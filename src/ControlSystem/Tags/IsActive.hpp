@@ -42,6 +42,28 @@ template <typename Metavariables, typename ControlSystem>
 struct IsActiveOptionList<Metavariables, ControlSystem, false> {
   using type = tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
 };
+
+template <typename ControlSystem>
+bool is_control_system_active(
+    const control_system::OptionHolder<ControlSystem>& option_holder,
+    const std::optional<std::string>& function_of_time_file,
+    const std::map<std::string, std::string>& function_of_time_name_map) {
+  if (not function_of_time_file.has_value()) {
+    // `None` was specified as the option for the file so we aren't replacing
+    // anything
+    return option_holder.is_active;
+  }
+
+  const std::string& name = ControlSystem::name();
+
+  for (const auto& spec_and_spectre_names : function_of_time_name_map) {
+    if (spec_and_spectre_names.second == name) {
+      return false;
+    }
+  }
+
+  return option_holder.is_active;
+}
 }  // namespace detail
 
 /// \ingroup DataBoxTagsGroup
@@ -79,21 +101,8 @@ struct IsActive : db::SimpleTag {
       const control_system::OptionHolder<ControlSystem>& option_holder,
       const std::optional<std::string>& function_of_time_file,
       const std::map<std::string, std::string>& function_of_time_name_map) {
-    if (not function_of_time_file.has_value()) {
-      // `None` was specified as the option for the file so we aren't replacing
-      // anything
-      return option_holder.is_active;
-    }
-
-    const std::string& name = ControlSystem::name();
-
-    for (const auto& spec_and_spectre_names : function_of_time_name_map) {
-      if (spec_and_spectre_names.second == name) {
-        return false;
-      }
-    }
-
-    return option_holder.is_active;
+    return detail::is_control_system_active(
+        option_holder, function_of_time_file, function_of_time_name_map);
   }
 
   template <typename Metavariables>

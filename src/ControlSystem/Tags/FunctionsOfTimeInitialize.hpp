@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "ControlSystem/ExpirationTimes.hpp"
+#include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -91,9 +92,31 @@ struct OptionList<Metavariables, NeedDomainCreator, false> {
 // continue.
 void check_expiration_time_consistency(
     const std::unordered_map<std::string, double>& initial_expiration_times,
+    const std::unordered_map<std::string, bool>& is_active_map,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time);
+
+template <typename... OptionHolders>
+std::unordered_map<std::string, bool> create_is_active_map(
+    const std::optional<std::string>& function_of_time_file,
+    const std::map<std::string, std::string>& function_of_time_name_map,
+    const OptionHolders&... option_holders) {
+  std::unordered_map<std::string, bool> result{};
+
+  [[maybe_unused]] const auto add_to_result =
+      [&result, &function_of_time_file,
+       &function_of_time_name_map](const auto& option_holder) {
+        using control_system =
+            typename std::decay_t<decltype(option_holder)>::control_system;
+        result[control_system::name()] = is_control_system_active(
+            option_holder, function_of_time_file, function_of_time_name_map);
+      };
+
+  EXPAND_PACK_LEFT_TO_RIGHT(add_to_result(option_holders));
+
+  return result;
+}
 }  // namespace detail
 
 /// \ingroup ControlSystemGroup
@@ -136,8 +159,11 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
     auto functions_of_time =
         domain_creator->functions_of_time(initial_expiration_times);
 
+    const auto is_active_map = detail::create_is_active_map(
+        function_of_time_file, function_of_time_name_map, option_holders...);
+
     detail::check_expiration_time_consistency(initial_expiration_times,
-                                              functions_of_time);
+                                              is_active_map, functions_of_time);
 
     if (function_of_time_file.has_value()) {
       domain::FunctionsOfTime::override_functions_of_time(

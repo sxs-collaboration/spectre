@@ -29,7 +29,8 @@ struct EvolutionMetavars
       EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::dg_registration_list;
-  using typename gh_base::initialization_actions;
+  using initialization_actions =
+      typename gh_base::template initialization_actions<false>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::observed_reduction_data_tags;
   using typename gh_base::step_actions;

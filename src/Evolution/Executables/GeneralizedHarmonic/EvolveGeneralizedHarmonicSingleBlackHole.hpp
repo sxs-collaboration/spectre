@@ -13,9 +13,17 @@
 #include "ApparentHorizons/ComputeItems.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
 #include "ApparentHorizons/Tags.hpp"
+#include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/Component.hpp"
+#include "ControlSystem/Event.hpp"
+#include "ControlSystem/Measurements/SingleHorizon.hpp"
+#include "ControlSystem/Systems/Shape.hpp"
+#include "ControlSystem/Trigger.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
@@ -122,13 +130,18 @@ struct EvolutionMetavars
     using interpolating_component = typename metavariables::gh_dg_element_array;
   };
 
-  using interpolation_target_tags = tmpl::list<AhA, ExcisionBoundaryA>;
-  using interpolator_source_vars_excision_boundary = tmpl::list<
-      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
-  using interpolator_source_vars = tmpl::remove_duplicates<
-      tmpl::append<interpolator_source_vars_excision_boundary,
-                   ::ah::source_vars<volume_dim>>>;
+  using control_systems = tmpl::list<control_system::Systems::Shape<
+      ::domain::ObjectLabel::None, 2,
+      control_system::measurements::SingleHorizon<
+          ::domain::ObjectLabel::None>>>;
+
+  static constexpr bool use_control_systems =
+      tmpl::size<control_systems>::value > 0;
+
+  using interpolation_target_tags = tmpl::push_back<
+      control_system::metafunctions::interpolation_target_tags<control_systems>,
+      AhA, ExcisionBoundaryA>;
+  using interpolator_source_vars = ::ah::source_vars<volume_dim>;
 
   // The interpolator_source_vars need to be the same in both the Interpolate
   // event and the InterpolateWithoutInterpComponent event.  The Interpolate
@@ -140,12 +153,16 @@ struct EvolutionMetavars
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
         typename gh_base::factory_creation::factory_classes,
-        tmpl::pair<Event,
-                   tmpl::list<intrp::Events::Interpolate<
-                                  3, AhA, interpolator_source_vars>,
-                              intrp::Events::InterpolateWithoutInterpComponent<
-                                  3, ExcisionBoundaryA, EvolutionMetavars,
-                                  interpolator_source_vars>>>>;
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
+                control_system::control_system_events<control_systems>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryA, EvolutionMetavars,
+                    interpolator_source_vars>>>>,
+        tmpl::pair<DenseTrigger,
+                   control_system::control_system_triggers<control_systems>>>;
   };
 
   using typename gh_base::const_global_cache_tags;
@@ -162,11 +179,14 @@ struct EvolutionMetavars
 
   using typename gh_base::step_actions;
 
-  using initialization_actions =
-      tmpl::push_back<tmpl::pop_back<typename gh_base::initialization_actions>,
-                      intrp::Actions::ElementInitInterpPoints<
-                          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
-                      tmpl::back<typename gh_base::initialization_actions>>;
+  using initialization_actions = tmpl::push_back<
+      tmpl::pop_back<typename gh_base::template initialization_actions<
+          use_control_systems>>,
+      control_system::Actions::InitializeMeasurements<control_systems>,
+      intrp::Actions::ElementInitInterpPoints<
+          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      tmpl::back<typename gh_base::template initialization_actions<
+          use_control_systems>>>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
@@ -201,7 +221,8 @@ struct EvolutionMetavars
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+              tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
@@ -219,8 +240,10 @@ struct EvolutionMetavars
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
-      intrp::InterpolationTarget<EvolutionMetavars, AhA>,
-      intrp::InterpolationTarget<EvolutionMetavars, ExcisionBoundaryA>>>;
+      control_system::control_components<EvolutionMetavars, control_systems>,
+      tmpl::transform<interpolation_target_tags,
+                      tmpl::bind<intrp::InterpolationTarget,
+                                 tmpl::pin<EvolutionMetavars>, tmpl::_1>>>>;
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

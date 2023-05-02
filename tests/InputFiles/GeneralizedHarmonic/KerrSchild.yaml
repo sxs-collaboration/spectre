@@ -26,6 +26,8 @@ ResourceInfo:
     ExcisionBoundaryA:
       Proc: Auto
       Exclusive: false
+    ControlSystemSingleAh: Auto
+    Shape: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -49,11 +51,11 @@ InitialData: &InitialData
   KerrSchild:
     Mass: 1.0
     Spin: [0.0, 0.0, 0.0]
-    Center: [0.0, 0.0, 0.0]
+    Center: &Center [0.0, 0.0, 0.0]
 
 DomainCreator:
   Sphere:
-    InnerRadius: 1.9
+    InnerRadius: &InnerRadius 1.9
     OuterRadius: 2.3
     Interior:
       ExciseWithBoundaryCondition:
@@ -192,11 +194,11 @@ Interpolator:
   DumpVolumeDataOnFailure: false
 
 ApparentHorizons:
-  AhA:
+  AhA: &AhA
     InitialGuess:
-      Lmax: 4
+      Lmax: &LMax 4
       Radius: 2.2
-      Center: [0.0, 0.0, 0.0]
+      Center: *Center
     FastFlow:
       Flow: Fast
       Alpha: 1.0
@@ -207,10 +209,31 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
+  ControlSystemSingleAh: *AhA
 
 InterpolationTargets:
   ExcisionBoundaryA:
-    Lmax: 10
-    Center: [0., 0., 0.]
-    Radius: 2.0
+    Lmax: *LMax
+    Center: *Center
+    Radius: *InnerRadius
     AngularOrdering: "Strahlkorper"
+
+ControlSystems:
+  WriteDataToDisk: false
+  MeasurementsPerUpdate: 4
+  Shape:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:

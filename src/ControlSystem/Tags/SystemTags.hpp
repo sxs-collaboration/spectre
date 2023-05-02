@@ -196,8 +196,9 @@ struct ControlError : db::SimpleTag {
 
     if constexpr (expected_number_of_excisions == 1) {
       if (excision_spheres.count("ExcisionSphereA") != 1 and
-          excision_spheres.count("ExcisionSphereB") != 1) {
-        print_error("ExcisionSphereA' or 'ExcisionSphereB");
+          excision_spheres.count("ExcisionSphereB") != 1 and
+          excision_spheres.count("ExcisionSphere") != 1) {
+        print_error("ExcisionSphereA' or 'ExcisionSphereB' or 'ExcisionSphere");
       }
     }
     if constexpr (expected_number_of_excisions == 2) {
