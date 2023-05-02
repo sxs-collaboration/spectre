@@ -70,8 +70,11 @@ boost::rational<size_t> fraction_of_block_volume(
 template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
                            const Direction<VolumeDim>& direction) {
-  return direction.side() ==
-         element_id.segment_id(direction.dimension()).side_of_sibling();
+  const SegmentId segment_id = element_id.segment_id(direction.dimension());
+  if (segment_id.refinement_level() == 0) {
+    return false;
+  }
+  return direction.side() == segment_id.side_of_sibling();
 }
 
 template <size_t VolumeDim>

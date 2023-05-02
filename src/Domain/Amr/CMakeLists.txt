@@ -11,6 +11,7 @@ spectre_target_sources(
   Flag.cpp
   Helpers.cpp
   NeighborsOfChild.cpp
+  NeighborsOfParent.cpp
   NewNeighborIds.cpp
   UpdateAmrDecision.cpp
   )
@@ -23,6 +24,7 @@ spectre_target_headers(
   Flag.hpp
   Helpers.hpp
   NeighborsOfChild.hpp
+  NeighborsOfParent.hpp
   NewNeighborIds.hpp
   UpdateAmrDecision.hpp
   )

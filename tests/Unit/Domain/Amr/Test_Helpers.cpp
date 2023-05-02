@@ -118,6 +118,11 @@ void test_fraction_of_block_volume() {
 }
 
 void test_has_potential_sibling() {
+  const ElementId<1> element_id_root{0, {{SegmentId(0, 0)}}};
+  CHECK_FALSE(
+      amr::has_potential_sibling(element_id_root, Direction<1>::lower_xi()));
+  CHECK_FALSE(
+      amr::has_potential_sibling(element_id_root, Direction<1>::upper_xi()));
   const ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
   CHECK(amr::has_potential_sibling(element_id_1d, Direction<1>::lower_xi()));
   CHECK_FALSE(
