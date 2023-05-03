@@ -12,6 +12,10 @@
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
 namespace gr::Solutions {
+
+template <size_t Dim>
+PUP::able::PUP_ID Minkowski<Dim>::my_PUP_ID = 0;
+
 template <size_t Dim>
 Minkowski<Dim>::Minkowski(CkMigrateMessage* /*msg*/) {}
 

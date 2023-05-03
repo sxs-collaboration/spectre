@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -240,7 +241,11 @@ class KerrSchild : public AnalyticSolution<3_st>,
              const std::array<double, 3>& center,
              const Options::Context& context = {});
 
+  /// \cond
   explicit KerrSchild(CkMigrateMessage* /*msg*/);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(KerrSchild);
+  /// \endcond
 
   template <typename DataType, typename Frame = Frame::Inertial>
   using tags = tmpl::flatten<tmpl::list<
@@ -258,6 +263,11 @@ class KerrSchild : public AnalyticSolution<3_st>,
   KerrSchild& operator=(KerrSchild&& /*rhs*/) = default;
   ~KerrSchild() = default;
 
+  std::unique_ptr<evolution::initial_data::InitialData> get_clone()
+      const override {
+    return std::make_unique<KerrSchild>(*this);
+  }
+
   template <typename DataType, typename Frame, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
@@ -273,7 +283,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   double mass() const { return mass_; }
   const std::array<double, volume_dim>& center() const { return center_; }

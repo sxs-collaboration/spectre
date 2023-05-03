@@ -25,6 +25,9 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace gr::Solutions {
+
+PUP::able::PUP_ID KerrSchild::my_PUP_ID = 0;
+
 KerrSchild::KerrSchild(CkMigrateMessage* /*msg*/) {}
 
 KerrSchild::KerrSchild(const double mass,

@@ -11,6 +11,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -50,7 +51,16 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   Minkowski& operator=(Minkowski&& /*rhs*/) = default;
   ~Minkowski() = default;
 
+  std::unique_ptr<evolution::initial_data::InitialData> get_clone()
+      const override {
+    return std::make_unique<Minkowski>(*this);
+  }
+
+  /// \cond
   explicit Minkowski(CkMigrateMessage* /*msg*/);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Minkowski);
+  /// \endcond
 
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
@@ -211,8 +221,6 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
             tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
                 Dim, Frame::Inertial, DataType>> /*meta*/) const;
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) {}
 };
 
 template <size_t Dim>
