@@ -134,7 +134,7 @@ EventsAndDenseTriggers:
 
 InterpolationTargets:
   SphericalSurface:
-    Lmax: 10
+    LMax: 10
     Center: [0., 0., 0.]
     Radius: 1.
     AngularOrdering: Strahlkorper

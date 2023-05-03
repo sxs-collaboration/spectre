@@ -139,7 +139,7 @@ std::string option_string(
                               "    SizeMap:\n"
                               "      InitialValues: [0.5, -0.04, 0.003]\n"
                               "    ShapeMap:\n"
-                              "      Lmax: 10\n"
+                              "      LMax: 10\n"
                             : "  TimeDependentMaps:\n"
                               "    UniformTranslation:\n"
                               "      InitialTime: 1.0\n"

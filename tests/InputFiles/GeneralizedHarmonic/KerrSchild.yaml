@@ -196,7 +196,7 @@ Interpolator:
 ApparentHorizons:
   AhA: &AhA
     InitialGuess:
-      Lmax: &LMax 4
+      LMax: &LMax 4
       Radius: 2.2
       Center: *Center
     FastFlow:
@@ -213,7 +213,7 @@ ApparentHorizons:
 
 InterpolationTargets:
   ExcisionBoundaryA:
-    Lmax: *LMax
+    LMax: *LMax
     Center: *Center
     Radius: *InnerRadius
     AngularOrdering: "Strahlkorper"

@@ -213,7 +213,7 @@ EventsAndTriggers:
 ApparentHorizons:
   AhA:
     InitialGuess:
-      Lmax: 4
+      LMax: 4
       Radius: 2.2
       Center: [0.0, 0.0, 0.0]
     FastFlow:

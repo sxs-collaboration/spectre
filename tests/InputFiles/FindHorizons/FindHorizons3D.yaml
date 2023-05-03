@@ -38,7 +38,7 @@ Importers:
 ApparentHorizons:
   AhA:
     InitialGuess:
-      Lmax: 10
+      LMax: 10
       Radius: 2.
       Center: [0., 0., 0.]
     FastFlow:

@@ -249,7 +249,7 @@ Interpolator:
 ApparentHorizons:
   ObservationAhA: &AhA
     InitialGuess:
-      Lmax: 10
+      LMax: 10
       Radius: 2.2
       Center: [*XCoordA, 0.0, 0.0]
     FastFlow: &DefaultFastFlow
@@ -264,7 +264,7 @@ ApparentHorizons:
     Verbosity: Verbose
   ObservationAhB: &AhB
     InitialGuess:
-      Lmax: 10
+      LMax: 10
       Radius: 2.2
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
@@ -274,17 +274,17 @@ ApparentHorizons:
 
 InterpolationTargets:
   BondiSachsInterpolation:
-    Lmax: 16
+    LMax: 16
     Radius: [100, 150, 200]
     Center: [0, 0, 0]
     AngularOrdering: Cce
   ObservationExcisionBoundaryA:
-    Lmax: 10
+    LMax: 10
     Center: [0., 0., 0.]
     Radius: 2.0
     AngularOrdering: "Strahlkorper"
   ObservationExcisionBoundaryB:
-    Lmax: 10
+    LMax: 10
     Center: [0., 0., 0.]
     Radius: 2.0
     AngularOrdering: "Strahlkorper"

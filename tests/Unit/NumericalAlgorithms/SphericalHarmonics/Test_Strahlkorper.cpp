@@ -157,7 +157,7 @@ void test_construct_from_options() {
       "");
   opts.parse(
       "Strahlkorper:\n"
-      " Lmax : 6\n"
+      " LMax : 6\n"
       " Center: [1.,2.,3.]\n"
       " Radius: 4.5\n");
   CHECK(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>() ==

@@ -78,7 +78,7 @@ void test_interpolation_target_kerr_horizon(
       TestHelpers::test_creation<intrp::OptionHolders::KerrHorizon>(
           "Center: [0.05, 0.06, 0.07]\n"
           "DimensionlessSpin: [0.2, 0.3, 0.4]\n"
-          "Lmax: 18\n"
+          "LMax: 18\n"
           "Mass: 1.8\n"
           "AngularOrdering: " +
           std::string(MakeString{} << angular_ordering));
