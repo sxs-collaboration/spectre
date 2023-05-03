@@ -21,7 +21,7 @@ SPECTRE_TEST_CASE(
   const tnsr::I<DataVector, 2, Frame::Inertial> x_2d{DataVector{3.0, 4.0}};
   const tnsr::I<DataVector, 1, Frame::Inertial> x_1d{DataVector{3.0, 4.0}};
   check_wrapped_gr_solution_consistency(
-      GeneralizedHarmonic::Solutions::WrappedGr<
+      gh::Solutions::WrappedGr<
           RelativisticEuler::Solutions::FishboneMoncriefDisk>{1.0, 0.23, 6.0,
                                                               12.0, 0.001, 1.4},
       RelativisticEuler::Solutions::FishboneMoncriefDisk{1.0, 0.23, 6.0, 12.0,
@@ -29,8 +29,7 @@ SPECTRE_TEST_CASE(
       x_3d, t);
 
   check_wrapped_gr_solution_consistency(
-      GeneralizedHarmonic::Solutions::WrappedGr<
-          RelativisticEuler::Solutions::TovStar>{
+      gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>{
           1.e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(8.0, 2.0)},
       RelativisticEuler::Solutions::TovStar{

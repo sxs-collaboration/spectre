@@ -27,7 +27,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 namespace {
 double min_characteristic_speed(const std::array<DataVector, 4>& char_speeds) {
   std::array<double, 4> min_speeds{{min(char_speeds[0]), min(char_speeds[1]),
@@ -467,11 +467,11 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
   raise_or_lower_index(unit_interface_normal_vector, normal_covector,
                        *inverse_spatial_metric);
 
-  GeneralizedHarmonic::extrinsic_curvature(
-      extrinsic_curvature, spacetime_unit_normal_vector, pi, phi);
+  gh::extrinsic_curvature(extrinsic_curvature, spacetime_unit_normal_vector, pi,
+                          phi);
 
   if (LIKELY(Dim == 3)) {
-    GeneralizedHarmonic::four_index_constraint(four_index_constraint, d_phi);
+    gh::four_index_constraint(four_index_constraint, d_phi);
   } else if (UNLIKELY(Dim == 2)) {
     for (size_t a = 0; a <= Dim; ++a) {
       for (size_t b = 0; b <= Dim; ++b) {
@@ -520,7 +520,7 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
       get<Tags::VMinus<Dim, Frame::Inertial>>(dt_char_fields);
 
   // c^{\hat{0}-}_a = F_a + n^k C_{ka}
-  GeneralizedHarmonic::two_index_constraint(
+  gh::two_index_constraint(
       make_not_null(&two_index_constraint), spacetime_deriv_gauge_source,
       spacetime_unit_normal_one_form, spacetime_unit_normal_vector,
       *inverse_spatial_metric, inverse_spacetime_metric, pi, phi, d_pi, d_phi,
@@ -557,4 +557,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

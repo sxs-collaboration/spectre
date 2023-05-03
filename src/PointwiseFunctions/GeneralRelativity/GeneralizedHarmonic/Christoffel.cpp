@@ -10,7 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*> christoffel,
@@ -119,46 +119,45 @@ void trace_christoffel(
     get<0>(*trace) += spacetime_normal_vector.get(b) * pi.get(b, 0);
   }
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::christoffel_second_kind(              \
-      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*> \
-          christoffel,                                                     \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);    \
-  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::christoffel_second_kind(                            \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);    \
-  template void GeneralizedHarmonic::trace_christoffel(                    \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>   \
-          trace,                                                           \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_one_form,                                       \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_vector,                                         \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spatial_metric,                                          \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spacetime_metric,                                        \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);          \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                    \
-  GeneralizedHarmonic::trace_christoffel(                                  \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_one_form,                                       \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_vector,                                         \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spatial_metric,                                          \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spacetime_metric,                                        \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
+#define INSTANTIATE(_, data)                                                   \
+  template void gh::christoffel_second_kind(                                   \
+      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          christoffel,                                                         \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);        \
+  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                      \
+  gh::christoffel_second_kind(                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);        \
+  template void gh::trace_christoffel(                                         \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          trace,                                                               \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_one_form,                                           \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_vector,                                             \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);              \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)> gh::trace_christoffel( \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_one_form,                                           \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_vector,                                             \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

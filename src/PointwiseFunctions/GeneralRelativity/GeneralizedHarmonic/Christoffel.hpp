@@ -8,7 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -76,4 +76,4 @@ void trace_christoffel(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

@@ -54,7 +54,7 @@ class TeukolskyWave;
  * required to be overriden in the derived class are
  * `gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>`,
  * `::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>`,
- * `GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>`, and
+ * `gh::Tags::Phi<3, ::Frame::Inertial>`, and
  * `Cce::Tags::News`.
  * - `prepare_solution()`: Any initial precomputation needed to determine all of
  * the solutions efficiently. This function is called by the base class prior to
@@ -80,8 +80,7 @@ struct WorldtubeData : public PUP::able {
       Tags::CauchyCartesianCoords, Tags::Dr<Tags::CauchyCartesianCoords>,
       gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-      GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>,
+      gh::Tags::Pi<3, ::Frame::Inertial>, gh::Tags::Phi<3, ::Frame::Inertial>,
       gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
       ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
       Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
@@ -176,16 +175,15 @@ struct WorldtubeData : public PUP::able {
           gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>
       /*meta*/) const = 0;
 
-  virtual void variables_impl(
-      gsl::not_null<tnsr::aa<DataVector, 3>*> pi, size_t output_l_max,
-      double time,
-      tmpl::type_<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>
-      /*meta*/) const;
+  virtual void variables_impl(gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
+                              size_t output_l_max, double time,
+                              tmpl::type_<gh::Tags::Pi<3, ::Frame::Inertial>>
+                              /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
       size_t output_l_max, double time,
-      tmpl::type_<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>
+      tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>>
       /*meta*/) const = 0;
 
   virtual void variables_impl(
@@ -264,8 +262,8 @@ struct WorldtubeData : public PUP::able {
               Tags::CauchyCartesianCoords,
               Tags::Dr<Tags::CauchyCartesianCoords>,
               gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-              GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-              GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>,
+              gh::Tags::Pi<3, ::Frame::Inertial>,
+              gh::Tags::Phi<3, ::Frame::Inertial>,
               gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
               gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
               gr::Tags::Lapse<DataVector>,

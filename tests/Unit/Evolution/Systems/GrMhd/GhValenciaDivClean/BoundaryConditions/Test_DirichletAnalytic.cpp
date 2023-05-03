@@ -41,8 +41,7 @@
 
 namespace {
 struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
-  using type =
-      GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>;
+  using type = gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>;
 };
 
 struct Metavariables {
@@ -54,7 +53,7 @@ struct Metavariables {
             tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
                            DirichletAnalytic>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::list<GeneralizedHarmonic::Solutions::WrappedGr<
+                   tmpl::list<gh::Solutions::WrappedGr<
                        grmhd::Solutions::BondiMichel>>>>;
   };
 };
@@ -81,8 +80,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       db::wrap_tags_in<::Tags::Flux,
                        grmhd::GhValenciaDivClean::System::flux_variables,
                        tmpl::size_t<3_st>, Frame::Inertial>,
-      tmpl::list<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-                 GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 gh::ConstraintDamping::Tags::ConstraintGamma2,
                  gr::Tags::Lapse<>, gr::Tags::Shift<3>,
                  gr::Tags::InverseSpatialMetric<3>>>>;
   Vars vars{num_points};
@@ -112,8 +111,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         gr::Tags::SqrtDetSpatialMetric<DataVector>, gr::Tags::Lapse<DataVector>,
         gr::Tags::Shift<3, Frame::Inertial, DataVector>,
         gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-        ::GeneralizedHarmonic::Tags::Pi<3>,
-        ::GeneralizedHarmonic::Tags::Phi<3>>;
+        ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -126,8 +124,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     spacetime_metric =
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             analytic_vars);
-    pi = get<::GeneralizedHarmonic::Tags::Pi<3>>(analytic_vars);
-    phi = get<::GeneralizedHarmonic::Tags::Phi<3>>(analytic_vars);
+    pi = get<::gh::Tags::Pi<3>>(analytic_vars);
+    phi = get<::gh::Tags::Phi<3>>(analytic_vars);
     lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
     shift = get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(analytic_vars);
     inverse_spatial_metric =
@@ -247,8 +245,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
                    hydro::Tags::MagneticField<DataVector, 3>,
                    hydro::Tags::DivergenceCleaningField<DataVector>,
                    gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                   ::GeneralizedHarmonic::Tags::Pi<3>,
-                   ::GeneralizedHarmonic::Tags::Phi<3>>;
+                   ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -266,10 +263,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
     get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(expected) =
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             analytic_vars);
-    get<::GeneralizedHarmonic::Tags::Pi<3>>(expected) =
-        get<::GeneralizedHarmonic::Tags::Pi<3>>(analytic_vars);
-    get<::GeneralizedHarmonic::Tags::Phi<3>>(expected) =
-        get<::GeneralizedHarmonic::Tags::Phi<3>>(analytic_vars);
+    get<::gh::Tags::Pi<3>>(expected) = get<::gh::Tags::Pi<3>>(analytic_vars);
+    get<::gh::Tags::Phi<3>>(expected) = get<::gh::Tags::Phi<3>>(analytic_vars);
     get<hydro::Tags::RestMassDensity<DataVector>>(expected) =
         get<hydro::Tags::RestMassDensity<DataVector>>(analytic_vars);
     get<hydro::Tags::ElectronFraction<DataVector>>(expected) =
@@ -322,8 +317,7 @@ SPECTRE_TEST_CASE(
           ->get_clone();
   {
     INFO("Test with analytic solution");
-    const GeneralizedHarmonic::Solutions::WrappedGr<
-        grmhd::Solutions::BondiMichel>
+    const gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
         analytic_solution_or_data{1.0, 4.0, 0.1, 2.0, 0.01};
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
@@ -337,8 +331,7 @@ SPECTRE_TEST_CASE(
   }
   {
     INFO("Test with analytic data");
-    const GeneralizedHarmonic::Solutions::WrappedGr<
-        grmhd::AnalyticData::MagnetizedTovStar>
+    const gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedTovStar>
         analytic_solution_or_data{
             1.28e-3,
             std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0,

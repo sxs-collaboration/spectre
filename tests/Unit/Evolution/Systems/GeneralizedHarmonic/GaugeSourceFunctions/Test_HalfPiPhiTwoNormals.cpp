@@ -11,8 +11,7 @@ namespace {
 template <size_t SpatialDim, typename Frame>
 void test_with_python(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::gauges::half_pi_and_phi_two_normals<SpatialDim,
-                                                                Frame>,
+      &gh::gauges::half_pi_and_phi_two_normals<SpatialDim, Frame>,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "HalfPiPhiTwoNormals",
       {"half_pi_two_normals", "half_phi_two_normals"}, {{{-0.01, 0.01}}},

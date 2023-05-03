@@ -26,7 +26,7 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 /// \endcond
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 /*!
  * \brief A constant function: \f$f = C\f$
  *
@@ -97,11 +97,10 @@ bool operator!=(const Constant<VolumeDim, Fr>& lhs,
                 const Constant<VolumeDim, Fr>& rhs) {
   return not(lhs == rhs);
 }
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 /// \cond
 template <size_t VolumeDim, typename Fr>
-PUP::able::PUP_ID
-    GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
-        0;  // NOLINT
+PUP::able::PUP_ID gh::ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
+    0;  // NOLINT
 /// \endcond

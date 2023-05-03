@@ -34,7 +34,7 @@ template <typename, typename, typename>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /*!
  * \brief Compute the RHS of the Generalized Harmonic formulation of
  * Einstein's equations.
@@ -99,9 +99,9 @@ template <size_t Dim>
 struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>, Tags::Gamma1Gamma2,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2, Tags::GaugeH<Dim>,
+      Tags::SpacetimeDerivGaugeH<Dim>, Tags::Gamma1Gamma2,
       Tags::HalfPiTwoNormals, Tags::NormalDotOneIndexConstraint,
       Tags::Gamma1Plus1, Tags::PiOneNormal<Dim>,
       Tags::GaugeConstraint<Dim, Frame::Inertial>, Tags::HalfPhiTwoNormals<Dim>,
@@ -126,16 +126,16 @@ struct TimeDerivative {
       gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>;
-  using argument_tags = tmpl::list<
-      gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      gauges::Tags::GaugeCondition, domain::Tags::Mesh<Dim>, ::Tags::Time,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                    Frame::Inertial>,
-      domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma0,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+                 gauges::Tags::GaugeCondition, domain::Tags::Mesh<Dim>,
+                 ::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>,
+                 domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
@@ -191,4 +191,4 @@ struct TimeDerivative {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity);
 };
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

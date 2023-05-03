@@ -88,10 +88,10 @@ class DirichletFreeOutflow final : public BoundaryCondition {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
-  using dg_interior_temporary_tags = tmpl::list<
-      domain::Tags::Coordinates<3, Frame::Inertial>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
+  using dg_interior_temporary_tags =
+      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
   using dg_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
@@ -167,8 +167,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
                 gr::Tags::Lapse<DataVector>,
                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                 gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::GeneralizedHarmonic::Tags::Pi<3>,
-                ::GeneralizedHarmonic::Tags::Phi<3>>{});
+                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
 
       } else {
         (void)time;
@@ -181,16 +180,15 @@ class DirichletFreeOutflow final : public BoundaryCondition {
                 gr::Tags::Lapse<DataVector>,
                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                 gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::GeneralizedHarmonic::Tags::Pi<3>,
-                ::GeneralizedHarmonic::Tags::Phi<3>>{});
+                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       }
     }();
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             boundary_values);
-    *pi = get<::GeneralizedHarmonic::Tags::Pi<3>>(boundary_values);
-    *phi = get<::GeneralizedHarmonic::Tags::Phi<3>>(boundary_values);
+    *pi = get<::gh::Tags::Pi<3>>(boundary_values);
+    *phi = get<::gh::Tags::Phi<3>>(boundary_values);
     *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
     *shift =
         get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(boundary_values);
@@ -292,23 +290,21 @@ class DirichletFreeOutflow final : public BoundaryCondition {
             ghost_inertial_coords,
             tmpl::list<
                 gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::GeneralizedHarmonic::Tags::Pi<3>,
-                ::GeneralizedHarmonic::Tags::Phi<3>>{});
+                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       } else {
         return analytic_solution_or_data.variables(
             ghost_inertial_coords, time,
             tmpl::list<
                 gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::GeneralizedHarmonic::Tags::Pi<3>,
-                ::GeneralizedHarmonic::Tags::Phi<3>>{});
+                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       }
     }();
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             boundary_values);
-    *pi = get<::GeneralizedHarmonic::Tags::Pi<3>>(boundary_values);
-    *phi = get<::GeneralizedHarmonic::Tags::Phi<3>>(boundary_values);
+    *pi = get<::gh::Tags::Pi<3>>(boundary_values);
+    *phi = get<::gh::Tags::Phi<3>>(boundary_values);
 
     // Note: Once we support high-order fluxes with GHMHD we will need to
     // handle this correctly.

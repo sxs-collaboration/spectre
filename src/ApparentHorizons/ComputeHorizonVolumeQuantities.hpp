@@ -75,18 +75,18 @@ struct ComputeHorizonVolumeQuantities
           invjac_logical_to_target,
       const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity);
 
-  using allowed_src_tags = tmpl::list<
-      gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>;
+  using allowed_src_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>,
+                 ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
   using required_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>>;
 
   template <typename TargetFrame>
   using allowed_dest_tags_target_frame =

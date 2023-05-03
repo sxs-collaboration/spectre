@@ -11,7 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim>*>
@@ -36,11 +36,11 @@ void ComputeNormalDotFluxes<Dim>::apply(
     (*phi_normal_dot_flux)[storage_index] = 0.0;
   }
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data) \
-  template struct GeneralizedHarmonic::ComputeNormalDotFluxes<DIM(data)>;
+  template struct gh::ComputeNormalDotFluxes<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

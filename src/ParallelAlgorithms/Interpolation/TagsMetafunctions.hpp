@@ -19,7 +19,7 @@ struct replace_frame_in_tag {
   // like some scalars.
   using type = Tag;
 };
-// Specialization for tensors in GeneralizedHarmonic::Tags
+// Specialization for tensors in gh::Tags
 template <template <size_t, typename> typename Tag, size_t Dim, typename Frame,
           typename NewFrame>
 struct replace_frame_in_tag<Tag<Dim, Frame>, NewFrame> {
@@ -37,7 +37,7 @@ template <template <typename> typename Tag, typename DataType,
 struct replace_frame_in_tag<Tag<DataType>, NewFrame> {
   using type = Tag<DataType>;
 };
-// Specialization for Tags::deriv<Tag> with Tag in GeneralizedHarmonic::Tags
+// Specialization for Tags::deriv<Tag> with Tag in gh::Tags
 template <template <size_t, typename> typename Tag, size_t Dim, typename Frame,
           typename NewFrame>
 struct replace_frame_in_tag<

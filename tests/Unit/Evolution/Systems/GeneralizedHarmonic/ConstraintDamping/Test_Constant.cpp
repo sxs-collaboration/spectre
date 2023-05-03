@@ -21,7 +21,7 @@ namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_constant_random(const DataType& used_for_size) {
   register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>>();
+      gh::ConstraintDamping::Constant<VolumeDim, Fr>>();
 
   // Generate the amplitude and width
   MAKE_GENERATOR(gen);
@@ -30,24 +30,20 @@ void test_constant_random(const DataType& used_for_size) {
 
   const double value = real_dis(gen);
 
-  GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>
-      val{value};
+  gh::ConstraintDamping::Constant<VolumeDim, Fr> val{value};
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
-      std::move(val), "constant", used_for_size,
-      {{{-1.0, 1.0}}}, {"IgnoredFunctionOfTime"}, value);
+  TestHelpers::gh::ConstraintDamping::check(std::move(val), "constant",
+                                            used_for_size, {{{-1.0, 1.0}}},
+                                            {"IgnoredFunctionOfTime"}, value);
 
-  std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::Constant<
-      VolumeDim, Fr>>
+  std::unique_ptr<gh::ConstraintDamping::Constant<VolumeDim, Fr>>
       val_unique_ptr =
-          std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                               Constant<VolumeDim, Fr>>(
+          std::make_unique<gh::ConstraintDamping::Constant<VolumeDim, Fr>>(
               value);
 
-  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
-      std::move(val_unique_ptr->get_clone()),
-      "constant", used_for_size, {{{-1.0, 1.0}}},
-      {"IgnoredFunctionOfTime"}, value);
+  TestHelpers::gh::ConstraintDamping::check(
+      std::move(val_unique_ptr->get_clone()), "constant", used_for_size,
+      {{{-1.0, 1.0}}}, {"IgnoredFunctionOfTime"}, value);
 }
 }  // namespace
 
@@ -72,26 +68,21 @@ SPECTRE_TEST_CASE(
     });
   });
 
-  TestHelpers::test_creation<
-      std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          1, Frame::Inertial>>>(
+  TestHelpers::test_creation<std::unique_ptr<
+      gh::ConstraintDamping::DampingFunction<1, Frame::Inertial>>>(
       "Constant:\n"
       "  Value: 4.0\n");
 
   const double value_3d{5.0};
-  const GeneralizedHarmonic::ConstraintDamping::Constant<
-      3, Frame::Inertial>
-      val_3d{value_3d};
-  const auto created_val =
-      TestHelpers::test_creation<GeneralizedHarmonic::ConstraintDamping::
-                                     Constant<3, Frame::Inertial>>(
-          "Value: 5.0\n");
+  const gh::ConstraintDamping::Constant<3, Frame::Inertial> val_3d{value_3d};
+  const auto created_val = TestHelpers::test_creation<
+      gh::ConstraintDamping::Constant<3, Frame::Inertial>>("Value: 5.0\n");
   CHECK(created_val == val_3d);
-  const auto created_gh_damping_function = TestHelpers::test_creation<
-      std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          3, Frame::Inertial>>>(
-      "Constant:\n"
-      "  Value: 5.0\n");
+  const auto created_gh_damping_function =
+      TestHelpers::test_creation<std::unique_ptr<
+          gh::ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
+          "Constant:\n"
+          "  Value: 5.0\n");
 
   test_serialization(val_3d);
 }

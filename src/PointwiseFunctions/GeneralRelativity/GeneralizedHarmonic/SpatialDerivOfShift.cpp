@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_deriv_of_shift(
@@ -54,19 +54,19 @@ tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::iJ<DataType, SpatialDim, Frame> deriv_shift{};
-  GeneralizedHarmonic::spatial_deriv_of_shift<SpatialDim, Frame, DataType>(
+  gh::spatial_deriv_of_shift<SpatialDim, Frame, DataType>(
       make_not_null(&deriv_shift), lapse, inverse_spacetime_metric,
       spacetime_unit_normal, phi);
   return deriv_shift;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                              \
-  template void GeneralizedHarmonic::spatial_deriv_of_shift(              \
+  template void gh::spatial_deriv_of_shift(                               \
       const gsl::not_null<tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>*> \
           deriv_shift,                                                    \
       const Scalar<DTYPE(data)>& lapse,                                   \
@@ -76,7 +76,7 @@ tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
           spacetime_unit_normal,                                          \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
   template tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::spatial_deriv_of_shift(                            \
+  gh::spatial_deriv_of_shift(                                             \
       const Scalar<DTYPE(data)>& lapse,                                   \
       const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                \
           inverse_spacetime_metric,                                       \

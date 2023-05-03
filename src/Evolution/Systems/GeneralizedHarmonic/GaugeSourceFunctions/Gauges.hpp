@@ -8,7 +8,7 @@
 
 #include "Utilities/Serialization/CharmPupable.hpp"
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// \brief Gauge conditions for generalized harmonic evolution systems.
 namespace gauges {
 /// \brief Base class for GH gauge conditions.
@@ -16,7 +16,7 @@ namespace gauges {
 /// Derived class must have a `void gauge_and_spacetime_derivative` function
 /// that takes as `not_null` arguments \f$H_a\f$ and \f$\partial_b H_a\f$.
 /// Additional arguments can be added that are needed to compute the gauge
-/// condition. The `GeneralizedHarmonic::gauges::dispatch()` function must also
+/// condition. The `gh::gauges::dispatch()` function must also
 /// be updated to correctly detect and forward to the gauge condition. The
 /// header file must also be included in `Factory.hpp` and the gauge condition
 /// added to the `all_gauges` type alias in `Factory.hpp`.
@@ -36,4 +36,4 @@ class GaugeCondition : public PUP::able {
   virtual std::unique_ptr<GaugeCondition> get_clone() const = 0;
 };
 }  // namespace gauges
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

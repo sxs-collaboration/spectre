@@ -34,7 +34,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 namespace DampedHarmonicGauge_detail {
 // Roll-on function for the damped harmonic gauge.
 //
@@ -624,4 +624,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
 #undef DTYPE_SCAL
 #undef INSTANTIATE_DV_FUNC
 #undef INSTANTIATE_SCALAR_FUNC
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

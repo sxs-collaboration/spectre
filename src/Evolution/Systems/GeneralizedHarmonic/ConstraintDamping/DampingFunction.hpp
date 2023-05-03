@@ -21,7 +21,7 @@ class FunctionOfTime;
 /// \endcond
 
 /// Holds classes implementing DampingFunction (functions \f$R^n \to R\f$).
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 /// \cond
 template <size_t VolumeDim, typename Fr>
 class Constant;
@@ -42,15 +42,11 @@ class DampingFunction : public PUP::able {
  public:
   using creatable_classes = tmpl::conditional_t<
       (VolumeDim == 3 and std::is_same<Fr, Frame::Grid>::value),
-      tmpl::list<
-          GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>,
-          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-              VolumeDim, Fr>,
-          GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>,
-      tmpl::list<
-          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-              VolumeDim, Fr>,
-          GeneralizedHarmonic::ConstraintDamping::Constant<VolumeDim, Fr>>>;
+      tmpl::list<gh::ConstraintDamping::Constant<VolumeDim, Fr>,
+                 gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
+                 gh::ConstraintDamping::TimeDependentTripleGaussian>,
+      tmpl::list<gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
+                 gh::ConstraintDamping::Constant<VolumeDim, Fr>>>;
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
 
@@ -86,7 +82,7 @@ class DampingFunction : public PUP::able {
   virtual auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> = 0;
 };
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Constant.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"

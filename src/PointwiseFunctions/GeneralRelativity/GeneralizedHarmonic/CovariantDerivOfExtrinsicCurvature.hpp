@@ -20,7 +20,7 @@ struct not_null;
 class DataVector;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the covariant derivative of extrinsic curvature from
@@ -113,4 +113,4 @@ void covariant_deriv_of_extrinsic_curvature(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

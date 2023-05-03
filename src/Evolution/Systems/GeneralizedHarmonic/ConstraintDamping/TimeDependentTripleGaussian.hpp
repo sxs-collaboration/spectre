@@ -26,7 +26,7 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 /// \endcond
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 /*!
  * \brief A sum of three Gaussians plus a constant, where the Gaussian widths
  * are scaled by a domain::FunctionsOfTime::FunctionOfTime.
@@ -183,4 +183,4 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
 
 bool operator!=(const TimeDependentTripleGaussian& lhs,
                 const TimeDependentTripleGaussian& rhs);
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping

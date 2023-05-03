@@ -33,13 +33,13 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic::ConstraintDamping::Tags {
+namespace gh::ConstraintDamping::Tags {
 /*!
  * \brief Computes the constraint damping parameter \f$\gamma_0\f$ from the
  * coordinates and a DampingFunction.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0`.
+ * `gh::ConstraintDamping::Tags::ConstraintGamma0`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
@@ -51,8 +51,8 @@ struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma,
-      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          SpatialDim, Frame>& damping_function,
+      const ::gh::ConstraintDamping::DampingFunction<SpatialDim, Frame>&
+          damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords, const double time,
       const std::unordered_map<
           std::string,
@@ -69,7 +69,7 @@ struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
  * coordinates and a DampingFunction.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1`.
+ * `gh::ConstraintDamping::Tags::ConstraintGamma1`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
@@ -81,8 +81,8 @@ struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma1,
-      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          SpatialDim, Frame>& damping_function,
+      const ::gh::ConstraintDamping::DampingFunction<SpatialDim, Frame>&
+          damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords, const double time,
       const std::unordered_map<
           std::string,
@@ -99,7 +99,7 @@ struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
  * coordinates and a DampingFunction.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2`.
+ * `gh::ConstraintDamping::Tags::ConstraintGamma2`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
@@ -111,8 +111,8 @@ struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma,
-      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          SpatialDim, Frame>& damping_function,
+      const ::gh::ConstraintDamping::DampingFunction<SpatialDim, Frame>&
+          damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords, const double time,
       const std::unordered_map<
           std::string,
@@ -123,4 +123,4 @@ struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
 
   using base = ConstraintGamma2;
 };
-}  // namespace GeneralizedHarmonic::ConstraintDamping::Tags
+}  // namespace gh::ConstraintDamping::Tags

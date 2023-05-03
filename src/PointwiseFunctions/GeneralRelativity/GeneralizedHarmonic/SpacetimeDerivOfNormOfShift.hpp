@@ -30,7 +30,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -66,4 +66,4 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

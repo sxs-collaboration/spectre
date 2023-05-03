@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void extrinsic_curvature(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curv,
@@ -47,14 +47,14 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
                       phi);
   return ex_curv;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                              \
-  template void GeneralizedHarmonic::extrinsic_curvature(                 \
+  template void gh::extrinsic_curvature(                                  \
       const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*> \
           ex_curv,                                                        \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
@@ -62,7 +62,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::extrinsic_curvature(                               \
+  gh::extrinsic_curvature(                                                \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
           spacetime_normal_vector,                                        \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \

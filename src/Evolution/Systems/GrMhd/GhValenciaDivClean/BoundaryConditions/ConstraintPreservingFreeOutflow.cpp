@@ -9,8 +9,7 @@
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 ConstraintPreservingFreeOutflow::ConstraintPreservingFreeOutflow(
-    GeneralizedHarmonic::BoundaryConditions::detail::
-        ConstraintPreservingBjorhusType type)
+    gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type)
     : constraint_preserving_(type) {}
 
 // LCOV_EXCL_START

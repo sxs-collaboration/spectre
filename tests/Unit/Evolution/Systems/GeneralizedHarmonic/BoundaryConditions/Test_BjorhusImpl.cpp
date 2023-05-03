@@ -83,7 +83,7 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
     }
 
     // Compute rhs value
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_bjorhus_corrections_dt_v_psi(
             make_not_null(&local_bc_dt_v_psi),
             local_unit_interface_normal_vector, local_three_index_constraint,
@@ -131,7 +131,7 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
       get<2>(local_unit_interface_normal_vector)[i] = 1.;
     }
     // Compute rhs value
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_bjorhus_corrections_dt_v_psi(
             make_not_null(&local_bc_dt_v_psi),
             local_unit_interface_normal_vector, local_three_index_constraint,
@@ -218,8 +218,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
       }
     }
     // C4_{iab} = LeviCivita^{ijk} dphi_{jkab}
-    local_four_index_constraint =
-        GeneralizedHarmonic::four_index_constraint(local_dphi);
+    local_four_index_constraint = gh::four_index_constraint(local_dphi);
 
     // Setting unit_interface_normal_Vector
     for (size_t i = 0; i < slice_grid_points; ++i) {
@@ -234,7 +233,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
     }
 
     // Compute rhs value
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_bjorhus_corrections_dt_v_zero(
             make_not_null(&local_bc_dt_v_zero),
             local_unit_interface_normal_vector, local_four_index_constraint,
@@ -291,7 +290,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
       get<2>(local_unit_interface_normal_vector)[i] = 0.;
     }
     // Compute rhs value
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_bjorhus_corrections_dt_v_zero(
             make_not_null(&local_bc_dt_v_zero),
             local_unit_interface_normal_vector, local_four_index_constraint,
@@ -767,7 +766,7 @@ void test_constraint_preserving_physical_bjorhus_v_minus_vs_spec_3d(
 
   {
     // Compute the new boundary corrections for dt<vminus>
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_bjorhus_corrections_dt_v_minus(
             make_not_null(&local_bc_dt_v_minus), local_constraint_gamma2,
             local_inertial_coords, local_incoming_null_one_form,
@@ -909,7 +908,7 @@ void test_constraint_preserving_physical_bjorhus_v_minus_vs_spec_3d(
   }
 
   {  // Compute the new boundary corrections for dt<vminus>
-    GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+    gh::BoundaryConditions::Bjorhus::
         constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
             make_not_null(&local_bc_dt_v_minus), local_constraint_gamma2,
             local_inertial_coords, local_unit_interface_normal_one_form,
@@ -1089,7 +1088,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_psi(
   auto dt_v_psi =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           interface_normal_vector, 0.);
-  GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+  gh::BoundaryConditions::Bjorhus::
       constraint_preserving_bjorhus_corrections_dt_v_psi<VolumeDim, DataVector>(
           make_not_null(&dt_v_psi), interface_normal_vector,
           three_index_constraint, char_speed_array);
@@ -1119,7 +1118,7 @@ tnsr::iaa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_zero(
   auto dt_v_zero =
       make_with_value<tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>>(
           get<0>(interface_normal_vector), 0.);
-  GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+  gh::BoundaryConditions::Bjorhus::
       constraint_preserving_bjorhus_corrections_dt_v_zero<VolumeDim,
                                                           DataVector>(
           make_not_null(&dt_v_zero), interface_normal_vector,
@@ -1165,7 +1164,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cp_v_minus(
   auto dt_v_minus =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
-  GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+  gh::BoundaryConditions::Bjorhus::
       constraint_preserving_bjorhus_corrections_dt_v_minus<VolumeDim,
                                                            DataVector>(
           make_not_null(&dt_v_minus), gamma2, inertial_coords,
@@ -1222,7 +1221,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpp_v_minus(
   auto dt_v_minus =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
-  GeneralizedHarmonic::BoundaryConditions::Bjorhus::
+  gh::BoundaryConditions::Bjorhus::
       constraint_preserving_physical_bjorhus_corrections_dt_v_minus<VolumeDim,
                                                                     DataVector>(
           make_not_null(&dt_v_minus), gamma2, inertial_coords,

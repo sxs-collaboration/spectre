@@ -172,9 +172,7 @@ struct BouncingBlackHole : public WorldtubeData {
   void variables_impl(
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric, size_t l_max,
       double time,
-      tmpl::type_<
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-      const override;
+      tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const override;
 
   /// The News in the bouncing black hole solution vanishes, as the oscillation
   /// comes entirely from a coordinate transform.

@@ -18,7 +18,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GhGrMhd.WrappedGr",
   const tnsr::I<DataVector, 3, Frame::Inertial> coords{DataVector{3.0, 4.0}};
 
   check_wrapped_gr_solution_consistency(
-      GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>{
-          1.1, 50.0, 1.3, 1.5, 0.24},
+      gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>{1.1, 50.0, 1.3,
+                                                              1.5, 0.24},
       grmhd::Solutions::BondiMichel{1.1, 50.0, 1.3, 1.5, 0.24}, coords, time);
 }

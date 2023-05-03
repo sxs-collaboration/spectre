@@ -95,7 +95,7 @@ void test_compute_phi(const DataType& used_for_size) {
           const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
-          &::GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>),
+          &::gh::phi<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "phi", {{{-1., 1.}}},
       used_for_size);
 }
@@ -109,7 +109,7 @@ void test_compute_pi(const DataType& used_for_size) {
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::iaa<DataType, Dim, Frame::Inertial>&)>(
-          &::GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>),
+          &::gh::pi<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "pi", {{{-1., 1.}}},
       used_for_size);
 }
@@ -125,7 +125,7 @@ void test_compute_gauge_source(const DataType& used_for_size) {
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const Scalar<DataType>&,
           const tnsr::i<DataType, Dim, Frame::Inertial>&)>(
-          &::GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>),
+          &::gh::gauge_source<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "gauge_source", {{{-1., 1.}}},
       used_for_size, 1.e-11);
 }
@@ -177,19 +177,16 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
       gr::spacetime_normal_vector(lapse, shift);
   const auto spacetime_normal_one_form =
       gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
-  const auto phi =
-      GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
-                               spatial_metric, deriv_spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+  const auto phi = gh::phi(lapse, deriv_lapse, shift, deriv_shift,
+                           spatial_metric, deriv_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
 
   // Compute extrinsic curvature and deriv_spatial_metric from generalized
   // harmonic variables and make sure we get the same result.
   const auto extrinsic_curvature_test =
-      GeneralizedHarmonic::extrinsic_curvature(spacetime_normal_vector, pi,
-                                               phi);
-  const auto deriv_spatial_metric_test =
-      GeneralizedHarmonic::deriv_spatial_metric(phi);
+      gh::extrinsic_curvature(spacetime_normal_vector, pi, phi);
+  const auto deriv_spatial_metric_test = gh::deriv_spatial_metric(phi);
 
   CHECK_ITERABLE_APPROX(extrinsic_curvature, extrinsic_curvature_test);
   CHECK_ITERABLE_APPROX(deriv_spatial_metric, deriv_spatial_metric_test);
@@ -200,7 +197,7 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
   const auto christoffel_second_kind =
-      GeneralizedHarmonic::christoffel_second_kind(phi, inverse_spatial_metric);
+      gh::christoffel_second_kind(phi, inverse_spatial_metric);
   const auto christoffel_second_kind_test = raise_or_lower_first_index(
       gr::christoffel_first_kind(deriv_spatial_metric), inverse_spatial_metric);
 
@@ -209,11 +206,11 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
   // Test Christoffel trace
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto trace_christoffel = GeneralizedHarmonic::trace_christoffel(
+  const auto trace_christoffel = gh::trace_christoffel(
       spacetime_normal_one_form, spacetime_normal_vector,
       inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
   tnsr::abb<T, Dim, Frame::Inertial> d4_spacetime_metric;
-  ::GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  ::gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   const auto expected_trace_christoffel =
       trace_last_indices(gr::christoffel_first_kind(d4_spacetime_metric),
@@ -226,7 +223,7 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
       const tnsr::AA<T, Dim, Frame::Inertial>&,
       const tnsr::aa<T, Dim, Frame::Inertial>&,
       const tnsr::iaa<T, Dim, Frame::Inertial>&) =
-      &GeneralizedHarmonic::trace_christoffel<Dim, Frame::Inertial, T>;
+      &gh::trace_christoffel<Dim, Frame::Inertial, T>;
   pypp::check_with_random_values<1>(
       f_trace_christoffel, "GeneralRelativity.ComputeGhQuantities",
       "trace_christoffel", {{{-1., 1.}}}, used_for_size, 1.e-11);
@@ -239,8 +236,7 @@ void test_lapse_deriv_functions(const DataVector& used_for_size) {
       static_cast<tnsr::i<DataType, SpatialDim, Frame> (*)(
           const Scalar<DataType>&, const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::spatial_deriv_of_lapse<SpatialDim, Frame,
-                                                         DataType>),
+          &::gh::spatial_deriv_of_lapse<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "deriv_lapse",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
   // time_deriv_of_lapse
@@ -250,8 +246,7 @@ void test_lapse_deriv_functions(const DataVector& used_for_size) {
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::time_deriv_of_lapse<SpatialDim, Frame,
-                                                      DataType>),
+          &::gh::time_deriv_of_lapse<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_lapse",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size,
       1.e-11);
@@ -265,8 +260,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) {
           const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::time_deriv_of_spatial_metric<
-              SpatialDim, Frame, DataType>),
+          &::gh::time_deriv_of_spatial_metric<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_spatial_metric",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
   // spacetime_deriv_of_det_spatial_metric
@@ -275,8 +269,8 @@ void test_gij_deriv_functions(const DataVector& used_for_size) {
           const Scalar<DataType>&, const tnsr::II<DataType, SpatialDim, Frame>&,
           const tnsr::ii<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<
-              SpatialDim, Frame, DataType>),
+          &::gh::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame,
+                                                       DataType>),
       "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_detg",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
 }
@@ -288,8 +282,8 @@ void test_spacetime_metric_deriv_functions(const DataVector& used_for_size) {
           const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::time_derivative_of_spacetime_metric<
-              SpatialDim, Frame, DataType>),
+          &::gh::time_derivative_of_spacetime_metric<SpatialDim, Frame,
+                                                     DataType>),
       "GeneralRelativity.ComputeGhQuantities", "gh_dt_spacetime_metric",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
 }
@@ -337,23 +331,19 @@ void test_lapse_deriv_functions_analytic(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Get ingredients
-  const auto phi =
-      GeneralizedHarmonic::phi(lapse, d_lapse_expected, shift, d_shift,
-                               spatial_metric, d_spatial_metric);
-  const auto pi =
-      GeneralizedHarmonic::pi(lapse, dt_lapse_expected, shift, dt_shift,
-                              spatial_metric, dt_spatial_metric, phi);
+  const auto phi = gh::phi(lapse, d_lapse_expected, shift, d_shift,
+                           spatial_metric, d_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse_expected, shift, dt_shift,
+                         spatial_metric, dt_spatial_metric, phi);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Check that locally computed derivs match returned ones
   const auto dt_lapse =
-      GeneralizedHarmonic::time_deriv_of_lapse<spatial_dim, Frame::Inertial,
-                                               DataVector>(
+      gh::time_deriv_of_lapse<spatial_dim, Frame::Inertial, DataVector>(
           lapse, shift, normal_vector, phi, pi);
 
   const auto d_lapse =
-      GeneralizedHarmonic::spatial_deriv_of_lapse<spatial_dim, Frame::Inertial,
-                                                  DataVector>(
+      gh::spatial_deriv_of_lapse<spatial_dim, Frame::Inertial, DataVector>(
           lapse, normal_vector, phi);
 
   CHECK_ITERABLE_APPROX(dt_lapse_expected, dt_lapse);
@@ -368,8 +358,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) {
           const Scalar<DataType>&, const tnsr::AA<DataType, SpatialDim, Frame>&,
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::spatial_deriv_of_shift<SpatialDim, Frame,
-                                                         DataType>),
+          &::gh::spatial_deriv_of_shift<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "deriv_shift",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
   // time_deriv_of_shift
@@ -381,8 +370,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) {
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::time_deriv_of_shift<SpatialDim, Frame,
-                                                      DataType>),
+          &::gh::time_deriv_of_shift<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_shift",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size,
       1.e-10);
@@ -394,8 +382,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) {
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::time_deriv_of_lower_shift<SpatialDim, Frame,
-                                                            DataType>),
+          &::gh::time_deriv_of_lower_shift<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_lower_shift",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size,
       5.e-9);
@@ -409,8 +396,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) {
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift<
-              SpatialDim, Frame, DataType>),
+          &::gh::spacetime_deriv_of_norm_of_shift<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_norm_shift",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size,
       1.e-10);
@@ -464,12 +450,10 @@ void test_shift_deriv_functions_analytic(
       determinant_and_inverse(spatial_metric).second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto phi =
-      GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift_expected,
-                               spatial_metric, d_spatial_metric);
-  const auto pi =
-      GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift_expected,
-                              spatial_metric, dt_spatial_metric, phi);
+  const auto phi = gh::phi(lapse, d_lapse, shift, d_shift_expected,
+                           spatial_metric, d_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift_expected,
+                         spatial_metric, dt_spatial_metric, phi);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   const auto lower_shift = raise_or_lower_index(shift, spatial_metric);
 
@@ -502,24 +486,22 @@ void test_shift_deriv_functions_analytic(
 
   // Check that locally computed derivs match returned ones
   const auto dt_shift =
-      GeneralizedHarmonic::time_deriv_of_shift<SpatialDim, Frame::Inertial,
-                                               DataVector>(
+      gh::time_deriv_of_shift<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric, normal_vector, phi, pi);
 
   const auto d_shift =
-      GeneralizedHarmonic::spatial_deriv_of_shift<SpatialDim, Frame::Inertial,
-                                                  DataVector>(
+      gh::spatial_deriv_of_shift<SpatialDim, Frame::Inertial, DataVector>(
           lapse, inverse_spacetime_metric, normal_vector, phi);
 
   const auto d4_norm_shift =
-      GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift<
-          SpatialDim, Frame::Inertial, DataVector>(
+      gh::spacetime_deriv_of_norm_of_shift<SpatialDim, Frame::Inertial,
+                                           DataVector>(
           lapse, shift, spatial_metric, inverse_spatial_metric,
           inverse_spacetime_metric, normal_vector, phi, pi);
 
-  const auto dt_lower_shift = GeneralizedHarmonic::time_deriv_of_lower_shift<
-      SpatialDim, Frame::Inertial, DataVector>(lapse, shift, spatial_metric,
-                                               normal_vector, phi, pi);
+  const auto dt_lower_shift =
+      gh::time_deriv_of_lower_shift<SpatialDim, Frame::Inertial, DataVector>(
+          lapse, shift, spatial_metric, normal_vector, phi, pi);
 
   auto shift_dot_dt_lower_shift = make_with_value<Scalar<DataVector>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -584,12 +566,10 @@ void test_gij_deriv_functions_analytic(
       dt_spatial_metric_expected, d_spatial_metric_expected);
   const auto christoffel_first =
       gr::christoffel_first_kind(d4_spacetime_metric);
-  const auto phi =
-      GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, spatial_metric,
-                               d_spatial_metric_expected);
-  const auto pi =
-      GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
-                              dt_spatial_metric_expected, phi);
+  const auto phi = gh::phi(lapse, d_lapse, shift, d_shift, spatial_metric,
+                           d_spatial_metric_expected);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric_expected, phi);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Get spacetime deriv of Det[g]:
@@ -618,15 +598,16 @@ void test_gij_deriv_functions_analytic(
   }
 
   // Check that locally computed derivs match returned ones
-  const auto dt_gij = GeneralizedHarmonic::time_deriv_of_spatial_metric<
-      SpatialDim, Frame::Inertial, DataVector>(lapse, shift, phi, pi);
+  const auto dt_gij =
+      gh::time_deriv_of_spatial_metric<SpatialDim, Frame::Inertial, DataVector>(
+          lapse, shift, phi, pi);
   const auto d_gij =
-      GeneralizedHarmonic::deriv_spatial_metric<SpatialDim, Frame::Inertial,
-                                                DataVector>(phi);
-  const auto d4_g = GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<
-      SpatialDim, Frame::Inertial, DataVector>(sqrt_det_spatial_metric,
-                                               inverse_spatial_metric,
-                                               dt_spatial_metric_expected, phi);
+      gh::deriv_spatial_metric<SpatialDim, Frame::Inertial, DataVector>(phi);
+  const auto d4_g =
+      gh::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame::Inertial,
+                                                DataVector>(
+          sqrt_det_spatial_metric, inverse_spatial_metric,
+          dt_spatial_metric_expected, phi);
 
   CHECK_ITERABLE_APPROX(dt_spatial_metric_expected, dt_gij);
   CHECK_ITERABLE_APPROX(d_spatial_metric_expected, d_gij);
@@ -652,10 +633,9 @@ void test_spacetime_derivative_of_spacetime_metric(const size_t num_pts) {
           make_not_null(&generator), make_not_null(&distribution), num_pts);
 
   const auto expected_dt_spacetime_metric =
-      ::GeneralizedHarmonic::time_derivative_of_spacetime_metric(lapse, shift,
-                                                                 pi, phi);
+      ::gh::time_derivative_of_spacetime_metric(lapse, shift, pi, phi);
   tnsr::abb<DataType, SpatialDim, Frame> d4_spacetime_metric;
-  ::GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  ::gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
@@ -682,8 +662,8 @@ void test_cov_deriv_extrinsic_curvature(const DataType& used_for_size) {
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature<
-              SpatialDim, Frame, DataType>),
+          &::gh::covariant_deriv_of_extrinsic_curvature<SpatialDim, Frame,
+                                                        DataType>),
       "GeneralRelativity.ComputeGhQuantities",
       "covariant_deriv_extrinsic_curvture", {{{-1., 1.}}}, used_for_size);
 }
@@ -695,13 +675,12 @@ void test_spatial_ricci_tensor(const DataVector& used_for_size) {
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::ijaa<DataType, SpatialDim, Frame>&,
           const tnsr::II<DataType, SpatialDim, Frame>&)>(
-          &::GeneralizedHarmonic::spatial_ricci_tensor<SpatialDim, Frame,
-                                                       DataType>),
+          &::gh::spatial_ricci_tensor<SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "gh_spatial_ricci_tensor",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
 }
 
-// Test GeneralizedHarmonic::ricci_tensor by comparing to specific values
+// Test gh::ricci_tensor by comparing to specific values
 // c.f. SpEC
 void test_spatial_ricci_tensor_spec(const size_t grid_size_each_dimension,
                                     const std::array<double, 3>& lower_bound,
@@ -794,8 +773,8 @@ void test_spatial_ricci_tensor_spec(const size_t grid_size_each_dimension,
   }
 
   // Call tested function
-  auto local_ricci_3 = GeneralizedHarmonic::spatial_ricci_tensor(
-      local_phi, local_d_phi, local_inverse_spatial_metric);
+  auto local_ricci_3 = gh::spatial_ricci_tensor(local_phi, local_d_phi,
+                                                local_inverse_spatial_metric);
 
   // Initialize with values from SpEC
   auto spec_ricci_3 = local_ricci_3;
@@ -902,49 +881,44 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
-          3, Frame::Inertial>>("dt(SpatialMetric)");
+      gh::Tags::TimeDerivSpatialMetricCompute<3, Frame::Inertial>>(
+      "dt(SpatialMetric)");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::TimeDerivLapseCompute<3, Frame::Inertial>>(
-      "dt(Lapse)");
+      gh::Tags::TimeDerivLapseCompute<3, Frame::Inertial>>("dt(Lapse)");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::TimeDerivShiftCompute<3, Frame::Inertial>>(
-      "dt(Shift)");
+      gh::Tags::TimeDerivShiftCompute<3, Frame::Inertial>>("dt(Shift)");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>>(
+      gh::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>>(
       "deriv(SpatialMetric)");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::DerivLapseCompute<3, Frame::Inertial>>(
-      "deriv(Lapse)");
+      gh::Tags::DerivLapseCompute<3, Frame::Inertial>>("deriv(Lapse)");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::DerivShiftCompute<3, Frame::Inertial>>(
-      "deriv(Shift)");
+      gh::Tags::DerivShiftCompute<3, Frame::Inertial>>("deriv(Shift)");
+  TestHelpers::db::test_compute_tag<gh::Tags::PhiCompute<3, Frame::Inertial>>(
+      "Phi");
+  TestHelpers::db::test_compute_tag<gh::Tags::PiCompute<3, Frame::Inertial>>(
+      "Pi");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>>("Phi");
-  TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>>("Pi");
-  TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      gh::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
       "ExtrinsicCurvature");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
-          3, Frame::Inertial>>("TraceExtrinsicCurvature");
+      gh::Tags::TraceExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      "TraceExtrinsicCurvature");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
-          3, Frame::Inertial>>("ConstraintGamma0");
+      gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
+      "ConstraintGamma0");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
-          3, Frame::Inertial>>("ConstraintGamma1");
+      gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
+      "ConstraintGamma1");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
-          3, Frame::Inertial>>("ConstraintGamma2");
+      gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
+      "ConstraintGamma2");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3,
-                                                             Frame::Inertial>>(
+      gh::Tags::SpacetimeDerivGaugeHCompute<3, Frame::Inertial>>(
       "SpacetimeDerivGaugeH");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
-          3, Frame::Inertial>>("GaugeH");
+      gh::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<3, Frame::Inertial>>(
+      "GaugeH");
 
   // Check that the compute items return the correct values
   MAKE_GENERATOR(generator);
@@ -1002,15 +976,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
 
-  const auto expected_phi = GeneralizedHarmonic::phi(
-      lapse, expected_deriv_lapse, shift, expected_deriv_shift, spatial_metric,
-      expected_deriv_spatial_metric);
-  const auto expected_pi = GeneralizedHarmonic::pi(
-      lapse, expected_dt_lapse, shift, expected_dt_shift, spatial_metric,
-      expected_dt_spatial_metric, expected_phi);
-  const auto expected_extrinsic_curvature =
-      GeneralizedHarmonic::extrinsic_curvature(spacetime_normal_vector,
-                                               expected_pi, expected_phi);
+  const auto expected_phi =
+      gh::phi(lapse, expected_deriv_lapse, shift, expected_deriv_shift,
+              spatial_metric, expected_deriv_spatial_metric);
+  const auto expected_pi =
+      gh::pi(lapse, expected_dt_lapse, shift, expected_dt_shift, spatial_metric,
+             expected_dt_spatial_metric, expected_phi);
+  const auto expected_extrinsic_curvature = gh::extrinsic_curvature(
+      spacetime_normal_vector, expected_pi, expected_phi);
   const auto expected_trace_extrinsic_curvature =
       trace(expected_extrinsic_curvature, inverse_spatial_metric);
 
@@ -1019,12 +992,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           gr::Tags::Lapse<DataVector>,
           gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
           gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+          gh::Tags::Phi<3, Frame::Inertial>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<3,
-                                                               Frame::Inertial>,
-          GeneralizedHarmonic::Tags::DerivLapseCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::DerivShiftCompute<3, Frame::Inertial>>>(
+          gh::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>,
+          gh::Tags::DerivLapseCompute<3, Frame::Inertial>,
+          gh::Tags::DerivShiftCompute<3, Frame::Inertial>>>(
       lapse, spacetime_normal_vector, inverse_spacetime_metric, expected_phi);
   CHECK_ITERABLE_APPROX(
       SINGLE_ARG(db::get<::Tags::deriv<
@@ -1048,14 +1020,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
           gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>,
+          gh::Tags::Phi<3, Frame::Inertial>, gh::Tags::Pi<3, Frame::Inertial>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
-              3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::TimeDerivLapseCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::TimeDerivShiftCompute<3,
-                                                           Frame::Inertial>>>(
+          gh::Tags::TimeDerivSpatialMetricCompute<3, Frame::Inertial>,
+          gh::Tags::TimeDerivLapseCompute<3, Frame::Inertial>,
+          gh::Tags::TimeDerivShiftCompute<3, Frame::Inertial>>>(
       lapse, shift, spacetime_normal_vector, inverse_spacetime_metric,
       inverse_spatial_metric, expected_phi, expected_pi);
   CHECK_ITERABLE_APPROX(
@@ -1089,21 +1058,17 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           ::Tags::dt<gr::Tags::Lapse<DataVector>>,
           ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3,
-                                                               Frame::Inertial>,
-          GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
-              3, Frame::Inertial>>>(
-      spatial_metric, lapse, shift,
-      spacetime_normal_vector, inverse_spatial_metric,
-      expected_deriv_spatial_metric, expected_deriv_lapse, expected_deriv_shift,
-      expected_dt_spatial_metric, expected_dt_lapse, expected_dt_shift);
+          gh::Tags::PhiCompute<3, Frame::Inertial>,
+          gh::Tags::PiCompute<3, Frame::Inertial>,
+          gh::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>,
+          gh::Tags::TraceExtrinsicCurvatureCompute<3, Frame::Inertial>>>(
+      spatial_metric, lapse, shift, spacetime_normal_vector,
+      inverse_spatial_metric, expected_deriv_spatial_metric,
+      expected_deriv_lapse, expected_deriv_shift, expected_dt_spatial_metric,
+      expected_dt_lapse, expected_dt_shift);
 
-  CHECK(db::get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
-            ghvars_box) == expected_phi);
-  CHECK(db::get<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(
-            ghvars_box) == expected_pi);
+  CHECK(db::get<gh::Tags::Phi<3, Frame::Inertial>>(ghvars_box) == expected_phi);
+  CHECK(db::get<gh::Tags::Pi<3, Frame::Inertial>>(ghvars_box) == expected_pi);
   CHECK(db::get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
             ghvars_box) == expected_extrinsic_curvature);
   CHECK(db::get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(ghvars_box) ==

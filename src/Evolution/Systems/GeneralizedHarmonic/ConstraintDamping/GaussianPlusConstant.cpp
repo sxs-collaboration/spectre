@@ -23,7 +23,7 @@ namespace domain::FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(CkMigrateMessage* msg)
     : DampingFunction<VolumeDim, Fr>(msg) {}
@@ -85,21 +85,22 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const
     -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
   return std::make_unique<GaussianPlusConstant<VolumeDim, Fr>>(*this);
 }
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                                  \
-  template GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<      \
-      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);   \
-  template GeneralizedHarmonic::ConstraintDamping::                           \
-      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
-          const double constant, const double amplitude, const double width,  \
-          const std::array<double, DIM(data)>& center);                       \
-  template void GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
-      DIM(data), FRAME(data)>::pup(PUP::er& p);                               \
-  template auto GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
-      DIM(data), FRAME(data)>::get_clone()                                    \
+#define INSTANTIATE(_, data)                                                 \
+  template gh::ConstraintDamping::GaussianPlusConstant<                      \
+      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);  \
+  template gh::ConstraintDamping::                                           \
+      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(    \
+          const double constant, const double amplitude, const double width, \
+          const std::array<double, DIM(data)>& center);                      \
+  template void                                                              \
+  gh::ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::pup(  \
+      PUP::er& p);                                                           \
+  template auto gh::ConstraintDamping::GaussianPlusConstant<                 \
+      DIM(data), FRAME(data)>::get_clone()                                   \
       const->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
@@ -112,7 +113,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::ConstraintDamping::                   \
+  template void gh::ConstraintDamping::                                    \
       GaussianPlusConstant<DIM(data), FRAME(data)>::operator()(            \
           const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
           const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,           \

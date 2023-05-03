@@ -90,8 +90,8 @@ struct EvolutionMetavars
 
   using interpolator_source_vars =
       tmpl::list<::gr::Tags::SpacetimeMetric<VolumeDim, Frame::Inertial>,
-                 ::GeneralizedHarmonic::Tags::Phi<VolumeDim, Frame::Inertial>,
-                 ::GeneralizedHarmonic::Tags::Pi<VolumeDim, Frame::Inertial>>;
+                 ::gh::Tags::Phi<VolumeDim, Frame::Inertial>,
+                 ::gh::Tags::Pi<VolumeDim, Frame::Inertial>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,
@@ -126,12 +126,10 @@ struct EvolutionMetavars
               Actions::UpdateU<system>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
-                  tmpl::list<
-                      gr::Tags::SpacetimeMetric<VolumeDim, Frame::Inertial,
-                                                DataVector>,
-                      GeneralizedHarmonic::Tags::Pi<VolumeDim, Frame::Inertial>,
-                      GeneralizedHarmonic::Tags::Phi<VolumeDim,
-                                                     Frame::Inertial>>>>>>;
+                  tmpl::list<gr::Tags::SpacetimeMetric<
+                                 VolumeDim, Frame::Inertial, DataVector>,
+                             gh::Tags::Pi<VolumeDim, Frame::Inertial>,
+                             gh::Tags::Phi<VolumeDim, Frame::Inertial>>>>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -159,7 +157,7 @@ struct EvolutionMetavars
           domain::Tags::InverseJacobian<VolumeDim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,
-      GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<VolumeDim>,
+      gh::Actions::InitializeGhAnd3Plus1Variables<VolumeDim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>,
@@ -184,12 +182,11 @@ struct EvolutionMetavars
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
                       Parallel::Phase::ImportInitialData,
-                      tmpl::list<
-                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          GeneralizedHarmonic::Actions::SetNumericInitialData<
-                              evolution::OptionTags::NumericInitialData>,
-                          Parallel::Actions::TerminatePhase>>>,
+                      tmpl::list<gh::Actions::ReadNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 gh::Actions::SetNumericInitialData<
+                                     evolution::OptionTags::NumericInitialData>,
+                                 Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
@@ -263,8 +260,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
-    &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
-    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &gh::BoundaryCorrections::register_derived_with_charm,
+    &gh::ConstraintDamping::register_derived_with_charm,
     &Cce::register_initialize_j_with_charm<
         metavariables::uses_partially_flat_cartesian_coordinates,
         metavariables::cce_boundary_component>,

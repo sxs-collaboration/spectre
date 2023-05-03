@@ -30,7 +30,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
@@ -77,7 +77,7 @@ namespace Tags {
  * quantities.
  *
  * \details See `gauge_source()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::GaugeH`.
+ * `gh::Tags::GaugeH`.
  */
 template <size_t SpatialDim, typename Frame>
 struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
@@ -117,15 +117,15 @@ struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
  * from its spatial and time derivatives.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH`.
+ * `gh::Tags::SpacetimeDerivGaugeH`.
  */
 template <size_t SpatialDim, typename Frame>
 struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
                                      db::ComputeTag {
-  using argument_tags = tmpl::list<
-      ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>,
-                    tmpl::size_t<SpatialDim>, Frame>>;
+  using argument_tags =
+      tmpl::list<::Tags::dt<gh::Tags::GaugeH<SpatialDim, Frame>>,
+                 ::Tags::deriv<gh::Tags::GaugeH<SpatialDim, Frame>,
+                               tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::ab<DataVector, SpatialDim, Frame>;
 
@@ -148,4 +148,4 @@ struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
   using base = SpacetimeDerivGaugeH<SpatialDim, Frame>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

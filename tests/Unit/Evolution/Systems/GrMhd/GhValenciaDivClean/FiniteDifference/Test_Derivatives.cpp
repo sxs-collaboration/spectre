@@ -66,10 +66,10 @@ SPECTRE_TEST_CASE(
       volume_evolved_vars{subcell_mesh.number_of_grid_points()};
   get<gr::Tags::SpacetimeMetric<3>>(volume_evolved_vars) =
       get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
-  get<GeneralizedHarmonic::Tags::Phi<3>>(volume_evolved_vars) =
-      get<GeneralizedHarmonic::Tags::Phi<3>>(volume_prims_for_recons);
-  get<GeneralizedHarmonic::Tags::Pi<3>>(volume_evolved_vars) =
-      get<GeneralizedHarmonic::Tags::Pi<3>>(volume_prims_for_recons);
+  get<gh::Tags::Phi<3>>(volume_evolved_vars) =
+      get<gh::Tags::Phi<3>>(volume_prims_for_recons);
+  get<gh::Tags::Pi<3>>(volume_evolved_vars) =
+      get<gh::Tags::Pi<3>>(volume_prims_for_recons);
 
   Variables<db::wrap_tags_in<
       Tags::deriv, typename grmhd::GhValenciaDivClean::System::gradients_tags,
@@ -117,8 +117,8 @@ SPECTRE_TEST_CASE(
       expected_d_metric);
 
   auto& expected_d_pi =
-      get<::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(expected_deriv_of_gh_vars);
+      get<::Tags::deriv<gh::Tags::Pi<3>, tmpl::size_t<3>, Frame::Inertial>>(
+          expected_deriv_of_gh_vars);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t a = 0; a < 4; ++a) {
       for (size_t b = a; b < 4; ++b) {
@@ -128,13 +128,13 @@ SPECTRE_TEST_CASE(
   }
 
   CHECK_ITERABLE_APPROX(
-      (get<::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3>, tmpl::size_t<3>,
-                         Frame::Inertial>>(deriv_of_gh_vars)),
+      (get<::Tags::deriv<gh::Tags::Pi<3>, tmpl::size_t<3>, Frame::Inertial>>(
+          deriv_of_gh_vars)),
       expected_d_pi);
 
   auto& expected_d_phi =
-      get<::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(expected_deriv_of_gh_vars);
+      get<::Tags::deriv<gh::Tags::Phi<3>, tmpl::size_t<3>, Frame::Inertial>>(
+          expected_deriv_of_gh_vars);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       for (size_t a = 0; a < 4; ++a) {
@@ -147,8 +147,8 @@ SPECTRE_TEST_CASE(
   }
 
   CHECK_ITERABLE_APPROX(
-      (get<::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3>, tmpl::size_t<3>,
-                         Frame::Inertial>>(deriv_of_gh_vars)),
+      (get<::Tags::deriv<gh::Tags::Phi<3>, tmpl::size_t<3>, Frame::Inertial>>(
+          deriv_of_gh_vars)),
       expected_d_phi);
 
   // Test ASSERT triggers for incorrect neighbor size.

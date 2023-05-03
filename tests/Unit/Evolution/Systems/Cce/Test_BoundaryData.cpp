@@ -376,11 +376,11 @@ void dispatch_to_gh_worldtube_computation_from_analytic(
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           kerr_schild_variables);
 
-  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
-                                            spatial_metric, d_spatial_metric);
+  const auto phi =
+      gh::phi(lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
   const auto psi = gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
 
   create_bondi_boundary_data(variables, phi, pi, psi, extraction_radius, l_max);
 }

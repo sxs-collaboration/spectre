@@ -10,7 +10,7 @@
 class DataVector;
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace Tags {
 /// \f$\gamma_1 \gamma_2\f$ constraint damping product
 struct Gamma1Gamma2 : db::SimpleTag {
@@ -86,4 +86,4 @@ struct SpacetimeChristoffelFirstKindThirdIndexUp : db::SimpleTag {
   using type = tnsr::abC<DataVector, Dim, Frame::Inertial>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

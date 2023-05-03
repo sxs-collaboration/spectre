@@ -16,65 +16,46 @@ struct ArbitraryFrame;
 
 template <size_t Dim, typename Frame>
 void test_simple_tags() {
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::Pi<Dim, Frame>>(
-      "Pi");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::Phi<Dim, Frame>>(
-      "Phi");
+  TestHelpers::db::test_simple_tag<gh::Tags::Pi<Dim, Frame>>("Pi");
+  TestHelpers::db::test_simple_tag<gh::Tags::Phi<Dim, Frame>>("Phi");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0>(
-      "ConstraintGamma0");
+      gh::ConstraintDamping::Tags::ConstraintGamma0>("ConstraintGamma0");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
-      "ConstraintGamma1");
+      gh::ConstraintDamping::Tags::ConstraintGamma1>("ConstraintGamma1");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
-      "ConstraintGamma2");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>>("GaugeH");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>(
+      gh::ConstraintDamping::Tags::ConstraintGamma2>("ConstraintGamma2");
+  TestHelpers::db::test_simple_tag<gh::Tags::GaugeH<Dim, Frame>>("GaugeH");
+  TestHelpers::db::test_simple_tag<gh::Tags::SpacetimeDerivGaugeH<Dim, Frame>>(
       "SpacetimeDerivGaugeH");
+  TestHelpers::db::test_simple_tag<gh::Tags::InitialGaugeH<Dim, Frame>>(
+      "InitialGaugeH");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::InitialGaugeH<Dim, Frame>>("InitialGaugeH");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>(
+      gh::Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>(
       "SpacetimeDerivInitialGaugeH");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::VSpacetimeMetric<Dim, Frame>>(
       "VSpacetimeMetric");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::VZero<Dim, Frame>>("VZero");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::VPlus<Dim, Frame>>("VPlus");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::VMinus<Dim, Frame>>("VMinus");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::CharacteristicSpeeds<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::VZero<Dim, Frame>>("VZero");
+  TestHelpers::db::test_simple_tag<gh::Tags::VPlus<Dim, Frame>>("VPlus");
+  TestHelpers::db::test_simple_tag<gh::Tags::VMinus<Dim, Frame>>("VMinus");
+  TestHelpers::db::test_simple_tag<gh::Tags::CharacteristicSpeeds<Dim, Frame>>(
       "CharacteristicSpeeds");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::CharacteristicFields<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::CharacteristicFields<Dim, Frame>>(
       "CharacteristicFields");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::EvolvedFieldsFromCharacteristicFields<Dim,
-                                                                       Frame>>(
+      gh::Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>>(
       "EvolvedFieldsFromCharacteristicFields");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::GaugeConstraint<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::GaugeConstraint<Dim, Frame>>(
       "GaugeConstraint");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::FConstraint<Dim, Frame>>("FConstraint");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::TwoIndexConstraint<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::FConstraint<Dim, Frame>>(
+      "FConstraint");
+  TestHelpers::db::test_simple_tag<gh::Tags::TwoIndexConstraint<Dim, Frame>>(
       "TwoIndexConstraint");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::ThreeIndexConstraint<Dim, Frame>>(
       "ThreeIndexConstraint");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::FourIndexConstraint<Dim, Frame>>(
       "FourIndexConstraint");
 
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::ConstraintEnergy<Dim, Frame>>(
+  TestHelpers::db::test_simple_tag<gh::Tags::ConstraintEnergy<Dim, Frame>>(
       "ConstraintEnergy");
 }
 

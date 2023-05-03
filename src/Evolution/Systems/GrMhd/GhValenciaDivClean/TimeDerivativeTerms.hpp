@@ -77,7 +77,7 @@ struct TimeDerivativeTermsImpl<
       const tnsr::ijaa<DataVector, 3>& d_phi,
 
       const tuples::TaggedTuple<ExtraTags...>& arguments) {
-    GeneralizedHarmonic::TimeDerivative<3_st>::apply(
+    gh::TimeDerivative<3_st>::apply(
         get<GhDtTags>(dt_vars_ptr)..., get<GhTempTags>(temps_ptr)...,
         d_spacetime_metric, d_pi, d_phi,
         get<Tags::detail::TemporaryReference<GhArgTags>>(arguments)...);
@@ -85,14 +85,11 @@ struct TimeDerivativeTermsImpl<
     for (size_t i = 0; i < 3; ++i) {
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                         Frame::Inertial>>(*temps_ptr)
-          .get(i) =
-          -get(get<gr::Tags::Lapse<>>(*temps_ptr)) *
-          get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>>(*temps_ptr)
-              .get(i);
+          .get(i) = -get(get<gr::Tags::Lapse<>>(*temps_ptr)) *
+                    get<gh::Tags::HalfPhiTwoNormals<3>>(*temps_ptr).get(i);
     }
-    const auto& phi = get<
-        Tags::detail::TemporaryReference<GeneralizedHarmonic::Tags::Phi<3>>>(
-        arguments);
+    const auto& phi =
+        get<Tags::detail::TemporaryReference<gh::Tags::Phi<3>>>(arguments);
     const auto& inv_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<3>>(*temps_ptr);
     const auto& shift = get<gr::Tags::Shift<3>>(*temps_ptr);
@@ -129,16 +126,13 @@ struct TimeDerivativeTermsImpl<
       }
     }
     const auto& pi =
-        get<Tags::detail::TemporaryReference<GeneralizedHarmonic::Tags::Pi<3>>>(
-            arguments);
+        get<Tags::detail::TemporaryReference<gh::Tags::Pi<3>>>(arguments);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {
         get<gr::Tags::ExtrinsicCurvature<3>>(*temps_ptr).get(i, j) =
             0.5 * (pi.get(i + 1, j + 1) +
-                   get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(*temps_ptr)
-                       .get(i, j + 1) +
-                   get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(*temps_ptr)
-                       .get(j, i + 1));
+                   get<gh::Tags::PhiOneNormal<3>>(*temps_ptr).get(i, j + 1) +
+                   get<gh::Tags::PhiOneNormal<3>>(*temps_ptr).get(j, i + 1));
       }
     }
 
@@ -168,7 +162,7 @@ struct TimeDerivativeTermsImpl<
     // The addition to dt Pi is independent of the specific form of the stress
     // tensor.
     add_stress_energy_term_to_dt_pi(
-        get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3>>>(dt_vars_ptr),
+        get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars_ptr),
         get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
             *temps_ptr),
         get<gr::Tags::Lapse<DataVector>>(*temps_ptr));
@@ -182,7 +176,7 @@ struct TimeDerivativeTermsImpl<
  * the GRMHD equations with divergence cleaning.
  *
  * \details The bulk of the computations in this class dispatch to
- * `GeneralizedHarmonic::TimeDerivative` and
+ * `gh::TimeDerivative` and
  * `grmhd::ValenciaDivClean::TimeDerivativeTerms` as a 'product system' -- each
  * independently operating on its own subset of the supplied variable
  * collections.
@@ -200,9 +194,9 @@ struct TimeDerivativeTermsImpl<
  * compute tags.
  */
 struct TimeDerivativeTerms : evolution::PassVariables {
-  using gh_dt_tags = db::wrap_tags_in<
-      ::Tags::dt,
-      typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list>;
+  using gh_dt_tags =
+      db::wrap_tags_in<::Tags::dt,
+                       typename gh::System<3_st>::variables_tag::tags_list>;
   using valencia_dt_tags = db::wrap_tags_in<
       ::Tags::dt,
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list>;
@@ -214,12 +208,9 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       tmpl::bind<::Tags::Flux, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
                  tmpl::pin<Frame::Inertial>>>;
 
-  using gh_temp_tags =
-      typename GeneralizedHarmonic::TimeDerivative<3_st>::temporary_tags;
-  using gh_gradient_tags =
-      typename GeneralizedHarmonic::System<3_st>::gradients_tags;
-  using gh_arg_tags =
-      typename GeneralizedHarmonic::TimeDerivative<3_st>::argument_tags;
+  using gh_temp_tags = typename gh::TimeDerivative<3_st>::temporary_tags;
+  using gh_gradient_tags = typename gh::System<3_st>::gradients_tags;
+  using gh_arg_tags = typename gh::TimeDerivative<3_st>::argument_tags;
 
   using valencia_temp_tags =
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::temporary_tags;

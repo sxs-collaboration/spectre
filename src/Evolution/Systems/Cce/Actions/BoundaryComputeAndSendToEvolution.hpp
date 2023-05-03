@@ -249,8 +249,8 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
         box, cache, array_index, time,
         get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
             gh_variables),
-        get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
-        get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(gh_variables));
+        get<gh::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
+        get<gh::Tags::Pi<3, ::Frame::Inertial>>(gh_variables));
   }
 
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>

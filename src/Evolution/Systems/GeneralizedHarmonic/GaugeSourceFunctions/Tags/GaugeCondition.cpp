@@ -17,7 +17,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::gauges::Tags {
+namespace gh::gauges::Tags {
 template <size_t Dim>
 void GaugeAndDerivativeCompute<Dim>::function(
     const gsl::not_null<return_type*> gauge_and_deriv,
@@ -44,7 +44,7 @@ void GaugeAndDerivativeCompute<Dim>::function(
   // are only used for observing, this should be fine.
   tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{
       get(lapse).size()};
-  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+  gh::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
   tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
@@ -69,11 +69,11 @@ void GaugeAndDerivativeCompute<Dim>::function(
   }
   get(half_pi_two_normals) *= 0.5;
 
-  dispatch(make_not_null(
-               &get<::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>(
+  dispatch(make_not_null(&get<::gh::Tags::GaugeH<Dim, Frame::Inertial>>(
+               *gauge_and_deriv)),
+           make_not_null(
+               &get<::gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>(
                    *gauge_and_deriv)),
-           make_not_null(&get<::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-                             Dim, Frame::Inertial>>(*gauge_and_deriv)),
            lapse, shift, spacetime_unit_normal_one_form, spacetime_unit_normal,
            sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
            half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
@@ -89,4 +89,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace GeneralizedHarmonic::gauges::Tags
+}  // namespace gh::gauges::Tags

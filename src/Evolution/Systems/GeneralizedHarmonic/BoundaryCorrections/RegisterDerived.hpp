@@ -3,6 +3,6 @@
 
 #pragma once
 
-namespace GeneralizedHarmonic::BoundaryCorrections {
+namespace gh::BoundaryCorrections {
 void register_derived_with_charm();
-}  // namespace GeneralizedHarmonic::BoundaryCorrections
+}  // namespace gh::BoundaryCorrections

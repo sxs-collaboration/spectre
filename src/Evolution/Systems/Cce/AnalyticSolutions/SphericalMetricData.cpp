@@ -135,8 +135,7 @@ void SphericalMetricData::variables_impl(
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-    const {
+    tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const {
   Variables<tmpl::list<
       gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeMetric<3, ::Frame::Spherical<::Frame::Inertial>,

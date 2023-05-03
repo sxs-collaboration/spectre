@@ -248,7 +248,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
       boundary_tuple);
   const auto& d_spacetime_metric =
-      get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
+      get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
 
   const auto serialized_and_deserialized_analytic_solution =
       serialize_and_deserialize(analytic_solution);

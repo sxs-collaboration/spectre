@@ -154,7 +154,7 @@ using d_pi_type = tnsr::iaa<DataType, Dim>;
 
 // Computes the Generalized Harmonic equation for the time derivative,
 // \f$\partial_t \Pi_{ab} \f$ (eq 36 of \cite Lindblom2005qh). This is taken
-// from the implementation of `GeneralizedHarmonic::TimeDerivative`.
+// from the implementation of `gh::TimeDerivative`.
 template <typename DataType, size_t Dim>
 result_tensor_type<DataType, Dim> compute_expected_large_equation(
     const spacetime_deriv_gauge_function_type<DataType, Dim>&

@@ -20,7 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail {
+namespace gh::gauges::DampedHarmonicGauge_detail {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
@@ -306,4 +306,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef FRAME
 #undef DTYPE
 #undef DIM
-}  // namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail
+}  // namespace gh::gauges::DampedHarmonicGauge_detail

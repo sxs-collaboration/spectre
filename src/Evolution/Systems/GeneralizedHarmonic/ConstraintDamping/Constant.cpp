@@ -22,7 +22,7 @@ namespace domain::FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
 Constant<VolumeDim, Fr>::Constant(CkMigrateMessage* msg)
     : DampingFunction<VolumeDim, Fr>(msg) {}
@@ -68,19 +68,19 @@ auto Constant<VolumeDim, Fr>::get_clone() const
     -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
   return std::make_unique<Constant<VolumeDim, Fr>>(*this);
 }
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                      \
-  template GeneralizedHarmonic::ConstraintDamping::Constant<      \
-      DIM(data), FRAME(data)>::Constant(CkMigrateMessage* msg);   \
-  template GeneralizedHarmonic::ConstraintDamping::Constant<      \
-      DIM(data), FRAME(data)>::Constant(const double value);      \
-  template void GeneralizedHarmonic::ConstraintDamping::Constant< \
-      DIM(data), FRAME(data)>::pup(PUP::er& p);                   \
-  template auto GeneralizedHarmonic::ConstraintDamping::Constant< \
-      DIM(data), FRAME(data)>::get_clone()                        \
+#define INSTANTIATE(_, data)                                                  \
+  template gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
+      CkMigrateMessage* msg);                                                 \
+  template gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
+      const double value);                                                    \
+  template void gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::pup( \
+      PUP::er& p);                                                            \
+  template auto                                                               \
+  gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::get_clone()        \
       const->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
@@ -92,17 +92,16 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::ConstraintDamping::                   \
-      Constant<DIM(data), FRAME(data)>::operator()(                        \
-          const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
-          const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& /*x*/,       \
-          const double /*time*/,                                           \
-          const std::unordered_map<                                        \
-              std::string,                                                 \
-              std::unique_ptr<domain::FunctionsOfTime::                    \
-                                  FunctionOfTime>>& /*functions_of_time*/) \
-          const;
+#define INSTANTIATE(_, data)                                           \
+  template void                                                        \
+  gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::operator()( \
+      const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& /*x*/,       \
+      const double /*time*/,                                           \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::                    \
+                              FunctionOfTime>>& /*functions_of_time*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

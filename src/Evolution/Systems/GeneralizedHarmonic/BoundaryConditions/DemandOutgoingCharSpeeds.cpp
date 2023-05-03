@@ -20,7 +20,7 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 template <size_t Dim>
 DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
     CkMigrateMessage* const msg)
@@ -72,7 +72,7 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
               << "\n speed: " << gsl::at(char_speeds, i)
               << "\nn_i: " << outward_directed_normal_covector
               << "\n"
-                 "See GeneralizedHarmonic::characteristic_speeds for the "
+                 "See gh::characteristic_speeds for the "
                  "index ordering of characteristic speeds\n"};
     }
   }
@@ -92,4 +92,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

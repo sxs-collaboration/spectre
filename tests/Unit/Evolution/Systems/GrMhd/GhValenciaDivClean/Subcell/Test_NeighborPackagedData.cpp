@@ -78,7 +78,7 @@ namespace grmhd::GhValenciaDivClean {
 namespace {
 double test(const size_t num_dg_pts) {
   using BoundaryCorrection = BoundaryCorrections::ProductOfCorrections<
-      GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<3>,
+      gh::BoundaryCorrections::UpwindPenalty<3>,
       ValenciaDivClean::BoundaryCorrections::Hll>;
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -106,12 +106,11 @@ double test(const size_t num_dg_pts) {
       domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{});
 
-  const GeneralizedHarmonic::Solutions::WrappedGr<
-      ::RelativisticEuler::Solutions::TovStar>
-      soln{1.28e-3,
-           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0)
-               ->get_clone(),
-           RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
+  const gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::TovStar> soln{
+      1.28e-3,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0)
+          ->get_clone(),
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
 
   const double time = 0.0;
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
@@ -235,14 +234,14 @@ double test(const size_t num_dg_pts) {
       dg_coords, time, typename System::gh_system::variables_tag::tags_list{}));
 
   const auto gamma1 =  // Gamma1, taken from SpEC BNS
-      std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                           GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<
+          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           -0.999, 0.999 * 1.0,
           10.0 * 10.0,  // second 10 is "separation" of NSes
           std::array{0.0, 0.0, 0.0});
   const auto gamma2 =  // Gamma1, taken from SpEC BNS
-      std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                           GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<
+          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           0.01, 1.35 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0});
 
   // Below are also dummy variables required for compilation due to boundary
@@ -252,7 +251,7 @@ double test(const size_t num_dg_pts) {
   // initialized.
   std::optional<tnsr::I<DataVector, 3>> dummy_volume_mesh_velocity{};
   using DampingFunction =
-      GeneralizedHarmonic::ConstraintDamping::DampingFunction<3, Frame::Grid>;
+      gh::ConstraintDamping::DampingFunction<3, Frame::Grid>;
 
   auto box = db::create<
       db::AddSimpleTags<
@@ -272,13 +271,10 @@ double test(const size_t num_dg_pts) {
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize,
-          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-              3, Frame::Grid>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-              3, Frame::Grid>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-              3, Frame::Grid>,
-          ::GeneralizedHarmonic::gauges::Tags::GaugeCondition,
+          gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>,
+          gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
+          gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
+          ::gh::gauges::Tags::GaugeCondition,
           grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
           evolution::dg::subcell::Tags::SubcellOptions<3>>,
       db::AddComputeTags<
@@ -296,12 +292,10 @@ double test(const size_t num_dg_pts) {
           gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                       DataVector>,
           gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
-              3, Frame::Grid>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
-              3, Frame::Grid>,
-          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
-              3, Frame::Grid>>>(
+          gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Grid>,
+          gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Grid>,
+          gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
+                                                               Frame::Grid>>>(
       element, dg_mesh, subcell_mesh,
       std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor>{
           std::make_unique<
@@ -318,13 +312,12 @@ double test(const size_t num_dg_pts) {
       // Note: These damping functions all assume Grid==Inertial. We need to
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS
-          std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                               GaussianPlusConstant<3, Frame::Grid>>(
+          std::make_unique<
+              gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
               0.01, 0.09 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0})),
       gamma1->get_clone(), gamma2->get_clone(),
-      std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>(
-          std::make_unique<GeneralizedHarmonic::gauges::AnalyticChristoffel>(
-              soln.get_clone())),
+      std::unique_ptr<gh::gauges::GaugeCondition>(
+          std::make_unique<gh::gauges::AnalyticChristoffel>(soln.get_clone())),
       grmhd::GhValenciaDivClean::fd::FilterOptions{0.001},
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
@@ -387,8 +380,7 @@ double test(const size_t num_dg_pts) {
     auto& sliced_spacetime_metric =
         get<gr::Tags::SpacetimeMetric<3>>(sliced_vars);
     const auto& packaged_data_spacetime_metric =
-        get<GeneralizedHarmonic::Tags::VSpacetimeMetric<3, Frame::Inertial>>(
-            packaged_data);
+        get<gh::Tags::VSpacetimeMetric<3, Frame::Inertial>>(packaged_data);
 
     const auto spatial_metric = gr::spatial_metric(sliced_spacetime_metric);
     const auto [det_spatial_metric, inverse_spatial_metric] =
@@ -418,8 +410,8 @@ double test(const size_t num_dg_pts) {
     Scalar<DataVector> gamma2_sdv{dg_interface_mesh.number_of_grid_points()};
     (*gamma2)(make_not_null(&gamma2_sdv), dg_interface_grid_coords, 0.0, {});
 
-    const auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(sliced_vars);
-    const auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(sliced_vars);
+    const auto& pi = get<gh::Tags::Pi<3>>(sliced_vars);
+    const auto& phi = get<gh::Tags::Phi<3>>(sliced_vars);
     tnsr::aa<DataVector, 3> v_plus_times_lambda_plus = pi;
     tnsr::aa<DataVector, 3> v_minus_times_lambda_minus = pi;
     for (size_t a = 0; a < 4; ++a) {
@@ -442,11 +434,9 @@ double test(const size_t num_dg_pts) {
     }
 
     const auto& packaged_data_v_plus_times_lambda_plus =
-        get<GeneralizedHarmonic::Tags::VPlus<3, Frame::Inertial>>(
-            packaged_data);
+        get<gh::Tags::VPlus<3, Frame::Inertial>>(packaged_data);
     const auto& packaged_data_v_minus_times_lambda_minus =
-        get<GeneralizedHarmonic::Tags::VMinus<3, Frame::Inertial>>(
-            packaged_data);
+        get<gh::Tags::VMinus<3, Frame::Inertial>>(packaged_data);
     for (size_t tensor_index = 0; tensor_index < sliced_spacetime_metric.size();
          ++tensor_index) {
       max_rel_error = std::max(

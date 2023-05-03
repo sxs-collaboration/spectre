@@ -10,13 +10,13 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 namespace {
 template <size_t Dim>
 void impl() {
   // The analytic gauge condition also can hold all the different solutions, so
   // register those too.
-  using solutions = GeneralizedHarmonic::solutions_including_matter<Dim>;
+  using solutions = gh::solutions_including_matter<Dim>;
   register_classes_with_charm(solutions{});
 }
 }  // namespace
@@ -28,4 +28,4 @@ void register_derived_with_charm() {
   register_classes_with_charm(
       tmpl::list<AnalyticChristoffel, DampedHarmonic, Harmonic>{});
 }
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

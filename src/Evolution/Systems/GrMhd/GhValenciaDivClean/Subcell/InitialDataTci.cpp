@@ -18,8 +18,7 @@ namespace grmhd::GhValenciaDivClean::subcell {
 std::tuple<bool, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
     const Variables<tmpl::list<
         gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-        GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-        GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+        gh::Tags::Pi<3, Frame::Inertial>, gh::Tags::Phi<3, Frame::Inertial>,
         ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
         ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeS<>,
         ValenciaDivClean::Tags::TildeB<>, ValenciaDivClean::Tags::TildePhi>>&

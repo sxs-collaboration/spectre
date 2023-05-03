@@ -22,7 +22,7 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::BoundaryConditions {
+namespace gh::BoundaryConditions {
 /// A `BoundaryCondition` that only verifies that all characteristic speeds are
 /// directed out of the domain; no boundary data is altered by this boundary
 /// condition.
@@ -56,10 +56,10 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
-  using dg_interior_temporary_tags = tmpl::list<
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+  using dg_interior_temporary_tags =
+      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
   using dg_gridless_tags = tmpl::list<>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
 
@@ -74,4 +74,4 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift);
 };
-}  // namespace GeneralizedHarmonic::BoundaryConditions
+}  // namespace gh::BoundaryConditions

@@ -40,16 +40,15 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  */
 class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
  public:
-  using options = typename GeneralizedHarmonic::BoundaryConditions::
-      ConstraintPreservingBjorhus<3>::options;
+  using options =
+      typename gh::BoundaryConditions::ConstraintPreservingBjorhus<3>::options;
   static constexpr Options::String help{
       "ConstraintPreservingAnalytic boundary conditions  for GH variables and "
       "hydro free outflow for GRMHD."};
 
   ConstraintPreservingFreeOutflow() = default;
   explicit ConstraintPreservingFreeOutflow(
-      GeneralizedHarmonic::BoundaryConditions::detail::
-          ConstraintPreservingBjorhusType type);
+      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type);
 
   ConstraintPreservingFreeOutflow(ConstraintPreservingFreeOutflow&&) = default;
   ConstraintPreservingFreeOutflow& operator=(
@@ -75,21 +74,21 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Pi<3>,
-                 GeneralizedHarmonic::Tags::Phi<3>>;
+      tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>,
+                 gh::Tags::Phi<3>>;
   using dg_interior_temporary_tags = tmpl::list<
       domain::Tags::Coordinates<3, Frame::Inertial>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>;
+      gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
+      gh::Tags::GaugeH<3, Frame::Inertial>,
+      gh::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>;
   using dg_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
@@ -172,15 +171,15 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
 
   using dg_interior_dt_vars_tags = tmpl::list<
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>,
-      ::Tags::dt<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>,
-      ::Tags::dt<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>>;
+      ::Tags::dt<gh::Tags::Pi<3, Frame::Inertial>>,
+      ::Tags::dt<gh::Tags::Phi<3, Frame::Inertial>>>;
   using dg_interior_deriv_vars_tags = tmpl::list<
       ::Tags::deriv<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>>;
+      ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                    Frame::Inertial>>;
 
   std::optional<std::string> dg_time_derivative(
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
@@ -264,7 +263,7 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
   }
 
  private:
-  GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<3>
+  gh::BoundaryConditions::ConstraintPreservingBjorhus<3>
       constraint_preserving_{};
 };
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

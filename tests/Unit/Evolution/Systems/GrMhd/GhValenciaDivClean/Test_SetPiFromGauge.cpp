@@ -54,8 +54,8 @@ SPECTRE_TEST_CASE(
 
   using evolved_vars_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
+                 gh::Tags::Pi<3, Frame::Inertial>,
+                 gh::Tags::Phi<3, Frame::Inertial>>;
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -63,10 +63,10 @@ SPECTRE_TEST_CASE(
                           &metric_dist](const Mesh<3>& mesh) {
     const size_t num_points = mesh.number_of_grid_points();
     Variables<evolved_vars_tags> evolved_vars{mesh.number_of_grid_points()};
-    get<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(evolved_vars) =
+    get<gh::Tags::Pi<3, Frame::Inertial>>(evolved_vars) =
         make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&deriv_dist), num_points);
-    get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(evolved_vars) =
+    get<gh::Tags::Phi<3, Frame::Inertial>>(evolved_vars) =
         make_with_random_values<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&deriv_dist), num_points);
     get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
@@ -96,7 +96,7 @@ SPECTRE_TEST_CASE(
                             3, Frame::Grid, Frame::Inertial>,
                         domain::Tags::FunctionsOfTimeInitialize,
                         domain::Tags::Coordinates<3, Frame::ElementLogical>,
-                        GeneralizedHarmonic::gauges::Tags::GaugeCondition,
+                        gh::gauges::Tags::GaugeCondition,
                         evolution::dg::subcell::Tags::ActiveGrid>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::MeshCompute<3>,
@@ -112,8 +112,8 @@ SPECTRE_TEST_CASE(
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
       logical_coordinates(dg_mesh),
-      std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>(
-          std::make_unique<GeneralizedHarmonic::gauges::DampedHarmonic>(
+      std::unique_ptr<gh::gauges::GaugeCondition>(
+          std::make_unique<gh::gauges::DampedHarmonic>(
               100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})),
       evolution::dg::subcell::ActiveGrid::Dg);
   const auto initial_subcell_vars =
@@ -125,8 +125,8 @@ SPECTRE_TEST_CASE(
   const auto check = [&box](const Mesh<3>& mesh, const auto& initial_vars) {
     CAPTURE(mesh);
     tnsr::aa<DataVector, 3, Frame::Inertial> expected_pi =
-        get<GeneralizedHarmonic::Tags::Pi<3>>(initial_vars);
-    GeneralizedHarmonic::gauges::SetPiFromGauge<3>::apply(
+        get<gh::Tags::Pi<3>>(initial_vars);
+    gh::gauges::SetPiFromGauge<3>::apply(
         make_not_null(&expected_pi), 0., mesh,
         db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
         db::get<domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
@@ -135,10 +135,10 @@ SPECTRE_TEST_CASE(
         db::get<domain::Tags::FunctionsOfTime>(box), logical_coordinates(mesh),
         get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             initial_vars),
-        get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(initial_vars),
-        db::get<GeneralizedHarmonic::gauges::Tags::GaugeCondition>(box));
+        get<gh::Tags::Phi<3, Frame::Inertial>>(initial_vars),
+        db::get<gh::gauges::Tags::GaugeCondition>(box));
 
-    const auto& pi = db::get<GeneralizedHarmonic::Tags::Pi<3>>(box);
+    const auto& pi = db::get<gh::Tags::Pi<3>>(box);
     CHECK(pi == expected_pi);
   };
 

@@ -75,15 +75,13 @@ void verify_time_independent_einstein_solution(
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
+  using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
+  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi>;
-  const GeneralizedHarmonic::Solutions::WrappedGr<Solution> gh_solution{
-      solution};
-  const std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>
-      gauge_condition =
-          std::make_unique<GeneralizedHarmonic::gauges::AnalyticChristoffel>(
-              gh_solution.get_clone());
+  const gh::Solutions::WrappedGr<Solution> gh_solution{solution};
+  const std::unique_ptr<gh::gauges::GaugeCondition> gauge_condition =
+      std::make_unique<gh::gauges::AnalyticChristoffel>(
+          gh_solution.get_clone());
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
@@ -220,25 +218,18 @@ void verify_time_independent_einstein_solution(
   auto dt_phi =
       make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   Variables<tmpl::list<
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      GeneralizedHarmonic::Tags::GaugeH<3>,
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>,
-      GeneralizedHarmonic::Tags::Gamma1Gamma2,
-      GeneralizedHarmonic::Tags::HalfPiTwoNormals,
-      GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
-      GeneralizedHarmonic::Tags::Gamma1Plus1,
-      GeneralizedHarmonic::Tags::PiOneNormal<3>,
-      GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>,
-      GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>,
-      GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<3>,
-      GeneralizedHarmonic::Tags::PhiOneNormal<3>,
-      GeneralizedHarmonic::Tags::PiSecondIndexUp<3>,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::PhiFirstIndexUp<3>,
-      GeneralizedHarmonic::Tags::PhiThirdIndexUp<3>,
-      GeneralizedHarmonic::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
+      gh::ConstraintDamping::Tags::ConstraintGamma1,
+      gh::ConstraintDamping::Tags::ConstraintGamma2, gh::Tags::GaugeH<3>,
+      gh::Tags::SpacetimeDerivGaugeH<3>, gh::Tags::Gamma1Gamma2,
+      gh::Tags::HalfPiTwoNormals, gh::Tags::NormalDotOneIndexConstraint,
+      gh::Tags::Gamma1Plus1, gh::Tags::PiOneNormal<3>,
+      gh::Tags::GaugeConstraint<3, Frame::Inertial>,
+      gh::Tags::HalfPhiTwoNormals<3>, gh::Tags::ShiftDotThreeIndexConstraint<3>,
+      gh::Tags::MeshVelocityDotThreeIndexConstraint<3>,
+      gh::Tags::PhiOneNormal<3>, gh::Tags::PiSecondIndexUp<3>,
+      gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
+      gh::Tags::PhiFirstIndexUp<3>, gh::Tags::PhiThirdIndexUp<3>,
+      gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
@@ -255,47 +246,34 @@ void verify_time_independent_einstein_solution(
       gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial, DataVector>>>
       buffer(mesh.number_of_grid_points());
 
-  GeneralizedHarmonic::TimeDerivative<3>::apply(
+  gh::TimeDerivative<3>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
       make_not_null(
-          &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
-              buffer)),
+          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
-              buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::GaugeH<3>>(buffer)),
+          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeH<3>>(buffer)),
+      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<3>>(buffer)),
+      make_not_null(&get<gh::Tags::Gamma1Gamma2>(buffer)),
+      make_not_null(&get<gh::Tags::HalfPiTwoNormals>(buffer)),
+      make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(buffer)),
+      make_not_null(&get<gh::Tags::Gamma1Plus1>(buffer)),
+      make_not_null(&get<gh::Tags::PiOneNormal<3>>(buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(buffer)),
+          &get<gh::Tags::GaugeConstraint<3, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::HalfPhiTwoNormals<3>>(buffer)),
+      make_not_null(&get<gh::Tags::ShiftDotThreeIndexConstraint<3>>(buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PiOneNormal<3>>(buffer)),
+          &get<gh::Tags::MeshVelocityDotThreeIndexConstraint<3>>(buffer)),
+      make_not_null(&get<gh::Tags::PhiOneNormal<3>>(buffer)),
+      make_not_null(&get<gh::Tags::PiSecondIndexUp<3>>(buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>>(
-              buffer)),
+          &get<gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::PhiFirstIndexUp<3>>(buffer)),
+      make_not_null(&get<gh::Tags::PhiThirdIndexUp<3>>(buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>>(buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>>(
-              buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<
-              3>>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::PiSecondIndexUp<3>>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-                        3, Frame::Inertial>>(buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::PhiFirstIndexUp<3>>(buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::PhiThirdIndexUp<3>>(buffer)),
-      make_not_null(
-          &get<GeneralizedHarmonic::Tags::
-                   SpacetimeChristoffelFirstKindThirdIndexUp<3>>(buffer)),
+          &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>>(buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(
           &get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(buffer)),
@@ -329,8 +307,8 @@ void verify_time_independent_einstein_solution(
       gamma1, gamma2, *gauge_condition, mesh, time, x, inverse_jacobian,
       std::nullopt);
 
-  const auto gauge_constraint = GeneralizedHarmonic::gauge_constraint(
-      get<GeneralizedHarmonic::Tags::GaugeH<3>>(buffer),
+  const auto gauge_constraint = gh::gauge_constraint(
+      get<gh::Tags::GaugeH<3>>(buffer),
       get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>>(
           buffer),
       get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(

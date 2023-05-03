@@ -26,7 +26,7 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 /// \endcond
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 /*!
  * \brief A Gaussian plus a constant: \f$f = C + A
  * \exp\left(-\frac{(x-x_0)^2}{w^2}\right)\f$
@@ -127,10 +127,11 @@ bool operator!=(const GaussianPlusConstant<VolumeDim, Fr>& lhs,
                 const GaussianPlusConstant<VolumeDim, Fr>& rhs) {
   return not(lhs == rhs);
 }
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 /// \cond
 template <size_t VolumeDim, typename Fr>
-PUP::able::PUP_ID GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-    VolumeDim, Fr>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID
+    gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>::my_PUP_ID =
+        0;  // NOLINT
 /// \endcond

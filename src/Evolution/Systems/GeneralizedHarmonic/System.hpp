@@ -20,7 +20,7 @@ class DataVector;
  * \ingroup EvolutionSystemsGroup
  * \brief Items related to evolving the first-order generalized harmonic system.
  */
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t Dim>
 struct System {
   static constexpr bool is_in_flux_conservative_form = false;
@@ -50,4 +50,4 @@ struct System {
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>;
 };
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

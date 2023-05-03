@@ -30,19 +30,17 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
 
-namespace TestHelpers::GeneralizedHarmonic::ConstraintDamping {
+namespace TestHelpers::gh::ConstraintDamping {
 namespace detail {
 template <size_t VolumeDim, typename Fr, class... MemberArgs, class T>
 void check_impl(
-    const std::unique_ptr<
-        ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-            VolumeDim, Fr>>& in_gh_damping_function,
+    const std::unique_ptr<::gh::ConstraintDamping::DampingFunction<
+        VolumeDim, Fr>>& in_gh_damping_function,
     const std::string& python_function_prefix, const T& used_for_size,
     const std::array<std::pair<double, double>, 1> random_value_bounds,
     const std::vector<std::string>& function_of_time_names,
     const MemberArgs&... member_args) {
-  using GhDampingFunc =
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
+  using GhDampingFunc = ::gh::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
 
   const auto member_args_tuple = std::make_tuple(member_args...);
   const auto helper =
@@ -142,13 +140,12 @@ void check(std::unique_ptr<DampingFunctionType> in_gh_damping_function,
            const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const std::vector<std::string>& function_of_time_names,
            const MemberArgs&... member_args) {
-  detail::check_impl(
-      std::unique_ptr<::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          DampingFunctionType::volume_dim,
-          typename DampingFunctionType::frame>>(
-          std::move(in_gh_damping_function)),
-      python_function_prefix, used_for_size, random_value_bounds,
-      function_of_time_names, member_args...);
+  detail::check_impl(std::unique_ptr<::gh::ConstraintDamping::DampingFunction<
+                         DampingFunctionType::volume_dim,
+                         typename DampingFunctionType::frame>>(
+                         std::move(in_gh_damping_function)),
+                     python_function_prefix, used_for_size, random_value_bounds,
+                     function_of_time_names, member_args...);
 }
 
 template <class DampingFunctionType, class T, class... MemberArgs>
@@ -157,14 +154,13 @@ void check(DampingFunctionType in_gh_damping_function,
            const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const std::vector<std::string>& function_of_time_names,
            const MemberArgs&... member_args) {
-  detail::check_impl(
-      std::unique_ptr<::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          DampingFunctionType::volume_dim,
-          typename DampingFunctionType::frame>>(
-          std::make_unique<DampingFunctionType>(
-              std::move(in_gh_damping_function))),
-      python_function_prefix, used_for_size, random_value_bounds,
-      function_of_time_names, member_args...);
+  detail::check_impl(std::unique_ptr<::gh::ConstraintDamping::DampingFunction<
+                         DampingFunctionType::volume_dim,
+                         typename DampingFunctionType::frame>>(
+                         std::make_unique<DampingFunctionType>(
+                             std::move(in_gh_damping_function))),
+                     python_function_prefix, used_for_size, random_value_bounds,
+                     function_of_time_names, member_args...);
 }
 /// @}
-}  // namespace TestHelpers::GeneralizedHarmonic::ConstraintDamping
+}  // namespace TestHelpers::gh::ConstraintDamping

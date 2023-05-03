@@ -33,12 +33,10 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<
-            GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
-            tmpl::list<GeneralizedHarmonic::BoundaryConditions::
-                           DirichletAnalytic<Dim>>>,
+        tmpl::pair<gh::BoundaryConditions::BoundaryCondition<Dim>,
+                   tmpl::list<gh::BoundaryConditions::DirichletAnalytic<Dim>>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   GeneralizedHarmonic::Solutions::all_solutions<Dim>>>;
+                   gh::Solutions::all_solutions<Dim>>>;
   };
 };
 
@@ -46,7 +44,7 @@ template <size_t Dim>
 struct ConvertPlaneWave {
   using unpacked_container = int;
   using packed_container =
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<Dim>>;
+      gh::Solutions::WrappedGr<gr::Solutions::GaugeWave<Dim>>;
   using packed_type = double;
 
   static packed_container create_container() {
@@ -75,24 +73,20 @@ struct ConvertPlaneWave {
 template <size_t Dim>
 void test() {
   CAPTURE(Dim);
-  register_classes_with_charm(
-      GeneralizedHarmonic::Solutions::all_solutions<Dim>{});
+  register_classes_with_charm(gh::Solutions::all_solutions<Dim>{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
-      Tags::Time,
-      Tags::AnalyticSolution<GeneralizedHarmonic::Solutions::WrappedGr<
-          gr::Solutions::GaugeWave<Dim>>>>>(
+      Tags::Time, Tags::AnalyticSolution<gh::Solutions::WrappedGr<
+                      gr::Solutions::GaugeWave<Dim>>>>>(
       0.5, ConvertPlaneWave<Dim>::create_container());
 
   helpers::test_boundary_condition_with_python<
-      GeneralizedHarmonic::BoundaryConditions::DirichletAnalytic<Dim>,
-      GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
-      GeneralizedHarmonic::System<Dim>,
-      tmpl::list<GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>>,
+      gh::BoundaryConditions::DirichletAnalytic<Dim>,
+      gh::BoundaryConditions::BoundaryCondition<Dim>, gh::System<Dim>,
+      tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>,
       tmpl::list<ConvertPlaneWave<Dim>>,
-      tmpl::list<
-          Tags::AnalyticSolution<GeneralizedHarmonic::Solutions::WrappedGr<
-              gr::Solutions::GaugeWave<Dim>>>>,
+      tmpl::list<Tags::AnalyticSolution<
+          gh::Solutions::WrappedGr<gr::Solutions::GaugeWave<Dim>>>>,
       Metavariables<Dim>>(
       make_not_null(&gen),
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions."
@@ -100,13 +94,12 @@ void test() {
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
           helpers::Tags::PythonFunctionName<gr::Tags::SpacetimeMetric<Dim>>,
-          helpers::Tags::PythonFunctionName<GeneralizedHarmonic::Tags::Pi<Dim>>,
+          helpers::Tags::PythonFunctionName<gh::Tags::Pi<Dim>>,
+          helpers::Tags::PythonFunctionName<gh::Tags::Phi<Dim>>,
           helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::Tags::Phi<Dim>>,
+              gh::ConstraintDamping::Tags::ConstraintGamma1>,
           helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
+              gh::ConstraintDamping::Tags::ConstraintGamma2>,
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<
               gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>>{
@@ -119,10 +112,8 @@ void test() {
       "      Wavelength: 10.0\n",
       Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_soln,
       tuples::TaggedTuple<
-          helpers::Tags::Range<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::Range<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>>{
+          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma1>,
+          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma2>>{
           std::array{0.0, 1.0}, std::array{0.0, 1.0}});
 }
 }  // namespace

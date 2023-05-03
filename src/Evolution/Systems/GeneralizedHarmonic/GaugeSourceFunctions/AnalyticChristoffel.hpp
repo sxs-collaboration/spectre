@@ -24,7 +24,7 @@ template <size_t Dim>
 class Mesh;
 /// \endcond
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 /*!
  * \brief Imposes the analytic gauge condition,
  * \f$H_a=\Gamma_a^{\mathrm{analytic}}\f$ from an analytic solution or analytic
@@ -83,4 +83,4 @@ class AnalyticChristoffel final : public GaugeCondition {
  private:
   std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

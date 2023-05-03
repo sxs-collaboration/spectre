@@ -3,6 +3,6 @@
 
 #pragma once
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 void register_derived_with_charm();
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

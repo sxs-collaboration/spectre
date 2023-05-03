@@ -276,8 +276,8 @@ struct MockMetavariables {
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>;
+                 gh::Tags::Pi<3, ::Frame::Inertial>,
+                 gh::Tags::Phi<3, ::Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
   static constexpr size_t volume_dim = 3;
   using component_list =
@@ -541,15 +541,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
         get<::gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(output_vars) =
             gr::spacetime_metric(lapse, shift, g);
-        get<::GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-            output_vars) =
-            GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, g, d_g);
-        get<::GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
-            output_vars) =
-            GeneralizedHarmonic::pi(
-                lapse, dt_lapse, shift, dt_shift, g, dt_g,
-                get<::GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-                    output_vars));
+        get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars) =
+            gh::phi(lapse, d_lapse, shift, d_shift, g, d_g);
+        get<::gh::Tags::Pi<3, ::Frame::Inertial>>(output_vars) =
+            gh::pi(lapse, dt_lapse, shift, dt_shift, g, dt_g,
+                   get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars));
       } else {
         // Frame is not Inertial, and we are time-dependent,
         // so need to transform tensors to
@@ -697,20 +693,17 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
         get<::gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(output_vars) =
             gr::spacetime_metric(lapse, shift_inertial, lower_metric_inertial);
-        get<::GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-            output_vars) =
-            GeneralizedHarmonic::phi(lapse, d_lapse, shift_inertial, d_shift,
-                                     lower_metric_inertial, d_g);
+        get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars) =
+            gh::phi(lapse, d_lapse, shift_inertial, d_shift,
+                    lower_metric_inertial, d_g);
         // Compute Pi from extrinsic curvature and Phi.  Fill in zero
         // for zero components of Pi, since they won't be used at all
         // (can't fill in NaNs, because they will still be interpolated).
         const auto spacetime_normal_vector =
             gr::spacetime_normal_vector(lapse, shift_inertial);
-        auto& Pi = get<::GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
-            output_vars);
+        auto& Pi = get<::gh::Tags::Pi<3, ::Frame::Inertial>>(output_vars);
         const auto& Phi =
-            get<::GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-                output_vars);
+            get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars);
         for (size_t i = 0; i < 3; ++i) {
           Pi.get(i + 1, 0) = 0.0;
           for (size_t j = i; j < 3; ++j) {  // symmetry

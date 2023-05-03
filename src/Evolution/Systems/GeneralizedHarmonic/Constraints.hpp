@@ -25,7 +25,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace GeneralizedHarmonic {
+namespace gh {
 /// @{
 /*!
  * \brief Computes the generalized-harmonic 3-index constraint.
@@ -356,7 +356,7 @@ void f_constraint(
  * the Kronecker delta.
  *
  * Also note that the argument `four_index_constraint` is a rank-3 tensor.
- * This is because `GeneralizedHarmonic::four_index_constraint()` takes
+ * This is because `gh::four_index_constraint()` takes
  * advantage of the antisymmetry of the four-index constraint's first two
  * indices to only compute and return the independent
  * components of \f$C_{ijab}\f$, which can be written as
@@ -557,7 +557,7 @@ namespace Tags {
  * generalized harmonic evolution system.
  *
  * \details See `gauge_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::GaugeConstraint`.
+ * `gh::Tags::GaugeConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
 struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
@@ -591,7 +591,7 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
  * generalized harmonic evolution system.
  *
  * \details See `f_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::FConstraint`.
+ * `gh::Tags::FConstraint`.
  *
  * \note If the system contains matter, you will need to use a system-specific
  * version of this compute tag that passes the appropriate stress-energy tensor
@@ -608,7 +608,7 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
       ThreeIndexConstraint<SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
@@ -637,7 +637,7 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
  * generalized harmonic evolution system.
  *
  * \details See `two_index_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::TwoIndexConstraint`.
+ * `gh::Tags::TwoIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
 struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
@@ -651,7 +651,7 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
       ThreeIndexConstraint<SpatialDim, Frame>>;
 
   using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;
@@ -679,7 +679,7 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
  * generalized harmonic evolution system.
  *
  * \details See `three_index_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::ThreeIndexConstraint`.
+ * `gh::Tags::ThreeIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
@@ -705,7 +705,7 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
  * generalized harmonic evolution system.
  *
  * \details See `four_index_constraint()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::FourIndexConstraint`.
+ * `gh::Tags::FourIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
 struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
@@ -728,7 +728,7 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
  * generalized harmonic evolution system.
  *
  * \details See `constraint_energy()`. Can be retrieved using
- * `GeneralizedHarmonic::Tags::ConstraintEnergy`.
+ * `gh::Tags::ConstraintEnergy`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
@@ -764,4 +764,4 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
   using base = ConstraintEnergy<SpatialDim, Frame>;
 };
 }  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

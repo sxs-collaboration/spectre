@@ -79,17 +79,16 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
       raise_or_lower_first_index(
           gr::christoffel_first_kind(deriv_spatial_metric),
           expected_inverse_spatial_metric);
-  const auto phi =
-      GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
-                               spatial_metric, deriv_spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+  const auto phi = gh::phi(lapse, deriv_lapse, shift, deriv_shift,
+                           spatial_metric, deriv_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
 
   // Now test the ComputeItems.
   const auto box = db::create<
-      db::AddSimpleTags<tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>,
-                                   GeneralizedHarmonic::Tags::Pi<Dim, Frame>,
-                                   GeneralizedHarmonic::Tags::Phi<Dim, Frame>>>,
+      db::AddSimpleTags<
+          tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>,
+                     gh::Tags::Pi<Dim, Frame>, gh::Tags::Phi<Dim, Frame>>>,
       db::AddComputeTags<tmpl::list<
           ah::Tags::InverseSpatialMetricCompute<Dim, Frame>,
           ah::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,

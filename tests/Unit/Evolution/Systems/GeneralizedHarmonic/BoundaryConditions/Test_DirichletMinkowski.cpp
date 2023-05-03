@@ -31,7 +31,7 @@ template <size_t Dim>
 struct ConvertMinkowski {
   using unpacked_container = int;
   using packed_container =
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::Minkowski<Dim>>;
+      gh::Solutions::WrappedGr<gr::Solutions::Minkowski<Dim>>;
   using packed_type = double;
 
   static packed_container create_container() { return {}; }
@@ -58,16 +58,14 @@ void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
-      Tags::Time,
-      Tags::AnalyticSolution<GeneralizedHarmonic::Solutions::WrappedGr<
-          gr::Solutions::Minkowski<Dim>>>>>(
+      Tags::Time, Tags::AnalyticSolution<gh::Solutions::WrappedGr<
+                      gr::Solutions::Minkowski<Dim>>>>>(
       0.5, ConvertMinkowski<Dim>::create_container());
 
   helpers::test_boundary_condition_with_python<
-      GeneralizedHarmonic::BoundaryConditions::DirichletMinkowski<Dim>,
-      GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
-      GeneralizedHarmonic::System<Dim>,
-      tmpl::list<GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>>,
+      gh::BoundaryConditions::DirichletMinkowski<Dim>,
+      gh::BoundaryConditions::BoundaryCondition<Dim>, gh::System<Dim>,
+      tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>,
       tmpl::list<ConvertMinkowski<Dim>>>(
       make_not_null(&gen),
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions."
@@ -75,13 +73,12 @@ void test() {
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
           helpers::Tags::PythonFunctionName<gr::Tags::SpacetimeMetric<Dim>>,
-          helpers::Tags::PythonFunctionName<GeneralizedHarmonic::Tags::Pi<Dim>>,
+          helpers::Tags::PythonFunctionName<gh::Tags::Pi<Dim>>,
+          helpers::Tags::PythonFunctionName<gh::Tags::Phi<Dim>>,
           helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::Tags::Phi<Dim>>,
+              gh::ConstraintDamping::Tags::ConstraintGamma1>,
           helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::PythonFunctionName<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
+              gh::ConstraintDamping::Tags::ConstraintGamma2>,
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<
               gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>>{
@@ -90,10 +87,8 @@ void test() {
       "DirichletMinkowski:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5},
       box_analytic_soln,
       tuples::TaggedTuple<
-          helpers::Tags::Range<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::Range<
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>>{
+          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma1>,
+          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma2>>{
           std::array{0.0, 1.0}, std::array{0.0, 1.0}});
 }
 }  // namespace

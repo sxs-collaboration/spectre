@@ -23,7 +23,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::ConstraintDamping {
+namespace gh::ConstraintDamping {
 TimeDependentTripleGaussian::TimeDependentTripleGaussian(CkMigrateMessage* msg)
     : DampingFunction<3, Frame::Grid>(msg) {}
 
@@ -84,7 +84,7 @@ void TimeDependentTripleGaussian::apply_call_operator(
   add_gauss_to_value_at_x(amplitude_1_, inverse_width_1_, center_1_);
   add_gauss_to_value_at_x(amplitude_2_, inverse_width_2_, center_2_);
   add_gauss_to_value_at_x(amplitude_3_, inverse_width_3_, center_3_);
-}  // namespace GeneralizedHarmonic::ConstraintDamping
+}  // namespace gh::ConstraintDamping
 
 void TimeDependentTripleGaussian::operator()(
     const gsl::not_null<Scalar<double>*> value_at_x,
@@ -127,6 +127,7 @@ bool operator!=(const TimeDependentTripleGaussian& lhs,
                 const TimeDependentTripleGaussian& rhs) {
   return not(lhs == rhs);
 }
-}  // namespace GeneralizedHarmonic::ConstraintDamping
-PUP::able::PUP_ID GeneralizedHarmonic::ConstraintDamping::
-    TimeDependentTripleGaussian::my_PUP_ID = 0;  // NOLINT
+}  // namespace gh::ConstraintDamping
+PUP::able::PUP_ID
+    gh::ConstraintDamping::TimeDependentTripleGaussian::my_PUP_ID =
+        0;  // NOLINT

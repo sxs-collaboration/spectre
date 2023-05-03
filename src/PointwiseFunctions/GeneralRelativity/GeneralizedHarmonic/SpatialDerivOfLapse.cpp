@@ -13,7 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_deriv_of_lapse(
     const gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> deriv_lapse,
@@ -45,18 +45,18 @@ tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::i<DataType, SpatialDim, Frame> deriv_lapse{};
-  GeneralizedHarmonic::spatial_deriv_of_lapse<SpatialDim, Frame, DataType>(
+  gh::spatial_deriv_of_lapse<SpatialDim, Frame, DataType>(
       make_not_null(&deriv_lapse), lapse, spacetime_unit_normal, phi);
   return deriv_lapse;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                             \
-  template void GeneralizedHarmonic::spatial_deriv_of_lapse(             \
+  template void gh::spatial_deriv_of_lapse(                              \
       const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*> \
           deriv_lapse,                                                   \
       const Scalar<DTYPE(data)>& lapse,                                  \
@@ -64,7 +64,7 @@ tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
           spacetime_unit_normal,                                         \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);        \
   template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                  \
-  GeneralizedHarmonic::spatial_deriv_of_lapse(                           \
+  gh::spatial_deriv_of_lapse(                                            \
       const Scalar<DTYPE(data)>& lapse,                                  \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_unit_normal,                                         \

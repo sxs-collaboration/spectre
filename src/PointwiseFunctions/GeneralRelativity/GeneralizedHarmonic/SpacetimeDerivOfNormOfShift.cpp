@@ -20,7 +20,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct D4NormOfShiftBuffer;
@@ -124,21 +124,20 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::a<DataType, SpatialDim, Frame> d4_norm_of_shift{};
-  GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift<SpatialDim, Frame,
-                                                        DataType>(
+  gh::spacetime_deriv_of_norm_of_shift<SpatialDim, Frame, DataType>(
       make_not_null(&d4_norm_of_shift), lapse, shift, spatial_metric,
       inverse_spatial_metric, inverse_spacetime_metric, spacetime_unit_normal,
       phi, pi);
   return d4_norm_of_shift;
 }
-}  // namespace GeneralizedHarmonic
+}  // namespace gh
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(     \
+  template void gh::spacetime_deriv_of_norm_of_shift(                      \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>   \
           d4_norm_of_shift,                                                \
       const Scalar<DTYPE(data)>& lapse,                                    \
@@ -153,7 +152,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);            \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                    \
-  GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(                   \
+  gh::spacetime_deriv_of_norm_of_shift(                                    \
       const Scalar<DTYPE(data)>& lapse,                                    \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric, \

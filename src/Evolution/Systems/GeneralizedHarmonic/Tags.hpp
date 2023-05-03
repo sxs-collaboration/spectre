@@ -15,7 +15,7 @@
 
 class DataVector;
 
-namespace GeneralizedHarmonic {
+namespace gh {
 namespace Tags {
 /*!
  * \brief Conjugate momentum to the spacetime metric.
@@ -191,4 +191,4 @@ struct Group {
   using group = evolution::OptionTags::SystemGroup;
 };
 }  // namespace OptionTags
-}  // namespace GeneralizedHarmonic
+}  // namespace gh

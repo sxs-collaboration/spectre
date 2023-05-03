@@ -91,8 +91,7 @@ struct ComputeVolumeTimeDerivativeTermsHelper<
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GhValenciaDivClean.TimeDerivativeTerms",
     "[Unit][Evolution]") {
-  using gh_variables_tags =
-      typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
+  using gh_variables_tags = typename gh::System<3_st>::variables_tag::tags_list;
   using valencia_variables_tags =
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
 
@@ -183,8 +182,8 @@ SPECTRE_TEST_CASE(
                   DataVector{element_size});
         }
       });
-  get<GeneralizedHarmonic::gauges::Tags::GaugeCondition>(arg_variables) =
-      std::make_unique<GeneralizedHarmonic::gauges::DampedHarmonic>(
+  get<gh::gauges::Tags::GaugeCondition>(arg_variables) =
+      std::make_unique<gh::gauges::DampedHarmonic>(
           100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6});
 
   // ensure that the signature of the metric is correct
@@ -198,8 +197,8 @@ SPECTRE_TEST_CASE(
   }
 
   ComputeVolumeTimeDerivativeTermsHelper<
-      GeneralizedHarmonic::TimeDerivative<3_st>, 3_st, gh_variables_tags,
-      gh_flux_tags, gh_temp_tags, gh_gradient_tags,
+      gh::TimeDerivative<3_st>, 3_st, gh_variables_tags, gh_flux_tags,
+      gh_temp_tags, gh_gradient_tags,
       gh_arg_tags>::apply(make_not_null(&expected_dt_variables),
                           make_not_null(&expected_flux_variables),
                           make_not_null(&expected_temp_variables),
@@ -223,21 +222,21 @@ SPECTRE_TEST_CASE(
                                                            tmpl::size_t<3>,
                                                            Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
-          GeneralizedHarmonic::spatial_deriv_of_lapse(
+          gh::spatial_deriv_of_lapse(
               get<gr::Tags::Lapse<>>(expected_temp_variables),
               get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
-              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<tag, ::Tags::deriv<gr::Tags::Shift<3>,
                                                            tmpl::size_t<3>,
                                                            Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
-          GeneralizedHarmonic::spatial_deriv_of_shift(
+          gh::spatial_deriv_of_shift(
               get<gr::Tags::Lapse<>>(expected_temp_variables),
               get<gr::Tags::InverseSpacetimeMetric<3>>(expected_temp_variables),
               get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
-              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<
@@ -245,16 +244,15 @@ SPECTRE_TEST_CASE(
                              ::Tags::deriv<gr::Tags::SpatialMetric<3>,
                                            tmpl::size_t<3>, Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
-          GeneralizedHarmonic::deriv_spatial_metric(
-              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+          gh::deriv_spatial_metric(get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<3>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
-          GeneralizedHarmonic::extrinsic_curvature(
+          gh::extrinsic_curvature(
               get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
-              get<GeneralizedHarmonic::Tags::Pi<3>>(arg_variables),
-              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Pi<3>>(arg_variables),
+              get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else {
@@ -302,8 +300,8 @@ SPECTRE_TEST_CASE(
       get<gr::Tags::Lapse<>>(expected_temp_variables));
   // apply the correction to dt pi for the expected variables
   grmhd::GhValenciaDivClean::add_stress_energy_term_to_dt_pi(
-      make_not_null(&get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3_st>>>(
-          expected_dt_variables)),
+      make_not_null(
+          &get<::Tags::dt<gh::Tags::Pi<3_st>>>(expected_dt_variables)),
       get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
           expected_temp_variables),
       get<gr::Tags::Lapse<>>(expected_temp_variables));

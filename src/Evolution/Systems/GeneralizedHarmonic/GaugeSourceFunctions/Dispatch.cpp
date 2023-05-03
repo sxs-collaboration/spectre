@@ -14,7 +14,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace GeneralizedHarmonic::gauges {
+namespace gh::gauges {
 template <size_t Dim>
 void dispatch(
     const gsl::not_null<tnsr::a<DataVector, Dim, Frame::Inertial>*> gauge_h,
@@ -99,4 +99,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace GeneralizedHarmonic::gauges
+}  // namespace gh::gauges

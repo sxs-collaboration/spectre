@@ -103,8 +103,8 @@ void BoundaryConditionGhostData::apply(
   using DivergenceCleaningField =
       hydro::Tags::DivergenceCleaningField<DataVector>;
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3>;
-  using Pi = GeneralizedHarmonic::Tags::Pi<3>;
-  using Phi = GeneralizedHarmonic::Tags::Phi<3>;
+  using Pi = gh::Tags::Pi<3>;
+  using Phi = gh::Tags::Phi<3>;
 
   using reconstruction_tags = GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;

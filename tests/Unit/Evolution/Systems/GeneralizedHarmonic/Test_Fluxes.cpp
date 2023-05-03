@@ -18,7 +18,7 @@ void test() {
   tnsr::aa<DataVector, Dim> normal_dot_flux_pi{num_points};
   tnsr::iaa<DataVector, Dim> normal_dot_flux_phi{num_points};
 
-  GeneralizedHarmonic::ComputeNormalDotFluxes<Dim>::apply(
+  gh::ComputeNormalDotFluxes<Dim>::apply(
       make_not_null(&normal_dot_flux_spacetime_metric),
       make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
       spacetime_metric);
