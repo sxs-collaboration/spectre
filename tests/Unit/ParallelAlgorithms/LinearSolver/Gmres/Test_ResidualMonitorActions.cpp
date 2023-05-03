@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 0_st, 2.);
+        make_not_null(&runner), 0, 1_st, 0_st, 2.);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{})(0, 0) ==
           2.);
@@ -206,7 +206,7 @@ SPECTRE_TEST_CASE(
     CHECK(get_element_inbox_tag(
               LinearSolver::gmres::detail::Tags::Orthogonalization<
                   TestLinearSolver>{})
-              .at(0) == 2.);
+              .at(1) == 2.);
   }
 
   SECTION("StoreOrthogonalization (final)") {
@@ -220,14 +220,14 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 0_st, 3.);
+        make_not_null(&runner), 0, 1_st, 0_st, 3.);
     // Test intermediate residual monitor state
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{})(0, 0) ==
           3.);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 1_st, 4.);
+        make_not_null(&runner), 0, 1_st, 1_st, 4.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
         make_not_null(&runner), 0);
     // Test residual monitor state
@@ -239,7 +239,7 @@ SPECTRE_TEST_CASE(
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
                 TestLinearSolver>{})
-            .at(0);
+            .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.4615384615384615]
     const auto& minres = get<1>(element_inbox);
@@ -272,11 +272,11 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 0_st, 1.);
+        make_not_null(&runner), 0, 1_st, 0_st, 1.);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 1_st, 0.);
+        make_not_null(&runner), 0, 1_st, 1_st, 0.);
     // Test residual monitor state
     // H = [[1.], [0.]]
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
@@ -286,7 +286,7 @@ SPECTRE_TEST_CASE(
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
                 TestLinearSolver>{})
-            .at(0);
+            .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [2.]
     const auto& minres = get<1>(element_inbox);
@@ -310,15 +310,7 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 0_st, 1.);
-    ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
-                              fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 1_st, 4.);
-    ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
-                              fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 1_st, 0_st, 3.);
+        make_not_null(&runner), 0, 1_st, 0_st, 1.);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
@@ -326,7 +318,15 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 1_st, 2_st, 25.);
+        make_not_null(&runner), 0, 2_st, 0_st, 3.);
+    ActionTesting::simple_action<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
+                              fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 2_st, 1_st, 4.);
+    ActionTesting::simple_action<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
+                              fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 2_st, 2_st, 25.);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
           blaze::DynamicMatrix<double>({{1., 3.}, {2., 4.}, {0., 5.}}));
@@ -335,7 +335,7 @@ SPECTRE_TEST_CASE(
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
                 TestLinearSolver>{})
-            .at(1);
+            .at(2);
     // beta = [1., 0., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.13178295, 0.03100775]
     const auto& minres = get<1>(element_inbox);
@@ -359,11 +359,11 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 0_st, 3.);
+        make_not_null(&runner), 0, 1_st, 0_st, 3.);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0_st, 1_st, 1.);
+        make_not_null(&runner), 0, 1_st, 1_st, 1.);
     // Test residual monitor state
     // H = [[3.], [1.]]
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
@@ -373,7 +373,7 @@ SPECTRE_TEST_CASE(
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
                 TestLinearSolver>{})
-            .at(0);
+            .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.6]
     const auto& minres = get<1>(element_inbox);
