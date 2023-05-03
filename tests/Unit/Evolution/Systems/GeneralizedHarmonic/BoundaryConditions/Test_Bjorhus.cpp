@@ -45,7 +45,7 @@ void test() {
         tuples::TaggedTuple<
             helpers::Tags::PythonFunctionForErrorMessage<>,
             helpers::Tags::PythonFunctionName<
-                ::Tags::dt<gr::Tags::SpacetimeMetric<Dim, frame, DataVector>>>,
+                ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim, frame>>>,
             helpers::Tags::PythonFunctionName<
                 ::Tags::dt<gh::Tags::Pi<Dim, frame>>>,
             helpers::Tags::PythonFunctionName<
@@ -58,7 +58,7 @@ void test() {
         Index<Dim - 1>{Dim == 1 ? 1 : 5}, db::DataBox<tmpl::list<>>{},
         tuples::TaggedTuple<
             helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
-            helpers::Tags::Range<gr::Tags::Shift<Dim, frame, DataVector>>,
+            helpers::Tags::Range<gr::Tags::Shift<DataVector, Dim, frame>>,
             helpers::Tags::Range<gh::Tags::SpacetimeDerivGaugeH<Dim, frame>>,
             helpers::Tags::Range<
                 domain::Tags::Coordinates<Dim, Frame::Inertial>>>{

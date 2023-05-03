@@ -76,7 +76,8 @@ struct ConservativeFromPrimitive {
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::MagneticField<DataVector, 3>,
-                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  hydro::Tags::DivergenceCleaningField<DataVector>>;
 
   static void apply(

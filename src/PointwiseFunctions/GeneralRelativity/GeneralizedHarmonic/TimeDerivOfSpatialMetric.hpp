@@ -50,7 +50,7 @@ namespace gh {
  * \partial_0 g_{ab} = - \alpha \Pi_{ab} + \beta^k \Phi_{kab}
  * \f]
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> dt_spatial_metric,
     const Scalar<DataType>& lapse,
@@ -58,7 +58,7 @@ void time_deriv_of_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -76,11 +76,11 @@ namespace Tags {
  */
 template <size_t SpatialDim, typename Frame>
 struct TimeDerivSpatialMetricCompute
-    : ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
+    : ::Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>>,
       db::ComputeTag {
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                 gr::Tags::Shift<DataVector, SpatialDim, Frame>,
                  Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
 
   using return_type = tnsr::ii<DataVector, SpatialDim, Frame>;
@@ -90,10 +90,10 @@ struct TimeDerivSpatialMetricCompute
       const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
-      &time_deriv_of_spatial_metric<SpatialDim, Frame>);
+      &time_deriv_of_spatial_metric<DataVector, SpatialDim, Frame>);
 
   using base =
-      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>;
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>>;
 };
 }  // namespace Tags
 }  // namespace gh

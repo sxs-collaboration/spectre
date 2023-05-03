@@ -51,7 +51,7 @@ namespace gh {
  *  =& -\alpha \gamma^{ik} n^b (\alpha \Pi_{kb} - \beta^j \Phi_{jkb}) \\
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_shift(
     gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> dt_shift,
     const Scalar<DataType>& lapse,
@@ -61,7 +61,7 @@ void time_deriv_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -81,13 +81,13 @@ namespace Tags {
  */
 template <size_t SpatialDim, typename Frame>
 struct TimeDerivShiftCompute
-    : ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
+    : ::Tags::dt<gr::Tags::Shift<DataVector, SpatialDim, Frame>>,
       db::ComputeTag {
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<SpatialDim, Frame, DataVector>,
-                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-                 gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+                 gr::Tags::Shift<DataVector, SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+                 gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
                  Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
 
   using return_type = tnsr::I<DataVector, SpatialDim, Frame>;
@@ -99,9 +99,9 @@ struct TimeDerivShiftCompute
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
-      &time_deriv_of_shift<SpatialDim, Frame, DataVector>);
+      &time_deriv_of_shift<DataVector, SpatialDim, Frame>);
 
-  using base = ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>;
+  using base = ::Tags::dt<gr::Tags::Shift<DataVector, SpatialDim, Frame>>;
 };
 }  // namespace Tags
 }  // namespace gh

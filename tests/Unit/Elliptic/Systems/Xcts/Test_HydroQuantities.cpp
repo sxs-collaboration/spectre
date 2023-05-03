@@ -44,8 +44,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
                   "[Unit][Elliptic]") {
   using hydro_tags = AnalyticData::hydro_tags<DataVector>;
-  using spatial_metric_tag =
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>;
+  using spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   const Solutions::TovStar tov_star{
       1.e-3, std::make_unique<EquationsOfState::PolytropicFluid<true>>(1., 2.),
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
@@ -57,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
   const auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Coordinates<3, Frame::Inertial>,
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
           elliptic::Tags::Background<elliptic::analytic_data::Background>,
           Parallel::Tags::MetavariablesImpl<Metavariables>>,
       db::AddComputeTags<Tags::HydroQuantitiesCompute<hydro_tags>,

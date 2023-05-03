@@ -30,7 +30,7 @@ namespace callbacks {
 ///
 /// Uses:
 /// - DataBox:
-///   - `::gr::Tags::SpacetimeMetric<3,Frame::Inertial>`
+///   - `::gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Inertial>`
 ///   - `::gh::Tags::Pi<3,Frame::Inertial>`
 ///   - `::gh::Tags::Phi<3,Frame::Inertial>`
 ///
@@ -64,7 +64,7 @@ struct SendGhWorldtubeData
       Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
           CceEvolutionComponent, DuringSelfStart>>(
           cce_gh_boundary_component, temporal_id,
-          db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
+          db::get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(box),
           db::get<::gh::Tags::Phi<3, Frame::Inertial>>(box),
           db::get<::gh::Tags::Pi<3, Frame::Inertial>>(box));
     } else {
@@ -72,7 +72,7 @@ struct SendGhWorldtubeData
       Parallel::simple_action<Cce::Actions::SendToEvolution<
           Cce::GhWorldtubeBoundary<Metavariables>, CceEvolutionComponent>>(
           cce_gh_boundary_component, temporal_id,
-          db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
+          db::get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(box),
           db::get<::gh::Tags::Phi<3, Frame::Inertial>>(box),
           db::get<::gh::Tags::Pi<3, Frame::Inertial>>(box));
     }

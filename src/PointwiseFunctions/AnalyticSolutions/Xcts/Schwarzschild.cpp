@@ -656,7 +656,7 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
       std::fill(extrinsic_curvature->begin(), extrinsic_curvature->end(), 0.);
@@ -722,7 +722,7 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>,
                         ConformalMatterScale> /*meta*/) const {
   std::fill(momentum_density->begin(), momentum_density->end(), 0.);
 }

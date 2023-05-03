@@ -53,8 +53,7 @@ SPECTRE_TEST_CASE(
   get(get<grmhd::ValenciaDivClean::Tags::TildeD>(cons_vars))[0] = 2.e-12;
   get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(cons_vars))[0] = 2.e-13;
   get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(cons_vars))[0] = 1.e-7;
-  get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(cons_vars) =
-      spacetime_metric;
+  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(cons_vars) = spacetime_metric;
 
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
 

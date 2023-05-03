@@ -160,9 +160,10 @@ void test_characteristic_speeds_analytic(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& shift = get<gr::Tags::Shift<spatial_dim>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<spatial_dim>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, spatial_dim>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, spatial_dim>>(vars);
 
   // Get ingredients
   const auto gamma_1 = make_with_value<Scalar<DataVector>>(x, 0.1);
@@ -298,17 +299,19 @@ void test_characteristic_fields_analytic(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<spatial_dim>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, spatial_dim>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<spatial_dim>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<spatial_dim>>(vars);
+  const auto& dt_shift =
+      get<Tags::dt<gr::Tags::Shift<DataVector, spatial_dim>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, spatial_dim>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<spatial_dim>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, spatial_dim>>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -324,7 +327,8 @@ void test_characteristic_fields_analytic(
   const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
                          dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, spatial_dim, Frame::Inertial>(
+          lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   // Outward 3-normal to the surface on which characteristic fields are needed
   auto unit_normal_one_form =
@@ -418,7 +422,8 @@ void test_evolved_from_characteristic_fields() {
   const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<gr::Tags::SpacetimeMetric<Dim, Frame>, Dim, Frame>,
+      evol_field_with_tag<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
+                          Dim, Frame>,
       "TestFunctions", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
@@ -461,17 +466,19 @@ void test_evolved_from_characteristic_fields_analytic(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<spatial_dim>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, spatial_dim>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<spatial_dim>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<spatial_dim>>(vars);
+  const auto& dt_shift =
+      get<Tags::dt<gr::Tags::Shift<DataVector, spatial_dim>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, spatial_dim>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<spatial_dim>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, spatial_dim>>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -487,7 +494,8 @@ void test_evolved_from_characteristic_fields_analytic(
   const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
                          dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, spatial_dim, Frame::Inertial>(
+          lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   // Outward 3-normal to the surface on which characteristic fields are needed
   auto unit_normal_one_form =
@@ -542,7 +550,7 @@ void test_evolved_from_characteristic_fields_analytic(
   const auto ffields = gh::evolved_fields_from_characteristic_fields(
       gamma_2, upsi, uzero, uplus, uminus, unit_normal_one_form);
   const auto& psi_from_func =
-      get<gr::Tags::SpacetimeMetric<spatial_dim, Frame::Inertial>>(ffields);
+      get<gr::Tags::SpacetimeMetric<DataVector, spatial_dim>>(ffields);
   const auto& pi_from_func =
       get<gh::Tags::Pi<spatial_dim, Frame::Inertial>>(ffields);
   const auto& phi_from_func =

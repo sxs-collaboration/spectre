@@ -82,39 +82,37 @@ void test_generalized_harmonic_solution(const Args&... args) {
       get<Tags::deriv<gr::Tags::Lapse<DataVector>,
                       tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(
           vars);
-  const auto& shift = get<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>>(
-      vars);
-  const auto& dt_shift = get<Tags::dt<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>>>(
-      vars);
-  const auto& d_shift = get<Tags::deriv<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>,
-      tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(vars);
-  const auto& g =
-      get<gr::Tags::SpatialMetric<SolutionType::volume_dim, Frame::Inertial,
-                                  DataVector>>(vars);
-  const auto& dt_g =
-      get<Tags::dt<gr::Tags::SpatialMetric<SolutionType::volume_dim,
-                                           Frame::Inertial, DataVector>>>(vars);
-  const auto& d_g =
-      get<Tags::deriv<gr::Tags::SpatialMetric<SolutionType::volume_dim,
-                                              Frame::Inertial, DataVector>,
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, SolutionType::volume_dim>>(vars);
+  const auto& dt_shift =
+      get<Tags::dt<gr::Tags::Shift<DataVector, SolutionType::volume_dim>>>(
+          vars);
+  const auto& d_shift =
+      get<Tags::deriv<gr::Tags::Shift<DataVector, SolutionType::volume_dim>,
                       tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(
           vars);
+  const auto& g =
+      get<gr::Tags::SpatialMetric<DataVector, SolutionType::volume_dim>>(vars);
+  const auto& dt_g = get<
+      Tags::dt<gr::Tags::SpatialMetric<DataVector, SolutionType::volume_dim>>>(
+      vars);
+  const auto& d_g = get<
+      Tags::deriv<gr::Tags::SpatialMetric<DataVector, SolutionType::volume_dim>,
+                  tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(
+      vars);
   const auto psi = gr::spacetime_metric(lapse, shift, g);
   const auto phi = gh::phi(lapse, d_lapse, shift, d_shift, g, d_g);
   const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, g, dt_g, phi);
 
   const auto wrapped_gh_vars = wrapped_solution.variables(
       x, t,
-      tmpl::list<gr::Tags::SpacetimeMetric<SolutionType::volume_dim,
-                                           Frame::Inertial, DataVector>,
-                 gh::Tags::Pi<SolutionType::volume_dim, Frame::Inertial>,
-                 gh::Tags::Phi<SolutionType::volume_dim, Frame::Inertial>>{});
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<DataVector, SolutionType::volume_dim>,
+          gh::Tags::Pi<SolutionType::volume_dim, Frame::Inertial>,
+          gh::Tags::Phi<SolutionType::volume_dim, Frame::Inertial>>{});
   CHECK(psi ==
-        get<gr::Tags::SpacetimeMetric<SolutionType::volume_dim, Frame::Inertial,
-                                      DataVector>>(wrapped_gh_vars));
+        get<gr::Tags::SpacetimeMetric<DataVector, SolutionType::volume_dim>>(
+            wrapped_gh_vars));
   CHECK(pi == get<gh::Tags::Pi<SolutionType::volume_dim, Frame::Inertial>>(
                   wrapped_gh_vars));
   CHECK(phi == get<gh::Tags::Phi<SolutionType::volume_dim, Frame::Inertial>>(

@@ -240,26 +240,26 @@ void test_computed_quantities(const DataType& used_for_size) {
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivLapse<DataType,
                                                                     Frame>>(
           vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataType, 3, Frame>>(vars);
   const auto& d_shift =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivShift<DataType,
                                                                     Frame>>(
           vars);
   const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::Shift<DataType, 3, Frame>>>(vars);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>>(vars);
   const auto& d_spatial_metric =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivSpatialMetric<
           DataType, Frame>>(vars);
   const auto& sqrt_det_spatial_metric =
       get<typename gr::Tags::SqrtDetSpatialMetric<DataType>>(vars);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::InverseSpatialMetric<DataType, 3, Frame>>(vars);
   const auto& extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<3, Frame, DataType>>(vars);
+      get<gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>>(vars);
 
   // Check that metric * inverse metric = identity
   auto identity =
@@ -438,17 +438,17 @@ void test_against_spec_impl(const DataType used_for_size) {
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivLapse<DataType,
                                                                     Frame>>(
           vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataType, 3, Frame>>(vars);
   const auto& d_shift =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivShift<DataType,
                                                                     Frame>>(
           vars);
   const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::Shift<DataType, 3, Frame>>>(vars);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>>(vars);
   const auto& d_spatial_metric =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivSpatialMetric<
           DataType, Frame>>(vars);
@@ -535,29 +535,29 @@ void test_harmonic_conditions_satisfied(const DataType& used_for_size) {
                                                                     Frame>>(
           vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataType, 3, Frame>>(vars);
   const auto& d_shift =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivShift<DataType,
                                                                     Frame>>(
           vars);
   const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::Shift<DataType, 3, Frame>>>(vars);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
   const auto& d_spatial_metric =
       get<typename gr::Solutions::HarmonicSchwarzschild::DerivSpatialMetric<
           DataType, Frame>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>>(vars);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::InverseSpatialMetric<DataType, 3, Frame>>(vars);
   const auto& extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<3, Frame, DataType>>(vars);
+      get<gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>>(vars);
 
   // Check that eq 4.42 of \cite BaumgarteShapiro is satisfied:
   //   \Gamma^i = 0
   const auto spacetime_metric =
-      gr::spacetime_metric<3, Frame, DataType>(lapse, shift, spatial_metric);
+      gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto da_spacetime_metric = gr::derivatives_of_spacetime_metric(
       lapse, dt_lapse, d_lapse, shift, dt_shift, d_shift, spatial_metric,
       dt_spatial_metric, d_spatial_metric);

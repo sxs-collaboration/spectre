@@ -50,28 +50,33 @@ struct TimeDerivativeTerms {
 
       // Need lapse, shift, spatial metric, and inverse spatial metric to be
       // projected to the boundary for Riemann solvers.
-      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
-      gr::Tags::InverseSpatialMetric<Dim>>;
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+      gr::Tags::SpatialMetric<DataVector, Dim>,
+      gr::Tags::InverseSpatialMetric<DataVector, Dim>>;
 
-  using argument_tags = tmpl::list<
-      RelativisticEuler::Valencia::Tags::TildeD,
-      RelativisticEuler::Valencia::Tags::TildeTau,
-      RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+  using argument_tags =
+      tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
+                 RelativisticEuler::Valencia::Tags::TildeTau,
+                 RelativisticEuler::Valencia::Tags::TildeS<Dim>,
 
-      // For fluxes (and maybe sources)
-      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 // For fluxes (and maybe sources)
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
 
-      // For sources
-      ::Tags::deriv<gr::Tags::Lapse<>, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::ExtrinsicCurvature<Dim>,
+                 // For sources
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, Dim>,
 
-      // For Riemann solvers
-      gr::Tags::SpatialMetric<Dim>>;
+                 // For Riemann solvers
+                 gr::Tags::SpatialMetric<DataVector, Dim>>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,

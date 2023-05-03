@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_derivative_of_spacetime_metric(
     const gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
         da_spacetime_metric,

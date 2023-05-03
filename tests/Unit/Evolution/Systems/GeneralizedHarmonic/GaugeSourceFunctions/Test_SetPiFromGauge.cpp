@@ -57,7 +57,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution<> deriv_dist(-1.e-5, 1.e-5);
 
   using evolved_vars_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  gh::Tags::Pi<Dim, Frame::Inertial>,
                  gh::Tags::Phi<Dim, Frame::Inertial>>;
 
@@ -71,18 +71,15 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   get<gh::Tags::Phi<Dim, Frame::Inertial>>(evolved_vars) =
       make_with_random_values<tnsr::iaa<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&deriv_dist), num_points);
-  get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-      evolved_vars) =
+  get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars) =
       make_with_random_values<tnsr::aa<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&metric_dist), num_points);
-  get<0, 0>(get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-      evolved_vars)) += -2.0;
+  get<0, 0>(get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars)) +=
+      -2.0;
   for (size_t i = 0; i < Dim; ++i) {
-    get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-        evolved_vars)
+    get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars)
         .get(i + 1, i + 1) += 4.0;
-    get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-        evolved_vars)
+    get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars)
         .get(i + 1, 0) *= 0.01;
   }
 
@@ -112,7 +109,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 
   // Verify that the gauge constraint is satisfied
   const auto& spacetime_metric =
-      db::get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(box);
+      db::get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(box);
   const auto& pi = db::get<gh::Tags::Pi<Dim, Frame::Inertial>>(box);
   const auto& phi = db::get<gh::Tags::Phi<Dim, Frame::Inertial>>(box);
 
@@ -125,7 +122,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, Dim, Frame::Inertial>(lapse);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};

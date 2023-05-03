@@ -66,8 +66,9 @@ struct ComputeFluxes {
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
-                 gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>>;
 
   static void apply(
       const gsl::not_null<typename ::Tags::Flux<

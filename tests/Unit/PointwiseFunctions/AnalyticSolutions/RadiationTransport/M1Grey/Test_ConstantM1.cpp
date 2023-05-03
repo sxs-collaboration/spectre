@@ -120,10 +120,9 @@ void test_variables(const DataVector& used_for_size) {
   for (size_t i = 0; i < 3; ++i) {
     expected_spatial_metric.get(i, i) = 1.0;
   }
-  const auto spatial_metric = get<
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(soln.variables(
-      coords, 0.0,
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>{}));
+  const auto spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(soln.variables(
+          coords, 0.0, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 

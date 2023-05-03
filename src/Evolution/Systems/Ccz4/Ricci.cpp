@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -71,7 +71,7 @@ void spatial_ricci_tensor(
               christoffel_second_kind(ti::M, ti::l, ti::j));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,

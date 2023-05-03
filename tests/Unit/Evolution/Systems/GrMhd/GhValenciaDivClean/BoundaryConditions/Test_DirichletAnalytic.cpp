@@ -82,8 +82,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                        tmpl::size_t<3_st>, Frame::Inertial>,
       tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
                  gh::ConstraintDamping::Tags::ConstraintGamma2,
-                 gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                 gr::Tags::InverseSpatialMetric<3>>>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>>>>;
   Vars vars{num_points};
   const auto expected_vars = [&analytic_solution_or_data, &coords,
                               &interior_gamma1, &interior_gamma2, time]() {
@@ -96,22 +96,22 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     gamma1 = interior_gamma1;
     gamma2 = interior_gamma2;
 
-    using tags = tmpl::list<
-        hydro::Tags::RestMassDensity<DataVector>,
-        hydro::Tags::ElectronFraction<DataVector>,
-        hydro::Tags::SpecificInternalEnergy<DataVector>,
-        hydro::Tags::SpecificEnthalpy<DataVector>,
-        hydro::Tags::Pressure<DataVector>,
-        hydro::Tags::SpatialVelocity<DataVector, 3>,
-        hydro::Tags::LorentzFactor<DataVector>,
-        hydro::Tags::MagneticField<DataVector, 3>,
-        hydro::Tags::DivergenceCleaningField<DataVector>,
-        gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-        gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-        gr::Tags::SqrtDetSpatialMetric<DataVector>, gr::Tags::Lapse<DataVector>,
-        gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-        gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-        ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
+    using tags =
+        tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                   hydro::Tags::ElectronFraction<DataVector>,
+                   hydro::Tags::SpecificInternalEnergy<DataVector>,
+                   hydro::Tags::SpecificEnthalpy<DataVector>,
+                   hydro::Tags::Pressure<DataVector>,
+                   hydro::Tags::SpatialVelocity<DataVector, 3>,
+                   hydro::Tags::LorentzFactor<DataVector>,
+                   hydro::Tags::MagneticField<DataVector, 3>,
+                   hydro::Tags::DivergenceCleaningField<DataVector>,
+                   gr::Tags::SpatialMetric<DataVector, 3>,
+                   gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                   gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                   gr::Tags::SpacetimeMetric<DataVector, 3>, ::gh::Tags::Pi<3>,
+                   ::gh::Tags::Phi<3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -122,15 +122,13 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       analytic_vars = analytic_solution_or_data.variables(coords, tags{});
     }
     spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(analytic_vars);
     pi = get<::gh::Tags::Pi<3>>(analytic_vars);
     phi = get<::gh::Tags::Phi<3>>(analytic_vars);
     lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
-    shift = get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(analytic_vars);
+    shift = get<gr::Tags::Shift<DataVector, 3>>(analytic_vars);
     inverse_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(analytic_vars);
 
     grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
         make_not_null(&tilde_d), make_not_null(&tilde_ye),
@@ -144,8 +142,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         get<hydro::Tags::LorentzFactor<DataVector>>(analytic_vars),
         get<hydro::Tags::MagneticField<DataVector, 3>>(analytic_vars),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(analytic_vars),
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(analytic_vars));
 
     grmhd::ValenciaDivClean::ComputeFluxes::apply(
@@ -154,10 +151,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         make_not_null(&tilde_b_flux), make_not_null(&tilde_phi_flux), tilde_d,
         tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(analytic_vars),
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars),
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(analytic_vars),
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::Pressure<DataVector>>(analytic_vars),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::LorentzFactor<DataVector>>(analytic_vars),
@@ -236,16 +231,15 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
     const auto ghost_inertial_coords = grid_to_inertial_map(
         logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
 
-    using tags =
-        tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                   hydro::Tags::ElectronFraction<DataVector>,
-                   hydro::Tags::Pressure<DataVector>,
-                   hydro::Tags::SpatialVelocity<DataVector, 3>,
-                   hydro::Tags::LorentzFactor<DataVector>,
-                   hydro::Tags::MagneticField<DataVector, 3>,
-                   hydro::Tags::DivergenceCleaningField<DataVector>,
-                   gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                   ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
+    using tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                            hydro::Tags::ElectronFraction<DataVector>,
+                            hydro::Tags::Pressure<DataVector>,
+                            hydro::Tags::SpatialVelocity<DataVector, 3>,
+                            hydro::Tags::LorentzFactor<DataVector>,
+                            hydro::Tags::MagneticField<DataVector, 3>,
+                            hydro::Tags::DivergenceCleaningField<DataVector>,
+                            gr::Tags::SpacetimeMetric<DataVector, 3>,
+                            ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -260,9 +254,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
 
     Vars expected{get<0>(ghost_inertial_coords).size()};
 
-    get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(expected) =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            analytic_vars);
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(expected) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(analytic_vars);
     get<::gh::Tags::Pi<3>>(expected) = get<::gh::Tags::Pi<3>>(analytic_vars);
     get<::gh::Tags::Phi<3>>(expected) = get<::gh::Tags::Phi<3>>(analytic_vars);
     get<hydro::Tags::RestMassDensity<DataVector>>(expected) =

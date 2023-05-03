@@ -72,11 +72,11 @@ class HydroFreeOutflow final : public BoundaryCondition {
       hydro::Tags::SpecificInternalEnergy<DataVector>;
   using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
-  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<>;
-  using SpatialMetric = gr::Tags::SpatialMetric<3>;
-  using InvSpatialMetric = gr::Tags::InverseSpatialMetric<3>;
-  using Lapse = gr::Tags::Lapse<>;
-  using Shift = gr::Tags::Shift<3>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<DataVector>;
+  using SpatialMetric = gr::Tags::SpatialMetric<DataVector, 3>;
+  using InvSpatialMetric = gr::Tags::InverseSpatialMetric<DataVector, 3>;
+  using Lapse = gr::Tags::Lapse<DataVector>;
+  using Shift = gr::Tags::Shift<DataVector, 3>;
 
   using prim_tags_for_reconstruction =
       tmpl::list<RestMassDensity, ElectronFraction, Pressure,

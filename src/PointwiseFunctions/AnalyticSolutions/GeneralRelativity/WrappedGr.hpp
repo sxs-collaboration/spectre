@@ -70,27 +70,24 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
 
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
+  using DerivShift = ::Tags::deriv<gr::Tags::Shift<DataVector, volume_dim>,
+                                   tmpl::size_t<volume_dim>, Frame::Inertial>;
+  using DerivSpatialMetric =
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, volume_dim>,
                     tmpl::size_t<volume_dim>, Frame::Inertial>;
-  using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
-      tmpl::size_t<volume_dim>, Frame::Inertial>;
   using TimeDerivLapse = ::Tags::dt<gr::Tags::Lapse<DataVector>>;
-  using TimeDerivShift =
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>;
-  using TimeDerivSpatialMetric = ::Tags::dt<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>>;
+  using TimeDerivShift = ::Tags::dt<gr::Tags::Shift<DataVector, volume_dim>>;
+  using TimeDerivSpatialMetric =
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, volume_dim>>;
 
   using IntermediateVars = tuples::tagged_tuple_from_typelist<
       typename SolutionType::template tags<DataVector>>;
 
   template <typename DataType>
-  using tags = tmpl::push_back<
-      typename SolutionType::template tags<DataType>,
-      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataType>,
-      gh::Tags::Pi<volume_dim, Frame::Inertial>,
-      gh::Tags::Phi<volume_dim, Frame::Inertial>>;
+  using tags = tmpl::push_back<typename SolutionType::template tags<DataType>,
+                               gr::Tags::SpacetimeMetric<DataType, volume_dim>,
+                               gh::Tags::Pi<volume_dim, Frame::Inertial>,
+                               gh::Tags::Phi<volume_dim, Frame::Inertial>>;
 
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
@@ -143,13 +140,11 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
   // tags other than the three the wrapper adds (i.e., other than
   // gr::Tags::SpacetimeMetric, gh::Tags::Pi, and
   // GeneralizedHarmonic:Tags::Phi)
-  using TagShift = gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>;
-  using TagSpatialMetric =
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>;
+  using TagShift = gr::Tags::Shift<DataVector, volume_dim>;
+  using TagSpatialMetric = gr::Tags::SpatialMetric<DataVector, volume_dim>;
   using TagInverseSpatialMetric =
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
-  using TagExCurvature =
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, volume_dim>;
+  using TagExCurvature = gr::Tags::ExtrinsicCurvature<DataVector, volume_dim>;
 
   template <
       typename Tag,
@@ -183,12 +178,11 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
     return variables(x, tag_list, intermediate_vars);
   }
 
-  tuples::TaggedTuple<
-      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataVector>>
-  variables(const tnsr::I<DataVector, volume_dim>& /*x*/,
-            tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial,
-                                                 DataVector>> /*meta*/,
-            const IntermediateVars& intermediate_vars) const;
+  tuples::TaggedTuple<gr::Tags::SpacetimeMetric<DataVector, volume_dim>>
+  variables(
+      const tnsr::I<DataVector, volume_dim>& /*x*/,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>> /*meta*/,
+      const IntermediateVars& intermediate_vars) const;
   tuples::TaggedTuple<gh::Tags::Pi<volume_dim, Frame::Inertial>> variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/,
       tmpl::list<gh::Tags::Pi<volume_dim, Frame::Inertial>> /*meta*/,

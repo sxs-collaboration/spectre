@@ -51,7 +51,7 @@ namespace gh {
  *     \partial_t g_{ij} &= \partial_t \gamma_{ij}
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void pi(gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
         const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
         const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -60,7 +60,7 @@ void pi(gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
         const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
         const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::aa<DataType, SpatialDim, Frame> pi(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -81,10 +81,10 @@ template <size_t SpatialDim, typename Frame>
 struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-      gr::Tags::Shift<SpatialDim, Frame, DataVector>,
-      ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
-      gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
-      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
+      gr::Tags::Shift<DataVector, SpatialDim, Frame>,
+      ::Tags::dt<gr::Tags::Shift<DataVector, SpatialDim, Frame>>,
+      gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>>,
       Phi<SpatialDim, Frame>>;
 
   using return_type = tnsr::aa<DataVector, SpatialDim, Frame>;
@@ -97,7 +97,7 @@ struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &pi<SpatialDim, Frame, DataVector>);
+      &pi<DataVector, SpatialDim, Frame>);
 
   using base = Pi<SpatialDim, Frame>;
 };

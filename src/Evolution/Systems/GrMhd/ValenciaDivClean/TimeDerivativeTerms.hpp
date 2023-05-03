@@ -67,39 +67,41 @@ struct TimeDerivativeTerms {
 
       // Source terms
       TildeSUp, DensitizedStress,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                  DataVector>,
+      gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>,
       EnthalpyTimesDensityWSquaredPlusBSquared,
 
       // Need lapse, shift, and inverse spatial metric to be projected to the
       // boundary for Riemann solvers.
-      gr::Tags::Lapse<>, gr::Tags::Shift<3>, gr::Tags::InverseSpatialMetric<3>>;
-  using argument_tags = tmpl::list<
-      grmhd::ValenciaDivClean::Tags::TildeD,
-      grmhd::ValenciaDivClean::Tags::TildeYe,
-      grmhd::ValenciaDivClean::Tags::TildeTau,
-      grmhd::ValenciaDivClean::Tags::TildeS<>,
-      grmhd::ValenciaDivClean::Tags::TildeB<>,
-      grmhd::ValenciaDivClean::Tags::TildePhi, gr::Tags::Lapse<>,
-      gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
-      gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, 3>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::MagneticField<DataVector, 3>,
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::ElectronFraction<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
-      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>>;
+  using argument_tags =
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeYe,
+                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                 grmhd::ValenciaDivClean::Tags::TildeS<>,
+                 grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 grmhd::ValenciaDivClean::Tags::TildePhi,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+                 grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,

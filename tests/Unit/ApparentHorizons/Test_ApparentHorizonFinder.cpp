@@ -173,7 +173,8 @@ struct TestSchwarzschildHorizon {
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
     const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
-    const auto& inv_metric = get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
@@ -208,7 +209,8 @@ struct TestKerrHorizon {
     // Test that InverseSpatialMetric can be retrieved from the
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
-    const auto& inv_metric = get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
@@ -262,10 +264,10 @@ struct MockMetavariables {
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::InverseSpatialMetric<3, TargetFrame>,
-                   gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
-                   gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>>;
+    using vars_to_interpolate_to_target = tmpl::list<
+        gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>,
+        gr::Tags::ExtrinsicCurvature<DataVector, 3, TargetFrame>,
+        gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
@@ -275,7 +277,7 @@ struct MockMetavariables {
     using horizon_find_failure_callback = TestHorizonFindFailureCallback;
   };
   using interpolator_source_vars =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, ::Frame::Inertial>,
                  gh::Tags::Phi<3, ::Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
@@ -520,26 +522,22 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         const auto& d_lapse =
             get<typename gr::Solutions::KerrSchild ::DerivLapse<
                 DataVector, ::Frame::Inertial>>(solution_vars);
-        const auto& shift =
-            get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-                solution_vars);
+        const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(solution_vars);
         const auto& d_shift =
             get<typename gr::Solutions::KerrSchild ::DerivShift<
                 DataVector, ::Frame::Inertial>>(solution_vars);
         const auto& dt_shift =
-            get<Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-                solution_vars);
+            get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(solution_vars);
         const auto& g =
-            get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+            get<gr::Tags::SpatialMetric<DataVector, 3>>(solution_vars);
+        const auto& dt_g =
+            get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(
                 solution_vars);
-        const auto& dt_g = get<Tags::dt<
-            gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-            solution_vars);
         const auto& d_g =
             get<typename gr::Solutions::KerrSchild ::DerivSpatialMetric<
                 DataVector, ::Frame::Inertial>>(solution_vars);
 
-        get<::gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(output_vars) =
+        get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(output_vars) =
             gr::spacetime_metric(lapse, shift, g);
         get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars) =
             gh::phi(lapse, d_lapse, shift, d_shift, g, d_g);
@@ -562,10 +560,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         // differentiation.
         const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
         const auto& shift =
-            get<gr::Tags::Shift<3, Frame, DataVector>>(solution_vars);
+            get<gr::Tags::Shift<DataVector, 3, Frame>>(solution_vars);
         const auto& g =
-            get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(solution_vars);
-        const auto& K = get<gr::Tags::ExtrinsicCurvature<3, Frame, DataVector>>(
+            get<gr::Tags::SpatialMetric<DataVector, 3, Frame>>(solution_vars);
+        const auto& K = get<gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>>(
             solution_vars);
 
         auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
@@ -591,18 +589,17 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         const auto& frame_velocity =
             std::get<3>(coords_frame_velocity_jacobians);
 
-        using inertial_metric_vars_tags = tmpl::list<
-            gr::Tags::Lapse<DataVector>,
-            gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-            gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>;
+        using inertial_metric_vars_tags =
+            tmpl::list<gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>,
+                       gr::Tags::SpatialMetric<DataVector, 3>>;
         Variables<inertial_metric_vars_tags> inertial_metric_vars(
             mesh.number_of_grid_points());
 
         auto& shift_inertial =
-            get<::gr::Tags::Shift<3, ::Frame::Inertial>>(inertial_metric_vars);
+            get<::gr::Tags::Shift<DataVector, 3>>(inertial_metric_vars);
         auto& lower_metric_inertial =
-            get<::gr::Tags::SpatialMetric<3, ::Frame::Inertial>>(
-                inertial_metric_vars);
+            get<::gr::Tags::SpatialMetric<DataVector, 3>>(inertial_metric_vars);
         // Just copy lapse, since it doesn't transform. Need it for derivs.
         get<gr::Tags::Lapse<DataVector>>(inertial_metric_vars) = lapse;
 
@@ -653,8 +650,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
               for (size_t l = 0; l < 3; ++l) {
                 d_g.get(k, i, j) +=
                     inv_jacobian.get(l, k) *
-                    get<Tags::deriv<gr::Tags::SpatialMetric<
-                                        3, ::Frame::Inertial, DataVector>,
+                    get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
                                     tmpl::size_t<3>, ::Frame::Grid>>(
                         grid_deriv_inertial_metric_vars)
                         .get(l, i, j);
@@ -670,9 +666,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             for (size_t l = 0; l < 3; ++l) {
               d_shift.get(k, i) +=
                   inv_jacobian.get(l, k) *
-                  get<Tags::deriv<
-                      gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, ::Frame::Grid>>(
+                  get<Tags::deriv<gr::Tags::Shift<DataVector, 3>,
+                                  tmpl::size_t<3>, ::Frame::Grid>>(
                       grid_deriv_inertial_metric_vars)
                       .get(l, i);
             }
@@ -691,7 +686,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
           }
         }
 
-        get<::gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(output_vars) =
+        get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(output_vars) =
             gr::spacetime_metric(lapse, shift_inertial, lower_metric_inertial);
         get<::gh::Tags::Phi<3, ::Frame::Inertial>>(output_vars) =
             gh::phi(lapse, d_lapse, shift_inertial, d_shift,

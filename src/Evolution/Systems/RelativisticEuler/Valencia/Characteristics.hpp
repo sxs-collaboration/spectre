@@ -217,8 +217,8 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicSpeeds<Dim>;
   using argument_tags =
-      tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
-                 gr::Tags::SpatialMetric<Dim>,
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::SpatialMetric<DataVector, Dim>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::SoundSpeedSquared<DataVector>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;

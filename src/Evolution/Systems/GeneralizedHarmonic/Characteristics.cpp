@@ -145,7 +145,7 @@ void evolved_fields_from_characteristic_fields(
     evolved_fields->initialize(number_of_grid_points);
   }
   // Invert Eq.(32) of Lindblom+ (2005) for Psi
-  get<::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>>(*evolved_fields) =
+  get<::gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>>(*evolved_fields) =
       u_psi;
 
   for (size_t a = 0; a < Dim + 1; ++a) {

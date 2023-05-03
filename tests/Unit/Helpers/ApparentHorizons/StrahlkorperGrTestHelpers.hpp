@@ -24,7 +24,7 @@ namespace Schwarzschild {
  * where \f$r = x_i x_j \delta^{ij}\f$, \f$x_i\f$ is the
  * position vector in Cartesian coordinates, and M is the mass.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
     const tnsr::I<DataType, SpatialDim, Frame>& x, double mass);
 }  // namespace Schwarzschild
@@ -40,7 +40,7 @@ namespace Minkowski {
  * where \f$r = x_i x_j \delta^{ij}\f$ and \f$x_i\f$ is the
  * position vector in Cartesian coordinates.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
     const tnsr::I<DataType, SpatialDim, Frame>& x);
 }  // namespace Minkowski

@@ -9,7 +9,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace gr {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, Dim, Frame>& deriv_lapse,
@@ -27,7 +27,7 @@ tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
   return spacetime_deriv_spacetime_metric;
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void derivatives_of_spacetime_metric(
     const gsl::not_null<tnsr::abb<DataType, Dim, Frame>*>
         spacetime_deriv_spacetime_metric,

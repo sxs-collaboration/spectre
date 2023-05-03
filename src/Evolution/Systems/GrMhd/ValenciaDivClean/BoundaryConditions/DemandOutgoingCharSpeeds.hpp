@@ -65,8 +65,7 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
-      tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::Lapse<DataVector>>;
+      tmpl::list<gr::Tags::Shift<DataVector, 3>, gr::Tags::Lapse<DataVector>>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
   using dg_gridless_tags = tmpl::list<>;
 
@@ -84,8 +83,8 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
   using fd_interior_evolved_variables_tags = tmpl::list<>;
   using fd_interior_temporary_tags =
       tmpl::list<evolution::dg::subcell::Tags::Mesh<3>,
-                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::SpatialMetric<3>>;
+                 gr::Tags::Shift<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   using fd_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,

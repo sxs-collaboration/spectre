@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>
         dt_spatial_metric,
@@ -37,15 +37,15 @@ void time_deriv_of_spatial_metric(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::ii<DataType, SpatialDim, Frame> dt_spatial_metric{};
-  gh::time_deriv_of_spatial_metric<SpatialDim, Frame, DataType>(
-      make_not_null(&dt_spatial_metric), lapse, shift, phi, pi);
+  gh::time_deriv_of_spatial_metric(make_not_null(&dt_spatial_metric), lapse,
+                                   shift, phi, pi);
   return dt_spatial_metric;
 }
 }  // namespace gh

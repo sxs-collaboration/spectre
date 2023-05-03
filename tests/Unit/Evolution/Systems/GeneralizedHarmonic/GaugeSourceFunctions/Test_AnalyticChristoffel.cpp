@@ -146,14 +146,14 @@ void test_ks(const Mesh<3>& mesh) {
       inertial_coords, time,
       tmpl::list<gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
-                 gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>{});
+                 gr::Tags::SpacetimeMetric<DataVector, 3>>{});
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
   const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
   const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   const auto inverse_spacetime_metric =

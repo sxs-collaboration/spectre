@@ -79,12 +79,12 @@ namespace Tags {
 /// spatial metric.
 ///
 /// Can be retrieved using `gr::Tags::SpatialChristoffelFirstKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpatialChristoffelFirstKindCompute
-    : SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
+    : SpatialChristoffelFirstKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags = tmpl::list<
-      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataType>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::ijj<DataType, SpatialDim, Frame>;
@@ -95,7 +95,7 @@ struct SpatialChristoffelFirstKindCompute
       const tnsr::ijj<DataType, SpatialDim, Frame>&)>(
       &christoffel_first_kind<SpatialDim, Frame, IndexType::Spatial, DataType>);
 
-  using base = SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>;
+  using base = SpatialChristoffelFirstKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for spatial Christoffel symbols of the second kind
@@ -103,13 +103,13 @@ struct SpatialChristoffelFirstKindCompute
 /// first kind and the inverse spatial metric.
 ///
 /// Can be retrieved using `gr::Tags::SpatialChristoffelSecondKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpatialChristoffelSecondKindCompute
-    : SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+    : SpatialChristoffelSecondKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpatialChristoffelFirstKind<DataType, SpatialDim, Frame>,
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::Ijj<DataType, SpatialDim, Frame>;
 
@@ -121,7 +121,7 @@ struct SpatialChristoffelSecondKindCompute
                                   SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
                                   SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
 
-  using base = SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>;
+  using base = SpatialChristoffelSecondKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for the trace of the spatial Christoffel symbols
@@ -130,13 +130,13 @@ struct SpatialChristoffelSecondKindCompute
 /// Christoffel symbols of the first kind and the inverse spatial metric.
 ///
 /// Can be retrieved using `gr::Tags::TraceSpatialChristoffelFirstKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct TraceSpatialChristoffelFirstKindCompute
-    : TraceSpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
+    : TraceSpatialChristoffelFirstKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpatialChristoffelFirstKind<DataType, SpatialDim, Frame>,
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::i<DataType, SpatialDim, Frame>;
 
@@ -147,7 +147,7 @@ struct TraceSpatialChristoffelFirstKindCompute
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
                           SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
 
-  using base = TraceSpatialChristoffelFirstKind<SpatialDim, Frame, DataType>;
+  using base = TraceSpatialChristoffelFirstKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for the trace of the spatial Christoffel symbols
@@ -156,13 +156,13 @@ struct TraceSpatialChristoffelFirstKindCompute
 /// Christoffel symbols of the second kind and the inverse spatial metric.
 ///
 /// Can be retrieved using `gr::Tags::TraceSpatialChristoffelSecondKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct TraceSpatialChristoffelSecondKindCompute
-    : TraceSpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+    : TraceSpatialChristoffelSecondKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpatialChristoffelSecondKind<DataType, SpatialDim, Frame>,
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::I<DataType, SpatialDim, Frame>;
 
@@ -173,7 +173,7 @@ struct TraceSpatialChristoffelSecondKindCompute
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Up, Frame>,
                           SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
 
-  using base = TraceSpatialChristoffelSecondKind<SpatialDim, Frame, DataType>;
+  using base = TraceSpatialChristoffelSecondKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for spacetime Christoffel symbols of the first kind
@@ -181,12 +181,12 @@ struct TraceSpatialChristoffelSecondKindCompute
 /// spacetime metric.
 ///
 /// Can be retrieved using `gr::Tags::SpacetimeChristoffelFirstKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpacetimeChristoffelFirstKindCompute
-    : SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
+    : SpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<DerivativesOfSpacetimeMetric<DataType, SpatialDim, Frame>>;
 
   using return_type =
       tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>;
@@ -198,7 +198,7 @@ struct SpacetimeChristoffelFirstKindCompute
       &christoffel_first_kind<SpatialDim, Frame, IndexType::Spacetime,
                               DataType>);
 
-  using base = SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>;
+  using base = SpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for spacetime Christoffel symbols of the second kind
@@ -206,13 +206,13 @@ struct SpacetimeChristoffelFirstKindCompute
 /// first kind and the inverse spacetime metric.
 ///
 /// Can be retrieved using `gr::Tags::SpacetimeChristoffelSecondKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpacetimeChristoffelSecondKindCompute
-    : SpacetimeChristoffelSecondKind<SpatialDim, Frame, DataType>,
+    : SpacetimeChristoffelSecondKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
-                 InverseSpacetimeMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>,
+                 InverseSpacetimeMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::Abb<DataType, SpatialDim, Frame>;
 
@@ -224,7 +224,7 @@ struct SpacetimeChristoffelSecondKindCompute
                                   SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
                                   SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
 
-  using base = SpacetimeChristoffelSecondKind<SpatialDim, Frame, DataType>;
+  using base = SpacetimeChristoffelSecondKind<DataType, SpatialDim, Frame>;
 };
 
 /// Compute item for the trace of the spacetime Christoffel symbols
@@ -233,13 +233,13 @@ struct SpacetimeChristoffelSecondKindCompute
 /// Christoffel symbols of the first kind and the inverse spacetime metric.
 ///
 /// Can be retrieved using `gr::Tags::TraceSpacetimeChristoffelFirstKind`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct TraceSpacetimeChristoffelFirstKindCompute
-    : TraceSpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
+    : TraceSpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
-                 InverseSpacetimeMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>,
+                 InverseSpacetimeMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataType, SpatialDim, Frame>;
 
@@ -250,7 +250,7 @@ struct TraceSpacetimeChristoffelFirstKindCompute
       &trace_last_indices<DataType, SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
                           SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
 
-  using base = TraceSpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>;
+  using base = TraceSpacetimeChristoffelFirstKind<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

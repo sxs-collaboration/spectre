@@ -32,8 +32,8 @@ void test_projection_operator(const DataType& used_for_size) {
     tnsr::II<DataType, SpatialDim, Frame::Inertial> (*f)(
         const tnsr::II<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::I<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(f, "ProjectionOperators",
                                       "transverse_projection_operator",
                                       {{{-1., 1.}}}, used_for_size);
@@ -43,8 +43,8 @@ void test_projection_operator(const DataType& used_for_size) {
     tnsr::ii<DataType, SpatialDim, Frame::Inertial> (*f)(
         const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(f, "ProjectionOperators",
                                       "transverse_projection_operator",
                                       {{{-1., 1.}}}, used_for_size);
@@ -54,8 +54,8 @@ void test_projection_operator(const DataType& used_for_size) {
     tnsr::Ij<DataType, SpatialDim, Frame::Inertial> (*f)(
         const tnsr::I<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(
         f, "ProjectionOperators",
         "transverse_projection_operator_mixed_from_spatial_input",
@@ -67,8 +67,8 @@ void test_projection_operator(const DataType& used_for_size) {
         const tnsr::AA<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::A<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::I<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(
         f, "ProjectionOperators", "projection_operator_transverse_to_interface",
         {{{-1., 1.}}}, used_for_size);
@@ -79,8 +79,8 @@ void test_projection_operator(const DataType& used_for_size) {
         const tnsr::aa<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(
         f, "ProjectionOperators", "projection_operator_transverse_to_interface",
         {{{-1., 1.}}}, used_for_size);
@@ -92,8 +92,8 @@ void test_projection_operator(const DataType& used_for_size) {
         const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::I<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
-        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
-                                            DataType>;
+        &gr::transverse_projection_operator<DataType, SpatialDim,
+                                            Frame::Inertial>;
     pypp::check_with_random_values<1>(
         f, "ProjectionOperators",
         "projection_operator_transverse_to_interface_mixed", {{{-1., 1.}}},

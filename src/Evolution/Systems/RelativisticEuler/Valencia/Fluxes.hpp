@@ -57,8 +57,8 @@ struct ComputeFluxes {
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
                  RelativisticEuler::Valencia::Tags::TildeTau,
                  RelativisticEuler::Valencia::Tags::TildeS<Dim>,
-                 gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
-                 gr::Tags::SqrtDetSpatialMetric<>,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>>;
 

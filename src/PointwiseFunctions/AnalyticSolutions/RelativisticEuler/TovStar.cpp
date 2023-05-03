@@ -567,7 +567,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> shift,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::Shift<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::Shift<DataType, 3> /*meta*/) const {
   get<0>(*shift) = 0.;
   get<1>(*shift) = 0.;
   get<2>(*shift) = 0.;
@@ -577,7 +577,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> dt_shift,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const {
+    ::Tags::dt<gr::Tags::Shift<DataType, 3>> /*meta*/) const {
   get<0>(*dt_shift) = 0.;
   get<1>(*dt_shift) = 0.;
   get<2>(*dt_shift) = 0.;
@@ -587,8 +587,8 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<gr::Tags::Shift<DataType, 3>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
   *deriv_shift = make_with_value<tnsr::iJ<DataType, 3>>(coords, 0.);
 }
 
@@ -596,7 +596,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataType, 3> /*meta*/) const {
   if constexpr (Region == StarRegion::Center) {
     const auto& metric_angular_potential =
         get(cache->get_var(*this, Tags::MetricAngularPotential<DataType>{}));
@@ -628,8 +628,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> dt_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>> /*meta*/)
-    const {
+    ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>> /*meta*/) const {
   *dt_spatial_metric = make_with_value<tnsr::ii<DataType, 3>>(coords, 0.);
 }
 
@@ -637,8 +636,8 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_spatial_metric,
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<gr::Tags::SpatialMetric<DataType, 3>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
   if constexpr (Region == StarRegion::Center) {
     *deriv_spatial_metric = make_with_value<tnsr::ijj<DataType, 3>>(coords, 0.);
   } else {
@@ -702,8 +701,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3>*> inv_spatial_metric,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType> /*meta*/)
-    const {
+    gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const {
   if constexpr (Region == StarRegion::Center) {
     const auto& metric_angular_potential =
         get(cache->get_var(*this, Tags::MetricAngularPotential<DataType>{}));
@@ -735,7 +733,7 @@ template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const {
   *extrinsic_curvature = make_with_value<tnsr::ii<DataType, 3>>(coords, 0.);
 }
 

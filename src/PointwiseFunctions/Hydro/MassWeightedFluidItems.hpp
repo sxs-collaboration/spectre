@@ -120,7 +120,7 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD, LorentzFactor<DataType>,
                  SpatialVelocityOneForm<DataType, Dim, Fr>,
-                 gr::Tags::Lapse<DataType>, gr::Tags::Shift<Dim, Fr, DataType>>;
+                 gr::Tags::Lapse<DataType>, gr::Tags::Shift<DataType, Dim, Fr>>;
 
   using return_type = Scalar<DataType>;
 

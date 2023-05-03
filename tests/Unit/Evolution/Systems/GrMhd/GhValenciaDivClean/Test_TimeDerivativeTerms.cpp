@@ -188,7 +188,8 @@ SPECTRE_TEST_CASE(
 
   // ensure that the signature of the metric is correct
   {
-    auto& metric = tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables);
+    auto& metric =
+        tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(arg_variables);
     get<0, 0>(metric) += -2.0;
     for (size_t i = 0; i < 3; ++i) {
       metric.get(i + 1, i + 1) += 4.0;
@@ -218,39 +219,46 @@ SPECTRE_TEST_CASE(
     if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
       tuples::get<tag>(all_valencia_argument_variables) =
           get<tag>(expected_temp_variables);
-    } else if constexpr (std::is_same_v<tag, ::Tags::deriv<gr::Tags::Lapse<>,
-                                                           tmpl::size_t<3>,
-                                                           Frame::Inertial>>) {
+    } else if constexpr (std::is_same_v<
+                             tag,
+                             ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                           tmpl::size_t<3>, Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
           gh::spatial_deriv_of_lapse(
-              get<gr::Tags::Lapse<>>(expected_temp_variables),
-              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
-              get<gh::Tags::Phi<3>>(arg_variables));
-      get<tag>(expected_temp_variables) =
-          tuples::get<tag>(all_valencia_argument_variables);
-    } else if constexpr (std::is_same_v<tag, ::Tags::deriv<gr::Tags::Shift<3>,
-                                                           tmpl::size_t<3>,
-                                                           Frame::Inertial>>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          gh::spatial_deriv_of_shift(
-              get<gr::Tags::Lapse<>>(expected_temp_variables),
-              get<gr::Tags::InverseSpacetimeMetric<3>>(expected_temp_variables),
-              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
+              get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
+              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                  expected_temp_variables),
               get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<
                              tag,
-                             ::Tags::deriv<gr::Tags::SpatialMetric<3>,
+                             ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
                                            tmpl::size_t<3>, Frame::Inertial>>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          gh::spatial_deriv_of_shift(
+              get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
+              get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(
+                  expected_temp_variables),
+              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                  expected_temp_variables),
+              get<gh::Tags::Phi<3>>(arg_variables));
+      get<tag>(expected_temp_variables) =
+          tuples::get<tag>(all_valencia_argument_variables);
+    } else if constexpr (std::is_same_v<
+                             tag, ::Tags::deriv<
+                                      gr::Tags::SpatialMetric<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
           gh::deriv_spatial_metric(get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
-    } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<3>>) {
+    } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<
+                                                 DataVector, 3>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
           gh::extrinsic_curvature(
-              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
+              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                  expected_temp_variables),
               get<gh::Tags::Pi<3>>(arg_variables),
               get<gh::Tags::Phi<3>>(arg_variables));
       get<tag>(expected_temp_variables) =
@@ -295,16 +303,16 @@ SPECTRE_TEST_CASE(
       get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
               OneOverLorentzFactorSquared>(expected_temp_variables),
       tuples::get<hydro::Tags::Pressure<DataVector>>(arg_variables),
-      tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables),
-      get<gr::Tags::Shift<3_st>>(expected_temp_variables),
-      get<gr::Tags::Lapse<>>(expected_temp_variables));
+      tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(arg_variables),
+      get<gr::Tags::Shift<DataVector, 3_st>>(expected_temp_variables),
+      get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));
   // apply the correction to dt pi for the expected variables
   grmhd::GhValenciaDivClean::add_stress_energy_term_to_dt_pi(
       make_not_null(
           &get<::Tags::dt<gh::Tags::Pi<3_st>>>(expected_dt_variables)),
       get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
           expected_temp_variables),
-      get<gr::Tags::Lapse<>>(expected_temp_variables));
+      get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));
 
   ComputeVolumeTimeDerivativeTermsHelper<
       grmhd::GhValenciaDivClean::TimeDerivativeTerms, 3_st,

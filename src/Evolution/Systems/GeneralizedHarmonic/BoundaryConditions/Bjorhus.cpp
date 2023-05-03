@@ -125,32 +125,31 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const {
-  TempBuffer<tmpl::list<
-      ::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempii<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempA<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempA<2, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempAb<0, Dim, Frame::Inertial, DataVector>,
-      ::Tags::TempAA<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
-      ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>,
-      // inertial time derivatives
-      ::Tags::dt<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>,
-      ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
-      ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>>
+  TempBuffer<tmpl::list<::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempii<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::TempA<1, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::TempA<2, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::TempAb<0, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::TempAA<1, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>,
+                        // inertial time derivatives
+                        ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>,
+                        ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
+                        ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);
 
   tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric;
@@ -160,8 +159,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     for (size_t storage_index = 0; storage_index < dt_pi.size();
          ++storage_index) {
       dt_spacetime_metric[storage_index].set_data_ref(make_not_null(
-          &get<::Tags::dt<
-              gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>>(
+          &get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>>(
               local_buffer)[storage_index]));
       dt_pi[storage_index].set_data_ref(
           make_not_null(&get<::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>>(
@@ -362,8 +360,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   *dt_pi_correction = get<Tags::Pi<Dim, Frame::Inertial>>(dt_evolved_vars);
   *dt_phi_correction = get<Tags::Phi<Dim, Frame::Inertial>>(dt_evolved_vars);
   *dt_spacetime_metric_correction =
-      get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-          dt_evolved_vars);
+      get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(dt_evolved_vars);
 
   if (face_mesh_velocity.has_value()) {
     const auto radial_mesh_velocity =

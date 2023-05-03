@@ -296,7 +296,7 @@ struct GhValenciaDivCleanDefaults {
           gh::gauges::SetPiFromGauge<3>>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
-              volume_dim, domain_frame, DataVector>>>,
+              DataVector, volume_dim, domain_frame>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives,
@@ -413,11 +413,11 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                               error_tags>,
           tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
-                         volume_dim, domain_frame, DataVector>,
+                         DataVector, volume_dim, domain_frame>,
                      gr::Tags::SpacetimeNormalVectorCompute<
-                         volume_dim, domain_frame, DataVector>,
+                         DataVector, volume_dim, domain_frame>,
                      gr::Tags::InverseSpacetimeMetricCompute<
-                         volume_dim, domain_frame, DataVector>,
+                         DataVector, volume_dim, domain_frame>,
                      gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
                      ::Tags::PointwiseL2NormCompute<
                          gh::Tags::GaugeConstraint<volume_dim, domain_frame>>>,
@@ -600,7 +600,7 @@ struct GhValenciaDivCleanTemplateBase<
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       dg::Actions::Filter<::Filters::Exponential<0>,
-                          tmpl::list<gr::Tags::SpacetimeMetric<3>,
+                          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                                      gh::Tags::Pi<3>, gh::Tags::Phi<3>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,

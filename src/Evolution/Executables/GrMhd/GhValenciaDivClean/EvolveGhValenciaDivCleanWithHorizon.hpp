@@ -84,10 +84,11 @@ struct EvolutionMetavars
         tmpl::list<StrahlkorperGr::Tags::AreaCompute<domain_frame>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target = tmpl::list<
-        gr::Tags::SpatialMetric<volume_dim, domain_frame, DataVector>,
-        gr::Tags::InverseSpatialMetric<volume_dim, domain_frame>,
-        gr::Tags::ExtrinsicCurvature<volume_dim, domain_frame>,
-        gr::Tags::SpatialChristoffelSecondKind<volume_dim, domain_frame>>;
+        gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
+        gr::Tags::InverseSpatialMetric<DataVector, volume_dim, domain_frame>,
+        gr::Tags::ExtrinsicCurvature<DataVector, volume_dim, domain_frame>,
+        gr::Tags::SpatialChristoffelSecondKind<DataVector, volume_dim,
+                                               domain_frame>>;
     using compute_items_on_target = tmpl::append<
         tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<domain_frame>>,
         tags_to_observe>;
@@ -102,10 +103,10 @@ struct EvolutionMetavars
   };
 
   using interpolation_target_tags = tmpl::list<AhA>;
-  using interpolator_source_vars =
-      tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, domain_frame>,
-                 gh::Tags::Pi<volume_dim, domain_frame>,
-                 gh::Tags::Phi<volume_dim, domain_frame>>;
+  using interpolator_source_vars = tmpl::list<
+      gr::Tags::SpacetimeMetric<DataVector, volume_dim, domain_frame>,
+      gh::Tags::Pi<volume_dim, domain_frame>,
+      gh::Tags::Phi<volume_dim, domain_frame>>;
 
   using observe_fields =
       typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,

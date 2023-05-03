@@ -32,18 +32,18 @@ namespace Xcts::Solutions {
 namespace detail {
 
 template <typename DataType, size_t Dim>
-using gr_solution_vars = tmpl::list<
-    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>,
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-    gr::Tags::Lapse<DataType>,
-    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-    gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>;
+using gr_solution_vars =
+    tmpl::list<gr::Tags::SpatialMetric<DataType, Dim>,
+               gr::Tags::InverseSpatialMetric<DataType, Dim>,
+               ::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
+                             tmpl::size_t<Dim>, Frame::Inertial>,
+               gr::Tags::Lapse<DataType>,
+               ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                             Frame::Inertial>,
+               gr::Tags::Shift<DataType, Dim>,
+               ::Tags::deriv<gr::Tags::Shift<DataType, Dim>, tmpl::size_t<Dim>,
+                             Frame::Inertial>,
+               gr::Tags::ExtrinsicCurvature<DataType, Dim>>;
 
 template <typename DataType>
 using WrappedGrVariablesCache =
@@ -53,8 +53,7 @@ using WrappedGrVariablesCache =
         hydro::Tags::ComovingMagneticFieldSquared<DataType>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        gr::Tags::Conformal<
-            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>>>;
+        gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>>>;
 
 template <typename DataType, bool HasMhd>
 struct WrappedGrVariables
@@ -100,21 +99,19 @@ struct WrappedGrVariables
       ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
       const override;
-  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial,
-                                          DataType> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::SpatialMetric<DataType, Dim> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
       gsl::not_null<Cache*> cache,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
-      const override;
+      gr::Tags::InverseSpatialMetric<DataType, Dim> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-      const override;
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
@@ -169,8 +166,7 @@ struct WrappedGrVariables
   void operator()(
       gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
       gsl::not_null<Cache*> cache,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/)
-      const override;
+      gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> magnetic_field_dot_spatial_velocity,
       gsl::not_null<Cache*> cache,
@@ -189,9 +185,8 @@ struct WrappedGrVariables
       gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Conformal<
-                      gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
-                      0> /*meta*/) const;
+                  gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>,
+                                      0> /*meta*/) const;
 };
 
 }  // namespace detail

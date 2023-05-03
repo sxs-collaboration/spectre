@@ -95,8 +95,7 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
       });
 
   *spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-          boundary_values);
+      get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(boundary_values);
   *pi = get<gh::Tags::Pi<Dim, Frame::Inertial>>(boundary_values);
   *phi = get<gh::Tags::Phi<Dim, Frame::Inertial>>(boundary_values);
 

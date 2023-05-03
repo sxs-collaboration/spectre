@@ -47,16 +47,14 @@ void test_initialize_evolved_variables(
   const auto lapse_and_shift = background_spacetime.variables(
       random_coords, initial_time,
       tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>{});
+                 gr::Tags::Shift<DataVector, Dim>>{});
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(lapse_and_shift);
-  const auto& shift =
-      get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(lapse_and_shift);
+  const auto& shift = get<gr::Tags::Shift<DataVector, Dim>>(lapse_and_shift);
 
   auto box = db::create<db::AddSimpleTags<
-      ::Tags::Time,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      ::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
       Tags::AnalyticData<InitialData>, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>, evolved_var_tag>>(
+      gr::Tags::Shift<DataVector, Dim>, evolved_var_tag>>(
       initial_time, random_coords, initial_data, lapse, shift,
       typename evolved_var_tag::type{grid_size});
   db::mutate_apply<

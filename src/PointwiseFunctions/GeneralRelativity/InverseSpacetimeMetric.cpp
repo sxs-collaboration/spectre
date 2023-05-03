@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric) {
@@ -23,7 +23,7 @@ tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
   return inv_spacetime_metric;
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void inverse_spacetime_metric(
     const gsl::not_null<tnsr::AA<DataType, Dim, Frame>*>
         inverse_spacetime_metric,

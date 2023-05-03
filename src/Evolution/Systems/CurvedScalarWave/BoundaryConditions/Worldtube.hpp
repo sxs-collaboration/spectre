@@ -75,11 +75,10 @@ class Worldtube final : public BoundaryConditions::BoundaryCondition<Dim> {
 
   void pup(PUP::er& p) override;
 
-  using dg_interior_temporary_tags = tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
+  using dg_interior_temporary_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
   using dg_gridless_tags =
       tmpl::list<CurvedScalarWave::Worldtube::Tags::WorldtubeSolution<Dim>>;

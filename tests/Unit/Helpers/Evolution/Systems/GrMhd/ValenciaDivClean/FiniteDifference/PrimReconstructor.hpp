@@ -174,11 +174,10 @@ void test_prim_reconstructor_impl(
           hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
       flux_tags,
       tmpl::remove_duplicates<tmpl::push_back<tmpl::list<
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpatialMetric<3>,
+          gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
           gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpatialMetric<DataVector, 3>,
           evolution::dg::Actions::detail::NormalVector<3>>>>>;
   tnsr::ii<DataVector, 3, Frame::Inertial> lower_face_spatial_metric{
       reconstructed_num_pts, 0.0};
@@ -205,10 +204,10 @@ void test_prim_reconstructor_impl(
     get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
         gsl::at(vars_on_upper_face, i)) = upper_face_sqrt_det_spatial_metric;
 
-    get<gr::Tags::SpatialMetric<3>>(gsl::at(vars_on_lower_face, i)) =
-        lower_face_spatial_metric;
-    get<gr::Tags::SpatialMetric<3>>(gsl::at(vars_on_upper_face, i)) =
-        upper_face_spatial_metric;
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(
+        gsl::at(vars_on_lower_face, i)) = lower_face_spatial_metric;
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(
+        gsl::at(vars_on_upper_face, i)) = upper_face_spatial_metric;
   }
 
   Variables<prims_tags> volume_prims{subcell_mesh.number_of_grid_points()};
@@ -324,11 +323,11 @@ void test_prim_reconstructor_impl(
 
     get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
         expected_lower_face_values) = lower_face_sqrt_det_spatial_metric;
-    get<gr::Tags::SpatialMetric<3>>(expected_lower_face_values) =
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_lower_face_values) =
         lower_face_spatial_metric;
     get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
         expected_upper_face_values) = upper_face_sqrt_det_spatial_metric;
-    get<gr::Tags::SpatialMetric<3>>(expected_upper_face_values) =
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_upper_face_values) =
         upper_face_spatial_metric;
 
     mhd::ConservativeFromPrimitive::apply(
@@ -347,7 +346,7 @@ void test_prim_reconstructor_impl(
         get<MagField>(expected_lower_face_values),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
             expected_lower_face_values),
-        get<gr::Tags::SpatialMetric<3>>(expected_lower_face_values),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_lower_face_values),
         get<Phi>(expected_lower_face_values));
     mhd::ConservativeFromPrimitive::apply(
         make_not_null(&get<mhd::Tags::TildeD>(expected_upper_face_values)),
@@ -365,7 +364,7 @@ void test_prim_reconstructor_impl(
         get<MagField>(expected_upper_face_values),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
             expected_upper_face_values),
-        get<gr::Tags::SpatialMetric<3>>(expected_upper_face_values),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_upper_face_values),
         get<Phi>(expected_upper_face_values));
 
     tmpl::for_each<tmpl::append<cons_tags, prims_tags>>(
@@ -394,9 +393,9 @@ void test_prim_reconstructor_impl(
             expected_upper_face_values),
         face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
     data_on_slice(
-        make_not_null(
-            &get<gr::Tags::SpatialMetric<3>>(upper_side_vars_on_mortar)),
-        get<gr::Tags::SpatialMetric<3>>(expected_upper_face_values),
+        make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(
+            upper_side_vars_on_mortar)),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_upper_face_values),
         face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
 
     dynamic_cast<const Reconstructor&>(reconstructor)
@@ -413,10 +412,11 @@ void test_prim_reconstructor_impl(
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
             expected_lower_face_values),
         face_centered_mesh.extents(), dim, 0);
-    data_on_slice(make_not_null(&get<gr::Tags::SpatialMetric<3>>(
-                      lower_side_vars_on_mortar)),
-                  get<gr::Tags::SpatialMetric<3>>(expected_lower_face_values),
-                  face_centered_mesh.extents(), dim, 0);
+    data_on_slice(
+        make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(
+            lower_side_vars_on_mortar)),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_lower_face_values),
+        face_centered_mesh.extents(), dim, 0);
 
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),

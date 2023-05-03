@@ -74,21 +74,20 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,
                  gh::Tags::Phi<3>>;
-  using dg_interior_temporary_tags = tmpl::list<
-      domain::Tags::Coordinates<3, Frame::Inertial>,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
-      gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
-      gh::Tags::GaugeH<3, Frame::Inertial>,
-      gh::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>;
+  using dg_interior_temporary_tags =
+      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpacetimeNormalVector<DataVector, 3>,
+                 gr::Tags::SpacetimeNormalOneForm<DataVector, 3>,
+                 gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
+                 gh::Tags::GaugeH<3, Frame::Inertial>,
+                 gh::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>;
   using dg_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
@@ -169,17 +168,17 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& /*d_pi*/,
       const tnsr::ijaa<DataVector, 3, Frame::Inertial>& /*d_phi*/);
 
-  using dg_interior_dt_vars_tags = tmpl::list<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>,
-      ::Tags::dt<gh::Tags::Pi<3, Frame::Inertial>>,
-      ::Tags::dt<gh::Tags::Phi<3, Frame::Inertial>>>;
-  using dg_interior_deriv_vars_tags = tmpl::list<
-      ::Tags::deriv<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
-                    Frame::Inertial>>;
+  using dg_interior_dt_vars_tags =
+      tmpl::list<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
+                 ::Tags::dt<gh::Tags::Pi<3, Frame::Inertial>>,
+                 ::Tags::dt<gh::Tags::Phi<3, Frame::Inertial>>>;
+  using dg_interior_deriv_vars_tags =
+      tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
+                               tmpl::size_t<3>, Frame::Inertial>>;
 
   std::optional<std::string> dg_time_derivative(
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>

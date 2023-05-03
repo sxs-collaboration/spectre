@@ -146,13 +146,11 @@ void test_variables(const DataType& used_for_size) {
           coords, 0.0,
           tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
   const auto expected_spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
-          ks_soln.variables(coords, 0.0,
-                            gr::Solutions::KerrSchild::tags<DataType>{}));
+      get<gr::Tags::SpatialMetric<DataType, 3>>(ks_soln.variables(
+          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{}));
   const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(disk.variables(
-          coords, 0.0,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+      get<gr::Tags::SpatialMetric<DataType, 3>>(disk.variables(
+          coords, 0.0, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 

@@ -21,11 +21,11 @@
 
 namespace gh {
 namespace {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct D0LowerShiftBuffer;
 
 template <size_t SpatialDim, typename Frame>
-struct D0LowerShiftBuffer<SpatialDim, Frame, double> {
+struct D0LowerShiftBuffer<double, SpatialDim, Frame> {
   explicit D0LowerShiftBuffer(const size_t /*size*/) {}
 
   tnsr::I<double, SpatialDim, Frame> dt_shift{};
@@ -33,7 +33,7 @@ struct D0LowerShiftBuffer<SpatialDim, Frame, double> {
 };
 
 template <size_t SpatialDim, typename Frame>
-struct D0LowerShiftBuffer<SpatialDim, Frame, DataVector> {
+struct D0LowerShiftBuffer<DataVector, SpatialDim, Frame> {
  private:
   // We make one giant allocation so that we don't thrash the heap.
   Variables<tmpl::list<::Tags::TempI<0, SpatialDim, Frame, DataVector>,
@@ -52,7 +52,7 @@ struct D0LowerShiftBuffer<SpatialDim, Frame, DataVector> {
 };
 }  // namespace
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_lower_shift(
     const gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> dt_lower_shift,
     const Scalar<DataType>& lapse,
@@ -67,14 +67,14 @@ void time_deriv_of_lower_shift(
   }
   // Use a Variables to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
-  D0LowerShiftBuffer<SpatialDim, Frame, DataType> buffer(get_size(get(lapse)));
+  D0LowerShiftBuffer<DataType, SpatialDim, Frame> buffer(get_size(get(lapse)));
   // get \partial_0 N^j
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
-  gh::time_deriv_of_shift<SpatialDim, Frame, DataType>(
+  gh::time_deriv_of_shift<DataType, SpatialDim, Frame>(
       make_not_null(&buffer.dt_shift), lapse, shift, inverse_spatial_metric,
       spacetime_unit_normal, phi, pi);
-  gh::time_deriv_of_spatial_metric<SpatialDim, Frame, DataType>(
+  gh::time_deriv_of_spatial_metric<DataType, SpatialDim, Frame>(
       make_not_null(&buffer.dt_spatial_metric), lapse, shift, phi, pi);
   for (size_t i = 0; i < SpatialDim; ++i) {
     dt_lower_shift->get(i) = spatial_metric.get(i, 0) * buffer.dt_shift.get(0) +
@@ -89,7 +89,7 @@ void time_deriv_of_lower_shift(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -98,9 +98,8 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::i<DataType, SpatialDim, Frame> dt_lower_shift{};
-  gh::time_deriv_of_lower_shift<SpatialDim, Frame, DataType>(
-      make_not_null(&dt_lower_shift), lapse, shift, spatial_metric,
-      spacetime_unit_normal, phi, pi);
+  gh::time_deriv_of_lower_shift(make_not_null(&dt_lower_shift), lapse, shift,
+                                spatial_metric, spacetime_unit_normal, phi, pi);
   return dt_lower_shift;
 }
 }  // namespace gh

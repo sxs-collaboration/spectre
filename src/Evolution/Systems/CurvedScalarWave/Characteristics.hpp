@@ -74,7 +74,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<DataVector, SpatialDim>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
@@ -181,8 +181,8 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2,
-      gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial, DataVector>,
-      Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim>, Tags::Psi,
+      Tags::Pi, Tags::Phi<SpatialDim>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
@@ -280,10 +280,10 @@ namespace Tags {
 template <size_t SpatialDim>
 struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
                                            db::ComputeTag {
-  using argument_tags = tmpl::list<
-      Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>;
+  using argument_tags =
+      tmpl::list<Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, SpatialDim>,
+                 gr::Tags::SpatialMetric<DataVector, SpatialDim>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(

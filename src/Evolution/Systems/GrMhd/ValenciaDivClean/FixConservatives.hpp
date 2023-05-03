@@ -162,8 +162,9 @@ class FixConservatives {
                                  grmhd::ValenciaDivClean::Tags::TildeS<>>;
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeB<>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
-                 gr::Tags::SqrtDetSpatialMetric<>>;
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
 
   /// Returns `true` if any variables were fixed.
   bool operator()(

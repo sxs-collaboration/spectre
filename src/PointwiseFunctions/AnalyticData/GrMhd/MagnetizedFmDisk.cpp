@@ -91,11 +91,11 @@ MagnetizedFmDisk::MagnetizedFmDisk(
 
   const auto b_field = unnormalized_magnetic_field(grid);
   const auto unmagnetized_vars = variables(
-      grid, tmpl::list<gr::Tags::SpatialMetric<3>,
+      grid, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>>{});
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3>>(unmagnetized_vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(unmagnetized_vars);
 
   const tnsr::I<double, 3> x_max{{{max_pressure_radius_, bh_spin_a_, 0.0}}};
 

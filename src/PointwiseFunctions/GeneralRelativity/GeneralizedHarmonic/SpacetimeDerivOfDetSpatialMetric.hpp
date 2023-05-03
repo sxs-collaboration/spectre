@@ -41,7 +41,7 @@ namespace gh {
  * \details Using the relation
  * \f$ \partial_a \gamma = \gamma \gamma^{jk} \partial_a \gamma_{jk} \f$
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_det_spatial_metric(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_det_spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric,
@@ -49,7 +49,7 @@ void spacetime_deriv_of_det_spatial_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,

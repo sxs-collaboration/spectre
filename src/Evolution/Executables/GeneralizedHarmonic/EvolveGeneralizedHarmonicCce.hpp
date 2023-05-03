@@ -89,7 +89,7 @@ struct EvolutionMetavars
   struct CceWorldtubeTarget;
 
   using interpolator_source_vars =
-      tmpl::list<::gr::Tags::SpacetimeMetric<VolumeDim, Frame::Inertial>,
+      tmpl::list<::gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
                  ::gh::Tags::Phi<VolumeDim, Frame::Inertial>,
                  ::gh::Tags::Pi<VolumeDim, Frame::Inertial>>;
 
@@ -126,8 +126,7 @@ struct EvolutionMetavars
               Actions::UpdateU<system>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
-                  tmpl::list<gr::Tags::SpacetimeMetric<
-                                 VolumeDim, Frame::Inertial, DataVector>,
+                  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
                              gh::Tags::Pi<VolumeDim, Frame::Inertial>,
                              gh::Tags::Phi<VolumeDim, Frame::Inertial>>>>>>;
 

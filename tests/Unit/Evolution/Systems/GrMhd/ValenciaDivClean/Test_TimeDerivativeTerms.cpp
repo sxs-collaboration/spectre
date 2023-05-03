@@ -97,20 +97,18 @@ void forward_to_time_deriv(
       make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              DensitizedStress>(temp)),
       make_not_null(
-          &get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial,
-                                                     DataVector>>(temp)),
+          &get<gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>>(temp)),
       make_not_null(
-          &get<gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                      DataVector>>(temp)),
+          &get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(temp)),
       make_not_null(
-          &get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                           DataVector>>(temp)),
+          &get<gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>(
+              temp)),
       make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              EnthalpyTimesDensityWSquaredPlusBSquared>(temp)),
 
-      make_not_null(&get<gr::Tags::Lapse<>>(temp)),
-      make_not_null(&get<gr::Tags::Shift<3>>(temp)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<3>>(temp)),
+      make_not_null(&get<gr::Tags::Lapse<DataVector>>(temp)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, 3>>(temp)),
+      make_not_null(&get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp)),
 
       tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
       sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, d_lapse,
@@ -120,9 +118,10 @@ void forward_to_time_deriv(
       rest_mass_density, electron_fraction, specific_enthalpy,
       extrinsic_curvature, constraint_damping_parameter);
 
-  CHECK(get<gr::Tags::Lapse<>>(temp) == lapse);
-  CHECK(get<gr::Tags::Shift<3>>(temp) == shift);
-  CHECK(get<gr::Tags::InverseSpatialMetric<3>>(temp) == inv_spatial_metric);
+  CHECK(get<gr::Tags::Lapse<DataVector>>(temp) == lapse);
+  CHECK(get<gr::Tags::Shift<DataVector, 3>>(temp) == shift);
+  CHECK(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp) ==
+        inv_spatial_metric);
 }
 }  // namespace
 

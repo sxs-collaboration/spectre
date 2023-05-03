@@ -92,7 +92,7 @@ struct ValenciaDoNothingGhostCondition {
       db::wrap_tags_in<::Tags::Flux,
                        typename grmhd::ValenciaDivClean::System::flux_variables,
                        tmpl::size_t<3_st>, Frame::Inertial>,
-      gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>;
+      gr::Tags::SpacetimeMetric<DataVector, 3>>;
 
   std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> tilde_d,
@@ -372,8 +372,7 @@ struct ProductOfConditionsImpl<
           tuples::get<Tags::detail::TemporaryReference<ValenciaFluxTags>>(
               shuffle_refs)...,
           tuples::get<Tags::detail::TemporaryReference<
-              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>>(
-              shuffle_refs));
+              gr::Tags::SpacetimeMetric<DataVector, 3>>>(shuffle_refs));
     }
     if (not gh_string.has_value()) {
       return valencia_string;

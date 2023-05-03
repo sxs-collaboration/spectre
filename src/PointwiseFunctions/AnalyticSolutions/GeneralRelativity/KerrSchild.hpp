@@ -245,11 +245,11 @@ class KerrSchild : public AnalyticSolution<3_st>,
   template <typename DataType, typename Frame = Frame::Inertial>
   using tags = tmpl::flatten<tmpl::list<
       AnalyticSolution<3_st>::tags<DataType, Frame>,
-      gr::Tags::DerivDetSpatialMetric<3, Frame, DataType>,
+      gr::Tags::DerivDetSpatialMetric<DataType, 3, Frame>,
       gr::Tags::TraceExtrinsicCurvature<DataType>,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType>>>;
+      gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3, Frame>>>;
 
   KerrSchild() = default;
   KerrSchild(const KerrSchild& /*rhs*/) = default;
@@ -347,14 +347,14 @@ class KerrSchild : public AnalyticSolution<3_st>,
       internal_tags::lapse_squared<DataType>, gr::Tags::Lapse<DataType>,
       internal_tags::deriv_lapse_multiplier<DataType>,
       internal_tags::shift_multiplier<DataType>,
-      gr::Tags::Shift<3, Frame, DataType>, DerivShift<DataType, Frame>,
-      gr::Tags::SpatialMetric<3, Frame, DataType>,
-      gr::Tags::InverseSpatialMetric<3, Frame, DataType>,
+      gr::Tags::Shift<DataType, 3, Frame>, DerivShift<DataType, Frame>,
+      gr::Tags::SpatialMetric<DataType, 3, Frame>,
+      gr::Tags::InverseSpatialMetric<DataType, 3, Frame>,
       DerivSpatialMetric<DataType, Frame>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>,
-      gr::Tags::ExtrinsicCurvature<3, Frame, DataType>,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>>;
+      ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>,
+      gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>,
+      gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>>;
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
   class IntermediateComputer {
@@ -461,7 +461,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
 
     void operator()(const gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
                     const gsl::not_null<CachedBuffer*> cache,
-                    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const;
+                    gr::Tags::Shift<DataType, 3, Frame> /*meta*/) const;
 
     void operator()(
         const gsl::not_null<tnsr::iJ<DataType, 3, Frame>*> deriv_shift,
@@ -471,12 +471,12 @@ class KerrSchild : public AnalyticSolution<3_st>,
     void operator()(
         const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
         const gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const;
+        gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const;
 
     void operator()(
         const gsl::not_null<tnsr::II<DataType, 3, Frame>*> spatial_metric,
         const gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) const;
+        gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/) const;
 
     void operator()(const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
                         deriv_spatial_metric,
@@ -486,25 +486,25 @@ class KerrSchild : public AnalyticSolution<3_st>,
     void operator()(
         const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
         const gsl::not_null<CachedBuffer*> cache,
-        ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const;
+        ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) const;
 
     void operator()(
         const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
         const gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) const;
+        gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/) const;
 
     void operator()(
         const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
             spatial_christoffel_first_kind,
         const gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType> /*meta*/)
+        gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame> /*meta*/)
         const;
 
     void operator()(
         const gsl::not_null<tnsr::Ijj<DataType, 3, Frame>*>
             spatial_christoffel_second_kind,
         const gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/)
+        gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame> /*meta*/)
         const;
 
    private:
@@ -533,7 +533,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
 
     tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/);
+        ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/);
 
     Scalar<DataType> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
@@ -541,7 +541,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
 
     tnsr::i<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::DerivDetSpatialMetric<3, Frame, DataType> /*meta*/);
+        gr::Tags::DerivDetSpatialMetric<DataType, 3, Frame> /*meta*/);
 
     Scalar<DataType> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
@@ -549,8 +549,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
 
     tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame,
-                                                    DataType> /*meta*/);
+        gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3,
+                                                    Frame> /*meta*/);
 
    private:
     // Here null_vector_0 is simply -1, but if you have a boosted solution,

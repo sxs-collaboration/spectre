@@ -44,7 +44,7 @@ namespace {
 // in the test because while convenient the additional allocations are bad for
 // performance. By not having them available in the production code we avoid
 // possible accidental usage.
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> spatial_weight_function(
     const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r) {
   Scalar<DataType> spatial_weight{};
@@ -52,7 +52,7 @@ Scalar<DataType> spatial_weight_function(
   return spatial_weight;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_spatial_weight_function(
     const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r) {
   tnsr::a<DataType, SpatialDim, Frame> d4_weight{};
@@ -109,7 +109,7 @@ void wrap_damped_harmonic_rollon(
   const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame>(lapse);
+      gr::spacetime_normal_one_form<DataVector, SpatialDim, Frame>(lapse);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   tnsr::abb<DataVector, SpatialDim, Frame> d4_spacetime_metric{};
@@ -154,7 +154,7 @@ void wrap_damped_harmonic(
   const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame>(lapse);
+      gr::spacetime_normal_one_form<DataVector, SpatialDim, Frame>(lapse);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   tnsr::abb<DataVector, SpatialDim, Frame> d4_spacetime_metric{};
@@ -250,7 +250,7 @@ void test_derived_class(const Mesh<Dim>& mesh) {
   const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
   const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, Dim, Frame::Inertial>(lapse);
   const auto inverse_spacetime_metric =
       determinant_and_inverse(spacetime_metric).second;
   const auto spacetime_normal_vector =

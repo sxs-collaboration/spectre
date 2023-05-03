@@ -114,17 +114,16 @@ using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     hydro::Tags::DivergenceCleaningField<DataType>, gr::Tags::Lapse<DataType>,
     ::Tags::dt<gr::Tags::Lapse<DataType>>,
     ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::Inertial>,
-    gr::Tags::Shift<3, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                  tmpl::size_t<3>, Frame::Inertial>,
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                  tmpl::size_t<3>, Frame::Inertial>,
+    gr::Tags::Shift<DataType, 3>, ::Tags::dt<gr::Tags::Shift<DataType, 3>>,
+    ::Tags::deriv<gr::Tags::Shift<DataType, 3>, tmpl::size_t<3>,
+                  Frame::Inertial>,
+    gr::Tags::SpatialMetric<DataType, 3>,
+    ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<DataType, 3>, tmpl::size_t<3>,
+                  Frame::Inertial>,
     gr::Tags::SqrtDetSpatialMetric<DataType>,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>>;
+    gr::Tags::ExtrinsicCurvature<DataType, 3>,
+    gr::Tags::InverseSpatialMetric<DataType, 3>>>;
 
 template <typename DataType, StarRegion Region>
 struct TovVariables {
@@ -235,40 +234,35 @@ struct TovVariables {
                                 Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Shift<3, Frame::Inertial, DataType> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::I<DataType, 3>*> dt_shift,
-      gsl::not_null<Cache*> cache,
-      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
-      gsl::not_null<Cache*> cache,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> dt_spatial_metric,
+                  gr::Tags::Shift<DataType, 3> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> dt_shift,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial,
-                                                     DataType>> /*meta*/) const;
+                  ::Tags::dt<gr::Tags::Shift<DataType, 3>> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<gr::Tags::Shift<DataType, 3>, tmpl::size_t<3>,
+                                Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::SpatialMetric<DataType, 3> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, 3>*> dt_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_spatial_metric,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, 3>, tmpl::size_t<3>,
+                    Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> sqrt_det_spatial_metric,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
-                                               DataType> /*meta*/) const;
+                  gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, 3>*> inv_spatial_metric,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataType> /*meta*/) const;
+                  gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const;
 };
 }  // namespace tov_detail
 

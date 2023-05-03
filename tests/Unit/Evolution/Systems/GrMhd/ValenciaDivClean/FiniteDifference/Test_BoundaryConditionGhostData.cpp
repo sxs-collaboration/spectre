@@ -179,7 +179,7 @@ void test(const BoundaryConditionType& boundary_condition,
       subcell_inertial_coords, time,
       typename System::spacetime_variables_tag::tags_list{}));
   for (size_t i = 0; i < 3; ++i) {
-    get<gr::Tags::Shift<3>>(volume_spacetime_vars).get(i) = -2.0;
+    get<gr::Tags::Shift<DataVector, 3>>(volume_spacetime_vars).get(i) = -2.0;
   }
 
   Variables<typename System::primitive_variables_tag::tags_list>
@@ -262,8 +262,7 @@ void test(const BoundaryConditionType& boundary_condition,
         get<hydro::Tags::LorentzFactor<DataVector>>(volume_prim_vars),
         get<hydro::Tags::MagneticField<DataVector, 3>>(volume_prim_vars),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            volume_spacetime_vars),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(volume_spacetime_vars),
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(
             volume_prim_vars));
 
@@ -289,12 +288,10 @@ void test(const BoundaryConditionType& boundary_condition,
         get<tmpl::at_c<cons_tags, 5>>(volume_cons_vars),
 
         get<gr::Tags::Lapse<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(
-            volume_spacetime_vars),
+        get<gr::Tags::Shift<DataVector, 3>>(volume_spacetime_vars),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            volume_spacetime_vars),
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(volume_spacetime_vars),
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
             volume_spacetime_vars),
         get<hydro::Tags::Pressure<DataVector>>(volume_prim_vars),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(volume_prim_vars),
@@ -572,7 +569,7 @@ void test(const BoundaryConditionType& boundary_condition,
 
       // Set shift to be zero so that the DemandOutgoingCharSpeeds condition is
       // violated. See if the code fails correctly.
-      db::mutate<gr::Tags::Shift<3>>(
+      db::mutate<gr::Tags::Shift<DataVector, 3>>(
           make_not_null(&box),
           [](const gsl::not_null<tnsr::I<DataVector, 3>*> shift_vector) {
             for (size_t i = 0; i < 3; ++i) {

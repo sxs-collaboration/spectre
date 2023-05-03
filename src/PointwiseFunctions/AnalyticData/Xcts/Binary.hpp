@@ -47,8 +47,7 @@ using BinaryVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        gr::Tags::Conformal<
-            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>,
+        gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
         // For initial guesses
         Tags::ConformalFactor<DataType>,
         Tags::LapseTimesConformalFactor<DataType>,
@@ -72,8 +71,7 @@ struct BinaryVariables
           ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
           gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
           gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-          gr::Tags::Conformal<
-              gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>,
+          gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0>,
           Tags::ConformalFactor<DataType>,
           Tags::LapseTimesConformalFactor<DataType>,
           Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>,
@@ -191,9 +189,8 @@ struct BinaryVariables
   void operator()(
       const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
       const gsl::not_null<Cache*> cache,
-      gr::Tags::Conformal<
-          gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>
-          meta) const {
+      gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> meta)
+      const {
     superposition<false>(conformal_momentum_density, cache, meta);
   }
   void operator()(const gsl::not_null<Scalar<DataType>*> conformal_factor,

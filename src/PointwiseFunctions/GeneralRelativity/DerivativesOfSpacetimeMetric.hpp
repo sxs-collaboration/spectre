@@ -39,7 +39,7 @@ namespace gr {
  * where \f$ \alpha, \beta^i, \gamma_{ij} \f$ are the lapse, shift, and spatial
  * metric respectively.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void derivatives_of_spacetime_metric(
     gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
         spacetime_deriv_spacetime_metric,
@@ -52,7 +52,7 @@ void derivatives_of_spacetime_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -74,19 +74,19 @@ namespace Tags {
  */
 template <size_t SpatialDim, typename Frame>
 struct DerivativesOfSpacetimeMetricCompute
-    : gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>,
+    : gr::Tags::DerivativesOfSpacetimeMetric<DataVector, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<SpatialDim>,
                     Frame>,
-      gr::Tags::Shift<SpatialDim, Frame, DataVector>,
-      ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
-      ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+      gr::Tags::Shift<DataVector, SpatialDim, Frame>,
+      ::Tags::dt<gr::Tags::Shift<DataVector, SpatialDim, Frame>>,
+      ::Tags::deriv<gr::Tags::Shift<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
-      gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
-      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::abb<DataVector, SpatialDim, Frame>;
@@ -102,10 +102,10 @@ struct DerivativesOfSpacetimeMetricCompute
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ijj<DataVector, SpatialDim, Frame>&)>(
-      &gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>);
+      &gr::derivatives_of_spacetime_metric<DataVector, SpatialDim, Frame>);
 
   using base =
-      gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>;
+      gr::Tags::DerivativesOfSpacetimeMetric<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

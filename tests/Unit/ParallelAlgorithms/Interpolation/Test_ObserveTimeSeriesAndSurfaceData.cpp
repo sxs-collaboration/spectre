@@ -225,8 +225,7 @@ struct MockMetavariables {
   struct SurfaceA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
-        tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+        tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute,
                    StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
@@ -243,8 +242,7 @@ struct MockMetavariables {
   struct SurfaceB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
-        tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+        tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
                    StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
@@ -265,8 +263,7 @@ struct MockMetavariables {
   struct SurfaceC : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
-        tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+        tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
                    StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
@@ -284,8 +281,7 @@ struct MockMetavariables {
   struct SurfaceD : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
-        tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+        tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute,
                    StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
@@ -301,8 +297,7 @@ struct MockMetavariables {
   using observed_reduction_data_tags = tmpl::list<>;
 
   using interpolator_source_vars =
-      tmpl::list<Tags::TestSolution,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+      tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
   using interpolation_target_tags =
       tmpl::list<SurfaceA, SurfaceB, SurfaceC, SurfaceD>;
   static constexpr size_t volume_dim = 3;
@@ -515,10 +510,10 @@ SPECTRE_TEST_CASE(
     // spacetime in Kerr-Schild coordinates; this in no way requires
     // that there is an actual horizon or that the metric is Kerr.
     gr::Solutions::Minkowski<3> solution;
-    get<gr::Tags::SpatialMetric<3, Frame::Inertial>>(output_vars) =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial>>(solution.variables(
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(output_vars) =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(solution.variables(
             inertial_coords, 0.0,
-            tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>>{}));
+            tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>{}));
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,

@@ -39,10 +39,10 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.HydroFreeOutflow",
           make_not_null(&gen), used_for_size);
   const auto sqrt_det_spatial_metric = determinant(spatial_metric);
 
-  const auto box_with_gridless_tags = db::create<
-      db::AddSimpleTags<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        gr::Tags::SqrtDetSpatialMetric<DataVector>>>(
-      spatial_metric, sqrt_det_spatial_metric);
+  const auto box_with_gridless_tags =
+      db::create<db::AddSimpleTags<gr::Tags::SpatialMetric<DataVector, 3>,
+                                   gr::Tags::SqrtDetSpatialMetric<DataVector>>>(
+          spatial_metric, sqrt_det_spatial_metric);
 
   helpers::test_boundary_condition_with_python<
       grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow,
@@ -87,10 +87,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.HydroFreeOutflow",
                            tmpl::size_t<3>, Frame::Inertial>>,
 
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, 3>>,
           helpers::Tags::PythonFunctionName<
-              gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
-          helpers::Tags::PythonFunctionName<
-              gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>>{
+              gr::Tags::InverseSpatialMetric<DataVector, 3>>>{
           "error", "tilde_d", "tilde_ye", "tilde_tau", "tilde_s", "tilde_b",
           "tilde_phi", "flux_tilde_d", "flux_tilde_ye", "flux_tilde_tau",
           "flux_tilde_s", "flux_tilde_b", "flux_tilde_phi", "lapse", "shift",

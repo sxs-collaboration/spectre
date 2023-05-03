@@ -52,15 +52,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.RobinsonTrautman",
   const auto boundary_data = boundary_solution.variables(
       l_max, time,
       tmpl::list<Tags::Dr<Tags::CauchyCartesianCoords>,
-                 gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-                 ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
-                                                      DataVector>>,
+                 gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
                  gh::Tags::Phi<3, ::Frame::Inertial>, Tags::News>{});
 
   const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_data);
-
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_data);
 
   CartesianiSphericalJ inverse_jacobian{get<0, 0>(spacetime_metric).size()};
   boundary_solution.inverse_jacobian(make_not_null(&inverse_jacobian), l_max);
@@ -69,9 +66,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.RobinsonTrautman",
       TestHelpers::extract_bondi_scalars_from_cartesian_metric(
           spacetime_metric, inverse_jacobian, extraction_radius);
 
-  const auto& dt_spacetime_metric = get<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      boundary_data);
+  const auto& dt_spacetime_metric =
+      get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(boundary_data);
   const auto dt_bondi_quantities =
       TestHelpers::extract_dt_bondi_scalars_from_cartesian_metric(
           dt_spacetime_metric, spacetime_metric, inverse_jacobian,

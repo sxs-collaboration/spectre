@@ -18,26 +18,25 @@ struct AnalyticSolution {
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                    tmpl::size_t<volume_dim>, Frame>;
   template <typename DataType, typename Frame = ::Frame::Inertial>
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame, DataType>,
-                    tmpl::size_t<volume_dim>, Frame>;
+  using DerivShift = ::Tags::deriv<gr::Tags::Shift<DataType, volume_dim, Frame>,
+                                   tmpl::size_t<volume_dim>, Frame>;
   template <typename DataType, typename Frame = ::Frame::Inertial>
-  using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
-      tmpl::size_t<volume_dim>, Frame>;
+  using DerivSpatialMetric =
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, volume_dim, Frame>,
+                    tmpl::size_t<volume_dim>, Frame>;
 
-template <typename DataType, typename Frame = ::Frame::Inertial>
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using tags = tmpl::list<
       gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType, Frame>, gr::Tags::Shift<volume_dim, Frame, DataType>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame, DataType>>,
+      DerivLapse<DataType, Frame>, gr::Tags::Shift<DataType, volume_dim, Frame>,
+      ::Tags::dt<gr::Tags::Shift<DataType, volume_dim, Frame>>,
       DerivShift<DataType, Frame>,
-      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<volume_dim, Frame, DataType>>,
+      gr::Tags::SpatialMetric<DataType, volume_dim, Frame>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim, Frame>>,
       DerivSpatialMetric<DataType, Frame>,
       gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame, DataType>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame, DataType>>;
+      gr::Tags::ExtrinsicCurvature<DataType, volume_dim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataType, volume_dim, Frame>>;
 };
 
 /*!

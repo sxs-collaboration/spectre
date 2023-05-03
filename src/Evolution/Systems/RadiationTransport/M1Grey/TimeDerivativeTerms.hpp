@@ -25,23 +25,24 @@ struct TimeDerivativeTerms {
   };
 
   using temporary_tags =
-      tmpl::list<TildeSUp, gr::Tags::InverseSpatialMetric<3>>;
+      tmpl::list<TildeSUp, gr::Tags::InverseSpatialMetric<DataVector, 3>>;
   using argument_tags = tmpl::list<
       Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
       Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
-      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>..., gr::Tags::Lapse<>,
-      gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
-      gr::Tags::InverseSpatialMetric<3>,
+      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
 
       Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
       Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
 
   static void apply(
       const gsl::not_null<typename Tags::TildeE<

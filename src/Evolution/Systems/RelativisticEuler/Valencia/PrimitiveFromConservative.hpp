@@ -73,8 +73,8 @@ struct PrimitiveFromConservative {
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
                  RelativisticEuler::Valencia::Tags::TildeTau,
                  RelativisticEuler::Valencia::Tags::TildeS<Dim>,
-                 gr::Tags::InverseSpatialMetric<Dim>,
-                 gr::Tags::SqrtDetSpatialMetric<>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
                  hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>

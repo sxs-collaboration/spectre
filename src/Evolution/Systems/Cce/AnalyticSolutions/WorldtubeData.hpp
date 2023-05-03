@@ -52,8 +52,8 @@ class TeukolskyWave;
  * and return by `not_null` pointer the spacetime metric quantity requested in
  * the final (metavariable) tag argument. The function overloads that are
  * required to be overriden in the derived class are
- * `gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>`,
- * `::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>`,
+ * `gr::Tags::SpacetimeMetric<DataVector, 3>`,
+ * `::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>`,
  * `gh::Tags::Phi<3, ::Frame::Inertial>`, and
  * `Cce::Tags::News`.
  * - `prepare_solution()`: Any initial precomputation needed to determine all of
@@ -78,16 +78,16 @@ struct WorldtubeData : public PUP::able {
   /// The set of available tags provided by the analytic solution
   using tags = tmpl::list<
       Tags::CauchyCartesianCoords, Tags::Dr<Tags::CauchyCartesianCoords>,
-      gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
       gh::Tags::Pi<3, ::Frame::Inertial>, gh::Tags::Phi<3, ::Frame::Inertial>,
-      gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
-      Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
-      gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-      Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
+      Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>,
+      gr::Tags::Shift<DataVector, 3>,
+      ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
+      Tags::Dr<gr::Tags::Shift<DataVector, 3>>, gr::Tags::Lapse<DataVector>,
+      ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>;
 
   WRAPPED_PUPable_abstract(WorldtubeData);  // NOLINT
@@ -165,14 +165,13 @@ struct WorldtubeData : public PUP::able {
   virtual void variables_impl(
       gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
       size_t output_l_max, double time,
-      tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>
+      tmpl::type_<gr::Tags::SpacetimeMetric<DataVector, 3>>
       /*meta*/) const = 0;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric,
       size_t output_l_max, double time,
-      tmpl::type_<::Tags::dt<
-          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>
+      tmpl::type_<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>
       /*meta*/) const = 0;
 
   virtual void variables_impl(gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
@@ -189,39 +188,34 @@ struct WorldtubeData : public PUP::able {
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
       size_t output_l_max, double time,
-      tmpl::type_<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>
+      tmpl::type_<gr::Tags::SpatialMetric<DataVector, 3>>
       /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
       size_t output_l_max, double time,
-      tmpl::type_<
-          ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>
+      tmpl::type_<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>
       /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> dr_spatial_metric,
       size_t output_l_max, double time,
-      tmpl::type_<
-          Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>
+      tmpl::type_<Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>>
       /*meta*/) const;
 
-  virtual void variables_impl(
-      gsl::not_null<tnsr::I<DataVector, 3>*> shift, size_t output_l_max,
-      double time,
-      tmpl::type_<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>
-      /*meta*/) const;
+  virtual void variables_impl(gsl::not_null<tnsr::I<DataVector, 3>*> shift,
+                              size_t output_l_max, double time,
+                              tmpl::type_<gr::Tags::Shift<DataVector, 3>>
+                              /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::I<DataVector, 3>*> dt_shift, size_t output_l_max,
-      double time,
-      tmpl::type_<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>
+      double time, tmpl::type_<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>
       /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::I<DataVector, 3>*> dr_shift, size_t output_l_max,
-      double time,
-      tmpl::type_<Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>
+      double time, tmpl::type_<Tags::Dr<gr::Tags::Shift<DataVector, 3>>>
       /*meta*/) const;
 
   virtual void variables_impl(gsl::not_null<Scalar<DataVector>*> lapse,
@@ -258,25 +252,21 @@ struct WorldtubeData : public PUP::able {
 
   using IntermediateCacheTuple =
       tuples::tagged_tuple_from_typelist<tmpl::transform<
-          tmpl::list<
-              Tags::CauchyCartesianCoords,
-              Tags::Dr<Tags::CauchyCartesianCoords>,
-              gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-              gh::Tags::Pi<3, ::Frame::Inertial>,
-              gh::Tags::Phi<3, ::Frame::Inertial>,
-              gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-              gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-              gr::Tags::Lapse<DataVector>,
-              ::Tags::dt<
-                  gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-              ::Tags::dt<
-                  gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
-              ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-              ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-              Tags::Dr<
-                  gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
-              Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-              Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>,
+          tmpl::list<Tags::CauchyCartesianCoords,
+                     Tags::Dr<Tags::CauchyCartesianCoords>,
+                     gr::Tags::SpacetimeMetric<DataVector, 3>,
+                     gh::Tags::Pi<3, ::Frame::Inertial>,
+                     gh::Tags::Phi<3, ::Frame::Inertial>,
+                     gr::Tags::SpatialMetric<DataVector, 3>,
+                     gr::Tags::Shift<DataVector, 3>,
+                     gr::Tags::Lapse<DataVector>,
+                     ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
+                     ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
+                     ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
+                     ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+                     Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>,
+                     Tags::Dr<gr::Tags::Shift<DataVector, 3>>,
+                     Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>,
           tmpl::bind<IntermediateCacheTag, tmpl::_1>>>;
 
   // NOLINTNEXTLINE(spectre-mutable)

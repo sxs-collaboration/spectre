@@ -102,8 +102,9 @@ class FixConservatives {
                  RelativisticEuler::Valencia::Tags::TildeTau,
                  RelativisticEuler::Valencia::Tags::TildeS<Dim>>;
 
-  using argument_tags = tmpl::list<gr::Tags::InverseSpatialMetric<Dim>,
-                                   gr::Tags::SqrtDetSpatialMetric<>>;
+  using argument_tags =
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
 
   void operator()(
       gsl::not_null<Scalar<DataVector>*> tilde_d,

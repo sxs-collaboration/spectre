@@ -45,9 +45,9 @@ struct ConformalFactorSquared : db::SimpleTag {
  * spatial metric, then we define
  * \f$\bar{\gamma}_{ij} = \phi^2 \gamma_{ij}\f$.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 using ConformalMetric =
-    gr::Tags::Conformal<gr::Tags::SpatialMetric<Dim, Frame, DataType>, 2>;
+    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Frame>, 2>;
 
 /*!
  * \brief The conformally scaled inverse spatial metric
@@ -56,9 +56,9 @@ using ConformalMetric =
  * inverse spatial metric, then we define
  * \f$\bar{\gamma}^{ij} = \phi^{-2} \gamma^{ij}\f$.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 using InverseConformalMetric =
-    gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
+    gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<DataType, Dim, Frame>,
                         -2>;
 
 /*!
@@ -66,7 +66,7 @@ using InverseConformalMetric =
  *
  * \details See `Ccz4::a_tilde()` for details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ATilde : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
@@ -105,7 +105,7 @@ struct LogLapse : db::SimpleTag {
  * \details If \f$ \alpha \f$ is the lapse, then we define
  * \f$A_i = \partial_i ln(\alpha) = \frac{\partial_i \alpha}{\alpha}\f$.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldA : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -114,7 +114,7 @@ struct FieldA : db::SimpleTag {
  * \brief Auxiliary variable which is analytically the spatial derivative of the
  * shift
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldB : db::SimpleTag {
   using type = tnsr::iJ<DataType, Dim, Frame>;
 };
@@ -127,7 +127,7 @@ struct FieldB : db::SimpleTag {
  * define
  * \f$D_{kij} = \frac{1}{2} \partial_k \bar{\gamma}_{ij}\f$.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldD : db::SimpleTag {
   using type = tnsr::ijj<DataType, Dim, Frame>;
 };
@@ -147,7 +147,7 @@ struct LogConformalFactor : db::SimpleTag {
  * \details If \f$\phi\f$ is the conformal factor, then we define
  * \f$P_i = \partial_i ln(\phi) = \frac{\partial_i \phi}{\phi}\f$.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldP : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -166,7 +166,7 @@ struct FieldP : db::SimpleTag {
  * spatial metric and the CCZ4 auxiliary variable defined by
  * `Ccz4::Tags::FieldD`, respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldDUp : db::SimpleTag {
   using type = tnsr::iJJ<DataType, Dim, Frame>;
 };
@@ -183,7 +183,7 @@ struct FieldDUp : db::SimpleTag {
  * spatial metric and the CCZ4 auxiliary variable defined by
  * `Ccz4::Tags::InverseConformalMetric` and `Ccz4::Tags::FieldD`, respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Ijj<DataType, Dim, Frame>;
 };
@@ -205,7 +205,7 @@ struct ConformalChristoffelSecondKind : db::SimpleTag {
  * `Ccz4::Tags::FieldD`, its spatial derivative, and the CCZ4 identity defined
  * by `Ccz4::Tags::FieldDUp`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct DerivConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::iJkk<DataType, Dim, Frame>;
 };
@@ -228,7 +228,7 @@ struct DerivConformalChristoffelSecondKind : db::SimpleTag {
  * `Ccz4::Tags::ConformalChristoffelSecondKind`, and `Ccz4::Tags::FieldP`,
  * respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Ijj<DataType, Dim, Frame>;
 };
@@ -238,7 +238,7 @@ struct ChristoffelSecondKind : db::SimpleTag {
  *
  * \details See `Ccz4::spatial_ricci_tensor()` for details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct Ricci : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
@@ -256,7 +256,7 @@ struct Ricci : db::SimpleTag {
  * kind, the CCZ4 auxiliary variable defined by `Ccz4::Tags::FieldA`, and its
  * spatial derivative, respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct GradGradLapse : db::SimpleTag {
   using type = tnsr::ij<DataType, Dim, Frame>;
 };
@@ -287,7 +287,7 @@ struct DivergenceLapse : db::SimpleTag {
  * \details See `Ccz4::contracted_conformal_christoffel_second_kind()` for
  * details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ContractedConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
@@ -299,7 +299,7 @@ struct ContractedConformalChristoffelSecondKind : db::SimpleTag {
  * \details See `Ccz4::deriv_contracted_conformal_christoffel_second_kind()` for
  * details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct DerivContractedConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::iJ<DataType, Dim, Frame>;
 };
@@ -320,7 +320,7 @@ struct DerivContractedConformalChristoffelSecondKind : db::SimpleTag {
  * christoffel symbols of the second kind defined by
  * `Ccz4::Tags::ContractedConformalChristoffelSecondKind`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct GammaHat : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
@@ -330,7 +330,7 @@ struct GammaHat : db::SimpleTag {
  *
  * \details See `Ccz4::spatial_z4_constraint` for details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct SpatialZ4Constraint : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -340,7 +340,7 @@ struct SpatialZ4Constraint : db::SimpleTag {
  *
  * \details See `Ccz4::upper_spatial_z4_constraint` for details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct SpatialZ4ConstraintUp : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
@@ -350,7 +350,7 @@ struct SpatialZ4ConstraintUp : db::SimpleTag {
  *
  * \details See `Ccz4::grad_spatial_z4_constraint` for details.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct GradSpatialZ4Constraint : db::SimpleTag {
   using type = tnsr::ij<DataType, Dim, Frame>;
 };

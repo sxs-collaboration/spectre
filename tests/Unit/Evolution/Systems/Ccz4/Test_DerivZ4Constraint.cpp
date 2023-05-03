@@ -27,7 +27,7 @@ void test_compute_grad_spatial_z4_constraint(const DataType& used_for_size) {
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&,
           const tnsr::I<DataType, Dim, Frame::Inertial>&,
           const tnsr::iJ<DataType, Dim, Frame::Inertial>&)>(
-          &Ccz4::grad_spatial_z4_constraint<Dim, Frame::Inertial, DataType>),
+          &Ccz4::grad_spatial_z4_constraint<DataType, Dim, Frame::Inertial>),
       "DerivZ4Constraint", "grad_spatial_z4_constraint", {{{-1., 1.}}},
       used_for_size);
 }

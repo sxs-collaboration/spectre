@@ -62,7 +62,7 @@ FastFlow::Status do_iteration(
         cart_coords, t, gr::Solutions::KerrSchild::tags<DataVector>{});
 
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
     const auto& deriv_spatial_metric =
         get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars);
     const auto inverse_spatial_metric =
@@ -72,11 +72,10 @@ FastFlow::Status do_iteration(
         strahlkorper, inverse_spatial_metric,
         gr::extrinsic_curvature(
             get<gr::Tags::Lapse<DataVector>>(vars),
-            get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
+            get<gr::Tags::Shift<DataVector, 3>>(vars),
             get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(vars),
             spatial_metric,
-            get<Tags::dt<
-                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
+            get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars),
             deriv_spatial_metric),
         raise_or_lower_first_index(
             gr::christoffel_first_kind(deriv_spatial_metric),

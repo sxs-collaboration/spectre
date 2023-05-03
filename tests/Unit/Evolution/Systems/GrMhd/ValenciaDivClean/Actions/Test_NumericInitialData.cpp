@@ -57,12 +57,11 @@ struct MockElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-              ::Tags::Variables<all_hydro_vars>,
-              hydro::Tags::EquationOfState<
-                  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
-              gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                             DataVector>>>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::list<::Tags::Variables<all_hydro_vars>,
+                         hydro::Tags::EquationOfState<std::unique_ptr<
+                             EquationsOfState::EquationOfState<true, 1>>>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<grmhd::ValenciaDivClean::Actions::ReadNumericInitialData<
@@ -153,8 +152,7 @@ void test_numeric_initial_data(
               star_radius / 2., star_radius * 2., 1., 1., {}, true});
   const auto logical_coords = logical_coordinates(mesh);
   const auto coords = map(logical_coords);
-  using spatial_metric_tag =
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>;
+  using spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   const auto spatial_metric = get<spatial_metric_tag>(
       tov_star.variables(coords, 0., tmpl::list<spatial_metric_tag>{}));
   const auto inv_spatial_metric =

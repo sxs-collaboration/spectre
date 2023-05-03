@@ -53,24 +53,22 @@ namespace CurvedScalarWave {
 template <size_t Dim>
 struct TimeDerivative {
  public:
-  using temporary_tags = tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
+  using temporary_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
-  using argument_tags = tmpl::list<
-      Tags::Pi, Tags::Phi<Dim>, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial,
-                                                  DataVector>,
-      gr::Tags::TraceExtrinsicCurvature<DataVector>, Tags::ConstraintGamma1,
-      Tags::ConstraintGamma2>;
+  using argument_tags =
+      tmpl::list<Tags::Pi, Tags::Phi<Dim>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, Dim>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, Dim>,
+                 gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_psi,

@@ -110,9 +110,8 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& /*vars*/,
-    tmpl::list<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>> /*meta*/)
-    const -> tuples::TaggedTuple<
-        gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::Shift<DataType, volume_dim>> /*meta*/) const
+    -> tuples::TaggedTuple<gr::Tags::Shift<DataType, volume_dim>> {
   return {
       make_with_value<tnsr::I<DataType, volume_dim, Frame::Inertial>>(x, 0.0)};
 }
@@ -122,10 +121,9 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& /*vars*/,
-    tmpl::list<::Tags::dt<
-        gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>> {
+    tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, volume_dim>>> /*meta*/)
+    const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, volume_dim>>> {
   return {
       make_with_value<tnsr::I<DataType, volume_dim, Frame::Inertial>>(x, 0.0)};
 }
@@ -146,10 +144,8 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
-                                       DataType>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::SpatialMetric<DataType, volume_dim>> /*meta*/) const
+    -> tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, volume_dim>> {
   auto spatial_metric =
       make_with_value<tnsr::ii<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
   get<0, 0>(spatial_metric) = vars.h;
@@ -164,10 +160,10 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
-                                                  DataType>>> /*meta*/) const
-    -> tuples::TaggedTuple<::Tags::dt<
-        gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>> {
+    tmpl::list<
+        ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim>>> /*meta*/)
+    const -> tuples::TaggedTuple<
+        ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim>>> {
   auto dt_spatial_metric =
       make_with_value<tnsr::ii<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
   get<0, 0>(dt_spatial_metric) = -1.0 * vars.dx_h;
@@ -202,10 +198,9 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial,
-                                            DataType>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, volume_dim>> /*meta*/)
+    const
+    -> tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<DataType, volume_dim>> {
   auto extrinsic_curvature =
       make_with_value<tnsr::ii<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
   get<0, 0>(extrinsic_curvature) = vars.dx_h_over_2_sqrt_h;
@@ -217,10 +212,9 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial,
-                                              DataType>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::InverseSpatialMetric<DataType, volume_dim>> /*meta*/)
+    const -> tuples::TaggedTuple<
+        gr::Tags::InverseSpatialMetric<DataType, volume_dim>> {
   auto inverse_spatial_metric =
       make_with_value<tnsr::II<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
   get<0, 0>(inverse_spatial_metric) = 1.0 / vars.h;
@@ -269,68 +263,69 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) {
       tmpl::list<                                                              \
           ::Tags::deriv<gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, \
                         Frame::Inertial>> /*meta*/) const;                     \
+  template tuples::TaggedTuple<gr::Tags::Shift<DTYPE(data), DIM(data)>>        \
+  GaugeWave<DIM(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
+      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
+      tmpl::list<gr::Tags::Shift<DTYPE(data), DIM(data)>> /*meta*/) const;     \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>                \
+      ::Tags::dt<gr::Tags::Shift<DTYPE(data), DIM(data)>>>                     \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<                                                              \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/)  \
+          ::Tags::dt<gr::Tags::Shift<DTYPE(data), DIM(data)>>> /*meta*/)       \
       const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      ::Tags::dt<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>>    \
-  GaugeWave<DIM(data)>::variables(                                             \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
-      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<::Tags::dt<                                                   \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) \
-      const;                                                                   \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,  \
+      ::Tags::deriv<gr::Tags::Shift<DTYPE(data), DIM(data)>,                   \
                     tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,            \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
+      tmpl::list<                                                              \
+          ::Tags::deriv<gr::Tags::Shift<DTYPE(data), DIM(data)>,               \
+                        tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/)   \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>        \
+      gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>                         \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<gr::Tags::SpatialMetric<DIM(data), Frame::Inertial,           \
-                                         DTYPE(data)>> /*meta*/) const;        \
-  template tuples::TaggedTuple<::Tags::dt<                                     \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>>       \
-  GaugeWave<DIM(data)>::variables(                                             \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
-      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<                           \
-          DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) const;          \
-  template tuples::TaggedTuple<::Tags::deriv<                                  \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,        \
-      tmpl::size_t<DIM(data)>, Frame::Inertial>>                               \
-  GaugeWave<DIM(data)>::variables(                                             \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
-      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,    \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
+      tmpl::list<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>> /*meta*/)    \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>> \
+      ::Tags::dt<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>>             \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial,    \
-                                                DTYPE(data)>> /*meta*/) const; \
+      tmpl::list<::Tags::dt<                                                   \
+          gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>> /*meta*/) const;   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial, DTYPE(data)>>   \
+      ::Tags::deriv<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>,           \
+                    tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial,      \
-                                              DTYPE(data)>> /*meta*/) const;   \
+      tmpl::list<                                                              \
+          ::Tags::deriv<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>,       \
+                        tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/)   \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::InverseSpatialMetric<DTYPE(data), DIM(data)>>                  \
+  GaugeWave<DIM(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
+      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
+      tmpl::list<                                                              \
+          gr::Tags::InverseSpatialMetric<DTYPE(data), DIM(data)>> /*meta*/)    \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::ExtrinsicCurvature<DTYPE(data), DIM(data)>>                    \
+  GaugeWave<DIM(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
+      const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
+      tmpl::list<                                                              \
+          gr::Tags::ExtrinsicCurvature<DTYPE(data), DIM(data)>> /*meta*/)      \
+      const;                                                                   \
   template tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>    \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& /*x*/, const double /*t*/,        \

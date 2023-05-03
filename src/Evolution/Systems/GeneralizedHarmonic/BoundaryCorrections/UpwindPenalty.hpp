@@ -221,8 +221,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   using dg_package_data_temporary_tags =
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>>;
   using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
 

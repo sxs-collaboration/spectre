@@ -140,8 +140,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
-                 gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<3>>,
                  hydro::Tags::EquationOfStateBase>;
 
@@ -177,8 +178,9 @@ struct LargestCharacteristicSpeed : db::SimpleTag {
 
 struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
                                            LargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                                   gr::Tags::SpatialMetric<3>>;
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(gsl::not_null<double*> speed,

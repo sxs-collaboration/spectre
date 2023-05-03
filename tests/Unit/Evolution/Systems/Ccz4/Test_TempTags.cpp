@@ -14,11 +14,11 @@ namespace {
 struct ArbitraryFrame;
 }  // namespace
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::GammaHatMinusContractedConformalChristoffel<Dim, Frame,
-                                                              DataType>>(
+      Ccz4::Tags::GammaHatMinusContractedConformalChristoffel<DataType, Dim,
+                                                              Frame>>(
       "GammaHatMinusContractedConformalChristoffel");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::KMinus2ThetaC<DataType>>(
       "KMinus2ThetaC");
@@ -27,36 +27,36 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Ccz4::Tags::ContractedFieldB<DataType>>(
       "ContractedFieldB");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ConformalMetricTimesFieldB<Dim, Frame, DataType>>(
+      Ccz4::Tags::ConformalMetricTimesFieldB<DataType, Dim, Frame>>(
       "ConformalMetricTimesFieldB");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::LapseTimesRicciScalarPlus2DivergenceZ4Constraint<DataType>>(
       "LapseTimesRicciScalarPlus2DivergenceZ4Constraint");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ConformalMetricTimesTraceATilde<Dim, Frame, DataType>>(
+      Ccz4::Tags::ConformalMetricTimesTraceATilde<DataType, Dim, Frame>>(
       "ConformalMetricTimesTraceATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::LapseTimesATilde<Dim, Frame, DataType>>("LapseTimesATilde");
+      Ccz4::Tags::LapseTimesATilde<DataType, Dim, Frame>>("LapseTimesATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::FieldDUpTimesATilde<Dim, Frame, DataType>>(
+      Ccz4::Tags::FieldDUpTimesATilde<DataType, Dim, Frame>>(
       "FieldDUpTimesATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::LapseTimesDerivATilde<Dim, Frame, DataType>>(
+      Ccz4::Tags::LapseTimesDerivATilde<DataType, Dim, Frame>>(
       "LapseTimesDerivATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::InverseConformalMetricTimesDerivATilde<Dim, Frame, DataType>>(
+      Ccz4::Tags::InverseConformalMetricTimesDerivATilde<DataType, Dim, Frame>>(
       "InverseConformalMetricTimesDerivATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ATildeMinusOneThirdConformalMetricTimesTraceATilde<Dim, Frame,
-                                                                     DataType>>(
+      Ccz4::Tags::ATildeMinusOneThirdConformalMetricTimesTraceATilde<
+          DataType, Dim, Frame>>(
       "ATildeMinusOneThirdConformalMetricTimesTraceATilde");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::LapseTimesFieldA<Dim, Frame, DataType>>("LapseTimesFieldA");
+      Ccz4::Tags::LapseTimesFieldA<DataType, Dim, Frame>>("LapseTimesFieldA");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ShiftTimesDerivGammaHat<Dim, Frame, DataType>>(
+      Ccz4::Tags::ShiftTimesDerivGammaHat<DataType, Dim, Frame>>(
       "ShiftTimesDerivGammaHat");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::InverseTauTimesConformalMetric<Dim, Frame, DataType>>(
+      Ccz4::Tags::InverseTauTimesConformalMetric<DataType, Dim, Frame>>(
       "InverseTauTimesConformalMetric");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::LapseTimesSlicingCondition<DataType>>(
@@ -64,10 +64,10 @@ void test_simple_tags() {
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.TempTags", "[Unit][Evolution]") {
-  test_simple_tags<1, ArbitraryFrame, double>();
-  test_simple_tags<1, ArbitraryFrame, DataVector>();
-  test_simple_tags<2, ArbitraryFrame, double>();
-  test_simple_tags<2, ArbitraryFrame, DataVector>();
-  test_simple_tags<3, ArbitraryFrame, double>();
-  test_simple_tags<3, ArbitraryFrame, DataVector>();
+  test_simple_tags<double, 1, ArbitraryFrame>();
+  test_simple_tags<DataVector, 1, ArbitraryFrame>();
+  test_simple_tags<double, 2, ArbitraryFrame>();
+  test_simple_tags<DataVector, 2, ArbitraryFrame>();
+  test_simple_tags<double, 3, ArbitraryFrame>();
+  test_simple_tags<DataVector, 3, ArbitraryFrame>();
 }

@@ -22,11 +22,11 @@
 
 namespace gh {
 namespace {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct D4NormOfShiftBuffer;
 
 template <size_t SpatialDim, typename Frame>
-struct D4NormOfShiftBuffer<SpatialDim, Frame, double> {
+struct D4NormOfShiftBuffer<double, SpatialDim, Frame> {
   explicit D4NormOfShiftBuffer(const size_t /*size*/) {}
 
   tnsr::i<double, SpatialDim, Frame> lower_shift{};
@@ -36,7 +36,7 @@ struct D4NormOfShiftBuffer<SpatialDim, Frame, double> {
 };
 
 template <size_t SpatialDim, typename Frame>
-struct D4NormOfShiftBuffer<SpatialDim, Frame, DataVector> {
+struct D4NormOfShiftBuffer<DataVector, SpatialDim, Frame> {
  private:
   // We make one giant allocation so that we don't thrash the heap.
   Variables<tmpl::list<::Tags::Tempi<0, SpatialDim, Frame, DataVector>,
@@ -64,7 +64,7 @@ struct D4NormOfShiftBuffer<SpatialDim, Frame, DataVector> {
 };
 }  // namespace
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_norm_of_shift(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_norm_of_shift,
     const Scalar<DataType>& lapse,
@@ -81,7 +81,7 @@ void spacetime_deriv_of_norm_of_shift(
   }
   // Use a Variables to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
-  D4NormOfShiftBuffer<SpatialDim, Frame, DataType> buffer(get_size(get(lapse)));
+  D4NormOfShiftBuffer<DataType, SpatialDim, Frame> buffer(get_size(get(lapse)));
 
   raise_or_lower_index(make_not_null(&buffer.lower_shift), shift,
                        spatial_metric);
@@ -113,7 +113,7 @@ void spacetime_deriv_of_norm_of_shift(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -124,7 +124,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::a<DataType, SpatialDim, Frame> d4_norm_of_shift{};
-  gh::spacetime_deriv_of_norm_of_shift<SpatialDim, Frame, DataType>(
+  gh::spacetime_deriv_of_norm_of_shift(
       make_not_null(&d4_norm_of_shift), lapse, shift, spatial_metric,
       inverse_spatial_metric, inverse_spacetime_metric, spacetime_unit_normal,
       phi, pi);

@@ -45,7 +45,7 @@ namespace gh {
  * where the first term is obtained from `time_deriv_of_shift()`, and the latter
  * is a user input.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_lower_shift(
     gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> dt_lower_shift,
     const Scalar<DataType>& lapse,
@@ -55,7 +55,7 @@ void time_deriv_of_lower_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

@@ -122,9 +122,8 @@ class Flattener {
   using argument_tags = tmpl::list<
       Tags::TildeB<>, Tags::TildePhi,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-      domain::Tags::Mesh<3>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>, domain::Tags::Mesh<3>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       hydro::Tags::EquationOfStateBase>;
 

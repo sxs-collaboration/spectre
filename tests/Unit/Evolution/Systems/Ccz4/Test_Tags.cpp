@@ -14,68 +14,68 @@ namespace {
 struct ArbitraryFrame;
 }  // namespace
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Ccz4::Tags::ConformalFactor<DataType>>(
       "ConformalFactor");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::ConformalFactorSquared<DataType>>("ConformalFactorSquared");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ConformalMetric<Dim, Frame, DataType>>(
+      Ccz4::Tags::ConformalMetric<DataType, Dim, Frame>>(
       "Conformal(SpatialMetric)");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::InverseConformalMetric<Dim, Frame, DataType>>(
+      Ccz4::Tags::InverseConformalMetric<DataType, Dim, Frame>>(
       "Conformal(InverseSpatialMetric)");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::ATilde<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::ATilde<DataType, Dim, Frame>>(
       "ATilde");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::TraceATilde<DataType>>(
       "TraceATilde");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogLapse<DataType>>("LogLapse");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<DataType, Dim, Frame>>(
       "FieldA");
-  TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::FieldB<Dim, Frame, DataType>>("FieldB");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldD<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldB<DataType, Dim, Frame>>(
+      "FieldB");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldD<DataType, Dim, Frame>>(
       "FieldD");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogConformalFactor<DataType>>(
       "LogConformalFactor");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldP<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldP<DataType, Dim, Frame>>(
       "FieldP");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldDUp<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldDUp<DataType, Dim, Frame>>(
       "FieldDUp");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ConformalChristoffelSecondKind<Dim, Frame, DataType>>(
+      Ccz4::Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame>>(
       "ConformalChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::DerivConformalChristoffelSecondKind<Dim, Frame, DataType>>(
+      Ccz4::Tags::DerivConformalChristoffelSecondKind<DataType, Dim, Frame>>(
       "DerivConformalChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ChristoffelSecondKind<Dim, Frame, DataType>>(
+      Ccz4::Tags::ChristoffelSecondKind<DataType, Dim, Frame>>(
       "ChristoffelSecondKind");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::Ricci<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Ricci<DataType, Dim, Frame>>(
       "Ricci");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::GradGradLapse<Dim, Frame, DataType>>("GradGradLapse");
+      Ccz4::Tags::GradGradLapse<DataType, Dim, Frame>>("GradGradLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::DivergenceLapse<DataType>>(
       "DivergenceLapse");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ContractedConformalChristoffelSecondKind<Dim, Frame,
-                                                           DataType>>(
+      Ccz4::Tags::ContractedConformalChristoffelSecondKind<DataType, Dim,
+                                                           Frame>>(
       "ContractedConformalChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::DerivContractedConformalChristoffelSecondKind<Dim, Frame,
-                                                                DataType>>(
+      Ccz4::Tags::DerivContractedConformalChristoffelSecondKind<DataType, Dim,
+                                                                Frame>>(
       "DerivContractedConformalChristoffelSecondKind");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::GammaHat<Dim, Frame, DataType>>(
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::GammaHat<DataType, Dim, Frame>>(
       "GammaHat");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::SpatialZ4Constraint<Dim, Frame, DataType>>(
+      Ccz4::Tags::SpatialZ4Constraint<DataType, Dim, Frame>>(
       "SpatialZ4Constraint");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::SpatialZ4ConstraintUp<Dim, Frame, DataType>>(
+      Ccz4::Tags::SpatialZ4ConstraintUp<DataType, Dim, Frame>>(
       "SpatialZ4ConstraintUp");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::GradSpatialZ4Constraint<Dim, Frame, DataType>>(
+      Ccz4::Tags::GradSpatialZ4Constraint<DataType, Dim, Frame>>(
       "GradSpatialZ4Constraint");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::RicciScalarPlusDivergenceZ4Constraint<DataType>>(
@@ -83,10 +83,10 @@ void test_simple_tags() {
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {
-  test_simple_tags<1, ArbitraryFrame, double>();
-  test_simple_tags<1, ArbitraryFrame, DataVector>();
-  test_simple_tags<2, ArbitraryFrame, double>();
-  test_simple_tags<2, ArbitraryFrame, DataVector>();
-  test_simple_tags<3, ArbitraryFrame, double>();
-  test_simple_tags<3, ArbitraryFrame, DataVector>();
+  test_simple_tags<double, 1, ArbitraryFrame>();
+  test_simple_tags<DataVector, 1, ArbitraryFrame>();
+  test_simple_tags<double, 2, ArbitraryFrame>();
+  test_simple_tags<DataVector, 2, ArbitraryFrame>();
+  test_simple_tags<double, 3, ArbitraryFrame>();
+  test_simple_tags<DataVector, 3, ArbitraryFrame>();
 }

@@ -13,7 +13,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
         const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
         const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -58,7 +58,7 @@ void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::aa<DataType, SpatialDim, Frame> pi(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -67,7 +67,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::aa<DataType, SpatialDim, Frame> pi{};
-  gh::pi<SpatialDim, Frame, DataType>(make_not_null(&pi), lapse, dt_lapse,
+  gh::pi<DataType, SpatialDim, Frame>(make_not_null(&pi), lapse, dt_lapse,
                                       shift, dt_shift, spatial_metric,
                                       dt_spatial_metric, phi);
   return pi;

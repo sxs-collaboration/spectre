@@ -305,8 +305,7 @@ void test_boundary_correction_conservation_impl(
     // adjust the spatial metric. Note that for testing purposes, the metric and
     // inverse metric don't need to be inverses of each other. However, we do
     // want both to be physically reasonable, i.e., close to flat space.
-    using spatial_metric =
-        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    using spatial_metric = gr::Tags::SpatialMetric<DataVector, FaceDim + 1>;
     if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
                                         spatial_metric>) {
       detail::adjust_spatial_metric_or_inverse(
@@ -603,8 +602,7 @@ void test_with_python(
         make_not_null(&unit_normal_vector),
         get<inv_spatial_metric>(fields_on_face));
 
-    using spatial_metric =
-        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    using spatial_metric = gr::Tags::SpatialMetric<DataVector, FaceDim + 1>;
     if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
                                         spatial_metric>) {
       detail::adjust_spatial_metric_or_inverse(
@@ -753,8 +751,7 @@ void test_with_python(
     // adjust the spatial metric. Note that for testing purposes, the metric and
     // inverse metric don't need to be inverses of each other. However, we do
     // want both to be physically reasonable, i.e., close to flat space.
-    using spatial_metric =
-        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    using spatial_metric = gr::Tags::SpatialMetric<DataVector, FaceDim + 1>;
     if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
                                         spatial_metric>) {
       // as for external inverse metric: we get the external metric by slightly

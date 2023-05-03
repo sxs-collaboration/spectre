@@ -56,16 +56,17 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     // Note: This same computation needs to be done in the time derivative
     // computation, so it is more efficient to move the code there in the long
     // term, but that likely requires more refactoring anyway.
-    Variables<tmpl::list<gr::Tags::SpatialMetric<3>,
-                         gr::Tags::InverseSpatialMetric<3>,
-                         gr::Tags::SqrtDetSpatialMetric<>>>
+    Variables<tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                         gr::Tags::SqrtDetSpatialMetric<DataVector>>>
         temp_buffer{num_grid_points};
-    auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(temp_buffer);
+    auto& spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_buffer);
     gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
     auto& inverse_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3>>(temp_buffer);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp_buffer);
     auto& sqrt_det_spatial_metric =
-        get<gr::Tags::SqrtDetSpatialMetric<>>(temp_buffer);
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(temp_buffer);
     determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
                             make_not_null(&inverse_spatial_metric),
                             spatial_metric);

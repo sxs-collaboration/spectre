@@ -151,8 +151,7 @@ void test_soln() {
                            tmpl::size_t<3>, Frame::Inertial>>,
 
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
-          helpers::Tags::PythonFunctionName<
-              gr::Tags::Shift<3, Frame::Inertial, DataVector>>>{
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, 3>>>{
           "soln_error", "soln_tilde_d", "soln_tilde_ye", "soln_tilde_tau",
           "soln_tilde_s", "soln_tilde_b", "soln_tilde_phi", "soln_flux_tilde_d",
           "soln_flux_tilde_ye", "soln_flux_tilde_tau", "soln_flux_tilde_s",
@@ -212,8 +211,7 @@ void test_data() {
                            tmpl::size_t<3>, Frame::Inertial>>,
 
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
-          helpers::Tags::PythonFunctionName<
-              gr::Tags::Shift<3, Frame::Inertial, DataVector>>>{
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, 3>>>{
           "soln_error", "data_tilde_d", "data_tilde_ye", "data_tilde_tau",
           "data_tilde_s", "data_tilde_b", "data_tilde_phi", "data_flux_tilde_d",
           "data_flux_tilde_ye", "data_flux_tilde_tau", "data_flux_tilde_s",

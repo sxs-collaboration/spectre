@@ -130,13 +130,14 @@ struct NeighborPackagedData {
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
         using dg_package_data_temporary_tags =
             typename DerivedCorrection::dg_package_data_temporary_tags;
-        using dg_package_data_argument_tags = tmpl::append<
-            evolved_vars_tags, recons_prim_tags, fluxes_tags,
-            tmpl::remove_duplicates<tmpl::push_back<
-                dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
-                gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-                evolution::dg::Actions::detail::NormalVector<3>>>>;
+        using dg_package_data_argument_tags =
+            tmpl::append<evolved_vars_tags, recons_prim_tags, fluxes_tags,
+                         tmpl::remove_duplicates<tmpl::push_back<
+                             dg_package_data_temporary_tags,
+                             gr::Tags::SpatialMetric<DataVector, 3>,
+                             gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                             gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                             evolution::dg::Actions::detail::NormalVector<3>>>>;
 
         const auto& element = db::get<domain::Tags::Element<3>>(box);
         const auto& eos = get<hydro::Tags::EquationOfStateBase>(box);
@@ -159,12 +160,12 @@ struct NeighborPackagedData {
                                           .product();
           vars_on_face.initialize(num_face_pts);
           // Copy spacetime vars over from volume.
-          using spacetime_vars_to_copy = tmpl::list<
-              gr::Tags::Lapse<DataVector>,
-              gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-              gr::Tags::SpatialMetric<3>,
-              gr::Tags::SqrtDetSpatialMetric<DataVector>,
-              gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+          using spacetime_vars_to_copy =
+              tmpl::list<gr::Tags::Lapse<DataVector>,
+                         gr::Tags::Shift<DataVector, 3>,
+                         gr::Tags::SpatialMetric<DataVector, 3>,
+                         gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>>;
           tmpl::for_each<spacetime_vars_to_copy>(
               [&direction, &extents, &vars_on_face,
                &spacetime_vars_on_faces =

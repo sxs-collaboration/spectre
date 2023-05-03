@@ -225,8 +225,7 @@ struct RandomBackground : elliptic::analytic_data::Background {
   // NOLINTEND(readability-convert-member-functions-to-static)
   static tnsr::II<DataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                     DataVector> /*meta*/) {
+      gr::Tags::InverseSpatialMetric<DataVector, Dim> /*meta*/) {
     tnsr::II<DataVector, Dim> inv_metric{x.begin()->size()};
     const DataVector r = get(magnitude(x));
     for (size_t i = 0; i < Dim; ++i) {
@@ -239,8 +238,8 @@ struct RandomBackground : elliptic::analytic_data::Background {
   }
   static tnsr::i<DataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
-      gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame::Inertial,
-                                                       DataVector> /*meta*/) {
+      gr::Tags::SpatialChristoffelSecondKindContracted<DataVector,
+                                                       Dim> /*meta*/) {
     tnsr::i<DataVector, Dim> result{x.begin()->size()};
     const DataVector r = get(magnitude(x));
     for (size_t i = 0; i < Dim; ++i) {

@@ -131,28 +131,26 @@ void test_ccsn_collapse(std::string progenitor_filename,
 
   const auto vars = ccsn_progenitor.variables(
       in_coords,
-      tmpl::list<
-          hydro::Tags::RestMassDensity<DataVector>,
-          hydro::Tags::ElectronFraction<DataVector>,
-          hydro::Tags::SpatialVelocity<DataVector, 3>,
-          hydro::Tags::SpecificEnthalpy<DataVector>,
-          hydro::Tags::Pressure<DataVector>,
-          hydro::Tags::SpecificInternalEnergy<DataVector>,
-          hydro::Tags::LorentzFactor<DataVector>,
-          hydro::Tags::MagneticField<DataVector, 3>,
-          hydro::Tags::DivergenceCleaningField<DataVector>,
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-          gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-          gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
-          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>{});
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 hydro::Tags::DivergenceCleaningField<DataVector>,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>>{});
 
   // Check velocity > c check and provide small interpolation ratio test
   // coverage
@@ -203,7 +201,7 @@ void test_ccsn_collapse(std::string progenitor_filename,
 
   // Relevant metric variables
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& sqrt_det_spatial_metric_analytic =
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
   const auto& det_spatial_metric_numeric =

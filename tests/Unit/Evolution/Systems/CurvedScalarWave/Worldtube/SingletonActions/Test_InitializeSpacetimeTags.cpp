@@ -31,8 +31,8 @@ SPECTRE_TEST_CASE(
         1. / (orbital_radius * sqrt(orbital_radius));
     const tnsr::I<double, Dim, Frame::Grid> wt_center{{orbital_radius, 0., 0.}};
     auto box = db::create<db::AddSimpleTags<
-        gr::Tags::InverseSpacetimeMetric<Dim, Frame::Grid, double>,
-        gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame::Grid, double>,
+        gr::Tags::InverseSpacetimeMetric<double, Dim, Frame::Grid>,
+        gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim, Frame::Grid>,
         Tags::ExcisionSphere<Dim>>>(tnsr::AA<double, Dim, Frame::Grid>{},
                                     tnsr::A<double, Dim, Frame::Grid>{},
                                     ExcisionSphere<Dim>(1., wt_center, {}));
@@ -44,22 +44,22 @@ SPECTRE_TEST_CASE(
     using background_tags = tmpl::list<
         gr::Tags::Lapse<double>, ::Tags::dt<gr::Tags::Lapse<double>>,
         ::Tags::deriv<gr::Tags::Lapse<double>, tmpl::size_t<Dim>, Frame::Grid>,
-        gr::Tags::Shift<Dim, Frame::Grid, double>,
-        ::Tags::dt<gr::Tags::Shift<Dim, Frame::Grid, double>>,
-        ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Grid, double>,
+        gr::Tags::Shift<double, Dim, Frame::Grid>,
+        ::Tags::dt<gr::Tags::Shift<double, Dim, Frame::Grid>>,
+        ::Tags::deriv<gr::Tags::Shift<double, Dim, Frame::Grid>,
                       tmpl::size_t<Dim>, Frame::Grid>,
-        gr::Tags::SpatialMetric<Dim, Frame::Grid, double>,
-        gr::Tags::InverseSpatialMetric<Dim, Frame::Grid, double>,
-        ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Grid, double>>,
-        ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Grid, double>,
+        gr::Tags::SpatialMetric<double, Dim, Frame::Grid>,
+        gr::Tags::InverseSpatialMetric<double, Dim, Frame::Grid>,
+        ::Tags::dt<gr::Tags::SpatialMetric<double, Dim, Frame::Grid>>,
+        ::Tags::deriv<gr::Tags::SpatialMetric<double, Dim, Frame::Grid>,
                       tmpl::size_t<Dim>, Frame::Grid>>;
     const auto background_vars =
         kerr_schild.variables(wt_center, 0., background_tags{});
 
     const auto inverse_metric = gr::inverse_spacetime_metric(
         get<gr::Tags::Lapse<double>>(background_vars),
-        get<gr::Tags::Shift<Dim, Frame::Grid, double>>(background_vars),
-        get<gr::Tags::InverseSpatialMetric<Dim, Frame::Grid, double>>(
+        get<gr::Tags::Shift<double, Dim, Frame::Grid>>(background_vars),
+        get<gr::Tags::InverseSpatialMetric<double, Dim, Frame::Grid>>(
             background_vars));
 
     // jacobian and hessian to transform into a frame co-rotating about the
@@ -76,7 +76,7 @@ SPECTRE_TEST_CASE(
                                       jacobian(ti::B, ti::d) *
                                       inverse_metric(ti::C, ti::D));
     const auto& inverse_spacetime_metric =
-        get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Grid, double>>(box);
+        get<gr::Tags::InverseSpacetimeMetric<double, Dim, Frame::Grid>>(box);
     CHECK_ITERABLE_APPROX(boosted_inverse_metric, inverse_spacetime_metric);
 
     tnsr::Abb<double, Dim, Frame::Grid> inverse_hessian(0.);
@@ -90,15 +90,15 @@ SPECTRE_TEST_CASE(
         get<::Tags::dt<gr::Tags::Lapse<double>>>(background_vars),
         get<::Tags::deriv<gr::Tags::Lapse<double>, tmpl::size_t<Dim>,
                           Frame::Grid>>(background_vars),
-        get<gr::Tags::Shift<Dim, Frame::Grid, double>>(background_vars),
-        get<::Tags::dt<gr::Tags::Shift<Dim, Frame::Grid, double>>>(
+        get<gr::Tags::Shift<double, Dim, Frame::Grid>>(background_vars),
+        get<::Tags::dt<gr::Tags::Shift<double, Dim, Frame::Grid>>>(
             background_vars),
-        get<::Tags::deriv<gr::Tags::Shift<Dim, Frame::Grid, double>,
+        get<::Tags::deriv<gr::Tags::Shift<double, Dim, Frame::Grid>,
                           tmpl::size_t<Dim>, Frame::Grid>>(background_vars),
-        get<gr::Tags::SpatialMetric<Dim, Frame::Grid, double>>(background_vars),
-        get<::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Grid, double>>>(
+        get<gr::Tags::SpatialMetric<double, Dim, Frame::Grid>>(background_vars),
+        get<::Tags::dt<gr::Tags::SpatialMetric<double, Dim, Frame::Grid>>>(
             background_vars),
-        get<::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Grid, double>,
+        get<::Tags::deriv<gr::Tags::SpatialMetric<double, Dim, Frame::Grid>,
                           tmpl::size_t<Dim>, Frame::Grid>>(background_vars));
 
     const auto christoffel =
@@ -118,8 +118,8 @@ SPECTRE_TEST_CASE(
         tenex::evaluate<ti::A>(boosted_inverse_metric(ti::B, ti::C) *
                                boosted_christoffel(ti::A, ti::b, ti::c));
     const auto& contracted_christoffel =
-        get<gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame::Grid,
-                                                          double>>(box);
+        get<gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim,
+                                                          Frame::Grid>>(box);
     CHECK_ITERABLE_APPROX(contracted_christoffel,
                           contracted_boosted_christoffel);
   }

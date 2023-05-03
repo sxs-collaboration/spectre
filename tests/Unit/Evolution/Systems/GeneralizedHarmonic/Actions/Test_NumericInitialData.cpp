@@ -78,38 +78,35 @@ struct MockReadVolumeData {
         get<detail::Tags::NumericInitialDataVariables<TestOptionGroup>>(cache);
     if (std::holds_alternative<detail::GeneralizedHarmonic>(selected_vars)) {
       CHECK(get<importers::Tags::Selected<
-                gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>>(
-                selected_fields) == "CustomSpacetimeMetric");
+                gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields) ==
+            "CustomSpacetimeMetric");
       CHECK(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
                 selected_fields) == "CustomPi");
-      CHECK_FALSE(get<importers::Tags::Selected<
-                      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          selected_fields));
-      CHECK_FALSE(get<importers::Tags::Selected<gr::Tags::Lapse<DataVector>>>(
-          selected_fields));
-      CHECK_FALSE(get<importers::Tags::Selected<
-                      gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
-          selected_fields));
       CHECK_FALSE(
           get<importers::Tags::Selected<
-              gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>(
+              gr::Tags::SpatialMetric<DataVector, 3>>>(selected_fields));
+      CHECK_FALSE(get<importers::Tags::Selected<gr::Tags::Lapse<DataVector>>>(
+          selected_fields));
+      CHECK_FALSE(
+          get<importers::Tags::Selected<gr::Tags::Shift<DataVector, 3>>>(
               selected_fields));
+      CHECK_FALSE(
+          get<importers::Tags::Selected<
+              gr::Tags::ExtrinsicCurvature<DataVector, 3>>>(selected_fields));
     } else if (std::holds_alternative<detail::Adm>(selected_vars)) {
       CHECK(get<importers::Tags::Selected<
-                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-                selected_fields) == "CustomSpatialMetric");
+                gr::Tags::SpatialMetric<DataVector, 3>>>(selected_fields) ==
+            "CustomSpatialMetric");
       CHECK(get<importers::Tags::Selected<gr::Tags::Lapse<DataVector>>>(
                 selected_fields) == "CustomLapse");
-      CHECK(get<importers::Tags::Selected<
-                gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
+      CHECK(get<importers::Tags::Selected<gr::Tags::Shift<DataVector, 3>>>(
                 selected_fields) == "CustomShift");
       CHECK(get<importers::Tags::Selected<
-                gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>(
+                gr::Tags::ExtrinsicCurvature<DataVector, 3>>>(
                 selected_fields) == "CustomExtrinsicCurvature");
       CHECK_FALSE(
           get<importers::Tags::Selected<
-              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>>(
-              selected_fields));
+              gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields));
       CHECK_FALSE(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
           selected_fields));
     } else {
@@ -204,29 +201,24 @@ void test_numeric_initial_data(
       1., {{0., 0., 0.}}, {{0., 0., 0.}}};
   const auto kerr_gh_vars = kerr.variables(coords, 0., gh_system_vars{});
   if (std::holds_alternative<detail::GeneralizedHarmonic>(selected_vars)) {
-    get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(inbox) =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            kerr_gh_vars);
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
     get<Tags::Pi<3, Frame::Inertial>>(inbox) =
         get<Tags::Pi<3, Frame::Inertial>>(kerr_gh_vars);
   } else if (std::holds_alternative<detail::Adm>(selected_vars)) {
     const auto kerr_adm_vars = kerr.variables(
         coords, 0.,
-        tmpl::list<
-            gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-            gr::Tags::Lapse<DataVector>,
-            gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-            gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>{});
-    get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(inbox) =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            kerr_adm_vars);
+        tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                   gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                   gr::Tags::ExtrinsicCurvature<DataVector, 3>>{});
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(inbox) =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(kerr_adm_vars);
     get<gr::Tags::Lapse<DataVector>>(inbox) =
         get<gr::Tags::Lapse<DataVector>>(kerr_adm_vars);
-    get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(inbox) =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(kerr_adm_vars);
-    get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(inbox) =
-        get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
-            kerr_adm_vars);
+    get<gr::Tags::Shift<DataVector, 3>>(inbox) =
+        get<gr::Tags::Shift<DataVector, 3>>(kerr_adm_vars);
+    get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(inbox) =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(kerr_adm_vars);
   } else {
     REQUIRE(false);
   }
@@ -238,10 +230,8 @@ void test_numeric_initial_data(
   // taking numerical derivatives on a fairly coarse wedge-shaped grid.
   Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
-      get_element_tag(
-          gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>{}),
-      (get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-          kerr_gh_vars)),
+      get_element_tag(gr::Tags::SpacetimeMetric<DataVector, 3>{}),
+      (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars)),
       custom_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get_element_tag(Tags::Pi<3, Frame::Inertial>{}),

@@ -70,7 +70,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::Shift<DataType, Dim> /*meta*/) const {
   *shift = cache->get_var(*this,
                           Tags::ShiftExcess<DataType, Dim, Frame::Inertial>{});
   const auto& shift_background = cache->get_var(
@@ -84,7 +84,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataType, Dim> /*meta*/) const {
   *spatial_metric = cache->get_var(
       *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   const auto& conformal_factor =
@@ -98,7 +98,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
+    gr::Tags::InverseSpatialMetric<DataType, Dim> /*meta*/)
     const {
   const auto& conformal_factor =
       cache->get_var(*this, Tags::ConformalFactor<DataType>{});
@@ -113,7 +113,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
     const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   const auto& conformal_metric = cache->get_var(
       *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
@@ -192,7 +192,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataType> /*meta*/) const {
   const auto& shift =
-      cache->get_var(*this, gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
+      cache->get_var(*this, gr::Tags::Shift<DataType, Dim>{});
   const auto& deriv_extrinsic_curvature_trace = cache->get_var(
       *this, ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
                            tmpl::size_t<Dim>, Frame::Inertial>{});

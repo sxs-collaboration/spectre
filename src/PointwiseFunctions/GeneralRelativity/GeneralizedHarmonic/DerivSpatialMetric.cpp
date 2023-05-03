@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void deriv_spatial_metric(
     const gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_spatial_metric,
@@ -33,11 +33,11 @@ void deriv_spatial_metric(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::ijj<DataType, SpatialDim, Frame> d_spatial_metric{};
-  gh::deriv_spatial_metric<SpatialDim, Frame, DataType>(
+  gh::deriv_spatial_metric<DataType, SpatialDim, Frame>(
       make_not_null(&d_spatial_metric), phi);
   return d_spatial_metric;
 }

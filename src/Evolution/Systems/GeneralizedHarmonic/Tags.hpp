@@ -137,7 +137,7 @@ struct CharacteristicFields : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type =
-      Variables<tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
+      Variables<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
                            Pi<Dim, Frame>, Phi<Dim, Frame>>>;
 };
 

@@ -19,7 +19,7 @@ interface_outgoing_null_normal_one_form(
         spacetime_normal_one_form,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
         interface_normal_one_form) {
-  return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
+  return gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
       spacetime_normal_one_form, interface_normal_one_form, 1.);
 }
 template <size_t SpatialDim, typename DataType>
@@ -29,7 +29,7 @@ interface_incoming_null_normal_one_form(
         spacetime_normal_one_form,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
         interface_normal_one_form) {
-  return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
+  return gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
       spacetime_normal_one_form, interface_normal_one_form, -1.);
 }
 template <size_t SpatialDim, typename DataType>
@@ -39,7 +39,7 @@ interface_outgoing_null_normal_vector(
         spacetime_normal_vector,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
         interface_normal_vector) {
-  return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
+  return gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
       spacetime_normal_vector, interface_normal_vector, 1.);
 }
 template <size_t SpatialDim, typename DataType>
@@ -49,7 +49,7 @@ interface_incoming_null_normal_vector(
         spacetime_normal_vector,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
         interface_normal_vector) {
-  return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
+  return gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
       spacetime_normal_vector, interface_normal_vector, -1.);
 }
 

@@ -127,7 +127,7 @@ template <typename DataType, typename Frame>
 void BrillLindquist::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const {
   const auto& conformal_factor =
       cache->get_var(*this, internal_tags::conformal_factor<DataType>{});
   std::fill(spatial_metric->begin(), spatial_metric->end(), 0.);
@@ -183,7 +183,7 @@ template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 BrillLindquist::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::Shift<3, Frame, DataType> /*meta*/) {
+    gr::Tags::Shift<DataType, 3, Frame> /*meta*/) {
   const auto& r_a = get(get_var(computer, internal_tags::r_a<DataType>{}));
   return make_with_value<tnsr::I<DataType, 3, Frame>>(r_a, 0.);
 }
@@ -192,7 +192,7 @@ template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 BrillLindquist::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/) {
+    ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/) {
   const auto& r_a = get(get_var(computer, internal_tags::r_a<DataType>{}));
   return make_with_value<tnsr::I<DataType, 3, Frame>>(r_a, 0.);
 }
@@ -210,7 +210,7 @@ template <typename DataType, typename Frame>
 tnsr::ii<DataType, 3, Frame>
 BrillLindquist::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) {
+    ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) {
   const auto& r_a = get(get_var(computer, internal_tags::r_a<DataType>{}));
   return make_with_value<tnsr::ii<DataType, 3, Frame>>(r_a, 0.);
 }
@@ -228,9 +228,9 @@ template <typename DataType, typename Frame>
 tnsr::II<DataType, 3, Frame>
 BrillLindquist::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) {
+    gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/) {
   const auto& spatial_metric =
-      get_var(computer, gr::Tags::SpatialMetric<3, Frame, DataType>{});
+      get_var(computer, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
   tnsr::II<DataType, 3, Frame> inverse_spatial_metric{};
   get<0, 0>(inverse_spatial_metric) = 1.0 / get<0, 0>(spatial_metric);
   get<1, 1>(inverse_spatial_metric) = 1.0 / get<1, 1>(spatial_metric);
@@ -242,7 +242,7 @@ template <typename DataType, typename Frame>
 tnsr::ii<DataType, 3, Frame>
 BrillLindquist::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) {
+    gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/) {
   const auto& r_a = get(get_var(computer, internal_tags::r_a<DataType>{}));
   return make_with_value<tnsr::ii<DataType, 3, Frame>>(r_a, 0.);
 }

@@ -35,12 +35,12 @@ namespace gr {
  *
  * is computed.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_normal_vector(
     gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
         spacetime_normal_vector,
@@ -55,21 +55,21 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeNormalVector`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpacetimeNormalVectorCompute
-    : SpacetimeNormalVector<SpatialDim, Frame, DataType>,
+    : SpacetimeNormalVector<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>>;
+      tmpl::list<Lapse<DataType>, Shift<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::A<DataType, SpatialDim, Frame>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&)>(
-      &spacetime_normal_vector<SpatialDim, Frame, DataType>);
+      &spacetime_normal_vector<DataType, SpatialDim, Frame>);
 
-  using base = SpacetimeNormalVector<SpatialDim, Frame, DataType>;
+  using base = SpacetimeNormalVector<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

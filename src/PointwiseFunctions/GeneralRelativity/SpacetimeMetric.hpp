@@ -33,13 +33,13 @@ namespace gr {
  * where \f$ \alpha, \beta^i\f$ and \f$ \gamma_{ij}\f$ are the lapse, shift and
  * spatial metric respectively
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -53,12 +53,12 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeMetric`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
-struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct SpacetimeMetricCompute : SpacetimeMetric<DataType, SpatialDim, Frame>,
                                 db::ComputeTag {
   using argument_tags =
-      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
-                 SpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<Lapse<DataType>, Shift<DataType, SpatialDim, Frame>,
+                 SpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::aa<DataType, SpatialDim, Frame>;
 
@@ -66,9 +66,9 @@ struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
       gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
       const tnsr::ii<DataType, SpatialDim, Frame>&)>(
-      &spacetime_metric<SpatialDim, Frame, DataType>);
+      &spacetime_metric<DataType, SpatialDim, Frame>);
 
-  using base = SpacetimeMetric<SpatialDim, Frame, DataType>;
+  using base = SpacetimeMetric<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

@@ -92,10 +92,10 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
   //  * divergence cleaning field on ghost zone
   //  * spatial metric
   //  * sqrt determinant of spatial metric
-  Variables<tmpl::list<::Tags::TempScalar<0>,
-                       hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       ::Tags::TempScalar<1>, gr::Tags::SpatialMetric<3>,
-                       gr::Tags::SqrtDetSpatialMetric<>>>
+  Variables<tmpl::list<
+      ::Tags::TempScalar<0>, hydro::Tags::SpatialVelocity<DataVector, 3>,
+      ::Tags::TempScalar<1>, gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>>>
       temp_buffer{number_of_grid_points};
   auto& normal_dot_interior_spatial_velocity =
       get<::Tags::TempScalar<0>>(temp_buffer);
@@ -103,9 +103,10 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(temp_buffer);
   auto& exterior_divergence_cleaning_field =
       get<::Tags::TempScalar<1>>(temp_buffer);
-  auto& interior_spatial_metric = get<gr::Tags::SpatialMetric<3>>(temp_buffer);
+  auto& interior_spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_buffer);
   auto& interior_sqrt_det_spatial_metric =
-      get<gr::Tags::SqrtDetSpatialMetric<>>(temp_buffer);
+      get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(temp_buffer);
 
   get(*lapse) = get(interior_lapse);
   for (size_t i = 0; i < 3; ++i) {

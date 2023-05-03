@@ -85,28 +85,28 @@ struct TimeDerivativeTermsImpl<
     for (size_t i = 0; i < 3; ++i) {
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                         Frame::Inertial>>(*temps_ptr)
-          .get(i) = -get(get<gr::Tags::Lapse<>>(*temps_ptr)) *
+          .get(i) = -get(get<gr::Tags::Lapse<DataVector>>(*temps_ptr)) *
                     get<gh::Tags::HalfPhiTwoNormals<3>>(*temps_ptr).get(i);
     }
     const auto& phi =
         get<Tags::detail::TemporaryReference<gh::Tags::Phi<3>>>(arguments);
     const auto& inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3>>(*temps_ptr);
-    const auto& shift = get<gr::Tags::Shift<3>>(*temps_ptr);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(*temps_ptr);
+    const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*temps_ptr);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
-        get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                          tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
+        get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                          Frame::Inertial>>(*temps_ptr)
             .get(i, j) = inv_spatial_metric.get(j, 0) * phi.get(i, 0, 1);
         for (size_t k = 1; k < 3; ++k) {
-          get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                            tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
+          get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                            Frame::Inertial>>(*temps_ptr)
               .get(i, j) += inv_spatial_metric.get(j, k) * phi.get(i, 0, k + 1);
         }
         for (size_t k = 0; k < 3; ++k) {
           for (size_t l = 0; l < 3; ++l) {
-            get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                              tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
+            get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                              Frame::Inertial>>(*temps_ptr)
                 .get(i, j) -= shift.get(k) * inv_spatial_metric.get(j, l) *
                               phi.get(i, l + 1, k + 1);
           }
@@ -118,9 +118,8 @@ struct TimeDerivativeTermsImpl<
       for (size_t j = 0; j < 3; ++j) {
         for (size_t k = j; k < 3; ++k) {
           // NOTE: it would be nice if we could just make this a reference...
-          get<::Tags::deriv<
-              gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-              tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
+          get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                            tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
               .get(i, j, k) = phi.get(i, j + 1, k + 1);
         }
       }
@@ -129,7 +128,7 @@ struct TimeDerivativeTermsImpl<
         get<Tags::detail::TemporaryReference<gh::Tags::Pi<3>>>(arguments);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {
-        get<gr::Tags::ExtrinsicCurvature<3>>(*temps_ptr).get(i, j) =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(*temps_ptr).get(i, j) =
             0.5 * (pi.get(i + 1, j + 1) +
                    get<gh::Tags::PhiOneNormal<3>>(*temps_ptr).get(i, j + 1) +
                    get<gh::Tags::PhiOneNormal<3>>(*temps_ptr).get(j, i + 1));
@@ -216,14 +215,14 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::temporary_tags;
   // Additional temp tags are the derivatives of the metric since GH doesn't
   // explicitly calculate those.
-  using valencia_extra_temp_tags = tmpl::list<
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3>>;
+  using valencia_extra_temp_tags =
+      tmpl::list<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
   using valencia_arg_tags = tmpl::list_difference<
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags,
       tmpl::append<gh_temp_tags, valencia_extra_temp_tags>>;
@@ -240,9 +239,9 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::LorentzFactor<DataVector>,
       grmhd::ValenciaDivClean::TimeDerivativeTerms::OneOverLorentzFactorSquared,
-      hydro::Tags::Pressure<DataVector>, gr::Tags::SpacetimeMetric<3>,
-      gr::Tags::Shift<3_st, Frame::Inertial, DataVector>,
-      gr::Tags::Lapse<DataVector>>;
+      hydro::Tags::Pressure<DataVector>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
+      gr::Tags::Shift<DataVector, 3_st>, gr::Tags::Lapse<DataVector>>;
 
   using temporary_tags = tmpl::remove_duplicates<
       tmpl::append<gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,

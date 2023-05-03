@@ -100,9 +100,10 @@ void test() {
               ::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeS<Dim>,
                            tmpl::size_t<Dim>, Frame::Inertial>>,
 
-          helpers::Tags::PythonFunctionName<gr::Tags::Lapse<>>,
-          helpers::Tags::PythonFunctionName<gr::Tags::Shift<Dim>>,
-          helpers::Tags::PythonFunctionName<gr::Tags::SpatialMetric<Dim>>,
+          helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, Dim>>,
+          helpers::Tags::PythonFunctionName<
+              gr::Tags::SpatialMetric<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<
               hydro::Tags::RestMassDensity<DataVector>>,
           helpers::Tags::PythonFunctionName<

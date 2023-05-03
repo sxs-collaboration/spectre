@@ -378,7 +378,7 @@ template <typename DataType, typename Frame>
 void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::Shift<DataType, 3, Frame> /*meta*/) const {
   const auto& two_m_over_m_plus_r_squared = cache->get_var(
       *this, internal_tags::two_m_over_m_plus_r_squared<DataType>{});
   const auto& x_over_r =
@@ -417,7 +417,7 @@ template <typename DataType, typename Frame>
 void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const {
   const auto& f_0 = cache->get_var(*this, internal_tags::f_0<DataType>{});
   const auto& spatial_metric_rr_minus_f_0 = cache->get_var(
       *this, internal_tags::spatial_metric_rr_minus_f_0<DataType>{});
@@ -470,7 +470,7 @@ template <typename DataType, typename Frame>
 void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
     const gsl::not_null<CachedBuffer*> /*cache*/,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const {
+    ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) const {
   std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
 }
 
@@ -480,7 +480,7 @@ void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<CachedBuffer*> cache,
     gr::Tags::DetSpatialMetric<DataType> /*meta*/) const {
   const auto& spatial_metric =
-      cache->get_var(*this, gr::Tags::SpatialMetric<3, Frame, DataType>{});
+      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
 
   *det_spatial_metric = determinant(spatial_metric);
 }
@@ -529,7 +529,7 @@ template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 HarmonicSchwarzschild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/) {
+    ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/) {
   const auto& r = get(get_var(computer, internal_tags::r<DataType>{}));
   return make_with_value<tnsr::I<DataType, 3, Frame>>(r, 0.);
 }
@@ -548,9 +548,9 @@ template <typename DataType, typename Frame>
 tnsr::II<DataType, 3, Frame>
 HarmonicSchwarzschild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) {
+    gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/) {
   const auto& spatial_metric =
-      get_var(computer, gr::Tags::SpatialMetric<3, Frame, DataType>{});
+      get_var(computer, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
   const DataType& spatial_metric_00 = get<0, 0>(spatial_metric);
   const DataType& spatial_metric_01 = get<0, 1>(spatial_metric);
   const DataType& spatial_metric_02 = get<0, 2>(spatial_metric);
@@ -587,14 +587,14 @@ template <typename DataType, typename Frame>
 tnsr::ii<DataType, 3, Frame>
 HarmonicSchwarzschild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) {
+    gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/) {
   return gr::extrinsic_curvature(
       get_var(computer, gr::Tags::Lapse<DataType>{}),
-      get_var(computer, gr::Tags::Shift<3, Frame, DataType>{}),
+      get_var(computer, gr::Tags::Shift<DataType, 3, Frame>{}),
       get_var(computer, DerivShift<DataType, Frame>{}),
-      get_var(computer, gr::Tags::SpatialMetric<3, Frame, DataType>{}),
+      get_var(computer, gr::Tags::SpatialMetric<DataType, 3, Frame>{}),
       get_var(computer,
-              ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>{}),
+              ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>{}),
       get_var(computer, DerivSpatialMetric<DataType, Frame>{}));
 }
 

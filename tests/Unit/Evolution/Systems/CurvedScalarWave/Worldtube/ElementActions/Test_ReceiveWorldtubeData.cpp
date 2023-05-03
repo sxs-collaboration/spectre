@@ -61,8 +61,7 @@ struct MockElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
-                  Tags::PunctureField<Dim>,
-                  gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                  Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
                   gr::Tags::Lapse<DataVector>,
                   domain::Tags::InverseJacobian<Dim, Frame::Grid,
                                                 Frame::Inertial>,

@@ -59,16 +59,17 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
 
     // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
     // metric}} on the DG grid since we need these for the prim recovery.
-    Variables<tmpl::list<gr::Tags::SpatialMetric<3>,
-                         gr::Tags::InverseSpatialMetric<3>,
-                         gr::Tags::SqrtDetSpatialMetric<>>>
+    Variables<tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                         gr::Tags::SqrtDetSpatialMetric<DataVector>>>
         temp_buffer{num_grid_points};
-    auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(temp_buffer);
+    auto& spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_buffer);
     gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
     auto& inverse_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3>>(temp_buffer);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp_buffer);
     auto& sqrt_det_spatial_metric =
-        get<gr::Tags::SqrtDetSpatialMetric<>>(temp_buffer);
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(temp_buffer);
     determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
                             make_not_null(&inverse_spatial_metric),
                             spatial_metric);

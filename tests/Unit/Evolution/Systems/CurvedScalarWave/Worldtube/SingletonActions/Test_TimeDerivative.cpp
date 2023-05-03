@@ -90,9 +90,9 @@ struct MockWorldtubeSingleton {
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                        Frame::Grid>,
-                  gr::Tags::InverseSpacetimeMetric<Dim, Frame::Grid, double>,
-                  gr::Tags::TraceSpacetimeChristoffelSecondKind<
-                      Dim, Frame::Grid, double>,
+                  gr::Tags::InverseSpacetimeMetric<double, Dim, Frame::Grid>,
+                  gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim,
+                                                                Frame::Grid>,
                   Tags::ExpansionOrder, Tags::ExcisionSphere<Dim>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,

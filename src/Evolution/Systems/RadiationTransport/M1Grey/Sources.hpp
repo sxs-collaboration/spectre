@@ -81,15 +81,15 @@ struct ComputeSources {
       Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
       Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
       Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...,
-      gr::Tags::Lapse<>,
+      gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<3>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
 
   static void apply(
       const gsl::not_null<typename Tags::TildeE<

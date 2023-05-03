@@ -32,16 +32,16 @@ namespace Tags {
  * \details Can be retrieved using `gr::Tags::DetSpatialMetric` and
  * `gr::Tags::InverseSpatialMetric`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct DetAndInverseSpatialMetricCompute
     : ::Tags::Variables<
           tmpl::list<DetSpatialMetric<DataType>,
-                     InverseSpatialMetric<SpatialDim, Frame, DataType>>>,
+                     InverseSpatialMetric<DataType, SpatialDim, Frame>>>,
       db::ComputeTag {
-  using argument_tags = tmpl::list<SpatialMetric<SpatialDim, Frame, DataType>>;
+  using argument_tags = tmpl::list<SpatialMetric<DataType, SpatialDim, Frame>>;
   using base = ::Tags::Variables<
       tmpl::list<DetSpatialMetric<DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>>;
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>>;
   using return_type = typename base::type;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<return_type*>,
@@ -57,7 +57,7 @@ struct DetAndInverseSpatialMetricCompute
  *
  * \details Can be retrieved using `gr::Tags::SqrtDetSpatialMetric`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
                                      db::ComputeTag {
   using argument_tags = tmpl::list<DetSpatialMetric<DataType>>;

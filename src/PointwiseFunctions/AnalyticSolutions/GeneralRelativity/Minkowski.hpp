@@ -56,22 +56,21 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
                                    Frame::Inertial>;
   template <typename DataType>
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial>;
+  using DerivShift = ::Tags::deriv<gr::Tags::Shift<DataType, Dim>,
+                                   tmpl::size_t<Dim>, Frame::Inertial>;
   template <typename DataType>
   using DerivSpatialMetric =
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>;
 
   template <typename DataType, typename Frame = Frame::Inertial>
   using tags = tmpl::flatten<tmpl::list<
       typename AnalyticSolution<Dim>::template tags<DataType, Frame>,
-      gr::Tags::DerivDetSpatialMetric<Dim, Frame, DataType>,
+      gr::Tags::DerivDetSpatialMetric<DataType, Dim, Frame>,
       gr::Tags::TraceExtrinsicCurvature<DataType>,
-      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame, DataType>,
-      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame, DataType>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, DataType>>>;
+      gr::Tags::SpatialChristoffelFirstKind<DataType, Dim, Frame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataType, Dim, Frame>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataType, Dim, Frame>>>;
 
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
@@ -105,67 +104,54 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
                                Frame::Inertial>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>
-  variables(
+  tuples::TaggedTuple<gr::Tags::Shift<DataType, Dim>> variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>> /*meta*/)
-      const;
+      tmpl::list<gr::Tags::Shift<DataType, Dim>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>>
-  variables(
+  tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, Dim>>> variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<
-          ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>> /*meta*/)
-      const;
+      tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, Dim>>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial>>
+  tuples::TaggedTuple<::Tags::deriv<gr::Tags::Shift<DataType, Dim>,
+                                    tmpl::size_t<Dim>, Frame::Inertial>>
   variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+      tmpl::list<::Tags::deriv<gr::Tags::Shift<DataType, Dim>,
                                tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
       const;
 
   template <typename DataType>
-  tuples::TaggedTuple<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial,
-                                               DataType>> /*meta*/) const;
+  tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::SpatialMetric<DataType, Dim>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<
-                Dim, Frame::Inertial, DataType>>> /*meta*/) const;
-
-  template <typename DataType>
-  tuples::TaggedTuple<
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial>>
+  tuples::TaggedTuple<::Tags::dt<gr::Tags::SpatialMetric<DataType, Dim>>>
   variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<
-          ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                        tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/) const;
+      tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<DataType, Dim>>> /*meta*/)
+      const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::InverseSpatialMetric<
-                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+  tuples::TaggedTuple<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
+                                    tmpl::size_t<Dim>, Frame::Inertial>>
+  variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
+      const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial,
-                                                    DataType>> /*meta*/) const;
+  tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataType, Dim>> /*meta*/) const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, Dim>> /*meta*/) const;
 
   template <typename DataType>
   tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>> variables(
@@ -173,11 +159,10 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::DerivDetSpatialMetric<
-                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+  tuples::TaggedTuple<gr::Tags::DerivDetSpatialMetric<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::DerivDetSpatialMetric<DataType, Dim>> /*meta*/)
+      const;
 
   template <typename DataType>
   tuples::TaggedTuple<::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>>
@@ -192,25 +177,25 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, DataType>>
+  tuples::TaggedTuple<gr::Tags::SpatialChristoffelFirstKind<DataType, Dim>>
+  variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::SpatialChristoffelFirstKind<DataType, Dim>> /*meta*/)
+      const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>>
   variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
-                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+            tmpl::list<
+                gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>> /*meta*/)
+      const;
 
   template <typename DataType>
   tuples::TaggedTuple<
-      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
-                Dim, Frame::Inertial, DataType>> /*meta*/) const;
-
-  template <typename DataType>
-  tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<
-      Dim, Frame::Inertial, DataType>>
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataType, Dim>>
   variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
             tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
-                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+                DataType, Dim>> /*meta*/) const;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };

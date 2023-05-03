@@ -94,20 +94,18 @@ void create_fake_time_varying_gh_nodal_data(
   const auto& d_lapse = get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(
       kerr_schild_variables);
 
-  const auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-      kerr_schild_variables);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, 3>>(kerr_schild_variables);
   const auto& dt_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          kerr_schild_variables);
+      get<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>(kerr_schild_variables);
   const auto& d_shift = get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(
       kerr_schild_variables);
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(kerr_schild_variables);
+  const auto& dt_spatial_metric =
+      get<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(
           kerr_schild_variables);
-  const auto& dt_spatial_metric = get<
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-      kerr_schild_variables);
   const auto& d_spatial_metric =
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           kerr_schild_variables);
@@ -166,20 +164,18 @@ void create_fake_time_varying_modal_data(
   const auto& d_lapse = get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(
       kerr_schild_variables);
 
-  const auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-      kerr_schild_variables);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, 3>>(kerr_schild_variables);
   const auto& dt_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          kerr_schild_variables);
+      get<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>(kerr_schild_variables);
   const auto& d_shift = get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(
       kerr_schild_variables);
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(kerr_schild_variables);
+  const auto& dt_spatial_metric =
+      get<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(
           kerr_schild_variables);
-  const auto& dt_spatial_metric = get<
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-      kerr_schild_variables);
   const auto& d_spatial_metric =
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           kerr_schild_variables);

@@ -39,8 +39,9 @@ namespace ForceFree {
 struct ComputeDriftTildeJ {
   using argument_tags =
       tmpl::list<Tags::TildeQ, Tags::TildeE, Tags::TildeB,
-                 Tags::ParallelConductivity, gr::Tags::Lapse<>,
-                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>>;
+                 Tags::ParallelConductivity, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   using return_type = tnsr::I<DataVector, 3>;
 
   static void apply(
@@ -73,8 +74,9 @@ struct ComputeDriftTildeJ {
 struct ComputeParallelTildeJ {
   using argument_tags =
       tmpl::list<Tags::TildeQ, Tags::TildeE, Tags::TildeB,
-                 Tags::ParallelConductivity, gr::Tags::Lapse<>,
-                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>>;
+                 Tags::ParallelConductivity, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   using return_type = tnsr::I<DataVector, 3>;
 
   static void apply(
@@ -110,8 +112,9 @@ namespace Tags {
 struct ComputeTildeJ : TildeJ, db::ComputeTag {
   using argument_tags =
       tmpl::list<Tags::TildeQ, Tags::TildeE, Tags::TildeB,
-                 Tags::ParallelConductivity, gr::Tags::Lapse<>,
-                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>>;
+                 Tags::ParallelConductivity, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   using return_type = tnsr::I<DataVector, 3>;
   using base = TildeJ;
 

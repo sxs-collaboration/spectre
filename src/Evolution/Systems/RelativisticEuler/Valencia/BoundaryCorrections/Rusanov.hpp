@@ -91,8 +91,8 @@ class Rusanov final : public BoundaryCorrection<Dim> {
                  ::Tags::NormalDotFlux<Tags::TildeTau>,
                  ::Tags::NormalDotFlux<Tags::TildeS<Dim>>, AbsCharSpeed>;
   using dg_package_data_temporary_tags =
-      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim>,
-                 gr::Tags::SpatialMetric<Dim>>;
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::SpatialMetric<DataVector, Dim>>;
   using dg_package_data_primitive_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,

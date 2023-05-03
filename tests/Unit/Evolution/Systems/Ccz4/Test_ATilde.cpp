@@ -22,7 +22,7 @@ void test_compute_a_tilde(const DataType& used_for_size) {
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const Scalar<DataType>&)>(
-          &Ccz4::a_tilde<Dim, Frame::Inertial, DataType>),
+          &Ccz4::a_tilde<DataType, Dim, Frame::Inertial>),
       "ATilde", "a_tilde", {{{-1., 1.}}}, used_for_size);
 }
 }  // namespace

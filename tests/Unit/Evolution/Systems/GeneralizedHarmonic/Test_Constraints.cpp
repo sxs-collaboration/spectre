@@ -64,18 +64,18 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_three_index_constraint(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &gh::three_index_constraint<SpatialDim, Frame, DataType>),
+          &gh::three_index_constraint<DataType, SpatialDim, Frame>),
       "numpy", "subtract", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-value gauge constraint function using random values
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_gauge_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
@@ -86,7 +86,7 @@ void test_gauge_constraint_random(const DataType& used_for_size) {
           const tnsr::AA<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &gh::gauge_constraint<SpatialDim, Frame, DataType>),
+          &gh::gauge_constraint<DataType, SpatialDim, Frame>),
       "TestFunctions", "gauge_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
@@ -121,17 +121,18 @@ void test_gauge_constraint_analytic(const Solution& solution,
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -152,7 +153,7 @@ void test_gauge_constraint_analytic(const Solution& solution,
   const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
                          dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Get the constraint, and check that it vanishes
@@ -168,7 +169,7 @@ void test_gauge_constraint_analytic(const Solution& solution,
 }
 
 // Test the return-by-value two-index constraint function using random values
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_two_index_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ia<DataType, SpatialDim, Frame> (*)(
@@ -183,7 +184,7 @@ void test_two_index_constraint_random(const DataType& used_for_size) {
           const tnsr::ijaa<DataType, SpatialDim, Frame>&,
           const Scalar<DataType>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &gh::two_index_constraint<SpatialDim, Frame, DataType>),
+          &gh::two_index_constraint<DataType, SpatialDim, Frame>),
       "TestFunctions", "two_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
@@ -195,7 +196,7 @@ void test_two_index_constraint_analytic(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound, const double error_tolerance) {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
   using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
   using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
@@ -227,17 +228,18 @@ void test_two_index_constraint_analytic(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -247,7 +249,7 @@ void test_two_index_constraint_analytic(
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
@@ -323,12 +325,12 @@ void test_two_index_constraint_analytic(
 }
 
 // Test the return-by-value four-index constraint function using random values
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_four_index_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
-          &gh::four_index_constraint<SpatialDim, Frame, DataType>),
+          &gh::four_index_constraint<DataType, SpatialDim, Frame>),
       "TestFunctions", "four_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
@@ -369,13 +371,14 @@ void test_four_index_constraint_analytic(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -406,7 +409,7 @@ void test_four_index_constraint_analytic(
 }
 
 // Test the return-by-value F constraint function using random values
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_f_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
@@ -422,7 +425,7 @@ void test_f_constraint_random(const DataType& used_for_size) {
           const tnsr::ijaa<DataType, SpatialDim, Frame>&,
           const Scalar<DataType>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
-          &gh::f_constraint<SpatialDim, Frame, DataType>),
+          &gh::f_constraint<DataType, SpatialDim, Frame>),
       "TestFunctions", "f_constraint", {{{-1.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
@@ -439,7 +442,7 @@ void test_f_constraint_random(const DataType& used_for_size) {
           const Scalar<DataType>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &gh::f_constraint<SpatialDim, Frame, DataType>),
+          &gh::f_constraint<DataType, SpatialDim, Frame>),
       "TestFunctions", "f_constraint_with_stress_energy", {{{-1.0, 1.0}}},
       used_for_size);
 }
@@ -453,7 +456,7 @@ void test_f_constraint_analytic(const Solution& solution,
                                 const std::array<double, 3>& upper_bound,
                                 const double error_tolerance) {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
   using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
   using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
@@ -485,17 +488,18 @@ void test_f_constraint_analytic(const Solution& solution,
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -505,7 +509,7 @@ void test_f_constraint_analytic(const Solution& solution,
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
@@ -579,7 +583,7 @@ void test_f_constraint_analytic(const Solution& solution,
 }
 
 // Test the return-by-value constraint energy function using random values
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void test_constraint_energy_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<Scalar<DataType> (*)(
@@ -590,7 +594,7 @@ void test_constraint_energy_random(const DataType& used_for_size) {
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
           double, double, double, double)>(
-          &gh::constraint_energy<SpatialDim, Frame, DataType>),
+          &gh::constraint_energy<DataType, SpatialDim, Frame>),
       "TestFunctions", "constraint_energy", {{{-1.0, 1.0}}}, used_for_size);
 }
 
@@ -603,7 +607,7 @@ void test_constraint_energy_analytic(const Solution& solution,
                                      const std::array<double, 3>& upper_bound,
                                      const double error_tolerance) {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
   using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
   using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
@@ -635,19 +639,20 @@ void test_constraint_energy_analytic(const Solution& solution,
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& d_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
 
   const auto determinant_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
@@ -658,7 +663,7 @@ void test_constraint_energy_analytic(const Solution& solution,
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Compute derivative d_phi numerically
@@ -805,17 +810,20 @@ void test_constraint_compute_items(const Solution& solution,
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& time_deriv_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& time_deriv_lapse =
+      get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& deriv_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& deriv_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& time_deriv_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& time_deriv_shift =
+      get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& time_deriv_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
   const auto& deriv_spatial_metric =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
@@ -823,7 +831,7 @@ void test_constraint_compute_items(const Solution& solution,
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial, DataVector>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
@@ -914,24 +922,22 @@ void test_constraint_compute_items(const Solution& solution,
       db::AddSimpleTags<
           domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
           domain::Tags::Coordinates<3, Frame::Inertial>,
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::SpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+          gr::Tags::Shift<DataVector, 3>,
+          ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>,
           ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                         Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+          ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>,
+          ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
           ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-          ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
+          ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
           ::Tags::deriv<gh::Tags::GaugeH<3, Frame::Inertial>, tmpl::size_t<3>,
                         Frame::Inertial>,
           ::Tags::dt<gh::Tags::GaugeH<3, Frame::Inertial>>,
-          ::Tags::deriv<
-              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-              tmpl::size_t<3>, Frame::Inertial>,
+          ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                        tmpl::size_t<3>, Frame::Inertial>,
           ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
                         Frame::Inertial>,
           ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>, tmpl::size_t<3>,
@@ -949,18 +955,18 @@ void test_constraint_compute_items(const Solution& solution,
                                                                Frame::Inertial>,
           gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
                                                                Frame::Inertial>,
-          gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
-                                                  DataVector>,
-          gr::Tags::SpacetimeNormalVectorCompute<3,
-                                                 Frame::Inertial, DataVector>,
-          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
-                                                      DataVector>,
-          gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
-                                                  DataVector>,
-          gr::Tags::SpatialChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                       DataVector>,
-          gr::Tags::TraceSpatialChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                            DataVector>,
+          gr::Tags::SpacetimeNormalOneFormCompute<DataVector, 3,
+                                                  Frame::Inertial>,
+          gr::Tags::SpacetimeNormalVectorCompute<DataVector, 3,
+                                                 Frame::Inertial>,
+          gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
+                                                      Frame::Inertial>,
+          gr::Tags::InverseSpacetimeMetricCompute<DataVector, 3,
+                                                  Frame::Inertial>,
+          gr::Tags::SpatialChristoffelFirstKindCompute<DataVector, 3,
+                                                       Frame::Inertial>,
+          gr::Tags::TraceSpatialChristoffelFirstKindCompute<DataVector, 3,
+                                                            Frame::Inertial>,
           gh::Tags::PhiCompute<3, Frame::Inertial>,
           gh::Tags::PiCompute<3, Frame::Inertial>,
           gh::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>,
@@ -1066,31 +1072,31 @@ void test_constraint_compute_items(const Solution& solution,
 }
 
 void three_index_constraint() {
-  test_three_index_constraint<1, Frame::Grid, DataVector>(
+  test_three_index_constraint<DataVector, 1, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<1, Frame::Inertial, DataVector>(
+  test_three_index_constraint<DataVector, 1, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<1, Frame::Grid, double>(
+  test_three_index_constraint<double, 1, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<1, Frame::Inertial, double>(
-      std::numeric_limits<double>::signaling_NaN());
-
-  test_three_index_constraint<2, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<2, Frame::Inertial, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<2, Frame::Grid, double>(
-      std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<2, Frame::Inertial, double>(
+  test_three_index_constraint<double, 1, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_three_index_constraint<3, Frame::Grid, DataVector>(
+  test_three_index_constraint<DataVector, 2, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<3, Frame::Inertial, DataVector>(
+  test_three_index_constraint<DataVector, 2, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<3, Frame::Grid, double>(
+  test_three_index_constraint<double, 2, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<3, Frame::Inertial, double>(
+  test_three_index_constraint<double, 2, Frame::Inertial>(
+      std::numeric_limits<double>::signaling_NaN());
+
+  test_three_index_constraint<DataVector, 3, Frame::Grid>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_three_index_constraint<DataVector, 3, Frame::Inertial>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_three_index_constraint<double, 3, Frame::Grid>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_three_index_constraint<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1108,27 +1114,27 @@ void gauge_constraint() {
   test_gauge_constraint_analytic(solution, grid_size, lower_bound, upper_bound);
 
   // Test the gauge constraint with random numbers
-  test_gauge_constraint_random<1, Frame::Grid, DataVector>(
+  test_gauge_constraint_random<DataVector, 1, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<1, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<DataVector, 1, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<1, Frame::Grid, double>(
+  test_gauge_constraint_random<double, 1, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<1, Frame::Inertial, double>(
+  test_gauge_constraint_random<double, 1, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<2, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<DataVector, 2, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<2, Frame::Grid, double>(
+  test_gauge_constraint_random<double, 2, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<2, Frame::Inertial, double>(
+  test_gauge_constraint_random<double, 2, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<3, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<DataVector, 3, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<3, Frame::Grid, double>(
+  test_gauge_constraint_random<double, 3, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<3, Frame::Inertial, double>(
+  test_gauge_constraint_random<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1150,27 +1156,27 @@ void two_index_constraint() {
       std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the two-index constraint with random numbers
-  test_two_index_constraint_random<1, Frame::Grid, DataVector>(
+  test_two_index_constraint_random<DataVector, 1, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<1, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<DataVector, 1, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<1, Frame::Grid, double>(
+  test_two_index_constraint_random<double, 1, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<1, Frame::Inertial, double>(
+  test_two_index_constraint_random<double, 1, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<2, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<DataVector, 2, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<2, Frame::Grid, double>(
+  test_two_index_constraint_random<double, 2, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<2, Frame::Inertial, double>(
+  test_two_index_constraint_random<double, 2, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<3, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<DataVector, 3, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<3, Frame::Grid, double>(
+  test_two_index_constraint_random<double, 3, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<3, Frame::Inertial, double>(
+  test_two_index_constraint_random<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1192,11 +1198,11 @@ void four_index_constraint() {
       std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the four-index constraint with random numbers
-  test_four_index_constraint_random<3, Frame::Inertial, DataVector>(
+  test_four_index_constraint_random<DataVector, 3, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_four_index_constraint_random<3, Frame::Grid, double>(
+  test_four_index_constraint_random<double, 3, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_four_index_constraint_random<3, Frame::Inertial, double>(
+  test_four_index_constraint_random<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1217,27 +1223,27 @@ void f_constraint() {
                              std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the F constraint with random numbers
-  test_f_constraint_random<1, Frame::Grid, DataVector>(
+  test_f_constraint_random<DataVector, 1, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<1, Frame::Inertial, DataVector>(
+  test_f_constraint_random<DataVector, 1, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<1, Frame::Grid, double>(
+  test_f_constraint_random<double, 1, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<1, Frame::Inertial, double>(
+  test_f_constraint_random<double, 1, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<2, Frame::Inertial, DataVector>(
+  test_f_constraint_random<DataVector, 2, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<2, Frame::Grid, double>(
+  test_f_constraint_random<double, 2, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<2, Frame::Inertial, double>(
+  test_f_constraint_random<double, 2, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<3, Frame::Inertial, DataVector>(
+  test_f_constraint_random<DataVector, 3, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<3, Frame::Grid, double>(
+  test_f_constraint_random<double, 3, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<3, Frame::Inertial, double>(
+  test_f_constraint_random<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1257,27 +1263,27 @@ void constraint_energy() {
       std::numeric_limits<double>::epsilon() * 1.e7);
 
   // Test the constraint energy with random numbers
-  test_constraint_energy_random<1, Frame::Grid, DataVector>(
+  test_constraint_energy_random<DataVector, 1, Frame::Grid>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<1, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<DataVector, 1, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<1, Frame::Grid, double>(
+  test_constraint_energy_random<double, 1, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<1, Frame::Inertial, double>(
+  test_constraint_energy_random<double, 1, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<2, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<DataVector, 2, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<2, Frame::Grid, double>(
+  test_constraint_energy_random<double, 2, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<2, Frame::Inertial, double>(
+  test_constraint_energy_random<double, 2, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<3, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<DataVector, 3, Frame::Inertial>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<3, Frame::Grid, double>(
+  test_constraint_energy_random<double, 3, Frame::Grid>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<3, Frame::Inertial, double>(
+  test_constraint_energy_random<double, 3, Frame::Inertial>(
       std::numeric_limits<double>::signaling_NaN());
 }
 

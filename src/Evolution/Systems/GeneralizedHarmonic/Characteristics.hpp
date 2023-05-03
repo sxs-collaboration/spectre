@@ -82,7 +82,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
   using type = typename base::type;
   using argument_tags = tmpl::list<
       ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
       domain::Tags::MeshVelocity<Dim, Frame>>;
 
@@ -116,7 +116,7 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
   using argument_tags =
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame, DataVector>,
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
                  ::StrahlkorperTags::UnitNormalOneForm<Frame>>;
 
   using return_type = typename base::type;
@@ -210,8 +210,8 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-      gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
-      gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>, Tags::Pi<Dim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
+      gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>, Tags::Pi<Dim, Frame>,
       Tags::Phi<Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
@@ -288,8 +288,8 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
   using argument_tags =
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame, DataVector>,
-                 gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
+                 gr::Tags::SpatialMetric<DataVector, Dim, Frame>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,

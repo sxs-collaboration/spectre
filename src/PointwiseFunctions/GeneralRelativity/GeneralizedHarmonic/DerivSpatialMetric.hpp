@@ -46,12 +46,12 @@ namespace gh {
  *
  * This quantity is needed for computing spatial Christoffel symbols.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void deriv_spatial_metric(
     gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*> d_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
@@ -66,7 +66,7 @@ namespace Tags {
  */
 template <size_t SpatialDim, typename Frame>
 struct DerivSpatialMetricCompute
-    : ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+    : ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
       db::ComputeTag {
   using argument_tags = tmpl::list<Phi<SpatialDim, Frame>>;
@@ -76,10 +76,10 @@ struct DerivSpatialMetricCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ijj<DataVector, SpatialDim, Frame>*>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &deriv_spatial_metric<SpatialDim, Frame>);
+      &deriv_spatial_metric<DataVector, SpatialDim, Frame>);
 
   using base =
-      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>;
 };
 }  // namespace Tags

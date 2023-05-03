@@ -32,13 +32,13 @@ namespace gr {
  * in \cite Boyle2019kee.
  * \note This needs additional terms for computations in a non-vacuum.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_electric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_electric_part,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
@@ -60,12 +60,12 @@ void weyl_electric(
  * gr::weyl_electric(). The electric part of the Weyl tensor needs additional
  * terms for matter.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> weyl_electric_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_electric_scalar(
     gsl::not_null<Scalar<DataType>*> weyl_electric_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
@@ -77,13 +77,13 @@ namespace Tags {
 /// Computed from the SpatialRicci, ExtrinsicCurvature, and InverseSpatialMetric
 ///
 /// Can be retrieved using gr::Tags::WeylElectric
-template <size_t SpatialDim, typename Frame, typename DataType>
-struct WeylElectricCompute : WeylElectric<SpatialDim, Frame, DataType>,
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct WeylElectricCompute : WeylElectric<DataType, SpatialDim, Frame>,
                              db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::SpatialRicci<SpatialDim, Frame, DataType>,
-                 gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataType>,
-                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<gr::Tags::SpatialRicci<DataType, SpatialDim, Frame>,
+                 gr::Tags::ExtrinsicCurvature<DataType, SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
 
@@ -92,26 +92,26 @@ struct WeylElectricCompute : WeylElectric<SpatialDim, Frame, DataType>,
       const tnsr::ii<DataType, SpatialDim, Frame>&,
       const tnsr::ii<DataType, SpatialDim, Frame>&,
       const tnsr::II<DataType, SpatialDim, Frame>&)>(
-      &weyl_electric<SpatialDim, Frame, DataType>);
+      &weyl_electric<DataType, SpatialDim, Frame>);
 
-  using base = WeylElectric<SpatialDim, Frame, DataType>;
+  using base = WeylElectric<DataType, SpatialDim, Frame>;
 };
 
 /// Can be retrieved using gr::Tags::WeylElectricScalar
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct WeylElectricScalarCompute : WeylElectricScalar<DataType>,
                                    db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::WeylElectricCompute<SpatialDim, Frame, DataType>,
-                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<gr::Tags::WeylElectricCompute<DataType, SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = Scalar<DataType>;
 
   static constexpr auto function =
-    static_cast<void (*)(gsl::not_null<Scalar<DataType>*>,
+      static_cast<void (*)(gsl::not_null<Scalar<DataType>*>,
                            const tnsr::ii<DataType, SpatialDim, Frame>&,
                            const tnsr::II<DataType, SpatialDim, Frame>&)>(
-          &gr::weyl_electric_scalar<SpatialDim, Frame, DataType>);
+          &gr::weyl_electric_scalar<DataType, SpatialDim, Frame>);
 
   using base = WeylElectricScalar<DataType>;
 };

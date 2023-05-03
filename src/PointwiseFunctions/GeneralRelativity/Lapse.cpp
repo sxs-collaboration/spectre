@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
@@ -22,7 +22,7 @@ Scalar<DataType> lapse(
   return local_lapse;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void lapse(const gsl::not_null<Scalar<DataType>*> lapse,
            const tnsr::I<DataType, SpatialDim, Frame>& shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {

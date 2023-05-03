@@ -115,9 +115,11 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                        hydro::Tags::Pressure<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, Dim>,
                        hydro::Tags::LorentzFactor<DataVector>,
-                       gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::Lapse<>,
-                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
-                       gr::Tags::InverseSpatialMetric<Dim>>{});
+                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, Dim>,
+                       gr::Tags::SpatialMetric<DataVector, Dim>,
+                       gr::Tags::InverseSpatialMetric<DataVector, Dim>>{});
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
@@ -128,17 +130,20 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                        hydro::Tags::Pressure<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, Dim>,
                        hydro::Tags::LorentzFactor<DataVector>,
-                       gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::Lapse<>,
-                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
-                       gr::Tags::InverseSpatialMetric<Dim>>{});
+                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, Dim>,
+                       gr::Tags::SpatialMetric<DataVector, Dim>,
+                       gr::Tags::InverseSpatialMetric<DataVector, Dim>>{});
       }
     }();
 
-    *lapse = get<gr::Tags::Lapse<>>(boundary_values);
-    *shift = get<gr::Tags::Shift<Dim>>(boundary_values);
-    *spatial_metric = get<gr::Tags::SpatialMetric<Dim>>(boundary_values);
+    *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
+    *shift = get<gr::Tags::Shift<DataVector, Dim>>(boundary_values);
+    *spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, Dim>>(boundary_values);
     *inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<Dim>>(boundary_values);
+        get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(boundary_values);
     *rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
     *specific_internal_energy =
@@ -153,7 +158,7 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
     const auto& lorentz_factor =
         get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values);
     const auto& sqrt_det_spatial_metric =
-        get<gr::Tags::SqrtDetSpatialMetric<>>(boundary_values);
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(boundary_values);
 
     ConservativeFromPrimitive<Dim>::apply(
         tilde_d, tilde_tau, tilde_s, *rest_mass_density,

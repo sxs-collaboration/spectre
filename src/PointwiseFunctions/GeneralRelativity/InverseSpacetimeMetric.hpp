@@ -38,7 +38,7 @@ namespace gr {
  * where \f$ \alpha, \beta^i\f$ and \f$ \gamma^{ij}\f$ are the lapse, shift and
  * inverse spatial metric respectively
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void inverse_spacetime_metric(
     gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>
         inverse_spacetime_metric,
@@ -46,7 +46,7 @@ void inverse_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -61,13 +61,13 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::InverseSpacetimeMetric`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct InverseSpacetimeMetricCompute
-    : InverseSpacetimeMetric<SpatialDim, Frame, DataType>,
+    : InverseSpacetimeMetric<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags =
-      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<Lapse<DataType>, Shift<DataType, SpatialDim, Frame>,
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::AA<DataType, SpatialDim, Frame>;
 
@@ -75,9 +75,9 @@ struct InverseSpacetimeMetricCompute
       gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
       const tnsr::II<DataType, SpatialDim, Frame>&)>(
-      &inverse_spacetime_metric<SpatialDim, Frame, DataType>);
+      &inverse_spacetime_metric<DataType, SpatialDim, Frame>);
 
-  using base = InverseSpacetimeMetric<SpatialDim, Frame, DataType>;
+  using base = InverseSpacetimeMetric<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

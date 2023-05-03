@@ -133,9 +133,8 @@ struct DispatchApparentHorizonFinder {
     intrp::interpolate<InterpolationTargetTag>(
         db::get<::Tags::Time>(box), db::get<domain::Tags::Mesh<Dim>>(box),
         cache, element_id,
-        db::get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(box),
-        db::get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataVector>>(
-            box),
+        db::get<gr::Tags::SpatialMetric<DataVector, Dim>>(box),
+        db::get<gr::Tags::ExtrinsicCurvature<DataVector, Dim>>(box),
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -148,18 +147,18 @@ template <size_t Dim>
 struct ComputeHorizonVolumeQuantities
     : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   using allowed_src_tags =
-      tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
-                 gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataVector>,
+      tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>>;
   using required_src_tags = allowed_src_tags;
   template <typename TargetFrame>
-  using allowed_dest_tags =
-      tmpl::list<gr::Tags::SpatialMetric<Dim, TargetFrame>,
-                 gr::Tags::InverseSpatialMetric<Dim, TargetFrame>,
-                 gr::Tags::ExtrinsicCurvature<Dim, TargetFrame>,
-                 gr::Tags::SpatialChristoffelSecondKind<Dim, TargetFrame>,
-                 gr::Tags::SpatialRicci<Dim, TargetFrame>>;
+  using allowed_dest_tags = tmpl::list<
+      gr::Tags::SpatialMetric<DataVector, Dim, TargetFrame>,
+      gr::Tags::InverseSpatialMetric<DataVector, Dim, TargetFrame>,
+      gr::Tags::ExtrinsicCurvature<DataVector, Dim, TargetFrame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim, TargetFrame>,
+      gr::Tags::SpatialRicci<DataVector, Dim, TargetFrame>>;
   template <typename TargetFrame>
   using required_dest_tags = allowed_dest_tags<TargetFrame>;
 
@@ -168,35 +167,32 @@ struct ComputeHorizonVolumeQuantities
                     const Variables<SrcTagList>& src_vars,
                     const Mesh<Dim>& mesh) {
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(
-            src_vars);
+        get<gr::Tags::SpatialMetric<DataVector, Dim>>(src_vars);
     const auto& ext_curvature =
-        get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataVector>>(
-            src_vars);
+        get<gr::Tags::ExtrinsicCurvature<DataVector, Dim>>(src_vars);
     const auto& inv_jacobian =
         get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                           Frame::Inertial>>(src_vars);
-    get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(
-        *target_vars) = spatial_metric;
-    get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataVector>>(
-        *target_vars) = ext_curvature;
+    get<gr::Tags::SpatialMetric<DataVector, Dim>>(*target_vars) =
+        spatial_metric;
+    get<gr::Tags::ExtrinsicCurvature<DataVector, Dim>>(*target_vars) =
+        ext_curvature;
     auto& inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-            *target_vars);
+        get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(*target_vars);
     Scalar<DataVector> unused_det{mesh.number_of_grid_points()};
     determinant_and_inverse(make_not_null(&unused_det),
                             make_not_null(&inv_spatial_metric), spatial_metric);
     const auto deriv_spatial_metric =
         ::partial_derivative(spatial_metric, mesh, inv_jacobian);
     auto& spatial_christoffel_second_kind =
-        get<gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial,
-                                                   DataVector>>(*target_vars);
+        get<gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim>>(
+            *target_vars);
     gr::christoffel_second_kind(make_not_null(&spatial_christoffel_second_kind),
                                 deriv_spatial_metric, inv_spatial_metric);
     const auto deriv_spatial_christoffel_second_kind = ::partial_derivative(
         spatial_christoffel_second_kind, mesh, inv_jacobian);
     auto& spatial_ricci =
-        get<gr::Tags::SpatialRicci<Dim, Frame::Inertial>>(*target_vars);
+        get<gr::Tags::SpatialRicci<DataVector, Dim>>(*target_vars);
     gr::ricci_tensor(make_not_null(&spatial_ricci),
                      spatial_christoffel_second_kind,
                      deriv_spatial_christoffel_second_kind);
@@ -247,11 +243,10 @@ struct Metavariables {
 
   using const_global_cache_tags = tmpl::list<>;
 
-  using adm_vars = tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataVector>>;
+  using adm_vars =
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::SpatialMetric<DataVector, Dim>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, Dim>>;
 
   using interpolator_source_vars =
       typename ComputeHorizonVolumeQuantities<Dim>::required_src_tags;

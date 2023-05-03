@@ -198,8 +198,8 @@ void damped_harmonic_impl(
                              ? DampedHarmonicGauge_detail::roll_on_function(
                                    time, rollon_start_time, rollon_width)
                              : 1.0;
-  DampedHarmonicGauge_detail::spatial_weight_function<SpatialDim, Frame,
-                                                      DataVector>(
+  DampedHarmonicGauge_detail::spatial_weight_function<DataVector, SpatialDim,
+                                                      Frame>(
       make_not_null(&weight), coords, sigma_r);
 
   // coeffs that enter gauge source function
@@ -245,7 +245,7 @@ void damped_harmonic_impl(
 
   // Calc \f$ \partial_a [R W] \f$
   DampedHarmonicGauge_detail::spacetime_deriv_of_spatial_weight_function<
-      SpatialDim, Frame, DataVector>(make_not_null(&d4_weight), coords, sigma_r,
+      DataVector, SpatialDim, Frame>(make_not_null(&d4_weight), coords, sigma_r,
                                      weight);
   d4_RW_L1 = d4_weight;
   d4_RW_S = d4_weight;
@@ -268,17 +268,17 @@ void damped_harmonic_impl(
   // \partial_a \mu_2 = \partial_a(A_L2 R_L2 W
   //                               \log(1/N)^{1+c_{L2}})
   DampedHarmonicGauge_detail::spacetime_deriv_of_power_log_factor_metric_lapse<
-      SpatialDim, Frame, DataVector>(
+      DataVector, SpatialDim, Frame>(
       make_not_null(&d4_log_fac_mu1), lapse, shift, spacetime_unit_normal,
       inverse_spatial_metric, sqrt_det_spatial_metric, d0_spatial_metric, pi,
       phi, exp_fac_1, exp_L1 + 1);
   DampedHarmonicGauge_detail::spacetime_deriv_of_power_log_factor_metric_lapse<
-      SpatialDim, Frame, DataVector>(
+      DataVector, SpatialDim, Frame>(
       make_not_null(&d4_log_fac_muS), lapse, shift, spacetime_unit_normal,
       inverse_spatial_metric, sqrt_det_spatial_metric, d0_spatial_metric, pi,
       phi, exp_fac_1, exp_S);
   DampedHarmonicGauge_detail::spacetime_deriv_of_power_log_factor_metric_lapse<
-      SpatialDim, Frame, DataVector>(
+      DataVector, SpatialDim, Frame>(
       make_not_null(&d4_log_fac_mu2), lapse, shift, spacetime_unit_normal,
       inverse_spatial_metric, sqrt_det_spatial_metric, d0_spatial_metric, pi,
       phi, exp_fac_2, exp_L2 + 1);

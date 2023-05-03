@@ -41,11 +41,9 @@ void test_tags_metafunctions() {
                          gh::Tags::Pi<3, Frame::Distorted>>,
       "Failed testing replace_frame_in_tag_t");
   static_assert(
-      std::is_same_v<
-          TensorMetafunctions::replace_frame_in_tag_t<
-              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-              Frame::Grid>,
-          gr::Tags::SpacetimeMetric<3, Frame::Grid, DataVector>>,
+      std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
+                         gr::Tags::SpacetimeMetric<DataVector, 3>, Frame::Grid>,
+                     gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Grid>>,
       "Failed testing replace_frame_in_tag_t");
   static_assert(std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
                                    gr::Tags::Lapse<DataVector>, Frame::Grid>,

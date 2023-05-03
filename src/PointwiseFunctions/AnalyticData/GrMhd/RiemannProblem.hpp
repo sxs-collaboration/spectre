@@ -280,10 +280,9 @@ class RiemannProblem : public evolution::initial_data::InitialData,
       -> tuples::TaggedTuple<gr::Tags::Lapse<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<gr::Tags::Shift<DataType, 3>> /*meta*/) const
+      -> tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>>;
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x

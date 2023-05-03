@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void grad_spatial_z4_constraint(
     const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> result,
     const tnsr::i<DataType, Dim, Frame>& spatial_z4_constraint,
@@ -36,7 +36,7 @@ void grad_spatial_z4_constraint(
               spatial_z4_constraint(ti::l));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ij<DataType, Dim, Frame> grad_spatial_z4_constraint(
     const tnsr::i<DataType, Dim, Frame>& spatial_z4_constraint,
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,

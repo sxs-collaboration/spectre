@@ -35,8 +35,8 @@ struct InitializeSpacetimeTags {
   using mutable_global_cache_tags = tmpl::list<>;
   using argument_tags = tmpl::list<Tags::ExcisionSphere<Dim>>;
   using simple_tags = tmpl::list<
-      gr::Tags::InverseSpacetimeMetric<Dim, Frame::Grid, double>,
-      gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame::Grid, double>>;
+      gr::Tags::InverseSpacetimeMetric<double, Dim, Frame::Grid>,
+      gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim, Frame::Grid>>;
   using return_tags = simple_tags;
 
   static void apply(const gsl::not_null<tnsr::AA<double, Dim, Frame::Grid>*>

@@ -15,7 +15,7 @@
 
 namespace gh {
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_deriv_of_shift(
     const gsl::not_null<tnsr::iJ<DataType, SpatialDim, Frame>*> deriv_shift,
     const Scalar<DataType>& lapse,
@@ -47,16 +47,16 @@ void spatial_deriv_of_shift(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::iJ<DataType, SpatialDim, Frame> deriv_shift{};
-  gh::spatial_deriv_of_shift<SpatialDim, Frame, DataType>(
-      make_not_null(&deriv_shift), lapse, inverse_spacetime_metric,
-      spacetime_unit_normal, phi);
+  gh::spatial_deriv_of_shift(make_not_null(&deriv_shift), lapse,
+                             inverse_spacetime_metric, spacetime_unit_normal,
+                             phi);
   return deriv_shift;
 }
 }  // namespace gh

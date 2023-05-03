@@ -83,16 +83,16 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
       Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
       Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...>;
 
-  using argument_tags =
-      tmpl::list<Tags::GreyEmissivity<NeutrinoSpecies>...,
-                 Tags::GreyAbsorptionOpacity<NeutrinoSpecies>...,
-                 Tags::GreyScatteringOpacity<NeutrinoSpecies>...,
-                 Tags::TildeJ<NeutrinoSpecies>...,
-                 Tags::TildeHNormal<NeutrinoSpecies>...,
-                 Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
-                 hydro::Tags::SpatialVelocity<DataVector, 3>,
-                 hydro::Tags::LorentzFactor<DataVector>, gr::Tags::Lapse<>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>>;
+  using argument_tags = tmpl::list<
+      Tags::GreyEmissivity<NeutrinoSpecies>...,
+      Tags::GreyAbsorptionOpacity<NeutrinoSpecies>...,
+      Tags::GreyScatteringOpacity<NeutrinoSpecies>...,
+      Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
+      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
+      hydro::Tags::SpatialVelocity<DataVector, 3>,
+      hydro::Tags::LorentzFactor<DataVector>, gr::Tags::Lapse<DataVector>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>>;
 
   static void apply(
       const gsl::not_null<typename Tags::M1HydroCouplingNormal<

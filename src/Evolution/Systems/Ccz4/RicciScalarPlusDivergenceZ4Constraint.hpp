@@ -29,7 +29,7 @@ namespace Ccz4 {
  * tensor defined by `Ccz4::Tags::Ricci`, and \f$\nabla_j Z_i\f$ is the gradient
  * of the spatial Z4 constraint defined by `Ccz4::Tags::GradZ4Constraint`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void ricci_scalar_plus_divergence_z4_constraint(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& conformal_factor_squared,
@@ -37,7 +37,7 @@ void ricci_scalar_plus_divergence_z4_constraint(
     const tnsr::ii<DataType, Dim, Frame>& spatial_ricci_tensor,
     const tnsr::ij<DataType, Dim, Frame>& grad_spatial_z4_constraint);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> ricci_scalar_plus_divergence_z4_constraint(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,

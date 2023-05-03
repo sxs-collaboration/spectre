@@ -109,11 +109,9 @@ void Sources::apply(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature) {
   // temp variable to store metric derivative quantities
   Variables<tmpl::list<
-      ::Tags::TempI<0, 3>,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                  DataVector>>>
+      ::Tags::TempI<0, 3>, gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>>
       temp_tensors(get<0>(tilde_e).size());
 
   // compute the drift component of tilde_J
@@ -123,20 +121,17 @@ void Sources::apply(
                             sqrt_det_spatial_metric, spatial_metric);
 
   // compute the product \gamma^jk \Gamma^i_{jk}
-  auto& spatial_christoffel_first_kind = get<
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_first_kind =
+      get<gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>>(temp_tensors);
   gr::christoffel_first_kind(make_not_null(&spatial_christoffel_first_kind),
                              d_spatial_metric);
-  auto& spatial_christoffel_second_kind = get<
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_second_kind =
+      get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(temp_tensors);
   raise_or_lower_first_index(make_not_null(&spatial_christoffel_second_kind),
                              spatial_christoffel_first_kind,
                              inv_spatial_metric);
   auto& trace_spatial_christoffel_second =
-      get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                      DataVector>>(
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>(
           temp_tensors);
   trace_last_indices(make_not_null(&trace_spatial_christoffel_second),
                      spatial_christoffel_second_kind, inv_spatial_metric);

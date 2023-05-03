@@ -13,7 +13,7 @@ namespace {
 // Wrap `wrap_spacetime_deriv_of_power_log_factor_metric_lapse` here to make its
 // last argument a double, allowing for `pypp::check_with_random_values` to
 // work.
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame>
 wrap_spacetime_deriv_of_power_log_factor_metric_lapse(
     const Scalar<DataType>& lapse,
@@ -40,7 +40,7 @@ void test_detail_functions(const DataType& used_for_size) {
   // weight_function
   pypp::check_with_random_values<2>(
       &::gh::gauges::DampedHarmonicGauge_detail::spatial_weight_function<
-          SpatialDim, Frame, DataType>,
+          DataType, SpatialDim, Frame>,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedWaveHelpers",
       {"spatial_weight_function"},
@@ -49,8 +49,8 @@ void test_detail_functions(const DataType& used_for_size) {
   // spacetime_deriv_of_spatial_weight_function
   pypp::check_with_random_values<3>(
       &::gh::gauges::DampedHarmonicGauge_detail::
-          spacetime_deriv_of_spatial_weight_function<SpatialDim, Frame,
-                                                     DataType>,
+          spacetime_deriv_of_spatial_weight_function<DataType, SpatialDim,
+                                                     Frame>,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedWaveHelpers",
       {"spacetime_deriv_spatial_weight_function"},
@@ -78,8 +78,8 @@ void test_detail_functions(const DataType& used_for_size) {
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&, const double)>(
           &::gh::gauges::DampedHarmonicGauge_detail::
-              spacetime_deriv_of_log_factor_metric_lapse<SpatialDim, Frame,
-                                                         DataType>),
+              spacetime_deriv_of_log_factor_metric_lapse<DataType, SpatialDim,
+                                                         Frame>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedWaveHelpers",
       "spacetime_deriv_log_fac",
@@ -87,8 +87,8 @@ void test_detail_functions(const DataType& used_for_size) {
       1.0e-11);
   // spacetime_deriv_of_power_log_factor_metric_lapse
   pypp::check_with_random_values<1>(
-      &wrap_spacetime_deriv_of_power_log_factor_metric_lapse<SpatialDim, Frame,
-                                                             DataType>,
+      &wrap_spacetime_deriv_of_power_log_factor_metric_lapse<DataType,
+                                                             SpatialDim, Frame>,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedWaveHelpers",
       "spacetime_deriv_pow_log_fac",

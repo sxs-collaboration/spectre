@@ -49,8 +49,8 @@ void test_compute_ricci_scalar_plus_divergence_z4_constraint(
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ij<DataType, Dim, Frame::Inertial>&)>(
-          &Ccz4::ricci_scalar_plus_divergence_z4_constraint<
-              Dim, Frame::Inertial, DataType>),
+          &Ccz4::ricci_scalar_plus_divergence_z4_constraint<DataType, Dim,
+                                                            Frame::Inertial>),
       "RicciScalarPlusDivergenceZ4Constraint",
       "ricci_scalar_plus_divergence_z4_constraint", {{{-1., 1.}}},
       used_for_size);
@@ -85,13 +85,14 @@ void test_divergence_spatial_z4_constraint_vanishes(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<SpatialDim>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, SpatialDim>>(vars);
   const auto det_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
   const auto det_spatial_metric = det_and_inverse_spatial_metric.first;
   const auto inverse_spatial_metric = det_and_inverse_spatial_metric.second;
   const auto& d_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<SpatialDim>,
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim>,
                       tmpl::size_t<SpatialDim>, Frame::Inertial>>(vars);
 
   // Compute arguments for KerrSchild Ricci scalar and
@@ -114,8 +115,7 @@ void test_divergence_spatial_z4_constraint_vanishes(
       gr::christoffel_second_kind(d_spatial_metric, inverse_spatial_metric);
 
   using christoffel_second_kind_tag =
-      gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame::Inertial,
-                                             DataVector>;
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, SpatialDim>;
   Variables<tmpl::list<christoffel_second_kind_tag>>
       christoffel_second_kind_var(num_points_3d);
   get<christoffel_second_kind_tag>(christoffel_second_kind_var) =

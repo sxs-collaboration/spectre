@@ -26,10 +26,10 @@ namespace {
 template <size_t Dim, IndexType TypeOfIndex, typename DataType>
 void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
-      gr::Tags::SpatialRicciCompute<Dim, Frame::Inertial, DataType>>(
+      gr::Tags::SpatialRicciCompute<DataType, Dim, Frame::Inertial>>(
       "SpatialRicci");
   TestHelpers::db::test_compute_tag<
-      gr::Tags::SpatialRicciScalarCompute<Dim, Frame::Inertial, DataType>>(
+      gr::Tags::SpatialRicciScalarCompute<DataType, Dim, Frame::Inertial>>(
       "SpatialRicciScalar");
 
   MAKE_GENERATOR(generator);
@@ -51,24 +51,21 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
 
   const auto box = db::create<
       db::AddSimpleTags<
-          gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial,
-                                                 DataType>,
-          ::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<
-                            Dim, Frame::Inertial, DataType>,
+          gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>,
+          ::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>,
                         tmpl::size_t<Dim>, Frame::Inertial>,
-          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>,
+          gr::Tags::InverseSpatialMetric<DataType, Dim>>,
       db::AddComputeTags<
-          gr::Tags::SpatialRicciCompute<Dim, Frame::Inertial, DataType>,
-          gr::Tags::SpatialRicciScalarCompute<Dim, Frame::Inertial, DataType>>>(
+          gr::Tags::SpatialRicciCompute<DataType, Dim, Frame::Inertial>,
+          gr::Tags::SpatialRicciScalarCompute<DataType, Dim, Frame::Inertial>>>(
       christoffel_2nd_kind, d_christoffel_2nd_kind, inv_spatial_metric);
 
   const auto expected =
       gr::ricci_tensor(christoffel_2nd_kind, d_christoffel_2nd_kind);
   const auto expected_spatial_scalar =
       gr::ricci_scalar(expected, inv_spatial_metric);
-  CHECK_ITERABLE_APPROX(
-      (db::get<gr::Tags::SpatialRicci<Dim, Frame::Inertial, DataType>>(box)),
-      expected);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::SpatialRicci<DataType, Dim>>(box)),
+                        expected);
   CHECK_ITERABLE_APPROX((db::get<gr::Tags::SpatialRicciScalar<DataType>>(box)),
                         expected_spatial_scalar);
 }

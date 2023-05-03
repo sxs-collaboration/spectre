@@ -20,79 +20,79 @@ struct Tag : db::SimpleTag {
 
 template <size_t Dim, typename Frame, typename Type>
 void test_simple_tags() {
-  TestHelpers::db::test_simple_tag<gr::Tags::SpacetimeMetric<Dim, Frame, Type>>(
+  TestHelpers::db::test_simple_tag<gr::Tags::SpacetimeMetric<Type, Dim, Frame>>(
       "SpacetimeMetric");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::InverseSpacetimeMetric<Dim, Frame, Type>>(
+      gr::Tags::InverseSpacetimeMetric<Type, Dim, Frame>>(
       "InverseSpacetimeMetric");
-  TestHelpers::db::test_simple_tag<gr::Tags::SpatialMetric<Dim, Frame, Type>>(
+  TestHelpers::db::test_simple_tag<gr::Tags::SpatialMetric<Type, Dim, Frame>>(
       "SpatialMetric");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::InverseSpatialMetric<Dim, Frame, Type>>("InverseSpatialMetric");
+      gr::Tags::InverseSpatialMetric<Type, Dim, Frame>>("InverseSpatialMetric");
   TestHelpers::db::test_simple_tag<gr::Tags::DetSpatialMetric<Type>>(
       "DetSpatialMetric");
   TestHelpers::db::test_simple_tag<gr::Tags::SqrtDetSpatialMetric<Type>>(
       "SqrtDetSpatialMetric");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::DerivDetSpatialMetric<Dim, Frame, Type>>(
+      gr::Tags::DerivDetSpatialMetric<Type, Dim, Frame>>(
       "DerivDetSpatialMetric");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::DerivInverseSpatialMetric<Dim, Frame, Type>>(
+      gr::Tags::DerivInverseSpatialMetric<Type, Dim, Frame>>(
       "DerivInverseSpatialMetric");
-  TestHelpers::db::test_simple_tag<gr::Tags::Shift<Dim, Frame, Type>>("Shift");
+  TestHelpers::db::test_simple_tag<gr::Tags::Shift<Type, Dim, Frame>>("Shift");
   TestHelpers::db::test_simple_tag<gr::Tags::Lapse<Type>>("Lapse");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame, Type>>(
+      gr::Tags::DerivativesOfSpacetimeMetric<Type, Dim, Frame>>(
       "DerivativesOfSpacetimeMetric");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame, Type>>(
+      gr::Tags::SpacetimeChristoffelFirstKind<Type, Dim, Frame>>(
       "SpacetimeChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame, Type>>(
+      gr::Tags::SpacetimeChristoffelSecondKind<Type, Dim, Frame>>(
       "SpacetimeChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame, Type>>(
+      gr::Tags::SpatialChristoffelFirstKind<Type, Dim, Frame>>(
       "SpatialChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame, Type>>(
+      gr::Tags::SpatialChristoffelSecondKind<Type, Dim, Frame>>(
       "SpatialChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpacetimeNormalOneForm<Dim, Frame, Type>>(
+      gr::Tags::SpacetimeNormalOneForm<Type, Dim, Frame>>(
       "SpacetimeNormalOneForm");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpacetimeNormalVector<Dim, Frame, Type>>(
+      gr::Tags::SpacetimeNormalVector<Type, Dim, Frame>>(
       "SpacetimeNormalVector");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame, Type>>(
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<Type, Dim, Frame>>(
       "TraceSpacetimeChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::TraceSpacetimeChristoffelSecondKind<Dim, Frame, Type>>(
+      gr::Tags::TraceSpacetimeChristoffelSecondKind<Type, Dim, Frame>>(
       "TraceSpacetimeChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::TraceSpatialChristoffelFirstKind<Dim, Frame, Type>>(
+      gr::Tags::TraceSpatialChristoffelFirstKind<Type, Dim, Frame>>(
       "TraceSpatialChristoffelFirstKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, Type>>(
+      gr::Tags::TraceSpatialChristoffelSecondKind<Type, Dim, Frame>>(
       "TraceSpatialChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame, Type>>(
+      gr::Tags::SpatialChristoffelSecondKindContracted<Type, Dim, Frame>>(
       "SpatialChristoffelSecondKindContracted");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::ExtrinsicCurvature<Dim, Frame, Type>>("ExtrinsicCurvature");
+      gr::Tags::ExtrinsicCurvature<Type, Dim, Frame>>("ExtrinsicCurvature");
   TestHelpers::db::test_simple_tag<gr::Tags::TraceExtrinsicCurvature<Type>>(
       "TraceExtrinsicCurvature");
-  TestHelpers::db::test_simple_tag<gr::Tags::SpatialRicci<Dim, Frame, Type>>(
+  TestHelpers::db::test_simple_tag<gr::Tags::SpatialRicci<Type, Dim, Frame>>(
       "SpatialRicci");
   TestHelpers::db::test_simple_tag<gr::Tags::EnergyDensity<Type>>(
       "EnergyDensity");
-  TestHelpers::db::test_simple_tag<gr::Tags::MomentumDensity<Dim, Frame, Type>>(
+  TestHelpers::db::test_simple_tag<gr::Tags::MomentumDensity<Type, Dim, Frame>>(
       "MomentumDensity");
   TestHelpers::db::test_simple_tag<gr::Tags::StressTrace<Type>>("StressTrace");
   TestHelpers::db::test_simple_tag<gr::Tags::HamiltonianConstraint<Type>>(
       "HamiltonianConstraint");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::MomentumConstraint<Dim, Frame, Type>>("MomentumConstraint");
-  TestHelpers::db::test_simple_tag<gr::Tags::WeylElectric<Dim, Frame, Type>>(
+      gr::Tags::MomentumConstraint<Type, Dim, Frame>>("MomentumConstraint");
+  TestHelpers::db::test_simple_tag<gr::Tags::WeylElectric<Type, Dim, Frame>>(
       "WeylElectric");
 }
 

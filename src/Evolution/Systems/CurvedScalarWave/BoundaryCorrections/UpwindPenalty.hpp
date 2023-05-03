@@ -116,10 +116,9 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<
                      Dim, Frame::Inertial>>,
                  CharSpeedsTensor>;
-  using dg_package_data_temporary_tags = tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
+  using dg_package_data_temporary_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
   using dg_package_data_volume_tags = tmpl::list<>;
 
   double dg_package_data(

@@ -42,7 +42,8 @@ DataVector PrimitiveGhostVariables::apply(
     lorentz_factor_time_spatial_velocity.get(i) *=
         get(get<hydro::Tags::LorentzFactor<DataVector>>(prims));
   }
-  get<gr::Tags::SpacetimeMetric<3>>(vars_to_reconstruct) = spacetime_metric;
+  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(vars_to_reconstruct) =
+      spacetime_metric;
   get<gh::Tags::Phi<3>>(vars_to_reconstruct) = phi;
   get<gh::Tags::Pi<3>>(vars_to_reconstruct) = pi;
   return buffer;

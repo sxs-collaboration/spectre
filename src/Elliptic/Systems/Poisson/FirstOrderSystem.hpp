@@ -84,12 +84,11 @@ struct FirstOrderSystem
   using background_fields = tmpl::conditional_t<
       BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
       tmpl::list<
-          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-          gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame::Inertial,
-                                                           DataVector>>>;
-  using inv_metric_tag = tmpl::conditional_t<
-      BackgroundGeometry == Geometry::FlatCartesian, void,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+          gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+          gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, Dim>>>;
+  using inv_metric_tag =
+      tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
+                          gr::Tags::InverseSpatialMetric<DataVector, Dim>>;
 
   using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
   using sources_computer = Sources<Dim, BackgroundGeometry>;

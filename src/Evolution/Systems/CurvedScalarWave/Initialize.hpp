@@ -88,10 +88,9 @@ struct InitializeEvolvedVariables {
       typename CurvedScalarWave::System<Dim>::variables_tag;
   using return_tags = tmpl::list<curved_variables_tag>;
   using argument_tags =
-      tmpl::list<::Tags::Time,
-                 domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      tmpl::list<::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  ::Tags::AnalyticSolutionOrData, gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+                 gr::Tags::Shift<DataVector, Dim>>;
   template <typename AnalyticSolutionOrData>
   static void apply(
       const gsl::not_null<typename curved_variables_tag::type*> evolved_vars,

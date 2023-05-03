@@ -65,8 +65,7 @@ struct SendToWorldtube {
                                   ::Tags::dt<CurvedScalarWave::Tags::Psi>>;
   using tags_to_slice_to_face = tmpl::list<
       CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
-      CurvedScalarWave::Tags::Phi<Dim>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+      CurvedScalarWave::Tags::Phi<Dim>, gr::Tags::Shift<DataVector, Dim>,
       gr::Tags::Lapse<DataVector>,
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>>;
 
@@ -106,7 +105,7 @@ struct SendToWorldtube {
           });
       const auto& face_lapse = get<gr::Tags::Lapse<DataVector>>(vars_on_face);
       const auto& face_shift =
-          get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(vars_on_face);
+          get<gr::Tags::Shift<DataVector, Dim>>(vars_on_face);
       auto& face_inv_jacobian =
           get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                             Frame::Grid>>(vars_on_face);
@@ -143,7 +142,7 @@ struct SendToWorldtube {
       // used at this point so we use the allocation for the mesh_velocity to
       // save memory.
       auto& mesh_velocity_on_face =
-          get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(vars_on_face);
+          get<gr::Tags::Shift<DataVector, Dim>>(vars_on_face);
       data_on_slice(make_not_null(&mesh_velocity_on_face),
                     mesh_velocity.value(), mesh.extents(),
                     direction.value().dimension(),

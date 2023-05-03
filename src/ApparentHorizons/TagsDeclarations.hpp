@@ -11,7 +11,7 @@ struct EuclideanAreaElementCompute;
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral;
 struct OneOverOneFormMagnitude;
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct OneOverOneFormMagnitudeCompute;
 template <typename Frame>
 struct UnitNormalOneForm;

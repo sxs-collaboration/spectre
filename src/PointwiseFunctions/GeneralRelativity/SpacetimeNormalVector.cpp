@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) {
@@ -24,7 +24,7 @@ tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
   return local_spacetime_normal_vector;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_normal_vector(
     const gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
         spacetime_normal_vector,

@@ -146,31 +146,31 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<Dim, Frame::Inertial>,
                  Tags::Phi<Dim, Frame::Inertial>>;
-  using dg_interior_temporary_tags = tmpl::list<
-      domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      ConstraintDamping::Tags::ConstraintGamma1,
-      ConstraintDamping::Tags::ConstraintGamma2, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial, DataVector>,
-      Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
-      Tags::GaugeH<Dim, Frame::Inertial>,
-      Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>;
-  using dg_interior_dt_vars_tags = tmpl::list<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>,
-      ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
-      ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>;
-  using dg_interior_deriv_vars_tags = tmpl::list<
-      ::Tags::deriv<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<Tags::Pi<Dim, Frame::Inertial>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      ::Tags::deriv<Tags::Phi<Dim, Frame::Inertial>, tmpl::size_t<Dim>,
-                    Frame::Inertial>>;
+  using dg_interior_temporary_tags =
+      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 ConstraintDamping::Tags::ConstraintGamma1,
+                 ConstraintDamping::Tags::ConstraintGamma2,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
+                 gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
+                 gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
+                 Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
+                 Tags::GaugeH<Dim, Frame::Inertial>,
+                 Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>;
+  using dg_interior_dt_vars_tags =
+      tmpl::list<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>,
+                 ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
+                 ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>;
+  using dg_interior_deriv_vars_tags =
+      tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::deriv<Tags::Pi<Dim, Frame::Inertial>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::deriv<Tags::Phi<Dim, Frame::Inertial>,
+                               tmpl::size_t<Dim>, Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_time_derivative(

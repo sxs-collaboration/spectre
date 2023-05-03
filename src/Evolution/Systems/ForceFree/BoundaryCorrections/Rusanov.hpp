@@ -98,8 +98,7 @@ class Rusanov final : public BoundaryCorrection {
                  ::Tags::NormalDotFlux<Tags::TildePhi>,
                  ::Tags::NormalDotFlux<Tags::TildeQ>, AbsCharSpeed>;
   using dg_package_data_temporary_tags =
-      tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial, DataVector>>;
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>>;
   using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
 

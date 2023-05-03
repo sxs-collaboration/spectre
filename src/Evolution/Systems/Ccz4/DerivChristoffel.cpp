@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void deriv_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::iJkk<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
@@ -50,7 +50,7 @@ void deriv_conformal_christoffel_second_kind(
   }
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
@@ -63,7 +63,7 @@ tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
   return result;
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void deriv_contracted_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::iJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
@@ -82,7 +82,7 @@ void deriv_contracted_conformal_christoffel_second_kind(
               d_conformal_christoffel_second_kind(ti::k, ti::I, ti::j, ti::l));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::iJ<DataType, Dim, Frame>
 deriv_contracted_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,

@@ -99,17 +99,13 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
   const auto& d_lapse =
       get<typename GaugeWave::template DerivLapse<DataType>>(vars);
-  const auto& shift =
-      get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataType, Dim>>(vars);
   const auto& d_shift =
       get<typename GaugeWave::template DerivShift<DataType>>(vars);
-  const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>>(vars);
-  const auto& gamma =
-      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataType, Dim>>>(vars);
+  const auto& gamma = get<gr::Tags::SpatialMetric<DataType, Dim>>(vars);
   const auto& dt_gamma =
-      get<Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>>(
-          vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataType, Dim>>>(vars);
   const auto& d_gamma =
       get<typename GaugeWave::template DerivSpatialMetric<DataType>>(vars);
 
@@ -174,7 +170,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
   // Check quantities derivable from spatial metric, lapse, shift, and their
   // derivatives
   const auto& inv_gamma =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>(vars);
+      get<gr::Tags::InverseSpatialMetric<DataType, Dim>>(vars);
   const auto& sqrt_det_gamma =
       get<gr::Tags::SqrtDetSpatialMetric<DataType>>(vars);
   const auto& det_and_inverse = determinant_and_inverse(gamma);
@@ -183,8 +179,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
   CHECK_ITERABLE_APPROX(inv_gamma, expected_inv_gamma);
   CHECK_ITERABLE_APPROX(get(sqrt_det_gamma), expected_sqrt_det_gamma);
 
-  const auto& K =
-      get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>(vars);
+  const auto& K = get<gr::Tags::ExtrinsicCurvature<DataType, Dim>>(vars);
   const auto& expected_K =
       gr::extrinsic_curvature(lapse, shift, d_shift, gamma, dt_gamma, d_gamma);
   CHECK_ITERABLE_APPROX(K, expected_K);

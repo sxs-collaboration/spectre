@@ -102,7 +102,7 @@ void BoundaryConditionGhostData::apply(
   using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
   using DivergenceCleaningField =
       hydro::Tags::DivergenceCleaningField<DataVector>;
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = gh::Tags::Pi<3>;
   using Phi = gh::Tags::Phi<3>;
 

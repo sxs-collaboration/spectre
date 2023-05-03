@@ -125,7 +125,8 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>>;
 
   static void apply(
       const gsl::not_null<typename Tags::ClosureFactor<

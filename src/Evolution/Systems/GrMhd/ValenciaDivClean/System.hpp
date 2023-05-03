@@ -191,11 +191,11 @@ struct System {
       ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
   using spacetime_variables_tag =
       ::Tags::Variables<gr::tags_for_hydro<volume_dim, DataVector>>;
-  using flux_spacetime_variables_tag = ::Tags::Variables<tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>>;
+  using flux_spacetime_variables_tag = ::Tags::Variables<
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
 
@@ -208,7 +208,7 @@ struct System {
       Tags::ComputeLargestCharacteristicSpeed;
 
   using inverse_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, volume_dim>;
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

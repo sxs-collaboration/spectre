@@ -90,7 +90,7 @@ namespace gh {
  *                      \Phi_{kbc}n^c
  *                \right) - \Gamma^l{}_{ik} K_{lj} - \Gamma^l{}_{jk} K_{li} \f}.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal_vector,
@@ -101,7 +101,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void covariant_deriv_of_extrinsic_curvature(
     gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_extrinsic_curvature,

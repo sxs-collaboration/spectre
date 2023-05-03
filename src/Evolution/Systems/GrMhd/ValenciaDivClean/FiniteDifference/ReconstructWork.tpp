@@ -45,7 +45,8 @@ void compute_conservatives_for_reconstruction(
   // 6. conserved variables
   // - note: spatial metric, inv spatial metric, lapse, and shift are
   //         all already in vars_on_face
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(*vars_on_face);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(*vars_on_face);
   const auto& lorentz_factor_times_spatial_velocity =
       get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
           *vars_on_face);
@@ -102,7 +103,7 @@ void compute_conservatives_for_reconstruction(
       get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
           *vars_on_face),
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face),
-      get<gr::Tags::SpatialMetric<3>>(*vars_on_face),
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(*vars_on_face),
       get<hydro::Tags::DivergenceCleaningField<DataVector>>(*vars_on_face));
 }
 

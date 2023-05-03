@@ -166,9 +166,8 @@ void test_gh_local_time_stepping_interface_manager(
         local_interface_manager->retrieve_and_remove_first_ready_gh_data();
     REQUIRE(static_cast<bool>(retrieved_data));
     CHECK_ITERABLE_CUSTOM_APPROX(
-        SINGLE_ARG(
-            get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-                get<1>(*retrieved_data))),
+        SINGLE_ARG(get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
+            get<1>(*retrieved_data))),
         expected_spacetime_metric, local_approx);
     CHECK_ITERABLE_CUSTOM_APPROX(
         SINGLE_ARG(

@@ -93,15 +93,14 @@ struct ComputeTimeDerivImpl<
     // Note: GH+GRMHD tags are always GH,GRMHD
     using deriv_lapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                                       tmpl::size_t<3>, Frame::Inertial>;
-    using deriv_shift =
-        ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>;
+    using deriv_shift = ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>;
     using deriv_spatial_metric =
-        ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>;
-    using extra_tags_for_grmhd = tmpl::list<
-        deriv_lapse, deriv_shift, deriv_spatial_metric,
-        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+        ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>;
+    using extra_tags_for_grmhd =
+        tmpl::list<deriv_lapse, deriv_shift, deriv_spatial_metric,
+                   gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
     using temporary_tags = tmpl::remove_duplicates<tmpl::append<
         typename gh::TimeDerivative<3_st>::temporary_tags,
         tmpl::push_front<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
@@ -170,9 +169,9 @@ struct ComputeTimeDerivImpl<
       const auto& phi = get<gh::Tags::Phi<3>>(evolved_vars);
       const auto& phi_one_normal = get<gh::Tags::PhiOneNormal<3>>(temp_tags);
       const auto& spacetime_normal_vector =
-          get<gr::Tags::SpacetimeNormalVector<3>>(temp_tags);
+          get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(temp_tags);
       const auto& inverse_spacetime_metric =
-          get<gr::Tags::InverseSpacetimeMetric<3>>(temp_tags);
+          get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(temp_tags);
 
       auto& spatial_deriv_lapse = get<deriv_lapse>(temp_tags);
       auto& spatial_deriv_shift = get<deriv_shift>(temp_tags);
@@ -212,9 +211,8 @@ struct ComputeTimeDerivImpl<
       const auto& pi = get<gh::Tags::Pi<3>>(evolved_vars);
       for (size_t i = 0; i < 3; ++i) {
         for (size_t j = i; j < 3; ++j) {
-          get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
-              temp_tags)
-              .get(i, j) =
+          get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(temp_tags).get(i,
+                                                                          j) =
               0.5 * (pi.get(i + 1, j + 1) + phi_one_normal.get(i, j + 1) +
                      phi_one_normal.get(j, i + 1));
         }
@@ -226,19 +224,19 @@ struct ComputeTimeDerivImpl<
         get<GrmhdArgumentSourceTags>(temp_tags, primitive_vars, evolved_vars,
                                      *box)...);
 
-    tenex::evaluate<ti::i>(
-        get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
-                                                Frame::Inertial>>(
-            temp_tags_ptr),
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(primitive_vars)(
-            ti::J) *
-            get<gr::Tags::SpatialMetric<3>>(temp_tags)(ti::i, ti::j));
+    tenex::evaluate<ti::i>(get<hydro::Tags::SpatialVelocityOneForm<
+                               DataVector, 3, Frame::Inertial>>(temp_tags_ptr),
+                           get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
+                               primitive_vars)(ti::J) *
+                               get<gr::Tags::SpatialMetric<DataVector, 3>>(
+                                   temp_tags)(ti::i, ti::j));
 
     tenex::evaluate<ti::i>(
         get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
             temp_tags_ptr),
         get<hydro::Tags::MagneticField<DataVector, 3>>(primitive_vars)(ti::J) *
-            get<gr::Tags::SpatialMetric<3>>(temp_tags)(ti::i, ti::j));
+            get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_tags)(ti::i,
+                                                                   ti::j));
 
     tenex::evaluate(
         get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tags_ptr),
@@ -287,15 +285,17 @@ struct ComputeTimeDerivImpl<
                                              primitive_vars),
         get<hydro::Tags::Pressure<DataVector>>(evolved_vars, temp_tags,
                                                primitive_vars),
-        get<gr::Tags::SpacetimeMetric<3>>(evolved_vars, temp_tags,
-                                          primitive_vars),
-        get<gr::Tags::Shift<3>>(evolved_vars, temp_tags, primitive_vars),
-        get<gr::Tags::Lapse<>>(evolved_vars, temp_tags, primitive_vars));
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars, temp_tags,
+                                                      primitive_vars),
+        get<gr::Tags::Shift<DataVector, 3>>(evolved_vars, temp_tags,
+                                            primitive_vars),
+        get<gr::Tags::Lapse<DataVector>>(evolved_vars, temp_tags,
+                                         primitive_vars));
 
     add_stress_energy_term_to_dt_pi(
         get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars_ptr),
         get<Tags::TraceReversedStressEnergy>(temp_tags),
-        get<gr::Tags::Lapse<>>(temp_tags));
+        get<gr::Tags::Lapse<DataVector>>(temp_tags));
 
     for (size_t dim = 0; dim < 3; ++dim) {
       const auto& boundary_correction_in_axis =
@@ -496,10 +496,10 @@ struct TimeDerivative {
           using dg_package_data_argument_tags = tmpl::append<
               evolved_vars_tags, recons_prim_tags, fluxes_tags,
               tmpl::remove_duplicates<tmpl::push_back<
-                  dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
+                  dg_package_data_temporary_tags,
+                  gr::Tags::SpatialMetric<DataVector, 3>,
                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataVector>,
+                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                   evolution::dg::Actions::detail::NormalVector<3>>>>;
 
           // Computed prims and cons on face via reconstruction
@@ -554,10 +554,10 @@ struct TimeDerivative {
             // NormalCovectorAndMagnitude tag in the DataBox right now to avoid
             // conflicts with the DG solver. We can explore in the future if
             // it's possible to reuse that allocation.
-            const Scalar<DataVector> normalization{sqrt(
-                get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                   DataVector>>(vars_upper_face)
-                    .get(i, i))};
+            const Scalar<DataVector> normalization{
+                sqrt(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                         vars_upper_face)
+                         .get(i, i))};
 
             tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
                 reconstructed_num_pts, 0.0};
@@ -622,7 +622,7 @@ struct TimeDerivative {
     using gh_gradient_tags = typename TimeDerivativeTerms::gh_gradient_tags;
     using gh_temporary_tags = typename TimeDerivativeTerms::gh_temp_tags;
     using gh_extra_tags =
-        tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>,
+        tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,
                    gh::Tags::Phi<3>,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma0,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma1,

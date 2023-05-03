@@ -25,7 +25,7 @@ namespace Ccz4 {
  * defined by `gr::Tags::ExtrinsicCurvature`, and \f$K\f$ is the trace of the
  * extrinsic curvature defined by `gr::Tags::TraceExtrinsicCurvature`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
              const gsl::not_null<Scalar<DataType>*> buffer,
              const Scalar<DataType>& conformal_factor_squared,
@@ -33,7 +33,7 @@ void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
              const tnsr::ii<DataType, Dim, Frame>& extrinsic_curvature,
              const Scalar<DataType>& trace_extrinsic_curvature);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ii<DataType, Dim, Frame> a_tilde(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,

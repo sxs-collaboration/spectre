@@ -21,14 +21,13 @@ bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
     const double time) const {
-  const auto boundary_tuple = generator_->variables(
-      l_max_, time,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-                 gh::Tags::Pi<3, ::Frame::Inertial>,
-                 gh::Tags::Phi<3, ::Frame::Inertial>>{});
+  const auto boundary_tuple =
+      generator_->variables(l_max_, time,
+                            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                                       gh::Tags::Pi<3, ::Frame::Inertial>,
+                                       gh::Tags::Phi<3, ::Frame::Inertial>>{});
   const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_tuple);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_tuple);
   const auto& pi = get<gh::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
   const auto& phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
   create_bondi_boundary_data(boundary_data_variables, phi, pi, spacetime_metric,

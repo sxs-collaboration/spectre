@@ -64,10 +64,10 @@ void test_expansion(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
@@ -96,12 +96,11 @@ void test_expansion(const Solution& solution,
       grad_unit_normal_one_form, inverse_surface_metric,
       gr::extrinsic_curvature(
           get<gr::Tags::Lapse<DataVector>>(vars),
-          get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-          get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                          tmpl::size_t<3>, Frame::Inertial>>(vars),
+          get<gr::Tags::Shift<DataVector, 3>>(vars),
+          get<Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                          Frame::Inertial>>(vars),
           spatial_metric,
-          get<Tags::dt<
-              gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
+          get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars),
           deriv_spatial_metric));
 
   Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
@@ -125,19 +124,16 @@ void test_minkowski() {
   gr::Solutions::Minkowski<3> solution{};
 
   const auto deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(
           solution.variables(
               cart_coords, t,
-              tmpl::list<Tags::deriv<
-                  gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                  tmpl::size_t<3>, Frame::Inertial>>{}));
+              tmpl::list<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                                     tmpl::size_t<3>, Frame::Inertial>>{}));
   const auto inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-          solution.variables(
-              cart_coords, t,
-              tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                        DataVector>>{}));
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(solution.variables(
+          cart_coords, t,
+          tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3>>{}));
 
   const DataVector one_over_one_form_magnitude =
       1.0 / get(magnitude(
@@ -188,10 +184,10 @@ void test_ricci_scalar(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
@@ -241,7 +237,7 @@ void test_area_element(const Solution& solution, const double surface_radius,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
@@ -317,7 +313,7 @@ void test_euclidean_surface_integral_of_vector_2(
   const auto vars = solution.variables(
       cart_coords, t, typename Solution::template tags<DataVector>{});
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3, Frame>>(vars);
 
   // Get everything we need for the integral
   const auto& normal_one_form =
@@ -365,7 +361,7 @@ void test_euclidean_area_element(
   const auto vars = solution.variables(
       cart_coords, t, gr::Solutions::Minkowski<3>::tags<DataVector>{});
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
@@ -402,7 +398,7 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
@@ -457,7 +453,7 @@ void test_integral_correspondence(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3, Frame>>(vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
   const auto det_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
@@ -523,7 +519,7 @@ void test_surface_integral_of_scalar(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Fr, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3, Fr>>(vars);
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Fr>>(box);
@@ -560,7 +556,7 @@ void test_spin_function(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
@@ -586,16 +582,15 @@ void test_spin_function(const Solution& solution,
   const auto& ylm = strahlkorper.ylm_spherepack();
 
   const auto& deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars);
   const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
-      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-      get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars),
+      get<gr::Tags::Shift<DataVector, 3>>(vars),
+      get<Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars),
       spatial_metric,
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          vars),
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars),
       deriv_spatial_metric);
 
   const auto& tangents =
@@ -634,7 +629,7 @@ void test_dimensionful_spin_magnitude(
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
@@ -660,16 +655,15 @@ void test_dimensionful_spin_magnitude(
   const auto& ylm = strahlkorper.ylm_spherepack();
 
   const auto& deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars);
   const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
-      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-      get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars),
+      get<gr::Tags::Shift<DataVector, 3>>(vars),
+      get<Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars),
       spatial_metric,
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          vars),
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars),
       deriv_spatial_metric);
 
   const auto& tangents =
@@ -728,7 +722,7 @@ void test_spin_vector(
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
@@ -754,16 +748,15 @@ void test_spin_vector(
   const auto& ylm = strahlkorper.ylm_spherepack();
 
   const auto& deriv_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars);
   const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
-      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-      get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                      tmpl::size_t<3>, Frame::Inertial>>(vars),
+      get<gr::Tags::Shift<DataVector, 3>>(vars),
+      get<Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(vars),
       spatial_metric,
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          vars),
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars),
       deriv_spatial_metric);
 
   const auto& tangents =
@@ -801,7 +794,7 @@ void test_dimensionless_spin_magnitude(const Solution& solution,
       cart_coords, t, typename Solution::template tags<DataVector>{});
 
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);

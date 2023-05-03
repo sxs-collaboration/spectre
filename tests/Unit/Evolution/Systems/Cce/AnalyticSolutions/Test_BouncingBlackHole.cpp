@@ -242,11 +242,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
   const auto boundary_tuple = analytic_solution.variables(
       l_max, time, Solutions::BouncingBlackHole::tags{});
   const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_tuple);
-  const auto& dt_spacetime_metric = get<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      boundary_tuple);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_tuple);
+  const auto& dt_spacetime_metric =
+      get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(boundary_tuple);
   const auto& d_spacetime_metric =
       get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
 
@@ -254,11 +252,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
       serialize_and_deserialize(analytic_solution);
   const auto boundary_tuple_from_serialized =
       serialized_and_deserialized_analytic_solution.variables(
-          l_max, time,
-          tmpl::list<
-              gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>{});
+          l_max, time, tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>{});
   const auto& spacetime_metric_from_serialized =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
           boundary_tuple_from_serialized);
   CHECK_ITERABLE_APPROX(spacetime_metric_from_serialized, spacetime_metric);
 
