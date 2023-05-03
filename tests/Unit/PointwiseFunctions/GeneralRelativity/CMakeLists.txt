@@ -44,3 +44,5 @@ target_link_libraries(
   Spectral
   Utilities
 )
+
+add_subdirectory(Python)
