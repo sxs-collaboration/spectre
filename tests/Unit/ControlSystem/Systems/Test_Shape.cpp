@@ -127,7 +127,7 @@ void test_shape_control(
 
   const auto& functions_of_time =
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
-  const double excision_radius = sqrt(0.5 * M_PI) * excision_sphere.radius();
+  const double excision_radius = excision_sphere.radius();
   const std::string size_name =
       control_system::ControlErrors::detail::size_name<
           ::domain::ObjectLabel::A>();
@@ -143,9 +143,10 @@ void test_shape_control(
   // Our expected coefs are just the (minus) coefs of the AH (except for l=0,l=1
   // which should be zero) scaled by the relative size factor defined in the
   // control error
-  auto expected_shape_coefs = -1.0 * (excision_radius / Y00 - lambda_00_coef) /
-                              ah_coefs_and_derivs[0][iter.set(0, 0)()] *
-                              ah_coefs_and_derivs;
+  auto expected_shape_coefs =
+      -1.0 * (excision_radius / Y00 - lambda_00_coef) /
+      (sqrt(0.5 * M_PI) * ah_coefs_and_derivs[0][iter.set(0, 0)()]) *
+      ah_coefs_and_derivs;
   // Manually set 0,0 component to 0
   expected_shape_coefs[0][iter.set(0, 0)()] = 0.0;
 
