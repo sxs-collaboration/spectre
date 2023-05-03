@@ -9,11 +9,13 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <variant>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -26,6 +28,41 @@ struct Inertial;
 /// \endcond
 
 namespace domain::creators::sphere {
+/*!
+ * \brief Mass and spin necessary for calculating the \f$ Y_{lm} \f$
+ * coefficients of a Kerr horizon of certain Boyer-Lindquist radius for the
+ * shape map of the Sphere domain creator.
+ */
+struct KerrSchildFromBoyerLindquist {
+  /// \brief The mass of the Kerr black hole.
+  struct Mass {
+    using type = double;
+    static constexpr Options::String help = {"The mass of the Kerr BH."};
+  };
+  /// \brief The dimensionless spin of the Kerr black hole.
+  struct Spin {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "The dim'less spin of the Kerr BH."};
+  };
+
+  using options = tmpl::list<Mass, Spin>;
+
+  static constexpr Options::String help = {
+      "Conform to an ellipsoid of constant Boyer-Lindquist radius in "
+      "Kerr-Schild coordinates. This Boyer-Lindquist radius is chosen as the "
+      "value of the 'InnerRadius'. To conform to the outer Kerr horizon, "
+      "choose an 'InnerRadius' of r_+ = M + sqrt(M^2-a^2)."};
+
+  double mass{std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 3> spin{std::numeric_limits<double>::signaling_NaN(),
+                             std::numeric_limits<double>::signaling_NaN(),
+                             std::numeric_limits<double>::signaling_NaN()};
+};
+
+// Label for shape map options
+struct Spherical {};
+
 /*!
  * \brief This holds all options related to the time dependent maps of the
  * domain::creators::Sphere domain creator.
@@ -75,9 +112,11 @@ struct TimeDependentMapOptions {
 
   struct SizeMapInitialValues {
     static std::string name() { return "InitialValues"; }
-    using type = std::array<double, 3>;
+    using type = Options::Auto<std::array<double, 3>>;
     static constexpr Options::String help = {
-        "Initial value and two derivatives of the size map."};
+        "Initial value and two derivatives of the size map. Specify 'Auto' to "
+        "use the l=0 coefficient calculated from the shape map Ylm "
+        "coefficients (derivs will be zero)."};
     using group = SizeMap;
   };
 
@@ -95,16 +134,30 @@ struct TimeDependentMapOptions {
     using group = ShapeMapOptions;
   };
 
-  using options = tmpl::list<InitialTime, SizeMapInitialValues, ShapeMapLMax>;
+  struct ShapeMapInitialValues {
+    static std::string name() { return "InitialValues"; }
+    using type =
+        Options::Auto<std::variant<KerrSchildFromBoyerLindquist>, Spherical>;
+    static constexpr Options::String help = {
+        "Initial Ylm coefficients for the shape map. Specify 'Spherical' for "
+        "all coefficients to be initialized to zero."};
+    using group = ShapeMapOptions;
+  };
+
+  using options = tmpl::list<InitialTime, SizeMapInitialValues, ShapeMapLMax,
+                             ShapeMapInitialValues>;
   static constexpr Options::String help{
       "The options for all the hard-coded time dependent maps in the Sphere "
       "domain."};
 
   TimeDependentMapOptions() = default;
 
-  TimeDependentMapOptions(double initial_time,
-                          std::array<double, 3> initial_size_values,
-                          size_t initial_l_max);
+  TimeDependentMapOptions(
+      double initial_time,
+      const std::optional<std::array<double, 3>>& initial_size_values,
+      size_t initial_l_max,
+      const typename ShapeMapInitialValues::type::value_type&
+          initial_shape_values);
 
   /*!
    * \brief Create the function of time map using the options that were
@@ -117,7 +170,8 @@ struct TimeDependentMapOptions {
    */
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-  create_functions_of_time(const std::unordered_map<std::string, double>&
+  create_functions_of_time(double inner_radius,
+                           const std::unordered_map<std::string, double>&
                                initial_expiration_times) const;
 
   /*!
@@ -166,11 +220,9 @@ struct TimeDependentMapOptions {
 
  private:
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::array<double, 3> initial_size_values_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
+  std::optional<std::array<double, 3>> initial_size_values_{};
   size_t initial_l_max_{};
   ShapeMap shape_map_{};
+  typename ShapeMapInitialValues::type::value_type initial_shape_values_{};
 };
 }  // namespace domain::creators::sphere

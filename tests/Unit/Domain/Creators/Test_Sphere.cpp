@@ -140,6 +140,7 @@ std::string option_string(
                               "      InitialValues: [0.5, -0.04, 0.003]\n"
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
+                              "      InitialValues: Spherical\n"
                             : "  TimeDependentMaps:\n"
                               "    UniformTranslation:\n"
                               "      InitialTime: 1.0\n"
@@ -538,7 +539,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning,
                        radial_distribution, which_wedges,
                        domain::creators::sphere::TimeDependentMapOptions{
-                           1.0, {0.0, 0.0, 0.0}, 5},
+                           1.0, std::nullopt, 5, std::nullopt},
                        nullptr),
       Catch::Matchers::Contains(
           "Currently cannot use hard-coded time dependent maps with an inner "
@@ -625,8 +626,8 @@ void test_sphere() {
 
     if (time_dependent) {
       if (use_hard_coded_time_dep_options) {
-        time_dependent_options =
-            creators::sphere::TimeDependentMapOptions(1.0, size_values, l_max);
+        time_dependent_options = creators::sphere::TimeDependentMapOptions(
+            1.0, size_values, l_max, std::nullopt);
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(

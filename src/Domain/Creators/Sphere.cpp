@@ -440,7 +440,7 @@ Sphere::functions_of_time(const std::unordered_map<std::string, double>&
     if (use_hard_coded_maps_) {
       return std::get<sphere::TimeDependentMapOptions>(
                  time_dependent_options_.value())
-          .create_functions_of_time(initial_expiration_times);
+          .create_functions_of_time(inner_radius_, initial_expiration_times);
     } else {
       return std::get<std::unique_ptr<
           domain::creators::time_dependence::TimeDependence<3>>>(

@@ -4,11 +4,13 @@
 #include "Domain/Creators/SphereTimeDependentMaps.hpp"
 
 #include <array>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -20,18 +22,25 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace domain::creators::sphere {
 TimeDependentMapOptions::TimeDependentMapOptions(
-    const double initial_time, const std::array<double, 3> initial_size_values,
-    const size_t initial_l_max)
+    const double initial_time,
+    const std::optional<std::array<double, 3>>& initial_size_values,
+    const size_t initial_l_max,
+    const typename ShapeMapInitialValues::type::value_type&
+        initial_shape_values)
     : initial_time_(initial_time),
       initial_size_values_(initial_size_values),
-      initial_l_max_(initial_l_max) {}
+      initial_l_max_(initial_l_max),
+      initial_shape_values_(initial_shape_values) {}
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 TimeDependentMapOptions::create_functions_of_time(
+    const double inner_radius,
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
   std::unordered_map<std::string,
@@ -50,24 +59,62 @@ TimeDependentMapOptions::create_functions_of_time(
     expiration_times[name] = expr_time;
   }
 
-  // CompressionMap FunctionOfTime
-  result[size_name] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-      initial_time_,
-      std::array<DataVector, 4>{{{gsl::at(initial_size_values_, 0)},
-                                 {gsl::at(initial_size_values_, 1)},
-                                 {gsl::at(initial_size_values_, 2)},
-                                 {0.0}}},
-      expiration_times.at(size_name));
-
-  const DataVector shape_zeros{
+  DataVector shape_zeros{
       YlmSpherepack::spectral_size(initial_l_max_, initial_l_max_), 0.0};
+  DataVector shape_func{};
+  double size_func_from_shape = std::numeric_limits<double>::signaling_NaN();
+
+  if (initial_shape_values_.has_value()) {
+    if (std::holds_alternative<KerrSchildFromBoyerLindquist>(
+            initial_shape_values_.value())) {
+      const YlmSpherepack ylm{initial_l_max_, initial_l_max_};
+      const auto& mass_and_spin =
+          std::get<KerrSchildFromBoyerLindquist>(initial_shape_values_.value());
+      const DataVector radial_distortion =
+          1.0 - get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+                    inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
+                    mass_and_spin.spin)) /
+                    inner_radius;
+      shape_func = ylm.phys_to_spec(radial_distortion);
+      // Transform from SPHEREPACK to actual Ylm for size func
+      size_func_from_shape = shape_func[0] * sqrt(0.5 * M_PI);
+      // Set l=0 for shape map to 0 because size is going to be used
+      shape_func[0] = 0.0;
+    }
+  } else {
+    shape_func = shape_zeros;
+    size_func_from_shape = 0.0;
+  }
+
+  ASSERT(not std::isnan(size_func_from_shape),
+         "Size func value from shape coefficients is NaN.");
 
   // ShapeMap FunctionOfTime
   result[shape_name] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{shape_zeros, shape_zeros, shape_zeros}},
+          std::array<DataVector, 3>{
+              {std::move(shape_func), shape_zeros, shape_zeros}},
           expiration_times.at(shape_name));
+
+  DataVector size_func{1, size_func_from_shape};
+  DataVector size_deriv{1, 0.0};
+  DataVector size_2nd_deriv{1, 0.0};
+
+  if (initial_size_values_.has_value()) {
+    size_func[0] = gsl::at(initial_size_values_.value(), 0);
+    size_deriv[0] = gsl::at(initial_size_values_.value(), 1);
+    size_2nd_deriv[0] = gsl::at(initial_size_values_.value(), 2);
+  }
+
+  // Size FunctionOfTime (used in ShapeMap)
+  result[size_name] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+      initial_time_,
+      std::array<DataVector, 4>{{std::move(size_func),
+                                 std::move(size_deriv),
+                                 std::move(size_2nd_deriv),
+                                 {0.0}}},
+      expiration_times.at(size_name));
 
   return result;
 }
