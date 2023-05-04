@@ -124,7 +124,16 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   GaugeWave& operator=(GaugeWave&& /*rhs*/) = default;
   ~GaugeWave() = default;
 
+  std::unique_ptr<evolution::initial_data::InitialData> get_clone()
+      const override {
+    return std::make_unique<GaugeWave>(*this);
+  }
+
+  /// \cond
   explicit GaugeWave(CkMigrateMessage* /*msg*/);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(GaugeWave);
+  /// \endcond
 
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
@@ -173,7 +182,7 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   SPECTRE_ALWAYS_INLINE double amplitude() const { return amplitude_; }
   SPECTRE_ALWAYS_INLINE double wavelength() const { return wavelength_; }

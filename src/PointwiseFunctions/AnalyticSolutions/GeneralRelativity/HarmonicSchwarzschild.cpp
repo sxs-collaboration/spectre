@@ -36,6 +36,8 @@ HarmonicSchwarzschild::HarmonicSchwarzschild(
   }
 }
 
+PUP::able::PUP_ID HarmonicSchwarzschild::my_PUP_ID = 0;
+
 HarmonicSchwarzschild::HarmonicSchwarzschild(CkMigrateMessage* /*msg*/) {}
 
 void HarmonicSchwarzschild::pup(PUP::er& p) {

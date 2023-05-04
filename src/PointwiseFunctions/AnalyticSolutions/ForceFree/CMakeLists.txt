@@ -28,6 +28,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   ForceFree
+  GeneralRelativitySolutions
   Options
   Serialization
   )

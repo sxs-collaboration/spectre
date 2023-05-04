@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Literals.hpp"
@@ -183,7 +184,16 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
   HarmonicSchwarzschild& operator=(HarmonicSchwarzschild&& /*rhs*/) = default;
   ~HarmonicSchwarzschild() = default;
 
+  std::unique_ptr<evolution::initial_data::InitialData> get_clone()
+      const override {
+    return std::make_unique<HarmonicSchwarzschild>(*this);
+  }
+
+  /// \cond
   explicit HarmonicSchwarzschild(CkMigrateMessage* /*msg*/);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(HarmonicSchwarzschild);
+  /// \endcond
 
   /*!
    * \brief Computes and returns spacetime quantities for a Schwarzschild black
@@ -207,7 +217,7 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   /*!
    * \brief Return the mass of the black hole

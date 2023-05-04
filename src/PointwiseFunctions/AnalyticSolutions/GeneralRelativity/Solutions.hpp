@@ -8,11 +8,13 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 
 namespace gr {
 /// Base struct for properties common to all GR analytic solutions
 template <size_t Dim>
-struct AnalyticSolution {
+class AnalyticSolution : public virtual evolution::initial_data::InitialData {
+ public:
   static constexpr size_t volume_dim = Dim;
   template <typename DataType, typename Frame = ::Frame::Inertial>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,

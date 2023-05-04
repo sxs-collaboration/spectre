@@ -39,6 +39,9 @@ template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(CkMigrateMessage* /*msg*/) {}
 
 template <size_t Dim>
+PUP::able::PUP_ID GaugeWave<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
                           const Options::Context& context)
     : amplitude_(amplitude), wavelength_(wavelength) {

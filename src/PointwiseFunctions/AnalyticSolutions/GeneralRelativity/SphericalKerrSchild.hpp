@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -419,7 +420,11 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
                       Center::type center,
                       const Options::Context& context = {});
 
-  explicit SphericalKerrSchild(CkMigrateMessage* /*unused*/);
+  /// \cond
+  explicit SphericalKerrSchild(CkMigrateMessage* /*msg*/);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SphericalKerrSchild);
+  /// \endcond
 
   SphericalKerrSchild() = default;
   SphericalKerrSchild(const SphericalKerrSchild& /*rhs*/) = default;
@@ -427,6 +432,11 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
   SphericalKerrSchild(SphericalKerrSchild&& /*rhs*/) = default;
   SphericalKerrSchild& operator=(SphericalKerrSchild&& /*rhs*/) = default;
   ~SphericalKerrSchild() = default;
+
+  std::unique_ptr<evolution::initial_data::InitialData> get_clone()
+      const override {
+    return std::make_unique<SphericalKerrSchild>(*this);
+  }
 
   template <typename DataType, typename Frame, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
@@ -443,7 +453,7 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   SPECTRE_ALWAYS_INLINE double mass() const { return mass_; }
   SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>& center() const {

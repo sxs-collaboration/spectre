@@ -48,6 +48,8 @@ SphericalKerrSchild::SphericalKerrSchild(
   }
 }
 
+PUP::able::PUP_ID SphericalKerrSchild::my_PUP_ID = 0;
+
 SphericalKerrSchild::SphericalKerrSchild(CkMigrateMessage* /*unused*/) {}
 
 void SphericalKerrSchild::pup(PUP::er& p) {
