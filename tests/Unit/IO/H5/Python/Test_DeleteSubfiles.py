@@ -26,11 +26,22 @@ class TestDeleteSubfiles(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    def test_deletes_subfile(self):
+    def test_delete_subfiles(self):
         runner = CliRunner()
         result = runner.invoke(delete_subfiles_command,
                                [self.h5_filename, "-d", "TimeSteps2.dat"],
                                catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.output, "")
+        with h5py.File(self.h5_filename, "r") as open_h5_file:
+            self.assertNotIn("TimeSteps2.dat", open_h5_file.keys())
+
+    def test_delete_subfiles_and_repack(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            delete_subfiles_command,
+            [self.h5_filename, "-d", "TimeSteps2.dat", "--repack"],
+            catch_exceptions=False)
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(result.output, "")
         with h5py.File(self.h5_filename, "r") as open_h5_file:

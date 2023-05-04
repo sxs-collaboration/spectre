@@ -4,8 +4,14 @@
 import click
 import h5py
 import logging
+import os
+import shutil
+import subprocess
+import tempfile
 
 logger = logging.getLogger(__name__)
+
+HDF5_REPACK_EXECUTABLE = "@HDF5_REPACK_EXECUTABLE@"
 
 
 @click.command()
@@ -21,7 +27,12 @@ logger = logging.getLogger(__name__)
               required=True,
               multiple=True,
               help="Subfile to delete")
-def delete_subfiles_command(h5files, subfiles):
+@click.option("--repack/--no-repack",
+              default=False,
+              help=("Repack the H5 files after deleting subfiles "
+                    "to reduce file size. Otherwise, the subfiles are deleted "
+                    "but the file size remains unchanged."))
+def delete_subfiles_command(h5files, subfiles, repack):
     """Delete subfiles from the 'H5FILES'"""
     for h5file in h5files:
         with h5py.File(h5file, "a") as open_h5_file:
@@ -32,3 +43,11 @@ def delete_subfiles_command(h5files, subfiles):
                         f"Deleted subfile '{subfile}' from file: {h5file}")
                 else:
                     logger.warning(f"No subfile '{subfile}' in file: {h5file}")
+        if repack:
+            # h5repack must write to a new file, so we create a temporary one
+            with tempfile.TemporaryDirectory() as tempdir:
+                tmp_h5file = os.path.join(tempdir, "temp.h5")
+                subprocess.run([HDF5_REPACK_EXECUTABLE, h5file, tmp_h5file],
+                               capture_output=True,
+                               text=True)
+                shutil.move(tmp_h5file, h5file)

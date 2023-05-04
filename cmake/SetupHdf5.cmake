@@ -71,3 +71,7 @@ file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "HDF5 version: ${HDF5_VERSION}\n"
   )
+
+# Find HDF5 tools
+get_filename_component(HDF5_TOOLS_DIR HDF5_DIFF_EXECUTABLE DIRECTORY)
+find_program(HDF5_REPACK_EXECUTABLE h5repack HINTS ${HDF5_TOOLS_DIR})
