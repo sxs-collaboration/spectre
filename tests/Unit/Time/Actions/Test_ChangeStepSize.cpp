@@ -16,10 +16,12 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -77,13 +79,13 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags =
-      tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
-  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                                 Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-                                 ::Tags::StepChoosers,
-                                 Tags::IsUsingTimeSteppingErrorControl,
-                                 history_tag, typename System::variables_tag>;
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
+  using simple_tags =
+      tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+                 Tags::Next<Tags::TimeStep>, ::Tags::StepChoosers,
+                 Tags::IsUsingTimeSteppingErrorControl,
+                 Tags::AdaptiveSteppingDiagnostics, history_tag,
+                 typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -148,7 +150,8 @@ void check(const bool time_runs_forward,
                  std::make_unique<Constant>(2. * request),
                  std::make_unique<Constant>(request),
                  std::make_unique<Constant>(2. * request)),
-       false, typename history_tag::type{}, 1.});
+       false, AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5},
+       typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
@@ -159,8 +162,12 @@ void check(const bool time_runs_forward,
   if (reject_step) {
     // if the step is rejected, it should jump to the UpdateU action
     CHECK(index == 2_st);
+    CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+          AdaptiveSteppingDiagnostics{1, 2, 3, 4, 6});
   } else {
     CHECK(index == 1_st);
+    CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+          AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
   }
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_step);
 }

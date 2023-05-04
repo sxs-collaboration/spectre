@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "ParallelAlgorithms/Events/ObserveAdaptiveSteppingDiagnostics.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
@@ -25,5 +26,6 @@ using field_observations = tmpl::flatten<
 namespace Events {
 template <typename System>
 using time_events =
-    tmpl::list<Events::ObserveTimeStep<System>, Events::ChangeSlabSize>;
+    tmpl::list<Events::ObserveAdaptiveSteppingDiagnostics,
+               Events::ObserveTimeStep<System>, Events::ChangeSlabSize>;
 }  // namespace Events

@@ -11,7 +11,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -68,14 +70,29 @@ struct AdvanceTime {
     }
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Time, Tags::Next<Tags::TimeStep>>(
+               Tags::Time, Tags::Next<Tags::TimeStep>,
+               Tags::AdaptiveSteppingDiagnostics>(
         make_not_null(&box),
         [](const gsl::not_null<TimeStepId*> time_id,
            const gsl::not_null<TimeStepId*> next_time_id,
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
            const gsl::not_null<TimeDelta*> next_time_step,
+           const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
            const TimeStepper& time_stepper, const bool using_error_control) {
+          if (time_id->slab_number() != next_time_id->slab_number()) {
+            ++diags->number_of_slabs;
+            // Put this here instead of unconditionally doing the next
+            // check because on the first call time_id doesn't have a
+            // valid slab so comparing the times will FPE.
+            ++diags->number_of_steps;
+          } else if (time_id->step_time() != next_time_id->step_time()) {
+            ++diags->number_of_steps;
+          }
+          if (time_step->fraction() != next_time_step->fraction()) {
+            ++diags->number_of_step_fraction_changes;
+          }
+
           *time_id = *next_time_id;
           *time_step = next_time_step->with_slab(time_id->step_time().slab());
 

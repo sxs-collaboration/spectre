@@ -63,11 +63,13 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -888,8 +890,8 @@ struct component {
   using simple_tags = tmpl::flatten<tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
-      ::evolution::dg::Tags::Quadrature, variables_tag,
-      db::add_tag_prefix<::Tags::dt, variables_tag>,
+      ::Tags::AdaptiveSteppingDiagnostics, ::evolution::dg::Tags::Quadrature,
+      variables_tag, db::add_tag_prefix<::Tags::dt, variables_tag>,
       ::Tags::HistoryEvolvedVariables<variables_tag>, Var3,
       domain::Tags::Mesh<Metavariables::volume_dim>,
       ::domain::Tags::FunctionsOfTimeInitialize,
@@ -1299,6 +1301,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          time_step,
          time_step,
          time_step_id.step_time().value(),
+         AdaptiveSteppingDiagnostics{},
          quadrature,
          evolved_vars,
          dt_evolved_vars,
@@ -1330,6 +1333,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              time_step,
              time_step,
              time_step_id.step_time().value(),
+             AdaptiveSteppingDiagnostics{},
              quadrature,
              evolved_vars,
              dt_evolved_vars,
@@ -1362,6 +1366,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          time_step,
          time_step,
          time_step_id.step_time().value(),
+         AdaptiveSteppingDiagnostics{},
          quadrature,
          evolved_vars,
          dt_evolved_vars,
@@ -1392,6 +1397,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              time_step,
              time_step,
              time_step_id.step_time().value(),
+             AdaptiveSteppingDiagnostics{},
              quadrature,
              evolved_vars,
              dt_evolved_vars,

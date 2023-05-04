@@ -11,8 +11,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -162,9 +164,19 @@ struct ChangeStepSize {
         "ChangeStepSize action.");
     const bool step_successful =
         change_step_size<StepChoosersToUse>(make_not_null(&box));
+    // We should update
+    // AdaptiveSteppingDiagnostics::number_of_step_fraction_changes,
+    // but with the inter-action step unwinding it's hard to tell
+    // whether that happened.  Most executables use take_step instead
+    // of this action, anyway.
     if (step_successful) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     } else {
+      db::mutate<Tags::AdaptiveSteppingDiagnostics>(
+          make_not_null(&box),
+          [](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
+            ++diags->number_of_step_rejections;
+          });
       return {Parallel::AlgorithmExecution::Continue,
               tmpl::index_if<ActionList,
                              tt::is_a<Actions::UpdateU, tmpl::_1>>::value};

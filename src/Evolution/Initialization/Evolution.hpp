@@ -16,6 +16,7 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -84,7 +85,7 @@ struct TimeStepping {
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags = tmpl::push_back<
       StepChoosers::step_chooser_simple_tags<Metavariables, UsingLts>,
-      ::Tags::TimeStepId>;
+      ::Tags::TimeStepId, ::Tags::AdaptiveSteppingDiagnostics>;
 
   /// Tags for items in the DataBox that are mutated by the apply function
   using return_tags =

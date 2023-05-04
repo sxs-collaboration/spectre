@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -13,8 +14,10 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
+#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -41,7 +44,8 @@ struct Component {
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                         Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time,
-                        Tags::IsUsingTimeSteppingErrorControl>;
+                        Tags::IsUsingTimeSteppingErrorControl,
+                        Tags::AdaptiveSteppingDiagnostics>;
 
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<
@@ -75,7 +79,8 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
            : TimeStepId(time_step.is_positive(), 8, start, 1,
                         (start + substep_offsets[1]).value()),
-       time_step, time_step, start.value(), using_error_control});
+       time_step, time_step, start.value(), using_error_control,
+       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
@@ -101,6 +106,10 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
         TimeStepId(time_step.is_positive(), 8, start + 2 * time_step));
   CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time());
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
+  CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
+        AdaptiveSteppingDiagnostics{
+            1 + static_cast<uint64_t>(final_time_id.slab_number() - 8), 2, 5, 4,
+            5});
 }
 }  // namespace
 
