@@ -182,8 +182,9 @@ void test_shape_control_error() {
       functions_of_time.at(shape_name)->func(check_time)[0];
 
   DataVector expected_control_error =
-      -(sqrt(0.5 * M_PI) * excision_radius / Y00 - lambda_00_coef) /
-          measurement_coefs[iter.set(0, 0)()] * measurement_coefs -
+      -(excision_radius / Y00 - lambda_00_coef) /
+          (sqrt(0.5 * M_PI) * measurement_coefs[iter.set(0, 0)()]) *
+          measurement_coefs -
       lambda_lm_coefs;
   // We don't control l=0 or l=1 modes
   for (iter.reset(); iter; ++iter) {
