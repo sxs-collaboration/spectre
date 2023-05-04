@@ -76,19 +76,33 @@ void take_step_and_check_error(
 
 template <typename F>
 double convergence_rate(const int32_t large_steps, const int32_t small_steps,
-                        F&& error) {
+                        F&& error, const bool output = false) {
   // We do a least squares fit on a log-log error-vs-steps plot.  The
   // unequal points caused by the log scale will introduce some bias,
   // but the typical range this is used for is only a factor of a few,
   // so it shouldn't be too bad.
+
+  // Make sure testing code is not left enabled.
+  CHECK(not output);
+
+  std::ofstream output_stream{};
+  if (output) {
+    output_stream.open("convergence.dat");
+    output_stream.precision(18);
+  }
+
   const auto num_tests = static_cast<size_t>(small_steps - large_steps) + 1;
   std::vector<double> log_steps;
   std::vector<double> log_errors;
   log_steps.reserve(num_tests);
   log_errors.reserve(num_tests);
   for (auto steps = large_steps; steps <= small_steps; ++steps) {
+    const double this_error = abs(error(steps));
+    if (output) {
+      output_stream << steps << "\t" << this_error << std::endl;
+    }
     log_steps.push_back(log(steps));
-    log_errors.push_back(log(abs(error(steps))));
+    log_errors.push_back(log(this_error));
   }
   const double average_log_steps = alg::accumulate(log_steps, 0.0) / num_tests;
   const double average_log_errors =
@@ -403,16 +417,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
 void check_convergence_order(const TimeStepper& stepper,
                              const std::pair<int32_t, int32_t>& step_range,
                              const bool output) {
-  // Make sure testing code is not left enabled.
-  CHECK(not output);
-
-  std::ofstream output_stream{};
-  if (output) {
-    output_stream.open("convergence.dat");
-    output_stream.precision(18);
-  }
-  const auto do_integral = [&output, &output_stream,
-                            &stepper](const int32_t num_steps) {
+  const auto do_integral = [&stepper](const int32_t num_steps) {
     const Slab slab(0., 1.);
     const TimeDelta step_size = slab.duration() / num_steps;
 
@@ -427,13 +432,10 @@ void check_convergence_order(const TimeStepper& stepper,
       take_step(&time, &y, &history, stepper, rhs, step_size);
     }
     const double result = abs(y - exp(1.));
-    if (output) {
-      output_stream << num_steps << "\t" << result << std::endl;
-    }
     return result;
   };
-  CHECK(convergence_rate(step_range.first, step_range.second, do_integral) ==
-        approx(stepper.order()).margin(0.4));
+  CHECK(convergence_rate(step_range.first, step_range.second, do_integral,
+                         output) == approx(stepper.order()).margin(0.4));
 }
 
 void check_dense_output(const TimeStepper& stepper,
