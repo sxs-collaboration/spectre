@@ -367,6 +367,20 @@ struct TimeDerivative {
         dt_vars_ptr, *box, grmhd_source_tags{},
         typename grmhd::ValenciaDivClean::ComputeSources::argument_tags{});
 
+    // Zero GRMHD tags that don't have sources.
+    tmpl::for_each<typename variables_tag::tags_list>(
+        [&dt_vars_ptr](auto evolved_var_tag_v) {
+          using evolved_var_tag = tmpl::type_from<decltype(evolved_var_tag_v)>;
+          using dt_tag = ::Tags::dt<evolved_var_tag>;
+          auto& dt_var = get<dt_tag>(*dt_vars_ptr);
+          for (size_t i = 0; i < dt_var.size(); ++i) {
+            if constexpr (not tmpl::list_contains_v<grmhd_source_tags,
+                                                    evolved_var_tag>) {
+              dt_var[i] = 0.0;
+            }
+          }
+        });
+
     // Correction to source terms due to moving mesh
     if (div_mesh_velocity.has_value()) {
       const DataVector div_mesh_velocity_subcell =
@@ -421,13 +435,6 @@ struct TimeDerivative {
             const auto& var_correction =
                 get<evolved_var_tag>(boundary_correction_in_axis);
             for (size_t i = 0; i < dt_var.size(); ++i) {
-              if constexpr (not tmpl::list_contains_v<grmhd_source_tags,
-                                                      evolved_var_tag>) {
-                // Zero GRMHD tags that don't have sources.
-                if (dim == 0) {
-                  dt_var[i] = 0.0;
-                }
-              }
               evolution::dg::subcell::add_cartesian_flux_divergence(
                   make_not_null(&dt_var[i]), inverse_delta,
                   component_inverse_jacobian, var_correction[i],
