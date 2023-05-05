@@ -401,6 +401,14 @@ using iJkk = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
 
 }  // namespace tnsr
 
+/*!
+ * \brief Inverse Jacobian $(J^{-1})^\hat{i}_j =
+ * \frac{\partial \xi^\hat{i}}{\partial x^j}$
+ *
+ * The first (upper) index is in the \p SourceFrame with coordinates
+ * $\xi^\hat{i}$ (often "logical"), and the second (lower) index is in the
+ * \p TargetFrame with coordinates $x^j$ (often "inertial").
+ */
 template <typename DataType, size_t Dim, typename SourceFrame,
           typename TargetFrame>
 using InverseJacobian =
@@ -408,6 +416,16 @@ using InverseJacobian =
            index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
                       SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>;
 
+/*!
+ * \brief Jacobian $J^i_\hat{j} = \frac{\partial x^i}{\partial \xi^\hat{j}}$
+ *
+ * The first (upper) index is in the \p TargetFrame with coordinates $x^i$
+ * (often "inertial"), and the second (lower) index is in the \p SourceFrame
+ * with coordinates $\xi^\hat{j}$ (often "logical").
+ *
+ * \note The indices produced by the `logical_partial_derivative` function
+ * are in the opposite order.
+ */
 template <typename DataType, size_t Dim, typename SourceFrame,
           typename TargetFrame>
 using Jacobian = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
