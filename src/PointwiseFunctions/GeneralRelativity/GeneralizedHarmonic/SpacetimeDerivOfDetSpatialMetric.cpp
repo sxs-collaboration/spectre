@@ -19,11 +19,11 @@
 
 namespace gh {
 namespace {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct D4gBuffer;
 
 template <size_t SpatialDim, typename Frame>
-struct D4gBuffer<SpatialDim, Frame, double> {
+struct D4gBuffer<double, SpatialDim, Frame> {
   explicit D4gBuffer(const size_t /*size*/) {}
 
   tnsr::ijj<double, SpatialDim, Frame> deriv_of_g{};
@@ -31,7 +31,7 @@ struct D4gBuffer<SpatialDim, Frame, double> {
 };
 
 template <size_t SpatialDim, typename Frame>
-struct D4gBuffer<SpatialDim, Frame, DataVector> {
+struct D4gBuffer<DataVector, SpatialDim, Frame> {
  private:
   // We make one giant allocation so that we don't thrash the heap.
   Variables<tmpl::list<::Tags::Tempijj<0, SpatialDim, Frame, DataVector>,
@@ -50,7 +50,7 @@ struct D4gBuffer<SpatialDim, Frame, DataVector> {
 };
 }  // namespace
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_det_spatial_metric(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>
         d4_det_spatial_metric,
@@ -66,9 +66,9 @@ void spacetime_deriv_of_det_spatial_metric(
   auto& d4_g = *d4_det_spatial_metric;
   // Use a Variables to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
-  D4gBuffer<SpatialDim, Frame, DataType> buffer(
+  D4gBuffer<DataType, SpatialDim, Frame> buffer(
       get_size(get(sqrt_det_spatial_metric)));
-  deriv_spatial_metric<SpatialDim, Frame, DataType>(
+  deriv_spatial_metric<DataType, SpatialDim, Frame>(
       make_not_null(&buffer.deriv_of_g), phi);
   get(buffer.det_spatial_metric) = square(get(sqrt_det_spatial_metric));
   // \f$ \partial_0 g = g g^{jk} \partial_0 g_{jk}\f$
@@ -98,14 +98,14 @@ void spacetime_deriv_of_det_spatial_metric(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::a<DataType, SpatialDim, Frame> d4_det_spatial_metric{};
-  gh::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame, DataType>(
+  gh::spacetime_deriv_of_det_spatial_metric(
       make_not_null(&d4_det_spatial_metric), sqrt_det_spatial_metric,
       inverse_spatial_metric, dt_spatial_metric, phi);
   return d4_det_spatial_metric;

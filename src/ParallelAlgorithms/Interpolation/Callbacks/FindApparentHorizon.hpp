@@ -64,13 +64,15 @@ namespace callbacks {
 /// type alias called `post_horizon_find_callbacks`, which is a list of
 /// structs, each of which has a function
 ///
-/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp post_horizon_find_callback_example
+/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp
+/// post_horizon_find_callback_example
 ///
 /// that is called if the FastFlow iteration has converged.
 /// InterpolationTargetTag also is assumed to contain an additional
 /// struct called `horizon_find_failure_callback`, which has a function
 ///
-/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp horizon_find_failure_callback_example
+/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp
+/// horizon_find_failure_callback_example
 ///
 /// that is called if the FastFlow iteration or the interpolation has
 /// failed.
@@ -80,9 +82,9 @@ namespace callbacks {
 ///   - `temporal_id`
 /// - DataBox:
 ///   - `logging::Tags::Verbosity<InterpolationTargetTag>`
-///   - `::gr::Tags::InverseSpatialMetric<3,Frame>`
-///   - `::gr::Tags::ExtrinsicCurvature<3,Frame>`
-///   - `::gr::Tags::SpatialChristoffelSecondKind<3,Frame>`
+///   - `::gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>`
+///   - `::gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>`
+///   - `::gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, Frame>`
 ///   - `::ah::Tags::FastFlow`
 ///   - `StrahlkorperTags::Strahlkorper<Frame>`
 ///
@@ -219,11 +221,11 @@ struct FindApparentHorizon
       const auto& verbosity =
           db::get<logging::Tags::Verbosity<InterpolationTargetTag>>(*box);
       const auto& inv_g =
-          db::get<::gr::Tags::InverseSpatialMetric<3, Frame>>(*box);
+          db::get<::gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>>(*box);
       const auto& ex_curv =
-          db::get<::gr::Tags::ExtrinsicCurvature<3, Frame>>(*box);
-      const auto& christoffel =
-          db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame>>(*box);
+          db::get<::gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>>(*box);
+      const auto& christoffel = db::get<
+          ::gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, Frame>>(*box);
 
       std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 

@@ -620,10 +620,8 @@ CcsnCollapse::variables(
 
   auto lorentz_factor = make_with_value<Scalar<DataType>>(get<0>(x), 0.0);
   // Compute spatial proper velocity, then Lorentz factor.
-  const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+  const auto spatial_metric = get<gr::Tags::SpatialMetric<DataType, 3>>(
+      variables(vars, x, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{}));
 
   const auto spatial_velocity =
       get<hydro::Tags::SpatialVelocity<DataType, 3>>(variables(
@@ -669,11 +667,10 @@ tuples::TaggedTuple<gr::Tags::Lapse<DataType>> CcsnCollapse::variables(
 
 // Shift
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>
-CcsnCollapse::variables(
+tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>> CcsnCollapse::variables(
     gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& /*x*/,
-    tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const {
+    tmpl::list<gr::Tags::Shift<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   // 0 in Schwarzschild coords
   return shift(vars->radius);
@@ -681,12 +678,11 @@ CcsnCollapse::variables(
 
 // Spatial metric
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, 3>>
 CcsnCollapse::variables(
     gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& /*x*/,
-    tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>> /*meta*/)
-    const {
+    tmpl::list<gr::Tags::SpatialMetric<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   return spatial_metric(vars->metric_data->chi, vars->cos_theta,
                         vars->sin_theta, vars->phi);
@@ -707,18 +703,15 @@ CcsnCollapse::variables(
 
 // Inverse spatial metric
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>
-CcsnCollapse::variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
-                        const tnsr::I<DataType, 3>& x,
-                        tmpl::list<gr::Tags::InverseSpatialMetric<
-                            3, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<DataType, 3>>
+CcsnCollapse::variables(
+    gsl::not_null<IntermediateVariables<DataType>*> vars,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<gr::Tags::InverseSpatialMetric<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
 
-  const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+  const auto spatial_metric = get<gr::Tags::SpatialMetric<DataType, 3>>(
+      variables(vars, x, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{}));
 
   // Determinant is returned first, inverse is returned second
   return determinant_and_inverse(spatial_metric).second;
@@ -796,22 +789,18 @@ template <typename DataType>
 auto CcsnCollapse::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
-                                            DataType>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, 3>> /*meta*/) const
+    -> tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<DataType, 3>> {
   // 0 in constant spacetime, RGPS
   return gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataType>>(
           variables(vars, x, tmpl::list<gr::Tags::Lapse<DataType>>{})),
-      get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>>{})),
+      get<gr::Tags::Shift<DataType, 3>>(
+          variables(vars, x, tmpl::list<gr::Tags::Shift<DataType, 3>>{})),
       get<DerivShift<DataType>>(
           variables(vars, x, tmpl::list<DerivShift<DataType>>{})),
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{})),
+      get<gr::Tags::SpatialMetric<DataType, 3>>(variables(
+          vars, x, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{})),
       make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0),
       get<DerivSpatialMetric<DataType>>(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
@@ -891,14 +880,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_MHD_VECTORS, (double, DataVector),
 
 #undef INSTANTIATE_MHD_VECTORS
 
-#define INSTANTIATE_METRIC_TENSORS(_, data)                                  \
-  template tuples::TaggedTuple < TAG(data) < 3, Frame::Inertial,             \
-      DTYPE(data) >>                                                         \
-          CcsnCollapse::variables(                                           \
-              const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
-              const tnsr::I<DTYPE(data), 3>& x, tmpl::list < TAG(data) < 3,  \
-              Frame::Inertial, DTYPE(data) >>                                \
-              /*meta*/) const;
+#define INSTANTIATE_METRIC_TENSORS(_, data)                                   \
+  template tuples::TaggedTuple < TAG(data) < DTYPE(data),                     \
+      3 >> CcsnCollapse::variables(                                           \
+               const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
+               const tnsr::I<DTYPE(data), 3>& x,                              \
+               tmpl::list < TAG(data) < DTYPE(data), 3 >>                     \
+               /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TENSORS, (double, DataVector),
                         (gr::Tags::Shift, gr::Tags::SpatialMetric,

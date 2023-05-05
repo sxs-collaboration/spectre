@@ -60,8 +60,7 @@ struct ReceiveWorldtubeData {
   using inbox_tags = tmpl::list<Tags::RegularFieldInbox<Dim>>;
   using tags_to_slice_to_face = tmpl::list<
       domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::Lapse<DataVector>>;
+      gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -133,8 +132,7 @@ struct ReceiveWorldtubeData {
             get<CurvedScalarWave::Tags::Psi>(*worldtube_solution) =
                 get<psi_tag>(received_data);
             const auto& shift =
-                get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(
-                    vars_on_face);
+                get<gr::Tags::Shift<DataVector, Dim>>(vars_on_face);
 
             const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars_on_face);
             auto& pi = get<CurvedScalarWave::Tags::Pi>(*worldtube_solution);

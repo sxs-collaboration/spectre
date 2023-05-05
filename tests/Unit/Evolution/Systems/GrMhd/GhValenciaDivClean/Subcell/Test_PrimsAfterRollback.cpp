@@ -126,8 +126,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
   // The DG prims are used as an initial guess so we need to provide them
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::DidRollback, cons_tag, prim_tag,
-      gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-      ::domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
+      evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>>>(
       did_rollback, subcell_cons, dg_prims, spacetime_metric, dg_mesh,

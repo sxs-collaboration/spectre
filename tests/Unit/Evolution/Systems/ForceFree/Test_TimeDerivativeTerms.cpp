@@ -67,18 +67,16 @@ void forward_to_time_deriv(
           &get<typename ForceFree::TimeDerivativeTerms::TildeJDrift>(temp)),
 
       make_not_null(
-          &get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial,
-                                                     DataVector>>(temp)),
+          &get<gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>>(temp)),
       make_not_null(
-          &get<gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                      DataVector>>(temp)),
+          &get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(temp)),
       make_not_null(
-          &get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                           DataVector>>(temp)),
+          &get<gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>(
+              temp)),
 
-      make_not_null(&get<gr::Tags::Lapse<>>(temp)),
-      make_not_null(&get<gr::Tags::Shift<3>>(temp)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<3>>(temp)),
+      make_not_null(&get<gr::Tags::Lapse<DataVector>>(temp)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, 3>>(temp)),
+      make_not_null(&get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp)),
 
       tilde_e, tilde_b, tilde_psi, tilde_phi, tilde_q, tilde_j_drift, kappa_psi,
       kappa_phi, parallel_conductivity,
@@ -86,9 +84,10 @@ void forward_to_time_deriv(
       lapse, shift, sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric,
       extrinsic_curvature, d_lapse, d_shift, d_spatial_metric);
 
-  CHECK(get<gr::Tags::Lapse<>>(temp) == lapse);
-  CHECK(get<gr::Tags::Shift<3>>(temp) == shift);
-  CHECK(get<gr::Tags::InverseSpatialMetric<3>>(temp) == inv_spatial_metric);
+  CHECK(get<gr::Tags::Lapse<DataVector>>(temp) == lapse);
+  CHECK(get<gr::Tags::Shift<DataVector, 3>>(temp) == shift);
+  CHECK(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp) ==
+        inv_spatial_metric);
 }
 }  // namespace
 

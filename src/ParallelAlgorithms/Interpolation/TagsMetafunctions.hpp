@@ -26,10 +26,10 @@ struct replace_frame_in_tag<Tag<Dim, Frame>, NewFrame> {
   using type = Tag<Dim, NewFrame>;
 };
 // Specialization for tensors in gr::Tags
-template <template <size_t, typename, typename> typename Tag, size_t Dim,
+template <template <typename, size_t, typename> typename Tag, size_t Dim,
           typename Frame, typename DataType, typename NewFrame>
-struct replace_frame_in_tag<Tag<Dim, Frame, DataType>, NewFrame> {
-  using type = Tag<Dim, NewFrame, DataType>;
+struct replace_frame_in_tag<Tag<DataType, Dim, Frame>, NewFrame> {
+  using type = Tag<DataType, Dim, NewFrame>;
 };
 // Specialization for scalars in gr::Tags (which have a DataType).
 template <template <typename> typename Tag, typename DataType,

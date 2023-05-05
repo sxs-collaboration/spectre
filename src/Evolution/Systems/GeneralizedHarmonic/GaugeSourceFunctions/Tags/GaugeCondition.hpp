@@ -62,12 +62,14 @@ struct GaugeAndDerivativeCompute
                  ::gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
-      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
-      gr::Tags::SpacetimeNormalOneForm<Dim>,
-      gr::Tags::SpacetimeNormalVector<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
-      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::SpacetimeMetric<Dim>,
-      gh::Tags::Pi<Dim>, gh::Tags::Phi<Dim>, ::Events::Tags::ObserverMesh<Dim>,
-      ::Tags::Time, ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+      gr::Tags::SpacetimeMetric<DataVector, Dim>, gh::Tags::Pi<Dim>,
+      gh::Tags::Phi<Dim>, ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
+      ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
       ::Events::Tags::ObserverInverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>,
       Tags::GaugeCondition>;

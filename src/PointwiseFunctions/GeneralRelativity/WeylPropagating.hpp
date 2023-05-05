@@ -44,7 +44,7 @@ namespace gr {
  * covariant derivative, and \f$P^{ij}\f$ and its index-raised and lowered forms
  * project tensors transverse to \f$n^i\f$.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -56,7 +56,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
     const double sign);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_propagating(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_prop_u8,
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,

@@ -195,16 +195,15 @@ void ComputeSources::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) {
-  Variables<tmpl::list<
-      TildeSUp, DensitizedStress, MagneticFieldOneForm,
-      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
-      hydro::Tags::MagneticFieldSquared<DataVector>,
-      OneOverLorentzFactorSquared, PressureStar,
-      EnthalpyTimesDensityWSquaredPlusBSquared,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                  DataVector>>>
+  Variables<
+      tmpl::list<TildeSUp, DensitizedStress, MagneticFieldOneForm,
+                 hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+                 hydro::Tags::MagneticFieldSquared<DataVector>,
+                 OneOverLorentzFactorSquared, PressureStar,
+                 EnthalpyTimesDensityWSquaredPlusBSquared,
+                 gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>,
+                 gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+                 gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>>
       temp_tensors(get<0>(tilde_s).size());
 
   auto& magnetic_field_oneform = get<MagneticFieldOneForm>(temp_tensors);
@@ -230,20 +229,17 @@ void ComputeSources::apply(
       get(pressure) + 0.5 * square(get(magnetic_field_dot_spatial_velocity)) +
       0.5 * get(magnetic_field_squared) * get(one_over_w_squared);
 
-  auto& spatial_christoffel_first_kind = get<
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_first_kind =
+      get<gr::Tags::SpatialChristoffelFirstKind<DataVector, 3>>(temp_tensors);
   gr::christoffel_first_kind(make_not_null(&spatial_christoffel_first_kind),
                              d_spatial_metric);
-  auto& spatial_christoffel_second_kind = get<
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_second_kind =
+      get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(temp_tensors);
   raise_or_lower_first_index(make_not_null(&spatial_christoffel_second_kind),
                              spatial_christoffel_first_kind,
                              inv_spatial_metric);
   auto& trace_spatial_christoffel_second =
-      get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                      DataVector>>(
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>(
           temp_tensors);
   trace_last_indices(make_not_null(&trace_spatial_christoffel_second),
                      spatial_christoffel_second_kind, inv_spatial_metric);

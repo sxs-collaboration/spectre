@@ -28,7 +28,7 @@ namespace gr {
  * \f$\gamma_{ij}\f$ is the spatial metric and \f$K_{ij}\f$ is the extrinsic
  * curvature.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_derivative_of_spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> dt_spatial_metric,
     const Scalar<DataType>& lapse,
@@ -38,7 +38,7 @@ void time_derivative_of_spatial_metric(
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> time_derivative_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

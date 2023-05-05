@@ -74,7 +74,7 @@ struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
                  hydro::Tags::SpatialVelocity<DataType, Dim, Frame>,
                  hydro::Tags::LorentzFactor<DataType>,
                  ::gr::Tags::Lapse<DataType>,
-                 ::gr::Tags::Shift<Dim, Frame, DataType>,
+                 ::gr::Tags::Shift<DataType, Dim, Frame>,
                  ::gr::Tags::SqrtDetSpatialMetric<DataType>>;
 
   using return_type = tnsr::I<DataType, Dim, Frame>;

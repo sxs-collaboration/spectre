@@ -118,8 +118,7 @@ compute_prim_solution(
     get<VelocityW>(vars).get(j) += 1.0e-2 * (j + 2.0) + 10.0;
     get<MagField>(vars).get(j) += 1.0e-2 * (j + 2.0) + 60.0;
   }
-  auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(vars);
+  auto& spacetime_metric = get<gr::Tags::SpacetimeMetric<DataVector, 3>>(vars);
   spacetime_metric.get(0, 0) = -1.0;
   for (size_t j = 1; j < 4; ++j) {
     spacetime_metric.get(j, j) = 1.0;
@@ -198,12 +197,12 @@ void test_prim_reconstructor_impl(
       hydro::Tags::SpecificInternalEnergy<DataVector>;
   using SpecificEnthalpy = hydro::Tags::SpecificEnthalpy<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3>;
-  using Lapse = gr::Tags::Lapse<>;
-  using Shift = gr::Tags::Shift<3>;
-  using SpatialMetric = gr::Tags::SpatialMetric<3>;
-  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<3>;
-  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
+  using Lapse = gr::Tags::Lapse<DataVector>;
+  using Shift = gr::Tags::Shift<DataVector, 3>;
+  using SpatialMetric = gr::Tags::SpatialMetric<DataVector, 3>;
+  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<DataVector, 3>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<DataVector>;
 
   using prims_tags = hydro::grmhd_tags<DataVector>;
   using cons_tags = typename ghmhd::System::variables_tag::tags_list;
@@ -271,10 +270,10 @@ void test_prim_reconstructor_impl(
           using tag = tmpl::type_from<decltype(tag_v)>;
           get<tag>(volume_prims) = get<tag>(volume_prims_for_recons);
         });
-    get<gr::Tags::SpacetimeMetric<3>>(volume_cons_vars) =
-        get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
-    const auto spatial_metric =
-        gr::spatial_metric(get<gr::Tags::SpacetimeMetric<3>>(volume_cons_vars));
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_cons_vars) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_prims_for_recons);
+    const auto spatial_metric = gr::spatial_metric(
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_cons_vars));
 
     get(get<LorentzFactor>(volume_prims)) =
         sqrt(1.0 + get(dot_product(get<VelocityW>(volume_prims_for_recons),
@@ -285,10 +284,10 @@ void test_prim_reconstructor_impl(
           get<VelocityW>(volume_prims_for_recons).get(i) /
           get(get<LorentzFactor>(volume_prims));
     }
-    get<gr::Tags::SpacetimeMetric<3>>(volume_cons_vars) =
-        get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
-    get<gr::Tags::SpacetimeMetric<3>>(volume_spacetime_vars) =
-        get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_cons_vars) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_prims_for_recons);
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_spacetime_vars) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_prims_for_recons);
     get<gh::Tags::Phi<3>>(volume_spacetime_vars) =
         get<gh::Tags::Phi<3>>(volume_prims_for_recons);
     get<gh::Tags::Pi<3>>(volume_spacetime_vars) =
@@ -402,7 +401,7 @@ void test_prim_reconstructor_impl(
         get<MagField>(expected_lower_face_values),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
             expected_lower_face_values),
-        get<gr::Tags::SpatialMetric<3>>(expected_lower_face_values),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_lower_face_values),
         get<Phi>(expected_lower_face_values));
     mhd::ConservativeFromPrimitive::apply(
         make_not_null(&get<mhd::Tags::TildeD>(expected_upper_face_values)),
@@ -420,7 +419,7 @@ void test_prim_reconstructor_impl(
         get<MagField>(expected_upper_face_values),
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
             expected_upper_face_values),
-        get<gr::Tags::SpatialMetric<3>>(expected_upper_face_values),
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_upper_face_values),
         get<Phi>(expected_upper_face_values));
 
     using tags_to_test = tmpl::push_back<

@@ -74,7 +74,7 @@ void verify_time_independent_einstein_solution(
   static_assert(is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
   using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi>;
@@ -108,18 +108,18 @@ void verify_time_independent_einstein_solution(
   // Evaluate analytic solution
   const auto vars = gh_solution.variables(
       x, time, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
-      get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
-  const auto& g = get<gr::Tags::SpatialMetric<3>>(vars);
-  const auto& dt_g = get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
-  const auto& d_g =
-      get<::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<DataVector, 3>>>(vars);
+  const auto& g = get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
+  const auto& dt_g =
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(vars);
+  const auto& d_g = get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>>(vars);
 
   // Check those quantities that should vanish identically.
   CHECK(get(dt_lapse) == make_with_value<DataVector>(x, 0.));
@@ -182,7 +182,7 @@ void verify_time_independent_einstein_solution(
   const auto trace_christoffel_first_kind =
       trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Test ADM evolution equation gives zero
@@ -230,20 +230,18 @@ void verify_time_independent_einstein_solution(
       gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
       gh::Tags::PhiFirstIndexUp<3>, gh::Tags::PhiThirdIndexUp<3>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeChristoffelFirstKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<3, Frame::Inertial,
-                                                   DataVector>,
-      gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
-      gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial, DataVector>>>
+      gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
+      gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>,
+      gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>,
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>,
+      gr::Tags::SpacetimeNormalVector<DataVector, 3>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, 3>,
+      gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>>
       buffer(mesh.number_of_grid_points());
 
   gh::TimeDerivative<3>::apply(
@@ -275,49 +273,38 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>>(buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, 3>>(buffer)),
+      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(buffer)),
       make_not_null(
-          &get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-              buffer)),
-      make_not_null(
-          &get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-              buffer)),
+          &get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial,
-                                                          DataVector>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelFirstKind<3, Frame::Inertial,
-                                                       DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<3, Frame::Inertial,
-                                                        DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::TraceSpacetimeChristoffelFirstKind<
-                        3, Frame::Inertial, DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
+          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
               buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial,
-                                                          DataVector>>(buffer)),
       make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
-                                                      DataVector>>(buffer)),
+          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, *gauge_condition, mesh, time, x, inverse_jacobian,
       std::nullopt);
 
   const auto gauge_constraint = gh::gauge_constraint(
       get<gh::Tags::GaugeH<3>>(buffer),
-      get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>>(
-          buffer),
-      get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
-          buffer),
-      get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-          buffer),
-      get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>>(
-          buffer),
-      pi, phi);
+      get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer),
+      get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer),
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(buffer),
+      get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(buffer), pi, phi);
   CHECK_ITERABLE_CUSTOM_APPROX(
       gauge_constraint, make_with_value<decltype(gauge_constraint)>(x, 0.0),
       numerical_approx);
@@ -385,11 +372,11 @@ void verify_consistency(const Solution& solution, const double time,
                         const double derivative_delta,
                         const double derivative_tolerance) {
   using Lapse = gr::Tags::Lapse<double>;
-  using Shift = gr::Tags::Shift<3, Frame, double>;
-  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame, double>;
+  using Shift = gr::Tags::Shift<double, 3, Frame>;
+  using SpatialMetric = gr::Tags::SpatialMetric<double, 3, Frame>;
   using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<double>;
-  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<3, Frame, double>;
-  using ExtrinsicCurvature = gr::Tags::ExtrinsicCurvature<3, Frame, double>;
+  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<double, 3, Frame>;
+  using ExtrinsicCurvature = gr::Tags::ExtrinsicCurvature<double, 3, Frame>;
   using tags =
       tmpl::list<SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
                  ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift, Frame>,

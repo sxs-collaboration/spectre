@@ -52,10 +52,9 @@ SPECTRE_TEST_CASE(
   std::uniform_real_distribution<> metric_dist(0.1, 1.);
   std::uniform_real_distribution<> deriv_dist(-1.e-5, 1.e-5);
 
-  using evolved_vars_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>>;
+  using evolved_vars_tags = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                                       gh::Tags::Pi<3, Frame::Inertial>,
+                                       gh::Tags::Phi<3, Frame::Inertial>>;
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -69,18 +68,15 @@ SPECTRE_TEST_CASE(
     get<gh::Tags::Phi<3, Frame::Inertial>>(evolved_vars) =
         make_with_random_values<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&deriv_dist), num_points);
-    get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-        evolved_vars) =
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars) =
         make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&metric_dist), num_points);
-    get<0, 0>(get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-        evolved_vars)) += -2.0;
+    get<0, 0>(get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars)) +=
+        -2.0;
     for (size_t i = 0; i < 3; ++i) {
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-          evolved_vars)
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars)
           .get(i + 1, i + 1) += 4.0;
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-          evolved_vars)
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars)
           .get(i + 1, 0) *= 0.01;
     }
     return evolved_vars;
@@ -133,8 +129,7 @@ SPECTRE_TEST_CASE(
                                                             Frame::Inertial>>(
             box),
         db::get<domain::Tags::FunctionsOfTime>(box), logical_coordinates(mesh),
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            initial_vars),
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
         get<gh::Tags::Phi<3, Frame::Inertial>>(initial_vars),
         db::get<gh::gauges::Tags::GaugeCondition>(box));
 

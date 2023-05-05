@@ -159,10 +159,10 @@ void test_compute_excision_boundary_volume_quantities() {
       typename gr::Solutions::KerrSchild::tags<DataVector, TargetFrame>{});
   const auto& lapse =
       get<gr::Tags::Lapse<DataVector>>(solution_vars_target_frame);
-  const auto& shift = get<gr::Tags::Shift<3, TargetFrame, DataVector>>(
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3, TargetFrame>>(
       solution_vars_target_frame);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, TargetFrame, DataVector>>(
+      get<gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>>(
           solution_vars_target_frame);
 
   // Fill src vars with analytic solution.
@@ -173,9 +173,8 @@ void test_compute_excision_boundary_volume_quantities() {
   // Define them here, instead of inside the `if constexpr` below,
   // because we might want to use them in later tests.
   using inertial_metric_vars_tags =
-      tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>;
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>;
   Variables<inertial_metric_vars_tags> inertial_metric_vars([&mesh]() {
     if constexpr (std::is_same_v<TargetFrame, Frame::Inertial>) {
       return 0;
@@ -190,7 +189,7 @@ void test_compute_excision_boundary_volume_quantities() {
     // Src vars are always in inertial frame. Here TargetFrame is inertial,
     // so no frame transformation is needed.
 
-    get<::gr::Tags::SpacetimeMetric<3, TargetFrame>>(src_vars) =
+    get<::gr::Tags::SpacetimeMetric<DataVector, 3, TargetFrame>>(src_vars) =
         gr::spacetime_metric(lapse, shift, spatial_metric);
   } else {
     static_assert(std::is_same_v<TargetFrame, Frame::Grid>,
@@ -227,7 +226,7 @@ void test_compute_excision_boundary_volume_quantities() {
 
     // Transform shift
     auto& shift_inertial =
-        get<::gr::Tags::Shift<3, Frame::Inertial>>(inertial_metric_vars);
+        get<::gr::Tags::Shift<DataVector, 3>>(inertial_metric_vars);
     for (size_t k = 0; k < 3; ++k) {
       shift_inertial.get(k) = -frame_velocity_grid_to_inertial.get(k);
       for (size_t j = 0; j < 3; ++j) {
@@ -238,14 +237,13 @@ void test_compute_excision_boundary_volume_quantities() {
 
     // Transform lower metric.
     auto& lower_metric_inertial =
-        get<::gr::Tags::SpatialMetric<3, Frame::Inertial>>(
-            inertial_metric_vars);
+        get<::gr::Tags::SpatialMetric<DataVector, 3>>(inertial_metric_vars);
     transform::to_different_frame(make_not_null(&lower_metric_inertial),
                                   spatial_metric,
                                   inv_jacobian_grid_to_inertial);
 
     // Now fill src_vars
-    get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars) =
+    get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(src_vars) =
         gr::spacetime_metric(lapse, shift_inertial, lower_metric_inertial);
   }
 
@@ -264,16 +262,19 @@ void test_compute_excision_boundary_volume_quantities() {
 
   // Now make sure that dest vars are correct.
   if constexpr (tmpl::list_contains_v<
-                    DestTags, gr::Tags::SpatialMetric<3, TargetFrame>>) {
+                    DestTags,
+                    gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>>) {
     const auto& numerical_spatial_metric =
-        get<gr::Tags::SpatialMetric<3, TargetFrame>>(dest_vars);
+        get<gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>>(dest_vars);
     CHECK_ITERABLE_APPROX(spatial_metric, numerical_spatial_metric);
   }
 
   if constexpr (tmpl::list_contains_v<
-                    DestTags, gr::Tags::InverseSpatialMetric<3, TargetFrame>>) {
+                    DestTags, gr::Tags::InverseSpatialMetric<DataVector, 3,
+                                                             TargetFrame>>) {
     const auto& inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3, TargetFrame>>(dest_vars);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>>(
+            dest_vars);
     CHECK_ITERABLE_APPROX(determinant_and_inverse(spatial_metric).second,
                           inv_spatial_metric);
   }
@@ -283,10 +284,10 @@ void test_compute_excision_boundary_volume_quantities() {
     CHECK_ITERABLE_APPROX(lapse, numerical_lapse);
   }
 
-  if constexpr (tmpl::list_contains_v<DestTags,
-                                      gr::Tags::Shift<3, TargetFrame>>) {
+  if constexpr (tmpl::list_contains_v<
+                    DestTags, gr::Tags::Shift<DataVector, 3, TargetFrame>>) {
     const auto& numerical_shift =
-        get<gr::Tags::Shift<3, TargetFrame>>(dest_vars);
+        get<gr::Tags::Shift<DataVector, 3, TargetFrame>>(dest_vars);
     CHECK_ITERABLE_APPROX(shift, numerical_shift);
   }
 
@@ -295,36 +296,34 @@ void test_compute_excision_boundary_volume_quantities() {
   // Test these here.
   if constexpr (not std::is_same_v<TargetFrame, Frame::Inertial>) {
     if constexpr (tmpl::list_contains_v<
-                      DestTags, gr::Tags::SpatialMetric<3, Frame::Inertial>>) {
+                      DestTags, gr::Tags::SpatialMetric<DataVector, 3>>) {
       const auto& expected_inertial_spatial_metric =
-          get<::gr::Tags::SpatialMetric<3, Frame::Inertial>>(
-              inertial_metric_vars);
+          get<::gr::Tags::SpatialMetric<DataVector, 3>>(inertial_metric_vars);
       const auto& inertial_spatial_metric =
-          get<gr::Tags::SpatialMetric<3, Frame::Inertial>>(dest_vars);
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(dest_vars);
       CHECK_ITERABLE_APPROX(expected_inertial_spatial_metric,
                             inertial_spatial_metric);
     }
 
     if constexpr (tmpl::list_contains_v<
                       DestTags,
-                      gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>) {
+                      gr::Tags::InverseSpatialMetric<DataVector, 3>>) {
       const auto expected_inertial_inverse_spatial_metric =
-          determinant_and_inverse(
-              get<::gr::Tags::SpatialMetric<3, Frame::Inertial>>(
-                  inertial_metric_vars))
+          determinant_and_inverse(get<::gr::Tags::SpatialMetric<DataVector, 3>>(
+                                      inertial_metric_vars))
               .second;
       const auto& inertial_inverse_spatial_metric =
-          get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(dest_vars);
+          get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(dest_vars);
       CHECK_ITERABLE_APPROX(expected_inertial_inverse_spatial_metric,
                             inertial_inverse_spatial_metric);
     }
 
     if constexpr (tmpl::list_contains_v<DestTags,
-                                        gr::Tags::Shift<3, Frame::Inertial>>) {
+                                        gr::Tags::Shift<DataVector, 3>>) {
       const auto& expected_inertial_shift =
-          get<gr::Tags::Shift<3, Frame::Inertial>>(inertial_metric_vars);
+          get<gr::Tags::Shift<DataVector, 3>>(inertial_metric_vars);
       const auto& inertial_shift =
-          get<gr::Tags::Shift<3, Frame::Inertial>>(dest_vars);
+          get<gr::Tags::Shift<DataVector, 3>>(dest_vars);
       CHECK_ITERABLE_APPROX(expected_inertial_shift, inertial_shift);
     }
   }
@@ -340,62 +339,61 @@ SPECTRE_TEST_CASE(
     // All possible tags.
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
                              Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial>>>();
+                 gr::Tags::Shift<DataVector, 3>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>>>();
 
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>,
-                 gr::Tags::Shift<3, Frame::Inertial>>>();
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::Shift<DataVector, 3>>>();
 
   // time-dependent.
   // All possible tags.
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
                              Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial>,
-                 gr::Tags::Shift<3, Frame::Grid>>>();
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::Shift<DataVector, 3, Frame::Grid>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>>>();
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>>>();
 }
 }  // namespace

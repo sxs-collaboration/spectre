@@ -92,7 +92,7 @@ struct DumpBondiSachsOnWorldtube
                  Cce::Tags::BondiU, Cce::Tags::BondiW>>;
 
   using gh_source_vars_for_cce =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, ::Frame::Inertial>,
                  gh::Tags::Phi<3, ::Frame::Inertial>>;
 
@@ -147,7 +147,7 @@ struct DumpBondiSachsOnWorldtube
         db::get<::Tags::Variables<gh_source_vars_from_interpolation>>(box);
 
     const auto& all_spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(all_gh_vars);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(all_gh_vars);
     const auto& all_pi = get<gh::Tags::Pi<3, ::Frame::Inertial>>(all_gh_vars);
     const auto& all_phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(all_gh_vars);
 

@@ -213,7 +213,8 @@ struct FirstOrderSystem
                   tmpl::size_t<3>, Frame::Inertial>>,
           tmpl::list<>>,
       tmpl::conditional_t<
-          EnabledEquations == Equations::Hamiltonian,
+          EnabledEquations ==
+              Equations::Hamiltonian,
           Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<
               DataVector>,
           tmpl::list<>>,
@@ -238,9 +239,8 @@ struct FirstOrderSystem
           EnabledEquations ==
               Equations::HamiltonianLapseAndShift,
           tmpl::list<
-              gr::Tags::Conformal<
-                  gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>,
-                  ConformalMatterScale>,
+              gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>,
+                                  ConformalMatterScale>,
               ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
                             tmpl::size_t<3>, Frame::Inertial>,
               Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,

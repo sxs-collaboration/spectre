@@ -32,7 +32,7 @@ namespace gh {
 template <size_t Dim>
 struct ComputeNormalDotFluxes {
  public:
-  using argument_tags = tmpl::list<gr::Tags::SpacetimeMetric<Dim>>;
+  using argument_tags = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*>

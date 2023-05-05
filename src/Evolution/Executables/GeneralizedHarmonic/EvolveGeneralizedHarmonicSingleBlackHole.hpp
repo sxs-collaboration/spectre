@@ -109,14 +109,15 @@ struct EvolutionMetavars
     using compute_vars_to_interpolate =
         ah::ComputeExcisionBoundaryVolumeQuantities;
     using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<3, Frame::Grid>,
-                   gr::Tags::SpatialMetric<3, Frame::Grid>,
+        tmpl::list<gr::Tags::Lapse<DataVector>,
+                   gr::Tags::Shift<DataVector, 3, Frame::Grid>,
+                   gr::Tags::SpatialMetric<DataVector, 3, Frame::Grid>,
                    gh::ConstraintDamping::Tags::ConstraintGamma1>;
     using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::append<tmpl::list<
-        gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Grid, DataVector>,
-        StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, Frame::Grid,
-                                                         DataVector>,
+        gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3, Frame::Grid>,
+        StrahlkorperTags::OneOverOneFormMagnitudeCompute<DataVector, 3,
+                                                         Frame::Grid>,
         StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
         gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
     using compute_target_points =

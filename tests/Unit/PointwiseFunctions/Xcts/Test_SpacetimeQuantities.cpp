@@ -112,19 +112,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
       energy_density, momentum_density, std::move(inv_jacobian));
   const auto& vars =
       get<::Tags::Variables<typename SpacetimeQuantities::tags_list>>(box);
-  check_with_python(get<gr::Tags::SpatialMetric<3>>(vars), "spatial_metric",
-                    conformal_factor, conformal_metric);
-  check_with_python(get<gr::Tags::InverseSpatialMetric<3>>(vars),
+  check_with_python(get<gr::Tags::SpatialMetric<DataVector, 3>>(vars),
+                    "spatial_metric", conformal_factor, conformal_metric);
+  check_with_python(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(vars),
                     "inv_spatial_metric", conformal_factor,
                     inv_conformal_metric);
   check_with_python(get<gr::Tags::Lapse<DataVector>>(vars), "lapse",
                     conformal_factor, lapse_times_conformal_factor);
-  check_with_python(get<gr::Tags::Shift<3>>(vars), "shift", shift_excess,
-                    shift_background);
+  check_with_python(get<gr::Tags::Shift<DataVector, 3>>(vars), "shift",
+                    shift_excess, shift_background);
   check_with_python(
-      get<gr::Tags::ExtrinsicCurvature<3>>(vars), "extrinsic_curvature",
-      conformal_factor, get<gr::Tags::Lapse<DataVector>>(vars),
-      conformal_metric,
+      get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars),
+      "extrinsic_curvature", conformal_factor,
+      get<gr::Tags::Lapse<DataVector>>(vars), conformal_metric,
       get<detail::LongitudinalShiftMinusDtConformalMetric<DataVector>>(vars),
       trace_extrinsic_curvature);
   // Constraints and other quantities are tested for various analytic solutions

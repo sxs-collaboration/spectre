@@ -43,7 +43,7 @@ namespace gh {
  *      \beta_i \partial_j \beta^i + \beta^i \partial_j \beta_i)
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_norm_of_shift(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_norm_of_shift,
     const Scalar<DataType>& lapse,
@@ -55,7 +55,7 @@ void spacetime_deriv_of_norm_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

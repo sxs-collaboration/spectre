@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_deriv_of_shift(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> dt_shift,
     const Scalar<DataType>& lapse,
@@ -48,7 +48,7 @@ void time_deriv_of_shift(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -57,9 +57,9 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::I<DataType, SpatialDim, Frame> dt_shift{};
-  gh::time_deriv_of_shift<SpatialDim, Frame, DataType>(
-      make_not_null(&dt_shift), lapse, shift, inverse_spatial_metric,
-      spacetime_unit_normal, phi, pi);
+  gh::time_deriv_of_shift(make_not_null(&dt_shift), lapse, shift,
+                          inverse_spatial_metric, spacetime_unit_normal, phi,
+                          pi);
   return dt_shift;
 }
 }  // namespace gh

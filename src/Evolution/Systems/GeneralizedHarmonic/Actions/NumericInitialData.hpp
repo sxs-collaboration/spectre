@@ -50,10 +50,9 @@ struct VarName {
 // files:
 // - ADM variables
 using adm_vars =
-    tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-               gr::Tags::Lapse<DataVector>,
-               gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-               gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+    tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+               gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+               gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
 struct Adm : tuples::tagged_tuple_from_typelist<
                  db::wrap_tags_in<OptionTags::VarName, adm_vars>> {
   using Base = tuples::tagged_tuple_from_typelist<
@@ -67,9 +66,8 @@ struct Adm : tuples::tagged_tuple_from_typelist<
   using Base::TaggedTuple;
 };
 // - Generalized harmonic variables
-using gh_vars =
-    tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-               Tags::Pi<3, Frame::Inertial>>;
+using gh_vars = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                           Tags::Pi<3, Frame::Inertial>>;
 struct GeneralizedHarmonic
     : tuples::tagged_tuple_from_typelist<
           db::wrap_tags_in<OptionTags::VarName, gh_vars>> {
@@ -189,7 +187,7 @@ struct ReadNumericInitialData {
  * store it in the DataBox to be used as initial data.
  *
  * This action modifies the following tags in the DataBox:
- * - gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>
+ * - gr::Tags::SpacetimeMetric<DataVector, 3>
  * - gh::Tags::Pi<3, Frame::Inertial>
  * - gh::Tags::Phi<3, Frame::Inertial>
  *
@@ -231,15 +229,15 @@ struct SetNumericInitialData {
       const auto& inv_jacobian =
           db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                 Frame::Inertial>>(box);
-      db::mutate<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
+      db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
           make_not_null(&box),
           [&numeric_initial_data, &mesh, &inv_jacobian](
               const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
               const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
               const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi) {
-            *spacetime_metric = std::move(
-                get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
+            *spacetime_metric =
+                std::move(get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
                     numeric_initial_data));
             *pi = std::move(
                 get<Tags::Pi<3, Frame::Inertial>>(numeric_initial_data));
@@ -250,14 +248,13 @@ struct SetNumericInitialData {
                    selected_initial_data_vars)) {
       // We have loaded ADM variables from the file. Convert to GH variables.
       const auto& spatial_metric =
-          get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-              numeric_initial_data);
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(numeric_initial_data);
       const auto& lapse =
           get<gr::Tags::Lapse<DataVector>>(numeric_initial_data);
-      const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(
-          numeric_initial_data);
+      const auto& shift =
+          get<gr::Tags::Shift<DataVector, 3>>(numeric_initial_data);
       const auto& extrinsic_curvature =
-          get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
+          get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(
               numeric_initial_data);
 
       // Take numerical derivatives
@@ -269,12 +266,11 @@ struct SetNumericInitialData {
           partial_derivative(spatial_metric, mesh, inv_jacobian);
       const auto deriv_lapse = partial_derivative(lapse, mesh, inv_jacobian);
       const auto deriv_shift = partial_derivative(
-          get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(
-              numeric_initial_data),
-          mesh, inv_jacobian);
+          get<gr::Tags::Shift<DataVector, 3>>(numeric_initial_data), mesh,
+          inv_jacobian);
 
       // Compute GH variables
-      db::mutate<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
+      db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
           make_not_null(&box),
           [&spatial_metric, &deriv_spatial_metric, &lapse, &deriv_lapse, &shift,

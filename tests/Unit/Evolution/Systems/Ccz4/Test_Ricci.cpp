@@ -69,14 +69,18 @@ void test_compute_spatial_ricci_tensor(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<SpatialDim>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, SpatialDim>>(vars);
   const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   const auto& d_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<SpatialDim>,
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim>,
                       tmpl::size_t<SpatialDim>, Frame::Inertial>>(vars);
   const auto d_det_spatial_metric =
-      get<gr::Tags::DerivDetSpatialMetric<SpatialDim>>(solution.variables(
-          x, t, tmpl::list<gr::Tags::DerivDetSpatialMetric<SpatialDim>>{}));
+      get<gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim>>(
+          solution.variables(
+              x, t,
+              tmpl::list<
+                  gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim>>{}));
 
   // Compute arguments for `spatial_ricci_tensor` function to test
   const auto conformal_factor = pow(get(det_spatial_metric), -1. / 6.);
@@ -128,7 +132,7 @@ void test_compute_spatial_ricci_tensor(
       ::tenex::evaluate<ti::L>(field_d_up(ti::m, ti::M, ti::L));
 
   using field_d_tag =
-      Ccz4::Tags::FieldD<SpatialDim, Frame::Inertial, DataVector>;
+      Ccz4::Tags::FieldD<DataVector, SpatialDim, Frame::Inertial>;
   Variables<tmpl::list<field_d_tag>> field_d_var(num_points_3d);
   get<field_d_tag>(field_d_var) = field_d;
   const auto d_field_d_var = partial_derivatives<tmpl::list<field_d_tag>>(
@@ -148,7 +152,7 @@ void test_compute_spatial_ricci_tensor(
   }
 
   using field_p_tag =
-      Ccz4::Tags::FieldP<SpatialDim, Frame::Inertial, DataVector>;
+      Ccz4::Tags::FieldP<DataVector, SpatialDim, Frame::Inertial>;
   Variables<tmpl::list<field_p_tag>> field_p_var(num_points_3d);
   get<field_p_tag>(field_p_var) = field_p;
   const auto d_field_p_var = partial_derivatives<tmpl::list<field_p_tag>>(
@@ -169,8 +173,7 @@ void test_compute_spatial_ricci_tensor(
       tenex::evaluate<ti::l>(christoffel_second_kind(ti::M, ti::l, ti::m));
 
   using christoffel_second_kind_tag =
-      gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame::Inertial,
-                                             DataVector>;
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, SpatialDim>;
   Variables<tmpl::list<christoffel_second_kind_tag>>
       christoffel_second_kind_var(num_points_3d);
   get<christoffel_second_kind_tag>(christoffel_second_kind_var) =

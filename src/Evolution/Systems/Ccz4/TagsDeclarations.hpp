@@ -13,114 +13,86 @@ namespace Ccz4 {
 /// \brief Tags for the CCZ4 formulation of Einstein equations
 namespace Tags {
 // Quantities of interest
-template <typename DataType = DataVector>
+template <typename DataType>
 struct ConformalFactor;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct ConformalFactorSquared;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ATilde;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct TraceATilde;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct LogLapse;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldA;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldB;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldD;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct LogConformalFactor;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldP;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldDUp;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ConformalChristoffelSecondKind;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct DerivConformalChristoffelSecondKind;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ChristoffelSecondKind;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct Ricci;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GradGradLapse;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct DivergenceLapse;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ContractedConformalChristoffelSecondKind;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct DerivContractedConformalChristoffelSecondKind;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GammaHat;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialZ4Constraint;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialZ4ConstraintUp;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GradSpatialZ4Constraint;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct RicciScalarPlusDivergenceZ4Constraint;
 // Temporary expressions for computing above quantities of interest
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GammaHatMinusContractedConformalChristoffel;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct KMinus2ThetaC;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct KMinusK0Minus2ThetaC;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct ContractedFieldB;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ConformalMetricTimesFieldB;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct LapseTimesRicciScalarPlus2DivergenceZ4Constraint;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ConformalMetricTimesTraceATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct LapseTimesATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct FieldDUpTimesATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct LapseTimesDerivATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InverseConformalMetricTimesDerivATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ATildeMinusOneThirdConformalMetricTimesTraceATilde;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct LapseTimesFieldA;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ShiftTimesDerivGammaHat;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InverseTauTimesConformalMetric;
-template <typename DataType = DataVector>
+template <typename DataType>
 struct LapseTimesSlicingCondition;
 }  // namespace Tags
 

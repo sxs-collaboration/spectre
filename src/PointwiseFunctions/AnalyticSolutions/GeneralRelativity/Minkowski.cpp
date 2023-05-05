@@ -45,44 +45,38 @@ Minkowski<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(
+tuples::TaggedTuple<gr::Tags::Shift<DataType, Dim>> Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>> /*meta*/)
-    const {
+    tmpl::list<gr::Tags::Shift<DataType, Dim>> /*meta*/) const {
   return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>>
+tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, Dim>>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<
-        ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>> /*meta*/)
-    const {
+    tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, Dim>>> /*meta*/) const {
   return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>
+tuples::TaggedTuple<::Tags::deriv<gr::Tags::Shift<DataType, Dim>,
+                                  tmpl::size_t<Dim>, Frame::Inertial>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                             tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
-    const {
+    tmpl::list<::Tags::deriv<gr::Tags::Shift<DataType, Dim>, tmpl::size_t<Dim>,
+                             Frame::Inertial>> /*meta*/) const {
   return {make_with_value<tnsr::iJ<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::SpatialMetric<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::SpatialMetric<DataType, Dim>> /*meta*/) const {
   tnsr::ii<DataType, Dim> lower_metric(make_with_value<DataType>(x, 0.));
   for (size_t i = 0; i < Dim; ++i) {
     lower_metric.get(i, i) = 1.;
@@ -92,35 +86,32 @@ Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>>
+tuples::TaggedTuple<::Tags::dt<gr::Tags::SpatialMetric<DataType, Dim>>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial,
-                                                  DataType>>> /*meta*/) const {
+    tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<DataType, Dim>>> /*meta*/)
+    const {
   return {make_with_value<tnsr::ii<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>
+tuples::TaggedTuple<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
+                                  tmpl::size_t<Dim>, Frame::Inertial>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<
-        ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                      tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/) const {
+    tmpl::list<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
+                             tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
+    const {
   return {make_with_value<tnsr::ijj<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::InverseSpatialMetric<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::InverseSpatialMetric<DataType, Dim>> /*meta*/) const {
   tnsr::II<DataType, Dim> upper_metric(make_with_value<DataType>(x, 0.));
   for (size_t i = 0; i < Dim; ++i) {
     upper_metric.get(i, i) = 1.;
@@ -130,11 +121,10 @@ Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::ExtrinsicCurvature<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, Dim>> /*meta*/) const {
   return {make_with_value<tnsr::ii<DataType, Dim>>(x, 0.)};
 }
 
@@ -159,11 +149,10 @@ Minkowski<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::DerivDetSpatialMetric<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::DerivDetSpatialMetric<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::DerivDetSpatialMetric<DataType, Dim>> /*meta*/) const {
   return {make_with_value<tnsr::i<DataType, Dim>>(x, 0.)};
 }
 
@@ -178,32 +167,32 @@ Minkowski<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::SpatialChristoffelFirstKind<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::SpatialChristoffelFirstKind<DataType, Dim>> /*meta*/)
+    const {
   return {make_with_value<tnsr::ijj<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::SpatialChristoffelSecondKind<DataType, Dim>> /*meta*/)
+    const {
   return {make_with_value<tnsr::Ijj<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<DataType, Dim>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
-        Dim, Frame::Inertial, DataType>> /*meta*/) const {
+    tmpl::list<
+        gr::Tags::TraceSpatialChristoffelSecondKind<DataType, Dim>> /*meta*/)
+    const {
   return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
 }
 
@@ -228,60 +217,61 @@ Minkowski<Dim>::variables(
       tmpl::list<                                                              \
           ::Tags::deriv<gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, \
                         Frame::Inertial>> /*meta*/) const;                     \
+  template tuples::TaggedTuple<gr::Tags::Shift<DTYPE(data), DIM(data)>>        \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::Shift<DTYPE(data), DIM(data)>> /*meta*/) const;     \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>                \
+      ::Tags::dt<gr::Tags::Shift<DTYPE(data), DIM(data)>>>                     \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<                                                              \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/)  \
+          ::Tags::dt<gr::Tags::Shift<DTYPE(data), DIM(data)>>> /*meta*/)       \
       const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      ::Tags::dt<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>>    \
-  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<::Tags::dt<                                                   \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) \
-      const;                                                                   \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,  \
+      ::Tags::deriv<gr::Tags::Shift<DTYPE(data), DIM(data)>,                   \
                     tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,            \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
+      tmpl::list<                                                              \
+          ::Tags::deriv<gr::Tags::Shift<DTYPE(data), DIM(data)>,               \
+                        tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/)   \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>        \
+      gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>                         \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::SpatialMetric<DIM(data), Frame::Inertial,           \
-                                         DTYPE(data)>> /*meta*/) const;        \
-  template tuples::TaggedTuple<::Tags::dt<                                     \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>>       \
-  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<                           \
-          DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) const;          \
-  template tuples::TaggedTuple<::Tags::deriv<                                  \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,        \
-      tmpl::size_t<DIM(data)>, Frame::Inertial>>                               \
-  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,    \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
+      tmpl::list<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>> /*meta*/)    \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>> \
+      ::Tags::dt<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>>             \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial,    \
-                                                DTYPE(data)>> /*meta*/) const; \
+      tmpl::list<::Tags::dt<                                                   \
+          gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>>> /*meta*/) const;   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial, DTYPE(data)>>   \
+      ::Tags::deriv<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>,           \
+                    tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial,      \
-                                              DTYPE(data)>> /*meta*/) const;   \
+      tmpl::list<                                                              \
+          ::Tags::deriv<gr::Tags::SpatialMetric<DTYPE(data), DIM(data)>,       \
+                        tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/)   \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::InverseSpatialMetric<DTYPE(data), DIM(data)>>                  \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<                                                              \
+          gr::Tags::InverseSpatialMetric<DTYPE(data), DIM(data)>> /*meta*/)    \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::ExtrinsicCurvature<DTYPE(data), DIM(data)>>                    \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<                                                              \
+          gr::Tags::ExtrinsicCurvature<DTYPE(data), DIM(data)>> /*meta*/)      \
+      const;                                                                   \
   template tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>    \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
@@ -293,31 +283,33 @@ Minkowski<Dim>::variables(
       tmpl::list<                                                              \
           ::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>> /*meta*/)   \
       const;                                                                   \
-  template tuples::TaggedTuple<gr::Tags::DerivDetSpatialMetric<                \
-      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::DerivDetSpatialMetric<DTYPE(data), DIM(data)>>                 \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::DerivDetSpatialMetric<DIM(data), Frame::Inertial,   \
-                                                 DTYPE(data)>> /*meta*/)       \
+      tmpl::list<                                                              \
+          gr::Tags::DerivDetSpatialMetric<DTYPE(data), DIM(data)>> /*meta*/)   \
       const;                                                                   \
-  template tuples::TaggedTuple<gr::Tags::SpatialChristoffelFirstKind<          \
-      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::SpatialChristoffelFirstKind<DTYPE(data), DIM(data)>>           \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::SpatialChristoffelFirstKind<                        \
-          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
-  template tuples::TaggedTuple<gr::Tags::SpatialChristoffelSecondKind<         \
-      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+      tmpl::list<gr::Tags::SpatialChristoffelFirstKind<DTYPE(data),            \
+                                                       DIM(data)>> /*meta*/)   \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::SpatialChristoffelSecondKind<DTYPE(data), DIM(data)>>          \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::SpatialChristoffelSecondKind<                       \
-          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
-  template tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<    \
-      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+      tmpl::list<gr::Tags::SpatialChristoffelSecondKind<DTYPE(data),           \
+                                                        DIM(data)>> /*meta*/)  \
+      const;                                                                   \
+  template tuples::TaggedTuple<                                                \
+      gr::Tags::TraceSpatialChristoffelSecondKind<DTYPE(data), DIM(data)>>     \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<                  \
-          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
+          DTYPE(data), DIM(data)>> /*meta*/) const;                            \
   template tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>> \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \

@@ -128,8 +128,9 @@ void test(const TestThis test_this, const int expected_tci_status,
       ::evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
-      gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
-      gr::Tags::InverseSpatialMetric<3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
       evolution::dg::subcell::Tags::SubcellOptions<3>,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(

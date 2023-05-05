@@ -31,7 +31,7 @@ struct ConformalFactor : db::SimpleTag {
  */
 template <typename DataType, size_t Dim, typename Frame>
 using ConformalMetric =
-    gr::Tags::Conformal<gr::Tags::SpatialMetric<Dim, Frame, DataType>, -4>;
+    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Frame>, -4>;
 
 /*!
  * \brief The conformally scaled inverse spatial metric
@@ -41,7 +41,7 @@ using ConformalMetric =
  */
 template <typename DataType, size_t Dim, typename Frame>
 using InverseConformalMetric =
-    gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
+    gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<DataType, Dim, Frame>,
                         4>;
 
 /*!

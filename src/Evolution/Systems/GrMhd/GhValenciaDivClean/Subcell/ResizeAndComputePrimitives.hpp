@@ -68,7 +68,7 @@ struct ResizeAndComputePrims {
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
                  grmhd::ValenciaDivClean::Tags::TildePhi,
-                 gr::Tags::SpacetimeMetric<3>,
+                 gr::Tags::SpacetimeMetric<DataVector, 3>,
                  hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>

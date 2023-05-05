@@ -64,8 +64,8 @@ SPECTRE_TEST_CASE(
   Variables<
       typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>
       volume_evolved_vars{subcell_mesh.number_of_grid_points()};
-  get<gr::Tags::SpacetimeMetric<3>>(volume_evolved_vars) =
-      get<gr::Tags::SpacetimeMetric<3>>(volume_prims_for_recons);
+  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_evolved_vars) =
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_prims_for_recons);
   get<gh::Tags::Phi<3>>(volume_evolved_vars) =
       get<gh::Tags::Phi<3>>(volume_prims_for_recons);
   get<gh::Tags::Pi<3>>(volume_evolved_vars) =
@@ -86,8 +86,9 @@ SPECTRE_TEST_CASE(
       expected_deriv_of_gh_vars{subcell_mesh.number_of_grid_points()};
 
   auto& expected_d_metric =
-      get<::Tags::deriv<gr::Tags::SpacetimeMetric<3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(expected_deriv_of_gh_vars);
+      get<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                        tmpl::size_t<3>, Frame::Inertial>>(
+          expected_deriv_of_gh_vars);
   get<0, 0, 0>(expected_d_metric) = get<1, 0, 0>(expected_d_metric) =
       get<2, 0, 0>(expected_d_metric) = 0.0;
   get<0, 1, 0>(expected_d_metric) = get<1, 1, 0>(expected_d_metric) =
@@ -112,8 +113,8 @@ SPECTRE_TEST_CASE(
       get<2, 3, 3>(expected_d_metric) = 0.012;
 
   CHECK_ITERABLE_APPROX(
-      (get<::Tags::deriv<gr::Tags::SpacetimeMetric<3>, tmpl::size_t<3>,
-                         Frame::Inertial>>(deriv_of_gh_vars)),
+      (get<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                         tmpl::size_t<3>, Frame::Inertial>>(deriv_of_gh_vars)),
       expected_d_metric);
 
   auto& expected_d_pi =

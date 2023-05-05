@@ -196,8 +196,7 @@ class ConstraintPreservingSphericalRadiation final
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma1, Tags::ConstraintGamma2,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>>;
   using dg_interior_dt_vars_tags =
       tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
                  ::Tags::dt<Tags::Phi<Dim>>>;

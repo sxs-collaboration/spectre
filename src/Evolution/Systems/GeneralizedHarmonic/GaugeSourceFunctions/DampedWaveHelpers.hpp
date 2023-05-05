@@ -26,7 +26,7 @@ namespace DampedHarmonicGauge_detail {
  * This function can be written with an extra factor inside the exponent in
  * literature, e.g. \cite Deppe2018uye. We absorb that in \f$\sigma_r\f$.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_weight_function(gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
                              double sigma_r);
@@ -45,7 +45,7 @@ void spatial_weight_function(gsl::not_null<Scalar<DataType>*> weight,
  * \f$\sigma_r\f$ is the width of the Gaussian. Since the weight function is
  * spatial, the time derivative is always zero.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_spatial_weight_function(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
     const tnsr::I<DataType, SpatialDim, Frame>& coords, double sigma_r,
@@ -76,7 +76,7 @@ Scalar<DataType> log_factor_metric_lapse(
  *  \partial_a logF = (p/g)\partial_a g - (1/N)\partial_a N
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_log_factor_metric_lapse(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_logfac,
     const Scalar<DataType>& lapse,
@@ -88,7 +88,7 @@ void spacetime_deriv_of_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double exponent);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -108,7 +108,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
  *  \partial_a (logF)^q = q (logF)^{q-1} \partial_a (logF)
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_deriv_of_power_log_factor_metric_lapse(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_powlogfac,
     const Scalar<DataType>& lapse,
@@ -121,7 +121,7 @@ void spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double g_exponent,
     int exponent);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame>
 spacetime_deriv_of_power_log_factor_metric_lapse(
     const Scalar<DataType>& lapse,

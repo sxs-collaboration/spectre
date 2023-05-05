@@ -272,9 +272,8 @@ void test_characteristics_compute_tags() {
       db::AddSimpleTags<
           CurvedScalarWave::Tags::ConstraintGamma1,
           CurvedScalarWave::Tags::ConstraintGamma2, gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
-          gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial,
-                                         DataVector>,
+          gr::Tags::Shift<DataVector, SpatialDim>,
+          gr::Tags::InverseSpatialMetric<DataVector, SpatialDim>,
           CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
           CurvedScalarWave::Tags::Phi<SpatialDim>,
           ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
@@ -454,10 +453,10 @@ void check_max_char_speed_compute_tag(const DataVector& used_for_size) {
 
   // Insert into databox
   const auto box = db::create<
-      db::AddSimpleTags<
-          CurvedScalarWave::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
-          gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>,
+      db::AddSimpleTags<CurvedScalarWave::Tags::ConstraintGamma1,
+                        gr::Tags::Lapse<DataVector>,
+                        gr::Tags::Shift<DataVector, SpatialDim>,
+                        gr::Tags::SpatialMetric<DataVector, SpatialDim>>,
       db::AddComputeTags<CurvedScalarWave::Tags::
                              ComputeLargestCharacteristicSpeed<SpatialDim>>>(
       gamma_1, lapse, shift, spatial_metric);

@@ -63,8 +63,7 @@ struct MockElementArray {
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
                   domain::Tags::Coordinates<Dim, Frame::Grid>,
-                  Tags::PunctureField<Dim>,
-                  gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                  Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
                   gr::Tags::Lapse<DataVector>,
                   domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                 Frame::Grid>,

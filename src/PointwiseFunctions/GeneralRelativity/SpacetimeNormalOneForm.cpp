@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_normal_one_form(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
     const Scalar<DataType>& lapse) {
@@ -24,7 +24,7 @@ void spacetime_normal_one_form(
   get<0>(*normal_one_form) = -get(lapse);
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) {
   tnsr::a<DataType, SpatialDim, Frame> normal_one_form{};

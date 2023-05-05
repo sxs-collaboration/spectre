@@ -244,8 +244,7 @@ using SchwarzschildVariablesCache =
                       Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        gr::Tags::Conformal<
-            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>>>;
+        gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>>>;
 
 template <typename DataType>
 struct SchwarzschildVariables
@@ -356,8 +355,7 @@ struct SchwarzschildVariables
   void operator()(
       gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
       gsl::not_null<Cache*> cache,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/)
-      const override;
+      gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const override;
   void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
@@ -368,9 +366,8 @@ struct SchwarzschildVariables
                                       ConformalMatterScale> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Conformal<
-                      gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                      ConformalMatterScale> /*meta*/) const;
+                  gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>,
+                                      ConformalMatterScale> /*meta*/) const;
 };
 
 }  // namespace detail

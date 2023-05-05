@@ -48,28 +48,24 @@ using SpacetimeQuantities = CachedTempBuffer<
     ::Tags::div<Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial>>,
     detail::LongitudinalShiftMinusDtConformalMetric<DataVector>,
     // ADM quantities
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-    gr::Tags::Lapse<DataVector>,
-    gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
+    gr::Tags::SpatialMetric<DataVector, 3>,
+    gr::Tags::InverseSpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+    gr::Tags::Shift<DataVector, 3>, gr::Tags::ExtrinsicCurvature<DataVector, 3>,
     // Constraints
     gr::Tags::HamiltonianConstraint<DataVector>,
-    gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>>;
+    gr::Tags::MomentumConstraint<DataVector, 3>>;
 
 /// `CachedTempBuffer` computer class for 3+1 quantities from XCTS variables.
 /// See `Xcts::SpacetimeQuantities`.
 struct SpacetimeQuantitiesComputer {
   using Cache = SpacetimeQuantities;
 
-  void operator()(
-      gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::SpatialMetric<DataVector, 3> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataVector> /*meta*/) const;
+                  gr::Tags::InverseSpatialMetric<DataVector, 3> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataVector, 3>*> deriv_conformal_factor,
       gsl::not_null<Cache*> cache,
@@ -88,9 +84,9 @@ struct SpacetimeQuantitiesComputer {
   void operator()(gsl::not_null<Scalar<DataVector>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataVector> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::I<DataVector, 3>*> shift, gsl::not_null<Cache*> cache,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataVector, 3>*> shift,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::Shift<DataVector, 3> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::iJ<DataVector, 3>*> deriv_shift_excess,
       gsl::not_null<Cache*> cache,
@@ -118,15 +114,13 @@ struct SpacetimeQuantitiesComputer {
       const;
   void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
-                                               DataVector> /*meta*/) const;
+                  gr::Tags::ExtrinsicCurvature<DataVector, 3> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataVector, 3>*> momentum_constraint,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::MomentumConstraint<3, Frame::Inertial,
-                                               DataVector> /*meta*/) const;
+                  gr::Tags::MomentumConstraint<DataVector, 3> /*meta*/) const;
 
   // XCTS variables
   const Scalar<DataVector>& conformal_factor;
@@ -182,8 +176,7 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
       ::Tags::div<LongitudinalShiftBackgroundMinusDtConformalMetric<
           DataVector, 3, Frame::Inertial>>,
       gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
-      gr::Tags::Conformal<
-          gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>,
+      gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>, 0>,
       domain::Tags::Mesh<3>,
       domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>>;
   template <typename... Args>

@@ -11,7 +11,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*> christoffel,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
@@ -34,7 +34,7 @@ void christoffel_second_kind(
     }
   }
 }
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 auto christoffel_second_kind(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::II<DataType, SpatialDim, Frame>& inv_metric)
@@ -45,7 +45,7 @@ auto christoffel_second_kind(
   return christoffel;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> trace_christoffel(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
@@ -54,13 +54,13 @@ tnsr::a<DataType, SpatialDim, Frame> trace_christoffel(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   auto trace = make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(pi, 0.0);
-  trace_christoffel<SpatialDim, Frame, DataType>(
+  trace_christoffel<DataType, SpatialDim, Frame>(
       &trace, spacetime_normal_one_form, spacetime_normal_vector,
       inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
   return trace;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void trace_christoffel(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> trace,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,

@@ -124,16 +124,14 @@ void test_boundary_condition_combination(
       db::wrap_tags_in<::Tags::Flux, typename gh::System<3_st>::flux_variables,
                        tmpl::size_t<3_st>, Frame::Inertial>,
       GhCorrectionTempTagList,
-      tmpl::list<
-          gr::Tags::InverseSpatialMetric<3_st, Frame::Inertial, DataVector>>>;
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3_st>>>;
   using valencia_mutable_tags = tmpl::append<
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
       db::wrap_tags_in<::Tags::Flux,
                        typename grmhd::ValenciaDivClean::System::flux_variables,
                        tmpl::size_t<3_st>, Frame::Inertial>,
       ValenciaCorrectionTempTagList,
-      tmpl::list<
-          gr::Tags::InverseSpatialMetric<3_st, Frame::Inertial, DataVector>>>;
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3_st>>>;
   using product_mutable_tags = tmpl::append<
       typename gh::System<3_st>::variables_tag::tags_list,
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
@@ -144,8 +142,7 @@ void test_boundary_condition_combination(
                        tmpl::size_t<3_st>, Frame::Inertial>,
       tmpl::remove_duplicates<
           tmpl::append<GhCorrectionTempTagList, ValenciaCorrectionTempTagList>>,
-      tmpl::list<
-          gr::Tags::InverseSpatialMetric<3_st, Frame::Inertial, DataVector>>>;
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3_st>>>;
 
   using gh_arg_tags = tmpl::append<
       tmpl::list<::domain::Tags::MeshVelocity<3_st>,
@@ -214,12 +211,14 @@ void test_boundary_condition_combination(
               make_not_null(&gen), make_not_null(&dist), element_size);
     }
   });
-  if constexpr (tmpl::list_contains_v<product_arg_tags,
-                                      gr::Tags::SpacetimeMetric<3_st>>) {
-    get<0, 0>(tuples::get<gr::Tags::SpacetimeMetric<3_st>>(
+  if constexpr (tmpl::list_contains_v<
+                    product_arg_tags,
+                    gr::Tags::SpacetimeMetric<DataVector, 3_st>>) {
+    get<0, 0>(tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(
         argument_variables)) += -2.0;
     for (size_t i = 0; i < 3; ++i) {
-      tuples::get<gr::Tags::SpacetimeMetric<3_st>>(argument_variables)
+      tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(
+          argument_variables)
           .get(i + 1, 0) *= 0.01;
     }
   }
@@ -310,13 +309,11 @@ void test_boundary_condition_combination(
           get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
         });
     const auto& spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            argument_variables);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(argument_variables);
     const auto spatial_metric = gr::spatial_metric(spacetime_metric);
     const auto inv_spatial_metric =
         determinant_and_inverse(spatial_metric).second;
-    auto& shift =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(mutable_variables);
+    auto& shift = get<gr::Tags::Shift<DataVector, 3>>(mutable_variables);
     gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
     gr::lapse(
         make_not_null(&get<gr::Tags::Lapse<DataVector>>(mutable_variables)),
@@ -344,13 +341,11 @@ void test_boundary_condition_combination(
           get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
         });
     const auto& spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            argument_variables);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(argument_variables);
     const auto spatial_metric = gr::spatial_metric(spacetime_metric);
     const auto inv_spatial_metric =
         determinant_and_inverse(spatial_metric).second;
-    auto& shift =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(mutable_variables);
+    auto& shift = get<gr::Tags::Shift<DataVector, 3>>(mutable_variables);
     gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
     gr::lapse(
         make_not_null(&get<gr::Tags::Lapse<DataVector>>(mutable_variables)),

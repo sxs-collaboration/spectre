@@ -466,7 +466,7 @@ void test_reference_impl_against_spec() {
 template <size_t Dim, typename Generator>
 void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
-  using gh_tags_list = tmpl::list<gr::Tags::SpacetimeMetric<Dim>,
+  using gh_tags_list = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                                   gh::Tags::Pi<Dim>, gh::Tags::Phi<Dim>>;
 
   const double time = 1.3;
@@ -484,7 +484,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   // compute it from the helper functions that generate a physical lapse, shift,
   // and spatial metric.
   gr::spacetime_metric(
-      make_not_null(&get<gr::Tags::SpacetimeMetric<Dim>>(evolved_vars)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars)),
       TestHelpers::gr::random_lapse(generator, used_for_size),
       TestHelpers::gr::random_shift<Dim>(generator, used_for_size),
       TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size));
@@ -511,12 +512,12 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       partial_derivatives<gh_tags_list>(evolved_vars, mesh, inv_jac);
 
   const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<Dim>>(evolved_vars);
+      get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars);
   const auto& phi = get<gh::Tags::Phi<Dim>>(evolved_vars);
   const auto& pi = get<gh::Tags::Pi<Dim>>(evolved_vars);
   const auto& d_spacetime_metric =
-      get<Tags::deriv<gr::Tags::SpacetimeMetric<Dim>, tmpl::size_t<Dim>,
-                      Frame::Inertial>>(partial_derivs);
+      get<Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                      tmpl::size_t<Dim>, Frame::Inertial>>(partial_derivs);
   const auto& d_phi =
       get<Tags::deriv<gh::Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
           partial_derivs);
@@ -534,9 +535,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   // Quantities as input for reference RHS
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const auto [det_spatial_metric, inverse_spatial_metric] =
-      determinant_and_inverse<
-          gr::Tags::DetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+      determinant_and_inverse<gr::Tags::DetSpatialMetric<DataVector>,
+                              gr::Tags::InverseSpatialMetric<DataVector, Dim>>(
           spatial_metric);
   const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
@@ -553,7 +553,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       trace_last_indices(christoffel_first_kind, inverse_spacetime_metric);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<DataVector, Dim, Frame::Inertial>(lapse);
   const Scalar<DataVector> sqrt_det_spatial_metric{
       sqrt(get(det_spatial_metric))};
 
@@ -617,21 +617,18 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gh::Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
       gh::Tags::PhiFirstIndexUp<Dim>, gh::Tags::PhiThirdIndexUp<Dim>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+      gr::Tags::SpatialMetric<DataVector, Dim>,
+      gr::Tags::InverseSpatialMetric<DataVector, Dim>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
-                                               DataVector>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
-                                                   DataVector>,
-      gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>>
+      gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
+      gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
+      gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
+      gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
 
   gh::TimeDerivative<Dim>::apply(
@@ -664,32 +661,30 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>>(
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
+      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(
-              buffer)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
-                                                       DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpacetimeMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::TraceSpacetimeChristoffelFirstKind<
-                        Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial,
-                                                         DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
       make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
-                                                      DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
+              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -771,32 +766,30 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>>(
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
+      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(
-              buffer)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
-                                                       DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpacetimeMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::TraceSpacetimeChristoffelFirstKind<
-                        Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial,
-                                                         DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
       make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
-                                                      DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
+              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -836,32 +829,30 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>>(
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
+      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(
-              buffer)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
-                                                       DataVector>>(buffer)),
+          &get<gr::Tags::InverseSpacetimeMetric<DataVector, Dim>>(buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
-                                                        DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::TraceSpacetimeChristoffelFirstKind<
-                        Dim, Frame::Inertial, DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial,
-                                                         DataVector>>(buffer)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial,
-                                                          DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
       make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
-                                                      DataVector>>(buffer)),
+          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
+              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       std::optional{mesh_velocity});

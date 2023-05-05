@@ -72,13 +72,13 @@ namespace Tags {
 /// computed from SpatialChristoffelSecondKind and its spatial derivatives.
 ///
 /// Can be retrieved using `gr::Tags::SpatialRicci`
-template <size_t SpatialDim, typename Frame, typename DataType>
-struct SpatialRicciCompute : SpatialRicci<SpatialDim, Frame, DataType>,
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct SpatialRicciCompute : SpatialRicci<DataType, SpatialDim, Frame>,
                              db::ComputeTag {
   using argument_tags = tmpl::list<
-      gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+      gr::Tags::SpatialChristoffelSecondKind<DataType, SpatialDim, Frame>,
       ::Tags::deriv<
-          gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+          gr::Tags::SpatialChristoffelSecondKind<DataType, SpatialDim, Frame>,
           tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
@@ -89,19 +89,19 @@ struct SpatialRicciCompute : SpatialRicci<SpatialDim, Frame, DataType>,
       const tnsr::iJkk<DataType, SpatialDim, Frame>&)>(
       &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>);
 
-  using base = SpatialRicci<SpatialDim, Frame, DataType>;
+  using base = SpatialRicci<DataType, SpatialDim, Frame>;
 };
 
 /// Computes the spatial Ricci scalar using the spatial Ricci tensor and the
 /// inverse spatial metric.
 ///
 /// Can be retrieved using `gr::Tags::SpatialRicciScalar`
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpatialRicciScalarCompute : SpatialRicciScalar<DataType>,
                                    db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::SpatialRicci<SpatialDim, Frame, DataType>,
-                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<gr::Tags::SpatialRicci<DataType, SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = Scalar<DataType>;
 

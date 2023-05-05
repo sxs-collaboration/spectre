@@ -58,8 +58,7 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>>;
   using dg_gridless_tags = tmpl::list<>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
 

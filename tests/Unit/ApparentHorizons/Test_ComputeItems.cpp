@@ -87,7 +87,7 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
   // Now test the ComputeItems.
   const auto box = db::create<
       db::AddSimpleTags<
-          tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>,
+          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
                      gh::Tags::Pi<Dim, Frame>, gh::Tags::Phi<Dim, Frame>>>,
       db::AddComputeTags<tmpl::list<
           ah::Tags::InverseSpatialMetricCompute<Dim, Frame>,
@@ -96,11 +96,12 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
       spacetime_metric, pi, phi);
 
   const auto& inverse_spatial_metric =
-      db::get<gr::Tags::InverseSpatialMetric<Dim, Frame>>(box);
+      db::get<gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>>(box);
   const auto& extrinsic_curvature =
-      db::get<gr::Tags::ExtrinsicCurvature<Dim, Frame>>(box);
+      db::get<gr::Tags::ExtrinsicCurvature<DataVector, Dim, Frame>>(box);
   const auto& spatial_christoffel_second_kind =
-      db::get<gr::Tags::SpatialChristoffelSecondKind<Dim, Frame>>(box);
+      db::get<gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim, Frame>>(
+          box);
   CHECK_ITERABLE_APPROX(inverse_spatial_metric,
                         expected_inverse_spatial_metric);
   CHECK_ITERABLE_APPROX(extrinsic_curvature, expected_extrinsic_curvature);

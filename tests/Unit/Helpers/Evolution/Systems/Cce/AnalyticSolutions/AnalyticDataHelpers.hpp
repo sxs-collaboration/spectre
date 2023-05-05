@@ -37,11 +37,11 @@ template <typename SphericalSolution>
 struct SphericalSolutionWrapper : public SphericalSolution {
   using taglist =
       tmpl::list<gr::Tags::SpacetimeMetric<
-                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>,
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>,
                  Tags::Dr<gr::Tags::SpacetimeMetric<
-                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>,
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>,
                  ::Tags::dt<gr::Tags::SpacetimeMetric<
-                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>,
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>,
                  Tags::News>;
   using SphericalSolution::SphericalSolution;
 
@@ -195,11 +195,9 @@ void check_adm_metric_quantities(
       get<Tags::Dr<Tags::CauchyCartesianCoords>>(boundary_tuple);
 
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(boundary_tuple);
-  const auto& shift =
-      get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(boundary_tuple);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(boundary_tuple);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_tuple);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(boundary_tuple);
 
   const auto expected_spatial_metric =
       gr::spatial_metric(expected_spacetime_metric);
@@ -225,11 +223,9 @@ void check_adm_metric_quantities(
   const auto& dt_lapse =
       get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(boundary_tuple);
   const auto& dt_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
-  const auto& dt_spatial_metric = get<
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-      boundary_tuple);
+      get<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>(boundary_tuple);
+  const auto& dt_spatial_metric =
+      get<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(boundary_tuple);
   const auto expected_dt_spatial_metric = gh::time_deriv_of_spatial_metric(
       expected_lapse, expected_shift, expected_d_spacetime_metric, pi);
   const auto expected_spacetime_unit_normal =
@@ -247,11 +243,9 @@ void check_adm_metric_quantities(
   const auto& dr_lapse =
       get<Tags::Dr<gr::Tags::Lapse<DataVector>>>(boundary_tuple);
   const auto& dr_shift =
-      get<Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
+      get<Tags::Dr<gr::Tags::Shift<DataVector, 3>>>(boundary_tuple);
   const auto& dr_spatial_metric =
-      get<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
+      get<Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>>(boundary_tuple);
   const auto expected_spatial_derivative_of_lapse =
       gh::spatial_deriv_of_lapse(expected_lapse, expected_spacetime_unit_normal,
                                  expected_d_spacetime_metric);

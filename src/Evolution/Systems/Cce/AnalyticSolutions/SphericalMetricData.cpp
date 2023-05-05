@@ -29,17 +29,17 @@ namespace Cce::Solutions {
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
-                                          DataVector>> /*meta*/) const {
+    tmpl::type_<gr::Tags::SpacetimeMetric<DataVector, 3>> /*meta*/) const {
   Variables<
       tmpl::list<Tags::detail::InverseCartesianToSphericalJacobian,
                  gr::Tags::SpacetimeMetric<
-                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>>
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>>
       intermediate_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   auto& intermediate_spherical_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Spherical<::Frame::Inertial>,
-                                    DataVector>>(intermediate_variables);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3,
+                                    ::Frame::Spherical<::Frame::Inertial>>>(
+          intermediate_variables);
   auto& intermediate_jacobian =
       get<Tags::detail::InverseCartesianToSphericalJacobian>(
           intermediate_variables);
@@ -80,18 +80,17 @@ void SphericalMetricData::variables_impl(
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<::Tags::dt<
-        gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
+    tmpl::type_<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>> /*meta*/)
     const {
   Variables<
       tmpl::list<Tags::detail::InverseCartesianToSphericalJacobian,
                  ::Tags::dt<gr::Tags::SpacetimeMetric<
-                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>>>
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>>>
       intermediate_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   auto& intermediate_dt_spherical_metric =
       get<::Tags::dt<gr::Tags::SpacetimeMetric<
-          3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>>(
+          DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>>(
           intermediate_variables);
   auto& intermediate_jacobian =
       get<Tags::detail::InverseCartesianToSphericalJacobian>(
@@ -136,35 +135,33 @@ void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
     const size_t l_max, const double time,
     tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const {
-  Variables<tmpl::list<
-      gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-      gr::Tags::SpacetimeMetric<3, ::Frame::Spherical<::Frame::Inertial>,
-                                DataVector>,
-      Tags::Dr<gr::Tags::SpacetimeMetric<
-          3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>,
-      Tags::Dr<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-      Tags::detail::InverseCartesianToSphericalJacobian,
-      Tags::Dr<Tags::detail::InverseCartesianToSphericalJacobian>>>
+  Variables<
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gr::Tags::SpacetimeMetric<
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>,
+                 Tags::Dr<gr::Tags::SpacetimeMetric<
+                     DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>,
+                 Tags::Dr<gr::Tags::SpacetimeMetric<DataVector, 3>>,
+                 Tags::detail::InverseCartesianToSphericalJacobian,
+                 Tags::Dr<Tags::detail::InverseCartesianToSphericalJacobian>>>
       intermediate_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
   auto& intermediate_cartesian_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          intermediate_variables);
-  variables_impl(
-      make_not_null(&intermediate_cartesian_metric), l_max, time,
-      tmpl::type_<
-          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>{});
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(intermediate_variables);
+  variables_impl(make_not_null(&intermediate_cartesian_metric), l_max, time,
+                 tmpl::type_<gr::Tags::SpacetimeMetric<DataVector, 3>>{});
   auto& intermediate_spherical_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Spherical<::Frame::Inertial>,
-                                    DataVector>>(intermediate_variables);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3,
+                                    ::Frame::Spherical<::Frame::Inertial>>>(
+          intermediate_variables);
   auto& intermediate_dr_spherical_metric =
       get<Tags::Dr<gr::Tags::SpacetimeMetric<
-          3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>>(
+          DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>>(
           intermediate_variables);
-  auto& intermediate_dr_cartesian_metric = get<
-      Tags::Dr<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      intermediate_variables);
+  auto& intermediate_dr_cartesian_metric =
+      get<Tags::Dr<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
+          intermediate_variables);
   auto& intermediate_jacobian =
       get<Tags::detail::InverseCartesianToSphericalJacobian>(
           intermediate_variables);

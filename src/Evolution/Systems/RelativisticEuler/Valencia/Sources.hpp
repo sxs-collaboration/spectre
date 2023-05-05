@@ -73,18 +73,21 @@ struct ComputeSources {
       ::Tags::Source<RelativisticEuler::Valencia::Tags::TildeTau>,
       ::Tags::Source<RelativisticEuler::Valencia::Tags::TildeS<Dim>>>;
 
-  using argument_tags = tmpl::list<
-      RelativisticEuler::Valencia::Tags::TildeD,
-      RelativisticEuler::Valencia::Tags::TildeTau,
-      RelativisticEuler::Valencia::Tags::TildeS<Dim>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim>,
-      hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<>,
-      ::Tags::deriv<gr::Tags::Lapse<>, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
-      gr::Tags::ExtrinsicCurvature<Dim>>;
+  using argument_tags =
+      tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
+                 RelativisticEuler::Valencia::Tags::TildeTau,
+                 RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<DataVector>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, Dim>>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> source_tilde_tau,

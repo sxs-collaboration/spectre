@@ -151,10 +151,10 @@ struct NeighborPackagedData {
           using dg_package_data_argument_tags = tmpl::append<
               evolved_vars_tags, recons_prim_tags, fluxes_tags,
               tmpl::remove_duplicates<tmpl::push_back<
-                  dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
+                  dg_package_data_temporary_tags,
+                  gr::Tags::SpatialMetric<DataVector, 3>,
                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataVector>,
+                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                   evolution::dg::Actions::detail::NormalVector<3>>>>;
 
           const auto& element = db::get<domain::Tags::Element<3>>(box);
@@ -249,7 +249,7 @@ struct NeighborPackagedData {
             // Need to renormalize the normal vector with the neighbor's
             // inverse spatial metric.
             const auto& inverse_spatial_metric =
-                get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(
+                get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
                     vars_on_face);
             const auto normal_magnitude =
                 magnitude(normal_covector, inverse_spatial_metric);

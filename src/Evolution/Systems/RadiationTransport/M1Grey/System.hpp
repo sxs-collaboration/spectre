@@ -60,19 +60,18 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
   // gr::tags_for_hydro contains all these tags plus SqrtDetSpatialMetric,
   // so it can be used when adding M1 coupling to hydro
-  using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
+  using spacetime_variables_tag = ::Tags::Variables<
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
   using hydro_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
@@ -84,7 +83,7 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       TimeDerivativeTerms<NeutrinoSpecies...>;
 
   using inverse_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, 3>;
 };
 }  // namespace M1Grey
 }  // namespace RadiationTransport

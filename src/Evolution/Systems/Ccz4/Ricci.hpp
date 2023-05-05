@@ -82,7 +82,7 @@ namespace Ccz4 {
  * term, and the argument `contracted_field_d_up` corresponds to the
  * \f$D_m{}^{ml}\f$ term.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -97,7 +97,7 @@ void spatial_ricci_tensor(
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::ij<DataType, Dim, Frame>& d_field_p);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,

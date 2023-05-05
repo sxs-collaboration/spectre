@@ -159,11 +159,11 @@ struct ExampleInterpolationTargetTag
     : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using temporal_id = ::Tags::Time;
 
-  using vars_to_interpolate_to_target =
-      tmpl::list<gr::Tags::SpatialMetric<3, ::Frame::Grid, DataVector>,
-                 gr::Tags::InverseSpatialMetric<3, ::Frame::Grid>,
-                 gr::Tags::ExtrinsicCurvature<3, ::Frame::Grid>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, ::Frame::Grid>>;
+  using vars_to_interpolate_to_target = tmpl::list<
+      gr::Tags::SpatialMetric<DataVector, 3, ::Frame::Grid>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3, ::Frame::Grid>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3, ::Frame::Grid>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, ::Frame::Grid>>;
 
   // This is not necessary to conform to the protocol, but is often used
   using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;

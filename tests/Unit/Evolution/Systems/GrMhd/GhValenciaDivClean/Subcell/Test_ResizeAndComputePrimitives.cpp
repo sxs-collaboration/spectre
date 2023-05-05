@@ -138,8 +138,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
 
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::ActiveGrid, cons_tag, prim_tag,
-      gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-      ::domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
+      evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>>>(
       active_grid, cons_vars, prim_vars, spacetime_metric, dg_mesh,

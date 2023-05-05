@@ -41,7 +41,7 @@ namespace gh {
  * \partial_i g_{ab}&=\Phi_{iab}
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_derivative_of_spacetime_metric(
     gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*> da_spacetime_metric,
     const Scalar<DataType>& lapse,

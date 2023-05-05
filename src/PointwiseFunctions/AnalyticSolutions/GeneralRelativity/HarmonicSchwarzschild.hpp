@@ -508,10 +508,10 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
       internal_tags::f_3<DataType>, internal_tags::f_4<DataType>,
       gr::Tags::Lapse<DataType>,
       internal_tags::neg_half_lapse_cubed_times_d_spatial_metric_rr<DataType>,
-      gr::Tags::Shift<3, Frame, DataType>, DerivShift<DataType, Frame>,
-      gr::Tags::SpatialMetric<3, Frame, DataType>,
+      gr::Tags::Shift<DataType, 3, Frame>, DerivShift<DataType, Frame>,
+      gr::Tags::SpatialMetric<DataType, 3, Frame>,
       DerivSpatialMetric<DataType, Frame>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>,
       gr::Tags::DetSpatialMetric<DataType>,
       internal_tags::one_over_det_spatial_metric<DataType>>;
 
@@ -757,7 +757,7 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
      */
     void operator()(gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
                     gsl::not_null<CachedBuffer*> cache,
-                    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const;
+                    gr::Tags::Shift<DataType, 3, Frame> /*meta*/) const;
 
     /*!
      * \brief Computes the spatial derivative of the shift
@@ -797,7 +797,7 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
      */
     void operator()(gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
                     gsl::not_null<CachedBuffer*> cache,
-                    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const;
+                    gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const;
 
     /*!
      * \brief Computes the spatial derivative of the spatial metric
@@ -828,7 +828,7 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
     void operator()(
         gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
         gsl::not_null<CachedBuffer*> cache,
-        ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const;
+        ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) const;
 
     /*!
      * \brief Computes the determinant of the spatial metric
@@ -900,7 +900,7 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
      */
     tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/);
+        ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/);
 
     /*!
      * \brief Computes and returns the square root of the determinant of the
@@ -915,14 +915,14 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
      */
     tnsr::II<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/);
+        gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/);
 
     /*!
      * \brief Computes and returns the extrinsic curvature
      */
     tnsr::ii<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/);
+        gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/);
   };
 
  private:

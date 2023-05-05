@@ -25,8 +25,8 @@ void GhLockstep::insert_gh_data(TimeStepId time_id,
                                 const tnsr::iaa<DataVector, 3>& phi,
                                 const tnsr::aa<DataVector, 3>& pi) {
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
-  get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-      input_gh_variables) = spacetime_metric;
+  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(input_gh_variables) =
+      spacetime_metric;
   get<gh::Tags::Pi<3, ::Frame::Inertial>>(input_gh_variables) = pi;
   get<gh::Tags::Phi<3, ::Frame::Inertial>>(input_gh_variables) = phi;
   // NOLINTNEXTLINE(performance-move-const-arg)

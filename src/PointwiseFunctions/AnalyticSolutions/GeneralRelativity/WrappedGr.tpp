@@ -26,22 +26,22 @@ WrappedGr<SolutionType>::get_clone() const {
 
 template <typename SolutionType>
 tuples::TaggedTuple<gr::Tags::SpacetimeMetric<
-    gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial, DataVector>>
+    DataVector, gh::Solutions::WrappedGr<SolutionType>::volume_dim>>
 WrappedGr<SolutionType>::variables(
-    const tnsr::I<DataVector, gh::Solutions::WrappedGr<
-                                  SolutionType>::volume_dim>& /*x*/,
+    const tnsr::I<DataVector,
+                  gh::Solutions::WrappedGr<SolutionType>::volume_dim>& /*x*/,
     tmpl::list<gr::Tags::SpacetimeMetric<
-        gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial, DataVector>> /*meta*/,
+        DataVector,
+        gh::Solutions::WrappedGr<SolutionType>::volume_dim>> /*meta*/,
     const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
-  const auto& shift = get<gr::Tags::Shift<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector,
+                          gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+          intermediate_vars);
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      DataVector, gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+      intermediate_vars);
 
   return {gr::spacetime_metric(lapse, shift, spatial_metric)};
 }
@@ -61,15 +61,16 @@ WrappedGr<SolutionType>::variables(
   const auto& deriv_lapse =
       get<typename WrappedGr<SolutionType>::DerivLapse>(intermediate_vars);
 
-  const auto& shift = get<gr::Tags::Shift<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector,
+                          gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+          intermediate_vars);
   const auto& deriv_shift =
       get<typename WrappedGr<SolutionType>::DerivShift>(intermediate_vars);
 
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      DataVector, gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+      intermediate_vars);
   const auto& deriv_spatial_metric =
       get<typename WrappedGr<SolutionType>::DerivSpatialMetric>(
           intermediate_vars);
@@ -95,17 +96,18 @@ WrappedGr<SolutionType>::variables(
   const auto& deriv_lapse =
       get<typename WrappedGr<SolutionType>::DerivLapse>(intermediate_vars);
 
-  const auto& shift = get<gr::Tags::Shift<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector,
+                          gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+          intermediate_vars);
   const auto& dt_shift =
       get<typename WrappedGr<SolutionType>::TimeDerivShift>(intermediate_vars);
   const auto& deriv_shift =
       get<typename WrappedGr<SolutionType>::DerivShift>(intermediate_vars);
 
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
-      gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      DataVector, gh::Solutions::WrappedGr<SolutionType>::volume_dim>>(
+      intermediate_vars);
   const auto& dt_spatial_metric =
       get<typename WrappedGr<SolutionType>::TimeDerivSpatialMetric>(
           intermediate_vars);

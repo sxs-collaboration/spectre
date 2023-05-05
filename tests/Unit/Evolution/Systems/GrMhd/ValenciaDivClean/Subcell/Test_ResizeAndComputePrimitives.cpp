@@ -132,8 +132,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
 
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::ActiveGrid, cons_tag, prim_tag,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>, ::domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<

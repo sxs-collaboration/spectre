@@ -119,9 +119,10 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
                        Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                       gr::Tags::SpatialMetric<3>,
-                       gr::Tags::InverseSpatialMetric<3>>{});
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>,
+                       gr::Tags::SpatialMetric<DataVector, 3>,
+                       gr::Tags::InverseSpatialMetric<DataVector, 3>>{});
 
       } else {
         (void)time;
@@ -131,14 +132,15 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
                        Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                       gr::Tags::SpatialMetric<3>,
-                       gr::Tags::InverseSpatialMetric<3>>{});
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>,
+                       gr::Tags::SpatialMetric<DataVector, 3>,
+                       gr::Tags::InverseSpatialMetric<DataVector, 3>>{});
       }
     }();
 
     *inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3>>(boundary_values);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_values);
 
     // Allocate the temporary tensors outside the loop over species
     Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempII<0, 3>,
@@ -167,10 +169,11 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
               get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values);
           const auto& fluid_lorentz_factor =
               get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values);
-          const auto& lapse = get<gr::Tags::Lapse<>>(boundary_values);
-          const auto& shift = get<gr::Tags::Shift<3>>(boundary_values);
+          const auto& lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
+          const auto& shift =
+              get<gr::Tags::Shift<DataVector, 3>>(boundary_values);
           const auto& spatial_metric =
-              get<gr::Tags::SpatialMetric<3>>(boundary_values);
+              get<gr::Tags::SpatialMetric<DataVector, 3>>(boundary_values);
           auto& closure_factor = get<::Tags::TempScalar<0>>(buffer);
           // The M1Closure reads in values from `closure_factor` as an initial
           // guess. We need to specify some value (else code fails in DEBUG

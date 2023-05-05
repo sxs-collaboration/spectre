@@ -27,7 +27,7 @@ namespace Ccz4 {
  * `Ccz4::Tags::FieldD`, its spatial derivative, and the CCZ4 identity defined
  * by `Ccz4::Tags::FieldDUp`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void deriv_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::iJkk<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
@@ -35,7 +35,7 @@ void deriv_conformal_christoffel_second_kind(
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
@@ -63,7 +63,7 @@ tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
  * \f$\partial_k \tilde{\Gamma}^k_{ij}\f$ is its spatial derivative defined by
  * `Ccz4::Tags::DerivConformalChristoffelSecondKind`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void deriv_contracted_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::iJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
@@ -72,7 +72,7 @@ void deriv_contracted_conformal_christoffel_second_kind(
     const tnsr::iJkk<DataType, Dim, Frame>&
         d_conformal_christoffel_second_kind);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::iJ<DataType, Dim, Frame>
 deriv_contracted_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,

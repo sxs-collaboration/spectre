@@ -34,12 +34,12 @@ namespace gh {
  * \f$C_{iab} = \partial_i\psi_{ab} - \Phi_{iab},\f$ which is
  * given by Eq. (26) of \cite Lindblom2005qh
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void three_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
@@ -64,7 +64,7 @@ void three_index_constraint(
  * normal vector to the spatial slice, \f$g^{ij}\f$ is the inverse spatial
  * metric, and \f$g^b_c = \delta^b_c + t^b t_c\f$.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> gauge_constraint(
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
@@ -74,7 +74,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_constraint(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void gauge_constraint(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
@@ -121,7 +121,7 @@ void gauge_constraint(
  * normal vector to the spatial slice, \f$g^{ij}\f$ is the inverse spatial
  * metric, and \f$g^b_c = \delta^b_c + t^b t_c\f$.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
     const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
@@ -135,7 +135,7 @@ tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void two_index_constraint(
     gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
@@ -177,11 +177,11 @@ void two_index_constraint(
  * C_{jkab} = \epsilon^{i}{}_{jk} D_{iab}.
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void four_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
@@ -269,7 +269,7 @@ void four_index_constraint(
  * trace reversal in that function and the trace-reversal that appears
  * explicitly in \f${\cal C}_a\f$ cancel.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
@@ -284,7 +284,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void f_constraint(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
@@ -300,7 +300,7 @@ void f_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
@@ -316,7 +316,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
     const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void f_constraint(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
@@ -521,7 +521,7 @@ void f_constraint(
  *      & + & 2 K_4 g D_{iab} D_{jab} g^{ij}.
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> constraint_energy(
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& f_constraint,
@@ -535,7 +535,7 @@ Scalar<DataType> constraint_energy(
     double three_index_constraint_multiplier = 1.0,
     double four_index_constraint_multiplier = 1.0);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void constraint_energy(
     gsl::not_null<Scalar<DataType>*> energy,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_constraint,
@@ -564,10 +564,10 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
                                 db::ComputeTag {
   using argument_tags = tmpl::list<
       GaugeH<SpatialDim, Frame>,
-      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
-      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
+      gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
@@ -581,7 +581,7 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
       const tnsr::AA<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &gauge_constraint<SpatialDim, Frame, DataVector>);
+      &gauge_constraint<DataVector, SpatialDim, Frame>);
 
   using base = GaugeConstraint<SpatialDim, Frame>;
 };
@@ -601,10 +601,10 @@ template <size_t SpatialDim, typename Frame>
 struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<
       GaugeH<SpatialDim, Frame>, SpacetimeDerivGaugeH<SpatialDim, Frame>,
-      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
-      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
+      gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
@@ -627,7 +627,7 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &f_constraint<SpatialDim, Frame, DataVector>);
+      &f_constraint<DataVector, SpatialDim, Frame>);
 
   using base = FConstraint<SpatialDim, Frame>;
 };
@@ -644,10 +644,10 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
                                    db::ComputeTag {
   using argument_tags = tmpl::list<
       SpacetimeDerivGaugeH<SpatialDim, Frame>,
-      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
-      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
+      gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
@@ -669,7 +669,7 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &two_index_constraint<SpatialDim, Frame, DataVector>);
+      &two_index_constraint<DataVector, SpatialDim, Frame>);
 
   using base = TwoIndexConstraint<SpatialDim, Frame>;
 };
@@ -684,10 +684,10 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
 template <size_t SpatialDim, typename Frame>
 struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
                                      db::ComputeTag {
-  using argument_tags =
-      tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<SpatialDim, Frame>,
-                               tmpl::size_t<SpatialDim>, Frame>,
-                 Phi<SpatialDim, Frame>>;
+  using argument_tags = tmpl::list<
+      ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      Phi<SpatialDim, Frame>>;
 
   using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
 
@@ -695,7 +695,7 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
       gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
-      &three_index_constraint<SpatialDim, Frame, DataVector>);
+      &three_index_constraint<DataVector, SpatialDim, Frame>);
 
   using base = ThreeIndexConstraint<SpatialDim, Frame>;
 };
@@ -718,7 +718,7 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&)>(
-      &four_index_constraint<SpatialDim, Frame, DataVector>);
+      &four_index_constraint<DataVector, SpatialDim, Frame>);
 
   using base = FourIndexConstraint<SpatialDim, Frame>;
 };
@@ -739,7 +739,7 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
                  TwoIndexConstraint<SpatialDim, Frame>,
                  ThreeIndexConstraint<SpatialDim, Frame>,
                  FourIndexConstraint<SpatialDim, Frame>,
-                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+                 gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
                  gr::Tags::DetSpatialMetric<DataVector>>;
 
   using return_type = Scalar<DataVector>;
@@ -755,7 +755,7 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
       const Scalar<DataVector>& spatial_metric_determinant) {
     destructive_resize_components(energy,
                                   get(spatial_metric_determinant).size());
-    constraint_energy<SpatialDim, Frame, DataVector>(
+    constraint_energy<DataVector, SpatialDim, Frame>(
         energy, gauge_constraint, f_constraint, two_index_constraint,
         three_index_constraint, four_index_constraint, inverse_spatial_metric,
         spatial_metric_determinant);

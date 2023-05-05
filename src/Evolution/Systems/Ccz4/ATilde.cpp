@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
              const gsl::not_null<Scalar<DataType>*> buffer,
              const Scalar<DataType>& conformal_factor_squared,
@@ -31,7 +31,7 @@ void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
                    (*buffer)() * spatial_metric(ti::i, ti::j)));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ii<DataType, Dim, Frame> a_tilde(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,

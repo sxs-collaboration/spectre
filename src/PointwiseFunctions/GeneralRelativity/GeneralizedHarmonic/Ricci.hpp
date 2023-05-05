@@ -116,14 +116,14 @@ namespace gh {
  * \f$1/2\f$ and so the last 3 terms in the same equation that are quadratic in
  * these terms occur multiplied by a factor of \f$4\f$.
  */
-template <size_t VolumeDim, typename Frame, typename DataType>
+template <typename DataType, size_t VolumeDim, typename Frame>
 void spatial_ricci_tensor(
     gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> ricci,
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric);
 
-template <size_t VolumeDim, typename Frame, typename DataType>
+template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,

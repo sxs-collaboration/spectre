@@ -288,10 +288,10 @@ double test(const size_t num_dg_pts) {
               evolution::dg::subcell::Tags::Coordinates<3,
                                                         Frame::ElementLogical>,
               evolution::dg::subcell::Tags::Coordinates>,
-          gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>,
-          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
-                                                      DataVector>,
-          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::SpatialMetricCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
+                                                      Frame::Inertial>,
+          gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
@@ -378,7 +378,7 @@ double test(const size_t num_dg_pts) {
           }
         });
     auto& sliced_spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3>>(sliced_vars);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(sliced_vars);
     const auto& packaged_data_spacetime_metric =
         get<gh::Tags::VSpacetimeMetric<3, Frame::Inertial>>(packaged_data);
 

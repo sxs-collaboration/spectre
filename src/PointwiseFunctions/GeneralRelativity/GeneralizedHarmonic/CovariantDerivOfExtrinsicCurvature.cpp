@@ -13,7 +13,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal_vector,
@@ -25,14 +25,14 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   tnsr::ijj<DataType, SpatialDim, Frame> d_extrinsic_curvature(
       get_size(get<0>(spacetime_unit_normal_vector)));
-  gh::covariant_deriv_of_extrinsic_curvature<SpatialDim, Frame, DataType>(
+  gh::covariant_deriv_of_extrinsic_curvature<DataType, SpatialDim, Frame>(
       make_not_null(&d_extrinsic_curvature), extrinsic_curvature,
       spacetime_unit_normal_vector, spatial_christoffel_second_kind,
       inverse_spacetime_metric, phi, d_pi, d_phi);
   return d_extrinsic_curvature;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void covariant_deriv_of_extrinsic_curvature(
     const gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_extrinsic_curvature,

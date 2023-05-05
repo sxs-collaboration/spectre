@@ -15,7 +15,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t VolumeDim, typename Frame, typename DataType>
+template <typename DataType, size_t VolumeDim, typename Frame>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> ricci,
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
@@ -125,14 +125,14 @@ void spatial_ricci_tensor(
   }
 }
 
-template <size_t VolumeDim, typename Frame, typename DataType>
+template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric) {
   tnsr::ii<DataType, VolumeDim, Frame> ricci{};
-  gh::spatial_ricci_tensor<VolumeDim, Frame, DataType>(
-      make_not_null(&ricci), phi, deriv_phi, inverse_spatial_metric);
+  gh::spatial_ricci_tensor(make_not_null(&ricci), phi, deriv_phi,
+                           inverse_spatial_metric);
   return ricci;
 }
 }  // namespace gh

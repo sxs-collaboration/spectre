@@ -42,75 +42,51 @@ void test_minkowski(const T& value) {
               x, t,
               tmpl::list<Tags::deriv<gr::Tags::Lapse<T>, tmpl::size_t<Dim>,
                                      Frame::Inertial>>{}));
-  const auto shift =
-      get<gr::Tags::Shift<Dim, Frame::Inertial, T>>(minkowski.variables(
-          x, t, tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, T>>{}));
-  const auto dt_shift = get<Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, T>>>(
+  const auto shift = get<gr::Tags::Shift<T, Dim>>(
+      minkowski.variables(x, t, tmpl::list<gr::Tags::Shift<T, Dim>>{}));
+  const auto dt_shift =
+      get<Tags::dt<gr::Tags::Shift<T, Dim>>>(minkowski.variables(
+          x, t, tmpl::list<Tags::dt<gr::Tags::Shift<T, Dim>>>{}));
+  const auto d_shift = get<
+      Tags::deriv<gr::Tags::Shift<T, Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
       minkowski.variables(
           x, t,
-          tmpl::list<Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, T>>>{}));
-  const auto d_shift = get<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
-                                       tmpl::size_t<Dim>, Frame::Inertial>>(
-      minkowski.variables(
-          x, t,
-          tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
-                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
-  const auto g =
-      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>(minkowski.variables(
-          x, t,
-          tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>{}));
+          tmpl::list<Tags::deriv<gr::Tags::Shift<T, Dim>, tmpl::size_t<Dim>,
+                                 Frame::Inertial>>{}));
+  const auto g = get<gr::Tags::SpatialMetric<T, Dim>>(
+      minkowski.variables(x, t, tmpl::list<gr::Tags::SpatialMetric<T, Dim>>{}));
   const auto dt_g =
-      get<Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<Tags::dt<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
-  const auto d_g =
-      get<Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>,
-                      tmpl::size_t<Dim>, Frame::Inertial>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<
-                  Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>{}));
-  const auto inv_g =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, T>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<
-                  gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, T>>{}));
-  const auto extrinsic_curvature = get<
-      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, T>>(
+      get<Tags::dt<gr::Tags::SpatialMetric<T, Dim>>>(minkowski.variables(
+          x, t, tmpl::list<Tags::dt<gr::Tags::SpatialMetric<T, Dim>>>{}));
+  const auto d_g = get<Tags::deriv<gr::Tags::SpatialMetric<T, Dim>,
+                                   tmpl::size_t<Dim>, Frame::Inertial>>(
       minkowski.variables(
           x, t,
-          tmpl::list<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, T>>{}));
+          tmpl::list<Tags::deriv<gr::Tags::SpatialMetric<T, Dim>,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
+  const auto inv_g =
+      get<gr::Tags::InverseSpatialMetric<T, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::InverseSpatialMetric<T, Dim>>{}));
+  const auto extrinsic_curvature =
+      get<gr::Tags::ExtrinsicCurvature<T, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::ExtrinsicCurvature<T, Dim>>{}));
   const auto det_g = get<gr::Tags::SqrtDetSpatialMetric<T>>(minkowski.variables(
       x, t, tmpl::list<gr::Tags::SqrtDetSpatialMetric<T>>{}));
   const auto dt_det_g =
       get<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>(minkowski.variables(
           x, t, tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>{}));
   const auto d_det_g =
-      get<gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, T>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<
-                  gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, T>>{}));
+      get<gr::Tags::DerivDetSpatialMetric<T, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::DerivDetSpatialMetric<T, Dim>>{}));
   const auto christoffel_first_kind =
-      get<gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, T>>(
-          minkowski.variables(x, t,
-                              tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
-                                  Dim, Frame::Inertial, T>>{}));
+      get<gr::Tags::SpatialChristoffelFirstKind<T, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::SpatialChristoffelFirstKind<T, Dim>>{}));
   const auto christoffel_second_kind =
-      get<gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, T>>(
-          minkowski.variables(x, t,
-                              tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
-                                  Dim, Frame::Inertial, T>>{}));
-  const auto trace_christoffel =
-      get<gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial, T>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
-                  Dim, Frame::Inertial, T>>{}));
+      get<gr::Tags::SpatialChristoffelSecondKind<T, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::SpatialChristoffelSecondKind<T, Dim>>{}));
+  const auto trace_christoffel = get<
+      gr::Tags::TraceSpatialChristoffelSecondKind<T, Dim>>(minkowski.variables(
+      x, t, tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<T, Dim>>{}));
   const auto trace_extrinsic_curvature =
       get<gr::Tags::TraceExtrinsicCurvature<T>>(minkowski.variables(
           x, t, tmpl::list<gr::Tags::TraceExtrinsicCurvature<T>>{}));

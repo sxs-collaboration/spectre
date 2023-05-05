@@ -29,11 +29,11 @@ namespace gr {
  * \brief Compute spatial metric from spacetime metric.
  * \details Simply pull out the spatial components.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
@@ -46,20 +46,20 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::SpatialMetric`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
-struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct SpatialMetricCompute : SpatialMetric<DataType, SpatialDim, Frame>,
                               db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpacetimeMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
       const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-      &spatial_metric<SpatialDim, Frame, DataType>);
+      &spatial_metric<DataType, SpatialDim, Frame>);
 
-  using base = SpatialMetric<SpatialDim, Frame, DataType>;
+  using base = SpatialMetric<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

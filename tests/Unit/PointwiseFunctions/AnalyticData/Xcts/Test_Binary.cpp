@@ -38,8 +38,7 @@ using test_tags = tmpl::list<
     Tags::ConformalFactor<DataVector>,
     gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
     gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
-    gr::Tags::Conformal<
-        gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>>;
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>, 0>>;
 
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 struct BinaryProxy {

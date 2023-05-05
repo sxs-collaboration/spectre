@@ -42,9 +42,8 @@ struct FixConservativesAndComputePrims {
                                  typename System::primitive_variables_tag>;
   using argument_tags = tmpl::list<
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-      hydro::Tags::EquationOfStateBase,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      hydro::Tags::EquationOfStateBase, gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>>;
 
   template <size_t ThermodynamicDim>

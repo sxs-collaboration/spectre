@@ -136,9 +136,8 @@ class FixToAtmosphere {
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>>;
-  using argument_tags =
-      tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
-                 hydro::Tags::EquationOfStateBase>;
+  using argument_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
+                                   hydro::Tags::EquationOfStateBase>;
 
   // for use in `db::mutate_apply`
   template <size_t ThermodynamicDim>

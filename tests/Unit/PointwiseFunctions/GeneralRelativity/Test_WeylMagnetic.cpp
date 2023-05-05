@@ -56,7 +56,8 @@ void make_random_tensors(
 template <typename DataType>
 void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
-      gr::Tags::WeylMagneticCompute<Frame::Inertial, DataType>>("WeylMagnetic");
+      gr::Tags::WeylMagneticCompute<DataType, 3, Frame::Inertial>>(
+      "WeylMagnetic");
 
   auto grad_extrinsic_curvature = make_with_value<tnsr::ijj<DataType, 3>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
@@ -73,23 +74,21 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
                       make_not_null(&inverse_spatial_metric), used_for_size);
 
   const auto box = db::create<
-      db::AddSimpleTags<
-          ::Tags::deriv<
-              gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
-              tmpl::size_t<3>, Frame::Inertial>,
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-          gr::Tags::SqrtDetSpatialMetric<DataType>,
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>,
+      db::AddSimpleTags<::Tags::deriv<gr::Tags::ExtrinsicCurvature<DataType, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        gr::Tags::SpatialMetric<DataType, 3>,
+                        gr::Tags::SqrtDetSpatialMetric<DataType>,
+                        gr::Tags::InverseSpatialMetric<DataType, 3>>,
       db::AddComputeTags<
-          gr::Tags::WeylMagneticCompute<Frame::Inertial, DataType>,
-          gr::Tags::WeylMagneticScalarCompute<Frame::Inertial, DataType>>>(
+          gr::Tags::WeylMagneticCompute<DataType, 3, Frame::Inertial>,
+          gr::Tags::WeylMagneticScalarCompute<DataType, 3, Frame::Inertial>>>(
       grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric,
       inverse_spatial_metric);
 
   const auto expected_weyl_magnetic = gr::weyl_magnetic(
       grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric);
   CHECK_ITERABLE_APPROX(
-      (db::get<gr::Tags::WeylMagnetic<Frame::Inertial, DataType>>(box)),
+      (db::get<gr::Tags::WeylMagnetic<DataType, 3, Frame::Inertial>>(box)),
       expected_weyl_magnetic);
 
   const auto expected_weyl_scalar =

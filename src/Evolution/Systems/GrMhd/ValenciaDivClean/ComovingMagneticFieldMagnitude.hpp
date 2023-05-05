@@ -35,7 +35,7 @@ struct ComovingMagneticFieldMagnitudeCompute
   using argument_tags = tmpl::list<hydro::Tags::MagneticField<DataVector, 3>,
                                    hydro::Tags::SpatialVelocity<DataVector, 3>,
                                    hydro::Tags::LorentzFactor<DataVector>,
-                                   gr::Tags::SpatialMetric<3>>;
+                                   gr::Tags::SpatialMetric<DataVector, 3>>;
   using return_type = Scalar<DataVector>;
   using base = hydro::Tags::ComovingMagneticFieldMagnitude<DataVector>;
 

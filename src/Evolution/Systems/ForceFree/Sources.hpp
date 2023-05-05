@@ -83,16 +83,17 @@ struct Sources {
       Tags::TildeE, Tags::TildeB, Tags::TildePsi, Tags::TildePhi, Tags::TildeQ,
       Tags::KappaPsi, Tags::KappaPhi, Tags::ParallelConductivity,
       // GR variables
-      gr::Tags::Lapse<>,
+      gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
-      gr::Tags::SqrtDetSpatialMetric<>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_e,

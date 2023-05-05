@@ -36,12 +36,12 @@ namespace gr {
  * and spacetime metric.
  * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void lapse(gsl::not_null<Scalar<DataType>*> lapse,
            const tnsr::I<DataType, SpatialDim, Frame>& shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
@@ -54,11 +54,11 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::Lapse`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct LapseCompute : Lapse<DataType>, db::ComputeTag {
   using argument_tags =
-      tmpl::list<Shift<SpatialDim, Frame, DataType>,
-                 SpacetimeMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<Shift<DataType, SpatialDim, Frame>,
+                 SpacetimeMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = Scalar<DataType>;
 
@@ -66,7 +66,7 @@ struct LapseCompute : Lapse<DataType>, db::ComputeTag {
       static_cast<void (*)(const gsl::not_null<Scalar<DataType>*> lapse,
                            const tnsr::I<DataType, SpatialDim, Frame>&,
                            const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &lapse<SpatialDim, Frame, DataType>);
+          &lapse<DataType, SpatialDim, Frame>);
 
   using base = Lapse<DataType>;
 };

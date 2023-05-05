@@ -70,11 +70,10 @@ struct Metavariables {
                                                 typename system::primal_fluxes>;
   using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
       tmpl::list<gr::Tags::HamiltonianConstraint<DataVector>,
-                 gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
+                 gr::Tags::MomentumConstraint<DataVector, 3>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
   using hydro_quantities_compute = Xcts::Tags::HydroQuantitiesCompute<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
@@ -93,7 +92,7 @@ struct Metavariables {
                      volume_dim, Frame::Inertial>,
                  ::Tags::NonEuclideanMagnitude<
                      Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
-                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+                     gr::Tags::SpatialMetric<DataVector, 3>>,
                  Xcts::Tags::LowerSpatialFourVelocityCompute>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

@@ -39,7 +39,7 @@ struct test_metavariables {
   struct Target : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
+        tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                    gh::Tags::Pi<3, ::Frame::Inertial>,
                    gh::Tags::Phi<3, ::Frame::Inertial>>;
     using compute_target_points =
@@ -76,7 +76,7 @@ template <typename Tags>
 auto make_spacetime_variables(const size_t size) {
   Variables<Tags> spacetime_variables{size, 0.0};
   auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>>(spacetime_variables);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(spacetime_variables);
   get<0, 0>(spacetime_metric) = -1.0;
   for (size_t i = 1; i < 4; i++) {
     spacetime_metric.get(i, i) = 1.0;

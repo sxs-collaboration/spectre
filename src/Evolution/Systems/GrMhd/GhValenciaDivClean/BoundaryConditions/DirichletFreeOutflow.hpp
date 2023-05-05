@@ -160,41 +160,35 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
-            tmpl::list<
-                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-                gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                gr::Tags::Lapse<DataVector>,
-                gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+            tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                       gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>,
+                       gr::Tags::SpacetimeMetric<DataVector, 3>,
+                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
 
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
-            coords,
-            tmpl::list<
-                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-                gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                gr::Tags::Lapse<DataVector>,
-                gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+            coords, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                               gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                               gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                               gr::Tags::Lapse<DataVector>,
+                               gr::Tags::Shift<DataVector, 3>,
+                               gr::Tags::SpacetimeMetric<DataVector, 3>,
+                               ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       }
     }();
 
     *spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            boundary_values);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);
     *pi = get<::gh::Tags::Pi<3>>(boundary_values);
     *phi = get<::gh::Tags::Phi<3>>(boundary_values);
     *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
-    *shift =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(boundary_values);
+    *shift = get<gr::Tags::Shift<DataVector, 3>>(boundary_values);
     *inv_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-            boundary_values);
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_values);
 
     return grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow::
         dg_ghost(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
@@ -288,21 +282,18 @@ class DirichletFreeOutflow final : public BoundaryCondition {
         (void)time;
         return analytic_solution_or_data.variables(
             ghost_inertial_coords,
-            tmpl::list<
-                gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       } else {
         return analytic_solution_or_data.variables(
             ghost_inertial_coords, time,
-            tmpl::list<
-                gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-                ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
       }
     }();
 
     *spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            boundary_values);
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);
     *pi = get<::gh::Tags::Pi<3>>(boundary_values);
     *phi = get<::gh::Tags::Phi<3>>(boundary_values);
 

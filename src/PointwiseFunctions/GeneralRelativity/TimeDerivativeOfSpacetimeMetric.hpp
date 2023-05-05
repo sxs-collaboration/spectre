@@ -43,7 +43,7 @@ namespace gr {
  * where \f$\alpha, \beta^i, \gamma_{ij}\f$ are the lapse, shift, and spatial
  * metric respectively.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_derivative_of_spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> dt_spacetime_metric,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
@@ -52,7 +52,7 @@ void time_derivative_of_spacetime_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

@@ -158,10 +158,10 @@ struct TimeDerivative {
           using dg_package_data_argument_tags = tmpl::append<
               evolved_vars_tags, recons_prim_tags, fluxes_tags,
               tmpl::remove_duplicates<tmpl::push_back<
-                  dg_package_data_temporary_tags, gr::Tags::SpatialMetric<3>,
+                  dg_package_data_temporary_tags,
+                  gr::Tags::SpatialMetric<DataVector, 3>,
                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                 DataVector>,
+                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                   evolution::dg::Actions::detail::NormalVector<3>>>>;
           // Computed prims and cons on face via reconstruction
           auto package_data_argvars_lower_face = make_array<3>(
@@ -169,12 +169,12 @@ struct TimeDerivative {
           auto package_data_argvars_upper_face = make_array<3>(
               Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
           // Copy over the face values of the metric quantities.
-          using spacetime_vars_to_copy = tmpl::list<
-              gr::Tags::Lapse<DataVector>,
-              gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-              gr::Tags::SpatialMetric<3>,
-              gr::Tags::SqrtDetSpatialMetric<DataVector>,
-              gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+          using spacetime_vars_to_copy =
+              tmpl::list<gr::Tags::Lapse<DataVector>,
+                         gr::Tags::Shift<DataVector, 3>,
+                         gr::Tags::SpatialMetric<DataVector, 3>,
+                         gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>>;
           tmpl::for_each<spacetime_vars_to_copy>(
               [&package_data_argvars_lower_face,
                &package_data_argvars_upper_face,
@@ -247,10 +247,10 @@ struct TimeDerivative {
             // NormalCovectorAndMagnitude tag in the DataBox right now to avoid
             // conflicts with the DG solver. We can explore in the future if
             // it's possible to reuse that allocation.
-            const Scalar<DataVector> normalization{sqrt(
-                get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
-                                                   DataVector>>(vars_upper_face)
-                    .get(i, i))};
+            const Scalar<DataVector> normalization{
+                sqrt(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                         vars_upper_face)
+                         .get(i, i))};
 
             tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
                 reconstructed_num_pts, 0.0};

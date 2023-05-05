@@ -27,7 +27,7 @@ namespace Xcts {
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataVector, 3> /*meta*/) const {
   *spatial_metric = conformal_metric;
   for (auto& spatial_metric_component : *spatial_metric) {
     spatial_metric_component *= pow<4>(get(conformal_factor));
@@ -37,8 +37,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector> /*meta*/)
-    const {
+    gr::Tags::InverseSpatialMetric<DataVector, 3> /*meta*/) const {
   *inv_spatial_metric = inv_conformal_metric;
   for (auto& inv_spatial_metric_component : *inv_spatial_metric) {
     inv_spatial_metric_component /= pow<4>(get(conformal_factor));
@@ -92,7 +91,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const {
+    gr::Tags::Shift<DataVector, 3> /*meta*/) const {
   for (size_t i = 0; i < 3; ++i) {
     shift->get(i) = shift_excess.get(i) + shift_background.get(i);
   }
@@ -169,8 +168,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector> /*meta*/)
-    const {
+    gr::Tags::ExtrinsicCurvature<DataVector, 3> /*meta*/) const {
   const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataVector>{});
   const auto& longitudinal_shift_minus_dt_conformal_metric = cache->get_var(
       *this, detail::LongitudinalShiftMinusDtConformalMetric<DataVector>{});
@@ -185,10 +183,10 @@ void SpacetimeQuantitiesComputer::operator()(
     gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const {
   const auto& conformal_laplacian_of_conformal_factor = cache->get_var(
       *this, detail::ConformalLaplacianOfConformalFactor<DataVector>{});
-  const auto& inv_spatial_metric = cache->get_var(
-      *this, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>{});
-  const auto& extrinsic_curvature = cache->get_var(
-      *this, gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>{});
+  const auto& inv_spatial_metric =
+      cache->get_var(*this, gr::Tags::InverseSpatialMetric<DataVector, 3>{});
+  const auto& extrinsic_curvature =
+      cache->get_var(*this, gr::Tags::ExtrinsicCurvature<DataVector, 3>{});
   // Eq. 3.12 in BaumgarteShapiro, divided by 2 for consistency with SpEC
   tenex::evaluate(hamiltonian_constraint,
                   4. * conformal_laplacian_of_conformal_factor() -
@@ -205,8 +203,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3>*> momentum_constraint,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector> /*meta*/)
-    const {
+    gr::Tags::MomentumConstraint<DataVector, 3> /*meta*/) const {
   const auto& deriv_conformal_factor =
       cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
                                           tmpl::size_t<3>, Frame::Inertial>{});

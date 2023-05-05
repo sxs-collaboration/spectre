@@ -40,7 +40,7 @@ namespace gr {
  * where \f$\gamma_{ab}\f$ is the spatial metric. See Eq. (2.53) in
  * \cite BaumgarteShapiro.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -49,7 +49,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void extrinsic_curvature(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curvature,
     const Scalar<DataType>& lapse,

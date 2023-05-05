@@ -86,29 +86,29 @@ void test_schwarzschild(const DataType& used_for_size) {
   const auto& d_lapse = get<
       typename gr::Solutions::SphericalKerrSchild::DerivLapse<DataType, Frame>>(
       vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataType, 3, Frame>>(vars);
   const auto& d_shift = get<
       typename gr::Solutions::SphericalKerrSchild::DerivShift<DataType, Frame>>(
       vars);
   const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
-  const auto& g = get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+      get<Tags::dt<gr::Tags::Shift<DataType, 3, Frame>>>(vars);
+  const auto& g = get<gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
   const auto& ig =
-      get<gr::Tags::InverseSpatialMetric<3, Frame, DataType>>(vars);
+      get<gr::Tags::InverseSpatialMetric<DataType, 3, Frame>>(vars);
 
   const auto& dt_g =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>>(vars);
   const auto& d_g =
       get<typename gr::Solutions::SphericalKerrSchild::DerivSpatialMetric<
           DataType, Frame>>(vars);
   const auto& christoffel_first_kind =
-      get<typename gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>>(
+      get<typename gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>>(
           vars);
   const auto& christoffel_second_kind =
-      get<typename gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>>(
+      get<typename gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>>(
           vars);
   const auto& trace_christoffel = get<
-      typename gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType>>(
+      typename gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3, Frame>>(
       vars);
   const auto& trace_extrinsic_curvature =
       get<typename gr::Tags::TraceExtrinsicCurvature<DataType>>(vars);
@@ -263,11 +263,11 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
 
   // Compute actual analytical derivative of the determinant
   const auto deriv_det_spatial_metric =
-      get<gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>(
+      get<gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim, FrameType>>(
           solution.variables(
               x, t,
-              tmpl::list<
-                  gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>{}));
+              tmpl::list<gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim,
+                                                         FrameType>>{}));
 
   // Compute expected numerical derivative of the determinant
   const double null_vector_0 = -1.0;

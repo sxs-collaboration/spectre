@@ -49,7 +49,7 @@ struct SetPiFromGauge {
       domain::Tags::FunctionsOfTime,
       domain::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
-      gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
       gh::Tags::Phi<3, Frame::Inertial>, gh::gauges::Tags::GaugeCondition,
       evolution::dg::subcell::Tags::ActiveGrid>;
 

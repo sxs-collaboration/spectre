@@ -65,12 +65,12 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     target_vars->initialize(src_vars.number_of_grid_points());
   }
 
-  using spacetime_metric_tag = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using spatial_metric_tag = gr::Tags::SpatialMetric<3, Frame::Inertial>;
+  using spacetime_metric_tag = gr::Tags::SpacetimeMetric<DataVector, 3>;
+  using spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   using inv_spatial_metric_tag =
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial>;
+    gr::Tags::InverseSpatialMetric<DataVector, 3>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
-  using shift_tag = gr::Tags::Shift<3, Frame::Inertial>;
+  using shift_tag = gr::Tags::Shift<DataVector, 3>;
   using constraint_gamma1_tag =
     gh::ConstraintDamping::Tags::ConstraintGamma1;
 
@@ -102,7 +102,7 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
 
   // Actual computation starts here
   const auto& src_spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(src_vars);
   spacetime_metric = src_spacetime_metric;
 
   gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
@@ -151,26 +151,28 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
       "A required dest tag is missing");
 
   const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(src_vars);
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(src_vars);
 
   if (target_vars->number_of_grid_points() !=
       src_vars.number_of_grid_points()) {
     target_vars->initialize(src_vars.number_of_grid_points());
   }
 
-  using spatial_metric_tag = gr::Tags::SpatialMetric<3, TargetFrame>;
-  using inv_spatial_metric_tag = gr::Tags::InverseSpatialMetric<3, TargetFrame>;
+  using spatial_metric_tag =
+      gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>;
+  using inv_spatial_metric_tag =
+      gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
-  using shift_tag = gr::Tags::Shift<3, TargetFrame>;
-  using inertial_shift_tag = gr::Tags::Shift<3, Frame::Inertial>;
+  using shift_tag = gr::Tags::Shift<DataVector, 3, TargetFrame>;
+  using inertial_shift_tag = gr::Tags::Shift<DataVector, 3>;
   using constraint_gamma1_tag =
     gh::ConstraintDamping::Tags::ConstraintGamma1;
 
   // Additional temporary tags used for multiple frames
   using inertial_spatial_metric_tag =
-      gr::Tags::SpatialMetric<3, Frame::Inertial>;
+      gr::Tags::SpatialMetric<DataVector, 3>;
   using inertial_inv_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial>;
+      gr::Tags::InverseSpatialMetric<DataVector, 3>;
 
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).

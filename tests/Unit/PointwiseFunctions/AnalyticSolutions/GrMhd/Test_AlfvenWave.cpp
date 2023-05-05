@@ -168,9 +168,8 @@ void test_variables(const DataType& used_for_size) {
     expected_spatial_metric.get(i, i) = 1.0;
   }
   const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(soln.variables(
-          coords, 0.0,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+      get<gr::Tags::SpatialMetric<DataType, 3>>(soln.variables(
+          coords, 0.0, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 

@@ -199,7 +199,7 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
 
   template <typename DataType, typename Frame>
   using DerivSpatialMetric =
-      ::Tags::deriv<gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, volume_dim, Frame>,
                     tmpl::size_t<volume_dim>, Frame>;
 
   /*!
@@ -217,7 +217,7 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
                        internal_tags::r_b<DataType>,
                        internal_tags::conformal_factor<DataType>,
                        internal_tags::deriv_conformal_factor<DataType, Frame>,
-                       gr::Tags::SpatialMetric<3, Frame, DataType>,
+                       gr::Tags::SpatialMetric<DataType, 3, Frame>,
                        DerivSpatialMetric<DataType, Frame>>;
 
   /*!
@@ -299,7 +299,7 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
      */
     void operator()(gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
                     gsl::not_null<CachedBuffer*> cache,
-                    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const;
+                    gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const;
 
     /*!
      * \brief Computes the spatial derivative of the spatial metric
@@ -361,14 +361,14 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
      */
     tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::Shift<3, Frame, DataType> /*meta*/);
+        gr::Tags::Shift<DataType, 3, Frame> /*meta*/);
 
     /*!
      * \brief Returns the time derivative of the shift, which is 0
      */
     tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/);
+        ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/);
 
     /*!
      * \brief Returns the spatial derivative of the shift, which is 0
@@ -382,7 +382,7 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
      */
     tnsr::ii<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/);
+        ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/);
 
     /*!
      * \brief Computes and returns the square root of the determinant of the
@@ -397,14 +397,14 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
      */
     tnsr::II<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/);
+        gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/);
 
     /*!
      * \brief Computes and returns the extrinsic curvature which is 0
      */
     tnsr::ii<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/);
+        gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/);
   };
 
  private:

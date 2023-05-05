@@ -60,10 +60,10 @@ struct InitializeGhAnd3Plus1Variables {
   using frame = Frame::Inertial;
   using compute_tags = db::AddComputeTags<
       // Needed to compute the characteristic speeds for the AH finder
-      gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
-      gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
-      gr::Tags::ShiftCompute<Dim, frame, DataVector>,
-      gr::Tags::LapseCompute<Dim, frame, DataVector>,
+      gr::Tags::SpatialMetricCompute<DataVector, Dim, frame>,
+      gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, Dim, frame>,
+      gr::Tags::ShiftCompute<DataVector, Dim, frame>,
+      gr::Tags::LapseCompute<DataVector, Dim, frame>,
 
       // Compute constraint damping parameters.
       ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,

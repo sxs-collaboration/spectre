@@ -44,13 +44,12 @@ struct System {
       gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
-      gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
-      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<volume_dim, Frame::Inertial,
-                                                  DataVector>,
+      gr::Tags::Shift<DataVector, volume_dim>,
+      ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
+      gr::Tags::SpatialMetric<DataVector, volume_dim>,
+      gr::Tags::InverseSpatialMetric<DataVector, volume_dim>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, volume_dim>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
@@ -59,6 +58,6 @@ struct System {
       Tags::ComputeLargestCharacteristicSpeed<Dim>;
 
   using inverse_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, Dim>;
 };
 }  // namespace CurvedScalarWave

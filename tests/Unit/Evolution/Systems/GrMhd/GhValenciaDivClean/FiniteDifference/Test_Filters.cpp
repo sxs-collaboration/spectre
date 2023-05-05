@@ -58,7 +58,7 @@ void set_solution(
          const auto local_vars) {
         for (size_t i = 0; i < 10; ++i) {
           (*local_dvs)[i].set_data_ref(make_not_null(
-              &get<gr::Tags::SpacetimeMetric<3>>(*local_vars)[i]));
+              &get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*local_vars)[i]));
         }
         for (size_t i = 0; i < 10; ++i) {
           (*local_dvs)[i + 10].set_data_ref(

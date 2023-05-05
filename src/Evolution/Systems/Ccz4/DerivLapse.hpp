@@ -23,7 +23,7 @@ namespace Ccz4 {
  * kind, the CCZ4 auxiliary variable defined by `Ccz4::Tags::FieldA`, and its
  * spatial derivative, respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void grad_grad_lapse(
     const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> result,
     const Scalar<DataType>& lapse,
@@ -31,7 +31,7 @@ void grad_grad_lapse(
     const tnsr::i<DataType, Dim, Frame>& field_a,
     const tnsr::ij<DataType, Dim, Frame>& d_field_a);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -55,14 +55,14 @@ tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
  * `Ccz4::Tags::ConformalFactor`, `Ccz4::Tags::InverseConformalMetric`, and
  * `Ccz4::Tags::GradGradLapse`, respectively.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void divergence_lapse(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> divergence_lapse(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,

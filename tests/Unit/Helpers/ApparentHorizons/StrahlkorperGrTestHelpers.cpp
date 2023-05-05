@@ -20,7 +20,7 @@
 namespace TestHelpers {
 namespace Schwarzschild {
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
     const tnsr::I<DataType, SpatialDim, Frame>& x, const double mass) {
   auto ricci = make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(x, 0.);
@@ -45,7 +45,7 @@ tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
 }  // namespace Schwarzschild
 
 namespace Minkowski {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
     const tnsr::I<DataType, SpatialDim, Frame>& x) {
   auto extrinsic_curvature =

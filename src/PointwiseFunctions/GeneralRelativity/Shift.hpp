@@ -36,12 +36,12 @@ namespace gr {
  * inverse spatial metric, and spacetime metric.
  * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void shift(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
            const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
@@ -54,11 +54,11 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::Shift`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
-struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct ShiftCompute : Shift<DataType, SpatialDim, Frame>, db::ComputeTag {
   using argument_tags =
-      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>,
-                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+      tmpl::list<SpacetimeMetric<DataType, SpatialDim, Frame>,
+                 InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = tnsr::I<DataType, SpatialDim, Frame>;
 
@@ -66,9 +66,9 @@ struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
       const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
       const tnsr::aa<DataType, SpatialDim, Frame>&,
       const tnsr::II<DataType, SpatialDim, Frame>&)>(
-      &shift<SpatialDim, Frame, DataType>);
+      &shift<DataType, SpatialDim, Frame>);
 
-  using base = Shift<SpatialDim, Frame, DataType>;
+  using base = Shift<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

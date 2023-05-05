@@ -11,19 +11,19 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   tnsr::ii<DataType, SpatialDim, Frame> weyl_electric_part{};
-  weyl_electric<SpatialDim, Frame, DataType>(make_not_null(&weyl_electric_part),
+  weyl_electric<DataType, SpatialDim, Frame>(make_not_null(&weyl_electric_part),
                                              spatial_ricci, extrinsic_curvature,
                                              inverse_spatial_metric);
   return weyl_electric_part;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_electric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>
         weyl_electric_part,
@@ -45,7 +45,7 @@ void weyl_electric(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_electric_scalar(
     const gsl::not_null<Scalar<DataType>*> weyl_electric_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
@@ -77,12 +77,12 @@ void weyl_electric_scalar(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 Scalar<DataType> weyl_electric_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   Scalar<DataType> weyl_electric_scalar_result{};
-  weyl_electric_scalar<SpatialDim, Frame, DataType>(
+  weyl_electric_scalar<DataType, SpatialDim, Frame>(
       make_not_null(&weyl_electric_scalar_result), weyl_electric,
       inverse_spatial_metric);
   return weyl_electric_scalar_result;

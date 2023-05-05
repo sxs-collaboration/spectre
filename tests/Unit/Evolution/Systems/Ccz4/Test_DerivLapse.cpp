@@ -24,7 +24,7 @@ void test_grad_grad_lapse(const DataType& used_for_size) {
           const tnsr::Ijj<DataType, Dim, Frame::Inertial>&,
           const tnsr::i<DataType, Dim, Frame::Inertial>&,
           const tnsr::ij<DataType, Dim, Frame::Inertial>&)>(
-          &::Ccz4::grad_grad_lapse<Dim, Frame::Inertial, DataType>),
+          &::Ccz4::grad_grad_lapse<DataType, Dim, Frame::Inertial>),
       "DerivLapse", "grad_grad_lapse", {{{-1., 1.}}}, used_for_size);
 }
 
@@ -35,7 +35,7 @@ void test_divergence_lapse(const DataType& used_for_size) {
           const Scalar<DataType>&,
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::ij<DataType, Dim, Frame::Inertial>&)>(
-          &::Ccz4::divergence_lapse<Dim, Frame::Inertial, DataType>),
+          &::Ccz4::divergence_lapse<DataType, Dim, Frame::Inertial>),
       "DerivLapse", "divergence_lapse", {{{-1., 1.}}}, used_for_size);
 }
 }  // namespace

@@ -17,7 +17,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -30,7 +30,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const double sign) {
   tnsr::ii<DataType, SpatialDim, Frame> weyl_prop(
       get_size(get<0>(unit_interface_normal_vector)));
-  weyl_propagating<SpatialDim, Frame, DataType>(
+  weyl_propagating<DataType, SpatialDim, Frame>(
       make_not_null(&weyl_prop), ricci, extrinsic_curvature,
       inverse_spatial_metric, cov_deriv_extrinsic_curvature,
       unit_interface_normal_vector, projection_IJ, projection_ij, projection_Ij,
@@ -38,7 +38,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
   return weyl_prop;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_propagating(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_prop_u8,
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,

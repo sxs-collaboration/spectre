@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void ricci_scalar_plus_divergence_z4_constraint(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& conformal_factor_squared,
@@ -29,7 +29,7 @@ void ricci_scalar_plus_divergence_z4_constraint(
                                  grad_spatial_z4_constraint(ti::j, ti::i)));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> ricci_scalar_plus_divergence_z4_constraint(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,

@@ -11,7 +11,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void spacetime_metric(
     const gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
@@ -44,13 +44,13 @@ void spacetime_metric(
   }
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::aa<DataType, Dim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric) {
   tnsr::aa<DataType, Dim, Frame> spacetime_metric{};
-  gr::spacetime_metric<Dim, Frame, DataType>(make_not_null(&spacetime_metric),
-                                             lapse, shift, spatial_metric);
+  gr::spacetime_metric(make_not_null(&spacetime_metric), lapse, shift,
+                       spatial_metric);
   return spacetime_metric;
 }
 }  // namespace gr

@@ -37,30 +37,27 @@ template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/) const {
-  *spatial_metric =
-      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(gr_solution);
+    gr::Tags::SpatialMetric<DataType, Dim> /*meta*/) const {
+  *spatial_metric = get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
 }
 
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
-    const {
+    gr::Tags::InverseSpatialMetric<DataType, Dim> /*meta*/) const {
   *inv_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>(
-          gr_solution);
+      get<gr::Tags::InverseSpatialMetric<DataType, Dim>>(gr_solution);
 }
 
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>, tmpl::size_t<Dim>,
+                  Frame::Inertial> /*meta*/) const {
   *deriv_spatial_metric =
-      get<::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+      get<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
                         tmpl::size_t<Dim>, Frame::Inertial>>(gr_solution);
 }
 
@@ -72,8 +69,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
     const {
   const auto& conformal_factor =
       cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
-  *conformal_metric =
-      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(gr_solution);
+  *conformal_metric = get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       conformal_metric->get(i, j) /= pow<4>(get(conformal_factor));
@@ -90,8 +86,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
   const auto& conformal_factor =
       cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
   *inv_conformal_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>(
-          gr_solution);
+      get<gr::Tags::InverseSpatialMetric<DataType, Dim>>(gr_solution);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       inv_conformal_metric->get(i, j) *= pow<4>(get(conformal_factor));
@@ -113,7 +108,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
   const auto& conformal_metric = cache->get_var(
       *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   *deriv_conformal_metric =
-      get<::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+      get<::Tags::deriv<gr::Tags::SpatialMetric<DataType, Dim>,
                         tmpl::size_t<Dim>, Frame::Inertial>>(gr_solution);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
@@ -133,11 +128,9 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const {
   const auto& extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>(
-          gr_solution);
+      get<gr::Tags::ExtrinsicCurvature<DataType, Dim>>(gr_solution);
   const auto& inv_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>(
-          gr_solution);
+      get<gr::Tags::InverseSpatialMetric<DataType, Dim>>(gr_solution);
   trace(trace_extrinsic_curvature, extrinsic_curvature, inv_spatial_metric);
 }
 
@@ -235,8 +228,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
     const gsl::not_null<Cache*> /*cache*/,
     Xcts::Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  *shift_excess =
-      get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(gr_solution);
+  *shift_excess = get<gr::Tags::Shift<DataType, Dim>>(gr_solution);
 }
 
 template <typename DataType, bool HasMhd>
@@ -244,11 +236,10 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  const auto& shift =
-      get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(gr_solution);
+  const auto& shift = get<gr::Tags::Shift<DataType, Dim>>(gr_solution);
   const auto& deriv_shift =
-      get<::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                        tmpl::size_t<Dim>, Frame::Inertial>>(gr_solution);
+      get<::Tags::deriv<gr::Tags::Shift<DataType, Dim>, tmpl::size_t<Dim>,
+                        Frame::Inertial>>(gr_solution);
   const auto& conformal_metric = cache->get_var(
       *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_conformal_metric = cache->get_var(
@@ -267,10 +258,9 @@ template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const {
   *extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>(
-          gr_solution);
+      get<gr::Tags::ExtrinsicCurvature<DataType, Dim>>(gr_solution);
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -292,8 +282,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
         get<hydro::Tags::MagneticField<DataType, Dim, Frame::Inertial>>(
             hydro_solution);
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-            gr_solution);
+        get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
     tenex::evaluate(magnetic_field_dot_spatial_velocity,
                     magnetic_field(ti::I) * spatial_velocity(ti::J) *
                         spatial_metric(ti::i, ti::j));
@@ -317,8 +306,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
         get<hydro::Tags::MagneticField<DataType, Dim, Frame::Inertial>>(
             hydro_solution);
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-            gr_solution);
+        get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
     const auto magnetic_field_squared =
         tenex::evaluate(magnetic_field(ti::I) * magnetic_field(ti::J) *
                         spatial_metric(ti::i, ti::j));
@@ -379,8 +367,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
         get<hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>(
             hydro_solution);
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-            gr_solution);
+        get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
     const auto spatial_velocity_squared =
         tenex::evaluate(spatial_velocity(ti::I) * spatial_velocity(ti::J) *
                         spatial_metric(ti::i, ti::j));
@@ -403,8 +390,7 @@ template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
-    gr::Tags::Conformal<
-        gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0> /*meta*/)
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> /*meta*/)
     const {
   if constexpr (HasMhd) {
     const auto& rest_mass_density =

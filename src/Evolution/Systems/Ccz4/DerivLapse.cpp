@@ -13,7 +13,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void grad_grad_lapse(
     const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> result,
     const Scalar<DataType>& lapse,
@@ -35,7 +35,7 @@ void grad_grad_lapse(
   }
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -47,7 +47,7 @@ tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
   return result;
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void divergence_lapse(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& conformal_factor_squared,
@@ -66,7 +66,7 @@ void divergence_lapse(
   get(*result) *= get(conformal_factor_squared);
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> divergence_lapse(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,

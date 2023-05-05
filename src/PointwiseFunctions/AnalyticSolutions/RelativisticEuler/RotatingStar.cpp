@@ -714,23 +714,21 @@ tuples::TaggedTuple<gr::Tags::Lapse<DataType>> RotatingStar::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>
-RotatingStar::variables(
+tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>> RotatingStar::variables(
     gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& /*x*/,
-    tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const {
+    tmpl::list<gr::Tags::Shift<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   return shift(vars->metric_data->omega, vars->phi, vars->radius,
                vars->sin_theta);
 }
 
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, 3>>
 RotatingStar::variables(
     gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& /*x*/,
-    tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>> /*meta*/)
-    const {
+    tmpl::list<gr::Tags::SpatialMetric<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   return spatial_metric(vars->metric_data->gamma, vars->metric_data->rho,
                         vars->metric_data->alpha, vars->phi);
@@ -749,12 +747,11 @@ RotatingStar::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>
-RotatingStar::variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
-                        const tnsr::I<DataType, 3>& /*x*/,
-                        tmpl::list<gr::Tags::InverseSpatialMetric<
-                            3, Frame::Inertial, DataType>> /*meta*/) const {
+tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<DataType, 3>>
+RotatingStar::variables(
+    gsl::not_null<IntermediateVariables<DataType>*> vars,
+    const tnsr::I<DataType, 3>& /*x*/,
+    tmpl::list<gr::Tags::InverseSpatialMetric<DataType, 3>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   return inverse_spatial_metric(vars->metric_data->gamma,
                                 vars->metric_data->rho,
@@ -848,21 +845,17 @@ template <typename DataType>
 auto RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
-                                            DataType>> /*meta*/) const
-    -> tuples::TaggedTuple<
-        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>> {
+    tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, 3>> /*meta*/) const
+    -> tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<DataType, 3>> {
   return gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataType>>(
           variables(vars, x, tmpl::list<gr::Tags::Lapse<DataType>>{})),
-      get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>>{})),
+      get<gr::Tags::Shift<DataType, 3>>(
+          variables(vars, x, tmpl::list<gr::Tags::Shift<DataType, 3>>{})),
       get<DerivShift<DataType>>(
           variables(vars, x, tmpl::list<DerivShift<DataType>>{})),
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(variables(
-          vars, x,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{})),
+      get<gr::Tags::SpatialMetric<DataType, 3>>(variables(
+          vars, x, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{})),
       make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0),
       get<DerivSpatialMetric<DataType>>(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
@@ -945,13 +938,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_MHD_VECTORS, (double, DataVector),
 
 #undef INSTANTIATE_MHD_VECTORS
 
-#define INSTANTIATE_METRIC_TENSORS(_, data)                                  \
-  template tuples::TaggedTuple<TAG(data) < 3, Frame::Inertial, DTYPE(data)>> \
-      RotatingStar::variables(                                               \
-          const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,     \
-          const tnsr::I<DTYPE(data), 3>& x,                                  \
-          tmpl::list<TAG(data) < 3, Frame::Inertial, DTYPE(data)>> /*meta*/) \
-          const;
+#define INSTANTIATE_METRIC_TENSORS(_, data)                                   \
+  template tuples::TaggedTuple < TAG(data) < DTYPE(data),                     \
+      3 >> RotatingStar::variables(                                           \
+               const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
+               const tnsr::I<DTYPE(data), 3>& x,                              \
+               tmpl::list < TAG(data) < DTYPE(data), 3 >>                     \
+               /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TENSORS, (double, DataVector),
                         (gr::Tags::Shift, gr::Tags::SpatialMetric,

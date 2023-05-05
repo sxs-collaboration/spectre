@@ -361,8 +361,7 @@ struct SetNumericInitialData {
           destructive_resize_components(div_cleaning_field, num_points);
           get(*div_cleaning_field) = 0.;
         },
-        db::get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-            box));
+        db::get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

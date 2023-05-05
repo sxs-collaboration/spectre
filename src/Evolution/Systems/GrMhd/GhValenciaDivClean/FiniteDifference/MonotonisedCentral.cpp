@@ -88,7 +88,7 @@ void MonotonisedCentralPrim::reconstruct(
                                         ghost_data, ghost_zone_size(),
                                         subcell_mesh);
 
-  reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<3>>,
+  reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>,
                          prim_tags_for_reconstruction>(
       vars_on_lower_face, vars_on_upper_face,
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -107,25 +107,27 @@ void MonotonisedCentralPrim::reconstruct(
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
-            get<gr::Tags::SpacetimeMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*vars_on_face_ptr);
         auto& spatial_metric =
-            get<gr::Tags::SpatialMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::SpatialMetric<DataVector, 3>>(*vars_on_face_ptr);
         gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
         auto& inverse_spatial_metric =
-            get<gr::Tags::InverseSpatialMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                *vars_on_face_ptr);
         auto& sqrt_det_spatial_metric =
-            get<gr::Tags::SqrtDetSpatialMetric<>>(*vars_on_face_ptr);
+            get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face_ptr);
 
         determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
                                 make_not_null(&inverse_spatial_metric),
                                 spatial_metric);
         get(sqrt_det_spatial_metric) = sqrt(get(sqrt_det_spatial_metric));
 
-        auto& shift = get<gr::Tags::Shift<3>>(*vars_on_face_ptr);
+        auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*vars_on_face_ptr);
         gr::shift(make_not_null(&shift), spacetime_metric,
                   inverse_spatial_metric);
-        gr::lapse(make_not_null(&get<gr::Tags::Lapse<>>(*vars_on_face_ptr)),
-                  shift, spacetime_metric);
+        gr::lapse(
+            make_not_null(&get<gr::Tags::Lapse<DataVector>>(*vars_on_face_ptr)),
+            shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
       neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
@@ -209,25 +211,27 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
-            get<gr::Tags::SpacetimeMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*vars_on_face_ptr);
         auto& spatial_metric =
-            get<gr::Tags::SpatialMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::SpatialMetric<DataVector, 3>>(*vars_on_face_ptr);
         gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
         auto& inverse_spatial_metric =
-            get<gr::Tags::InverseSpatialMetric<3>>(*vars_on_face_ptr);
+            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                *vars_on_face_ptr);
         auto& sqrt_det_spatial_metric =
-            get<gr::Tags::SqrtDetSpatialMetric<>>(*vars_on_face_ptr);
+            get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face_ptr);
 
         determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
                                 make_not_null(&inverse_spatial_metric),
                                 spatial_metric);
         get(sqrt_det_spatial_metric) = sqrt(get(sqrt_det_spatial_metric));
 
-        auto& shift = get<gr::Tags::Shift<3>>(*vars_on_face_ptr);
+        auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*vars_on_face_ptr);
         gr::shift(make_not_null(&shift), spacetime_metric,
                   inverse_spatial_metric);
-        gr::lapse(make_not_null(&get<gr::Tags::Lapse<>>(*vars_on_face_ptr)),
-                  shift, spacetime_metric);
+        gr::lapse(
+            make_not_null(&get<gr::Tags::Lapse<DataVector>>(*vars_on_face_ptr)),
+            shift, spacetime_metric);
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
@@ -245,76 +249,78 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
 }
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define TAGS_LIST_FD(data)                                                    \
-  tmpl::list<                                                                 \
-      gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>, gh::Tags::Phi<3>,        \
-      ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,        \
-      ValenciaDivClean::Tags::TildeTau,                                       \
-      ValenciaDivClean::Tags::TildeS<Frame::Inertial>,                        \
-      ValenciaDivClean::Tags::TildeB<Frame::Inertial>,                        \
-      ValenciaDivClean::Tags::TildePhi,                                       \
-      hydro::Tags::RestMassDensity<DataVector>,                               \
-      hydro::Tags::ElectronFraction<DataVector>,                              \
-      hydro::Tags::SpecificInternalEnergy<DataVector>,                        \
-      hydro::Tags::SpatialVelocity<DataVector, 3>,                            \
-      hydro::Tags::MagneticField<DataVector, 3>,                              \
-      hydro::Tags::DivergenceCleaningField<DataVector>,                       \
-      hydro::Tags::LorentzFactor<DataVector>,                                 \
-      hydro::Tags::Pressure<DataVector>,                                      \
-      hydro::Tags::SpecificEnthalpy<DataVector>,                              \
-      hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,          \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,           \
-                   Frame::Inertial>,                                          \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildeYe, tmpl::size_t<3>,          \
-                   Frame::Inertial>,                                          \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildeTau, tmpl::size_t<3>,         \
-                   Frame::Inertial>,                                          \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildeS<Frame::Inertial>,           \
-                   tmpl::size_t<3>, Frame::Inertial>,                         \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildeB<Frame::Inertial>,           \
-                   tmpl::size_t<3>, Frame::Inertial>,                         \
-      ::Tags::Flux<ValenciaDivClean::Tags::TildePhi, tmpl::size_t<3>,         \
-                   Frame::Inertial>,                                          \
-      gr::Tags::Lapse<>, gr::Tags::Shift<3, Frame::Inertial, DataVector>,     \
-      gr::Tags::SpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<DataVector>, \
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,         \
-      evolution::dg::Actions::detail::NormalVector<3>>
+#define TAGS_LIST_FD(data)                                                   \
+  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,      \
+             gh::Tags::Phi<3>, ValenciaDivClean::Tags::TildeD,               \
+             ValenciaDivClean::Tags::TildeYe,                                \
+             ValenciaDivClean::Tags::TildeTau,                               \
+             ValenciaDivClean::Tags::TildeS<Frame::Inertial>,                \
+             ValenciaDivClean::Tags::TildeB<Frame::Inertial>,                \
+             ValenciaDivClean::Tags::TildePhi,                               \
+             hydro::Tags::RestMassDensity<DataVector>,                       \
+             hydro::Tags::ElectronFraction<DataVector>,                      \
+             hydro::Tags::SpecificInternalEnergy<DataVector>,                \
+             hydro::Tags::SpatialVelocity<DataVector, 3>,                    \
+             hydro::Tags::MagneticField<DataVector, 3>,                      \
+             hydro::Tags::DivergenceCleaningField<DataVector>,               \
+             hydro::Tags::LorentzFactor<DataVector>,                         \
+             hydro::Tags::Pressure<DataVector>,                              \
+             hydro::Tags::SpecificEnthalpy<DataVector>,                      \
+             hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,   \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeYe, tmpl::size_t<3>,  \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeTau, tmpl::size_t<3>, \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeS<Frame::Inertial>,   \
+                          tmpl::size_t<3>, Frame::Inertial>,                 \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeB<Frame::Inertial>,   \
+                          tmpl::size_t<3>, Frame::Inertial>,                 \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildePhi, tmpl::size_t<3>, \
+                          Frame::Inertial>,                                  \
+             gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,    \
+             gr::Tags::SpatialMetric<DataVector, 3>,                         \
+             gr::Tags::SqrtDetSpatialMetric<DataVector>,                     \
+             gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
+             evolution::dg::Actions::detail::NormalVector<3>>
 
-#define TAGS_LIST_DG_FD_INTERFACE(data)                                        \
-  tmpl::list<gr::Tags::SpacetimeMetric<3>, gh::Tags::Pi<3>, gh::Tags::Phi<3>,  \
-             ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,  \
-             ValenciaDivClean::Tags::TildeTau,                                 \
-             ValenciaDivClean::Tags::TildeS<Frame::Inertial>,                  \
-             ValenciaDivClean::Tags::TildeB<Frame::Inertial>,                  \
-             ValenciaDivClean::Tags::TildePhi,                                 \
-             hydro::Tags::RestMassDensity<DataVector>,                         \
-             hydro::Tags::ElectronFraction<DataVector>,                        \
-             hydro::Tags::SpecificInternalEnergy<DataVector>,                  \
-             hydro::Tags::SpatialVelocity<DataVector, 3>,                      \
-             hydro::Tags::MagneticField<DataVector, 3>,                        \
-             hydro::Tags::DivergenceCleaningField<DataVector>,                 \
-             hydro::Tags::LorentzFactor<DataVector>,                           \
-             hydro::Tags::Pressure<DataVector>,                                \
-             hydro::Tags::SpecificEnthalpy<DataVector>,                        \
-             hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,    \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,     \
-                          Frame::Inertial>,                                    \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildeYe, tmpl::size_t<3>,    \
-                          Frame::Inertial>,                                    \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildeTau, tmpl::size_t<3>,   \
-                          Frame::Inertial>,                                    \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildeS<Frame::Inertial>,     \
-                          tmpl::size_t<3>, Frame::Inertial>,                   \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildeB<Frame::Inertial>,     \
-                          tmpl::size_t<3>, Frame::Inertial>,                   \
-             ::Tags::Flux<ValenciaDivClean::Tags::TildePhi, tmpl::size_t<3>,   \
-                          Frame::Inertial>,                                    \
-             gh::ConstraintDamping::Tags::ConstraintGamma1,                    \
-             gh::ConstraintDamping::Tags::ConstraintGamma2, gr::Tags::Lapse<>, \
-             gr::Tags::Shift<3, Frame::Inertial, DataVector>,                  \
-             gr::Tags::SpatialMetric<3>,                                       \
-             gr::Tags::SqrtDetSpatialMetric<DataVector>,                       \
-             gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,   \
+#define TAGS_LIST_DG_FD_INTERFACE(data)                                      \
+  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,      \
+             gh::Tags::Phi<3>, ValenciaDivClean::Tags::TildeD,               \
+             ValenciaDivClean::Tags::TildeYe,                                \
+             ValenciaDivClean::Tags::TildeTau,                               \
+             ValenciaDivClean::Tags::TildeS<Frame::Inertial>,                \
+             ValenciaDivClean::Tags::TildeB<Frame::Inertial>,                \
+             ValenciaDivClean::Tags::TildePhi,                               \
+             hydro::Tags::RestMassDensity<DataVector>,                       \
+             hydro::Tags::ElectronFraction<DataVector>,                      \
+             hydro::Tags::SpecificInternalEnergy<DataVector>,                \
+             hydro::Tags::SpatialVelocity<DataVector, 3>,                    \
+             hydro::Tags::MagneticField<DataVector, 3>,                      \
+             hydro::Tags::DivergenceCleaningField<DataVector>,               \
+             hydro::Tags::LorentzFactor<DataVector>,                         \
+             hydro::Tags::Pressure<DataVector>,                              \
+             hydro::Tags::SpecificEnthalpy<DataVector>,                      \
+             hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,   \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeYe, tmpl::size_t<3>,  \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeTau, tmpl::size_t<3>, \
+                          Frame::Inertial>,                                  \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeS<Frame::Inertial>,   \
+                          tmpl::size_t<3>, Frame::Inertial>,                 \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildeB<Frame::Inertial>,   \
+                          tmpl::size_t<3>, Frame::Inertial>,                 \
+             ::Tags::Flux<ValenciaDivClean::Tags::TildePhi, tmpl::size_t<3>, \
+                          Frame::Inertial>,                                  \
+             gh::ConstraintDamping::Tags::ConstraintGamma1,                  \
+             gh::ConstraintDamping::Tags::ConstraintGamma2,                  \
+             gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,    \
+             gr::Tags::SpatialMetric<DataVector, 3>,                         \
+             gr::Tags::SqrtDetSpatialMetric<DataVector>,                     \
+             gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
              evolution::dg::Actions::detail::NormalVector<3>>
 
 #define INSTANTIATION(r, data)                                                 \

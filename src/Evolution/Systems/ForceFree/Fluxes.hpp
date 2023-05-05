@@ -93,9 +93,11 @@ struct Fluxes {
 
   using argument_tags =
       tmpl::list<Tags::TildeE, Tags::TildeB, Tags::TildePsi, Tags::TildePhi,
-                 Tags::TildeQ, Tags::TildeJ, gr::Tags::Lapse<>,
-                 gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
+                 Tags::TildeQ, Tags::TildeJ, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>>;
 
   static void apply(
       gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_e_flux,

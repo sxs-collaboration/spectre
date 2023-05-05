@@ -76,25 +76,24 @@ struct ComputeHorizonVolumeQuantities
       const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity);
 
   using allowed_src_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<3, Frame::Inertial>,
                  gh::Tags::Phi<3, Frame::Inertial>,
                  ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
                                tmpl::size_t<3>, Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
-  using required_src_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>>;
+  using required_src_tags = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                                       gh::Tags::Pi<3, Frame::Inertial>,
+                                       gh::Tags::Phi<3, Frame::Inertial>>;
 
   template <typename TargetFrame>
-  using allowed_dest_tags_target_frame =
-      tmpl::list<gr::Tags::SpatialMetric<3, TargetFrame>,
-                 gr::Tags::InverseSpatialMetric<3, TargetFrame>,
-                 gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>,
-                 gr::Tags::SpatialRicci<3, TargetFrame>>;
+  using allowed_dest_tags_target_frame = tmpl::list<
+      gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3, TargetFrame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>,
+      gr::Tags::SpatialRicci<DataVector, 3, TargetFrame>>;
 
   template <typename TargetFrame>
   using allowed_dest_tags = tmpl::remove_duplicates<
@@ -102,9 +101,9 @@ struct ComputeHorizonVolumeQuantities
                    allowed_dest_tags_target_frame<Frame::Inertial>>>;
 
   template <typename TargetFrame>
-  using required_dest_tags =
-      tmpl::list<gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>>;
+  using required_dest_tags = tmpl::list<
+      gr::Tags::ExtrinsicCurvature<DataVector, 3, TargetFrame>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>;
 };
 
 }  // namespace ah

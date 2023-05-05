@@ -28,8 +28,8 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
                                            LargestCharacteristicSpeed {
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame, DataVector>,
-                 gr::Tags::SpatialMetric<3, Frame, DataVector>>;
+                 gr::Tags::Shift<DataVector, 3, Frame>,
+                 gr::Tags::SpatialMetric<DataVector, 3, Frame>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,

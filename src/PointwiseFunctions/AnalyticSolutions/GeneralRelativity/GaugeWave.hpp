@@ -130,13 +130,12 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;
   template <typename DataType>
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<volume_dim>, Frame::Inertial>;
+  using DerivShift = ::Tags::deriv<gr::Tags::Shift<DataType, volume_dim>,
+                                   tmpl::size_t<volume_dim>, Frame::Inertial>;
   template <typename DataType>
-  using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
-      tmpl::size_t<volume_dim>, Frame::Inertial>;
+  using DerivSpatialMetric =
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataType, volume_dim>,
+                    tmpl::size_t<volume_dim>, Frame::Inertial>;
 
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
@@ -161,16 +160,13 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   template <typename DataType>
   using tags = tmpl::list<
       gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>,
-      gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<DataType, volume_dim>,
+      ::Tags::dt<gr::Tags::Shift<DataType, volume_dim>>, DerivShift<DataType>,
+      gr::Tags::SpatialMetric<DataType, volume_dim>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim>>,
       DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
+      gr::Tags::ExtrinsicCurvature<DataType, volume_dim>,
+      gr::Tags::InverseSpatialMetric<DataType, volume_dim>>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -200,18 +196,16 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<gr::Tags::Shift<volume_dim, Frame::Inertial,
-                                            DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<
-          gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>;
+                 tmpl::list<gr::Tags::Shift<DataType, volume_dim>> /*meta*/)
+      const -> tuples::TaggedTuple<gr::Tags::Shift<DataType, volume_dim>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                 double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<::Tags::dt<gr::Tags::Shift<
-                     volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-      -> tuples::TaggedTuple<
-          ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>>;
+  auto variables(
+      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
+      const IntermediateVars<DataType>& vars,
+      tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, volume_dim>>> /*meta*/)
+      const
+      -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, volume_dim>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
@@ -220,20 +214,20 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<DerivShift<DataType>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                 double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
-                                                    DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>;
+  auto variables(
+      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
+      const IntermediateVars<DataType>& vars,
+      tmpl::list<gr::Tags::SpatialMetric<DataType, volume_dim>> /*meta*/) const
+      -> tuples::TaggedTuple<gr::Tags::SpatialMetric<DataType, volume_dim>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                 double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<
-                     volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-      -> tuples::TaggedTuple<::Tags::dt<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>>;
+  auto variables(
+      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
+      const IntermediateVars<DataType>& vars,
+      tmpl::list<
+          ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim>>> /*meta*/)
+      const -> tuples::TaggedTuple<
+          ::Tags::dt<gr::Tags::SpatialMetric<DataType, volume_dim>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
@@ -248,20 +242,20 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       const -> tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                 double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<gr::Tags::ExtrinsicCurvature<
-                     volume_dim, Frame::Inertial, DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<
-          gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>>;
+  auto variables(
+      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
+      const IntermediateVars<DataType>& vars,
+      tmpl::list<gr::Tags::ExtrinsicCurvature<DataType, volume_dim>> /*meta*/)
+      const -> tuples::TaggedTuple<
+          gr::Tags::ExtrinsicCurvature<DataType, volume_dim>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                 double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<gr::Tags::InverseSpatialMetric<
-                     volume_dim, Frame::Inertial, DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<
-          volume_dim, Frame::Inertial, DataType>>;
+  auto variables(
+      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
+      const IntermediateVars<DataType>& vars,
+      tmpl::list<gr::Tags::InverseSpatialMetric<DataType, volume_dim>> /*meta*/)
+      const -> tuples::TaggedTuple<
+          gr::Tags::InverseSpatialMetric<DataType, volume_dim>>;
 
   template <typename DataType>
   struct IntermediateVars {

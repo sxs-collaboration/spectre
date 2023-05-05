@@ -40,16 +40,13 @@ void test_dg_ghost(const gsl::not_null<std::mt19937*> gen) {
       make_with_random_values<tnsr::I<DataVector, 3>>(gen, dist, num_points);
   const auto spacetime_variables = kerr_schild.variables(
       coords, 0.,
-      tmpl::list<
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>{});
+      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim>>{});
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(spacetime_variables);
-  const auto& shift = get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(
-      spacetime_variables);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, Dim>>(spacetime_variables);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-          spacetime_variables);
+      get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(spacetime_variables);
 
   auto normal_covector =
       make_with_random_values<tnsr::i<DataVector, Dim>>(gen, dist, num_points);
@@ -200,9 +197,9 @@ void test_python(const gsl::not_null<std::mt19937*> gen) {
           helpers::Tags::PythonFunctionName<CurvedScalarWave::Tags::Pi>,
           helpers::Tags::PythonFunctionName<CurvedScalarWave::Tags::Phi<Dim>>,
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
-          helpers::Tags::PythonFunctionName<gr::Tags::Shift<Dim>>,
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<
-              gr::Tags::InverseSpatialMetric<Dim>>,
+              gr::Tags::InverseSpatialMetric<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<
               CurvedScalarWave::Tags::ConstraintGamma1>,
           helpers::Tags::PythonFunctionName<

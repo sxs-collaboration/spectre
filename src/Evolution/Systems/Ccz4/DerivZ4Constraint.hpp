@@ -35,7 +35,7 @@ namespace Ccz4 {
  * \f$\left(\partial_i \hat{\Gamma}^j - \partial_i \tilde{\Gamma}^j\right)\f$ is
  * its spatial derivative.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void grad_spatial_z4_constraint(
     const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> result,
     const tnsr::i<DataType, Dim, Frame>& spatial_z4_constraint,
@@ -47,7 +47,7 @@ void grad_spatial_z4_constraint(
     const tnsr::iJ<DataType, Dim, Frame>&
         d_gamma_hat_minus_contracted_conformal_christoffel);
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::ij<DataType, Dim, Frame> grad_spatial_z4_constraint(
     const tnsr::i<DataType, Dim, Frame>& spatial_z4_constraint,
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,

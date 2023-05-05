@@ -20,7 +20,7 @@ void test_compute_spatial_z4_constraint(const DataType& used_for_size) {
       static_cast<tnsr::i<DataType, Dim, Frame::Inertial> (*)(
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::I<DataType, Dim, Frame::Inertial>&)>(
-          &Ccz4::spatial_z4_constraint<Dim, Frame::Inertial, DataType>),
+          &Ccz4::spatial_z4_constraint<DataType, Dim, Frame::Inertial>),
       "Z4Constraint", "spatial_z4_constraint", {{{-1., 1.}}}, used_for_size);
 }
 
@@ -30,7 +30,7 @@ void test_compute_upper_spatial_z4_constraint(const DataType& used_for_size) {
       static_cast<tnsr::I<DataType, Dim, Frame::Inertial> (*)(
           const Scalar<DataType>&,
           const tnsr::I<DataType, Dim, Frame::Inertial>&)>(
-          &Ccz4::upper_spatial_z4_constraint<Dim, Frame::Inertial, DataType>),
+          &Ccz4::upper_spatial_z4_constraint<DataType, Dim, Frame::Inertial>),
       "Z4Constraint", "upper_spatial_z4_constraint", {{{-1., 1.}}},
       used_for_size);
 }

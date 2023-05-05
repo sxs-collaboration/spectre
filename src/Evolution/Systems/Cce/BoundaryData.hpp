@@ -575,17 +575,17 @@ void create_bondi_boundary_data(
       dyad_variables{size};
 
   auto& null_metric =
-      get<gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>(
+      get<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>(
           *computation_variables);
   auto& du_null_metric = get<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>>(
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>>(
       *computation_variables);
   null_metric_and_derivative(
       make_not_null(&du_null_metric), make_not_null(&null_metric),
       cartesian_to_spherical_jacobian, dt_spacetime_metric, spacetime_metric);
 
   auto& inverse_null_metric =
-      get<gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>(
+      get<gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>>(
           *computation_variables);
 
   // the below scaling process is used to reduce accumulation of numerical
@@ -594,7 +594,7 @@ void create_bondi_boundary_data(
   // buffer reuse because the scaled null metric is only needed until the
   // `determinant_and_inverse` call
   auto& scaled_null_metric =
-      get<gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>(
+      get<gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>>(
           *computation_variables);
   for (size_t i = 0; i < 4; ++i) {
     for (size_t j = i; j < 4; ++j) {
@@ -646,10 +646,10 @@ void create_bondi_boundary_data(
   }
 
   auto& dlambda_null_metric = get<Tags::detail::DLambda<
-      gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>>(
+      gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>>(
       *computation_variables);
   auto& dlambda_inverse_null_metric = get<Tags::detail::DLambda<
-      gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>>(
+      gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>>>(
       *computation_variables);
   dlambda_null_metric_and_inverse(
       make_not_null(&dlambda_null_metric),
@@ -804,24 +804,24 @@ void create_bondi_boundary_data(
       Tags::detail::SinTheta, Tags::detail::CartesianCoordinates,
       Tags::detail::CartesianToSphericalJacobian,
       Tags::detail::InverseCartesianToSphericalJacobian,
-      gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, ::Frame::Inertial, DataVector>,
-      gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::Shift<DataVector, 3>,
+      ::Tags::dt<gr::Tags::Shift<DataVector, 3>>, gr::Tags::Lapse<DataVector>,
+      ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
       Tags::detail::WorldtubeNormal, ::Tags::dt<Tags::detail::WorldtubeNormal>,
-      gr::Tags::SpacetimeNormalVector<3, ::Frame::Inertial, DataVector>,
-      Tags::detail::NullL, ::Tags::dt<Tags::detail::NullL>,
+      gr::Tags::SpacetimeNormalVector<DataVector, 3>, Tags::detail::NullL,
+      ::Tags::dt<Tags::detail::NullL>,
       // for the detail function called at the end
-      gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>,
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>,
-      gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>,
+      gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>,
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>,
       Tags::detail::AngularDNullL,
       Tags::detail::DLambda<
-          gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>,
+          gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
       Tags::detail::DLambda<
-          gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>,
+          gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
       ::Tags::spacetime_deriv<Tags::detail::RealBondiR, tmpl::size_t<3>,
                               Frame::RadialNull>,
       Tags::detail::DLambda<Tags::detail::DLambda<Tags::detail::RealBondiR>>,
@@ -865,26 +865,23 @@ void create_bondi_boundary_data(
       cos_theta, sin_phi, sin_theta, extraction_radius);
 
   auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
-          computation_variables);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(computation_variables);
   gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
 
   auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, ::Frame::Inertial, DataVector>>(
-          computation_variables);
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(computation_variables);
   // Allocation
   inverse_spatial_metric = determinant_and_inverse(spatial_metric).second;
 
-  auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-      computation_variables);
+  auto& shift = get<gr::Tags::Shift<DataVector, 3>>(computation_variables);
   gr::shift(make_not_null(&shift), spacetime_metric, inverse_spatial_metric);
 
   auto& lapse = get<gr::Tags::Lapse<DataVector>>(computation_variables);
   gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
 
-  auto& dt_spacetime_metric = get<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      computation_variables);
+  auto& dt_spacetime_metric =
+      get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
+          computation_variables);
 
   gh::time_derivative_of_spacetime_metric(make_not_null(&dt_spacetime_metric),
                                           lapse, shift, pi, phi);
@@ -898,7 +895,7 @@ void create_bondi_boundary_data(
       cos_phi, cos_theta, spacetime_metric, dt_spacetime_metric, sin_phi,
       sin_theta, inverse_spatial_metric);
   auto& spacetime_unit_normal =
-      get<gr::Tags::SpacetimeNormalVector<3, ::Frame::Inertial, DataVector>>(
+      get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
           computation_variables);
   gr::spacetime_normal_vector(make_not_null(&spacetime_unit_normal), lapse,
                               shift);
@@ -907,8 +904,7 @@ void create_bondi_boundary_data(
   gh::time_deriv_of_lapse(make_not_null(&dt_lapse), lapse, shift,
                           spacetime_unit_normal, phi, pi);
   auto& dt_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          computation_variables);
+      get<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>(computation_variables);
   gh::time_deriv_of_shift(make_not_null(&dt_shift), lapse, shift,
                           inverse_spatial_metric, spacetime_unit_normal, phi,
                           pi);
@@ -1009,33 +1005,32 @@ void create_bondi_boundary_data(
       Tags::detail::SinTheta, Tags::detail::CartesianCoordinates,
       Tags::detail::CartesianToSphericalJacobian,
       Tags::detail::InverseCartesianToSphericalJacobian,
-      gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, ::Frame::Inertial, DataVector>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, ::Frame::Inertial>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>,
-      gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-      ::Tags::deriv<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, ::Frame::Inertial>,
-      ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>,
-      gr::Tags::Lapse<DataVector>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                    ::Frame::Inertial>,
+      ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
+      gr::Tags::Shift<DataVector, 3>,
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                    ::Frame::Inertial>,
+      ::Tags::dt<gr::Tags::Shift<DataVector, 3>>, gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     ::Frame::Inertial>,
       ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-      gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
       gh::Tags::Phi<3, ::Frame::Inertial>, Tags::detail::WorldtubeNormal,
       ::Tags::dt<Tags::detail::WorldtubeNormal>, Tags::detail::NullL,
       ::Tags::dt<Tags::detail::NullL>,
       // for the detail function called at the end
-      gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>,
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>,
-      gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>,
+      gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>,
+      ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>,
       Tags::detail::AngularDNullL,
       Tags::detail::DLambda<
-          gr::Tags::SpacetimeMetric<3, Frame::RadialNull, DataVector>>,
+          gr::Tags::SpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
       Tags::detail::DLambda<
-          gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>,
+          gr::Tags::InverseSpacetimeMetric<DataVector, 3, Frame::RadialNull>>,
       ::Tags::spacetime_deriv<Tags::detail::RealBondiR, tmpl::size_t<3>,
                               Frame::RadialNull>,
       Tags::detail::DLambda<Tags::detail::DLambda<Tags::detail::RealBondiR>>,
@@ -1078,17 +1073,15 @@ void create_bondi_boundary_data(
       cos_theta, sin_phi, sin_theta, extraction_radius);
 
   auto& cartesian_spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
-          computation_variables);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(computation_variables);
   auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, ::Frame::Inertial, DataVector>>(
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(computation_variables);
+  auto& d_cartesian_spatial_metric =
+      get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                        ::Frame::Inertial>>(computation_variables);
+  auto& dt_cartesian_spatial_metric =
+      get<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>>(
           computation_variables);
-  auto& d_cartesian_spatial_metric = get<
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, ::Frame::Inertial>>(computation_variables);
-  auto& dt_cartesian_spatial_metric = get<
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-      computation_variables);
   auto& interpolation_buffer =
       get<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
                                std::integral_constant<int, 0>>>(
@@ -1110,15 +1103,12 @@ void create_bondi_boundary_data(
       l_max);
 
   auto& cartesian_shift =
-      get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          computation_variables);
+      get<gr::Tags::Shift<DataVector, 3>>(computation_variables);
   auto& d_cartesian_shift =
-      get<::Tags::deriv<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, ::Frame::Inertial>>(
-          computation_variables);
+      get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        ::Frame::Inertial>>(computation_variables);
   auto& dt_cartesian_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          computation_variables);
+      get<::Tags::dt<gr::Tags::Shift<DataVector, 3>>>(computation_variables);
 
   cartesian_shift_and_derivatives_from_modes(
       make_not_null(&cartesian_shift), make_not_null(&d_cartesian_shift),
@@ -1144,12 +1134,11 @@ void create_bondi_boundary_data(
       inverse_cartesian_to_spherical_jacobian, l_max);
 
   auto& phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(computation_variables);
-  auto& dt_spacetime_metric = get<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      computation_variables);
-  auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+  auto& dt_spacetime_metric =
+      get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
           computation_variables);
+  auto& spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(computation_variables);
   gh::phi(make_not_null(&phi), cartesian_lapse, d_cartesian_lapse,
           cartesian_shift, d_cartesian_shift, cartesian_spatial_metric,
           d_cartesian_spatial_metric);

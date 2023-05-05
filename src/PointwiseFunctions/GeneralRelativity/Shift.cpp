@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
@@ -23,7 +23,7 @@ tnsr::I<DataType, SpatialDim, Frame> shift(
   return local_shift;
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void shift(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,

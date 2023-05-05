@@ -68,7 +68,7 @@ struct LowerSpatialFourVelocityCompute
       hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>;
   using argument_tags =
       tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>>;
   static void function(const gsl::not_null<tnsr::i<DataVector, 3>*> result,
                        const tnsr::I<DataVector, 3>& spatial_velocity,

@@ -13,7 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 
 namespace {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_plus_wrapper(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -23,12 +23,12 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_plus_wrapper(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) {
-  return gr::weyl_propagating<SpatialDim, Frame, DataType>(
+  return gr::weyl_propagating<DataType, SpatialDim, Frame>(
       ricci, extrinsic_curvature, inverse_spatial_metric,
       cov_deriv_extrinsic_curvature, unit_interface_normal_vector,
       projection_IJ, projection_ij, projection_Ij, 1.);
 }
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_minus_wrapper(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -38,7 +38,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_minus_wrapper(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) {
-  return gr::weyl_propagating<SpatialDim, Frame, DataType>(
+  return gr::weyl_propagating<DataType, SpatialDim, Frame>(
       ricci, extrinsic_curvature, inverse_spatial_metric,
       cov_deriv_extrinsic_curvature, unit_interface_normal_vector,
       projection_IJ, projection_ij, projection_Ij, -1.);
@@ -56,7 +56,7 @@ void test_weyl_propagating(const DataType& used_for_size) {
         const tnsr::II<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::Ij<DataType, SpatialDim, Frame::Inertial>&) =
-        &weyl_propagating_plus_wrapper<SpatialDim, Frame::Inertial, DataType>;
+        &weyl_propagating_plus_wrapper<DataType, SpatialDim, Frame::Inertial>;
     pypp::check_with_random_values<1>(f, "GeneralRelativity.WeylPropagating",
                                       "weyl_propagating_mode_plus",
                                       {{{-1., 1.}}}, used_for_size);
@@ -71,7 +71,7 @@ void test_weyl_propagating(const DataType& used_for_size) {
         const tnsr::II<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::Ij<DataType, SpatialDim, Frame::Inertial>&) =
-        &weyl_propagating_minus_wrapper<SpatialDim, Frame::Inertial, DataType>;
+        &weyl_propagating_minus_wrapper<DataType, SpatialDim, Frame::Inertial>;
     pypp::check_with_random_values<1>(f, "GeneralRelativity.WeylPropagating",
                                       "weyl_propagating_mode_minus",
                                       {{{-1., 1.}}}, used_for_size);

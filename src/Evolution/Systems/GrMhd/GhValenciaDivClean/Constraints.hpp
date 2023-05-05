@@ -31,10 +31,10 @@ struct FConstraintCompute : gh::Tags::FConstraint<SpatialDim, Frame>,
   using argument_tags = tmpl::list<
       gh::Tags::GaugeH<SpatialDim, Frame>,
       gh::Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>,
-      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
-      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
+      gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+      gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
       gh::Tags::Pi<SpatialDim, Frame>, gh::Tags::Phi<SpatialDim, Frame>,
       ::Tags::deriv<gh::Tags::Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
                     Frame>,
@@ -61,7 +61,7 @@ struct FConstraintCompute : gh::Tags::FConstraint<SpatialDim, Frame>,
       const Scalar<DataVector>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
-      &gh::f_constraint<SpatialDim, Frame, DataVector>);
+      &gh::f_constraint<DataVector, SpatialDim, Frame>);
 
   using base = gh::Tags::FConstraint<SpatialDim, Frame>;
 };

@@ -175,17 +175,12 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
   const auto lapse = get<gr::Tags::Lapse<DataVector>>(
       minkowski.variables(x, t, tmpl::list<gr::Tags::Lapse<DataVector>>{}));
   // shift
-  const auto shift = get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(
-      minkowski.variables(
-          x, t,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>{}));
+  const auto shift = get<gr::Tags::Shift<DataVector, Dim>>(minkowski.variables(
+      x, t, tmpl::list<gr::Tags::Shift<DataVector, Dim>>{}));
   // inverse spatial metric
   const auto inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                                        DataVector>>{}));
+      get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, Dim>>{}));
 
   // ----- package data : CSW
   csw_flux_computer.dg_package_data(

@@ -40,8 +40,7 @@ void TovVariables<DataType>::operator()(
     get<0, 2>(*conformal_metric) = 0.;
     get<1, 2>(*conformal_metric) = 0.;
   } else {
-    *conformal_metric =
-        get_tov_var(gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>{});
+    *conformal_metric = get_tov_var(gr::Tags::SpatialMetric<DataType, 3>{});
   }
 }
 
@@ -59,8 +58,8 @@ void TovVariables<DataType>::operator()(
     get<0, 2>(*inv_conformal_metric) = 0.;
     get<1, 2>(*inv_conformal_metric) = 0.;
   } else {
-    *inv_conformal_metric = get_tov_var(
-        gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>{});
+    *inv_conformal_metric =
+        get_tov_var(gr::Tags::InverseSpatialMetric<DataType, 3>{});
   }
 }
 
@@ -75,9 +74,9 @@ void TovVariables<DataType>::operator()(
     std::fill(deriv_conformal_metric->begin(), deriv_conformal_metric->end(),
               0.);
   } else {
-    *deriv_conformal_metric = get_tov_var(
-        ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                      tmpl::size_t<3>, Frame::Inertial>{});
+    *deriv_conformal_metric =
+        get_tov_var(::Tags::deriv<gr::Tags::SpatialMetric<DataType, 3>,
+                                  tmpl::size_t<3>, Frame::Inertial>{});
   }
 }
 
@@ -85,7 +84,7 @@ template <typename DataType>
 void TovVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> /* cache */,
-    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+    gr::Tags::ExtrinsicCurvature<DataType, 3> /*meta*/) const {
   std::fill(extrinsic_curvature->begin(), extrinsic_curvature->end(), 0.);
 }
 
@@ -282,7 +281,7 @@ template <typename DataType>
 void TovVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
     const gsl::not_null<Cache*> /* cache */,
-    gr::Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>,
                         ConformalMatterScale> /*meta*/) const {
   std::fill(momentum_density->begin(), momentum_density->end(), 0.);
 }

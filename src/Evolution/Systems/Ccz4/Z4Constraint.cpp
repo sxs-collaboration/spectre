@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void spatial_z4_constraint(
     const gsl::not_null<tnsr::i<DataType, Dim, Frame>*> result,
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
@@ -26,7 +26,7 @@ void spatial_z4_constraint(
                      gamma_hat_minus_contracted_conformal_christoffel(ti::J)));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::i<DataType, Dim, Frame> spatial_z4_constraint(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::I<DataType, Dim, Frame>&
@@ -37,7 +37,7 @@ tnsr::i<DataType, Dim, Frame> spatial_z4_constraint(
   return result;
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 void upper_spatial_z4_constraint(
     const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
     const Scalar<DataType>& half_conformal_factor_squared,
@@ -51,7 +51,7 @@ void upper_spatial_z4_constraint(
                   gamma_hat_minus_contracted_conformal_christoffel(ti::I));
 }
 
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::I<DataType, Dim, Frame> upper_spatial_z4_constraint(
     const Scalar<DataType>& half_conformal_factor_squared,
     const tnsr::I<DataType, Dim, Frame>&

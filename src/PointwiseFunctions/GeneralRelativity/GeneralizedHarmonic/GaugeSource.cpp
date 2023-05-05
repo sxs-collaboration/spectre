@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void gauge_source(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
@@ -61,7 +61,7 @@ void gauge_source(
                              get(lapse) * get(trace_extrinsic_curvature);
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,

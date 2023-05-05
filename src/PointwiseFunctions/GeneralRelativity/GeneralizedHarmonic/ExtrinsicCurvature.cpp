@@ -14,7 +14,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void extrinsic_curvature(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curv,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
@@ -37,7 +37,7 @@ void extrinsic_curvature(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,

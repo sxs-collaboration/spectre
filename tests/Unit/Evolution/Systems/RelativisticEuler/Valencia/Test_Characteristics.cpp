@@ -56,7 +56,8 @@ void test_compute_item_in_databox(
       "CharacteristicSpeeds");
   const auto box = db::create<
       db::AddSimpleTags<
-          gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
+          gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
+          gr::Tags::SpatialMetric<DataVector, Dim>,
           hydro::Tags::SpatialVelocity<DataVector, Dim>,
           hydro::Tags::SoundSpeedSquared<DataVector>,
           ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>,

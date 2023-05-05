@@ -818,7 +818,7 @@ template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::Shift<DataType, 3, Frame> /*meta*/) const {
   const auto& l_upper =
       cache->get_var(*this, internal_tags::l_upper<DataType, Frame>{});
   const auto& shift_multiplier =
@@ -879,7 +879,7 @@ template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::SpatialMetric<DataType, 3, Frame> /*meta*/) const {
   const auto& H = get(cache->get_var(*this, internal_tags::H<DataType>{}));
   const auto& l_lower =
       cache->get_var(*this, internal_tags::l_lower<DataType, Frame>{});
@@ -936,7 +936,7 @@ template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
     const gsl::not_null<CachedBuffer*> /*cache*/,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const {
+    ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) const {
   std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
 }
 
@@ -944,7 +944,7 @@ template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3, Frame>*> inverse_spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::InverseSpatialMetric<DataType, 3, Frame> /*meta*/) const {
   const auto& H = get(cache->get_var(*this, internal_tags::H<DataType>{}));
   const auto& lapse_squared =
       get(cache->get_var(*this, internal_tags::lapse_squared<DataType>{}));
@@ -968,14 +968,14 @@ template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/) const {
   gr::extrinsic_curvature(
       extrinsic_curvature, cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
-      cache->get_var(*this, gr::Tags::Shift<3, Frame, DataType>{}),
+      cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{}),
       cache->get_var(*this, DerivShift<DataType, Frame>{}),
-      cache->get_var(*this, gr::Tags::SpatialMetric<3, Frame, DataType>{}),
+      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{}),
       cache->get_var(*this,
-                     ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>{}),
+                     ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>{}),
       cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{}));
 }
 
@@ -984,7 +984,7 @@ void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
         spatial_christoffel_first_kind,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame> /*meta*/) const {
   const auto& d_spatial_metric =
       cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{});
   gr::christoffel_first_kind<3, Frame, IndexType::Spatial, DataType>(
@@ -996,11 +996,11 @@ void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::Ijj<DataType, 3, Frame>*>
         spatial_christoffel_second_kind,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/) const {
+    gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame> /*meta*/) const {
   const auto& spatial_christoffel_first_kind = cache->get_var(
-      *this, gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>{});
+      *this, gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>{});
   const auto& inverse_spatial_metric = cache->get_var(
-      *this, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{});
+      *this, gr::Tags::InverseSpatialMetric<DataType, 3, Frame>{});
   raise_or_lower_first_index<DataType, SpatialIndex<3, UpLo::Lo, Frame>,
                              SpatialIndex<3, UpLo::Lo, Frame>>(
       spatial_christoffel_second_kind, spatial_christoffel_first_kind,
@@ -1038,7 +1038,7 @@ template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/) {
+    ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/) {
   const auto& H = get(get_var(computer, internal_tags::H<DataType>()));
 
   return make_with_value<tnsr::I<DataType, 3, Frame>>(H, 0.);
@@ -1060,7 +1060,7 @@ template <typename DataType, typename Frame>
 tnsr::i<DataType, 3, Frame>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::DerivDetSpatialMetric<3, Frame, DataType> /*meta*/) {
+    gr::Tags::DerivDetSpatialMetric<DataType, 3, Frame> /*meta*/) {
   const auto& deriv_H =
       get_var(computer, internal_tags::deriv_H<DataType, Frame>{});
 
@@ -1078,19 +1078,19 @@ SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) {
   return trace(
-      get_var(computer, gr::Tags::ExtrinsicCurvature<3, Frame, DataType>{}),
-      get_var(computer, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{}));
+      get_var(computer, gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>{}),
+      get_var(computer, gr::Tags::InverseSpatialMetric<DataType, 3, Frame>{}));
 }
 
 template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/) {
+    gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3, Frame> /*meta*/) {
   const auto& inverse_spatial_metric =
-      get_var(computer, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{});
+      get_var(computer, gr::Tags::InverseSpatialMetric<DataType, 3, Frame>{});
   const auto& spatial_christoffel_second_kind = get_var(
-      computer, gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>{});
+      computer, gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>{});
   return trace_last_indices<DataType, SpatialIndex<3, UpLo::Up, Frame>,
                             SpatialIndex<3, UpLo::Lo, Frame>>(
       spatial_christoffel_second_kind, inverse_spatial_metric);

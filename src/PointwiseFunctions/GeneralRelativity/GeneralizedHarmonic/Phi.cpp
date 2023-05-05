@@ -13,7 +13,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
          const Scalar<DataType>& lapse,
          const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -49,7 +49,7 @@ void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const Scalar<DataType>& lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -58,7 +58,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
   tnsr::iaa<DataType, SpatialDim, Frame> var_phi{};
-  gh::phi<SpatialDim, Frame, DataType>(make_not_null(&var_phi), lapse,
+  gh::phi<DataType, SpatialDim, Frame>(make_not_null(&var_phi), lapse,
                                        deriv_lapse, shift, deriv_shift,
                                        spatial_metric, deriv_spatial_metric);
   return var_phi;

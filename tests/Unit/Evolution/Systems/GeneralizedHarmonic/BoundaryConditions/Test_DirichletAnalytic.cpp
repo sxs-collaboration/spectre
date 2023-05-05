@@ -93,7 +93,8 @@ void test() {
       "DirichletAnalytic",
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
-          helpers::Tags::PythonFunctionName<gr::Tags::SpacetimeMetric<Dim>>,
+          helpers::Tags::PythonFunctionName<
+              gr::Tags::SpacetimeMetric<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<gh::Tags::Pi<Dim>>,
           helpers::Tags::PythonFunctionName<gh::Tags::Phi<Dim>>,
           helpers::Tags::PythonFunctionName<
@@ -101,8 +102,7 @@ void test() {
           helpers::Tags::PythonFunctionName<
               gh::ConstraintDamping::Tags::ConstraintGamma2>,
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
-          helpers::Tags::PythonFunctionName<
-              gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>>{
+          helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, Dim>>>{
           "error", "spacetime_metric", "pi", "phi", "constraint_gamma1",
           "constraint_gamma2", "lapse", "shift"},
       "DirichletAnalytic:\n"

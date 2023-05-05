@@ -30,7 +30,7 @@ namespace Tags {
  * `Ccz4::Tags::InverseConformalMetric`, and \f$Z_i\f$ is the spatial part of
  * the Z4 constraint defined by `Ccz4::Tags::SpatialZ4Constraint`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct GammaHatMinusContractedConformalChristoffel : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
@@ -80,7 +80,7 @@ struct ContractedFieldB : db::SimpleTag {
  * defined by `Ccz4::Tags::ConformalMetric` and \f$B_i{}^j\f$ is the CCZ4
  * auxiliary variable defined by `Ccz4::Tags::FieldB`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ConformalMetricTimesFieldB : db::SimpleTag {
   using type = tnsr::ij<DataType, Dim, Frame>;
 };
@@ -106,7 +106,7 @@ struct LapseTimesRicciScalarPlus2DivergenceZ4Constraint : db::SimpleTag {
  * of the trace-free part of the extrinsic curvature defined by
  * `Ccz4::Tags::TraceATilde`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ConformalMetricTimesTraceATilde : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
@@ -118,7 +118,7 @@ struct ConformalMetricTimesTraceATilde : db::SimpleTag {
  * \f$\tilde{A}_{ij}\f$ is the trace-free part of the extrinsic curvature
  * defined by `Ccz4::Tags::ATilde`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct LapseTimesATilde : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
@@ -131,7 +131,7 @@ struct LapseTimesATilde : db::SimpleTag {
  * `Ccz4::Tags::FieldDUp` and \f$\tilde{A}_{nm}\f$ is the trace-free part of the
  * extrinsic curvature defined by `Ccz4::Tags::ATilde`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct FieldDUpTimesATilde : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -144,7 +144,7 @@ struct FieldDUpTimesATilde : db::SimpleTag {
  * defined by `Ccz4::Tags::ATilde`, and \f$\partial_k \tilde{A}_{ij}\f$ is its
  * spatial derivative.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct LapseTimesDerivATilde : db::SimpleTag {
   using type = tnsr::ijj<DataType, Dim, Frame>;
 };
@@ -159,7 +159,7 @@ struct LapseTimesDerivATilde : db::SimpleTag {
  * `Ccz4::Tags::ATilde`, and \f$\partial_k \tilde{A}_{ij}\f$ is its spatial
  * derivative.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct InverseConformalMetricTimesDerivATilde : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -173,7 +173,7 @@ struct InverseConformalMetricTimesDerivATilde : db::SimpleTag {
  * defined by `Ccz4::Tags::TraceATilde`, and \f$\tilde{\gamma}_{ij}\f$ is the
  * conformal spatial metric defined by `Ccz4::Tags::ConformalMetric`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ATildeMinusOneThirdConformalMetricTimesTraceATilde : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
@@ -184,7 +184,7 @@ struct ATildeMinusOneThirdConformalMetricTimesTraceATilde : db::SimpleTag {
  * \details Here, \f$\alpha\f$ is the lapse defined by `gr::Tags::Lapse` and
  * \f$A_k\f$ is the CCZ4 auxiliary variable defined by `Ccz4::Tags::FieldA`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct LapseTimesFieldA : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
@@ -197,7 +197,7 @@ struct LapseTimesFieldA : db::SimpleTag {
  * `Ccz4::Tags::GammaHat`, and \f$\partial_k \hat{\Gamma}^i\f$ is its spatial
  * derivative.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct ShiftTimesDerivGammaHat : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
@@ -211,7 +211,7 @@ struct ShiftTimesDerivGammaHat : db::SimpleTag {
  * spatial metric and on the trace of the trace-free part of the extrinsic
  * curvature that is defined by `Ccz4::Tags::ATilde`.
  */
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType, size_t Dim, typename Frame>
 struct InverseTauTimesConformalMetric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };

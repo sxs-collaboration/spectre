@@ -68,14 +68,13 @@ void WorldtubeData::variables_impl(
     tmpl::type_<gh::Tags::Pi<3, ::Frame::Inertial>> /*meta*/) const {
   const auto& d_spacetime_metric =
       cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time);
-  const auto& dt_spacetime_metric = cache_or_compute<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      output_l_max, time);
+  const auto& dt_spacetime_metric =
+      cache_or_compute<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
+          output_l_max, time);
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
-      cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time);
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time);
   for (size_t a = 0; a < 4; ++a) {
     for (size_t b = a; b < 4; ++b) {
       pi->get(a, b) = -dt_spacetime_metric.get(a, b) / get(lapse);
@@ -90,24 +89,20 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
-                                        DataVector>> /*meta*/) const {
-  gr::spatial_metric(
-      spatial_metric,
-      cache_or_compute<
-          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time));
+    tmpl::type_<gr::Tags::SpatialMetric<DataVector, 3>> /*meta*/) const {
+  gr::spatial_metric(spatial_metric,
+                     cache_or_compute<gr::Tags::SpacetimeMetric<DataVector, 3>>(
+                         output_l_max, time));
 }
 
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<::Tags::dt<
-        gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
+    tmpl::type_<::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>> /*meta*/)
     const {
-  const auto& dt_spacetime_metric = cache_or_compute<
-      ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      output_l_max, time);
+  const auto& dt_spacetime_metric =
+      cache_or_compute<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
+          output_l_max, time);
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
@@ -119,8 +114,8 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dr_spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
-                                                 DataVector>>> /*meta*/) const {
+    tmpl::type_<Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>> /*meta*/)
+    const {
   const auto& dr_cartesian_coordinates =
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);
@@ -141,14 +136,13 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift,
     const size_t output_l_max, const double time,
-    tmpl::type_<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>> /*meta*/)
-    const {
-  const auto& spacetime_metric = cache_or_compute<
-      gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(output_l_max,
-                                                                   time);
-  const auto& spatial_metric = cache_or_compute<
-      gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(output_l_max,
+    tmpl::type_<gr::Tags::Shift<DataVector, 3>> /*meta*/) const {
+  const auto& spacetime_metric =
+      cache_or_compute<gr::Tags::SpacetimeMetric<DataVector, 3>>(output_l_max,
                                                                  time);
+  const auto& spatial_metric =
+      cache_or_compute<gr::Tags::SpatialMetric<DataVector, 3>>(output_l_max,
+                                                               time);
   gr::shift(shift, spacetime_metric,
             determinant_and_inverse(spatial_metric).second);
 }
@@ -156,20 +150,16 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*> dt_shift,
     const size_t output_l_max, const double time,
-    tmpl::type_<
-        ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const {
+    tmpl::type_<::Tags::dt<gr::Tags::Shift<DataVector, 3>>> /*meta*/) const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
-      cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time);
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time);
   gh::time_deriv_of_shift(
       dt_shift, lapse, shift,
       determinant_and_inverse(
-          cache_or_compute<
-              gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
-              output_l_max, time))
+          cache_or_compute<gr::Tags::SpatialMetric<DataVector, 3>>(output_l_max,
+                                                                   time))
           .second,
       gr::spacetime_normal_vector(lapse, shift),
       cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time),
@@ -179,21 +169,17 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*> dr_shift,
     const size_t output_l_max, const double time,
-    tmpl::type_<
-        Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const {
+    tmpl::type_<Tags::Dr<gr::Tags::Shift<DataVector, 3>>> /*meta*/) const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
-      cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time);
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time);
   const auto d_shift = gh::spatial_deriv_of_shift(
       lapse,
       gr::inverse_spacetime_metric(
           lapse, shift,
           determinant_and_inverse(
-              cache_or_compute<
-                  gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+              cache_or_compute<gr::Tags::SpatialMetric<DataVector, 3>>(
                   output_l_max, time))
               .second),
       gr::spacetime_normal_vector(lapse, shift),
@@ -215,12 +201,11 @@ void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> lapse, const size_t output_l_max,
     const double time,
     tmpl::type_<gr::Tags::Lapse<DataVector>> /*meta*/) const {
-  gr::lapse(lapse,
-            cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-                output_l_max, time),
-            cache_or_compute<
-                gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-                output_l_max, time));
+  gr::lapse(
+      lapse,
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time),
+      cache_or_compute<gr::Tags::SpacetimeMetric<DataVector, 3>>(output_l_max,
+                                                                 time));
 }
 
 void WorldtubeData::variables_impl(
@@ -230,8 +215,7 @@ void WorldtubeData::variables_impl(
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
-      cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time);
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time);
   gh::time_deriv_of_lapse(
       dt_lapse, lapse, shift, gr::spacetime_normal_vector(lapse, shift),
       cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max, time),
@@ -245,8 +229,7 @@ void WorldtubeData::variables_impl(
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
-      cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
-          output_l_max, time);
+      cache_or_compute<gr::Tags::Shift<DataVector, 3>>(output_l_max, time);
   const auto d_lapse = gh::spatial_deriv_of_lapse(
       lapse, gr::spacetime_normal_vector(lapse, shift),
       cache_or_compute<gh::Tags::Phi<3, ::Frame::Inertial>>(output_l_max,

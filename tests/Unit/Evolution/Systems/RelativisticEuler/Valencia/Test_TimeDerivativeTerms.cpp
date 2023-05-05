@@ -64,10 +64,12 @@ void forward_to_time_deriv(
       make_not_null(
           &get<typename TimeDerivativeTerms<Dim>::DensitizedStress>(temp)),
 
-      make_not_null(&get<typename gr::Tags::Lapse<>>(temp)),
-      make_not_null(&get<typename gr::Tags::Shift<Dim>>(temp)),
-      make_not_null(&get<typename gr::Tags::SpatialMetric<Dim>>(temp)),
-      make_not_null(&get<typename gr::Tags::InverseSpatialMetric<Dim>>(temp)),
+      make_not_null(&get<typename gr::Tags::Lapse<DataVector>>(temp)),
+      make_not_null(&get<typename gr::Tags::Shift<DataVector, Dim>>(temp)),
+      make_not_null(
+          &get<typename gr::Tags::SpatialMetric<DataVector, Dim>>(temp)),
+      make_not_null(
+          &get<typename gr::Tags::InverseSpatialMetric<DataVector, Dim>>(temp)),
 
       // For fluxes
       tilde_d, tilde_tau, tilde_s, lapse, shift, sqrt_det_spatial_metric,

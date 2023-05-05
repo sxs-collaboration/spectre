@@ -44,7 +44,7 @@ namespace gh {
  * \partial_t g_{a b} = \beta^i \Phi_{i a b} - \alpha \Pi_{a b}.
  * \f}
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_derivative_of_spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> dt_spacetime_metric,
     const Scalar<DataType>& lapse,
@@ -52,7 +52,7 @@ void time_derivative_of_spacetime_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

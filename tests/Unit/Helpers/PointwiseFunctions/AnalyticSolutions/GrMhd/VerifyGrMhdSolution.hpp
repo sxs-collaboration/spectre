@@ -57,7 +57,7 @@ Variables<valencia_tags> numerical_dt(
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::SqrtDetSpatialMetric<DataVector>>;
 
   for (size_t i = 0; i < 6; ++i) {
@@ -80,7 +80,7 @@ Variables<valencia_tags> numerical_dt(
         get<hydro::Tags::LorentzFactor<DataVector>>(vars);
     const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(vars);
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
     const auto& sqrt_det_spatial_metric =
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
 
@@ -144,17 +144,16 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
       hydro::Tags::DivergenceCleaningField<DataVector>,
       hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
       hydro::Tags::SpecificEnthalpy<DataVector>, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<DataVector, 3>, gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
   const auto vars = solution.variables(x, time, solution_tags{});
 
   const auto& rest_mass_density =
@@ -178,22 +177,21 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   const auto& d_lapse =
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                         Frame::Inertial>>(vars);
-  const auto& shift =
-      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(vars);
   const auto& d_shift =
-      get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars);
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
   const auto& d_spatial_metric =
-      get<::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>(vars);
+      get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars);
   const auto& inv_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(vars);
   const auto& sqrt_det_spatial_metric =
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
   const auto& extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(vars);
+      get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars);
 
   const size_t number_of_points = mesh.number_of_grid_points();
   Scalar<DataVector> tilde_d(number_of_points);

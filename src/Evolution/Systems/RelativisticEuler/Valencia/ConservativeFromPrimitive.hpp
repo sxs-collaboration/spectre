@@ -60,8 +60,8 @@ struct ConservativeFromPrimitive {
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 gr::Tags::SqrtDetSpatialMetric<>,
-                 gr::Tags::SpatialMetric<Dim>>;
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, Dim>>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> tilde_d,

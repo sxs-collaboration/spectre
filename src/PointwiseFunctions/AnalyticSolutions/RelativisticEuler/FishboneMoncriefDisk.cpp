@@ -257,10 +257,9 @@ FishboneMoncriefDisk::variables(
     for (size_t i = 0; i < 3; ++i) {
       get_element(spatial_velocity.get(i), s) =
           (gsl::at(transport_velocity, i) +
-           get_element(get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(
-                           vars.kerr_schild_soln)
-                           .get(i),
-                       s)) /
+           get_element(
+               get<gr::Tags::Shift<DataType, 3>>(vars.kerr_schild_soln).get(i),
+               s)) /
           get_element(
               get(get<gr::Tags::Lapse<DataType>>(vars.kerr_schild_soln)), s);
     }
@@ -280,10 +279,9 @@ FishboneMoncriefDisk::variables(
                 vars, index));
   Scalar<DataType> lorentz_factor{
       1.0 /
-      sqrt(1.0 - get(dot_product(
-                     spatial_velocity, spatial_velocity,
-                     get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
-                         vars.kerr_schild_soln))))};
+      sqrt(1.0 - get(dot_product(spatial_velocity, spatial_velocity,
+                                 get<gr::Tags::SpatialMetric<DataType, 3>>(
+                                     vars.kerr_schild_soln))))};
   return {std::move(lorentz_factor)};
 }
 

@@ -157,11 +157,10 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
              ::Tags::Flux<Tags::TildeB<Frame::Inertial>, tmpl::size_t<3>,    \
                           Frame::Inertial>,                                  \
              ::Tags::Flux<Tags::TildePhi, tmpl::size_t<3>, Frame::Inertial>, \
-             gr::Tags::Lapse<DataVector>,                                    \
-             gr::Tags::Shift<3, Frame::Inertial, DataVector>,                \
-             gr::Tags::SpatialMetric<3>,                                     \
+             gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,    \
+             gr::Tags::SpatialMetric<DataVector, 3>,                         \
              gr::Tags::SqrtDetSpatialMetric<DataVector>,                     \
-             gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>, \
+             gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
              evolution::dg::Actions::detail::NormalVector<3>>
 
 #define INSTANTIATION(r, data)                                                \

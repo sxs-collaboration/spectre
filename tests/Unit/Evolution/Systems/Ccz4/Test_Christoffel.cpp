@@ -22,8 +22,8 @@ void test_conformal_christoffel_second_kind(const DataType& used_for_size) {
       static_cast<tnsr::Ijj<DataType, Dim, Frame::Inertial> (*)(
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
-          &::Ccz4::conformal_christoffel_second_kind<Dim, Frame::Inertial,
-                                                     DataType>),
+          &::Ccz4::conformal_christoffel_second_kind<DataType, Dim,
+                                                     Frame::Inertial>),
       "Christoffel", "conformal_christoffel_second_kind", {{{-1., 1.}}},
       used_for_size);
 }
@@ -36,7 +36,7 @@ void test_christoffel_second_kind(const DataType& used_for_size) {
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::i<DataType, Dim, Frame::Inertial>&,
           const tnsr::Ijj<DataType, Dim, Frame::Inertial>&)>(
-          &::Ccz4::christoffel_second_kind<Dim, Frame::Inertial, DataType>),
+          &::Ccz4::christoffel_second_kind<DataType, Dim, Frame::Inertial>),
       "Christoffel", "christoffel_second_kind", {{{-1., 1.}}}, used_for_size);
 }
 
@@ -48,7 +48,7 @@ void test_contracted_conformal_christoffel_second_kind(
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::Ijj<DataType, Dim, Frame::Inertial>&)>(
           &::Ccz4::contracted_conformal_christoffel_second_kind<
-              Dim, Frame::Inertial, DataType>),
+              DataType, Dim, Frame::Inertial>),
       "Christoffel", "contracted_conformal_christoffel_second_kind",
       {{{-1., 1.}}}, used_for_size);
 }

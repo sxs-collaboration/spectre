@@ -55,12 +55,12 @@ namespace Tags {
 template <typename Frame>
 struct Psi4RealCompute : Psi4Real<DataVector>, db::ComputeTag {
   using argument_tags = tmpl::list<
-      gr::Tags::SpatialRicci<3, Frame, DataVector>,
-      gr::Tags::ExtrinsicCurvature<3, Frame, DataVector>,
-      ::Tags::deriv<gr::Tags::ExtrinsicCurvature<3, Frame, DataVector>,
+      gr::Tags::SpatialRicci<DataVector, 3, Frame>,
+      gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>,
+      ::Tags::deriv<gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>,
                     tmpl::size_t<3>, Frame>,
-      gr::Tags::SpatialMetric<3, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame, DataVector>,
+      gr::Tags::SpatialMetric<DataVector, 3, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>,
       domain::Tags::Coordinates<3, Frame>>;
 
   using return_type = Scalar<DataVector>;

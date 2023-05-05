@@ -165,7 +165,7 @@ struct EvolutionMetavars {
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::SpatialMetric<Dim, ::Frame::Inertial, DataVector>,
+        tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
                    CurvedScalarWave::Tags::Psi>;
     using compute_items_on_target =
         tmpl::list<CurvedScalarWave::Tags::PsiSquaredCompute,
@@ -184,9 +184,9 @@ struct EvolutionMetavars {
   };
 
   using interpolation_target_tags = tmpl::list<SphericalSurface>;
-  using interpolator_source_vars = tmpl::list<
-      gr::Tags::SpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
-      CurvedScalarWave::Tags::Psi>;
+  using interpolator_source_vars =
+      tmpl::list<gr::Tags::SpatialMetric<DataVector, volume_dim>,
+                 CurvedScalarWave::Tags::Psi>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<

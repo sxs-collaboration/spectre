@@ -23,8 +23,8 @@ void test_compute_deriv_conformal_christoffel_second_kind(
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijkk<DataType, Dim, Frame::Inertial>&,
           const tnsr::iJJ<DataType, Dim, Frame::Inertial>&)>(
-          &Ccz4::deriv_conformal_christoffel_second_kind<Dim, Frame::Inertial,
-                                                         DataType>),
+          &Ccz4::deriv_conformal_christoffel_second_kind<DataType, Dim,
+                                                         Frame::Inertial>),
       "DerivChristoffel", "deriv_conformal_christoffel_second_kind",
       {{{-1., 1.}}}, used_for_size);
 }
@@ -39,7 +39,7 @@ void test_compute_deriv_contracted_conformal_christoffel_second_kind(
           const tnsr::Ijj<DataType, Dim, Frame::Inertial>&,
           const tnsr::iJkk<DataType, Dim, Frame::Inertial>&)>(
           &Ccz4::deriv_contracted_conformal_christoffel_second_kind<
-              Dim, Frame::Inertial, DataType>),
+              DataType, Dim, Frame::Inertial>),
       "DerivChristoffel", "deriv_contracted_conformal_christoffel_second_kind",
       {{{-1., 1.}}}, used_for_size);
 }

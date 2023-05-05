@@ -53,10 +53,8 @@ using py_test_tags = tmpl::list<
                                                             Frame::Inertial>,
     gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
     gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
-    gr::Tags::Conformal<
-        gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>,
-    gr::Tags::Lapse<DataVector>,
-    gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>, 0>,
+    gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
     Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataVector>,
     Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataVector>,
     Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<DataVector>>;

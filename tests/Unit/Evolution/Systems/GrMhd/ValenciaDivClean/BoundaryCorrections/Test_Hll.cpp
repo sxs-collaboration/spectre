@@ -31,7 +31,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
 
   const tuples::TaggedTuple<
       helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
-      helpers::Tags::Range<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>
+      helpers::Tags::Range<gr::Tags::Shift<DataVector, 3>>>
       ranges{std::array{0.3, 1.0}, std::array{0.01, 0.02}};
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(

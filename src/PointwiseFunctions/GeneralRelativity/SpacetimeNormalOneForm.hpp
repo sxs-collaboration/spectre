@@ -36,12 +36,12 @@ namespace gr {
  *
  * is computed.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_normal_one_form(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
     const Scalar<DataType>& lapse);
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse);
 /// @}
@@ -53,9 +53,9 @@ namespace Tags {
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeNormalOneForm`.
  */
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct SpacetimeNormalOneFormCompute
-    : SpacetimeNormalOneForm<SpatialDim, Frame, DataType>,
+    : SpacetimeNormalOneForm<DataType, SpatialDim, Frame>,
       db::ComputeTag {
   using argument_tags = tmpl::list<Lapse<DataType>>;
 
@@ -64,9 +64,9 @@ struct SpacetimeNormalOneFormCompute
   static constexpr auto function =
       static_cast<void (*)(gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>,
                            const Scalar<DataType>&)>(
-          &spacetime_normal_one_form<SpatialDim, Frame, DataType>);
+          &spacetime_normal_one_form<DataType, SpatialDim, Frame>);
 
-  using base = SpacetimeNormalOneForm<SpatialDim, Frame, DataType>;
+  using base = SpacetimeNormalOneForm<DataType, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gr

@@ -87,22 +87,17 @@ void test_solution(const DataType& used_for_size,
       get<gr::Tags::Lapse<DataType>>(solution.variables(
           coords, dummy_time, tmpl::list<gr::Tags::Lapse<DataType>>{})));
   CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(minkowski.variables(
-          coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(solution.variables(
-          coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))));
+      (get<gr::Tags::Shift<DataType, Dim>>(minkowski.variables(
+          coords, dummy_time, tmpl::list<gr::Tags::Shift<DataType, Dim>>{}))),
+      (get<gr::Tags::Shift<DataType, Dim>>(solution.variables(
+          coords, dummy_time, tmpl::list<gr::Tags::Shift<DataType, Dim>>{}))));
   CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-          minkowski.variables(
-              coords, dummy_time,
-              tmpl::list<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-          solution.variables(coords, dummy_time,
-                             tmpl::list<gr::Tags::SpatialMetric<
-                                 Dim, Frame::Inertial, DataType>>{}))));
+      (get<gr::Tags::SpatialMetric<DataType, Dim>>(minkowski.variables(
+          coords, dummy_time,
+          tmpl::list<gr::Tags::SpatialMetric<DataType, Dim>>{}))),
+      (get<gr::Tags::SpatialMetric<DataType, Dim>>(solution.variables(
+          coords, dummy_time,
+          tmpl::list<gr::Tags::SpatialMetric<DataType, Dim>>{}))));
 
   register_classes_with_charm<RelativisticEuler::Solutions::SmoothFlow<Dim>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =

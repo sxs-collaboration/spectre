@@ -35,8 +35,7 @@ std::unique_ptr<WorldtubeData> BouncingBlackHole::get_clone() const {
 void BouncingBlackHole::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
-                                          DataVector>> /*meta*/) const {
+    tmpl::type_<gr::Tags::SpacetimeMetric<DataVector, 3>> /*meta*/) const {
   const auto& cartesian_coordinates =
       cache_or_compute<Tags::CauchyCartesianCoords>(l_max, time);
 
@@ -93,8 +92,7 @@ void BouncingBlackHole::variables_impl(
 void BouncingBlackHole::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<::Tags::dt<
-        gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
+    tmpl::type_<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>> /*meta*/)
     const {
   const auto& cartesian_coordinates =
       cache_or_compute<Tags::CauchyCartesianCoords>(l_max, time);

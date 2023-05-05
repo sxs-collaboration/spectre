@@ -56,7 +56,7 @@ struct System {
   using primitive_from_conservative = PrimitiveFromConservative<Dim>;
 
   using inverse_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, volume_dim>;
 };
 
 }  // namespace Valencia

@@ -13,7 +13,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 void time_derivative_of_spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>
         dt_spatial_metric,
@@ -38,7 +38,7 @@ void time_derivative_of_spatial_metric(
   }
 }
 
-template <size_t SpatialDim, typename Frame, typename DataType>
+template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> time_derivative_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

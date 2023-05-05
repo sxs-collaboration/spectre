@@ -43,7 +43,7 @@ namespace {
 void test_area_element_against_normal_vector() {
   using TargetFrame = Frame::Inertial;
   using inv_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<3, TargetFrame, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>;
   using sqrt_det_spatial_metric_tag =
       gr::Tags::SqrtDetSpatialMetric<DataVector>;
   const auto element_map_3d = ElementMap<3, TargetFrame>(
@@ -198,13 +198,11 @@ void test_kerr_area() {
             logical_to_inertial_map.inv_jacobian(face_logical_coords);
         const auto spacetime_vars = kerr_schild.variables(
             logical_to_inertial_map(face_logical_coords), 0.,
-            tmpl::list<
-                gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-                gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
+            tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                       gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
         const auto curved_area_element = area_element(
             inverse_jacobian, element_abutting_direction.value(),
-            get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
-                spacetime_vars),
+            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(spacetime_vars),
             get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(spacetime_vars));
         horizon_area += definite_integral(get(curved_area_element), face_mesh);
       }

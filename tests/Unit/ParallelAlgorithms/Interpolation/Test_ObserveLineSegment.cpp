@@ -165,7 +165,7 @@ struct MockMetavariables {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<volume_dim, Frame::Inertial>,
+                   gr::Tags::SpatialMetric<DataVector, volume_dim>,
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
@@ -179,7 +179,7 @@ struct MockMetavariables {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<volume_dim, Frame::Inertial>,
+                   gr::Tags::SpatialMetric<DataVector, volume_dim>,
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
@@ -193,7 +193,7 @@ struct MockMetavariables {
 
   using interpolator_source_vars =
       tmpl::list<Tags::TestSolution,
-                 gr::Tags::SpatialMetric<volume_dim, Frame::Inertial>,
+                 gr::Tags::SpatialMetric<DataVector, volume_dim>,
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<LineA, LineB>;
   using component_list =
@@ -358,10 +358,10 @@ void run_test(gsl::not_null<Generator*> generator,
     get<>(get<Tags::TestSolution>(output_vars)) =
         test_function(inertial_coords);
 
-    get<gr::Tags::SpatialMetric<Dim, Frame::Inertial>>(output_vars) =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial>>(spacetime.variables(
+    get<gr::Tags::SpatialMetric<DataVector, Dim>>(output_vars) =
+        get<gr::Tags::SpatialMetric<DataVector, Dim>>(spacetime.variables(
             inertial_coords, 0.0,
-            tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial>>{}));
+            tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>>{}));
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
@@ -428,9 +428,9 @@ void run_test(gsl::not_null<Generator*> generator,
     }
 
     const auto interpolated_metric =
-        get<gr::Tags::SpatialMetric<Dim, Frame::Inertial>>(spacetime.variables(
+        get<gr::Tags::SpatialMetric<DataVector, Dim>>(spacetime.variables(
             interpolated_coords, 0.0,
-            tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::Inertial>>{}));
+            tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>>{}));
     for (size_t i = 0; i < interpolated_metric.size(); ++i) {
       const auto& written_component = vol_file.get_tensor_component(
           obs_ids.at(0),

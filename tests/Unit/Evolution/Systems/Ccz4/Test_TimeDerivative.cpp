@@ -256,20 +256,20 @@ void test_minkowski(const Ccz4::EvolveShift evolve_shift,
 
   // Get ingredients for computing arguments to Ccz4::TimeDerivative
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<SpatialDim, FrameType, DataVector>>(
+      get<gr::Tags::SpatialMetric<DataVector, SpatialDim, FrameType>>(
           minkowski_vars);
   const auto det_spatial_metric = determinant(spatial_metric);
   const auto d_det_spatial_metric =
       make_with_value<tnsr::i<DataVector, SpatialDim, FrameType>>(used_for_size,
                                                                   0.0);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<SpatialDim, FrameType, DataVector>>(
+      get<gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, FrameType>>(
           minkowski_vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(minkowski_vars);
   const auto& shift =
-      get<gr::Tags::Shift<SpatialDim, FrameType, DataVector>>(minkowski_vars);
+      get<gr::Tags::Shift<DataVector, SpatialDim, FrameType>>(minkowski_vars);
   const auto& d_shift =
-      get<Tags::deriv<gr::Tags::Shift<SpatialDim, FrameType, DataVector>,
+      get<Tags::deriv<gr::Tags::Shift<DataVector, SpatialDim, FrameType>,
                       tmpl::size_t<SpatialDim>, FrameType>>(minkowski_vars);
 
   // Params
@@ -848,31 +848,32 @@ void test_kerrschild(const Ccz4::EvolveShift evolve_shift,
 
   // Get ingredients for computing arguments to Ccz4::TimeDerivative
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<SpatialDim, FrameType, DataVector>>(
+      get<gr::Tags::SpatialMetric<DataVector, SpatialDim, FrameType>>(
           kerrschild_vars);
   const auto& d_spatial_metric =
-      get<Tags::deriv<gr::Tags::SpatialMetric<SpatialDim>,
+      get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim>,
                       tmpl::size_t<SpatialDim>, FrameType>>(kerrschild_vars);
   const auto det_spatial_metric = determinant(spatial_metric);
   const auto d_det_spatial_metric =
-      get<gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>(
+      get<gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim, FrameType>>(
           solution.variables(
               x, t,
-              tmpl::list<
-                  gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>{}));
+              tmpl::list<gr::Tags::DerivDetSpatialMetric<DataVector, SpatialDim,
+                                                         FrameType>>{}));
   const auto& dt_spatial_metric =
-      get<Tags::dt<gr::Tags::SpatialMetric<SpatialDim>>>(kerrschild_vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim>>>(
+          kerrschild_vars);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<SpatialDim, FrameType, DataVector>>(
+      get<gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, FrameType>>(
           kerrschild_vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(kerrschild_vars);
   const auto& d_lapse =
       get<Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<SpatialDim>,
                       FrameType>>(kerrschild_vars);
   const auto& shift =
-      get<gr::Tags::Shift<SpatialDim, FrameType, DataVector>>(kerrschild_vars);
+      get<gr::Tags::Shift<DataVector, SpatialDim, FrameType>>(kerrschild_vars);
   const auto& d_shift =
-      get<Tags::deriv<gr::Tags::Shift<SpatialDim, FrameType, DataVector>,
+      get<Tags::deriv<gr::Tags::Shift<DataVector, SpatialDim, FrameType>,
                       tmpl::size_t<SpatialDim>, FrameType>>(kerrschild_vars);
 
   // Params

@@ -65,8 +65,9 @@ struct PrimitiveFromConservative {
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
                  grmhd::ValenciaDivClean::Tags::TildePhi,
-                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
-                 gr::Tags::SqrtDetSpatialMetric<>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
                  hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>

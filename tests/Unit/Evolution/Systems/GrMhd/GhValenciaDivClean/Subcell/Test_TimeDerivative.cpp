@@ -252,12 +252,14 @@ double test(const size_t num_dg_pts) {
         (*grid_to_inertial_map)(face_grid_coords, time, functions_of_time);
     const auto face_prims = soln.variables(
         face_coords, time,
-        tmpl::append<typename System::primitive_variables_tag::tags_list,
-                     typename System::gh_system::variables_tag::tags_list,
-                     tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                                gr::Tags::SqrtDetSpatialMetric<>,
-                                gr::Tags::SpatialMetric<3>,
-                                gr::Tags::InverseSpatialMetric<3>>>{});
+        tmpl::append<
+            typename System::primitive_variables_tag::tags_list,
+            typename System::gh_system::variables_tag::tags_list,
+            tmpl::list<gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>,
+                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                       gr::Tags::SpatialMetric<DataVector, 3>,
+                       gr::Tags::InverseSpatialMetric<DataVector, 3>>>{});
     using flux_tags =
         typename grmhd::ValenciaDivClean::ComputeFluxes::return_tags;
     using flux_argument_tags =
@@ -266,9 +268,10 @@ double test(const size_t num_dg_pts) {
         typename System::primitive_variables_tag::tags_list,
         typename System::gh_system::variables_tag::tags_list, flux_tags,
         flux_argument_tags,
-        tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<3>,
-                   gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
-                   gr::Tags::InverseSpatialMetric<3>,
+        tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                   gr::Tags::SpatialMetric<DataVector, 3>,
+                   gr::Tags::InverseSpatialMetric<DataVector, 3>,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma1,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma2>,
         prims_to_reconstruct_tags>>>
@@ -349,9 +352,9 @@ double test(const size_t num_dg_pts) {
         unnormalized_face_normal(interface_mesh, element_map,
                                  *grid_to_inertial_map, time, functions_of_time,
                                  direction);
-    const auto normal_magnitude =
-        magnitude(normal_covector,
-                  get<gr::Tags::InverseSpatialMetric<3>>(prims_to_reconstruct));
+    const auto normal_magnitude = magnitude(
+        normal_covector, get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                             prims_to_reconstruct));
     for (auto& component : normal_covector) {
       component /= get(normal_magnitude);
     }
@@ -360,7 +363,8 @@ double test(const size_t num_dg_pts) {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         normal_vector.get(i) +=
-            get<gr::Tags::InverseSpatialMetric<3>>(prims_to_reconstruct)
+            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                prims_to_reconstruct)
                 .get(i, j) *
             normal_covector.get(j);
       }
@@ -519,11 +523,11 @@ double test(const size_t num_dg_pts) {
               evolution::dg::subcell::Tags::Coordinates<3,
                                                         Frame::ElementLogical>,
               evolution::dg::subcell::Tags::Coordinates>,
-          gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>,
-          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
-                                                      DataVector>,
-          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
-                                                DataVector>>>(
+          gr::Tags::SpatialMetricCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
+                                                      Frame::Inertial>,
+          gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3,
+                                                Frame::Inertial>>>(
       element, subcell_mesh,
       std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor>{
           std::make_unique<

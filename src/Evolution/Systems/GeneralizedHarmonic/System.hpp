@@ -31,12 +31,13 @@ struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
-  using variables_tag = ::Tags::Variables<tmpl::list<
-      gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>>>;
+  using variables_tag =
+      ::Tags::Variables<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                                   Tags::Pi<Dim, Frame::Inertial>,
+                                   Tags::Phi<Dim, Frame::Inertial>>>;
   using flux_variables = tmpl::list<>;
   using gradient_variables =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<Dim, Frame::Inertial>,
                  Tags::Phi<Dim, Frame::Inertial>>;
   using gradients_tags = gradient_variables;
@@ -48,6 +49,6 @@ struct System {
       Tags::ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
 
   using inverse_spatial_metric_tag =
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<DataVector, Dim>;
 };
 }  // namespace gh
