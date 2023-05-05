@@ -98,8 +98,9 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
-    using type = LinkedMessageQueue<
-        double, tmpl::list<QueueTags::Strahlkorper<Frame::Distorted>>>;
+    using type =
+        LinkedMessageQueue<double,
+                           tmpl::list<QueueTags::Horizon<Frame::Distorted>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -119,7 +120,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
           ControlComponent<Metavariables, Shape>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
+          QueueTags::Horizon<Frame::Distorted>, MeasurementQueue,
           UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                        strahlkorper);
 
@@ -144,7 +145,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
             ControlComponent<Metavariables, Shape>>(cache);
 
         Parallel::simple_action<::Actions::UpdateMessageQueue<
-            QueueTags::Strahlkorper<Frame::Distorted>, MeasurementQueue,
+            QueueTags::Horizon<Frame::Distorted>, MeasurementQueue,
             UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
                                          strahlkorper);
 

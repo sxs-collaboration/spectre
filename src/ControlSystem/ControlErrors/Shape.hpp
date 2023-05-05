@@ -117,8 +117,7 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
         functions_of_time.at(detail::size_name<Horizon>())->func(time)[0][0];
 
     const auto& ah =
-        get<control_system::QueueTags::Strahlkorper<Frame::Distorted>>(
-            measurements);
+        get<control_system::QueueTags::Horizon<Frame::Distorted>>(measurements);
     const auto& ah_coefs = ah.coefficients();
 
     ASSERT(lambda_lm_coefs.size() == ah_coefs.size(),
