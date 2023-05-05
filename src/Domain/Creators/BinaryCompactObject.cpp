@@ -569,56 +569,63 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // When covering the inner regions with cubes, all blocks will use the same
     // time-dependent map instead.
     grid_to_inertial_block_maps[number_of_blocks_ - 1] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Grid>();
+        time_dependent_options_
+            ->grid_to_inertial_map<domain::ObjectLabel::None>(false);
 
     // Initialize the first block of the layer 1 blocks for each object
     // If excising interior A or B, the block maps for the corrsponding layer 1
     // blocks (first 6 blocks) should also include a size map from the Grid to
     // the Distorted frame, and then the combination expansion + rotation from
     // the Distorted to Inertial frame. If not excising interior A or B, the
-    // layer 1 blocks for that object will have an Identity map from the Grid to
-    // the Distorted frame and the same map as the final block from the
-    // Distorted to Inertial frame.
+    // layer 1 blocks for that object will not have maps to the Distorted frame
+    // (nullptr).
     grid_to_inertial_block_maps[0] =
-        time_dependent_options_
-            ->everything_grid_to_inertial_map<domain::ObjectLabel::A>(
-                is_excised_a_);
+        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::A>(
+            is_excised_a_);
     grid_to_distorted_block_maps[0] =
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
-            not is_excised_a_);
+            is_excised_a_);
     distorted_to_inertial_block_maps[0] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
+        time_dependent_options_->distorted_to_inertial_map(is_excised_a_);
 
     const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
     grid_to_inertial_block_maps[first_block_object_B] =
-        time_dependent_options_
-            ->everything_grid_to_inertial_map<domain::ObjectLabel::B>(
-                is_excised_b_);
+        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::B>(
+            is_excised_b_);
     grid_to_distorted_block_maps[first_block_object_B] =
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
-            not is_excised_b_);
+            is_excised_b_);
     distorted_to_inertial_block_maps[first_block_object_B] =
-        time_dependent_options_->frame_to_inertial_map<Frame::Distorted>();
+        time_dependent_options_->distorted_to_inertial_map(is_excised_b_);
 
     // Fill in the rest of the block maps by cloning the relevant maps
     for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
       if ((not use_single_block_a_) and block < 6) {
+        // We always have a grid to inertial map. We may or may not have maps to
+        // the distorted frame.
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[0]->get_clone();
-        grid_to_distorted_block_maps[block] =
-            grid_to_distorted_block_maps[0]->get_clone();
-        distorted_to_inertial_block_maps[block] =
-            distorted_to_inertial_block_maps[0]->get_clone();
+        if (grid_to_distorted_block_maps[0] != nullptr) {
+          grid_to_distorted_block_maps[block] =
+              grid_to_distorted_block_maps[0]->get_clone();
+          distorted_to_inertial_block_maps[block] =
+              distorted_to_inertial_block_maps[0]->get_clone();
+        }
       } else if (block == first_block_object_B) {
         continue;  // already initialized
       } else if ((not use_single_block_b_) and block > first_block_object_B and
                  block < first_block_object_B + 6) {
+        // We always have a grid to inertial map. We may or may not have maps to
+        // the distorted frame.
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[first_block_object_B]->get_clone();
-        grid_to_distorted_block_maps[block] =
-            grid_to_distorted_block_maps[first_block_object_B]->get_clone();
-        distorted_to_inertial_block_maps[block] =
-            distorted_to_inertial_block_maps[first_block_object_B]->get_clone();
+        if (grid_to_distorted_block_maps[first_block_object_B] != nullptr) {
+          grid_to_distorted_block_maps[block] =
+              grid_to_distorted_block_maps[first_block_object_B]->get_clone();
+          distorted_to_inertial_block_maps[block] =
+              distorted_to_inertial_block_maps[first_block_object_B]
+                  ->get_clone();
+        }
       } else {
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
