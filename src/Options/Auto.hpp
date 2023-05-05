@@ -38,6 +38,8 @@ struct All {};
 template <typename T, typename Label = AutoLabel::Auto>
 class Auto {
  public:
+  using value_type = std::optional<T>;
+
   Auto() = default;
   explicit Auto(T value) : value_(std::move(value)) {}
 
@@ -46,10 +48,10 @@ class Auto {
   operator std::optional<U>() && { return std::move(value_); }
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  operator const std::optional<T>&() const { return value_; }
+  operator const value_type&() const { return value_; }
 
  private:
-  std::optional<T> value_{};
+  value_type value_{};
 };
 
 template <typename T, typename Label>
