@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
@@ -55,6 +56,8 @@ void check_bounds() {
   const double max_double = std::numeric_limits<double>::max();
   CHECK(max_double == eos.rest_mass_density_upper_bound());
   CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
+  CHECK(eos.baryon_mass() ==
+        approx(hydro::units::geometric::default_baryon_mass));
 }
 
 }  // namespace

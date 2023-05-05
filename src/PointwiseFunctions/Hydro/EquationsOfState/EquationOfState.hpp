@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -45,11 +46,10 @@ struct DerivedClasses {};
 
 template <>
 struct DerivedClasses<true, 1> {
-  using type = tmpl::list<Enthalpy<Enthalpy<Enthalpy<Spectral>>>,
-                          Enthalpy<Enthalpy<Spectral>>, Enthalpy<Spectral>,
-                          Enthalpy<PolytropicFluid<true>>,
-                          PiecewisePolytropicFluid<true>, PolytropicFluid<true>,
-                          Spectral>;
+  using type = tmpl::list<
+      Enthalpy<Enthalpy<Enthalpy<Spectral>>>, Enthalpy<Enthalpy<Spectral>>,
+      Enthalpy<Spectral>, Enthalpy<PolytropicFluid<true>>,
+      PiecewisePolytropicFluid<true>, PolytropicFluid<true>, Spectral>;
 };
 
 template <>
@@ -275,6 +275,11 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
+
+  /// The vacuum mass of a baryon for this EOS
+  virtual double baryon_mass() const {
+    return hydro::units::geometric::default_baryon_mass;
+  }
 };
 
 /*!
@@ -454,6 +459,11 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
+
+  /// The vacuum mass of a baryon for this EOS
+  virtual double baryon_mass() const {
+    return hydro::units::geometric::default_baryon_mass;
+  }
 };
 
 /*!
@@ -544,13 +554,13 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
       const Scalar<double>& /*rest_mass_density*/,
       const Scalar<double>& /*temperature*/,
       const Scalar<double>& /*electron_fraction*/
-      ) const = 0;
+  ) const = 0;
   virtual Scalar<DataVector>
   specific_internal_energy_from_density_and_temperature(
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*temperature*/,
       const Scalar<DataVector>& /*electron_fraction*/
-      ) const = 0;
+  ) const = 0;
   /// @}
 
   /// @{
@@ -602,6 +612,11 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   /// The upper bound of the temperature that is valid for this EOS
   virtual double temperature_upper_bound() const = 0;
+
+  /// The vacuum mass of a baryon for this EOS
+  virtual double baryon_mass() const {
+    return hydro::units::geometric::default_baryon_mass;
+  }
 };
 
 /// Compare two equations of state for equality

@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -110,6 +111,11 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
   /// The lower bound of the specific enthalpy that is valid for this EOS
   double specific_enthalpy_lower_bound() const override {
     return IsRelativistic ? 1.0 : 0.0;
+  }
+
+  /// The vacuum baryon mass for this EoS
+  double baryon_mass() const override {
+    return hydro::units::geometric::default_baryon_mass;
   }
 
  private:

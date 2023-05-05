@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -44,7 +45,6 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
     const auto& log_T = get(log_temperature);
 
     const auto f = [this, log_rho, log_T](const double ye) {
-
       const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
       const auto interpolated_values =
           interpolator_.template interpolate<DeltaMu>(weights);
@@ -64,7 +64,6 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
       const auto& log_T = get(log_temperature)[s];
 
       const auto f = [this, log_rho, log_T](const double ye) {
-
         const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
         const auto interpolated_values =
             interpolator_.template interpolate<DeltaMu>(weights);
@@ -142,8 +141,6 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
   //  auto mu_q = spectre_eos.read_quantity("charge chemical potential");
   //  auto mu_b = spectre_eos.read_quantity("baryon chemical potential");
 
-
-
   double enthalpy_minimum = 1.e99;
   double eps_min = 1.e99;
 
@@ -160,7 +157,9 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
   // assuming an effective mass scale
   // set by the neutron mass
 
-  constexpr double nb_fm3_to_geom = 0.002711492496730566;
+  constexpr double nb_fm3_to_geom =
+      hydro::units::nuclear::neutron_mass  /
+      hydro::units::nuclear::pressure_unit;
 
   for (size_t s = 0; s < log_density.size(); ++s) {
     log_density[s] += std::log(nb_fm3_to_geom);
@@ -171,15 +170,16 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
     for (size_t iT = 0; iT < log_temperature.size(); ++iT) {
       for (size_t iY = 0; iY < electron_fraction.size(); ++iY) {
         // Index spectre table
-       // Ye varies fastest
+        // Ye varies fastest
         size_t index_spectre =
-           iY + electron_fraction.size() * (iR + log_density.size() * iT);
+            iY + electron_fraction.size() * (iR + log_density.size() * iT);
         // Local index
         // T varies fastest
         size_t index_tab3D =
             iT + log_temperature.size() * (iR + log_density.size() * iY);
 
-        constexpr double press_MeV_to_geom = 2.885900818968523e-06;
+        constexpr double press_MeV_to_geom =
+            1.0 / hydro::units::nuclear::pressure_unit;
 
         double* table_point = &(table_data[index_tab3D * NumberOfVars]);
 
@@ -191,7 +191,7 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
 
         // Determine specific enthalpy minimum
         double h = 1. + table_point[Epsilon] +
-                 table_point[Pressure] / std::exp(log_density[iR]);
+                   table_point[Pressure] / std::exp(log_density[iR]);
         enthalpy_minimum = std::min(enthalpy_minimum, h);
       }
     }
@@ -303,7 +303,6 @@ void Tabulated3D<IsRelativistic>::enforce_physicality(
   }
 }
 
-
 template <bool IsRelativistic>
 template <class DataType>
 Scalar<DataType>
@@ -358,7 +357,6 @@ Tabulated3D<IsRelativistic>::pressure_from_density_and_temperature_impl(
 
   return pressure;
 }
-
 
 template <bool IsRelativistic>
 void Tabulated3D<IsRelativistic>::pup(PUP::er& p) {
@@ -425,7 +423,6 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
     // Root-finding appropriate between reference density and maximum density
     // We can use x=0 and x=x_max as bounds
     const auto f = [this, log_eps, log_rho, ye](const double log_T) {
-
       const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
       const auto interpolated_values =
           interpolator_.template interpolate<Epsilon>(weights);
@@ -449,7 +446,6 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
       // Root-finding appropriate between reference density and maximum density
       // We can use x=0 and x=x_max as bounds
       const auto f = [this, log_eps, log_rho, ye](const double log_T) {
-
         const auto weights = interpolator_.get_weights(log_T, log_rho, ye);
         const auto interpolated_values =
             interpolator_.template interpolate<Epsilon>(weights);
@@ -628,4 +624,3 @@ Tabulated3D<IsRelativistic>::Tabulated3D(const std::string& filename,
 
 template class EquationsOfState::Tabulated3D<true>;
 template class EquationsOfState::Tabulated3D<false>;
-

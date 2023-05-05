@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -56,17 +57,16 @@ class ProgenitorProfile {
 
   // Begin constants to translate units from cgs to c=G=M_Sun=(k_Boltzmann=1)=1
   // Divide cm/s by speed_of_light_cgs_ to get into c=G=M_Sun=1 units
-  static constexpr double speed_of_light_cgs_ = 2.99792458e10;
+  static constexpr double speed_of_light_cgs_ =
+      hydro::units::cgs::speed_of_light;
 
   // Multiply cm by c2g_length_ to get into c=G=M_Sun=1 units
   // (speed of light)^2 / (Newton's constant * Msun)
   // c2g_length_ = c^2 / (G*M_Sun)
-  // Note G*M_Sun = 1.32712440042x10^26 +/- 1e16 [1/cm]
-  // G*M_Sun factor from https://doi.org/10.1063/1.4921980
   // c2g_length_~6.7706e-6 [1/cm]
-  static constexpr double g_times_m_sun_ = 1.32712440042e26;
-  static constexpr double c2g_length_ =
-      square(speed_of_light_cgs_) / g_times_m_sun_;
+  static constexpr double g_times_m_sun_ =
+      hydro::units::cgs::G_Newton_times_m_sun;
+  static constexpr double c2g_length_ = 1.0 / hydro::units::cgs::length_unit;
 
   // Multiply g/cm^3 by c2g_dens_ to get into c=G=M_Sun=1 units
   // c2g_dens_ = (G*M_Sun)^2*G/c^6.
@@ -76,25 +76,19 @@ class ProgenitorProfile {
   // a neutron star (~1%~10%), a quantity assumed to be 2.2 M_Sun when
   // converting to c=G=M_Sun=1 units; see
   // https://iopscience.iop.org/article/10.3847/2041-8213/aaa401.
-  // G factor from
-  // https://journals.aps.org/rmp/abstract/10.1103/RevModPhys.93.025010.
   // c2g_dens_~1.61887e-18 [cm^3/g]
-  static constexpr double newtons_grav_constant_ = 6.67430e-8;
-  static constexpr double c2g_dens_ = square(g_times_m_sun_) *
-                                      newtons_grav_constant_ /
-                                      pow<6>(speed_of_light_cgs_);
+  static constexpr double newtons_grav_constant_ = hydro::units::cgs::G_Newton;
+  static constexpr double c2g_dens_ =
+      1.0 / hydro::units::cgs::rest_mass_density_unit;
 
   // Multiply Kelvin by c2g_temp_ to get into c=G=M_Sun=k_Boltzmann=1 units.
   // c2g_temp_ = (k_B/(M_Sun*c^2))
-  // Note k_B = 1.380649e−16.
-  // k_B factor from
-  // https://journals.aps.org/rmp/pdf/10.1103/RevModPhys.93.025010.
   // c2g_temp_=7.72567e-71
-  static constexpr double boltzmann_constant_ = 1.380649e-16;
+  static constexpr double boltzmann_constant_ = hydro::units::cgs::k_Boltzmann;
   // Note setting MSun=1.0 is a choice made independent of EoS,
   // so that there are no unit ambiguities between 2 simulations
   // ran with different EoSs (e.g., polytropic vs. tabulated)
-  static constexpr double m_sun_ = g_times_m_sun_ / newtons_grav_constant_;
+  static constexpr double m_sun_ = hydro::units::cgs::mass_unit;
   static constexpr double c2g_temp_ =
       boltzmann_constant_ / (m_sun_ * square(speed_of_light_cgs_));
 

@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Interpolation/MultiLinearSpanInterpolation.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -67,7 +68,7 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   using options = tmpl::list<TableFilename, TableSubFilename>;
 
   /// Fields stored in the table
-  enum : size_t { Epsilon = 0, Pressure, CsSquared, DeltaMu,  NumberOfVars };
+  enum : size_t { Epsilon = 0, Pressure, CsSquared, DeltaMu, NumberOfVars };
 
   Tabulated3D() = default;
   Tabulated3D(const Tabulated3D&) = default;
@@ -162,7 +163,6 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<IsRelativistic, 3>), Tabulated3D);
 
-
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override {
     return table_electron_fraction_.front();
@@ -208,6 +208,11 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   /// The lower bound of the specific enthalpy that is valid for this EOS
   double specific_enthalpy_lower_bound() const override {
     return enthalpy_minimum_;
+  }
+
+  /// The baryon mass for this EoS
+  double baryon_mass() const override {
+    return hydro::units::geometric::neutron_mass;
   }
 
  private:
