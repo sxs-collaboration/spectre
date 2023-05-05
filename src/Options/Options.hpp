@@ -164,8 +164,8 @@ struct create_from_yaml {
 /// \snippet Test_Options.cpp alternatives
 template <typename... AlternativeLists>
 struct Alternatives {
-  static_assert(sizeof...(AlternativeLists) >= 2,
-                "Option alternatives must provide at least two alternatives.");
+  static_assert(sizeof...(AlternativeLists) >= 1,
+                "Option alternatives must provide at least one alternative.");
   static_assert(
       tmpl::all<tmpl::list<tt::is_a<tmpl::list, AlternativeLists>...>>::value,
       "Option alternatives must be given as tmpl::lists.");
