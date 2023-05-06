@@ -45,7 +45,8 @@ class TestExtractDatFromH5(unittest.TestCase):
         # All defaults, data should be same as expected
         extract_dat_files(self.h5_filename,
                           out_dir=self.created_dir,
-                          num_cores=1)
+                          num_cores=1,
+                          precision=16)
 
         self.assertTrue(os.path.exists(self.created_dir))
 
@@ -65,12 +66,14 @@ class TestExtractDatFromH5(unittest.TestCase):
                               extract_dat_files,
                               self.h5_filename,
                               out_dir=self.created_dir,
-                              num_cores=1)
+                              num_cores=1,
+                              precision=16)
 
         # Try with 'force' flag True this time
         extract_dat_files(self.h5_filename,
                           out_dir=self.created_dir,
                           num_cores=1,
+                          precision=16,
                           force=True)
 
         memory_data = np.loadtxt(memory_data_path)
@@ -85,13 +88,40 @@ class TestExtractDatFromH5(unittest.TestCase):
         # Parallelize. Use 2 cores (this is all we get on CI)
         extract_dat_files(self.h5_filename,
                           out_dir=self.created_dir,
-                          num_cores=2)
+                          num_cores=2,
+                          precision=16)
 
         memory_data = np.loadtxt(memory_data_path)
         timestep_data = np.loadtxt(timestep_data_path)
 
         npt.assert_almost_equal(memory_data, expected_memory_data)
         npt.assert_almost_equal(timestep_data, expected_timestep_data)
+
+        if os.path.exists(self.created_dir):
+            shutil.rmtree(self.created_dir)
+
+        # Extract single file to stdout
+        extract_dat_files(self.h5_filename,
+                          out_dir=None,
+                          num_cores=1,
+                          precision=16,
+                          list=False,
+                          force=False,
+                          subfiles=["TimeSteps2.dat"])
+
+        # We shouldn't have created an out directory
+        self.assertFalse(os.path.exists(self.created_dir))
+
+        self.failUnlessRaises(
+            ValueError,
+            extract_dat_files,
+            self.h5_filename,
+            out_dir=None,
+            num_cores=1,
+            precision=16,
+            list=False,
+            force=False,
+            subfiles=["TimeSteps2.dat", "Group0/MemoryData.dat"])
 
         # We don't test the '--list' flag as this is effectively just
         # available_subfiles()
