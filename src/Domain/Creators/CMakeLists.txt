@@ -66,6 +66,7 @@ target_link_libraries(
   Domain
   DomainBoundaryConditions
   DomainTimeDependence
+  GeneralRelativitySolutions
   INTERFACE
   ErrorHandling
   Options
