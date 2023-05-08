@@ -67,8 +67,10 @@ def fetch_job_data(fields: Sequence[str],
     for date_col in date_cols:
         job_data[date_col] = job_data[date_col].apply(
             lambda v: v.replace("Unknown", "NaN"))
+        # infer_datetime_format is deprecated in version 2.0.0
+        # so just use the actual SLURM format
         job_data[date_col] = pd.to_datetime(job_data[date_col],
-                                            infer_datetime_format=True)
+                                            format='%Y-%m-%dT%H:%M:%S')
     # We could parse the elapsed time as a timedelta, but the string
     # representation is fine so we don't right now. Here's the code for it:
     # if "Elapsed" in fields:
