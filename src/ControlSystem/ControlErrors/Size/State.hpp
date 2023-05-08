@@ -117,6 +117,12 @@ class State : public PUP::able {
   State& operator=(State&& /*rhs*/) = default;
   virtual ~State() override = default;
 
+  /// Name of this state
+  virtual std::string name() const = 0;
+
+  /// Return a size_t that corresponds to the state number in SpEC
+  virtual size_t number() const = 0;
+
   virtual std::unique_ptr<State> get_clone() const = 0;
   /// Updates the Info in `info`.  Notice that `info`
   /// includes a state, which might be different than the current

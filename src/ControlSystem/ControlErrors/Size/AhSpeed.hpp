@@ -13,6 +13,8 @@ namespace control_system::size::States {
 class AhSpeed : public State {
  public:
   AhSpeed() = default;
+  std::string name() const override { return "AhSpeed"; }
+  size_t number() const override { return 1; }
   std::unique_ptr<State> get_clone() const override;
   void update(const gsl::not_null<Info*> info,
               const StateUpdateArgs& update_args,
