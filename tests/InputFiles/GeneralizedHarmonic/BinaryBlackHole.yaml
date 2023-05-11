@@ -9,29 +9,7 @@ Testing:
 
 ResourceInfo:
   AvoidGlobalProc0: false
-  Singletons:
-    ObservationAhA:
-      Proc: Auto
-      Exclusive: true
-    ObservationAhB:
-      Proc: Auto
-      Exclusive: true
-    ControlSystemAhA:
-      Proc: Auto
-      Exclusive: true
-    ControlSystemAhB:
-      Proc: Auto
-      Exclusive: true
-    MemoryMonitor: Auto
-    Rotation: Auto
-    Expansion: Auto
-    BondiSachsInterpolation: Auto
-    ObservationExcisionBoundaryA:
-      Proc: Auto
-      Exclusive: false
-    ObservationExcisionBoundaryB:
-      Proc: Auto
-      Exclusive: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -102,9 +80,9 @@ DomainCreator:
       SizeMapB:
         InitialValues: [0.0, 0.0, 0.0]
       ShapeMapA:
-        LMax: 8
+        LMax: &LMax 10
       ShapeMapB:
-        LMax: 8
+        LMax: *LMax
 
 EventsAndDenseTriggers:
 
@@ -254,7 +232,7 @@ Interpolator:
 ApparentHorizons:
   ObservationAhA: &AhA
     InitialGuess:
-      LMax: 10
+      LMax: *LMax
       Radius: 2.2
       Center: [*XCoordA, 0.0, 0.0]
     FastFlow: &DefaultFastFlow
@@ -269,7 +247,7 @@ ApparentHorizons:
     Verbosity: Verbose
   ObservationAhB: &AhB
     InitialGuess:
-      LMax: 10
+      LMax: *LMax
       Radius: 2.2
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
@@ -284,12 +262,12 @@ InterpolationTargets:
     Center: [0, 0, 0]
     AngularOrdering: Cce
   ObservationExcisionBoundaryA:
-    LMax: 10
+    LMax: *LMax
     Center: [0., 0., 0.]
     Radius: 2.0
     AngularOrdering: "Strahlkorper"
   ObservationExcisionBoundaryB:
-    LMax: 10
+    LMax: *LMax
     Center: [0., 0., 0.]
     Radius: 2.0
     AngularOrdering: "Strahlkorper"
@@ -333,6 +311,23 @@ ControlSystems:
       IncreaseFactor: 1.01
       DecreaseFactor: 0.98
     ControlError:
+  ShapeA: &ShapeControl
+    IsActive: true
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+  ShapeB: *ShapeControl
 
 # initial_data.h5 should contain numerical initial data on a grid that covers
 # the domain given above

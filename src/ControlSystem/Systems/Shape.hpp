@@ -154,6 +154,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
                            pretty_type::name(submeasurement));
         }
       } else {
+        (void)submeasurement;
         (void)strahlkorper;
         (void)cache;
         (void)measurement_id;
