@@ -4,6 +4,7 @@
 set(LIBRARY "Test_GhValenciaDivClean")
 
 set(LIBRARY_SOURCES
+  Actions/Test_NumericInitialData.cpp
   BoundaryConditions/Test_ConstraintPreservingFreeOutflow.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_DirichletFreeOutflow.cpp

@@ -49,8 +49,7 @@ namespace importers {
 template <typename Metavariables>
 struct ElementDataReader;
 namespace Actions {
-template <size_t Dim, typename ImporterOptionsGroup, typename FieldTagsList,
-          typename ReceiveComponent>
+template <size_t Dim, typename FieldTagsList, typename ReceiveComponent>
 struct ReadAllVolumeDataAndDistribute;
 }  // namespace Actions
 /// \endcond
@@ -244,8 +243,13 @@ namespace Actions {
  * \brief Read a volume data file and distribute the data to all registered
  * elements, interpolating to the target points if needed.
  *
- * Invoke this action on the elements of an array parallel component to dispatch
- * reading the volume data file specified by the options in
+ * \note Use this action if you want to quickly load and distribute volume data.
+ * If you need to beyond that (such as more control over input-file options),
+ * write a new action and dispatch to
+ * `importers::Actions::ReadAllVolumeDataAndDistribute`.
+ *
+ * \details Invoke this action on the elements of an array parallel component to
+ * dispatch reading the volume data file specified by options placed in the
  * `ImporterOptionsGroup`. The tensors in `FieldTagsList` will be loaded from
  * the file and distributed to all elements that have previously registered. Use
  * `importers::Actions::RegisterWithElementDataReader` to register the elements
@@ -268,10 +272,7 @@ namespace Actions {
 template <typename ImporterOptionsGroup, typename FieldTagsList>
 struct ReadVolumeData {
   using const_global_cache_tags =
-      tmpl::list<Tags::FileGlob<ImporterOptionsGroup>,
-                 Tags::Subgroup<ImporterOptionsGroup>,
-                 Tags::ObservationValue<ImporterOptionsGroup>,
-                 Tags::EnableInterpolation<ImporterOptionsGroup>>;
+      tmpl::list<Tags::ImporterOptions<ImporterOptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -286,8 +287,9 @@ struct ReadVolumeData {
     auto& reader_component = Parallel::get_parallel_component<
         importers::ElementDataReader<Metavariables>>(cache);
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
-        Dim, ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
-        reader_component);
+        Dim, FieldTagsList, ParallelComponent>>(
+        reader_component,
+        get<Tags::ImporterOptions<ImporterOptionsGroup>>(cache), 0_st);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -308,15 +310,15 @@ struct ReadVolumeData {
  * Note that instead of invoking this action directly on the
  * `importers::ElementDataReader` component you can invoke the iterable action
  * `importers::Actions::ReadVolumeData` on the elements of an array parallel
- * component.
+ * component for simple use cases.
  *
- * - The `ImporterOptionsGroup` parameter specifies the \ref OptionGroupsGroup
- * "options group" in the input file that provides the following run-time
- * options:
- *   - `importers::OptionTags::FileGlob`
- *   - `importers::OptionTags::Subgroup`
- *   - `importers::OptionTags::ObservationValue`
- *   - `importers::OptionTags::EnableInterpolation`
+ * - Pass along the following arguments to the simple action invocation:
+ *   - `options`: `importers::ImporterOptions` that specify the H5 files
+ *     with volume data to load.
+ *   - `volume_data_id`: A number (or hash) that identifies this import
+ *     operation. Will also be used to identify the loaded volume data in the
+ *     inbox of the receiving elements.
+ *   - `selected_fields` (optional): See below.
  * - The `FieldTagsList` parameter specifies a typelist of tensor tags that
  * can be read from the file and provided to each element. The subset of tensors
  * that will actually be read and distributed can be selected at runtime with
@@ -331,7 +333,7 @@ struct ReadVolumeData {
  * inbox with a `tuples::tagged_tuple_from_typelist<FieldTagsList>` containing
  * the tensor data for that element. The `ReceiveComponent` must the the same
  * that was encoded into the `observers::ArrayComponentId` used to register the
- * elements.
+ * elements. The `volume_data_id` passed to this action is used as key.
  *
  * \par Memory consumption
  * This action runs once on every node. It reads all volume data files on the
@@ -354,40 +356,37 @@ struct ReadVolumeData {
  *
  * \see Dev guide on \ref dev_guide_importing
  */
-template <size_t Dim, typename ImporterOptionsGroup, typename FieldTagsList,
-          typename ReceiveComponent>
+template <size_t Dim, typename FieldTagsList, typename ReceiveComponent>
 struct ReadAllVolumeDataAndDistribute {
   template <typename ParallelComponent, typename DataBox,
             typename Metavariables, typename ArrayIndex>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
+                    const ImporterOptions& options, const size_t volume_data_id,
                     tuples::tagged_tuple_from_typelist<
                         db::wrap_tags_in<Tags::Selected, FieldTagsList>>
                         selected_fields = select_all_fields(FieldTagsList{})) {
     const bool enable_interpolation =
-        db::get<Tags::EnableInterpolation<ImporterOptionsGroup>>(box);
+        get<OptionTags::EnableInterpolation>(options);
 
     // Only read and distribute the volume data once
     // This action will be invoked by `importers::Actions::ReadVolumeData` from
     // every element on the node, but only the first invocation reads the file
     // and distributes the data to all elements. Subsequent invocations do
-    // nothing. We use the `ImporterOptionsGroup` that specifies the data file
-    // to read in as the identifier for whether or not we have already read the
-    // requested data. Doing this at runtime avoids having to collect all
-    // data files that will be read in at compile-time to initialize a flag in
-    // the DataBox for each of them.
+    // nothing. The `volume_data_id` identifies whether or not we have already
+    // read the requested data. Doing this at runtime avoids having to collect
+    // all data files that will be read in at compile-time to initialize a flag
+    // in the DataBox for each of them.
     const auto& has_read_volume_data =
         db::get<Tags::ElementDataAlreadyRead>(box);
-    const auto volume_data_id = pretty_type::get_name<ImporterOptionsGroup>();
     if (has_read_volume_data.find(volume_data_id) !=
         has_read_volume_data.end()) {
       return;
     }
     db::mutate<Tags::ElementDataAlreadyRead>(
         make_not_null(&box),
-        [&volume_data_id](const gsl::not_null<std::unordered_set<std::string>*>
-                              local_has_read_volume_data) {
-          local_has_read_volume_data->insert(std::move(volume_data_id));
+        [&volume_data_id](const auto local_has_read_volume_data) {
+          local_has_read_volume_data->insert(volume_data_id);
         });
 
     // This is the subset of elements that reside on this node. They have
@@ -429,8 +428,7 @@ struct ReadAllVolumeDataAndDistribute {
         all_indices_of_filled_interp_points{};
 
     // Resolve the file glob
-    const std::string& file_glob =
-        Parallel::get<Tags::FileGlob<ImporterOptionsGroup>>(cache);
+    const std::string& file_glob = get<OptionTags::FileGlob>(options);
     const std::vector<std::string> file_paths = file_system::glob(file_glob);
     if (file_paths.empty()) {
       ERROR_NO_TRACE("The file glob '" << file_glob << "' matches no files.");
@@ -448,8 +446,7 @@ struct ReadAllVolumeDataAndDistribute {
       h5::H5File<h5::AccessType::ReadOnly> h5file(file_name);
       constexpr size_t version_number = 0;
       const auto& volume_file = h5file.get<h5::VolumeData>(
-          "/" + Parallel::get<Tags::Subgroup<ImporterOptionsGroup>>(cache),
-          version_number);
+          "/" + get<OptionTags::Subgroup>(options), version_number);
 
       // Select observation ID
       const size_t observation_id = std::visit(
@@ -470,7 +467,7 @@ struct ReadAllVolumeDataAndDistribute {
                           << local_obs_selector);
                 }
               }},
-          Parallel::get<Tags::ObservationValue<ImporterOptionsGroup>>(cache));
+          get<OptionTags::ObservationValue>(options));
       if (prev_observation_id.has_value() and
           prev_observation_id.value() != observation_id) {
         ERROR("Inconsistent selection of observation ID in file "
@@ -655,14 +652,10 @@ struct ReadAllVolumeDataAndDistribute {
               // Pass the (interpolated) data to the element. Now it can proceed
               // in parallel with transforming the data, taking derivatives on
               // the grid, etc.
-              Parallel::receive_data<
-                  Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
+              Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
                   Parallel::get_parallel_component<ReceiveComponent>(
                       cache)[target_element_id],
-                  // Using `0` for the temporal ID since we only read the volume
-                  // data once, so there's no need to keep track of the temporal
-                  // ID.
-                  0_st, std::move(target_element_data));
+                  volume_data_id, std::move(target_element_data));
               completed_target_elements.insert(target_element_id);
               target_element_data_buffer.erase(target_element_id);
               all_indices_of_filled_interp_points.erase(target_element_id);
@@ -685,14 +678,10 @@ struct ReadAllVolumeDataAndDistribute {
                 element_data_offset_and_length, *source_inertial_coords,
                 target_points, source_grid_name);
             // Pass data directly to the element when interpolation is disabled
-            Parallel::receive_data<
-                Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
+            Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
                 Parallel::get_parallel_component<ReceiveComponent>(
                     cache)[target_element_id],
-                // Using `0` for the temporal ID since we only read the volume
-                // data once, so there's no need to keep track of the temporal
-                // ID.
-                0_st, std::move(source_element_data));
+                volume_data_id, std::move(source_element_data));
             completed_target_elements.insert(target_element_id);
           }
         }  // loop over overlapping source elements

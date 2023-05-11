@@ -13,7 +13,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -21,7 +20,8 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/NumericInitialData.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
@@ -32,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Phase.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
@@ -39,10 +40,12 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace grmhd::ValenciaDivClean::Actions {
+namespace grmhd::GhValenciaDivClean::Actions {
 namespace {
 
-using all_hydro_vars = hydro::grmhd_tags<DataVector>;
+using gh_system_vars = gh::System<3>::variables_tag::tags_list;
+using all_ghmhd_vars =
+    tmpl::append<hydro::grmhd_tags<DataVector>, gh_system_vars>;
 
 template <typename Metavariables>
 struct MockElementArray {
@@ -53,15 +56,18 @@ struct MockElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<::Tags::Variables<all_hydro_vars>,
-                         hydro::Tags::EquationOfState<std::unique_ptr<
-                             EquationsOfState::EquationOfState<true, 1>>>,
-                         gr::Tags::InverseSpatialMetric<DataVector, 3>>>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+              ::Tags::Variables<all_ghmhd_vars>,
+              hydro::Tags::EquationOfState<
+                  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+              domain::Tags::Mesh<3>,
+              domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                            Frame::Inertial>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<grmhd::ValenciaDivClean::Actions::ReadNumericInitialData,
-                     grmhd::ValenciaDivClean::Actions::SetNumericInitialData>>>;
+          tmpl::list<
+              grmhd::GhValenciaDivClean::Actions::ReadNumericInitialData,
+              grmhd::GhValenciaDivClean::Actions::SetNumericInitialData>>>;
 };
 
 struct MockReadVolumeData {
@@ -132,7 +138,7 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
       initial_data.get_clone()};
 
   // We get test data from a TOV solution
-  RelativisticEuler::Solutions::TovStar tov_star{
+  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar> tov_star{
       1.e-3,
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100., 2.)};
   const double star_radius = tov_star.radial_solution().outer_radius();
@@ -144,24 +150,20 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
 
   // Setup element
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
-  const Mesh<3> mesh{6, Spectral::Basis::Legendre,
+  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   const auto map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           domain::CoordinateMaps::Wedge<3>{
-              star_radius / 2., star_radius * 2., 1., 1., {}, true});
+              0.75 * star_radius, star_radius * 1.25, 1., 1., {}, true});
   const auto logical_coords = logical_coordinates(mesh);
   const auto coords = map(logical_coords);
-  using spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
-  const auto spatial_metric = get<spatial_metric_tag>(
-      tov_star.variables(coords, 0., tmpl::list<spatial_metric_tag>{}));
-  const auto inv_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  auto inv_jacobian = map.inv_jacobian(logical_coords);
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
-      {Variables<all_hydro_vars>{num_points}, eos.get_clone(),
-       inv_spatial_metric});
+      {Variables<all_ghmhd_vars>{num_points}, eos.get_clone(), mesh,
+       std::move(inv_jacobian)});
 
   const auto get_element_tag = [&runner,
                                 &element_id](auto tag_v) -> decltype(auto) {
@@ -186,8 +188,40 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
       element_array, importers::Tags::VolumeData<NumericInitialData::all_vars>,
       Metavariables>(make_not_null(&runner),
                      element_id)[initial_data.volume_data_id()];
-  const auto& selected_vars = initial_data.selected_variables();
-  auto tov_vars = tov_star.variables(coords, 0., all_hydro_vars{});
+  auto tov_vars = tov_star.variables(
+      coords, 0.,
+      tmpl::append<hydro::grmhd_tags<DataVector>, gh_system_vars,
+                   tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>>{});
+  const auto& gh_selected_vars =
+      initial_data.gh_numeric_id().selected_variables();
+  if (std::holds_alternative<gh::NumericInitialData::GhVars>(
+          gh_selected_vars)) {
+    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(tov_vars);
+    get<gh::Tags::Pi<3, Frame::Inertial>>(inbox) =
+        get<gh::Tags::Pi<3, Frame::Inertial>>(tov_vars);
+  } else if (std::holds_alternative<gh::NumericInitialData::AdmVars>(
+                 gh_selected_vars)) {
+    const auto tov_adm_vars = tov_star.variables(
+        coords, 0.,
+        tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                   gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+                   gr::Tags::ExtrinsicCurvature<DataVector, 3>>{});
+    get<gr::Tags::SpatialMetric<DataVector, 3>>(inbox) =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(tov_adm_vars);
+    get<gr::Tags::Lapse<DataVector>>(inbox) =
+        get<gr::Tags::Lapse<DataVector>>(tov_adm_vars);
+    get<gr::Tags::Shift<DataVector, 3>>(inbox) =
+        get<gr::Tags::Shift<DataVector, 3>>(tov_adm_vars);
+    get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(inbox) =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(tov_adm_vars);
+  } else {
+    REQUIRE(false);
+  }
+  const auto& hydro_selected_vars =
+      initial_data.hydro_numeric_id().selected_variables();
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(tov_vars);
   get<hydro::Tags::RestMassDensity<DataVector>>(inbox) =
       get<hydro::Tags::RestMassDensity<DataVector>>(tov_vars);
   const auto& W = get<hydro::Tags::LorentzFactor<DataVector>>(tov_vars);
@@ -203,20 +237,20 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
   get<hydro::Tags::MagneticField<DataVector, 3>>(inbox) =
       get<hydro::Tags::MagneticField<DataVector, 3>>(tov_vars);
 
-  // Override variables if constant value is specified in options
+  // Override hydro variables if constant value is specified in options
   const auto selected_electron_fraction =
-      get<NumericInitialData::VarName<hydro::Tags::ElectronFraction<DataVector>,
-                                      std::bool_constant<false>>>(
-          selected_vars);
+      get<ValenciaDivClean::NumericInitialData::VarName<
+          hydro::Tags::ElectronFraction<DataVector>,
+          std::bool_constant<false>>>(hydro_selected_vars);
   if (std::holds_alternative<double>(selected_electron_fraction)) {
     get<hydro::Tags::ElectronFraction<DataVector>>(tov_vars) =
         make_with_value<Scalar<DataVector>>(
             W, std::get<double>(selected_electron_fraction));
   }
   const auto selected_magnetic_field =
-      get<NumericInitialData::VarName<hydro::Tags::MagneticField<DataVector, 3>,
-                                      std::bool_constant<false>>>(
-          selected_vars);
+      get<ValenciaDivClean::NumericInitialData::VarName<
+          hydro::Tags::MagneticField<DataVector, 3>,
+          std::bool_constant<false>>>(hydro_selected_vars);
   if (std::holds_alternative<double>(selected_magnetic_field)) {
     get<hydro::Tags::MagneticField<DataVector, 3>>(tov_vars) =
         make_with_value<tnsr::I<DataVector, 3>>(
@@ -226,8 +260,19 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
   // SetNumericInitialData
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
 
-  // Check result
-  tmpl::for_each<all_hydro_vars>(
+  // Check result. The GH variables are not particularly precise because we are
+  // taking numerical derivatives on a fairly coarse wedge-shaped grid.
+  Approx custom_approx = Approx::custom().epsilon(1.e-2).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(gr::Tags::SpacetimeMetric<DataVector, 3>{}),
+      (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(tov_vars)), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(gh::Tags::Pi<3, Frame::Inertial>{}),
+      (get<gh::Tags::Pi<3, Frame::Inertial>>(tov_vars)), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(gh::Tags::Phi<3, Frame::Inertial>{}),
+      (get<gh::Tags::Phi<3, Frame::Inertial>>(tov_vars)), custom_approx);
+  tmpl::for_each<hydro::grmhd_tags<DataVector>>(
       [&get_element_tag, &tov_vars](const auto tag_v) {
         using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
         CAPTURE(pretty_type::name<tag>());
@@ -236,23 +281,29 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.GhValenciaDivClean.NumericInitialData",
+    "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
   EquationsOfState::register_derived_with_charm();
   test_numeric_initial_data(
-      NumericInitialData{"TestInitialData.h5",
-                         "VolumeData",
-                         0.,
-                         false,
-                         {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
-                         1.e-14},
+      NumericInitialData{
+          "TestInitialData.h5",
+          "VolumeData",
+          0.,
+          false,
+          gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"},
+          {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
+          1.e-14},
       "NumericInitialData:\n"
       "  FileGlob: TestInitialData.h5\n"
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
       "  Interpolate: False\n"
-      "  Variables:\n"
+      "  GhVariables:\n"
+      "    SpacetimeMetric: CustomSpacetimeMetric\n"
+      "    Pi: CustomPi\n"
+      "  HydroVariables:\n"
       "    RestMassDensity: CustomRho\n"
       "    LowerSpatialFourVelocity: CustomUi\n"
       "    ElectronFraction: CustomYe\n"
@@ -263,6 +314,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
                          "VolumeData",
                          0.,
                          false,
+                         gh::NumericInitialData::AdmVars{
+                             "CustomSpatialMetric", "CustomLapse",
+                             "CustomShift", "CustomExtrinsicCurvature"},
                          {"CustomRho", "CustomUi", 0.15, 0.},
                          1.e-14},
       "NumericInitialData:\n"
@@ -270,7 +324,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
       "  Interpolate: False\n"
-      "  Variables:\n"
+      "  GhVariables:\n"
+      "    SpatialMetric: CustomSpatialMetric\n"
+      "    Lapse: CustomLapse\n"
+      "    Shift: CustomShift\n"
+      "    ExtrinsicCurvature: CustomExtrinsicCurvature\n"
+      "  HydroVariables:\n"
       "    RestMassDensity: CustomRho\n"
       "    LowerSpatialFourVelocity: CustomUi\n"
       "    ElectronFraction: 0.15\n"
@@ -278,4 +337,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "  DensityCutoff: 1.e-14");
 }
 
-}  // namespace grmhd::ValenciaDivClean::Actions
+}  // namespace grmhd::GhValenciaDivClean::Actions

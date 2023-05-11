@@ -55,7 +55,6 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -67,6 +66,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -82,7 +82,6 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
@@ -246,20 +245,6 @@ struct get_thermodynamic_dim<InitialData, false> {
   static constexpr size_t value =
       InitialData::equation_of_state_type::thermodynamic_dim;
 };
-
-namespace OptionTags {
-struct GrNumericInitialData {
-  using group = importers::OptionTags::Group;
-  static constexpr Options::String help =
-      "Numeric initial data for GR variables";
-};
-
-struct HydroNumericInitialData {
-  using group = importers::OptionTags::Group;
-  static constexpr Options::String help =
-      "Numeric initial data for hydro variables";
-};
-}  // namespace OptionTags
 }  // namespace detail
 
 template <bool UseDgSubcell>
@@ -497,7 +482,12 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
-        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
+        tmpl::pair<
+            evolution::initial_data::InitialData,
+            tmpl::conditional_t<
+                use_numeric_initial_data,
+                tmpl::list<grmhd::GhValenciaDivClean::NumericInitialData>,
+                initial_data_list>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -683,18 +673,9 @@ struct GhValenciaDivCleanTemplateBase<
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::ImportInitialData,
-          tmpl::list<
-              // Load GH data first, then MHD data. Possible optimization:
-              // combine into one action for GH+MHD data.
-              gh::Actions::ReadNumericInitialData<
-                  detail::OptionTags::GrNumericInitialData>,
-              grmhd::ValenciaDivClean::Actions::ReadNumericInitialData<
-                  detail::OptionTags::HydroNumericInitialData>,
-              gh::Actions::SetNumericInitialData<
-                  detail::OptionTags::GrNumericInitialData>,
-              grmhd::ValenciaDivClean::Actions::SetNumericInitialData<
-                  detail::OptionTags::HydroNumericInitialData>,
-              Parallel::Actions::TerminatePhase>>>;
+          tmpl::list<grmhd::GhValenciaDivClean::Actions::ReadNumericInitialData,
+                     grmhd::GhValenciaDivClean::Actions::SetNumericInitialData,
+                     Parallel::Actions::TerminatePhase>>>;
 
   using dg_element_array_component = DgElementArray<
       derived_metavars,

@@ -32,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -221,12 +222,38 @@ struct Initialize {
         },
         make_not_null(&box));
     if (cell_is_troubled) {
-      static constexpr bool has_analytic_initial_data =
-          db::tag_is_retrievable_v<evolution::initial_data::Tags::InitialData,
-                                   db::DataBox<DbTagsList>> or
-          db::tag_is_retrievable_v<::Tags::AnalyticSolutionOrData,
-                                   db::DataBox<DbTagsList>>;
-      if constexpr (has_analytic_initial_data) {
+      // Set initial data on subcells. We can avoid projecting the initial data
+      // from the DG grid if we have analytic data available. That is the case
+      // if either the analytic data / solution type is known at compile-time,
+      // or if an analytic data / solution type was selected as initial data at
+      // runtime.
+      const bool has_analytic_initial_data = [&box]() {
+        if constexpr (db::tag_is_retrievable_v<::Tags::AnalyticSolutionOrData,
+                                               db::DataBox<DbTagsList>>) {
+          (void)box;
+          return true;
+        } else if constexpr (db::tag_is_retrievable_v<
+                                 evolution::initial_data::Tags::InitialData,
+                                 db::DataBox<DbTagsList>>) {
+          using initial_data_classes = tmpl::at<
+              typename Metavariables::factory_creation::factory_classes,
+              evolution::initial_data::InitialData>;
+          return call_with_dynamic_type<bool, initial_data_classes>(
+              &db::get<evolution::initial_data::Tags::InitialData>(box),
+              [](const auto* const initial_data) {
+                using initial_data_subclass =
+                    std::decay_t<decltype(*initial_data)>;
+                return is_analytic_data_v<initial_data_subclass> or
+                       is_analytic_solution_v<initial_data_subclass>;
+              });
+        } else {
+          ERROR(
+              "Expected either '::Tags::AnalyticSolutionOrData' or "
+              "'evolution::initial_data::Tags::InitialData' in the DataBox, "
+              "but found neither.");
+        }
+      }();
+      if (has_analytic_initial_data) {
         // Set analytic variables on subcells.
         if constexpr (System::has_primitive_and_conservative_vars) {
           db::mutate<typename System::primitive_variables_tag>(

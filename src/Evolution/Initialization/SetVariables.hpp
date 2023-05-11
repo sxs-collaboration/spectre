@@ -18,7 +18,9 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
@@ -76,7 +78,19 @@ struct SetVariables {
       call_with_dynamic_type<void, derived_classes>(
           &db::get<evolution::initial_data::Tags::InitialData>(box),
           [&box](const auto* const data_or_solution) {
-            impl<Metavariables>(make_not_null(&box), *data_or_solution);
+            using initial_data_subclass =
+                std::decay_t<decltype(*data_or_solution)>;
+            if constexpr (is_analytic_data_v<initial_data_subclass> or
+                          is_analytic_solution_v<initial_data_subclass>) {
+              impl<Metavariables>(make_not_null(&box), *data_or_solution);
+            } else {
+              ERROR(
+                  "Trying to use "
+                  "'evolution::Initialization::Actions::SetVariables' with a "
+                  "class that's not marked as analytic solution or analytic "
+                  "data. To support numeric initial data, add a "
+                  "system-specific initialization routine to your executable.");
+            }
           });
     } else if constexpr (db::tag_is_retrievable_v<
                              ::Tags::AnalyticSolutionOrData,

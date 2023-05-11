@@ -43,19 +43,16 @@ struct EvolutionMetavars
                                  initialization_actions>,
           tmpl::conditional_t<
               UseNumericalInitialData,
-              tmpl::list<
-                  Parallel::PhaseActions<
-                      Parallel::Phase::RegisterWithElementDataReader,
-                      tmpl::list<
-                          importers::Actions::RegisterWithElementDataReader,
-                          Parallel::Actions::TerminatePhase>>,
-                  Parallel::PhaseActions<
-                      Parallel::Phase::ImportInitialData,
-                      tmpl::list<gh::Actions::ReadNumericInitialData<
-                                     evolution::OptionTags::NumericInitialData>,
-                                 gh::Actions::SetNumericInitialData<
-                                     evolution::OptionTags::NumericInitialData>,
-                                 Parallel::Actions::TerminatePhase>>>,
+              tmpl::list<Parallel::PhaseActions<
+                             Parallel::Phase::RegisterWithElementDataReader,
+                             tmpl::list<importers::Actions::
+                                            RegisterWithElementDataReader,
+                                        Parallel::Actions::TerminatePhase>>,
+                         Parallel::PhaseActions<
+                             Parallel::Phase::ImportInitialData,
+                             tmpl::list<gh::Actions::ReadNumericInitialData,
+                                        gh::Actions::SetNumericInitialData,
+                                        Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,

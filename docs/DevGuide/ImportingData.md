@@ -20,18 +20,22 @@ Here's an example for such `Metavariables`:
 
 \snippet Test_VolumeDataReaderAlgorithm.hpp metavars
 
-To load volume data from a file, invoke the `importers::Actions::ReadVolumeData`
-iterable action in the `phase_dependent_action_list` of your array parallel
-component. Here's an example that will be explained in more detail below:
+To load volume data from a file, write an action in which you invoke
+`importers::Actions::ReadAllVolumeDataAndDistribute` on the
+`importers::ElementDataReader`. For simple use cases we provide
+`importers::Actions::ReadVolumeData`, which can be added to the
+`phase_dependent_action_list` of your element array and which will generate
+input-file options for you. Here's an example that will be explained in more
+detail below:
 
 \snippet Test_VolumeDataReaderAlgorithm.hpp import_actions
 
-- The `importers::Actions::ReadVolumeData` action will load the volume data file
-  once per node on its first invocation by dispatching to
-  `importers::Actions::ReadAllVolumeDataAndDistribute` on the
-  `importers::ElementDataReader` nodegroup component. Subsequent invocations of
-  these actions, e.g. from all other elements on the node, will do nothing. The
-  data is distributed into the inboxes of all elements on the node under the
+- The `importers::Actions::ReadVolumeData` action specifies input-file options
+  and dispatches to `importers::Actions::ReadAllVolumeDataAndDistribute` on the
+  `importers::ElementDataReader` nodegroup component. It loads the volume data
+  file once per node on its first invocation. Subsequent invocations of these
+  actions, e.g. from all other elements on the node, will do nothing. The data
+  is distributed into the inboxes of all elements on the node under the
   `importers::Tags::VolumeData` tag using `Parallel::receive_data`.
 - The `importers::Actions::ReceiveVolumeData` action waits for the volume data
   to be available and directly moves it into the DataBox. If you wish to verify
@@ -42,16 +46,11 @@ component. Here's an example that will be explained in more detail below:
   `importers::Actions::RegisterWithElementDataReader` action in an earlier
   phase, as shown in the example above.
 
-The template parameters to the actions in the example above specify the volume
-data to load. The first template parameter is an option group that determines
-the file to read and the second parameter is a typelist of the tags to import
-and fill with the volume data. See the documentation of the
-`importers::Actions::ReadAllVolumeDataAndDistribute` action for details on these
-parameters. In the example above, the `VolumeDataOptions` is an option group
-that supplies information such as the file name. You provide an option group
-that represents the data you want to import. For example, we have the
-`evolution::OptionTags::NumericInitialData` that represents numeric initial data
-for an evolution. In our example, we created a new class like this:
+The parameters passed to `importers::Actions::ReadAllVolumeDataAndDistribute`
+specify the volume data to load. See the documentation of
+`importers::Actions::ReadAllVolumeDataAndDistribute` for details. In the example
+above, we use `importers::Actions::ReadVolumeData` to generate the input-file
+options for us and place them in an option group:
 
 \snippet Test_VolumeDataReaderAlgorithm.hpp option_group
 
