@@ -5,6 +5,7 @@ set(LIBRARY "Test_Time")
 
 set(LIBRARY_SOURCES
   Test_AdaptiveSteppingDiagnostics.cpp
+  Test_ApproximateTime.cpp
   Test_BoundaryHistory.cpp
   Test_ChooseLtsStepSize.cpp
   Test_EvolutionOrdering.cpp
