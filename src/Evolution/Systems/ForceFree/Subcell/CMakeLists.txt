@@ -8,6 +8,7 @@ spectre_target_sources(
   ComputeFluxes.hpp
   GhostData.cpp
   InitialDataTci.cpp
+  SwapGrTags.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
@@ -19,6 +20,7 @@ spectre_target_headers(
   GhostData.hpp
   InitialDataTci.hpp
   Subcell.hpp
+  SwapGrTags.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
   )
