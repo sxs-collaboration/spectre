@@ -410,6 +410,17 @@ void test_exponential_filter_creation() {
         Catch::Contains(
             "is not a block name or a block group. Existing blocks are"));
 
+    // These two are to check that we can pass just a block name or just a block
+    // group and the tag will create things correctly
+    CHECK_NOTHROW(
+        (Filters::Tags::Filter<Filter>::create_from_options<Metavars<Dim>>(
+            Filter{26.0, 23, true, {{"Block0"}}},
+            std::make_unique<TestCreator<Dim>>())));
+    CHECK_NOTHROW(
+        (Filters::Tags::Filter<Filter>::create_from_options<Metavars<Dim>>(
+            Filter{26.0, 23, true, {{"Group1"}}},
+            std::make_unique<TestCreator<Dim>>())));
+
     CHECK_THROWS_WITH(
         (Filters::Tags::Filter<AnotherFilter>::create_from_options<
             Metavars<Dim>>(another_filter,
