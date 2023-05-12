@@ -19,6 +19,7 @@ if(MACHINE)
   configure_file(
     ${CMAKE_SOURCE_DIR}/support/SubmitScripts/${MACHINE}.sh
     ${SPECTRE_PYTHON_PREFIX}/support/Submit.sh
+    @ONLY
     )
 endif()
 
