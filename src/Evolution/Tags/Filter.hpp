@@ -79,7 +79,7 @@ struct Filter : db::SimpleTag {
       // The name must either be a block or a block group
       for (const std::string& block_to_filter : blocks_to_filter.value()) {
         const auto block_name_iter = alg::find(block_names, block_to_filter);
-        if (block_name_iter == block_names.end() or
+        if (block_name_iter == block_names.end() and
             block_groups.count(block_to_filter) == 0) {
           ERROR("Specified block (group) name '"
                 << block_to_filter
