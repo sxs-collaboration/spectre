@@ -181,8 +181,8 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
         "JobID",
         "User",
         "JobName",
-        "AllocCPUS",
-        "AllocNodes",
+        "NCPUS",
+        "NNodes",
         "Elapsed",
         "End",
         "State",
@@ -237,15 +237,15 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
         "JobID",
         "JobName",
         "Elapsed",
-        "AllocCPUS",
-        "AllocNodes",
+        "NCPUS",
+        "NNodes",
     ]
     if kwargs["allusers"]:
         standard_fields.insert(2, "User")
     # Transform some column names for better readability
     col_names = {
-        "AllocCPUS": "Cores",
-        "AllocNodes": "Nodes",
+        "NCPUS": "Cores",
+        "NNodes": "Nodes",
     }
     standard_columns = [col_names.get(col, col) for col in standard_fields]
 
