@@ -49,7 +49,7 @@ namespace Xcts::BoundaryConditions {
  * \\
  * \label{eq:ah_beta}
  * \beta_\mathrm{excess}^i &= \frac{\alpha}{\psi^2}\bar{s}^i
- * + \epsilon_{ijk}\Omega^j x^k
+ * - \epsilon_{ijk}\Omega_r^j x^k
  * \f}
  *
  * following section 7.2 of \cite Pfeiffer2005zm, section 12.3.2 of
@@ -61,13 +61,22 @@ namespace Xcts::BoundaryConditions {
  * covariant derivative w.r.t. to the conformal metric \f$\bar{\gamma}_{ij}\f$.
  * Note that e.g. in \cite Varma2018sqd Eq. (16) appears the surface-normal
  * \f$s^i\f$, not the _conformal_ surface normal \f$\bar{s}^i = \psi^2 s^i\f$.
+ * $\epsilon_{ijk}$ is the flat-space Levi-Civita symbol.
+ *
+ * \par Spin
  * To incur a spin on the apparent horizon we can freely choose the rotational
- * parameters \f$\boldsymbol{\Omega}\f$. Note that for a Kerr solution with
- * dimensionless spin \f$\boldsymbol{\chi}\f$ the rotational parameters at the
- * outer horizon are \f$\boldsymbol{\Omega} =
- * -\frac{\boldsymbol{\chi}}{2r_+}\f$, where \f$r_+ / M = 1 + \sqrt{1 -
- * \chi^2}\f$ (see e.g. Eq. (8) in \cite Ossokine2015yla). \f$\epsilon_{ijk}\f$
- * is the flat-space Levi-Civita symbol.
+ * parameters $\boldsymbol{\Omega_r}$. A choice for the rotational parameters
+ * that comes close to a Kerr solution with dimensionless spin
+ * $\boldsymbol{\chi}$, when the excision surface is at the outer horizon with
+ * constant Boyer-Lindquist radius $r_+ / M = 1 + \sqrt{1 - \chi^2}$, are the
+ * horizon angular velocities $\boldsymbol{\Omega}^H =
+ * \frac{\boldsymbol{\chi}}{2r_+}$ (see e.g. Eq. (6.92) in \cite Carroll and
+ * note that $r_+^2 + a^2 = 2M r_+$). However, this choice of rotational
+ * parameters does not reproduce the Kerr solution exactly because the excision
+ * surface is not a coordinate sphere.
+ * The sign of the spin term was chosen so it is consistent with the Kerr
+ * horizon angular velocities, which also corresponds to Eq. (20) in
+ * \cite Varma2018sqd .
  *
  * Note that the quasi-equilibrium conditions don't restrict the boundary
  * condition for the lapse. The choice for the lapse boundary condition is made
