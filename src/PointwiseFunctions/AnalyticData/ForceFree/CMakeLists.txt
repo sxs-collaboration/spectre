@@ -25,6 +25,5 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
-  ForceFree
   Options
   )

@@ -43,6 +43,8 @@ target_link_libraries(
   ErrorHandling
   Evolution
   FiniteDifference
+  ForceFreeAnalyticData
+  ForceFreeSolutions
   GeneralRelativity
   Options
   Parallel
