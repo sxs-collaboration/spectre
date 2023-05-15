@@ -45,14 +45,15 @@ namespace gh {
  *   zero. The `gh::gauges::SetPiFromGauge` mutator exists to override Pi later
  *   in the algorithm (it should be combined with this function).
  */
+template <size_t Dim>
 void initial_gh_variables_from_adm(
-    const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
-    const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
-    const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi,
-    const tnsr::ii<DataVector, 3>& spatial_metric,
-    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
-    const tnsr::ii<DataVector, 3>& extrinsic_curvature, const Mesh<3>& mesh,
-    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+    gsl::not_null<tnsr::aa<DataVector, Dim>*> spacetime_metric,
+    gsl::not_null<tnsr::aa<DataVector, Dim>*> pi,
+    gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi,
+    const tnsr::ii<DataVector, Dim>& spatial_metric,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
+    const tnsr::ii<DataVector, Dim>& extrinsic_curvature, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian);
 
 /*!
