@@ -21,6 +21,7 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   GeneralRelativity
+  GeneralRelativityAnalyticData
   GeneralRelativitySolutions
   GeneralizedHarmonic
   Importers
@@ -68,6 +69,11 @@ add_spectre_parallel_executable(
   "EvolutionMetavars"
   "${LIBS_TO_LINK};ApparentHorizons;Cce;ControlSystem"
 )
+
+if (TARGET SpEC::Exporter)
+  target_compile_definitions(
+    EvolveGhBinaryBlackHole PRIVATE HAS_SPEC_EXPORTER)
+endif()
 
 add_spectre_parallel_executable(
   "EvolveGhCce"

@@ -153,9 +153,18 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
+
+// Check if SpEC is linked and therefore we can load SpEC initial data
+#ifdef HAS_SPEC_EXPORTER
+#include "PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.hpp"
+using SpecInitialData = gr::AnalyticData::SpecInitialData;
+#else
+using SpecInitialData = NoSuchType;
+#endif
 
 /// \cond
 namespace Frame {
@@ -375,8 +384,12 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::list<gh::NumericInitialData>>,
+        tmpl::pair<
+            evolution::initial_data::InitialData,
+            tmpl::flatten<tmpl::list<
+                gh::NumericInitialData,
+                tmpl::conditional_t<std::is_same_v<SpecInitialData, NoSuchType>,
+                                    tmpl::list<>, SpecInitialData>>>>,
         tmpl::pair<DenseTrigger,
                    tmpl::flatten<tmpl::list<
                        control_system::control_system_triggers<control_systems>,
