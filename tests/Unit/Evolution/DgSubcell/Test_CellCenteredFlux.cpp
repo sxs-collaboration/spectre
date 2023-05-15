@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
@@ -63,21 +64,27 @@ void test(const fd::DerivativeOrder derivative_order, const bool did_rollback) {
   using flux_variables = typename TestSystem::flux_variables;
   using CellCenteredFluxTag =
       evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>;
-  const Mesh<Dim> mesh{9, Spectral::Basis::FiniteDifference,
-                       Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> subcell_mesh{9, Spectral::Basis::FiniteDifference,
+                               Spectral::Quadrature::CellCentered};
+  const std::optional<tnsr::I<DataVector, Dim>> dg_mesh_velocity{};
 
-  auto box = db::create<
-      tmpl::list<evolution::dg::subcell::Tags::DidRollback,
-                 evolution::dg::subcell::Tags::SubcellOptions<Dim>,
-                 evolution::dg::subcell::Tags::Mesh<Dim>, CellCenteredFluxTag,
-                 ::Tags::Variables<flux_variables>>>(
-      did_rollback,
-      evolution::dg::subcell::SubcellOptions{
-          1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, derivative_order},
-      mesh, typename CellCenteredFluxTag::type{},
-      Variables<flux_variables>{mesh.number_of_grid_points(), 1.0});
+  auto box =
+      db::create<tmpl::list<evolution::dg::subcell::Tags::DidRollback,
+                            evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+                            evolution::dg::subcell::Tags::Mesh<Dim>,
+                            CellCenteredFluxTag, domain::Tags::Mesh<Dim>,
+                            domain::Tags::MeshVelocity<Dim, Frame::Inertial>,
+                            ::Tags::Variables<flux_variables>>>(
+          did_rollback,
+          evolution::dg::subcell::SubcellOptions{
+              1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, false,
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+              std::nullopt, derivative_order},
+          subcell_mesh, typename CellCenteredFluxTag::type{}, dg_mesh,
+          dg_mesh_velocity,
+          Variables<flux_variables>{subcell_mesh.number_of_grid_points(), 1.0});
 
   db::mutate_apply<evolution::dg::subcell::fd::CellCenteredFlux<
       TestSystem, Fluxes<Dim>, Dim, ComputeOnlyOnRollback>>(

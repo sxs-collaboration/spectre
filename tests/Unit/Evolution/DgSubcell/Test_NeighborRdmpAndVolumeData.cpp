@@ -111,7 +111,8 @@ void test() {
     // Note: assume isotropic meshes
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
-            dg_mesh.slice_through(0), subcell_mesh.extents(0))));
+            dg_mesh.slice_through(0), subcell_mesh.extents(0),
+            Spectral::Quadrature::CellCentered)));
     projection_matrices[0] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
@@ -225,7 +226,8 @@ void test() {
 
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
-            dg_mesh.slice_through(0), subcell_mesh.extents(0))));
+            dg_mesh.slice_through(0), subcell_mesh.extents(0),
+            Spectral::Quadrature::CellCentered)));
     projection_matrices[1] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
@@ -270,7 +272,8 @@ void test() {
 
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
-            dg_mesh.slice_through(0), subcell_mesh.extents(0))));
+            dg_mesh.slice_through(0), subcell_mesh.extents(0),
+            Spectral::Quadrature::CellCentered)));
     projection_matrices[2] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),

@@ -121,6 +121,55 @@ void test_project_fd() {
   }
 }
 
+template <size_t MaxPts, size_t Dim, size_t Face_Dim, Spectral::Basis BasisType,
+          Spectral::Quadrature QuadratureType>
+void test_project_on_face_fd() {
+  CAPTURE(Dim);
+  CAPTURE(Face_Dim);
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
+
+  for (size_t num_pts_1d = std::max(
+           static_cast<size_t>(2),
+           Spectral::minimum_number_of_points<BasisType, QuadratureType>);
+       num_pts_1d < MaxPts + 1; ++num_pts_1d) {
+    CAPTURE(num_pts_1d);
+    const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
+    const auto logical_coords = logical_coordinates(dg_mesh);
+    const size_t num_subcells_1d_face = 2 * num_pts_1d;
+    const size_t num_subcells_1d_cell = 2 * num_pts_1d - 1;
+    CAPTURE(num_subcells_1d_face);
+    CAPTURE(num_subcells_1d_cell);
+
+    std::array<size_t, Dim> extents{};
+    std::array<Spectral::Basis, Dim> basis{};
+    std::array<Spectral::Quadrature, Dim> quadrature{};
+    for (size_t d = 0; d < Dim; d++) {
+      basis[d] = Spectral::Basis::FiniteDifference;
+      if (d == Face_Dim) {
+        extents[d] = num_subcells_1d_face;
+        quadrature[d] = Spectral::Quadrature::FaceCentered;
+      } else {
+        extents[d] = num_subcells_1d_cell;
+        quadrature[d] = Spectral::Quadrature::CellCentered;
+      }
+    }
+
+    const Mesh<Dim> subcell_mesh(extents, basis, quadrature);
+    const DataVector nodal_coeffs =
+        TestHelpers::evolution::dg::subcell::cell_values(dg_mesh.extents(0) - 2,
+                                                         logical_coords);
+    const DataVector expected_subcell_values =
+        TestHelpers::evolution::dg::subcell::cell_values(
+            dg_mesh.extents(0) - 2, logical_coordinates(subcell_mesh));
+    // Test projection of a DataVector
+    const DataVector subcell_values =
+        evolution::dg::subcell::fd::project_to_face(
+            nodal_coeffs, dg_mesh, subcell_mesh.extents(), Face_Dim);
+    CHECK_ITERABLE_APPROX(subcell_values, expected_subcell_values);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Projection", "[Evolution][Unit]") {
   test_project_fd<10, 1, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto>();
@@ -136,5 +185,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Projection", "[Evolution][Unit]") {
                   Spectral::Quadrature::GaussLobatto>();
   test_project_fd<4, 3, Spectral::Basis::Legendre,
                   Spectral::Quadrature::Gauss>();
+  test_project_on_face_fd<10, 1, 0, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<10, 1, 0, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 0, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 0, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 1, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 1, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 2, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 2, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
 }
 }  // namespace

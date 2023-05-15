@@ -51,8 +51,9 @@ void test_projection_matrix() {
     Matrix empty{};
     auto projection_mat = make_array<Dim>(std::cref(empty));
     for (size_t d = 0; d < Dim; ++d) {
-      gsl::at(projection_mat, d) = std::cref(projection_matrix(
-          dg_mesh.slice_through(d), subcell_mesh.extents()[d]));
+      gsl::at(projection_mat, d) = std::cref(
+          projection_matrix(dg_mesh.slice_through(d), subcell_mesh.extents()[d],
+                            Spectral::Quadrature::CellCentered));
     }
     DataVector cell_centered_values(num_subcells, 0.0);
     apply_matrices(make_not_null(&cell_centered_values), projection_mat,
@@ -114,6 +115,69 @@ void test_projection_matrix() {
             "FD Subcell projection only supports Legendre basis"));
   }
 #endif
+}
+
+template <size_t MaxPts, size_t Dim, size_t Face_Dim, Spectral::Basis BasisType,
+          Spectral::Quadrature QuadratureType>
+void test_projection_matrix_to_face() {
+  CAPTURE(Dim);
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
+
+  for (size_t num_pts_1d = std::max(
+           static_cast<size_t>(2),
+           Spectral::minimum_number_of_points<BasisType, QuadratureType>);
+       num_pts_1d < MaxPts + 1; ++num_pts_1d) {
+    CAPTURE(num_pts_1d);
+    const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
+    const auto logical_coords = logical_coordinates(dg_mesh);
+    const size_t num_subcells_1d_face = 2 * num_pts_1d;
+    const size_t num_subcells_1d_cell = 2 * num_pts_1d - 1;
+    CAPTURE(num_subcells_1d_face);
+    CAPTURE(num_subcells_1d_cell);
+
+    std::array<size_t, Dim> extents{};
+    std::array<Spectral::Basis, Dim> basis{};
+    std::array<Spectral::Quadrature, Dim> quadrature{};
+    for (size_t d = 0; d < Dim; d++) {
+      basis[d] = Spectral::Basis::FiniteDifference;
+      if (d == Face_Dim) {
+        extents[d] = num_subcells_1d_face;
+        quadrature[d] = Spectral::Quadrature::FaceCentered;
+      } else {
+        extents[d] = num_subcells_1d_cell;
+        quadrature[d] = Spectral::Quadrature::CellCentered;
+      }
+    }
+
+    const Mesh<Dim> subcell_mesh(extents, basis, quadrature);
+    const size_t num_subcells = subcell_mesh.number_of_grid_points();
+    const DataVector nodal_coeffs =
+        TestHelpers::evolution::dg::subcell::cell_values(dg_mesh.extents(0) - 2,
+                                                         logical_coords);
+
+    Matrix empty{};
+    auto projection_mat = make_array<Dim>(std::cref(empty));
+    for (size_t d = 0; d < Dim; ++d) {
+      if (d == Face_Dim) {
+        gsl::at(projection_mat, d) = std::cref(projection_matrix(
+            dg_mesh.slice_through(d), subcell_mesh.extents()[d],
+            Spectral::Quadrature::FaceCentered));
+      } else {
+        gsl::at(projection_mat, d) = std::cref(projection_matrix(
+            dg_mesh.slice_through(d), subcell_mesh.extents()[d],
+            Spectral::Quadrature::CellCentered));
+      }
+    }
+    DataVector subcell_values(num_subcells, 0.0);
+    apply_matrices(make_not_null(&subcell_values), projection_mat, nodal_coeffs,
+                   dg_mesh.extents());
+
+    const DataVector expected_values =
+        TestHelpers::evolution::dg::subcell::cell_values(
+            dg_mesh.extents(0) - 2, logical_coordinates(subcell_mesh));
+    CHECK_ITERABLE_APPROX(subcell_values, expected_values);
+  }
 }
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
@@ -178,6 +242,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                          Spectral::Quadrature::GaussLobatto>();
   test_projection_matrix<5, 3, Spectral::Basis::Legendre,
                          Spectral::Quadrature::Gauss>();
+  test_projection_matrix_to_face<10, 1, 0, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<10, 1, 0, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::Gauss>();
+  test_projection_matrix_to_face<5, 3, 0, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 0, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::Gauss>();
+  test_projection_matrix_to_face<5, 3, 1, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 1, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::Gauss>();
+  test_projection_matrix_to_face<5, 3, 2, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 2, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::Gauss>();
 }
 
 // [[TimeOut, 10]]

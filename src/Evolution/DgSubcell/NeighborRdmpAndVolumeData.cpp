@@ -111,7 +111,8 @@ void insert_or_update_neighbor_volume_data(
               gsl::at(ghost_projection_mat, i) =
                   std::cref(evolution::dg::subcell::fd::projection_matrix(
                       neighbor_mesh_for_projection.slice_through(i),
-                      subcell_mesh.extents(i)));
+                      subcell_mesh.extents(i),
+                      Spectral::Quadrature::CellCentered));
             }
           }
           apply_matrices(make_not_null(&computed_ghost_data),

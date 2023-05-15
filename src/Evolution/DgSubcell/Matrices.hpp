@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 /// \cond
 class DataVector;
@@ -21,7 +22,8 @@ namespace evolution::dg::subcell::fd {
  * \brief Computes the projection matrix in 1 dimension going from a DG
  * mesh to a conservative finite difference subcell mesh.
  */
-const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents);
+const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents,
+                                const Spectral::Quadrature& subcell_quadrature);
 
 /*!
  * \ingroup DgSubcellGroup
