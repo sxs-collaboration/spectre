@@ -24,6 +24,7 @@ SourceDomainCreator:
     OuterShell:
       Radius: 350.
       RadialDistribution: Inverse
+      OpeningAngle: 90.0
     UseEquiangularMap: True
     InitialRefinement: 1
     InitialGridPoints: 7
@@ -48,6 +49,7 @@ TargetDomainCreator:
     OuterShell:
       Radius: 300.
       RadialDistribution: Linear
+      OpeningAngle: 90.0
     UseEquiangularMap: True
     InitialRefinement: 0
     InitialGridPoints: 3

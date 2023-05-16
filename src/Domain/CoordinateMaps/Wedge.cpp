@@ -26,7 +26,8 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                   const bool with_equiangular_map,
                   const WedgeHalves halves_to_use,
                   const Distribution radial_distribution,
-                  const double half_opening_angle)
+                  const std::array<double, Dim - 1>& opening_angles,
+                  const bool with_adapted_equiangular_map)
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       sphericity_inner_(sphericity_inner),
@@ -35,7 +36,7 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       with_equiangular_map_(with_equiangular_map),
       halves_to_use_(halves_to_use),
       radial_distribution_(radial_distribution),
-      half_opening_angle_(half_opening_angle) {
+      opening_angles_(opening_angles) {
   const double sqrt_dim = sqrt(double{Dim});
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
@@ -62,8 +63,9 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       "Wedge rotations must be done in such a manner that the sign of "
       "the determinant of the discrete rotation is positive. This is to "
       "preserve handedness of the coordinates.");
-  ASSERT(half_opening_angle != M_PI_4 ? with_equiangular_map : true,
-         "If using a half opening angle other than pi/4, then the "
+  ASSERT(opening_angles_ != make_array<Dim - 1>(M_PI_2) ? with_equiangular_map
+                                                        : true,
+         "If using opening angles other than pi/2, then the "
          "equiangular map option must be turned on.");
   if (radial_distribution_ == Distribution::Linear) {
     scaled_frustum_zero_ = 0.5 / sqrt_dim *
@@ -90,6 +92,11 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
         0.5 * (radius_inner - radius_outer) / radius_inner / radius_outer;
   } else {
     ERROR("Unsupported radial distribution: " << radial_distribution_);
+  }
+  if (with_adapted_equiangular_map) {
+    opening_angles_distribution_ = opening_angles_;
+  } else {
+    opening_angles_distribution_ = make_array<Dim - 1>(M_PI_2);
   }
 }
 
@@ -130,12 +137,20 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
   }
 
   std::array<ReturnType, Dim - 1> cap{};
-  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
+  cap[0] = with_equiangular_map_
+               ? tan(0.5 * opening_angles_[0]) *
+                     tan(0.5 * opening_angles_distribution_[0] * xi) /
+                     tan(0.5 * opening_angles_distribution_[0])
+               : xi;
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
     const ReturnType& eta = source_coords[azimuth_coord];
-    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+    cap[1] = with_equiangular_map_
+                 ? tan(0.5 * opening_angles_[1]) *
+                       tan(0.5 * opening_angles_distribution_[1] * eta) /
+                       tan(0.5 * opening_angles_distribution_[1])
+                 : eta;
     one_over_rho += square(cap[1]);
   }
   one_over_rho = 1. / sqrt(one_over_rho);
@@ -199,8 +214,12 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
     }
   }();
   // Polar angle
-  double xi =
-      with_equiangular_map_ ? atan(cap[0]) / half_opening_angle_ : cap[0];
+  double xi = with_equiangular_map_
+                  ? 2.0 *
+                        atan(tan(0.5 * opening_angles_distribution_[0]) /
+                             tan(0.5 * opening_angles_[0]) * cap[0]) /
+                        opening_angles_distribution_[0]
+                  : cap[0];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi *= 2.0;
     xi -= 1.0;
@@ -213,7 +232,12 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
   logical_coords[polar_coord] = xi;
   if constexpr (Dim == 3) {
     logical_coords[azimuth_coord] =
-        with_equiangular_map_ ? atan(cap[1]) / M_PI_4 : cap[1];
+        with_equiangular_map_
+            ? 2.0 *
+                  atan(tan(0.5 * opening_angles_distribution_[1]) /
+                       tan(0.5 * opening_angles_[1]) * cap[1]) /
+                  opening_angles_distribution_[1]
+            : cap[1];
   }
   return logical_coords;
 }
@@ -238,17 +262,35 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
   }
   std::array<ReturnType, Dim - 1> cap{};
   std::array<ReturnType, Dim - 1> cap_deriv{};
-  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
-  cap_deriv[0] = with_equiangular_map_
-                     ? half_opening_angle_ * (1.0 + square(cap[0]))
-                     : make_with_value<ReturnType>(xi, 1.0);
+  cap[0] = with_equiangular_map_
+               ? tan(0.5 * opening_angles_[0]) *
+                     tan(0.5 * opening_angles_distribution_[0] * xi) /
+                     tan(0.5 * opening_angles_distribution_[0])
+               : xi;
+  cap_deriv[0] =
+      with_equiangular_map_
+          ? 0.5 * opening_angles_distribution_[0] *
+                tan(0.5 * opening_angles_[0]) /
+                tan(0.5 * opening_angles_distribution_[0]) *
+                (1.0 + square(tan(0.5 * opening_angles_distribution_[0] * xi)))
+          : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
     const ReturnType& eta = source_coords[azimuth_coord];
-    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-    cap_deriv[1] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[1]))
-                                         : make_with_value<ReturnType>(xi, 1.0);
+    cap[1] = with_equiangular_map_
+                 ? tan(0.5 * opening_angles_[1]) *
+                       tan(0.5 * opening_angles_distribution_[1] * eta) /
+                       tan(0.5 * opening_angles_distribution_[1])
+                 : eta;
+    cap_deriv[1] =
+        with_equiangular_map_
+            ? 0.5 * opening_angles_distribution_[1] *
+                  tan(0.5 * opening_angles_[1]) /
+                  tan(0.5 * opening_angles_distribution_[1]) *
+                  (1.0 +
+                   square(tan(0.5 * opening_angles_distribution_[1] * eta)))
+            : make_with_value<ReturnType>(xi, 1.0);
     one_over_rho += square(cap[1]);
   }
   one_over_rho = 1. / sqrt(one_over_rho);
@@ -349,17 +391,35 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
   }
   std::array<ReturnType, Dim> cap{};
   std::array<ReturnType, Dim> cap_deriv{};
-  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
-  cap_deriv[0] = with_equiangular_map_
-                     ? half_opening_angle_ * (1.0 + square(cap[0]))
-                     : make_with_value<ReturnType>(xi, 1.0);
+  cap[0] = with_equiangular_map_
+               ? tan(0.5 * opening_angles_[0]) *
+                     tan(0.5 * opening_angles_distribution_[0] * xi) /
+                     tan(0.5 * opening_angles_distribution_[0])
+               : xi;
+  cap_deriv[0] =
+      with_equiangular_map_
+          ? 0.5 * opening_angles_distribution_[0] *
+                tan(0.5 * opening_angles_[0]) /
+                tan(0.5 * opening_angles_distribution_[0]) *
+                (1.0 + square(tan(0.5 * opening_angles_distribution_[0] * xi)))
+          : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
     const ReturnType& eta = source_coords[azimuth_coord];
-    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-    cap_deriv[1] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[1]))
-                                         : make_with_value<ReturnType>(xi, 1.0);
+    cap[1] = with_equiangular_map_
+                 ? tan(0.5 * opening_angles_[1]) *
+                       tan(0.5 * opening_angles_distribution_[1] * eta) /
+                       tan(0.5 * opening_angles_distribution_[1])
+                 : eta;
+    cap_deriv[1] =
+        with_equiangular_map_
+            ? 0.5 * opening_angles_distribution_[1] *
+                  tan(0.5 * opening_angles_[1]) /
+                  tan(0.5 * opening_angles_distribution_[1]) *
+                  (1.0 +
+                   square(tan(0.5 * opening_angles_distribution_[1] * eta)))
+            : make_with_value<ReturnType>(xi, 1.0);
     one_over_rho += square(cap[1]);
   }
   one_over_rho = 1. / sqrt(one_over_rho);
@@ -447,7 +507,7 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
 
 template <size_t Dim>
 void Wedge<Dim>::pup(PUP::er& p) {
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -465,7 +525,19 @@ void Wedge<Dim>::pup(PUP::er& p) {
     p | sphere_zero_;
     p | scaled_frustum_rate_;
     p | sphere_rate_;
-    p | half_opening_angle_;
+    if (version == 0) {
+      double half_opening_angle = std::numeric_limits<double>::signaling_NaN();
+      p | half_opening_angle;
+      opening_angles_[0] = 2. * half_opening_angle;
+      if constexpr (Dim == 3) {
+        opening_angles_[1] = M_PI_2;
+      }
+      opening_angles_distribution_ = opening_angles_;
+    }
+  }
+  if (version >= 1) {
+    p | opening_angles_;
+    p | opening_angles_distribution_;
   }
 }
 
@@ -482,7 +554,9 @@ bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
          lhs.scaled_frustum_zero_ == rhs.scaled_frustum_zero_ and
          lhs.sphere_zero_ == rhs.sphere_zero_ and
          lhs.scaled_frustum_rate_ == rhs.scaled_frustum_rate_ and
-         lhs.sphere_rate_ == rhs.sphere_rate_;
+         lhs.sphere_rate_ == rhs.sphere_rate_ and
+         lhs.opening_angles_ == rhs.opening_angles_ and
+         lhs.opening_angles_distribution_ == rhs.opening_angles_distribution_;
 }
 
 template <size_t Dim>

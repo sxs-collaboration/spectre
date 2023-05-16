@@ -605,7 +605,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const ShellWedges which_wedges) {
+    const ShellWedges which_wedges, const double opening_angle) {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
   ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
@@ -640,7 +640,8 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, face_j),
-            use_equiangular_map, Halves::Both, radial_distribution_this_layer);
+            use_equiangular_map, Halves::Both, radial_distribution_this_layer,
+            std::array<double, 2>({{M_PI_2, M_PI_2}}));
       }
     } else {
       for (size_t i = 0; i < 4; i++) {
@@ -648,21 +649,28 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::LowerOnly,
-            radial_distribution_this_layer);
+            radial_distribution_this_layer,
+            std::array<double, 2>({{opening_angle, M_PI_2}}));
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::UpperOnly,
-            radial_distribution_this_layer);
+            radial_distribution_this_layer,
+            std::array<double, 2>({{opening_angle, M_PI_2}}));
       }
+      const double endcap_opening_angle = M_PI - opening_angle;
+      const std::array<double, 2> endcap_opening_angles = {
+          {endcap_opening_angle, endcap_opening_angle}};
       wedges_for_this_layer.emplace_back(
           temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer);
+          Halves::Both, radial_distribution_this_layer, endcap_opening_angles,
+          false);
       wedges_for_this_layer.emplace_back(
           temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer);
+          Halves::Both, radial_distribution_this_layer, endcap_opening_angles,
+          false);
     }
     for (const auto& wedge : wedges_for_this_layer) {
       wedges_for_all_layers.push_back(wedge);
@@ -680,7 +688,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     const double length_inner_cube, const double length_outer_cube,
     const bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage,
-    const double projective_scale_factor, const double sphericity) {
+    const double projective_scale_factor, const double sphericity,
+    const double opening_angle) {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
          "of the outer cube.");
@@ -702,6 +711,10 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
   // The frustums on the left are given a -1.0 indicating a lower half
   // equiangular map while the frustums on the right are given a 1.0 indicating
   // an upper half equiangular map
+  // If we wish to stretch this enveloping cube of frustums along its x-axis,
+  // the four left frustums and four right frustums have their upper bases
+  // stretched, and the end caps have their upper bases shifted upwards.
+  const double stretch = tan(0.5 * opening_angle);
   std::vector<FrustumMap> frustums{};
   for (size_t i = 0; i < 4; i++) {
     // frustums on the left
@@ -711,7 +724,7 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
         {{{{-2.0 * lower - displacement_from_origin[0],
             -lower - displacement_from_origin[1]}},
           {{-displacement_from_origin[0], lower - displacement_from_origin[1]}},
-          {{-top, -top}},
+          {{stretch * -top, -top}},
           {{0.0, top}}}},
         lower - displacement_from_origin[2],
         top,
@@ -720,14 +733,15 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
         projective_scale_factor,
         false,
         sphericity,
-        -1.0});
+        -1.0,
+        opening_angle});
     // frustums on the right
     frustums.push_back(FrustumMap{{{{{-displacement_from_origin[0],
                                       -lower - displacement_from_origin[1]}},
                                     {{2.0 * lower - displacement_from_origin[0],
                                       lower - displacement_from_origin[1]}},
                                     {{0.0, -top}},
-                                    {{top, top}}}},
+                                    {{stretch * top, top}}}},
                                   lower - displacement_from_origin[2],
                                   top,
                                   gsl::at(frustum_orientations, i),
@@ -735,7 +749,8 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                   projective_scale_factor,
                                   false,
                                   sphericity,
-                                  1.0});
+                                  1.0,
+                                  opening_angle});
   }
   // end cap frustum on the right
   std::array<double, 3> displacement_from_origin =
@@ -747,12 +762,14 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                   {{-top, -top}},
                                   {{top, top}}}},
                                 2.0 * lower - displacement_from_origin[2],
-                                top,
+                                stretch * top,
                                 frustum_orientations[4],
                                 use_equiangular_map,
                                 projective_scale_factor,
                                 false,
-                                sphericity});
+                                sphericity,
+                                0.0,
+                                M_PI_2});
   // end cap frustum on the left
   displacement_from_origin =
       discrete_rotation(frustum_orientations[5].inverse_map(), origin_preimage);
@@ -763,12 +780,14 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
                                   {{-top, -top}},
                                   {{top, top}}}},
                                 2.0 * lower - displacement_from_origin[2],
-                                top,
+                                stretch * top,
                                 frustum_orientations[5],
                                 use_equiangular_map,
                                 projective_scale_factor,
                                 false,
-                                sphericity});
+                                sphericity,
+                                0.0,
+                                M_PI_2});
   return frustums;
 }
 

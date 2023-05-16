@@ -61,6 +61,7 @@ BinaryCompactObject::BinaryCompactObject(
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, const bool use_projective_map,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
+    const double opening_angle_in_degrees,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -71,7 +72,8 @@ BinaryCompactObject::BinaryCompactObject(
       use_equiangular_map_(use_equiangular_map),
       use_projective_map_(use_projective_map),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
-      outer_boundary_condition_(std::move(outer_boundary_condition)) {
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
   // Get useful information about the type of grid used around each compact
   // object
   x_coord_a_ =
@@ -88,9 +90,11 @@ BinaryCompactObject::BinaryCompactObject(
       std::holds_alternative<CartesianCubeAtXCoord>(object_B_);
 
   // Determination of parameters for domain construction:
+  const double tan_half_opening_angle = tan(0.5 * opening_angle_);
   translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
   length_inner_cube_ = abs(x_coord_a_ - x_coord_b_);
-  length_outer_cube_ = 2.0 * envelope_radius_ / sqrt(3.0);
+  length_outer_cube_ =
+      2.0 * envelope_radius_ / sqrt(2.0 + square(tan_half_opening_angle));
   if (use_projective_map_) {
     projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
   } else {
@@ -127,7 +131,7 @@ BinaryCompactObject::BinaryCompactObject(
         context,
         "The x-coordinate of ObjectB's center is expected to be negative.");
   }
-  if (length_outer_cube_ <= 2.0 * length_inner_cube_) {
+  if (envelope_radius_ <= length_inner_cube_ * sqrt(3.0)) {
     const double suggested_value = 2.0 * length_inner_cube_ * sqrt(3.0);
     PARSE_ERROR(
         context,
@@ -288,6 +292,7 @@ BinaryCompactObject::BinaryCompactObject(
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, const bool use_projective_map,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
+    const double opening_angle_in_degrees,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -295,6 +300,7 @@ BinaryCompactObject::BinaryCompactObject(
                           envelope_radius, outer_radius, initial_refinement,
                           initial_number_of_grid_points, use_equiangular_map,
                           use_projective_map, radial_distribution_outer_shell,
+                          opening_angle_in_degrees,
                           std::move(outer_boundary_condition), context) {
   time_dependent_options_ = std::move(time_dependent_options);
 
@@ -429,19 +435,18 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // the origin to account for their center of mass, the enveloping frustums are
   // centered at the origin.
   Maps maps_frustums = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
-      length_inner_cube_, length_outer_cube_, use_equiangular_map_,
-      {{-translation_, 0.0, 0.0}}, projective_scale_factor_, 1.0));
+      Frame::BlockLogical, Frame::Inertial, 3>(
+      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
+                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
+                              projective_scale_factor_, 1.0, opening_angle_));
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
   // --- Outer spherical shell (10 blocks) ---
-  Maps maps_outer_shell =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(envelope_radius_, outer_radius_, 1.0, 1.0,
-                                    use_equiangular_map_, true, {},
-                                    {radial_distribution_outer_shell_}));
+  Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
+      envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, true, {},
+      {radial_distribution_outer_shell_}, ShellWedges::All, opening_angle_));
   std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
             std::back_inserter(maps));
 

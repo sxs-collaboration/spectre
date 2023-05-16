@@ -38,6 +38,7 @@ DomainCreator:
     OuterShell:
       Radius: 300.0
       RadialDistribution: Linear
+      OpeningAngle: 90.0
     UseEquiangularMap: True
     InitialRefinement:
       ObjectAShell:   [1, 1, 1]

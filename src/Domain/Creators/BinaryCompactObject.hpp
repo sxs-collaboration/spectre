@@ -88,10 +88,12 @@ namespace creators {
  * - **Envelope**: The 10 blocks that transition from the two inner cubes to a
  *   sphere centered at the origin.
  * - **Outer shell**: The 10 blocks that form an outer shell centered at the
- *   origin. This layer is spherical, so a logarithmic map can optionally be
- *   used in this layer. This allows the domain to extend to large radial
- *   distances from the compact objects. This layer can be h-refined radially,
- *   creating a layer of multiple concentric spherical shells.
+ *   origin, consisting of 2 endcap Wedges on the +x and -x axes, and 8 half
+ *   Wedges along the yz plane. This layer is spherical, so a logarithmic map
+ *   can optionally be used in this layer. This allows the domain to extend to
+ *   large radial distances from the compact objects. This layer can be
+ *   h-refined radially, creating a layer of multiple concentric spherical
+ *   shells.
  *
  * \par Notes:
  *
@@ -316,6 +318,16 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {"Radius of the entire domain."};
   };
 
+  struct OpeningAngle {
+    using group = OuterShell;
+    static std::string name() { return "OpeningAngle"; }
+    using type = double;
+    static constexpr Options::String help = {
+        "The combined opening angle of the two half wedges of the outer shell"
+        " in degrees. A value of 120.0 partitions the x-y and x-z slices of the"
+        " outer shell into six Blocks of equal angular size."};
+  };
+
   struct InitialRefinement {
     using type =
         std::variant<size_t, std::array<size_t, 3>,
@@ -378,7 +390,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   using time_independent_options = tmpl::append<
       tmpl::list<ObjectA, ObjectB, EnvelopeRadius, OuterRadius,
                  InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 UseProjectiveMap, RadialDistributionOuterShell>,
+                 UseProjectiveMap, RadialDistributionOuterShell, OpeningAngle>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -433,6 +445,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       bool use_equiangular_map = true, bool use_projective_map = true,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
+      double opening_angle_in_degrees = 90.0,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -450,6 +463,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       bool use_equiangular_map = true, bool use_projective_map = true,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
+      double opening_angle_in_degrees = 90.0,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -519,6 +533,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool use_single_block_a_ = false;
   bool use_single_block_b_ = false;
   std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
+  double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
 };
 }  // namespace creators
 }  // namespace domain

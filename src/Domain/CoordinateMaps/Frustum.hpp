@@ -260,13 +260,38 @@ namespace CoordinateMaps {
 class Frustum {
  public:
   static constexpr size_t dim = 3;
+  /*!
+   * Constructs a frustum.
+   * \param face_vertices An array of four 2D vertices that define the (x, y)
+   * coordinates of the upper and lower base of the frustum.
+   * \param lower_bound z distance from the origin to the lower base of the
+   * frustum.
+   * \param upper_bound z distance from the origin to the upper base of the
+   * frustum.
+   * \param orientation_of_frustum The orientation of the frustum in 3D space.
+   * \param with_equiangular_map Determines whether to apply a tangent function
+   * mapping to the logical coordinates (true) or not (false).
+   * \param projective_scale_factor The scale factor of the projective map
+   * applied to the zeta logical coordinate.
+   * \param auto_projective_scale_factor Determines whether to automatically
+   * calculate the projective scale factor based on the frustum geometry (true)
+   * or use the provided scale factor (false).
+   * \param sphericity Value between 0 and 1 which determines whether the
+   * surface of the upper base of the Frustum is flat (value of 0), spherical
+   * (value of 1), or somewhere in between.
+   * \param transition_phi Determines whether the equiangular map used conforms
+   * to a lower half wedge (value of -1), an upper half wedge (value of +1), or
+   * a full wedge (value of 0).
+   * \param opening_angle The opening angle of the wedge the frustum will
+   * conform to (have conforming boundaries with).
+   */
   Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
           double lower_bound, double upper_bound,
           OrientationMap<3> orientation_of_frustum,
           bool with_equiangular_map = false,
           double projective_scale_factor = 1.0,
           bool auto_projective_scale_factor = false, double sphericity = 0.0,
-          double transition_phi = 0.0);
+          double transition_phi = 0.0, double opening_angle = M_PI_2);
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -324,6 +349,9 @@ class Frustum {
   double sphericity_{std::numeric_limits<double>::signaling_NaN()};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
   double phi_{std::numeric_limits<double>::signaling_NaN()};
+  double half_opening_angle_{std::numeric_limits<double>::signaling_NaN()};
+  double one_over_tan_half_opening_angle_{
+      std::numeric_limits<double>::signaling_NaN()};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs);

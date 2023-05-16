@@ -31,7 +31,8 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const bool with_equiangular_map,
                  const double projective_scale_factor,
                  const bool auto_projective_scale_factor,
-                 const double sphericity, const double transition_phi)
+                 const double sphericity, const double transition_phi,
+                 const double opening_angle)
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
       with_equiangular_map_(with_equiangular_map),
@@ -102,19 +103,21 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
   w_plus_ = projective_scale_factor + 1.0;
   w_minus_ = projective_scale_factor - 1.0;
   phi_ = transition_phi;
+  half_opening_angle_ = 0.5 * opening_angle;
+  one_over_tan_half_opening_angle_ = 1.0 / tan(half_opening_angle_);
   // The radius is taken to be the distance from the origin to the vertex of
-  // the Frustum that is furthest away from the origin. This vertex is
-  // assumed to lie on a cube that is centered on the origin. Then the
-  // distance from the origin of the vertex is given by the distance along one
-  // of the x, y, or z axes to the vertex, multiplied by sqrt(3), as the
-  // distance from the origin to the vertex along the other two axes are the
-  // same as the first, assuming it is a vertex of the origin-centered cube.
-  radius_ = std::max({abs(upper_x_upper_base), abs(upper_y_upper_base),
-                      abs(upper_x_lower_base), abs(upper_y_lower_base),
-                      abs(lower_x_upper_base), abs(lower_y_upper_base),
-                      abs(lower_x_lower_base), abs(lower_y_lower_base),
-                      abs(upper_bound), abs(lower_bound)}) *
-            sqrt(3.0);
+  // the Frustum that is furthest away from the origin. For the rectangular
+  // BinaryCompactObject Domain, this vertex is assumed to lie on a rectangular
+  // prism centered at the origin made up of ten Frustums. The radius is then
+  // that of a sphere that circumscribes the prism. For information on how
+  // other Domains use the Frustum map, please see that particular Domain's
+  // documentation.
+  radius_ = sqrt(
+      square(std::max({abs(upper_x_upper_base), abs(upper_x_lower_base),
+                       abs(lower_x_upper_base), abs(lower_x_lower_base)})) +
+      square(std::max({abs(upper_y_upper_base), abs(upper_y_lower_base),
+                       abs(lower_y_upper_base), abs(lower_y_lower_base)})) +
+      square(std::max({abs(upper_bound), abs(lower_bound)})));
   if (auto_projective_scale_factor) {
     with_projective_map_ = true;
     const double w_delta = sqrt(((upper_x_lower_base - lower_x_lower_base) *
@@ -141,10 +144,12 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
   const ReturnType cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
   const ReturnType cap_xi_upper =
-      with_equiangular_map_ ? one_plus_phi_square * tan(M_PI_4 * (xi + phi_) /
-                                                        one_plus_phi_square) -
-                                  phi_
-                            : xi;
+      with_equiangular_map_
+          ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
+                    tan(half_opening_angle_ * (xi + phi_) /
+                        one_plus_phi_square) -
+                phi_
+          : xi;
   const ReturnType cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
                                        0.5 * (1.0 - cap_zeta) * cap_xi_zero;
   const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
@@ -300,10 +305,12 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   const ReturnType& cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
   const ReturnType cap_xi_upper =
-      with_equiangular_map_ ? one_plus_phi_square * tan(M_PI_4 * (xi + phi_) /
-                                                        one_plus_phi_square) -
-                                  phi_
-                            : xi;
+      with_equiangular_map_
+          ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
+                    tan(half_opening_angle_ * (xi + phi_) /
+                        one_plus_phi_square) -
+                phi_
+          : xi;
   const ReturnType cap_xi_transition =
       with_equiangular_map_ ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
                                   0.5 * (1.0 - cap_zeta) * cap_xi_zero
@@ -315,17 +322,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
                             : make_with_value<ReturnType>(xi, 1.0);
   const ReturnType cap_xi_upper_deriv =
       with_equiangular_map_
-          ? M_PI_4 *
-                (1.0 + square(tan(M_PI_4 * (xi + phi_) / one_plus_phi_square)))
+          ? one_over_tan_half_opening_angle_ * half_opening_angle_ *
+                (1.0 + square(tan(half_opening_angle_ * (xi + phi_) /
+                                  one_plus_phi_square)))
           : make_with_value<ReturnType>(xi, 1.0);
 
   const ReturnType cap_xi_transition_deriv =
-      with_equiangular_map_
-          ? 0.5 * (1.0 + cap_zeta) * M_PI_4 *
-                    (1.0 +
-                     square(tan(M_PI_4 * (xi + phi_) / one_plus_phi_square))) +
-                0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
-          : make_with_value<ReturnType>(xi, 1.0);
+      with_equiangular_map_ ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper_deriv +
+                                  0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
+                            : make_with_value<ReturnType>(xi, 1.0);
 
   const ReturnType cap_eta_deriv = with_equiangular_map_
                                        ? M_PI_4 * (1.0 + square(cap_eta))
@@ -481,7 +486,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
 }
 
 void Frustum::pup(PUP::er& p) {
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -507,6 +512,10 @@ void Frustum::pup(PUP::er& p) {
     p | radius_;
     p | phi_;
   }
+  if (version >= 1) {
+    p | half_opening_angle_;
+    p | one_over_tan_half_opening_angle_;
+  }
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) {
@@ -526,7 +535,10 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
          lhs.delta_z_zeta_ == rhs.delta_z_zeta_ and
          lhs.w_plus_ == rhs.w_plus_ and lhs.w_minus_ == rhs.w_minus_ and
          lhs.sphericity_ == rhs.sphericity_ and lhs.radius_ == rhs.radius_ and
-         lhs.phi_ == rhs.phi_;
+         lhs.phi_ == rhs.phi_ and
+         lhs.half_opening_angle_ == rhs.half_opening_angle_ and
+         lhs.one_over_tan_half_opening_angle_ ==
+             rhs.one_over_tan_half_opening_angle_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) {

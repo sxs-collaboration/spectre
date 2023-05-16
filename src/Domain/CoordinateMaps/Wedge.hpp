@@ -296,18 +296,25 @@ class Wedge {
    * \param radial_distribution Determines how to distribute grid points along
    * the radial direction. For wedges that are not exactly spherical, only
    * `Distribution::Linear` is currently supported.
-   * \param half_opening_angle Determines the angular size of the wedge. The
-   * default value is pi/4, which corresponds to a wedge size of pi/2. For this
+   * \param opening_angles Determines the angular size of the wedge. The
+   * default value is pi/2, which corresponds to a wedge size of pi/2. For this
    * setting, four Wedges can be put together to cover 2pi in angle along a
    * great circle. This option is meant to be used with the equiangular map
    * option turned on.
+   * \param with_adapted_equiangular_map Determines whether to adapt the
+   * point distribution in the wedge to match its physical angular size. When
+   * `true`, angular distances are proportional to logical distances. Note
+   * that it is not possible to use adapted maps in every Wedge of a Sphere
+   * unless each Wedge has the same size along both angular directions.
    */
   Wedge(double radius_inner, double radius_outer, double sphericity_inner,
         double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
         bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
         Distribution radial_distribution = Distribution::Linear,
-        double half_opening_angle = M_PI_4);
+        const std::array<double, Dim - 1>& opening_angles =
+            make_array<Dim - 1>(M_PI_2),
+        bool with_adapted_equiangular_map = true);
 
   Wedge() = default;
   ~Wedge() = default;
@@ -379,7 +386,10 @@ class Wedge {
   double sphere_zero_{std::numeric_limits<double>::signaling_NaN()};
   double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
   double sphere_rate_{std::numeric_limits<double>::signaling_NaN()};
-  double half_opening_angle_{std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, Dim - 1> opening_angles_{
+      make_array<Dim - 1>(std::numeric_limits<double>::signaling_NaN())};
+  std::array<double, Dim - 1> opening_angles_distribution_{
+      make_array<Dim - 1>(std::numeric_limits<double>::signaling_NaN())};
 };
 
 template <size_t Dim>
