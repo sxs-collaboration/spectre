@@ -268,8 +268,8 @@ struct TimeDerivative {
               }
               tmpl::for_each<evolved_vars_tags>([&vars_upper_face,
                                                  &vars_lower_face,
-                                                 &mesh_velocity_on_face,
-                                                 &i](auto tag_v) {
+                                                 &mesh_velocity_on_face](
+                                                    auto tag_v) {
                 using tag = tmpl::type_from<decltype(tag_v)>;
                 using flux_tag =
                     ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
@@ -282,14 +282,16 @@ struct TimeDerivative {
                      ++storage_index) {
                   const auto tensor_index =
                       var_upper.get_tensor_index(storage_index);
-                  const auto flux_storage_index =
-                      FluxTensor::get_storage_index(prepend(tensor_index, i));
-                  flux_upper[flux_storage_index] -=
-                      mesh_velocity_on_face.value().get(i) *
-                      var_upper[storage_index];
-                  flux_lower[flux_storage_index] -=
-                      mesh_velocity_on_face.value().get(i) *
-                      var_lower[storage_index];
+                  for (size_t j = 0; j < 3; j++) {
+                    const auto flux_storage_index =
+                        FluxTensor::get_storage_index(prepend(tensor_index, j));
+                    flux_upper[flux_storage_index] -=
+                        mesh_velocity_on_face.value().get(j) *
+                        var_upper[storage_index];
+                    flux_lower[flux_storage_index] -=
+                        mesh_velocity_on_face.value().get(j) *
+                        var_lower[storage_index];
+                  }
                 }
               });
             }

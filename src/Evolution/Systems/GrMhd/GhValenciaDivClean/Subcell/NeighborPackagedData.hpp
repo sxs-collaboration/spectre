@@ -229,8 +229,7 @@ struct NeighborPackagedData {
 
             if (mesh_velocity_on_subcell_face.has_value()) {
               tmpl::for_each<grmhd_evolved_vars_tags>(
-                  [&vars_on_face, &mesh_velocity_on_subcell_face,
-                   &direction](auto tag_v) {
+                  [&vars_on_face, &mesh_velocity_on_subcell_face](auto tag_v) {
                     using tag = tmpl::type_from<decltype(tag_v)>;
                     using flux_tag =
                         ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
@@ -241,13 +240,14 @@ struct NeighborPackagedData {
                          ++storage_index) {
                       const auto tensor_index =
                           var.get_tensor_index(storage_index);
-                      const auto flux_storage_index =
-                          FluxTensor::get_storage_index(
-                              prepend(tensor_index, direction.dimension()));
-                      flux[flux_storage_index] -=
-                          mesh_velocity_on_subcell_face.value().get(
-                              direction.dimension()) *
-                          var[storage_index];
+                      for (size_t j = 0; j < 3; j++) {
+                        const auto flux_storage_index =
+                            FluxTensor::get_storage_index(
+                                prepend(tensor_index, j));
+                        flux[flux_storage_index] -=
+                            mesh_velocity_on_subcell_face.value().get(j) *
+                            var[storage_index];
+                      }
                     }
                   });
             }

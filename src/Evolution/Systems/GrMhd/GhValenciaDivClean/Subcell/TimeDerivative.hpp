@@ -78,11 +78,10 @@ struct ComputeTimeDerivImpl<
   static void apply(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+      const Scalar<DataVector>& cell_centered_det_inv_jacobian,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>&
           cell_centered_logical_to_inertial_inv_jacobian,
-      const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
       const std::array<double, 3>& one_over_delta_xi,
       const std::array<Variables<tmpl::list<GrmhdDtTags...>>, 3>&
           boundary_corrections,
@@ -386,11 +385,9 @@ struct ComputeTimeDerivImpl<
     for (size_t dim = 0; dim < 3; ++dim) {
       const auto& boundary_correction_in_axis =
           gsl::at(boundary_corrections, dim);
-      const auto& component_inverse_jacobian =
-          cell_centered_logical_to_grid_inv_jacobian.get(dim, dim);
       const double inverse_delta = gsl::at(one_over_delta_xi, dim);
       EXPAND_PACK_LEFT_TO_RIGHT([&dt_vars_ptr, &boundary_correction_in_axis,
-                                 &component_inverse_jacobian, dim,
+                                 &cell_centered_det_inv_jacobian, dim,
                                  inverse_delta, &subcell_mesh]() {
         auto& dt_var = *get<::Tags::dt<GrmhdDtTags>>(dt_vars_ptr);
         const auto& var_correction =
@@ -398,7 +395,7 @@ struct ComputeTimeDerivImpl<
         for (size_t i = 0; i < dt_var.size(); ++i) {
           evolution::dg::subcell::add_cartesian_flux_divergence(
               make_not_null(&dt_var[i]), inverse_delta,
-              component_inverse_jacobian, var_correction[i],
+              get(cell_centered_det_inv_jacobian), var_correction[i],
               subcell_mesh.extents(), dim);
         }
       }());
@@ -420,8 +417,8 @@ struct TimeDerivative {
   static void apply(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+      /*cell_centered_logical_to_grid_inv_jacobian*/,
+      const Scalar<DataVector>& cell_centered_det_inv_jacobian) {
     using evolved_vars_tag =
         typename grmhd::GhValenciaDivClean::System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
@@ -514,6 +511,13 @@ struct TimeDerivative {
     // Velocity of the moving mesh on the dg grid, if applicable.
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
         mesh_velocity_dg = db::get<domain::Tags::MeshVelocity<3>>(*box);
+    // Inverse jacobian, to be projected on faces
+    const auto& inv_jacobian_dg =
+        db::get<domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                              Frame::Inertial>>(*box);
+    const auto& det_inv_jacobian_dg = db::get<
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+        *box);
 
     // GH+GRMHD is a bit different.
     // 1. Compute GH time derivative, since this will also give us lapse, shift,
@@ -606,16 +610,15 @@ struct TimeDerivative {
             grmhd::ValenciaDivClean::subcell::compute_fluxes(
                 make_not_null(&vars_lower_face));
 
+            // Build extents of mesh shifted by half a grid cell in direction i
+            const unsigned long& num_subcells_1d = subcell_mesh.extents(0);
+            Index<3> face_mesh_extents(std::array<size_t, 3>{
+                num_subcells_1d, num_subcells_1d, num_subcells_1d});
+            face_mesh_extents[i] = num_subcells_1d + 1;
             // Add moving mesh corrections to the fluxes, if needed
             std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
                 mesh_velocity_on_face = {};
             if (mesh_velocity_dg.has_value()) {
-              // Build extents of mesh shifted by half a grid cell in direction
-              // i
-              const unsigned long& num_subcells_1d = subcell_mesh.extents(0);
-              Index<3> face_mesh_extents(std::array<size_t, 3>{
-                  num_subcells_1d, num_subcells_1d, num_subcells_1d});
-              face_mesh_extents[i] = num_subcells_1d + 1;
               // Project mesh velocity on face mesh.
               // Can we get away with only doing the normal component? It
               // is also used in the packaged data...
@@ -631,8 +634,8 @@ struct TimeDerivative {
 
               tmpl::for_each<grmhd_evolved_vars_tags>([&vars_upper_face,
                                                        &vars_lower_face,
-                                                       &mesh_velocity_on_face,
-                                                       &i](auto tag_v) {
+                                                       &mesh_velocity_on_face](
+                                                          auto tag_v) {
                 using tag = tmpl::type_from<decltype(tag_v)>;
                 using flux_tag =
                     ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
@@ -645,14 +648,16 @@ struct TimeDerivative {
                      ++storage_index) {
                   const auto tensor_index =
                       var_upper.get_tensor_index(storage_index);
-                  const auto flux_storage_index =
-                      FluxTensor::get_storage_index(prepend(tensor_index, i));
-                  flux_upper[flux_storage_index] -=
-                      mesh_velocity_on_face.value().get(i) *
-                      var_upper[storage_index];
-                  flux_lower[flux_storage_index] -=
-                      mesh_velocity_on_face.value().get(i) *
-                      var_lower[storage_index];
+                  for (size_t j = 0; j < 3; j++) {
+                    const auto flux_storage_index =
+                        FluxTensor::get_storage_index(prepend(tensor_index, j));
+                    flux_upper[flux_storage_index] -=
+                        mesh_velocity_on_face.value().get(j) *
+                        var_upper[storage_index];
+                    flux_lower[flux_storage_index] -=
+                        mesh_velocity_on_face.value().get(j) *
+                        var_lower[storage_index];
+                  }
                 }
               });
             }
@@ -667,18 +672,35 @@ struct TimeDerivative {
             // NormalCovectorAndMagnitude tag in the DataBox right now to avoid
             // conflicts with the DG solver. We can explore in the future if
             // it's possible to reuse that allocation.
-            const Scalar<DataVector> normalization{
-                sqrt(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
-                         vars_upper_face)
-                         .get(i, i))};
-
+            //
+            // The unnormalized normal vector is
+            // n_j = d \xi^{\hat i}/dx^j
+            // with "i" the current face.
             tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
                 reconstructed_num_pts, 0.0};
-            lower_outward_conormal.get(i) = 1.0 / get(normalization);
+            for (size_t j = 0; j < 3; j++) {
+              lower_outward_conormal.get(j) =
+                  evolution::dg::subcell::fd::project_to_face(
+                      inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i);
+            }
+            const auto det_inv_jacobian_face =
+                evolution::dg::subcell::fd::project_to_face(
+                    get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i);
+
+            const Scalar<DataVector> normalization{sqrt(get(
+                dot_product(lower_outward_conormal, lower_outward_conormal,
+                            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                                vars_upper_face))))};
+            for (size_t j = 0; j < 3; j++) {
+              lower_outward_conormal.get(j) =
+                  lower_outward_conormal.get(j) / get(normalization);
+            }
 
             tnsr::i<DataVector, 3, Frame::Inertial> upper_outward_conormal{
                 reconstructed_num_pts, 0.0};
-            upper_outward_conormal.get(i) = -lower_outward_conormal.get(i);
+            for (size_t j = 0; j < 3; j++) {
+              upper_outward_conormal.get(j) = -lower_outward_conormal.get(j);
+            }
             // Note: we probably should compute the normal vector in addition to
             // the co-vector. Not a huge issue since we'll get an FPE right now
             // if it's used by a Riemann solver.
@@ -726,6 +748,9 @@ struct TimeDerivative {
                 upper_packaged_data, lower_packaged_data);
             // We need to multiply by the normal vector normalization
             gsl::at(boundary_corrections, i) *= get(normalization);
+            // Also multiply by determinant of Jacobian, following Eq.(34)
+            // of 2109.11645
+            gsl::at(boundary_corrections, i) *= 1.0 / det_inv_jacobian_face;
           }
         });
 
@@ -749,10 +774,9 @@ struct TimeDerivative {
                                  gh_gradient_tags, gh_extra_tags,
                                  grmhd_evolved_vars_tags, grmhd_source_tags,
                                  grmhd_source_argument_tags>::
-        apply(box, inertial_coords,
+        apply(box, inertial_coords, cell_centered_det_inv_jacobian,
               cell_centered_logical_to_inertial_inv_jacobian,
-              cell_centered_logical_to_grid_inv_jacobian, one_over_delta_xi,
-              boundary_corrections, cell_centered_gh_derivs);
+              one_over_delta_xi, boundary_corrections, cell_centered_gh_derivs);
   }
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell
