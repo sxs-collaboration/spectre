@@ -79,6 +79,9 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_simple_tag<
       subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>(
       "InverseJacobian(Logical,Grid)");
+  TestHelpers::db::test_simple_tag<
+      subcell::fd::Tags::InverseJacobianLogicalToInertial<Dim>>(
+      "InverseJacobian(Logical,Inertial)");
   TestHelpers::db::test_simple_tag<subcell::Tags::OnSubcellFaces<Var1, Dim>>(
       "OnSubcellFaces(Var1)");
   TestHelpers::db::test_simple_tag<subcell::Tags::OnSubcellFaces<
@@ -107,6 +110,11 @@ void test(const bool moving_mesh) {
                                                     Frame::Inertial>>>(
       "InertialCoordinates");
 
+  TestHelpers::db::test_compute_tag<
+      subcell::fd::Tags::InverseJacobianLogicalToInertialCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<
+              Dim, Frame::ElementLogical, Frame::Inertial>,
+          Dim>>("InverseJacobian(Logical,Inertial)");
   TestHelpers::db::test_compute_tag<
       subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::ElementLogical,
                                                     Frame::Grid>>(

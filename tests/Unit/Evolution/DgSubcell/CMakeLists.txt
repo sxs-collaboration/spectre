@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_GetTciDecision.cpp
   Test_GhostData.cpp
   Test_GhostZoneLogicalCoordinates.cpp
+  Test_JacobianCompute.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborRdmpAndVolumeData.cpp
@@ -50,6 +51,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DiscontinuousGalerkin
   Domain
   DgSubcell
   DgSubcellHelpers

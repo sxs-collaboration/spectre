@@ -149,10 +149,14 @@ struct NeighborPackagedData {
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
           const Direction<3>& direction = mortar_id.first;
 
+          const Mesh<2> dg_face_mesh =
+              dg_mesh.slice_away(direction.dimension());
           Index<3> extents = subcell_mesh.extents();
           // Switch to face-centered instead of cell-centered points on the FD.
           // There are num_cell_centered+1 face-centered points.
           ++extents[direction.dimension()];
+          const Index<2> subcell_face_extents =
+              extents.slice_away(direction.dimension());
 
           // Computed prims and cons on face via reconstruction
           const size_t num_face_pts = subcell_mesh.extents()
@@ -192,8 +196,57 @@ struct NeighborPackagedData {
                     ghost_subcell_data, subcell_mesh, mortar_id.first);
               });
 
+          // Get the mesh velocity if needed
+          const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+              mesh_velocity_dg = db::get<domain::Tags::MeshVelocity<3>>(box);
+          std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+              mesh_velocity_on_subcell_face = {};
+          if (mesh_velocity_dg.has_value()) {
+            // Slice data on current face
+            tnsr::I<DataVector, 3, Frame::Inertial> mesh_velocity_on_dg_face =
+                data_on_slice(
+                    mesh_velocity_dg.value(), dg_mesh.extents(),
+                    direction.dimension(),
+                    direction.side() == Side::Lower
+                        ? 0
+                        : (dg_mesh.extents(direction.dimension()) - 1));
+
+            mesh_velocity_on_subcell_face =
+                tnsr::I<DataVector, 3, Frame::Inertial>{num_face_pts};
+
+            for (size_t i = 0; i < 3; i++) {
+              evolution::dg::subcell::fd::project(
+                  make_not_null(&mesh_velocity_on_subcell_face.value().get(i)),
+                  mesh_velocity_on_dg_face.get(i), dg_face_mesh,
+                  subcell_face_extents);
+            }
+          }
+
           grmhd::ValenciaDivClean::subcell::compute_fluxes(
               make_not_null(&vars_on_face));
+
+          if (mesh_velocity_on_subcell_face.has_value()) {
+            tmpl::for_each<evolved_vars_tags>([&vars_on_face,
+                                               &mesh_velocity_on_subcell_face,
+                                               &direction](auto tag_v) {
+              using tag = tmpl::type_from<decltype(tag_v)>;
+              using flux_tag =
+                  ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+              using FluxTensor = typename flux_tag::type;
+              const auto& var = get<tag>(vars_on_face);
+              auto& flux = get<flux_tag>(vars_on_face);
+              for (size_t storage_index = 0; storage_index < var.size();
+                   ++storage_index) {
+                const auto tensor_index = var.get_tensor_index(storage_index);
+                const auto flux_storage_index = FluxTensor::get_storage_index(
+                    prepend(tensor_index, direction.dimension()));
+                flux[flux_storage_index] -=
+                    mesh_velocity_on_subcell_face.value().get(
+                        direction.dimension()) *
+                    var[storage_index];
+              }
+            });
+          }
 
           // Note: since the spacetime isn't dynamical we don't need to
           // worry about different normal vectors on the different sides
@@ -227,7 +280,7 @@ struct NeighborPackagedData {
           evolution::dg::Actions::detail::dg_package_data<System>(
               make_not_null(&packaged_data),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
-              vars_on_face, normal_covector, {std::nullopt}, box,
+              vars_on_face, normal_covector, mesh_velocity_on_subcell_face, box,
               typename DerivedCorrection::dg_package_data_volume_tags{},
               dg_package_data_projected_tags{});
 
