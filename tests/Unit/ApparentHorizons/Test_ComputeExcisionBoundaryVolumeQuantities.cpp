@@ -340,9 +340,8 @@ SPECTRE_TEST_CASE(
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+                 Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                              Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -354,8 +353,7 @@ SPECTRE_TEST_CASE(
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
@@ -364,8 +362,7 @@ SPECTRE_TEST_CASE(
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
@@ -376,9 +373,8 @@ SPECTRE_TEST_CASE(
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
-                 Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+                 Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                              Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -390,8 +386,7 @@ SPECTRE_TEST_CASE(
   test_compute_excision_boundary_volume_quantities<
       std::true_type, Frame::Grid,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>>>();

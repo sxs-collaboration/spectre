@@ -170,12 +170,10 @@ void test_gh_local_time_stepping_interface_manager(
             get<1>(*retrieved_data))),
         expected_spacetime_metric, local_approx);
     CHECK_ITERABLE_CUSTOM_APPROX(
-        SINGLE_ARG(
-            get<gh::Tags::Pi<3, ::Frame::Inertial>>(get<1>(*retrieved_data))),
+        SINGLE_ARG(get<gh::Tags::Pi<DataVector, 3>>(get<1>(*retrieved_data))),
         expected_pi, local_approx);
     CHECK_ITERABLE_CUSTOM_APPROX(
-        SINGLE_ARG(
-            get<gh::Tags::Phi<3, ::Frame::Inertial>>(get<1>(*retrieved_data))),
+        SINGLE_ARG(get<gh::Tags::Phi<DataVector, 3>>(get<1>(*retrieved_data))),
         expected_phi, local_approx);
   };
 

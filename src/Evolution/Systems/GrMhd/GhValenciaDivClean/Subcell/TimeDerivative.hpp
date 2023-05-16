@@ -166,7 +166,7 @@ struct ComputeTimeDerivImpl<
       const auto& lapse = get<gr::Tags::Lapse<DataVector>>(temp_tags);
       const auto& half_phi_two_normals =
           get<gh::Tags::HalfPhiTwoNormals<3>>(temp_tags);
-      const auto& phi = get<gh::Tags::Phi<3>>(evolved_vars);
+      const auto& phi = get<gh::Tags::Phi<DataVector, 3>>(evolved_vars);
       const auto& phi_one_normal = get<gh::Tags::PhiOneNormal<3>>(temp_tags);
       const auto& spacetime_normal_vector =
           get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(temp_tags);
@@ -208,7 +208,7 @@ struct ComputeTimeDerivImpl<
       }
 
       // Compute extrinsic curvature
-      const auto& pi = get<gh::Tags::Pi<3>>(evolved_vars);
+      const auto& pi = get<gh::Tags::Pi<DataVector, 3>>(evolved_vars);
       for (size_t i = 0; i < 3; ++i) {
         for (size_t j = i; j < 3; ++j) {
           get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(temp_tags).get(i,
@@ -293,7 +293,7 @@ struct ComputeTimeDerivImpl<
                                          primitive_vars));
 
     add_stress_energy_term_to_dt_pi(
-        get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars_ptr),
+        get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(dt_vars_ptr),
         get<Tags::TraceReversedStressEnergy>(temp_tags),
         get<gr::Tags::Lapse<DataVector>>(temp_tags));
 
@@ -622,8 +622,8 @@ struct TimeDerivative {
     using gh_gradient_tags = typename TimeDerivativeTerms::gh_gradient_tags;
     using gh_temporary_tags = typename TimeDerivativeTerms::gh_temp_tags;
     using gh_extra_tags =
-        tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,
-                   gh::Tags::Phi<3>,
+        tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                   gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma0,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma1,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma2>;

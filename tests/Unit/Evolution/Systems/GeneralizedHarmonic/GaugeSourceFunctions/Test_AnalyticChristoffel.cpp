@@ -144,8 +144,7 @@ void test_ks(const Mesh<3>& mesh) {
       1.2, {0.1, 0.2, 0.3}, {-0.1, -0.2, -0.4}};
   const auto [pi, phi, spacetime_metric] = kerr_schild.variables(
       inertial_coords, time,
-      tmpl::list<gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
+      tmpl::list<gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  gr::Tags::SpacetimeMetric<DataVector, 3>>{});
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const auto inverse_spatial_metric =

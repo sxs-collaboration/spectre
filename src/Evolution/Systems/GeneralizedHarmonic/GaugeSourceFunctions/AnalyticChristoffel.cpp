@@ -73,8 +73,8 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative(
   ASSERT(analytic_prescription_ != nullptr,
          "The analytic prescription cannot be nullptr.");
   using solution_tags =
-      tmpl::list<gh::Tags::Pi<SpatialDim, Frame::Inertial>,
-                 gh::Tags::Phi<SpatialDim, Frame::Inertial>,
+      tmpl::list<gh::Tags::Pi<DataVector, SpatialDim>,
+                 gh::Tags::Phi<DataVector, SpatialDim>,
                  gr::Tags::SpacetimeMetric<DataVector, SpatialDim>,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, SpatialDim>,

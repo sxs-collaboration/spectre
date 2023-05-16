@@ -228,7 +228,7 @@ SPECTRE_TEST_CASE(
               get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
               get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
                   expected_temp_variables),
-              get<gh::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<
@@ -242,7 +242,7 @@ SPECTRE_TEST_CASE(
                   expected_temp_variables),
               get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
                   expected_temp_variables),
-              get<gh::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<
@@ -250,7 +250,8 @@ SPECTRE_TEST_CASE(
                                       gr::Tags::SpatialMetric<DataVector, 3>,
                                       tmpl::size_t<3>, Frame::Inertial>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
-          gh::deriv_spatial_metric(get<gh::Tags::Phi<3>>(arg_variables));
+          gh::deriv_spatial_metric(
+              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<
@@ -259,8 +260,8 @@ SPECTRE_TEST_CASE(
           gh::extrinsic_curvature(
               get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
                   expected_temp_variables),
-              get<gh::Tags::Pi<3>>(arg_variables),
-              get<gh::Tags::Phi<3>>(arg_variables));
+              get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
+              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
     } else {
@@ -308,8 +309,8 @@ SPECTRE_TEST_CASE(
       get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));
   // apply the correction to dt pi for the expected variables
   grmhd::GhValenciaDivClean::add_stress_energy_term_to_dt_pi(
-      make_not_null(
-          &get<::Tags::dt<gh::Tags::Pi<3_st>>>(expected_dt_variables)),
+      make_not_null(&get<::Tags::dt<gh::Tags::Pi<DataVector, 3_st>>>(
+          expected_dt_variables)),
       get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
           expected_temp_variables),
       get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));

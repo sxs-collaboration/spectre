@@ -31,15 +31,13 @@ struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
-  using variables_tag =
-      ::Tags::Variables<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                                   Tags::Pi<Dim, Frame::Inertial>,
-                                   Tags::Phi<Dim, Frame::Inertial>>>;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                 Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>>;
   using flux_variables = tmpl::list<>;
   using gradient_variables =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                 Tags::Pi<Dim, Frame::Inertial>,
-                 Tags::Phi<Dim, Frame::Inertial>>;
+                 Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>;
   using gradients_tags = gradient_variables;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;

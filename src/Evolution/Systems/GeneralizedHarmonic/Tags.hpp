@@ -13,8 +13,6 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
-class DataVector;
-
 namespace gh {
 namespace Tags {
 /*!
@@ -25,9 +23,9 @@ namespace Tags {
  * \f$ \Pi_{ab} = -\frac{1}{N} ( \partial_t \psi_{ab} + N^{i} \Phi_{iab} ) \f$
  * where \f$\Phi_{iab}\f$ is the variable defined by the tag Phi.
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct Pi : db::SimpleTag {
-  using type = tnsr::aa<DataVector, Dim, Frame>;
+  using type = tnsr::aa<DataType, Dim, Frame>;
 };
 
 /*!
@@ -36,9 +34,9 @@ struct Pi : db::SimpleTag {
  * \details If \f$\psi_{ab}\f$ is the spacetime metric then we define
  * \f$\Phi_{iab} = \partial_i \psi_{ab}\f$
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct Phi : db::SimpleTag {
-  using type = tnsr::iaa<DataVector, Dim, Frame>;
+  using type = tnsr::iaa<DataType, Dim, Frame>;
 };
 
 /*!
@@ -49,9 +47,9 @@ struct Phi : db::SimpleTag {
  * \f$ \square x_a = H_a\f$ is sourced by non-vanishing functions. This variable
  * stores those functions \f$ H_a\f$.
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct GaugeH : db::SimpleTag {
-  using type = tnsr::a<DataVector, Dim, Frame>;
+  using type = tnsr::a<DataType, Dim, Frame>;
 };
 
 /*!
@@ -63,9 +61,9 @@ struct GaugeH : db::SimpleTag {
  * functions \f$ H_a\f$. This variable stores their spacetime derivatives
  * \f$ \partial_b H_a\f$.
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
-  using type = tnsr::ab<DataVector, Dim, Frame>;
+  using type = tnsr::ab<DataType, Dim, Frame>;
 };
 
 /*!
@@ -78,9 +76,9 @@ struct SpacetimeDerivGaugeH : db::SimpleTag {
  * stores the initial or starting value of those functions \f$ H_a\f$, which
  * are set by the user (based on the choice of initial data) to begin evolution.
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct InitialGaugeH : db::SimpleTag {
-  using type = tnsr::a<DataVector, Dim, Frame>;
+  using type = tnsr::a<DataType, Dim, Frame>;
 };
 
 /*!
@@ -93,9 +91,9 @@ struct InitialGaugeH : db::SimpleTag {
  * the spacetime derivatives of those functions \f$ \partial_b H_a\f$, which
  * are set by the user (based on the choice of initial data) to begin evolution.
  */
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
-  using type = tnsr::ab<DataVector, Dim, Frame>;
+  using type = tnsr::ab<DataType, Dim, Frame>;
 };
 
 /// @{
@@ -104,41 +102,41 @@ struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
 ///
 /// \details For details on how these are defined and computed, see
 /// CharacteristicSpeedsCompute
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct VSpacetimeMetric : db::SimpleTag {
-  using type = tnsr::aa<DataVector, Dim, Frame>;
+  using type = tnsr::aa<DataType, Dim, Frame>;
 };
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct VZero : db::SimpleTag {
-  using type = tnsr::iaa<DataVector, Dim, Frame>;
+  using type = tnsr::iaa<DataType, Dim, Frame>;
 };
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct VPlus : db::SimpleTag {
-  using type = tnsr::aa<DataVector, Dim, Frame>;
+  using type = tnsr::aa<DataType, Dim, Frame>;
 };
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct VMinus : db::SimpleTag {
-  using type = tnsr::aa<DataVector, Dim, Frame>;
+  using type = tnsr::aa<DataType, Dim, Frame>;
 };
 /// @}
 
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct CharacteristicSpeeds : db::SimpleTag {
-  using type = std::array<DataVector, 4>;
+  using type = std::array<DataType, 4>;
 };
 
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct CharacteristicFields : db::SimpleTag {
-  using type =
-      Variables<tmpl::list<VSpacetimeMetric<Dim, Frame>, VZero<Dim, Frame>,
-                           VPlus<Dim, Frame>, VMinus<Dim, Frame>>>;
+  using type = Variables<tmpl::list<
+      VSpacetimeMetric<DataType, Dim, Frame>, VZero<DataType, Dim, Frame>,
+      VPlus<DataType, Dim, Frame>, VMinus<DataType, Dim, Frame>>>;
 };
 
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
-  using type =
-      Variables<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
-                           Pi<Dim, Frame>, Phi<Dim, Frame>>>;
+  using type = Variables<
+      tmpl::list<gr::Tags::SpacetimeMetric<DataType, Dim, Frame>,
+                 Pi<DataType, Dim, Frame>, Phi<DataType, Dim, Frame>>>;
 };
 
 /*!
@@ -149,34 +147,34 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
  * `ThreeIndexConstraintCompute`, `FourIndexConstraintCompute`, and
  * `ConstraintEnergyCompute` respectively
  */
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct GaugeConstraint : db::SimpleTag {
-  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  using type = tnsr::a<DataType, SpatialDim, Frame>;
 };
 /// \copydoc GaugeConstraint
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct FConstraint : db::SimpleTag {
-  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  using type = tnsr::a<DataType, SpatialDim, Frame>;
 };
 /// \copydoc GaugeConstraint
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct TwoIndexConstraint : db::SimpleTag {
-  using type = tnsr::ia<DataVector, SpatialDim, Frame>;
+  using type = tnsr::ia<DataType, SpatialDim, Frame>;
 };
 /// \copydoc GaugeConstraint
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct ThreeIndexConstraint : db::SimpleTag {
-  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  using type = tnsr::iaa<DataType, SpatialDim, Frame>;
 };
 /// \copydoc GaugeConstraint
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct FourIndexConstraint : db::SimpleTag {
-  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  using type = tnsr::iaa<DataType, SpatialDim, Frame>;
 };
 /// \copydoc GaugeConstraint
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim, typename Frame>
 struct ConstraintEnergy : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 }  // namespace Tags
 

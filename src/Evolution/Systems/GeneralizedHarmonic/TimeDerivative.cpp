@@ -356,11 +356,11 @@ using derivative_frame = Frame::Inertial;
 
 template <size_t Dim>
 using derivative_tags_initial_gauge =
-    tmpl::list<gh::Tags::InitialGaugeH<Dim, derivative_frame>>;
+    tmpl::list<gh::Tags::InitialGaugeH<DataVector, Dim, derivative_frame>>;
 
 template <size_t Dim>
 using variables_tags_initial_gauge =
-    tmpl::list<gh::Tags::InitialGaugeH<Dim, derivative_frame>>;
+    tmpl::list<gh::Tags::InitialGaugeH<DataVector, Dim, derivative_frame>>;
 
 template <size_t Dim>
 using derivative_tags = typename gh::System<Dim>::gradients_tags;

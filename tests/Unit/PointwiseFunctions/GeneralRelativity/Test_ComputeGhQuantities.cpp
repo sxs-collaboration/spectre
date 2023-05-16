@@ -984,7 +984,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       db::AddSimpleTags<gr::Tags::Lapse<DataVector>,
                         gr::Tags::SpacetimeNormalVector<DataVector, 3>,
                         gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
-                        gh::Tags::Phi<3, Frame::Inertial>>,
+                        gh::Tags::Phi<DataVector, 3>>,
       db::AddComputeTags<
           gh::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>,
           gh::Tags::DerivLapseCompute<3, Frame::Inertial>,
@@ -1009,7 +1009,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           gr::Tags::SpacetimeNormalVector<DataVector, 3>,
           gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
           gr::Tags::InverseSpatialMetric<DataVector, 3>,
-          gh::Tags::Phi<3, Frame::Inertial>, gh::Tags::Pi<3, Frame::Inertial>>,
+          gh::Tags::Phi<DataVector, 3>, gh::Tags::Pi<DataVector, 3>>,
       db::AddComputeTags<
           gh::Tags::TimeDerivSpatialMetricCompute<3, Frame::Inertial>,
           gh::Tags::TimeDerivLapseCompute<3, Frame::Inertial>,
@@ -1053,8 +1053,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       expected_deriv_lapse, expected_deriv_shift, expected_dt_spatial_metric,
       expected_dt_lapse, expected_dt_shift);
 
-  CHECK(db::get<gh::Tags::Phi<3, Frame::Inertial>>(ghvars_box) == expected_phi);
-  CHECK(db::get<gh::Tags::Pi<3, Frame::Inertial>>(ghvars_box) == expected_pi);
+  CHECK(db::get<gh::Tags::Phi<DataVector, 3>>(ghvars_box) == expected_phi);
+  CHECK(db::get<gh::Tags::Pi<DataVector, 3>>(ghvars_box) == expected_pi);
   CHECK(db::get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(ghvars_box) ==
         expected_extrinsic_curvature);
   CHECK(db::get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(ghvars_box) ==

@@ -34,7 +34,7 @@ namespace gh::gauges {
 template <size_t Dim>
 struct SetPiFromGauge {
  public:
-  using return_tags = tmpl::list<gh::Tags::Pi<Dim, Frame::Inertial>>;
+  using return_tags = tmpl::list<gh::Tags::Pi<DataVector, Dim>>;
   using argument_tags =
       tmpl::list<::Tags::Time, domain::Tags::Mesh<Dim>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
@@ -43,7 +43,7 @@ struct SetPiFromGauge {
                  domain::Tags::FunctionsOfTime,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                 gh::Tags::Phi<Dim, Frame::Inertial>,
+                 gh::Tags::Phi<DataVector, Dim>,
                  gh::gauges::Tags::GaugeCondition>;
 
   using const_global_cache_tags = tmpl::list<gh::gauges::Tags::GaugeCondition>;

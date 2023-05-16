@@ -74,8 +74,8 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<3>,
-                 gh::Tags::Phi<3>>;
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma1,
@@ -85,9 +85,9 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
                  gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpacetimeNormalVector<DataVector, 3>,
                  gr::Tags::SpacetimeNormalOneForm<DataVector, 3>,
-                 gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
-                 gh::Tags::GaugeH<3, Frame::Inertial>,
-                 gh::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>;
+                 gh::Tags::ThreeIndexConstraint<DataVector, 3>,
+                 gh::Tags::GaugeH<DataVector, 3>,
+                 gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>;
   using dg_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
@@ -170,15 +170,15 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
 
   using dg_interior_dt_vars_tags =
       tmpl::list<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-                 ::Tags::dt<gh::Tags::Pi<3, Frame::Inertial>>,
-                 ::Tags::dt<gh::Tags::Phi<3, Frame::Inertial>>>;
+                 ::Tags::dt<gh::Tags::Pi<DataVector, 3>>,
+                 ::Tags::dt<gh::Tags::Phi<DataVector, 3>>>;
   using dg_interior_deriv_vars_tags =
       tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
                                tmpl::size_t<3>, Frame::Inertial>,
-                 ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>,
-                               tmpl::size_t<3>, Frame::Inertial>,
-                 ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
-                               tmpl::size_t<3>, Frame::Inertial>>;
+                 ::Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>>;
 
   std::optional<std::string> dg_time_derivative(
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>

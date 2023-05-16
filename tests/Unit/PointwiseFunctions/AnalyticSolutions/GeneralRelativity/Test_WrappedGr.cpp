@@ -108,14 +108,14 @@ void test_generalized_harmonic_solution(const Args&... args) {
       x, t,
       tmpl::list<
           gr::Tags::SpacetimeMetric<DataVector, SolutionType::volume_dim>,
-          gh::Tags::Pi<SolutionType::volume_dim, Frame::Inertial>,
-          gh::Tags::Phi<SolutionType::volume_dim, Frame::Inertial>>{});
+          gh::Tags::Pi<DataVector, SolutionType::volume_dim>,
+          gh::Tags::Phi<DataVector, SolutionType::volume_dim>>{});
   CHECK(psi ==
         get<gr::Tags::SpacetimeMetric<DataVector, SolutionType::volume_dim>>(
             wrapped_gh_vars));
-  CHECK(pi == get<gh::Tags::Pi<SolutionType::volume_dim, Frame::Inertial>>(
+  CHECK(pi == get<gh::Tags::Pi<DataVector, SolutionType::volume_dim>>(
                   wrapped_gh_vars));
-  CHECK(phi == get<gh::Tags::Phi<SolutionType::volume_dim, Frame::Inertial>>(
+  CHECK(phi == get<gh::Tags::Phi<DataVector, SolutionType::volume_dim>>(
                    wrapped_gh_vars));
 
   // Weak test of operators == and !=

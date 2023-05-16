@@ -26,22 +26,24 @@ namespace grmhd::GhValenciaDivClean::Tags {
  * `gh::Tags::FConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct FConstraintCompute : gh::Tags::FConstraint<SpatialDim, Frame>,
-                            db::ComputeTag {
+struct FConstraintCompute
+    : gh::Tags::FConstraint<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags = tmpl::list<
-      gh::Tags::GaugeH<SpatialDim, Frame>,
-      gh::Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>,
+      gh::Tags::GaugeH<DataVector, SpatialDim, Frame>,
+      gh::Tags::SpacetimeDerivGaugeH<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
-      gh::Tags::Pi<SpatialDim, Frame>, gh::Tags::Phi<SpatialDim, Frame>,
-      ::Tags::deriv<gh::Tags::Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
-                    Frame>,
-      ::Tags::deriv<gh::Tags::Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
-                    Frame>,
+      gh::Tags::Pi<DataVector, SpatialDim, Frame>,
+      gh::Tags::Phi<DataVector, SpatialDim, Frame>,
+      ::Tags::deriv<gh::Tags::Pi<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      ::Tags::deriv<gh::Tags::Phi<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
       ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-      gh::Tags::ThreeIndexConstraint<SpatialDim, Frame>,
+      gh::Tags::ThreeIndexConstraint<DataVector, SpatialDim, Frame>,
       Tags::TraceReversedStressEnergy>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
@@ -63,6 +65,6 @@ struct FConstraintCompute : gh::Tags::FConstraint<SpatialDim, Frame>,
       const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
       &gh::f_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = gh::Tags::FConstraint<SpatialDim, Frame>;
+  using base = gh::Tags::FConstraint<DataVector, SpatialDim, Frame>;
 };
 }  // namespace grmhd::GhValenciaDivClean::Tags

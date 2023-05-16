@@ -94,7 +94,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
 
   // - Generalized harmonic variables
   using gh_vars = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                             Tags::Pi<3, Frame::Inertial>>;
+                             Tags::Pi<DataVector, 3>>;
   struct GhVars
       : tuples::tagged_tuple_from_typelist<db::wrap_tags_in<VarName, gh_vars>> {
     static constexpr Options::String help =
@@ -224,7 +224,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       // metric to enforce the 3-index constraint.
       *spacetime_metric = std::move(
           get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*numeric_data));
-      *pi = std::move(get<Tags::Pi<3, Frame::Inertial>>(*numeric_data));
+      *pi = std::move(get<Tags::Pi<DataVector, 3>>(*numeric_data));
       // Set Phi to the numerical spatial derivative of spacetime_metric
       partial_derivative(phi, *spacetime_metric, mesh, inv_jacobian);
     } else if (std::holds_alternative<NumericInitialData::AdmVars>(
@@ -311,8 +311,8 @@ struct ReadNumericInitialData {
  *
  * This action modifies the following tags in the DataBox:
  * - gr::Tags::SpacetimeMetric<DataVector, 3>
- * - gh::Tags::Pi<3, Frame::Inertial>
- * - gh::Tags::Phi<3, Frame::Inertial>
+ * - gh::Tags::Pi<DataVector, 3>
+ * - gh::Tags::Phi<DataVector, 3>
  */
 struct SetNumericInitialData {
   static constexpr size_t Dim = 3;
@@ -343,7 +343,7 @@ struct SetNumericInitialData {
                                               Frame::Inertial>>(box);
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
-               Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
+               Tags::Pi<DataVector, 3>, Tags::Phi<DataVector, 3>>(
         make_not_null(&box),
         [&initial_data, &numeric_data, &mesh, &inv_jacobian](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,

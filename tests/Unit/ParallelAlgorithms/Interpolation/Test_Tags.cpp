@@ -30,15 +30,14 @@ struct InterpolationTargetTag {
 };
 
 void test_tags_metafunctions() {
-  static_assert(
-      std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
-                         gh::Tags::Pi<3, Frame::Inertial>, Frame::Grid>,
-                     gh::Tags::Pi<3, Frame::Grid>>,
-      "Failed testing replace_frame_in_tag_t");
+  static_assert(std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
+                                   gh::Tags::Pi<DataVector, 3>, Frame::Grid>,
+                               gh::Tags::Pi<DataVector, 3, Frame::Grid>>,
+                "Failed testing replace_frame_in_tag_t");
   static_assert(
       not std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
-                             gh::Tags::Pi<3, Frame::Inertial>, Frame::Grid>,
-                         gh::Tags::Pi<3, Frame::Distorted>>,
+                             gh::Tags::Pi<DataVector, 3>, Frame::Grid>,
+                         gh::Tags::Pi<DataVector, 3, Frame::Distorted>>,
       "Failed testing replace_frame_in_tag_t");
   static_assert(
       std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
@@ -57,22 +56,22 @@ void test_tags_metafunctions() {
       "Failed testing replace_frame_in_tag_t");
   static_assert(
       std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
-                         Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
+                         Tags::deriv<gh::Tags::Phi<DataVector, 3>,
                                      tmpl::size_t<3>, Frame::Inertial>,
                          Frame::Grid>,
-                     Tags::deriv<gh::Tags::Phi<3, Frame::Grid>, tmpl::size_t<3>,
-                                 Frame::Grid>>,
+                     Tags::deriv<gh::Tags::Phi<DataVector, 3, Frame::Grid>,
+                                 tmpl::size_t<3>, Frame::Grid>>,
       "Failed testing replace_frame_in_tag_t");
   static_assert(
       std::is_same_v<
           TensorMetafunctions::replace_frame_in_taglist<
-              tmpl::list<Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
+              tmpl::list<Tags::deriv<gh::Tags::Phi<DataVector, 3>,
                                      tmpl::size_t<3>, Frame::Inertial>,
-                         gh::Tags::Pi<3, Frame::Distorted>>,
+                         gh::Tags::Pi<DataVector, 3, Frame::Distorted>>,
               Frame::Grid>,
-          tmpl::list<Tags::deriv<gh::Tags::Phi<3, Frame::Grid>, tmpl::size_t<3>,
-                                 Frame::Grid>,
-                     gh::Tags::Pi<3, Frame::Grid>>>,
+          tmpl::list<Tags::deriv<gh::Tags::Phi<DataVector, 3, Frame::Grid>,
+                                 tmpl::size_t<3>, Frame::Grid>,
+                     gh::Tags::Pi<DataVector, 3, Frame::Grid>>>,
       "Failed testing replace_frame_in_taglist");
 }
 }  // namespace

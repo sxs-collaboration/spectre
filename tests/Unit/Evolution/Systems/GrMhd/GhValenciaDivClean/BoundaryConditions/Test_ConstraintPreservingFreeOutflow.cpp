@@ -122,8 +122,9 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                    gr::Tags::InverseSpatialMetric<DataVector, 3>,
                    gr::Tags::SqrtDetSpatialMetric<DataVector>,
                    gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                   gr::Tags::SpacetimeMetric<DataVector, 3>, ::gh::Tags::Pi<3>,
-                   ::gh::Tags::Phi<3>>;
+                   gr::Tags::SpacetimeMetric<DataVector, 3>,
+                   ::gh::Tags::Pi<DataVector, 3>,
+                   ::gh::Tags::Phi<DataVector, 3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -131,8 +132,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     local_prim_vars.assign_subset(analytic_vars);
     spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(analytic_vars);
-    pi = get<::gh::Tags::Pi<3>>(analytic_vars);
-    phi = get<::gh::Tags::Phi<3>>(analytic_vars);
+    pi = get<::gh::Tags::Pi<DataVector, 3>>(analytic_vars);
+    phi = get<::gh::Tags::Phi<DataVector, 3>>(analytic_vars);
     lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
     shift = get<gr::Tags::Shift<DataVector, 3>>(analytic_vars);
     inverse_spatial_metric =
@@ -207,8 +208,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(expected_vars),
-                  get<gh::Tags::Pi<3>>(expected_vars),
-                  get<gh::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<DataVector, 3>>(expected_vars),
+                  get<gh::Tags::Phi<DataVector, 3>>(expected_vars),
 
                   get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
                   get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
@@ -269,8 +270,10 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                       &get<
                           ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
                           dt_vars)),
-                  make_not_null(&get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars)),
-                  make_not_null(&get<::Tags::dt<gh::Tags::Phi<3>>>(dt_vars)),
+                  make_not_null(
+                      &get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(dt_vars)),
+                  make_not_null(
+                      &get<::Tags::dt<gh::Tags::Phi<DataVector, 3>>>(dt_vars)),
                   make_not_null(
                       &get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeD>>(
                           dt_vars)),
@@ -293,8 +296,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(expected_vars),
-                  get<gh::Tags::Pi<3>>(expected_vars),
-                  get<gh::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<DataVector, 3>>(expected_vars),
+                  get<gh::Tags::Phi<DataVector, 3>>(expected_vars),
 
                   get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
                   get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
@@ -377,16 +380,16 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                       &get<
                           ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
                           expected_dt_vars)),
-                  make_not_null(
-                      &get<::Tags::dt<gh::Tags::Pi<3>>>(expected_dt_vars)),
-                  make_not_null(
-                      &get<::Tags::dt<gh::Tags::Phi<3>>>(expected_dt_vars)),
+                  make_not_null(&get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(
+                      expected_dt_vars)),
+                  make_not_null(&get<::Tags::dt<gh::Tags::Phi<DataVector, 3>>>(
+                      expected_dt_vars)),
 
                   {}, normal_covector, normal_vector,
 
                   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(expected_vars),
-                  get<gh::Tags::Pi<3>>(expected_vars),
-                  get<gh::Tags::Phi<3>>(expected_vars),
+                  get<gh::Tags::Pi<DataVector, 3>>(expected_vars),
+                  get<gh::Tags::Phi<DataVector, 3>>(expected_vars),
 
                   coords, interior_gamma1, interior_gamma2,
                   get<gr::Tags::Lapse<DataVector>>(expected_vars),

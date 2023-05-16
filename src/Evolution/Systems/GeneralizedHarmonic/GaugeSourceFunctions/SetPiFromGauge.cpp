@@ -89,7 +89,8 @@ void SetPiFromGauge<Dim>::apply(
                  gr::Tags::TraceExtrinsicCurvature<DataVector>,
                  gr::Tags::SpatialChristoffelFirstKind<DataVector, Dim>,
                  gr::Tags::TraceSpatialChristoffelFirstKind<DataVector, Dim>,
-                 gh::Tags::GaugeH<Dim>, gh::Tags::SpacetimeDerivGaugeH<Dim>,
+                 gh::Tags::GaugeH<DataVector, Dim>,
+                 gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>,
                  ::Tags::dt<gr::Tags::Lapse<DataVector>>,
                  ::Tags::dt<gr::Tags::Shift<DataVector, Dim>>,
                  ::Tags::dt<gr::Tags::SpatialMetric<DataVector, Dim>>>>

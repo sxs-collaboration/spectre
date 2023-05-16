@@ -76,9 +76,10 @@ void characteristic_speeds(
     const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
 
 template <size_t Dim, typename Frame>
-struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
-                                     db::ComputeTag {
-  using base = Tags::CharacteristicSpeeds<Dim, Frame>;
+struct CharacteristicSpeedsCompute
+    : Tags::CharacteristicSpeeds<DataVector, Dim, Frame>,
+      db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds<DataVector, Dim, Frame>;
   using type = typename base::type;
   using argument_tags = tmpl::list<
       ::gh::ConstraintDamping::Tags::ConstraintGamma1,
@@ -184,7 +185,8 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
  * \ref CharacteristicSpeedsCompute .
  */
 template <size_t Dim, typename Frame>
-typename Tags::CharacteristicFields<Dim, Frame>::type characteristic_fields(
+typename Tags::CharacteristicFields<DataVector, Dim, Frame>::type
+characteristic_fields(
     const Scalar<DataVector>& gamma_2,
     const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
@@ -194,7 +196,8 @@ typename Tags::CharacteristicFields<Dim, Frame>::type characteristic_fields(
 
 template <size_t Dim, typename Frame>
 void characteristic_fields(
-    gsl::not_null<typename Tags::CharacteristicFields<Dim, Frame>::type*>
+    gsl::not_null<
+        typename Tags::CharacteristicFields<DataVector, Dim, Frame>::type*>
         char_fields,
     const Scalar<DataVector>& gamma_2,
     const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
@@ -204,15 +207,16 @@ void characteristic_fields(
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
-struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
-                                     db::ComputeTag {
-  using base = Tags::CharacteristicFields<Dim, Frame>;
+struct CharacteristicFieldsCompute
+    : Tags::CharacteristicFields<DataVector, Dim, Frame>,
+      db::ComputeTag {
+  using base = Tags::CharacteristicFields<DataVector, Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       ::gh::ConstraintDamping::Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
-      gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>, Tags::Pi<Dim, Frame>,
-      Tags::Phi<Dim, Frame>,
+      gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
+      Tags::Pi<DataVector, Dim, Frame>, Tags::Phi<DataVector, Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   static constexpr auto function = static_cast<void (*)(
@@ -231,7 +235,8 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
 template <size_t Dim, typename Frame>
-typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type
+typename Tags::EvolvedFieldsFromCharacteristicFields<DataVector, Dim,
+                                                     Frame>::type
 evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2,
     const tnsr::aa<DataVector, Dim, Frame>& u_psi,
@@ -242,8 +247,8 @@ evolved_fields_from_characteristic_fields(
 
 template <size_t Dim, typename Frame>
 void evolved_fields_from_characteristic_fields(
-    gsl::not_null<
-        typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type*>
+    gsl::not_null<typename Tags::EvolvedFieldsFromCharacteristicFields<
+        DataVector, Dim, Frame>::type*>
         evolved_fields,
     const Scalar<DataVector>& gamma_2,
     const tnsr::aa<DataVector, Dim, Frame>& u_psi,
@@ -254,14 +259,16 @@ void evolved_fields_from_characteristic_fields(
 
 template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
-    : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
+    : Tags::EvolvedFieldsFromCharacteristicFields<DataVector, Dim, Frame>,
       db::ComputeTag {
-  using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
+  using base =
+      Tags::EvolvedFieldsFromCharacteristicFields<DataVector, Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       gh::ConstraintDamping::Tags::ConstraintGamma2,
-      Tags::VSpacetimeMetric<Dim, Frame>, Tags::VZero<Dim, Frame>,
-      Tags::VPlus<Dim, Frame>, Tags::VMinus<Dim, Frame>,
+      Tags::VSpacetimeMetric<DataVector, Dim, Frame>,
+      Tags::VZero<DataVector, Dim, Frame>, Tags::VPlus<DataVector, Dim, Frame>,
+      Tags::VMinus<DataVector, Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   static constexpr auto function = static_cast<void (*)(

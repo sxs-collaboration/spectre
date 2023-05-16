@@ -89,7 +89,7 @@ struct DerivShiftCompute
       gr::Tags::Lapse<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
-      Phi<SpatialDim, Frame>>;
+      Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::iJ<DataVector, SpatialDim, Frame>;
 

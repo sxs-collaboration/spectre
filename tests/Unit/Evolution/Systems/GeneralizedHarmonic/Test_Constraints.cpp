@@ -197,9 +197,9 @@ void test_two_index_constraint_analytic(
     const std::array<double, 3>& upper_bound, const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
-  using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
+  using Pi = ::gh::Tags::Pi<DataVector, 3>;
+  using Phi = ::gh::Tags::Phi<DataVector, 3>;
+  using GaugeH = ::gh::Tags::GaugeH<DataVector, 3>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -342,7 +342,7 @@ void test_four_index_constraint_analytic(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound, const double error_tolerance) {
   // Shorter names for tags.
-  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
+  using Phi = ::gh::Tags::Phi<DataVector, 3>;
   using VariablesTags = tmpl::list<Phi>;
 
   // Check vs. time-independent analytic solution
@@ -457,9 +457,9 @@ void test_f_constraint_analytic(const Solution& solution,
                                 const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
-  using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
+  using Pi = ::gh::Tags::Pi<DataVector, 3>;
+  using Phi = ::gh::Tags::Phi<DataVector, 3>;
+  using GaugeH = ::gh::Tags::GaugeH<DataVector, 3>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -608,9 +608,9 @@ void test_constraint_energy_analytic(const Solution& solution,
                                      const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
-  using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::gh::Tags::GaugeH<3, Frame::Inertial>;
+  using Pi = ::gh::Tags::Pi<DataVector, 3>;
+  using Phi = ::gh::Tags::Phi<DataVector, 3>;
+  using GaugeH = ::gh::Tags::GaugeH<DataVector, 3>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -846,14 +846,14 @@ void test_constraint_compute_items(const Solution& solution,
   // Compute derivatives d_spacetime_metric, d_phi, d_pi, and d_gauge_function
   // numerically
   // First, prepare
-  using VariablesTags = tmpl::list<gh::Tags::Pi<3, Frame::Inertial>,
-                                   gh::Tags::Phi<3, Frame::Inertial>,
-                                   gh::Tags::GaugeH<3, Frame::Inertial>>;
+  using VariablesTags =
+      tmpl::list<gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+                 gh::Tags::GaugeH<DataVector, 3>>;
 
   Variables<VariablesTags> gh_vars(data_size);
-  auto& pi = get<gh::Tags::Pi<3, Frame::Inertial>>(gh_vars);
-  auto& phi = get<gh::Tags::Phi<3, Frame::Inertial>>(gh_vars);
-  auto& gauge_source = get<gh::Tags::GaugeH<3, Frame::Inertial>>(gh_vars);
+  auto& pi = get<gh::Tags::Pi<DataVector, 3>>(gh_vars);
+  auto& phi = get<gh::Tags::Phi<DataVector, 3>>(gh_vars);
+  auto& gauge_source = get<gh::Tags::GaugeH<DataVector, 3>>(gh_vars);
   phi = gh::phi(lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
                 deriv_spatial_metric);
   pi = gh::pi(lapse, time_deriv_lapse, shift, time_deriv_shift, spatial_metric,
@@ -871,13 +871,13 @@ void test_constraint_compute_items(const Solution& solution,
       partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& deriv_pi =
-      get<Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>, tmpl::size_t<3>,
+      get<Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
                       Frame::Inertial>>(gh_derivs);
   const auto& deriv_phi =
-      get<Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+      get<Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                       Frame::Inertial>>(gh_derivs);
   const auto& deriv_gauge_source =
-      get<Tags::deriv<gh::Tags::GaugeH<3, Frame::Inertial>, tmpl::size_t<3>,
+      get<Tags::deriv<gh::Tags::GaugeH<DataVector, 3>, tmpl::size_t<3>,
                       Frame::Inertial>>(gh_derivs);
 
   // The spatial derivative of the spacetime metric is needed to evaluate
@@ -933,14 +933,14 @@ void test_constraint_compute_items(const Solution& solution,
           ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
           ::Tags::dt<gr::Tags::Lapse<DataVector>>,
           ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
-          ::Tags::deriv<gh::Tags::GaugeH<3, Frame::Inertial>, tmpl::size_t<3>,
+          ::Tags::deriv<gh::Tags::GaugeH<DataVector, 3>, tmpl::size_t<3>,
                         Frame::Inertial>,
-          ::Tags::dt<gh::Tags::GaugeH<3, Frame::Inertial>>,
+          ::Tags::dt<gh::Tags::GaugeH<DataVector, 3>>,
           ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
                         tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>, tmpl::size_t<3>,
+          ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                         Frame::Inertial>,
-          ::Tags::deriv<gh::Tags::Pi<3, Frame::Inertial>, tmpl::size_t<3>,
+          ::Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
                         Frame::Inertial>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma0<3,
                                                              Frame::Inertial>,
@@ -1054,20 +1054,19 @@ void test_constraint_compute_items(const Solution& solution,
   CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(box) == gamma0);
   CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(box) == gamma1);
   CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(box) == gamma2);
-  CHECK(db::get<gh::Tags::GaugeH<3, Frame::Inertial>>(box) == gauge_source);
-  CHECK(db::get<gh::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::GaugeH<DataVector, 3>>(box) == gauge_source);
+  CHECK(db::get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(box) ==
         spacetime_deriv_gauge_source);
-  CHECK(db::get<gh::Tags::FourIndexConstraint<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::FourIndexConstraint<DataVector, 3>>(box) ==
         four_index_constraint);
-  CHECK(db::get<gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::ThreeIndexConstraint<DataVector, 3>>(box) ==
         three_index_constraint);
-  CHECK(db::get<gh::Tags::TwoIndexConstraint<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::TwoIndexConstraint<DataVector, 3>>(box) ==
         two_index_constraint);
-  CHECK(db::get<gh::Tags::GaugeConstraint<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::GaugeConstraint<DataVector, 3>>(box) ==
         gauge_constraint);
-  CHECK(db::get<gh::Tags::FConstraint<3, Frame::Inertial>>(box) ==
-        f_constraint);
-  CHECK(db::get<gh::Tags::ConstraintEnergy<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::FConstraint<DataVector, 3>>(box) == f_constraint);
+  CHECK(db::get<gh::Tags::ConstraintEnergy<DataVector, 3>>(box) ==
         constraint_energy);
 }
 

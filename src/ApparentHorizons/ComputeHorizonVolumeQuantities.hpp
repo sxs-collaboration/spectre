@@ -77,15 +77,14 @@ struct ComputeHorizonVolumeQuantities
 
   using allowed_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, Frame::Inertial>,
-                 gh::Tags::Phi<3, Frame::Inertial>,
-                 ::Tags::deriv<gh::Tags::Phi<3, Frame::Inertial>,
-                               tmpl::size_t<3>, Frame::Inertial>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+                 ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
-  using required_src_tags = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                                       gh::Tags::Pi<3, Frame::Inertial>,
-                                       gh::Tags::Phi<3, Frame::Inertial>>;
+  using required_src_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
 
   template <typename TargetFrame>
   using allowed_dest_tags_target_frame = tmpl::list<

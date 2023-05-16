@@ -79,7 +79,7 @@ struct MockReadVolumeData {
       CHECK(get<importers::Tags::Selected<
                 gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields) ==
             "CustomSpacetimeMetric");
-      CHECK(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
+      CHECK(get<importers::Tags::Selected<Tags::Pi<DataVector, 3>>>(
                 selected_fields) == "CustomPi");
       CHECK_FALSE(
           get<importers::Tags::Selected<
@@ -104,7 +104,7 @@ struct MockReadVolumeData {
       CHECK_FALSE(
           get<importers::Tags::Selected<
               gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields));
-      CHECK_FALSE(get<importers::Tags::Selected<Tags::Pi<3, Frame::Inertial>>>(
+      CHECK_FALSE(get<importers::Tags::Selected<Tags::Pi<DataVector, 3>>>(
           selected_fields));
     } else {
       REQUIRE(false);
@@ -205,8 +205,8 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
   if (std::holds_alternative<NumericInitialData::GhVars>(selected_vars)) {
     get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
-    get<Tags::Pi<3, Frame::Inertial>>(inbox) =
-        get<Tags::Pi<3, Frame::Inertial>>(kerr_gh_vars);
+    get<Tags::Pi<DataVector, 3>>(inbox) =
+        get<Tags::Pi<DataVector, 3>>(kerr_gh_vars);
   } else if (std::holds_alternative<NumericInitialData::AdmVars>(
                  selected_vars)) {
     const auto kerr_adm_vars = kerr.variables(
@@ -236,12 +236,12 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
       get_element_tag(gr::Tags::SpacetimeMetric<DataVector, 3>{}),
       (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars)),
       custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_element_tag(Tags::Pi<3, Frame::Inertial>{}),
-      (get<Tags::Pi<3, Frame::Inertial>>(kerr_gh_vars)), custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_element_tag(Tags::Phi<3, Frame::Inertial>{}),
-      (get<Tags::Phi<3, Frame::Inertial>>(kerr_gh_vars)), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(Tags::Pi<DataVector, 3>{}),
+                               (get<Tags::Pi<DataVector, 3>>(kerr_gh_vars)),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(Tags::Phi<DataVector, 3>{}),
+                               (get<Tags::Phi<DataVector, 3>>(kerr_gh_vars)),
+                               custom_approx);
 }
 }  // namespace
 

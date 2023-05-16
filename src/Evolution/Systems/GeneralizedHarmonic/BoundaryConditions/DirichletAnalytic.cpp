@@ -96,8 +96,8 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
 
   *spacetime_metric =
       get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(boundary_values);
-  *pi = get<gh::Tags::Pi<Dim, Frame::Inertial>>(boundary_values);
-  *phi = get<gh::Tags::Phi<Dim, Frame::Inertial>>(boundary_values);
+  *pi = get<gh::Tags::Pi<DataVector, Dim>>(boundary_values);
+  *phi = get<gh::Tags::Phi<DataVector, Dim>>(boundary_values);
 
   // Now compute lapse and shift...
   lapse_shift_and_inv_spatial_metric(lapse, shift, inv_spatial_metric,

@@ -19,13 +19,7 @@ struct replace_frame_in_tag {
   // like some scalars.
   using type = Tag;
 };
-// Specialization for tensors in gh::Tags
-template <template <size_t, typename> typename Tag, size_t Dim, typename Frame,
-          typename NewFrame>
-struct replace_frame_in_tag<Tag<Dim, Frame>, NewFrame> {
-  using type = Tag<Dim, NewFrame>;
-};
-// Specialization for tensors in gr::Tags
+// Specialization for tensors in gr::Tags / gh::Tags
 template <template <typename, size_t, typename> typename Tag, size_t Dim,
           typename Frame, typename DataType, typename NewFrame>
 struct replace_frame_in_tag<Tag<DataType, Dim, Frame>, NewFrame> {
@@ -38,11 +32,13 @@ struct replace_frame_in_tag<Tag<DataType>, NewFrame> {
   using type = Tag<DataType>;
 };
 // Specialization for Tags::deriv<Tag> with Tag in gh::Tags
-template <template <size_t, typename> typename Tag, size_t Dim, typename Frame,
-          typename NewFrame>
+template <template <typename, size_t, typename> typename Tag, typename DataType,
+          size_t Dim, typename Frame, typename NewFrame>
 struct replace_frame_in_tag<
-    ::Tags::deriv<Tag<Dim, Frame>, tmpl::size_t<Dim>, Frame>, NewFrame> {
-  using type = ::Tags::deriv<Tag<Dim, NewFrame>, tmpl::size_t<Dim>, NewFrame>;
+    ::Tags::deriv<Tag<DataType, Dim, Frame>, tmpl::size_t<Dim>, Frame>,
+    NewFrame> {
+  using type =
+      ::Tags::deriv<Tag<DataType, Dim, NewFrame>, tmpl::size_t<Dim>, NewFrame>;
 };
 
 /// \ingroup TensorGroup

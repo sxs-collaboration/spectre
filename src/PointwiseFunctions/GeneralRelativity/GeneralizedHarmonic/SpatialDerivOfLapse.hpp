@@ -90,7 +90,7 @@ struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
-                 Phi<SpatialDim, Frame>>;
+                 Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::i<DataVector, SpatialDim, Frame>;
 

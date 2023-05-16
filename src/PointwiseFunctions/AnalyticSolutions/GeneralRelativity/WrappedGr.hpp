@@ -86,8 +86,8 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
   template <typename DataType>
   using tags = tmpl::push_back<typename SolutionType::template tags<DataType>,
                                gr::Tags::SpacetimeMetric<DataType, volume_dim>,
-                               gh::Tags::Pi<volume_dim, Frame::Inertial>,
-                               gh::Tags::Phi<volume_dim, Frame::Inertial>>;
+                               gh::Tags::Pi<DataVector, volume_dim>,
+                               gh::Tags::Phi<DataVector, volume_dim>>;
 
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
@@ -183,13 +183,13 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
       const tnsr::I<DataVector, volume_dim>& /*x*/,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>> /*meta*/,
       const IntermediateVars& intermediate_vars) const;
-  tuples::TaggedTuple<gh::Tags::Pi<volume_dim, Frame::Inertial>> variables(
+  tuples::TaggedTuple<gh::Tags::Pi<DataVector, volume_dim>> variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/,
-      tmpl::list<gh::Tags::Pi<volume_dim, Frame::Inertial>> /*meta*/,
+      tmpl::list<gh::Tags::Pi<DataVector, volume_dim>> /*meta*/,
       const IntermediateVars& intermediate_vars) const;
-  tuples::TaggedTuple<gh::Tags::Phi<volume_dim, Frame::Inertial>> variables(
+  tuples::TaggedTuple<gh::Tags::Phi<DataVector, volume_dim>> variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/,
-      tmpl::list<gh::Tags::Phi<volume_dim, Frame::Inertial>> /*meta*/,
+      tmpl::list<gh::Tags::Phi<DataVector, volume_dim>> /*meta*/,
       const IntermediateVars& intermediate_vars) const;
 };
 

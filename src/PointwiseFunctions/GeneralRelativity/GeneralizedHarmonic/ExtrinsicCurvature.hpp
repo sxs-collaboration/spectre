@@ -73,7 +73,8 @@ struct ExtrinsicCurvatureCompute
       db::ComputeTag {
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
-                 Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
+                 Pi<DataVector, SpatialDim, Frame>,
+                 Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::ii<DataVector, SpatialDim, Frame>;
 

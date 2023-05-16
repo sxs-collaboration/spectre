@@ -80,8 +80,9 @@ namespace Tags {
  * `gh::Tags::GaugeH`.
  */
 template <size_t SpatialDim, typename Frame>
-struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
-                                                db::ComputeTag {
+struct GaugeHImplicitFrom3p1QuantitiesCompute
+    : GaugeH<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  ::Tags::dt<gr::Tags::Lapse<DataVector>>,
@@ -109,7 +110,7 @@ struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
       const tnsr::i<DataVector, SpatialDim, Frame>&)>(
       &gauge_source<DataVector, SpatialDim, Frame>);
 
-  using base = GaugeH<SpatialDim, Frame>;
+  using base = GaugeH<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -120,11 +121,12 @@ struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
  * `gh::Tags::SpacetimeDerivGaugeH`.
  */
 template <size_t SpatialDim, typename Frame>
-struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
-                                     db::ComputeTag {
+struct SpacetimeDerivGaugeHCompute
+    : SpacetimeDerivGaugeH<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags =
-      tmpl::list<::Tags::dt<gh::Tags::GaugeH<SpatialDim, Frame>>,
-                 ::Tags::deriv<gh::Tags::GaugeH<SpatialDim, Frame>,
+      tmpl::list<::Tags::dt<gh::Tags::GaugeH<DataVector, SpatialDim, Frame>>,
+                 ::Tags::deriv<gh::Tags::GaugeH<DataVector, SpatialDim, Frame>,
                                tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::ab<DataVector, SpatialDim, Frame>;
@@ -145,7 +147,7 @@ struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
     }
   }
 
-  using base = SpacetimeDerivGaugeH<SpatialDim, Frame>;
+  using base = SpacetimeDerivGaugeH<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gh

@@ -380,7 +380,7 @@ double test(const size_t num_dg_pts) {
     auto& sliced_spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(sliced_vars);
     const auto& packaged_data_spacetime_metric =
-        get<gh::Tags::VSpacetimeMetric<3, Frame::Inertial>>(packaged_data);
+        get<gh::Tags::VSpacetimeMetric<DataVector, 3>>(packaged_data);
 
     const auto spatial_metric = gr::spatial_metric(sliced_spacetime_metric);
     const auto [det_spatial_metric, inverse_spatial_metric] =
@@ -410,8 +410,8 @@ double test(const size_t num_dg_pts) {
     Scalar<DataVector> gamma2_sdv{dg_interface_mesh.number_of_grid_points()};
     (*gamma2)(make_not_null(&gamma2_sdv), dg_interface_grid_coords, 0.0, {});
 
-    const auto& pi = get<gh::Tags::Pi<3>>(sliced_vars);
-    const auto& phi = get<gh::Tags::Phi<3>>(sliced_vars);
+    const auto& pi = get<gh::Tags::Pi<DataVector, 3>>(sliced_vars);
+    const auto& phi = get<gh::Tags::Phi<DataVector, 3>>(sliced_vars);
     tnsr::aa<DataVector, 3> v_plus_times_lambda_plus = pi;
     tnsr::aa<DataVector, 3> v_minus_times_lambda_minus = pi;
     for (size_t a = 0; a < 4; ++a) {
@@ -434,9 +434,9 @@ double test(const size_t num_dg_pts) {
     }
 
     const auto& packaged_data_v_plus_times_lambda_plus =
-        get<gh::Tags::VPlus<3, Frame::Inertial>>(packaged_data);
+        get<gh::Tags::VPlus<DataVector, 3>>(packaged_data);
     const auto& packaged_data_v_minus_times_lambda_minus =
-        get<gh::Tags::VMinus<3, Frame::Inertial>>(packaged_data);
+        get<gh::Tags::VMinus<DataVector, 3>>(packaged_data);
     for (size_t tensor_index = 0; tensor_index < sliced_spacetime_metric.size();
          ++tensor_index) {
       max_rel_error = std::max(

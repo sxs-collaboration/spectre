@@ -23,10 +23,9 @@ namespace ah {
 template <size_t Dim>
 using source_vars =
     tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
-               gh::Tags::Pi<Dim, ::Frame::Inertial>,
-               gh::Tags::Phi<Dim, ::Frame::Inertial>,
-               ::Tags::deriv<gh::Tags::Phi<Dim, Frame::Inertial>,
-                             tmpl::size_t<Dim>, Frame::Inertial>,
+               gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>,
+               ::Tags::deriv<gh::Tags::Phi<DataVector, Dim>, tmpl::size_t<Dim>,
+                             Frame::Inertial>,
                gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
 template <size_t Dim, typename Frame>

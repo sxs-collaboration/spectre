@@ -111,8 +111,8 @@ void GhLocalTimeStepping::insert_gh_data(
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(input_gh_variables) =
       spacetime_metric;
-  get<gh::Tags::Pi<3, ::Frame::Inertial>>(input_gh_variables) = pi;
-  get<gh::Tags::Phi<3, ::Frame::Inertial>>(input_gh_variables) = phi;
+  get<gh::Tags::Pi<DataVector, 3>>(input_gh_variables) = pi;
+  get<gh::Tags::Phi<DataVector, 3>>(input_gh_variables) = phi;
   gh_data_.insert({time_and_previous, std::move(input_gh_variables)});
   clean_up_gh_data();
 }

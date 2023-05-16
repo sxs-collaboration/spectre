@@ -101,7 +101,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
   boundary_solution.dr_inverse_jacobian(make_not_null(&dr_inverse_jacobian),
                                         l_max);
   const auto& d_spacetime_metric =
-      get<gh::Tags::Phi<3, ::Frame::Inertial>>(boundary_data);
+      get<gh::Tags::Phi<DataVector, 3>>(boundary_data);
   const auto& dr_cartesian_coordinates =
       get<Tags::Dr<Tags::CauchyCartesianCoords>>(boundary_data);
   tnsr::aa<DataVector, 3> dr_spacetime_metric{

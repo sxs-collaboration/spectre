@@ -211,7 +211,7 @@ void check_adm_metric_quantities(
   CHECK_ITERABLE_APPROX(shift, expected_shift);
   CHECK_ITERABLE_APPROX(lapse, expected_lapse);
 
-  const auto& pi = get<gh::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
+  const auto& pi = get<gh::Tags::Pi<DataVector, 3>>(boundary_tuple);
   const auto dt_spacetime_metric_from_pi =
       gh::time_derivative_of_spacetime_metric(expected_lapse, expected_shift,
                                               pi, expected_d_spacetime_metric);

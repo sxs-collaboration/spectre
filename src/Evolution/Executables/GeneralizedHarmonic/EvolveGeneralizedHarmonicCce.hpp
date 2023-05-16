@@ -90,8 +90,8 @@ struct EvolutionMetavars
 
   using interpolator_source_vars =
       tmpl::list<::gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
-                 ::gh::Tags::Phi<VolumeDim, Frame::Inertial>,
-                 ::gh::Tags::Pi<VolumeDim, Frame::Inertial>>;
+                 ::gh::Tags::Phi<DataVector, VolumeDim>,
+                 ::gh::Tags::Pi<DataVector, VolumeDim>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,
@@ -127,8 +127,8 @@ struct EvolutionMetavars
               dg::Actions::Filter<
                   Filters::Exponential<0>,
                   tmpl::list<gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
-                             gh::Tags::Pi<VolumeDim, Frame::Inertial>,
-                             gh::Tags::Phi<VolumeDim, Frame::Inertial>>>>>>;
+                             gh::Tags::Pi<DataVector, VolumeDim>,
+                             gh::Tags::Phi<DataVector, VolumeDim>>>>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

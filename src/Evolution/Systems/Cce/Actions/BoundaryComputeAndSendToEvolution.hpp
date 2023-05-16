@@ -248,8 +248,8 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
     apply<ParallelComponent>(
         box, cache, array_index, time,
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(gh_variables),
-        get<gh::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
-        get<gh::Tags::Pi<3, ::Frame::Inertial>>(gh_variables));
+        get<gh::Tags::Phi<DataVector, 3>>(gh_variables),
+        get<gh::Tags::Pi<DataVector, 3>>(gh_variables));
   }
 
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>

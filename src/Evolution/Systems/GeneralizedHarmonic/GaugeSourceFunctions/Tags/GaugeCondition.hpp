@@ -54,12 +54,12 @@ struct GaugeCondition : db::SimpleTag {
 template <size_t Dim>
 struct GaugeAndDerivativeCompute
     : ::Tags::Variables<
-          tmpl::list<::gh::Tags::GaugeH<Dim, Frame::Inertial>,
-                     ::gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>>,
+          tmpl::list<::gh::Tags::GaugeH<DataVector, Dim>,
+                     ::gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>>,
       db::ComputeTag {
   using base = ::Tags::Variables<
-      tmpl::list<::gh::Tags::GaugeH<Dim, Frame::Inertial>,
-                 ::gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>>;
+      tmpl::list<::gh::Tags::GaugeH<DataVector, Dim>,
+                 ::gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
@@ -67,9 +67,9 @@ struct GaugeAndDerivativeCompute
       gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim>,
-      gr::Tags::SpacetimeMetric<DataVector, Dim>, gh::Tags::Pi<Dim>,
-      gh::Tags::Phi<Dim>, ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
-      ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
+      gr::Tags::SpacetimeMetric<DataVector, Dim>, gh::Tags::Pi<DataVector, Dim>,
+      gh::Tags::Phi<DataVector, Dim>, ::Events::Tags::ObserverMesh<Dim>,
+      ::Tags::Time, ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
       ::Events::Tags::ObserverInverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>,
       Tags::GaugeCondition>;

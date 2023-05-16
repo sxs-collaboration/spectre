@@ -132,12 +132,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
   const auto analytic_solution_gh_variables = analytic_solution.variables(
       l_max, time,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<3, ::Frame::Inertial>,
-                 gh::Tags::Phi<3, ::Frame::Inertial>>{});
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>{});
   create_bondi_boundary_data(
       make_not_null(&expected_boundary_variables),
-      get<gh::Tags::Phi<3, ::Frame::Inertial>>(analytic_solution_gh_variables),
-      get<gh::Tags::Pi<3, ::Frame::Inertial>>(analytic_solution_gh_variables),
+      get<gh::Tags::Phi<DataVector, 3>>(analytic_solution_gh_variables),
+      get<gh::Tags::Pi<DataVector, 3>>(analytic_solution_gh_variables),
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
           analytic_solution_gh_variables),
       extraction_radius, l_max);

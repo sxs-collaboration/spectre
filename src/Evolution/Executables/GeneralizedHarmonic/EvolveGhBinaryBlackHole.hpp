@@ -276,16 +276,16 @@ struct EvolutionMetavars {
   using interpolator_source_vars = ::ah::source_vars<volume_dim>;
   using source_vars_no_deriv =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                 gh::Tags::Pi<volume_dim, ::Frame::Inertial>,
-                 gh::Tags::Phi<volume_dim, ::Frame::Inertial>>;
+                 gh::Tags::Pi<DataVector, volume_dim>,
+                 gh::Tags::Phi<DataVector, volume_dim>>;
 
   using observe_fields = tmpl::append<
       tmpl::list<
           gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-          gh::Tags::Pi<volume_dim, Frame::Inertial>,
-          gh::Tags::Phi<volume_dim, Frame::Inertial>,
-          gh::Tags::GaugeH<volume_dim, Frame::Inertial>,
-          gh::Tags::SpacetimeDerivGaugeH<volume_dim, Frame::Inertial>,
+          gh::Tags::Pi<DataVector, volume_dim>,
+          gh::Tags::Phi<DataVector, volume_dim>,
+          gh::Tags::GaugeH<DataVector, volume_dim>,
+          gh::Tags::SpacetimeDerivGaugeH<DataVector, volume_dim>,
           gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, volume_dim>,
           gr::Tags::SpatialMetric<DataVector, volume_dim>,
           gr::Tags::DetSpatialMetric<DataVector>,
@@ -321,21 +321,19 @@ struct EvolutionMetavars {
               gr::Tags::SpatialMetric<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
               gr::Tags::SpacetimeMetric<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<gh::Tags::Pi<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<gh::Tags::Phi<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::Pi<volume_dim, Frame::Inertial>>,
+              gh::Tags::GaugeH<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::Phi<volume_dim, Frame::Inertial>>,
-          ::Tags::PointwiseL2NormCompute<
-              gh::Tags::GaugeH<volume_dim, Frame::Inertial>>,
-          ::Tags::PointwiseL2NormCompute<
-              gh::Tags::SpacetimeDerivGaugeH<volume_dim, Frame::Inertial>>,
+              gh::Tags::SpacetimeDerivGaugeH<DataVector, volume_dim>>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::GaugeConstraint<volume_dim, ::Frame::Inertial>>,
+              gh::Tags::GaugeConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::TwoIndexConstraint<volume_dim, ::Frame::Inertial>>,
+              gh::Tags::TwoIndexConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::ThreeIndexConstraint<volume_dim, ::Frame::Inertial>>,
+              gh::Tags::ThreeIndexConstraint<DataVector, volume_dim>>,
           ::domain::Tags::Coordinates<volume_dim, Frame::Grid>,
           ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
       // The 4-index constraint is only implemented in 3d
@@ -345,9 +343,9 @@ struct EvolutionMetavars {
               gh::Tags::FourIndexConstraintCompute<3, ::Frame::Inertial>,
               gh::Tags::FConstraintCompute<3, ::Frame::Inertial>,
               ::Tags::PointwiseL2NormCompute<
-                  gh::Tags::FConstraint<3, ::Frame::Inertial>>,
+                  gh::Tags::FConstraint<DataVector, 3>>,
               ::Tags::PointwiseL2NormCompute<
-                  gh::Tags::FourIndexConstraint<3, ::Frame::Inertial>>,
+                  gh::Tags::FourIndexConstraint<DataVector, 3>>,
               gh::Tags::ConstraintEnergyCompute<3, ::Frame::Inertial>,
               gh::Tags::ExtrinsicCurvatureCompute<3, ::Frame::Inertial>,
               ::Tags::DerivTensorCompute<
@@ -467,8 +465,8 @@ struct EvolutionMetavars {
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                     gh::Tags::Pi<volume_dim, Frame::Inertial>,
-                     gh::Tags::Phi<volume_dim, Frame::Inertial>>>>;
+                     gh::Tags::Pi<DataVector, volume_dim>,
+                     gh::Tags::Phi<DataVector, volume_dim>>>>;
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<

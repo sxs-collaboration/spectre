@@ -69,15 +69,15 @@ void GaugeAndDerivativeCompute<Dim>::function(
   }
   get(half_pi_two_normals) *= 0.5;
 
-  dispatch(make_not_null(&get<::gh::Tags::GaugeH<Dim, Frame::Inertial>>(
-               *gauge_and_deriv)),
-           make_not_null(
-               &get<::gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>(
-                   *gauge_and_deriv)),
-           lapse, shift, spacetime_unit_normal_one_form, spacetime_unit_normal,
-           sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-           half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
-           mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+  dispatch(
+      make_not_null(
+          &get<::gh::Tags::GaugeH<DataVector, Dim>>(*gauge_and_deriv)),
+      make_not_null(&get<::gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(
+          *gauge_and_deriv)),
+      lapse, shift, spacetime_unit_normal_one_form, spacetime_unit_normal,
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
+      mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

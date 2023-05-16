@@ -560,15 +560,15 @@ namespace Tags {
  * `gh::Tags::GaugeConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
+struct GaugeConstraintCompute : GaugeConstraint<DataVector, SpatialDim, Frame>,
                                 db::ComputeTag {
   using argument_tags = tmpl::list<
-      GaugeH<SpatialDim, Frame>,
+      GaugeH<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
-      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
+      Pi<DataVector, SpatialDim, Frame>, Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
 
@@ -583,7 +583,7 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &gauge_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = GaugeConstraint<SpatialDim, Frame>;
+  using base = GaugeConstraint<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -598,18 +598,22 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
  * to the F-constraint calculation.
  */
 template <size_t SpatialDim, typename Frame>
-struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
+struct FConstraintCompute : FConstraint<DataVector, SpatialDim, Frame>,
+                            db::ComputeTag {
   using argument_tags = tmpl::list<
-      GaugeH<SpatialDim, Frame>, SpacetimeDerivGaugeH<SpatialDim, Frame>,
+      GaugeH<DataVector, SpatialDim, Frame>,
+      SpacetimeDerivGaugeH<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
-      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
-      ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      Pi<DataVector, SpatialDim, Frame>, Phi<DataVector, SpatialDim, Frame>,
+      ::Tags::deriv<Pi<DataVector, SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      ::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
       ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-      ThreeIndexConstraint<SpatialDim, Frame>>;
+      ThreeIndexConstraint<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
 
@@ -629,7 +633,7 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &f_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = FConstraint<SpatialDim, Frame>;
+  using base = FConstraint<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -640,19 +644,22 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
  * `gh::Tags::TwoIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
-                                   db::ComputeTag {
+struct TwoIndexConstraintCompute
+    : TwoIndexConstraint<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags = tmpl::list<
-      SpacetimeDerivGaugeH<SpatialDim, Frame>,
+      SpacetimeDerivGaugeH<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalOneForm<DataVector, SpatialDim, Frame>,
       gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
       gr::Tags::InverseSpacetimeMetric<DataVector, SpatialDim, Frame>,
-      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
-      ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      Pi<DataVector, SpatialDim, Frame>, Phi<DataVector, SpatialDim, Frame>,
+      ::Tags::deriv<Pi<DataVector, SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      ::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
       ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-      ThreeIndexConstraint<SpatialDim, Frame>>;
+      ThreeIndexConstraint<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;
 
@@ -671,7 +678,7 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &two_index_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = TwoIndexConstraint<SpatialDim, Frame>;
+  using base = TwoIndexConstraint<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -682,12 +689,13 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
  * `gh::Tags::ThreeIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
-                                     db::ComputeTag {
+struct ThreeIndexConstraintCompute
+    : ThreeIndexConstraint<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags = tmpl::list<
       ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
-      Phi<SpatialDim, Frame>>;
+      Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
 
@@ -697,7 +705,7 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &three_index_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = ThreeIndexConstraint<SpatialDim, Frame>;
+  using base = ThreeIndexConstraint<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -708,10 +716,12 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
  * `gh::Tags::FourIndexConstraint`.
  */
 template <size_t SpatialDim, typename Frame>
-struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
-                                    db::ComputeTag {
-  using argument_tags = tmpl::list<
-      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>>;
+struct FourIndexConstraintCompute
+    : FourIndexConstraint<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
+                               tmpl::size_t<SpatialDim>, Frame>>;
 
   using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
 
@@ -720,7 +730,7 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&)>(
       &four_index_constraint<DataVector, SpatialDim, Frame>);
 
-  using base = FourIndexConstraint<SpatialDim, Frame>;
+  using base = FourIndexConstraint<DataVector, SpatialDim, Frame>;
 };
 
 /*!
@@ -731,14 +741,15 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
  * `gh::Tags::ConstraintEnergy`.
  */
 template <size_t SpatialDim, typename Frame>
-struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
-                                 db::ComputeTag {
+struct ConstraintEnergyCompute
+    : ConstraintEnergy<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
   using argument_tags =
-      tmpl::list<GaugeConstraint<SpatialDim, Frame>,
-                 FConstraint<SpatialDim, Frame>,
-                 TwoIndexConstraint<SpatialDim, Frame>,
-                 ThreeIndexConstraint<SpatialDim, Frame>,
-                 FourIndexConstraint<SpatialDim, Frame>,
+      tmpl::list<GaugeConstraint<DataVector, SpatialDim, Frame>,
+                 FConstraint<DataVector, SpatialDim, Frame>,
+                 TwoIndexConstraint<DataVector, SpatialDim, Frame>,
+                 ThreeIndexConstraint<DataVector, SpatialDim, Frame>,
+                 FourIndexConstraint<DataVector, SpatialDim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
                  gr::Tags::DetSpatialMetric<DataVector>>;
 
@@ -761,7 +772,7 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
         spatial_metric_determinant);
   }
 
-  using base = ConstraintEnergy<SpatialDim, Frame>;
+  using base = ConstraintEnergy<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gh

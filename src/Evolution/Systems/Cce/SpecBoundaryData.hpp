@@ -193,7 +193,7 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
       ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       gr::Tags::SpacetimeMetric<DataVector, 3>,
       ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-      gh::Tags::Phi<3, ::Frame::Inertial>, Tags::detail::WorldtubeNormal,
+      gh::Tags::Phi<DataVector, 3>, Tags::detail::WorldtubeNormal,
       ::Tags::dt<Tags::detail::WorldtubeNormal>, Tags::detail::NullL,
       ::Tags::dt<Tags::detail::NullL>,
       // for the detail function called at the end
@@ -310,7 +310,7 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
       lapse_coefficients, dr_lapse_coefficients, dt_lapse_coefficients,
       inverse_cartesian_to_spherical_jacobian, radial_correction_factor, l_max);
 
-  auto& phi = get<gh::Tags::Phi<3, ::Frame::Inertial>>(computation_variables);
+  auto& phi = get<gh::Tags::Phi<DataVector, 3>>(computation_variables);
   auto& dt_spacetime_metric =
       get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
           computation_variables);

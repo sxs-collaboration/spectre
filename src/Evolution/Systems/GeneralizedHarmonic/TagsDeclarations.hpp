@@ -11,47 +11,53 @@ namespace gh {
 
 /// \brief Tags for the generalized harmonic formulation of Einstein equations
 namespace Tags {
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct Pi;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct Phi;
 
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InitialGaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivInitialGaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
 
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct VSpacetimeMetric;
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct VZero;
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct VPlus;
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct VMinus;
 
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct CharacteristicSpeeds;
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct CharacteristicFields;
-template <size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct EvolvedFieldsFromCharacteristicFields;
 
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct GaugeConstraint;
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct FConstraint;
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct TwoIndexConstraint;
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct ThreeIndexConstraint;
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct FourIndexConstraint;
-template <size_t SpatialDim, typename Frame>
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
 struct ConstraintEnergy;
 }  // namespace Tags
 

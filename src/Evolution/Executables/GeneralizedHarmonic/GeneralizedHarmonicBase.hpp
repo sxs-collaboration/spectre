@@ -195,9 +195,8 @@ struct ObserverTags {
 
   using observe_fields = tmpl::append<
       tmpl::push_back<
-          analytic_solution_fields,
-          gh::Tags::GaugeH<volume_dim, Frame::Inertial>,
-          gh::Tags::SpacetimeDerivGaugeH<volume_dim, Frame::Inertial>,
+          analytic_solution_fields, gh::Tags::GaugeH<DataVector, volume_dim>,
+          gh::Tags::SpacetimeDerivGaugeH<DataVector, volume_dim>,
           gr::Tags::SpatialMetric<DataVector, volume_dim>,
           gr::Tags::DetSpatialMetric<DataVector>,
           gr::Tags::InverseSpatialMetric<DataVector, volume_dim>,
@@ -229,11 +228,11 @@ struct ObserverTags {
                                               ::Frame::Inertial>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::GaugeConstraint<volume_dim, Frame::Inertial>>,
+              gh::Tags::GaugeConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::TwoIndexConstraint<volume_dim, Frame::Inertial>>,
+              gh::Tags::TwoIndexConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
-              gh::Tags::ThreeIndexConstraint<volume_dim, Frame::Inertial>>,
+              gh::Tags::ThreeIndexConstraint<DataVector, volume_dim>>,
           ::domain::Tags::Coordinates<volume_dim, Frame::Grid>,
           ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
       error_tags,
@@ -244,9 +243,9 @@ struct ObserverTags {
               gh::Tags::FourIndexConstraintCompute<3, Frame::Inertial>,
               gh::Tags::FConstraintCompute<3, Frame::Inertial>,
               ::Tags::PointwiseL2NormCompute<
-                  gh::Tags::FConstraint<3, Frame::Inertial>>,
+                  gh::Tags::FConstraint<DataVector, 3>>,
               ::Tags::PointwiseL2NormCompute<
-                  gh::Tags::FourIndexConstraint<3, Frame::Inertial>>,
+                  gh::Tags::FourIndexConstraint<DataVector, 3>>,
               gh::Tags::ConstraintEnergyCompute<3, Frame::Inertial>,
               gh::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>,
               ::Tags::DerivTensorCompute<
@@ -375,8 +374,8 @@ struct GeneralizedHarmonicTemplateBase<
               dg::Actions::Filter<
                   Filters::Exponential<0>,
                   tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                             gh::Tags::Pi<volume_dim, Frame::Inertial>,
-                             gh::Tags::Phi<volume_dim, Frame::Inertial>>>>>>;
+                             gh::Tags::Pi<DataVector, volume_dim>,
+                             gh::Tags::Phi<DataVector, volume_dim>>>>>>;
 
   template <bool UseControlSystems>
   using initialization_actions = tmpl::list<

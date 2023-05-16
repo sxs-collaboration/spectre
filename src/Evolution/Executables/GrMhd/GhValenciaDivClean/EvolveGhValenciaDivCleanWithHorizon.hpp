@@ -105,8 +105,8 @@ struct EvolutionMetavars
   using interpolation_target_tags = tmpl::list<AhA>;
   using interpolator_source_vars = tmpl::list<
       gr::Tags::SpacetimeMetric<DataVector, volume_dim, domain_frame>,
-      gh::Tags::Pi<volume_dim, domain_frame>,
-      gh::Tags::Phi<volume_dim, domain_frame>>;
+      gh::Tags::Pi<DataVector, volume_dim, domain_frame>,
+      gh::Tags::Phi<DataVector, volume_dim, domain_frame>>;
 
   using observe_fields =
       typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,

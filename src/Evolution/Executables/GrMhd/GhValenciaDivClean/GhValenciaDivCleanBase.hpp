@@ -404,8 +404,8 @@ struct GhValenciaDivCleanTemplateBase<
                      gr::Tags::InverseSpacetimeMetricCompute<
                          DataVector, volume_dim, domain_frame>,
                      gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
-                     ::Tags::PointwiseL2NormCompute<
-                         gh::Tags::GaugeConstraint<volume_dim, domain_frame>>>,
+                     ::Tags::PointwiseL2NormCompute<gh::Tags::GaugeConstraint<
+                         DataVector, volume_dim, domain_frame>>>,
           tmpl::conditional_t<use_dg_subcell,
                               tmpl::list<evolution::dg::subcell::Tags::
                                              TciStatusCompute<volume_dim>>,
@@ -591,7 +591,8 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       dg::Actions::Filter<::Filters::Exponential<0>,
                           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                                     gh::Tags::Pi<3>, gh::Tags::Phi<3>>>,
+                                     gh::Tags::Pi<DataVector, 3>,
+                                     gh::Tags::Phi<DataVector, 3>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<

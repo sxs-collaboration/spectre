@@ -81,7 +81,8 @@ struct TimeDerivSpatialMetricCompute
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, SpatialDim, Frame>,
-                 Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
+                 Phi<DataVector, SpatialDim, Frame>,
+                 Pi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::ii<DataVector, SpatialDim, Frame>;
 
