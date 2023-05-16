@@ -244,8 +244,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2023-04-07
-doi: 10.5281/zenodo.7809262
+date-released: 2023-05-16
+doi: 10.5281/zenodo.7942177
 keywords:
 - Software
 - Astrophysics
@@ -260,7 +260,171 @@ license: MIT
 message: Please cite SpECTRE in any publications that make use of its code or data.
   Cite the latest version that you use in your publication. The citation for this
   version is listed below.
+references:
+- authors:
+  - family-names: Kale
+    given-names: Laxmikant
+  - family-names: Acun
+    given-names: Bilge
+  - family-names: Bak
+    given-names: Seonmyeong
+  - family-names: Becker
+    given-names: Aaron
+  - family-names: Bhandarkar
+    given-names: Milind
+  - family-names: Bhat
+    given-names: Nitin
+  - family-names: Bhatele
+    given-names: Abhinav
+  - family-names: Bohm
+    given-names: Eric
+  - family-names: Bordage
+    given-names: Cyril
+  - family-names: Brunner
+    given-names: Robert
+  - family-names: Buch
+    given-names: Ronak
+  - family-names: Chakravorty
+    given-names: Sayantan
+  - family-names: Chandrasekar
+    given-names: Kavitha
+  - family-names: Choi
+    given-names: Jaemin
+  - family-names: Denardo
+    given-names: Michael
+  - family-names: DeSouza
+    given-names: Jayant
+  - family-names: Diener
+    given-names: Matthias
+  - family-names: Dokania
+    given-names: Harshit
+  - family-names: Dooley
+    given-names: Isaac
+  - family-names: Fenton
+    given-names: Wayne
+  - family-names: Galvez
+    given-names: Juan
+  - family-names: Gioachin
+    given-names: Fillipo
+  - family-names: Gupta
+    given-names: Abhishek
+  - family-names: Gupta
+    given-names: Gagan
+  - family-names: Gupta
+    given-names: Manish
+  - family-names: Gursoy
+    given-names: Attila
+  - family-names: Harsh
+    given-names: Vipul
+  - family-names: Hu
+    given-names: Fang
+  - family-names: Huang
+    given-names: Chao
+  - family-names: Jagathesan
+    given-names: Narain
+  - family-names: Jain
+    given-names: Nikhil
+  - family-names: Jetley
+    given-names: Pritish
+  - family-names: Jindal
+    given-names: Prateek
+  - family-names: Kanakagiri
+    given-names: Raghavendra
+  - family-names: Koenig
+    given-names: Greg
+  - family-names: Krishnan
+    given-names: Sanjeev
+  - family-names: Kumar
+    given-names: Sameer
+  - family-names: Kunzman
+    given-names: David
+  - family-names: Lang
+    given-names: Michael
+  - family-names: Langer
+    given-names: Akhil
+  - family-names: Lawlor
+    given-names: Orion
+  - family-names: Wai Lee
+    given-names: Chee
+  - family-names: Lifflander
+    given-names: Jonathan
+  - family-names: Mahesh
+    given-names: Karthik
+  - family-names: Mendes
+    given-names: Celso
+  - family-names: Menon
+    given-names: Harshitha
+  - family-names: Mei
+    given-names: Chao
+  - family-names: Meneses
+    given-names: Esteban
+  - family-names: Mikida
+    given-names: Eric
+  - family-names: Miller
+    given-names: Phil
+  - family-names: Mokos
+    given-names: Ryan
+  - family-names: Narayanan
+    given-names: Venkatasubrahmanian
+  - family-names: Ni
+    given-names: Xiang
+  - family-names: Nomura
+    given-names: Kevin
+  - family-names: Paranjpye
+    given-names: Sameer
+  - family-names: Ramachandran
+    given-names: Parthasarathy
+  - family-names: Ramkumar
+    given-names: Balkrishna
+  - family-names: Ramos
+    given-names: Evan
+  - family-names: Robson
+    given-names: Michael
+  - family-names: Saboo
+    given-names: Neelam
+  - family-names: Saletore
+    given-names: Vikram
+  - family-names: Sarood
+    given-names: Osman
+  - family-names: Senthil
+    given-names: Karthik
+  - family-names: Shah
+    given-names: Nimish
+  - family-names: Shu
+    given-names: Wennie
+  - family-names: B. Sinha
+    given-names: Amitabh
+  - family-names: Sun
+    given-names: Yanhua
+  - family-names: Sura
+    given-names: Zehra
+  - family-names: Totoni
+    given-names: Ehsan
+  - family-names: Varadarajan
+    given-names: Krishnan
+  - family-names: Venkataraman
+    given-names: Ramprasad
+  - family-names: Wang
+    given-names: Jackie
+  - family-names: Wesolowski
+    given-names: Lukasz
+  - family-names: White
+    given-names: Sam
+  - family-names: Wilmarth
+    given-names: Terry
+  - family-names: Wright
+    given-names: Jeff
+  - family-names: Yelon
+    given-names: Joshua
+  - family-names: Zheng
+    given-names: Gengbin
+  doi: 10.5281/zenodo.3370873
+  month: Aug
+  title: '{The Charm++ Parallel Programming System}'
+  type: software
+  url: https://charm.cs.illinois.edu
+  year: '2019'
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.04.07
+version: 2023.05.16
