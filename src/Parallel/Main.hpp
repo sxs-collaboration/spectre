@@ -705,6 +705,15 @@ void Main<Metavariables>::execute_next_phase() {
       Parallel::printf("%s\n\n", exception_message);
     }
     exception_messages_.clear();
+    Parallel::printf(
+        "To determine where an exception is thrown, run gdb and do\n"
+        "catch throw EXCEPTION_TYPE\n"
+        "run\n"
+        "where EXCEPTION_TYPE is the Type of the exception above.\n"
+        "You may have to type `continue` to skip some option parser\n"
+        "exceptions until you get to the one you care about\n"
+        "You may also have to type `up` or `down` to go up and down\n"
+        "the function calls in order to find a useful line number.\n\n");
 
     // Errored during cleanup. Can't have this, so just abort
     if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
