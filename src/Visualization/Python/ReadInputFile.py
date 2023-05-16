@@ -33,7 +33,14 @@ def find_event(event_name: str, input_file: dict) -> dict:
     Returns: The event as a dictionary, or None if the event wasn't found.
     """
     for trigger_and_events in input_file["EventsAndTriggers"]:
-        for event in trigger_and_events["Events"]:
-            if event_name in event:
-                return event[event_name]
+        try:
+            for event in trigger_and_events["Events"]:
+                if event_name in event:
+                    return event[event_name]
+        except TypeError:
+            # Backwards compatibility for input files without metadata (can be
+            # removed once people have rebased)
+            for event in trigger_and_events[1]:
+                if event_name in event:
+                    return event[event_name]
     return None
