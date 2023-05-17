@@ -15,10 +15,16 @@ from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
 class TestTensor(unittest.TestCase):
     def test_tensor(self):
         coords = tnsr.I[DataVector, 3, Frame.Inertial](num_points=4, fill=0.)
+        spacetime_coords = tnsr.A[DataVector, 3, Frame.Inertial](num_points=1,
+                                                                 fill=0.)
         self.assertEqual(coords.rank, 1)
         self.assertEqual(coords.size, 3)
         self.assertEqual(coords.dim, 3)
         self.assertEqual(len(coords), 3)
+        self.assertEqual(spacetime_coords.rank, coords.rank)
+        self.assertEqual(spacetime_coords.size, coords.size + 1)
+        self.assertEqual(spacetime_coords.dim, coords.dim + 1)
+        self.assertEqual(len(spacetime_coords), len(coords) + 1)
         npt.assert_equal(coords[0], np.zeros(4))
         npt.assert_equal(coords[1], np.zeros(4))
         npt.assert_equal(coords[2], np.zeros(4))
