@@ -66,31 +66,31 @@ echo
 cd ${RUN_DIR}
 
 checkpoints=0
-current_checkpoint=000000
+current_checkpoint=0000
 if [[ $checkpoints == 0 ]]; then
   mpirun -n ${SLURM_NTASKS} \
        ${SPECTRE_EXECUTABLE} ++ppn ${CHARM_PPN} +setcpuaffinity \
        --input-file ${SPECTRE_INPUT_FILE}
   sleep 10s
   # If a checkpoint is found add one to checkpoint and sumbit next job
-  if test -e "${PWD}/SpectreCheckpoint$current_checkpoint"; then
-    mv spectre.out "${PWD}/SpectreCheckpoint$current_checkpoint"
+  if test -e "${PWD}/Checkpoints/Checkpoint_$current_checkpoint"; then
+    mv spectre.out "${PWD}/Checkpoints/Checkpoint_$current_checkpoint"
     sed -i "s/^checkpoints=0/checkpoints=1/" Wheeler.sh
     sbatch Wheeler.sh
   fi
 # Section to start from checkpoint
-elif [[ $checkpoints -gt 0 && $checkpoints -lt 1000000 ]]; then
+elif [[ $checkpoints -gt 0 && $checkpoints -lt 10000 ]]; then
   mpirun -n ${SLURM_NTASKS} \
        ${SPECTRE_EXECUTABLE} ++ppn ${CHARM_PPN} +setcpuaffinity \
        --input-file ${SPECTRE_INPUT_FILE} \
-       +restart SpectreCheckpoint${current_checkpoint}
+       +restart Checkpoints/Checkpoint_${current_checkpoint}
   sleep 10s
   # If the next checkpoint was created modify variables and submit next job
-  printf -v next_checkpoint %06d $checkpoints
-  if test -e "${PWD}/SpectreCheckpoint$next_checkpoint"; then
+  printf -v next_checkpoint %04d $checkpoints
+  if test -e "${PWD}/Checkpoints/Checkpoint_$next_checkpoint"; then
     # We move the current spectre.out to the checkpoint directory because SLURM
     # will overwrite it once the new job is run.
-    mv spectre.out "${PWD}/SpectreCheckpoint$next_checkpoint"
+    mv spectre.out "${PWD}/Checkpoints/Checkpoint_$next_checkpoint"
     next_num_of_checkpoints=$(($checkpoints + 1))
     #Updating variables for the next possible checkpoint
     sed -i "s/^checkpoints=$checkpoints/"\

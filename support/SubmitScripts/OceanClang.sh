@@ -104,26 +104,27 @@ spectre_load_modules
 chmod u+x ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID}
 
 checkpoints=0
-current_checkpoint=000000
+current_checkpoint=0000
 if [[ $checkpoints == 0 ]]; then
   charmrun ++runscript ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID} \
           ${SPECTRE_COMMAND} --input-file ${SPECTRE_INPUT_FILE}
   sleep 10s
   # If a checkpoint is found add one to checkpoint and sumbit next job
-  if test -e "${PWD}/SpectreCheckpoint$current_checkpoint"; then
+  if test -e "${PWD}/Checkpoints/Checkpoint_$current_checkpoint"; then
     cp ../OceanClang.sh .
     sed -i "s/^checkpoints=0/checkpoints=1/" OceanClang.sh
     sbatch OceanClang.sh
   fi
 # Section to start from checkpoint
-elif [[ $checkpoints -gt 0 && $checkpoints -lt 1000000 ]]; then
-  ln -s ${PWD}/../SpectreCheckpoint$current_checkpoint .
-  charmrun ${SPECTRE_COMMAND} +restart SpectreCheckpoint$current_checkpoint \
+elif [[ $checkpoints -gt 0 && $checkpoints -lt 10000 ]]; then
+  ln -s ${PWD}/../Checkpoints/Checkpoint_$current_checkpoint .
+  charmrun ${SPECTRE_COMMAND} \
+          +restart Checkpoints/Checkpoint_$current_checkpoint \
           --input-file ${SPECTRE_INPUT_FILE}
   sleep 10s
   # If the next checkpoint was created modify variables and submit next job
-  printf -v next_checkpoint %06d $checkpoints
-  if test -e "${PWD}/SpectreCheckpoint$next_checkpoint"; then
+  printf -v next_checkpoint %04d $checkpoints
+  if test -e "${PWD}/Checkpoints/Checkpoint_$next_checkpoint"; then
     cp ../OceanClang.sh .
     next_num_of_checkpoints=$(($checkpoints + 1))
     #Updating variables for the next possible checkpoint

@@ -33,9 +33,9 @@ Executables can checkpoint when:
 
 To restart an executable from a checkpoint file, run a command like this:
 ```
-./MySpectreExecutable +restart SpectreCheckpoint000123
+./MySpectreExecutable +restart Checkpoints/Checkpoint_0123
 ```
-where the `000123` should be the number of the checkpoint to restart from.
+where the `0123` should be the number of the checkpoint to restart from.
 
 There are a number of caveats in the current implementation of checkpointing
 and restarting:
