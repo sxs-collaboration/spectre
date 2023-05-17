@@ -71,7 +71,8 @@ struct ExtrinsicCurvatureCompute
   }
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
-                 gh::Tags::Pi<Dim, Frame>, gh::Tags::Phi<Dim, Frame>,
+                 gh::Tags::Pi<DataVector, Dim, Frame>,
+                 gh::Tags::Phi<DataVector, Dim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>>;
   using base = gr::Tags::ExtrinsicCurvature<DataVector, Dim, Frame>;
 };
@@ -90,7 +91,7 @@ struct SpatialChristoffelSecondKindCompute
         inv_g);
   }
   using argument_tags =
-      tmpl::list<gh::Tags::Phi<Dim, Frame>,
+      tmpl::list<gh::Tags::Phi<DataVector, Dim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>>;
   using base = ::gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim, Frame>;
 };

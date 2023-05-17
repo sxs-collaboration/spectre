@@ -75,8 +75,8 @@ void verify_time_independent_einstein_solution(
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
-  using Pi = ::gh::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::gh::Tags::Phi<3, Frame::Inertial>;
+  using Pi = ::gh::Tags::Pi<DataVector, 3>;
+  using Phi = ::gh::Tags::Phi<DataVector, 3>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi>;
   const gh::Solutions::WrappedGr<Solution> gh_solution{solution};
   const std::unique_ptr<gh::gauges::GaugeCondition> gauge_condition =
@@ -219,15 +219,16 @@ void verify_time_independent_einstein_solution(
       make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   Variables<tmpl::list<
       gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gh::ConstraintDamping::Tags::ConstraintGamma2, gh::Tags::GaugeH<3>,
-      gh::Tags::SpacetimeDerivGaugeH<3>, gh::Tags::Gamma1Gamma2,
+      gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::GaugeH<DataVector, 3>,
+      gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>, gh::Tags::Gamma1Gamma2,
       gh::Tags::HalfPiTwoNormals, gh::Tags::NormalDotOneIndexConstraint,
       gh::Tags::Gamma1Plus1, gh::Tags::PiOneNormal<3>,
-      gh::Tags::GaugeConstraint<3, Frame::Inertial>,
-      gh::Tags::HalfPhiTwoNormals<3>, gh::Tags::ShiftDotThreeIndexConstraint<3>,
+      gh::Tags::GaugeConstraint<DataVector, 3>, gh::Tags::HalfPhiTwoNormals<3>,
+      gh::Tags::ShiftDotThreeIndexConstraint<3>,
       gh::Tags::MeshVelocityDotThreeIndexConstraint<3>,
       gh::Tags::PhiOneNormal<3>, gh::Tags::PiSecondIndexUp<3>,
-      gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
+      gh::Tags::ThreeIndexConstraint<DataVector, 3>,
       gh::Tags::PhiFirstIndexUp<3>, gh::Tags::PhiThirdIndexUp<3>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
@@ -251,15 +252,15 @@ void verify_time_independent_einstein_solution(
           &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
       make_not_null(
           &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
-      make_not_null(&get<gh::Tags::GaugeH<3>>(buffer)),
-      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<3>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeH<DataVector, 3>>(buffer)),
+      make_not_null(
+          &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<gh::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Plus1>(buffer)),
       make_not_null(&get<gh::Tags::PiOneNormal<3>>(buffer)),
-      make_not_null(
-          &get<gh::Tags::GaugeConstraint<3, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, 3>>(buffer)),
       make_not_null(&get<gh::Tags::HalfPhiTwoNormals<3>>(buffer)),
       make_not_null(&get<gh::Tags::ShiftDotThreeIndexConstraint<3>>(buffer)),
       make_not_null(
@@ -267,7 +268,7 @@ void verify_time_independent_einstein_solution(
       make_not_null(&get<gh::Tags::PhiOneNormal<3>>(buffer)),
       make_not_null(&get<gh::Tags::PiSecondIndexUp<3>>(buffer)),
       make_not_null(
-          &get<gh::Tags::ThreeIndexConstraint<3, Frame::Inertial>>(buffer)),
+          &get<gh::Tags::ThreeIndexConstraint<DataVector, 3>>(buffer)),
       make_not_null(&get<gh::Tags::PhiFirstIndexUp<3>>(buffer)),
       make_not_null(&get<gh::Tags::PhiThirdIndexUp<3>>(buffer)),
       make_not_null(
@@ -300,7 +301,7 @@ void verify_time_independent_einstein_solution(
       std::nullopt);
 
   const auto gauge_constraint = gh::gauge_constraint(
-      get<gh::Tags::GaugeH<3>>(buffer),
+      get<gh::Tags::GaugeH<DataVector, 3>>(buffer),
       get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer),
       get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer),
       get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(buffer),

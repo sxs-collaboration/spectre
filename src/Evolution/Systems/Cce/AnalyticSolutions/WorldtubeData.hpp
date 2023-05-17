@@ -54,7 +54,7 @@ class TeukolskyWave;
  * required to be overriden in the derived class are
  * `gr::Tags::SpacetimeMetric<DataVector, 3>`,
  * `::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>`,
- * `gh::Tags::Phi<3, ::Frame::Inertial>`, and
+ * `gh::Tags::Phi<DataVector, 3>`, and
  * `Cce::Tags::News`.
  * - `prepare_solution()`: Any initial precomputation needed to determine all of
  * the solutions efficiently. This function is called by the base class prior to
@@ -80,7 +80,7 @@ struct WorldtubeData : public PUP::able {
       Tags::CauchyCartesianCoords, Tags::Dr<Tags::CauchyCartesianCoords>,
       gr::Tags::SpacetimeMetric<DataVector, 3>,
       ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-      gh::Tags::Pi<3, ::Frame::Inertial>, gh::Tags::Phi<3, ::Frame::Inertial>,
+      gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
       gr::Tags::SpatialMetric<DataVector, 3>,
       ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
       Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>,
@@ -176,13 +176,13 @@ struct WorldtubeData : public PUP::able {
 
   virtual void variables_impl(gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
                               size_t output_l_max, double time,
-                              tmpl::type_<gh::Tags::Pi<3, ::Frame::Inertial>>
+                              tmpl::type_<gh::Tags::Pi<DataVector, 3>>
                               /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
       size_t output_l_max, double time,
-      tmpl::type_<gh::Tags::Phi<3, ::Frame::Inertial>>
+      tmpl::type_<gh::Tags::Phi<DataVector, 3>>
       /*meta*/) const = 0;
 
   virtual void variables_impl(
@@ -255,8 +255,7 @@ struct WorldtubeData : public PUP::able {
           tmpl::list<Tags::CauchyCartesianCoords,
                      Tags::Dr<Tags::CauchyCartesianCoords>,
                      gr::Tags::SpacetimeMetric<DataVector, 3>,
-                     gh::Tags::Pi<3, ::Frame::Inertial>,
-                     gh::Tags::Phi<3, ::Frame::Inertial>,
+                     gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                      gr::Tags::SpatialMetric<DataVector, 3>,
                      gr::Tags::Shift<DataVector, 3>,
                      gr::Tags::Lapse<DataVector>,

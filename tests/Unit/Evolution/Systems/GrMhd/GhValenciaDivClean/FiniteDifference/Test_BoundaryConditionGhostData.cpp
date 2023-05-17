@@ -157,8 +157,8 @@ void test(const BoundaryConditionType& boundary_condition) {
       logical_to_grid_map(subcell_logical_coords), time, functions_of_time);
 
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
-  using Pi = gh::Tags::Pi<3>;
-  using Phi = gh::Tags::Phi<3>;
+  using Pi = gh::Tags::Pi<DataVector, 3>;
+  using Phi = gh::Tags::Phi<DataVector, 3>;
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;

@@ -100,15 +100,15 @@ struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<
       ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2, Tags::GaugeH<Dim>,
-      Tags::SpacetimeDerivGaugeH<Dim>, Tags::Gamma1Gamma2,
+      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      Tags::GaugeH<DataVector, Dim>,
+      Tags::SpacetimeDerivGaugeH<DataVector, Dim>, Tags::Gamma1Gamma2,
       Tags::HalfPiTwoNormals, Tags::NormalDotOneIndexConstraint,
       Tags::Gamma1Plus1, Tags::PiOneNormal<Dim>,
-      Tags::GaugeConstraint<Dim, Frame::Inertial>, Tags::HalfPhiTwoNormals<Dim>,
+      Tags::GaugeConstraint<DataVector, Dim>, Tags::HalfPhiTwoNormals<Dim>,
       Tags::ShiftDotThreeIndexConstraint<Dim>,
       Tags::MeshVelocityDotThreeIndexConstraint<Dim>, Tags::PhiOneNormal<Dim>,
-      Tags::PiSecondIndexUp<Dim>,
-      Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
+      Tags::PiSecondIndexUp<Dim>, Tags::ThreeIndexConstraint<DataVector, Dim>,
       Tags::PhiFirstIndexUp<Dim>, Tags::PhiThirdIndexUp<Dim>,
       Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
@@ -124,8 +124,8 @@ struct TimeDerivative {
       gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
       gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>;
   using argument_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>, Tags::Pi<Dim>,
-                 Tags::Phi<Dim>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                 Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma0,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma1,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma2,

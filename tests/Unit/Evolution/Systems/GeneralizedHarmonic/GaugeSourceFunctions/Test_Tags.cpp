@@ -37,8 +37,9 @@ void test() {
           gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
           gr::Tags::SqrtDetSpatialMetric<DataVector>,
           gr::Tags::InverseSpatialMetric<DataVector, Dim>,
-          gr::Tags::SpacetimeMetric<DataVector, Dim>, gh::Tags::Pi<Dim>,
-          gh::Tags::Phi<Dim>, ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
+          gr::Tags::SpacetimeMetric<DataVector, Dim>,
+          gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>,
+          ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
           ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
           ::Events::Tags::ObserverInverseJacobian<Dim, Frame::ElementLogical,
                                                   Frame::Inertial>,
@@ -61,9 +62,9 @@ void test() {
   const size_t num_points =
       db::get<::Events::Tags::ObserverMesh<Dim>>(box).number_of_grid_points();
 
-  CHECK(db::get<gh::Tags::GaugeH<Dim, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::GaugeH<DataVector, Dim>>(box) ==
         tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
-  CHECK(db::get<gh::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>(box) ==
+  CHECK(db::get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(box) ==
         tnsr::ab<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
 }
 }  // namespace

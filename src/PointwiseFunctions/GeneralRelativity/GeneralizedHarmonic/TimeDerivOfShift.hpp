@@ -88,7 +88,8 @@ struct TimeDerivShiftCompute
                  gr::Tags::Shift<DataVector, SpatialDim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
                  gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim, Frame>,
-                 Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
+                 Phi<DataVector, SpatialDim, Frame>,
+                 Pi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::I<DataVector, SpatialDim, Frame>;
 

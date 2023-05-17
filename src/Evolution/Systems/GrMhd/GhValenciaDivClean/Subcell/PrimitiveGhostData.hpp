@@ -43,8 +43,8 @@ class PrimitiveGhostVariables {
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
-                 gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Phi<3>,
-                 gh::Tags::Pi<3>>;
+                 gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Phi<DataVector, 3>, gh::Tags::Pi<DataVector, 3>>;
 
   static DataVector apply(
       const Variables<hydro::grmhd_tags<DataVector>>& prims,

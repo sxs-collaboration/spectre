@@ -52,10 +52,9 @@ class GhLockstep;
  */
 class GhInterfaceManager : public PUP::able {
  public:
-  using gh_variables =
-      Variables<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                           gh::Tags::Pi<3, ::Frame::Inertial>,
-                           gh::Tags::Phi<3, ::Frame::Inertial>>>;
+  using gh_variables = Variables<
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>>;
 
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 

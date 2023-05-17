@@ -198,8 +198,8 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
           gh_selected_vars)) {
     get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(tov_vars);
-    get<gh::Tags::Pi<3, Frame::Inertial>>(inbox) =
-        get<gh::Tags::Pi<3, Frame::Inertial>>(tov_vars);
+    get<gh::Tags::Pi<DataVector, 3>>(inbox) =
+        get<gh::Tags::Pi<DataVector, 3>>(tov_vars);
   } else if (std::holds_alternative<gh::NumericInitialData::AdmVars>(
                  gh_selected_vars)) {
     const auto tov_adm_vars = tov_star.variables(
@@ -266,12 +266,12 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
   CHECK_ITERABLE_CUSTOM_APPROX(
       get_element_tag(gr::Tags::SpacetimeMetric<DataVector, 3>{}),
       (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(tov_vars)), custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_element_tag(gh::Tags::Pi<3, Frame::Inertial>{}),
-      (get<gh::Tags::Pi<3, Frame::Inertial>>(tov_vars)), custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_element_tag(gh::Tags::Phi<3, Frame::Inertial>{}),
-      (get<gh::Tags::Phi<3, Frame::Inertial>>(tov_vars)), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(gh::Tags::Pi<DataVector, 3>{}),
+                               (get<gh::Tags::Pi<DataVector, 3>>(tov_vars)),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(gh::Tags::Phi<DataVector, 3>{}),
+                               (get<gh::Tags::Phi<DataVector, 3>>(tov_vars)),
+                               custom_approx);
   tmpl::for_each<hydro::grmhd_tags<DataVector>>(
       [&get_element_tag, &tov_vars](const auto tag_v) {
         using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;

@@ -62,11 +62,11 @@ void set_solution(
         }
         for (size_t i = 0; i < 10; ++i) {
           (*local_dvs)[i + 10].set_data_ref(
-              make_not_null(&get<gh::Tags::Pi<3>>(*local_vars)[i]));
+              make_not_null(&get<gh::Tags::Pi<DataVector, 3>>(*local_vars)[i]));
         }
         for (size_t i = 0; i < 30; ++i) {
-          (*local_dvs)[i + 20].set_data_ref(
-              make_not_null(&get<gh::Tags::Phi<3>>(*local_vars)[i]));
+          (*local_dvs)[i + 20].set_data_ref(make_not_null(
+              &get<gh::Tags::Phi<DataVector, 3>>(*local_vars)[i]));
         }
       };
   std::vector<DataVector> vars(50);

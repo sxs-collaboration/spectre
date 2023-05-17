@@ -69,7 +69,7 @@ struct DerivSpatialMetricCompute
     : ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
       db::ComputeTag {
-  using argument_tags = tmpl::list<Phi<SpatialDim, Frame>>;
+  using argument_tags = tmpl::list<Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::ijj<DataVector, SpatialDim, Frame>;
 

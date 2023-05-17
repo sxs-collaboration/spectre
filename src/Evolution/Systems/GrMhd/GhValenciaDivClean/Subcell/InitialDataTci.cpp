@@ -17,12 +17,11 @@
 namespace grmhd::GhValenciaDivClean::subcell {
 std::tuple<bool, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
     const Variables<tmpl::list<
-        gr::Tags::SpacetimeMetric<DataVector, 3>,
-        gh::Tags::Pi<3, Frame::Inertial>, gh::Tags::Phi<3, Frame::Inertial>,
-        ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
-        ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeS<>,
-        ValenciaDivClean::Tags::TildeB<>, ValenciaDivClean::Tags::TildePhi>>&
-        dg_vars,
+        gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<DataVector, 3>,
+        gh::Tags::Phi<DataVector, 3>, ValenciaDivClean::Tags::TildeD,
+        ValenciaDivClean::Tags::TildeYe, ValenciaDivClean::Tags::TildeTau,
+        ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
+        ValenciaDivClean::Tags::TildePhi>>& dg_vars,
     const double rdmp_delta0, const double rdmp_epsilon,
     const double persson_exponent, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh,

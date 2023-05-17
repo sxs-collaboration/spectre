@@ -44,8 +44,8 @@ DataVector PrimitiveGhostVariables::apply(
   }
   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(vars_to_reconstruct) =
       spacetime_metric;
-  get<gh::Tags::Phi<3>>(vars_to_reconstruct) = phi;
-  get<gh::Tags::Pi<3>>(vars_to_reconstruct) = pi;
+  get<gh::Tags::Phi<DataVector, 3>>(vars_to_reconstruct) = phi;
+  get<gh::Tags::Pi<DataVector, 3>>(vars_to_reconstruct) = pi;
   return buffer;
 }
 }  // namespace grmhd::GhValenciaDivClean::subcell

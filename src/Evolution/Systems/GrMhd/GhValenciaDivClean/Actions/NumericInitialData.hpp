@@ -247,8 +247,7 @@ struct SetNumericInitialData {
         db::get<hydro::Tags::EquationOfStateBase>(box);
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
-               gh::Tags::Pi<3, Frame::Inertial>,
-               gh::Tags::Phi<3, Frame::Inertial>,
+               gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                hydro::Tags::RestMassDensity<DataVector>,
                hydro::Tags::ElectronFraction<DataVector>,
                hydro::Tags::SpecificInternalEnergy<DataVector>,

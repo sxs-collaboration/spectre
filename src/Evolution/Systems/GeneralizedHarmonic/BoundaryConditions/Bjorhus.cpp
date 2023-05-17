@@ -148,8 +148,8 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
                         ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>,
                         // inertial time derivatives
                         ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>,
-                        ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
-                        ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>>
+                        ::Tags::dt<Tags::Pi<DataVector, Dim>>,
+                        ::Tags::dt<Tags::Phi<DataVector, Dim>>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);
 
   tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric;
@@ -162,13 +162,13 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
           &get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>>(
               local_buffer)[storage_index]));
       dt_pi[storage_index].set_data_ref(
-          make_not_null(&get<::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>>(
+          make_not_null(&get<::Tags::dt<Tags::Pi<DataVector, Dim>>>(
               local_buffer)[storage_index]));
     }
     for (size_t storage_index = 0; storage_index < dt_phi.size();
          ++storage_index) {
       dt_phi[storage_index].set_data_ref(
-          make_not_null(&get<::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>(
+          make_not_null(&get<::Tags::dt<Tags::Phi<DataVector, Dim>>>(
               local_buffer)[storage_index]));
     }
     // Compute inertial time derivative by subtracting mesh velocity from
@@ -245,7 +245,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   auto& constraint_char_zero_minus =
       get<::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>>(local_buffer);
 
-  typename Tags::CharacteristicSpeeds<Dim, Frame::Inertial>::type char_speeds;
+  typename Tags::CharacteristicSpeeds<DataVector, Dim>::type char_speeds;
 
   auto& bc_dt_v_psi =
       get<::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>>(local_buffer);
@@ -357,8 +357,8 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       gamma2, bc_dt_v_psi, bc_dt_v_zero, bc_dt_v_plus, bc_dt_v_minus,
       normal_covector);
 
-  *dt_pi_correction = get<Tags::Pi<Dim, Frame::Inertial>>(dt_evolved_vars);
-  *dt_phi_correction = get<Tags::Phi<Dim, Frame::Inertial>>(dt_evolved_vars);
+  *dt_pi_correction = get<Tags::Pi<DataVector, Dim>>(dt_evolved_vars);
+  *dt_phi_correction = get<Tags::Phi<DataVector, Dim>>(dt_evolved_vars);
   *dt_spacetime_metric_correction =
       get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(dt_evolved_vars);
 
@@ -508,13 +508,13 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
       gamma2, *inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
       normal_covector);
   *char_projected_rhs_dt_v_psi =
-      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(dt_char_fields);
+      get<Tags::VSpacetimeMetric<DataVector, Dim>>(dt_char_fields);
   *char_projected_rhs_dt_v_zero =
-      get<Tags::VZero<Dim, Frame::Inertial>>(dt_char_fields);
+      get<Tags::VZero<DataVector, Dim>>(dt_char_fields);
   *char_projected_rhs_dt_v_plus =
-      get<Tags::VPlus<Dim, Frame::Inertial>>(dt_char_fields);
+      get<Tags::VPlus<DataVector, Dim>>(dt_char_fields);
   *char_projected_rhs_dt_v_minus =
-      get<Tags::VMinus<Dim, Frame::Inertial>>(dt_char_fields);
+      get<Tags::VMinus<DataVector, Dim>>(dt_char_fields);
 
   // c^{\hat{0}-}_a = F_a + n^k C_{ka}
   gh::two_index_constraint(

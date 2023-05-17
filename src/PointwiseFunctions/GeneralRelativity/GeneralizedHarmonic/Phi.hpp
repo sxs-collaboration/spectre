@@ -76,7 +76,7 @@ namespace Tags {
  * `gh::Tags::Phi`.
  */
 template <size_t SpatialDim, typename Frame>
-struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
+struct PhiCompute : Phi<DataVector, SpatialDim, Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<SpatialDim>,
@@ -99,7 +99,7 @@ struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::ijj<DataVector, SpatialDim, Frame>&)>(
       &phi<DataVector, SpatialDim, Frame>);
 
-  using base = Phi<SpatialDim, Frame>;
+  using base = Phi<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gh

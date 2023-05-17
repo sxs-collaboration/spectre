@@ -58,17 +58,16 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 
   using evolved_vars_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                 gh::Tags::Pi<Dim, Frame::Inertial>,
-                 gh::Tags::Phi<Dim, Frame::Inertial>>;
+                 gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>>;
 
   const Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   Variables<evolved_vars_tags> evolved_vars{mesh.number_of_grid_points()};
-  get<gh::Tags::Pi<Dim, Frame::Inertial>>(evolved_vars) =
+  get<gh::Tags::Pi<DataVector, Dim>>(evolved_vars) =
       make_with_random_values<tnsr::aa<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&deriv_dist), num_points);
-  get<gh::Tags::Phi<Dim, Frame::Inertial>>(evolved_vars) =
+  get<gh::Tags::Phi<DataVector, Dim>>(evolved_vars) =
       make_with_random_values<tnsr::iaa<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&deriv_dist), num_points);
   get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars) =
@@ -110,8 +109,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   // Verify that the gauge constraint is satisfied
   const auto& spacetime_metric =
       db::get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(box);
-  const auto& pi = db::get<gh::Tags::Pi<Dim, Frame::Inertial>>(box);
-  const auto& phi = db::get<gh::Tags::Phi<Dim, Frame::Inertial>>(box);
+  const auto& pi = db::get<gh::Tags::Pi<DataVector, Dim>>(box);
+  const auto& phi = db::get<gh::Tags::Phi<DataVector, Dim>>(box);
 
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   auto [sqrt_det_spatial_metric, inverse_spatial_metric] =

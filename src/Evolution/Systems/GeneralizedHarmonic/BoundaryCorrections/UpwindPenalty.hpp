@@ -213,10 +213,9 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
-      tmpl::list<Tags::VSpacetimeMetric<Dim, Frame::Inertial>,
-                 Tags::VZero<Dim, Frame::Inertial>,
-                 Tags::VPlus<Dim, Frame::Inertial>,
-                 Tags::VMinus<Dim, Frame::Inertial>, NormalTimesVPlus,
+      tmpl::list<Tags::VSpacetimeMetric<DataVector, Dim>,
+                 Tags::VZero<DataVector, Dim>, Tags::VPlus<DataVector, Dim>,
+                 Tags::VMinus<DataVector, Dim>, NormalTimesVPlus,
                  NormalTimesVMinus, Gamma2VSpacetimeMetric, CharSpeedsTensor>;
   using dg_package_data_temporary_tags =
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,

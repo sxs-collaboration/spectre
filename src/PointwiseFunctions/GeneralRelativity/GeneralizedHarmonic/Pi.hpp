@@ -78,14 +78,14 @@ namespace Tags {
  * \details See `pi()`. Can be retrieved using `gh::Tags::Pi`.
  */
 template <size_t SpatialDim, typename Frame>
-struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
+struct PiCompute : Pi<DataVector, SpatialDim, Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       gr::Tags::Shift<DataVector, SpatialDim, Frame>,
       ::Tags::dt<gr::Tags::Shift<DataVector, SpatialDim, Frame>>,
       gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>,
       ::Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim, Frame>>,
-      Phi<SpatialDim, Frame>>;
+      Phi<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::aa<DataVector, SpatialDim, Frame>;
 
@@ -99,7 +99,7 @@ struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &pi<DataVector, SpatialDim, Frame>);
 
-  using base = Pi<SpatialDim, Frame>;
+  using base = Pi<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gh

@@ -466,8 +466,9 @@ void test_reference_impl_against_spec() {
 template <size_t Dim, typename Generator>
 void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
-  using gh_tags_list = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                                  gh::Tags::Pi<Dim>, gh::Tags::Phi<Dim>>;
+  using gh_tags_list =
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                 gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>>;
 
   const double time = 1.3;
   const gh::gauges::DampedHarmonic gauge_condition{
@@ -513,17 +514,17 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
 
   const auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(evolved_vars);
-  const auto& phi = get<gh::Tags::Phi<Dim>>(evolved_vars);
-  const auto& pi = get<gh::Tags::Pi<Dim>>(evolved_vars);
+  const auto& phi = get<gh::Tags::Phi<DataVector, Dim>>(evolved_vars);
+  const auto& pi = get<gh::Tags::Pi<DataVector, Dim>>(evolved_vars);
   const auto& d_spacetime_metric =
       get<Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                       tmpl::size_t<Dim>, Frame::Inertial>>(partial_derivs);
   const auto& d_phi =
-      get<Tags::deriv<gh::Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
-          partial_derivs);
+      get<Tags::deriv<gh::Tags::Phi<DataVector, Dim>, tmpl::size_t<Dim>,
+                      Frame::Inertial>>(partial_derivs);
   const auto& d_pi =
-      get<Tags::deriv<gh::Tags::Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
-          partial_derivs);
+      get<Tags::deriv<gh::Tags::Pi<DataVector, Dim>, tmpl::size_t<Dim>,
+                      Frame::Inertial>>(partial_derivs);
 
   const auto gamma0 = make_with_random_values<Scalar<DataVector>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -605,16 +606,17 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
 
   Variables<tmpl::list<
       gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gh::ConstraintDamping::Tags::ConstraintGamma2, gh::Tags::GaugeH<Dim>,
-      gh::Tags::SpacetimeDerivGaugeH<Dim>, gh::Tags::Gamma1Gamma2,
+      gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::GaugeH<DataVector, Dim>,
+      gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>, gh::Tags::Gamma1Gamma2,
       gh::Tags::HalfPiTwoNormals, gh::Tags::NormalDotOneIndexConstraint,
       gh::Tags::Gamma1Plus1, gh::Tags::PiOneNormal<Dim>,
-      gh::Tags::GaugeConstraint<Dim, Frame::Inertial>,
+      gh::Tags::GaugeConstraint<DataVector, Dim>,
       gh::Tags::HalfPhiTwoNormals<Dim>,
       gh::Tags::ShiftDotThreeIndexConstraint<Dim>,
       gh::Tags::MeshVelocityDotThreeIndexConstraint<Dim>,
       gh::Tags::PhiOneNormal<Dim>, gh::Tags::PiSecondIndexUp<Dim>,
-      gh::Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
+      gh::Tags::ThreeIndexConstraint<DataVector, Dim>,
       gh::Tags::PhiFirstIndexUp<Dim>, gh::Tags::PhiThirdIndexUp<Dim>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
@@ -638,15 +640,15 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
       make_not_null(
           &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
-      make_not_null(&get<gh::Tags::GaugeH<Dim>>(buffer)),
-      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<gh::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Plus1>(buffer)),
       make_not_null(&get<gh::Tags::PiOneNormal<Dim>>(buffer)),
-      make_not_null(
-          &get<gh::Tags::GaugeConstraint<Dim, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::ShiftDotThreeIndexConstraint<Dim>>(buffer)),
       make_not_null(
@@ -654,7 +656,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(&get<gh::Tags::PhiOneNormal<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PiSecondIndexUp<Dim>>(buffer)),
       make_not_null(
-          &get<gh::Tags::ThreeIndexConstraint<Dim, Frame::Inertial>>(buffer)),
+          &get<gh::Tags::ThreeIndexConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiFirstIndexUp<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiThirdIndexUp<Dim>>(buffer)),
       make_not_null(
@@ -693,10 +695,12 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer), gamma1);
   CHECK_ITERABLE_APPROX(
       get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer), gamma2);
-  CHECK_ITERABLE_APPROX(get<gh::Tags::GaugeH<Dim>>(buffer), gauge_h);
+  CHECK_ITERABLE_APPROX((get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
+                        gauge_h);
   Approx custom_approx = Approx::custom().epsilon(1.e-10);
-  CHECK_ITERABLE_CUSTOM_APPROX(get<gh::Tags::SpacetimeDerivGaugeH<Dim>>(buffer),
-                               d4_gauge_h, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
+      d4_gauge_h, custom_approx);
 
   CHECK_ITERABLE_CUSTOM_APPROX(expected_dt_spacetime_metric,
                                dt_spacetime_metric, custom_approx);
@@ -744,22 +748,22 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
       make_not_null(
           &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
-      make_not_null(&get<gh::Tags::GaugeH<Dim>>(buffer)),
-      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<gh::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Plus1>(buffer)),
       make_not_null(&get<gh::Tags::PiOneNormal<Dim>>(buffer)),
-      make_not_null(
-          &get<gh::Tags::GaugeConstraint<Dim, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(&shift_dot_three_index_constraint),
       make_not_null(&mesh_velocity_dot_three_index_constraint),
       make_not_null(&get<gh::Tags::PhiOneNormal<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PiSecondIndexUp<Dim>>(buffer)),
       make_not_null(
-          &get<gh::Tags::ThreeIndexConstraint<Dim, Frame::Inertial>>(buffer)),
+          &get<gh::Tags::ThreeIndexConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiFirstIndexUp<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiThirdIndexUp<Dim>>(buffer)),
       make_not_null(
@@ -807,22 +811,22 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
       make_not_null(
           &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
-      make_not_null(&get<gh::Tags::GaugeH<Dim>>(buffer)),
-      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
+      make_not_null(
+          &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<gh::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<gh::Tags::Gamma1Plus1>(buffer)),
       make_not_null(&get<gh::Tags::PiOneNormal<Dim>>(buffer)),
-      make_not_null(
-          &get<gh::Tags::GaugeConstraint<Dim, Frame::Inertial>>(buffer)),
+      make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(&shift_dot_three_index_constraint),
       make_not_null(&mesh_velocity_dot_three_index_constraint),
       make_not_null(&get<gh::Tags::PhiOneNormal<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PiSecondIndexUp<Dim>>(buffer)),
       make_not_null(
-          &get<gh::Tags::ThreeIndexConstraint<Dim, Frame::Inertial>>(buffer)),
+          &get<gh::Tags::ThreeIndexConstraint<DataVector, Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiFirstIndexUp<Dim>>(buffer)),
       make_not_null(&get<gh::Tags::PhiThirdIndexUp<Dim>>(buffer)),
       make_not_null(

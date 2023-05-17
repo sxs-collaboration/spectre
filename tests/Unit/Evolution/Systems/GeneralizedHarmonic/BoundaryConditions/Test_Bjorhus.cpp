@@ -47,9 +47,9 @@ void test() {
             helpers::Tags::PythonFunctionName<
                 ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim, frame>>>,
             helpers::Tags::PythonFunctionName<
-                ::Tags::dt<gh::Tags::Pi<Dim, frame>>>,
+                ::Tags::dt<gh::Tags::Pi<DataVector, Dim, frame>>>,
             helpers::Tags::PythonFunctionName<
-                ::Tags::dt<gh::Tags::Phi<Dim, frame>>>>{
+                ::Tags::dt<gh::Tags::Phi<DataVector, Dim, frame>>>>{
             "error", "dt_spacetime_metric", "dt_pi_" + bc_string,
             "dt_phi_" + bc_string},
         "ConstraintPreservingBjorhus:\n"
@@ -59,7 +59,8 @@ void test() {
         tuples::TaggedTuple<
             helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
             helpers::Tags::Range<gr::Tags::Shift<DataVector, Dim, frame>>,
-            helpers::Tags::Range<gh::Tags::SpacetimeDerivGaugeH<Dim, frame>>,
+            helpers::Tags::Range<
+                gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim, frame>>,
             helpers::Tags::Range<
                 domain::Tags::Coordinates<Dim, Frame::Inertial>>>{
             std::array<double, 2>{{0.8, 1.}}, std::array<double, 2>{{0.1, 0.2}},

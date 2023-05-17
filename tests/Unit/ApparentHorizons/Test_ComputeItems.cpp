@@ -88,7 +88,8 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
   const auto box = db::create<
       db::AddSimpleTags<
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
-                     gh::Tags::Pi<Dim, Frame>, gh::Tags::Phi<Dim, Frame>>>,
+                     gh::Tags::Pi<DataVector, Dim, Frame>,
+                     gh::Tags::Phi<DataVector, Dim, Frame>>>,
       db::AddComputeTags<tmpl::list<
           ah::Tags::InverseSpatialMetricCompute<Dim, Frame>,
           ah::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,

@@ -47,15 +47,13 @@ WrappedGr<SolutionType>::variables(
 }
 
 template <typename SolutionType>
-tuples::TaggedTuple<gh::Tags::Phi<
-    gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial>>
+tuples::TaggedTuple<gh::Tags::Phi<DataVector,
+    gh::Solutions::WrappedGr<SolutionType>::volume_dim>>
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, gh::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
-    tmpl::list<gh::Tags::Phi<
-        gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial>> /*meta*/,
+    tmpl::list<gh::Tags::Phi<DataVector,
+        gh::Solutions::WrappedGr<SolutionType>::volume_dim>> /*meta*/,
     const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& deriv_lapse =
@@ -80,15 +78,13 @@ WrappedGr<SolutionType>::variables(
 }
 
 template <typename SolutionType>
-tuples::TaggedTuple<gh::Tags::Pi<
-    gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial>>
+tuples::TaggedTuple<gh::Tags::Pi<DataVector,
+    gh::Solutions::WrappedGr<SolutionType>::volume_dim>>
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, gh::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
-    tmpl::list<gh::Tags::Pi<
-        gh::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial>> /*meta*/,
+    tmpl::list<gh::Tags::Pi<DataVector,
+        gh::Solutions::WrappedGr<SolutionType>::volume_dim>> /*meta*/,
     const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& dt_lapse =

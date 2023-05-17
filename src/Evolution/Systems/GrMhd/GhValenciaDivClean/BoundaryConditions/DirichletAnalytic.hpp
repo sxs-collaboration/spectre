@@ -157,7 +157,8 @@ class DirichletAnalytic final : public BoundaryCondition {
                        gr::Tags::Lapse<DataVector>,
                        gr::Tags::Shift<DataVector, 3>,
                        gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+                       ::gh::Tags::Pi<DataVector, 3>,
+                       ::gh::Tags::Phi<DataVector, 3>>{});
 
       } else {
         (void)time;
@@ -177,14 +178,15 @@ class DirichletAnalytic final : public BoundaryCondition {
                                gr::Tags::Lapse<DataVector>,
                                gr::Tags::Shift<DataVector, 3>,
                                gr::Tags::SpacetimeMetric<DataVector, 3>,
-                               ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+                               ::gh::Tags::Pi<DataVector, 3>,
+                               ::gh::Tags::Phi<DataVector, 3>>{});
       }
     }();
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);
-    *pi = get<::gh::Tags::Pi<3>>(boundary_values);
-    *phi = get<::gh::Tags::Phi<3>>(boundary_values);
+    *pi = get<::gh::Tags::Pi<DataVector, 3>>(boundary_values);
+    *phi = get<::gh::Tags::Phi<DataVector, 3>>(boundary_values);
     *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
     *shift = get<gr::Tags::Shift<DataVector, 3>>(boundary_values);
     *inv_spatial_metric =
@@ -284,7 +286,8 @@ class DirichletAnalytic final : public BoundaryCondition {
                        hydro::Tags::MagneticField<DataVector, 3>,
                        hydro::Tags::DivergenceCleaningField<DataVector>,
                        gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+                       ::gh::Tags::Pi<DataVector, 3>,
+                       ::gh::Tags::Phi<DataVector, 3>>{});
       } else {
         return analytic_solution_or_data.variables(
             ghost_inertial_coords, time,
@@ -296,14 +299,15 @@ class DirichletAnalytic final : public BoundaryCondition {
                        hydro::Tags::MagneticField<DataVector, 3>,
                        hydro::Tags::DivergenceCleaningField<DataVector>,
                        gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<3>, ::gh::Tags::Phi<3>>{});
+                       ::gh::Tags::Pi<DataVector, 3>,
+                       ::gh::Tags::Phi<DataVector, 3>>{});
       }
     }();
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);
-    *pi = get<::gh::Tags::Pi<3>>(boundary_values);
-    *phi = get<::gh::Tags::Phi<3>>(boundary_values);
+    *pi = get<::gh::Tags::Pi<DataVector, 3>>(boundary_values);
+    *phi = get<::gh::Tags::Phi<DataVector, 3>>(boundary_values);
     *rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
     *electron_fraction =

@@ -89,7 +89,8 @@ struct TimeDerivativeTermsImpl<
                     get<gh::Tags::HalfPhiTwoNormals<3>>(*temps_ptr).get(i);
     }
     const auto& phi =
-        get<Tags::detail::TemporaryReference<gh::Tags::Phi<3>>>(arguments);
+        get<Tags::detail::TemporaryReference<gh::Tags::Phi<DataVector, 3>>>(
+            arguments);
     const auto& inv_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(*temps_ptr);
     const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*temps_ptr);
@@ -125,7 +126,8 @@ struct TimeDerivativeTermsImpl<
       }
     }
     const auto& pi =
-        get<Tags::detail::TemporaryReference<gh::Tags::Pi<3>>>(arguments);
+        get<Tags::detail::TemporaryReference<gh::Tags::Pi<DataVector, 3>>>(
+            arguments);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {
         get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(*temps_ptr).get(i, j) =
@@ -161,7 +163,7 @@ struct TimeDerivativeTermsImpl<
     // The addition to dt Pi is independent of the specific form of the stress
     // tensor.
     add_stress_energy_term_to_dt_pi(
-        get<::Tags::dt<gh::Tags::Pi<3>>>(dt_vars_ptr),
+        get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(dt_vars_ptr),
         get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
             *temps_ptr),
         get<gr::Tags::Lapse<DataVector>>(*temps_ptr));

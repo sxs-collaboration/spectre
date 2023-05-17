@@ -39,7 +39,7 @@ namespace grmhd::GhValenciaDivClean {
  */
 struct SetPiFromGauge {
  public:
-  using return_tags = tmpl::list<gh::Tags::Pi<3, Frame::Inertial>>;
+  using return_tags = tmpl::list<gh::Tags::Pi<DataVector, 3>>;
   using argument_tags = tmpl::list<
       ::Tags::Time, domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
@@ -49,8 +49,8 @@ struct SetPiFromGauge {
       domain::Tags::FunctionsOfTime,
       domain::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
-      gr::Tags::SpacetimeMetric<DataVector, 3>,
-      gh::Tags::Phi<3, Frame::Inertial>, gh::gauges::Tags::GaugeCondition,
+      gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+      gh::gauges::Tags::GaugeCondition,
       evolution::dg::subcell::Tags::ActiveGrid>;
 
   using const_global_cache_tags = tmpl::list<gh::gauges::Tags::GaugeCondition>;

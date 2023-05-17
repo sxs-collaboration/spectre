@@ -52,9 +52,9 @@ SPECTRE_TEST_CASE(
   std::uniform_real_distribution<> metric_dist(0.1, 1.);
   std::uniform_real_distribution<> deriv_dist(-1.e-5, 1.e-5);
 
-  using evolved_vars_tags = tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                                       gh::Tags::Pi<3, Frame::Inertial>,
-                                       gh::Tags::Phi<3, Frame::Inertial>>;
+  using evolved_vars_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -62,10 +62,10 @@ SPECTRE_TEST_CASE(
                           &metric_dist](const Mesh<3>& mesh) {
     const size_t num_points = mesh.number_of_grid_points();
     Variables<evolved_vars_tags> evolved_vars{mesh.number_of_grid_points()};
-    get<gh::Tags::Pi<3, Frame::Inertial>>(evolved_vars) =
+    get<gh::Tags::Pi<DataVector, 3>>(evolved_vars) =
         make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&deriv_dist), num_points);
-    get<gh::Tags::Phi<3, Frame::Inertial>>(evolved_vars) =
+    get<gh::Tags::Phi<DataVector, 3>>(evolved_vars) =
         make_with_random_values<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&deriv_dist), num_points);
     get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars) =
@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE(
   const auto check = [&box](const Mesh<3>& mesh, const auto& initial_vars) {
     CAPTURE(mesh);
     tnsr::aa<DataVector, 3, Frame::Inertial> expected_pi =
-        get<gh::Tags::Pi<3>>(initial_vars);
+        get<gh::Tags::Pi<DataVector, 3>>(initial_vars);
     gh::gauges::SetPiFromGauge<3>::apply(
         make_not_null(&expected_pi), 0., mesh,
         db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
@@ -130,10 +130,10 @@ SPECTRE_TEST_CASE(
             box),
         db::get<domain::Tags::FunctionsOfTime>(box), logical_coordinates(mesh),
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
-        get<gh::Tags::Phi<3, Frame::Inertial>>(initial_vars),
+        get<gh::Tags::Phi<DataVector, 3>>(initial_vars),
         db::get<gh::gauges::Tags::GaugeCondition>(box));
 
-    const auto& pi = db::get<gh::Tags::Pi<3>>(box);
+    const auto& pi = db::get<gh::Tags::Pi<DataVector, 3>>(box);
     CHECK(pi == expected_pi);
   };
 

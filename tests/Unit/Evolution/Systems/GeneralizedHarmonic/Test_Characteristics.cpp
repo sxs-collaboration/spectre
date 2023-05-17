@@ -240,28 +240,29 @@ void test_characteristic_fields() {
   const DataVector used_for_size(5);
   // VSpacetimeMetric
   pypp::check_with_random_values<1>(
-      field_with_tag<gh::Tags::VSpacetimeMetric<Dim, Frame>, Dim, Frame>,
+      field_with_tag<gh::Tags::VSpacetimeMetric<DataVector, Dim, Frame>, Dim,
+                     Frame>,
       "TestFunctions", "char_field_upsi", {{{-2., 2.}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
-      field_with_tag<gh::Tags::VZero<Dim, Frame>, Dim, Frame>, "TestFunctions",
-      "char_field_uzero", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VZero<DataVector, Dim, Frame>, Dim, Frame>,
+      "TestFunctions", "char_field_uzero", {{{-2., 2.}}}, used_for_size,
       1.e-9);  // last argument loosens tolerance from
                // default of 1.0e-12 to avoid occasional
                // failures of this test, suspected from
                // accumulated roundoff error
   // VPlus
   pypp::check_with_random_values<1>(
-      field_with_tag<gh::Tags::VPlus<Dim, Frame>, Dim, Frame>, "TestFunctions",
-      "char_field_uplus", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VPlus<DataVector, Dim, Frame>, Dim, Frame>,
+      "TestFunctions", "char_field_uplus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
                 // accumulated roundoff error
   // VMinus
   pypp::check_with_random_values<1>(
-      field_with_tag<gh::Tags::VMinus<Dim, Frame>, Dim, Frame>, "TestFunctions",
-      "char_field_uminus", {{{-2., 2.}}}, used_for_size,
+      field_with_tag<gh::Tags::VMinus<DataVector, Dim, Frame>, Dim, Frame>,
+      "TestFunctions", "char_field_uminus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -386,13 +387,13 @@ void test_characteristic_fields_analytic(
                                                unit_normal_one_form);
 
   const auto& upsi_from_func =
-      get<gh::Tags::VSpacetimeMetric<spatial_dim, Frame::Inertial>>(uvars);
+      get<gh::Tags::VSpacetimeMetric<DataVector, spatial_dim>>(uvars);
   const auto& uzero_from_func =
-      get<gh::Tags::VZero<spatial_dim, Frame::Inertial>>(uvars);
+      get<gh::Tags::VZero<DataVector, spatial_dim>>(uvars);
   const auto& uplus_from_func =
-      get<gh::Tags::VPlus<spatial_dim, Frame::Inertial>>(uvars);
+      get<gh::Tags::VPlus<DataVector, spatial_dim>>(uvars);
   const auto& uminus_from_func =
-      get<gh::Tags::VMinus<spatial_dim, Frame::Inertial>>(uvars);
+      get<gh::Tags::VMinus<DataVector, spatial_dim>>(uvars);
 
   CHECK_ITERABLE_APPROX(upsi, upsi_from_func);
   CHECK_ITERABLE_APPROX(uzero, uzero_from_func);
@@ -427,11 +428,11 @@ void test_evolved_from_characteristic_fields() {
       "TestFunctions", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<gh::Tags::Pi<Dim, Frame>, Dim, Frame>,
+      evol_field_with_tag<gh::Tags::Pi<DataVector, Dim, Frame>, Dim, Frame>,
       "TestFunctions", "evol_field_pi", {{{-2., 2.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<gh::Tags::Phi<Dim, Frame>, Dim, Frame>,
+      evol_field_with_tag<gh::Tags::Phi<DataVector, Dim, Frame>, Dim, Frame>,
       "TestFunctions", "evol_field_phi", {{{-2., 2.}}}, used_for_size);
 }
 
@@ -552,9 +553,9 @@ void test_evolved_from_characteristic_fields_analytic(
   const auto& psi_from_func =
       get<gr::Tags::SpacetimeMetric<DataVector, spatial_dim>>(ffields);
   const auto& pi_from_func =
-      get<gh::Tags::Pi<spatial_dim, Frame::Inertial>>(ffields);
+      get<gh::Tags::Pi<DataVector, spatial_dim>>(ffields);
   const auto& phi_from_func =
-      get<gh::Tags::Phi<spatial_dim, Frame::Inertial>>(ffields);
+      get<gh::Tags::Phi<DataVector, spatial_dim>>(ffields);
 
   CHECK_ITERABLE_APPROX(spacetime_metric, psi_from_func);
   CHECK_ITERABLE_APPROX(pi, pi_from_func);
