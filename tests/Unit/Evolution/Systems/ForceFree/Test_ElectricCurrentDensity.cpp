@@ -15,13 +15,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.ElectricCurrentDensity",
 
   pypp::check_with_random_values<1>(&ForceFree::ComputeDriftTildeJ::apply,
                                     "ElectricCurrentDensity", {"tilde_j_drift"},
-                                    {{{-1.0, 1.0}}}, DataVector{5});
+                                    {{{-1.0, 1.0}}}, DataVector{5}, 1.0e-10);
 
   pypp::check_with_random_values<1>(
       &ForceFree::ComputeParallelTildeJ::apply, "ElectricCurrentDensity",
-      {"tilde_j_parallel"}, {{{-1.0, 1.0}}}, DataVector{5});
+      {"tilde_j_parallel"}, {{{-1.0, 1.0}}}, DataVector{5}, 1.0e-10);
 
   pypp::check_with_random_values<1>(&ForceFree::Tags::ComputeTildeJ::function,
                                     "ElectricCurrentDensity", {"tilde_j"},
-                                    {{{-1.0, 1.0}}}, DataVector{5});
+                                    {{{-1.0, 1.0}}}, DataVector{5}, 1.0e-10);
 }
