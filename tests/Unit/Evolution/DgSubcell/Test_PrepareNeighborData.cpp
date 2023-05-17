@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -26,6 +27,7 @@
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -258,10 +260,7 @@ void test(const bool all_neighbors_are_doing_dg,
     }
   } else {
     // Set all directions to false, enable the desired ones below
-    DirectionMap<Dim, bool> directions_to_slice{};
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      directions_to_slice[direction] = false;
-    }
+    std::unordered_set<Direction<Dim>> directions_to_slice{};
 
     REQUIRE(data_for_neighbors.size() == Dim);
     const size_t num_ghost_points =
@@ -270,7 +269,7 @@ void test(const bool all_neighbors_are_doing_dg,
       REQUIRE(data_for_neighbors.contains(direction));
       REQUIRE(data_for_neighbors.at(direction).size() ==
               num_ghost_points * (need_fluxes ? (Dim + 1) : 1) + 2);
-      directions_to_slice[direction] = true;
+      directions_to_slice.emplace(direction);
     }
 
     // do same operation as GhostDataToSlice

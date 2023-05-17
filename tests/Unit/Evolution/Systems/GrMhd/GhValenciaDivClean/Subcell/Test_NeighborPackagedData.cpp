@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -153,14 +154,12 @@ double test(const size_t num_dg_pts) {
     }
 
     // Slice data so we can add it to the element's neighbor data
-    DirectionMap<3, bool> directions_to_slice{};
-    directions_to_slice[direction.opposite()] = true;
     DataVector neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
             grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim{}
                 .ghost_zone_size(),
-            directions_to_slice, 0)
+            std::unordered_set{direction.opposite()}, 0)
             .at(direction.opposite());
 
     const auto key =
