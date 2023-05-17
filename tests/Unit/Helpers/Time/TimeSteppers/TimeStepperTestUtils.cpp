@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -15,6 +16,8 @@
 #include <limits>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
@@ -31,10 +34,10 @@
 namespace TimeStepperTestUtils {
 
 namespace {
-template <typename F>
+template <typename T, typename F>
 void take_step(
-    const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
-    const gsl::not_null<TimeSteppers::History<double>*> history,
+    const gsl::not_null<Time*> time, const gsl::not_null<T*> y,
+    const gsl::not_null<TimeSteppers::History<T>*> history,
     const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0;
@@ -42,6 +45,7 @@ void take_step(
        ++substep) {
     CHECK(time_id.substep() == substep);
     history->insert(time_id, *y, rhs(*y, time_id.substep_time()));
+    // There is no std::numeric_limits<complex>
     *y = std::numeric_limits<double>::signaling_NaN();
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
@@ -160,7 +164,8 @@ void integrate_test(const TimeStepper& stepper, const size_t order,
                      number_of_past_steps);
 
   for (uint64_t i = 0; i < num_steps; ++i) {
-    take_step(&time, &y, &history, stepper, rhs, step_size);
+    take_step(&time, make_not_null(&y), make_not_null(&history), stepper, rhs,
+              step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -195,7 +200,8 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
                      number_of_past_steps);
 
   for (uint64_t i = 0; i < num_steps; ++i) {
-    take_step(&time, &y, make_not_null(&history), stepper, rhs, step_size);
+    take_step(&time, make_not_null(&y), make_not_null(&history), stepper, rhs,
+              step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -281,64 +287,80 @@ void integrate_variable_test(const TimeStepper& stepper, const size_t order,
         (1. + 0.5 * sin(i)) * average_step);
     time = time.with_slab(slab);
 
-    take_step(&time, &y, make_not_null(&history), stepper, rhs,
+    take_step(&time, make_not_null(&y), make_not_null(&history), stepper, rhs,
               slab.duration());
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
 }
 
-void stability_test(const TimeStepper& stepper) {
-  const uint64_t num_steps = 5000;
-  const double bracket_size = 1.1;
+namespace {
+// This checks the stability of dy/dt = [exp(i phase) - 1] y.  To do
+// this, it uses the fact that time steppers can be considered as
+// linear operators on their history values.  It constructs the
+// operator for the passed stepper with the given step and phase
+// explicitly, and then checks whether all the eigenvalues have
+// magnitude less than one.
+bool step_is_stable(const TimeStepper& stepper, const double step_size,
+                    const double phase) {
+  const size_t operator_size = stepper.number_of_past_steps() + 1;
+  const Slab slab(0.0, step_size * (operator_size + 1));
+  const auto step_delta = slab.duration() / (operator_size + 1);
+  const std::complex<double> coefficient = std::polar(1.0, phase) - 1.0;
+  const auto rhs = [&coefficient](const std::complex<double> v,
+                                  const double /*t*/) {
+    return coefficient * v;
+  };
 
-  // This is integrating dy/dt = -2y, which is chosen so that the stable
-  // step size for Euler's method is 1.
-
-  // Stable region
-  {
-    const Slab slab = Slab::with_duration_from_start(
-        0., num_steps * stepper.stable_step() / bracket_size);
-    const TimeDelta step_size = slab.duration() / num_steps;
-
-    Time time = slab.start();
-    double y = 1.;
-    TimeSteppers::History<double> history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) { return -2. * v; };
-    initialize_history(
-        time, make_not_null(&history),
-        [](const double t) { return exp(-2. * t); }, rhs, step_size,
-        stepper.number_of_past_steps());
-
-    for (uint64_t i = 0; i < num_steps; ++i) {
-      take_step(&time, &y, make_not_null(&history), stepper, rhs, step_size);
-      CHECK(std::abs(y) < 10.);
-    }
+  blaze::DynamicMatrix<std::complex<double>, blaze::columnMajor>
+      stepper_operator(operator_size, operator_size, 0.0);
+  // Add entries for shifting the history backwards after the step.
+  for (size_t i = 0; i < operator_size - 1; ++i) {
+    stepper_operator(i, i + 1) = 1.0;
   }
 
-  // Unstable region
-  {
-    const Slab slab = Slab::with_duration_from_start(
-        0., num_steps * stepper.stable_step() * bracket_size);
-    const TimeDelta step_size = slab.duration() / num_steps;
-
-    Time time = slab.start();
-    double y = 1.;
-    TimeSteppers::History<double> history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) { return -2. * v; };
-    initialize_history(
-        time, make_not_null(&history),
-        [](const double t) { return exp(-2. * t); }, rhs, step_size,
-        stepper.number_of_past_steps());
-
-    for (uint64_t i = 0; i < num_steps; ++i) {
-      take_step(&time, &y, make_not_null(&history), stepper, rhs, step_size);
-      if (std::abs(y) > 10.) {
-        return;
+  // Construct the entries for the linear combination forming the new
+  // value.
+  for (size_t step_to_test = 0; step_to_test < operator_size; ++step_to_test) {
+    TimeSteppers::History<std::complex<double>> history{stepper.order()};
+    TimeStepId id(true, 0, slab.start());
+    for (size_t past_step = 0; past_step < operator_size - 1; ++past_step) {
+      if (past_step == step_to_test) {
+        history.insert(id, 1.0, rhs(1.0, 0.0));
+      } else {
+        history.insert(id, 0.0, 0.0);
       }
+      id = id.next_step(step_delta);
     }
-    CHECK(false);
+    Time time = id.step_time();
+    std::complex<double> y = step_to_test == operator_size - 1 ? 1.0 : 0.0;
+    take_step(make_not_null(&time), make_not_null(&y), make_not_null(&history),
+              stepper, rhs, step_delta);
+    stepper_operator(operator_size - 1, step_to_test) = y;
   }
+
+  const blaze::DynamicVector<std::complex<double>> stepper_eigenvalues =
+      eigen(stepper_operator);
+  return alg::all_of(stepper_eigenvalues, [](const std::complex<double> e) {
+    return norm(e) <= 1.0;
+  });
+}
+}  // namespace
+
+void stability_test(const TimeStepper& stepper, const double phase) {
+  const double bracket_size = 1.001;
+
+  CHECK(step_is_stable(stepper, stepper.stable_step() / bracket_size, phase));
+  CHECK(
+      not step_is_stable(stepper, stepper.stable_step() * bracket_size, phase));
+
+  // Check that the phase is correct.  Doing a global check is too
+  // expensive, but we can check that the passed value is a local
+  // minimum.
+  CHECK(step_is_stable(stepper, stepper.stable_step() / bracket_size,
+                       phase + 0.1));
+  CHECK(step_is_stable(stepper, stepper.stable_step() / bracket_size,
+                       phase - 0.1));
 }
 
 void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
@@ -429,7 +451,8 @@ void check_convergence_order(const TimeStepper& stepper,
         time, make_not_null(&history), [](const double t) { return exp(t); },
         rhs, step_size, stepper.number_of_past_steps());
     while (time < slab.end()) {
-      take_step(&time, &y, &history, stepper, rhs, step_size);
+      take_step(&time, make_not_null(&y), make_not_null(&history), stepper, rhs,
+                step_size);
     }
     const double result = abs(y - exp(1.));
     return result;
@@ -498,7 +521,8 @@ void check_dense_output(const TimeStepper& stepper,
       initialize_history(
           time, make_not_null(&history), [](const double t) { return exp(t); },
           rhs, time_step, stepper.number_of_past_steps());
-      take_step(&time, &y, &history, stepper, rhs, time_step);
+      take_step(&time, make_not_null(&y), make_not_null(&history), stepper, rhs,
+                time_step);
 
       // Some time steppers special-case the endpoints of the
       // interval, so check just inside to trigger the main dense

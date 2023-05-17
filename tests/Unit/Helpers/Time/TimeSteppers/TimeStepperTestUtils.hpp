@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
@@ -66,7 +67,11 @@ void initialize_history(
   }
 }
 
-void stability_test(const TimeStepper& stepper);
+/// Check that the reported stable step is correct.  The \p phase
+/// argument is the phase that is most unstable in the differential
+/// equation \f$y' = (\exp(i \phi) - 1) y\f$.  For most common time
+/// steppers this is \f$\pi\f$.
+void stability_test(const TimeStepper& stepper, double phase = M_PI);
 
 void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
                          size_t number_of_past_steps, double epsilon,
