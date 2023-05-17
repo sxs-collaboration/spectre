@@ -20,6 +20,7 @@
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
+#include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -264,11 +265,14 @@ struct EvolutionMetavars {
 
   using ExcisionBoundaryA = ExcisionBoundary<::domain::ObjectLabel::A>;
   using ExcisionBoundaryB = ExcisionBoundary<::domain::ObjectLabel::B>;
+  using both_horizons = control_system::measurements::BothHorizons;
   using control_systems =
-      tmpl::list<control_system::Systems::Rotation<
-                     3, control_system::measurements::BothHorizons>,
-                 control_system::Systems::Expansion<
-                     2, control_system::measurements::BothHorizons>>;
+      tmpl::list<control_system::Systems::Rotation<3, both_horizons>,
+                 control_system::Systems::Expansion<2, both_horizons>,
+                 control_system::Systems::Shape<::domain::ObjectLabel::A, 2,
+                                                both_horizons>,
+                 control_system::Systems::Shape<::domain::ObjectLabel::B, 2,
+                                                both_horizons>>;
 
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;
