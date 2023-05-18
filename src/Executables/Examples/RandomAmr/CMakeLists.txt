@@ -4,9 +4,12 @@
 set(LIBS_TO_LINK
   Amr
   AmrCriteria
+  AmrProjectors
   DomainCreators
   Informer
   Options
+  PhaseControl
+  Spectral
   Utilities
   )
 
