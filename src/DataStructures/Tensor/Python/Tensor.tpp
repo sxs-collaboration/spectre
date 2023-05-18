@@ -46,7 +46,9 @@ std::string class_name(const std::string& name) {
     return name + dtype_to_name<typename TensorType::type>();
   } else if constexpr (Kind == TensorKind::Tnsr) {
     return "Tensor" + name + dtype_to_name<typename TensorType::type>() +
-           std::to_string(TensorType::index_dim(0)) +
+           std::to_string(
+               TensorType::index_dim(0) -
+               (TensorType::index_types()[0] == IndexType::Spacetime ? 1 : 0)) +
            get_output(get<0>(TensorType::index_frames()));
   } else if constexpr (Kind == TensorKind::Jacobian) {
     // Jacobians have different frames, so handle them separately to other
@@ -231,10 +233,19 @@ void bind_tensor(py::module& m) {
       InverseJacobian<DTYPE(data), Dim, Frame::ElementLogical, FRAME(data)>, \
       TensorKind::Jacobian>(m, "Jacobian");
 
+  // Only tnsr::I and tnsr::i need to be instantiated for all frames currently,
+  // so to reduce compile time and library size, we're choosing to only
+  // instantiate other tensors in Frame::Inertial
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector),
                           (Frame::ElementLogical, Frame::BlockLogical,
                            Frame::Grid, Frame::Distorted, Frame::Inertial),
-                          (i, I, ij, iJ, Ij, ii, II, ijj))
+                          (I, i))
+
+  GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector),
+                          (Frame::Inertial),
+                          (a, A, ii, aa, II, AA, ij, ab, Ij, Ab, iJ, aB, ijj,
+                           abb, Ijj, Abb, iJkk, aBcc))
+
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector),
                           (Frame::Grid, Frame::Inertial))
 
