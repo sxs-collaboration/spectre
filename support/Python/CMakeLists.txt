@@ -7,6 +7,7 @@ particular supercomputer" OFF)
 spectre_python_add_module(
   support
   PYTHON_FILES
+  DirectoryStructure.py
   Machines.py
 )
 

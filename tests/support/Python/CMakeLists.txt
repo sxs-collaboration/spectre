@@ -19,9 +19,15 @@ if (BUILD_PYTHON_BINDINGS)
 endif()
 
 spectre_add_python_bindings_test(
+  "support.DirectoryStructure"
+  Test_DirectoryStructure.py
+  "Python"
+  None)
+
+spectre_add_python_bindings_test(
   "support.Machines"
   Test_Machines.py
-  "Machines"
+  "Python"
   None)
 
 spectre_add_python_bindings_test(
