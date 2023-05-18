@@ -6,6 +6,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   TciOnDgGrid.cpp
+  TciOnFdGrid.cpp
   )
 
 spectre_target_headers(
@@ -14,4 +15,5 @@ spectre_target_headers(
   HEADERS
   Subcell.hpp
   TciOnDgGrid.hpp
+  TciOnFdGrid.hpp
   )
