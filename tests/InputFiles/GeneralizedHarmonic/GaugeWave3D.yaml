@@ -13,6 +13,7 @@ ExpectedOutput:
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0

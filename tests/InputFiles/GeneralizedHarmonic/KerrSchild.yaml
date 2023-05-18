@@ -19,15 +19,7 @@ OutputFileChecks:
 
 ResourceInfo:
   AvoidGlobalProc0: false
-  Singletons:
-    AhA:
-      Proc: Auto
-      Exclusive: false
-    ExcisionBoundaryA:
-      Proc: Auto
-      Exclusive: false
-    ControlSystemSingleAh: Auto
-    Shape: Auto
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
