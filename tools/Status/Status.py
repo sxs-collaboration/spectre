@@ -5,10 +5,10 @@ import datetime
 import glob
 import logging
 import os
-import pathlib
 import re
 import subprocess
 from io import StringIO
+from pathlib import Path
 from typing import Any, Optional, Sequence
 
 import click
@@ -67,8 +67,10 @@ def fetch_job_data(fields: Sequence[str],
     for date_col in date_cols:
         job_data[date_col] = job_data[date_col].apply(
             lambda v: v.replace("Unknown", "NaN"))
+        # infer_datetime_format is deprecated in version 2.0.0
+        # so just use the actual SLURM format
         job_data[date_col] = pd.to_datetime(job_data[date_col],
-                                            infer_datetime_format=True)
+                                            format='%Y-%m-%dT%H:%M:%S')
     # We could parse the elapsed time as a timedelta, but the string
     # representation is fine so we don't right now. Here's the code for it:
     # if "Elapsed" in fields:
@@ -141,6 +143,12 @@ def get_executable_name(comment: Optional[str],
         metadata = next(yaml.safe_load_all(open_input_file))
     if metadata and "Executable" in metadata:
         return os.path.basename(metadata["Executable"])
+    # Backwards compatibility for input files without metadata (can be removed
+    # as soon as most people have rebased)
+    match = re.search(r'#\s+Executable:\s+(.+)',
+                      Path(input_file_path).read_text())
+    if match:
+        return match.group(1)
     return None
 
 
@@ -276,7 +284,11 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                 ]
                 try:
                     with open(row["InputFile"], "r") as open_input_file:
-                        input_file = yaml.safe_load(open_input_file)
+                        # Backwards compatibility for input files without
+                        # metadata. Once people have rebased this can be changed
+                        # to: _, input_file = yaml.safe_load_all(...)
+                        for doc in yaml.safe_load_all(open_input_file):
+                            input_file = doc
                 except:
                     logger.debug("Unable to load input file.", exc_info=True)
                     input_file = None

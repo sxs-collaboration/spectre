@@ -23,8 +23,9 @@ humanize
 #   issue: https://github.com/sxs-collaboration/spectre/issues/3844
 numpy < 1.22.0
 matplotlib
-# Pandas: To work with columns of data
-pandas
+# Pandas: To work with columns of data. Need a sufficiently recent version
+# to do some fancy indexing in Status CLI
+pandas ~= 1.5
 pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 10.11.0
