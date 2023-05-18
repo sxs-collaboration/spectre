@@ -177,8 +177,7 @@ struct test_metavariables {
       tmpl::list<mock_gh_worldtube_boundary<test_metavariables>,
                  mock_characteristic_evolution<test_metavariables>>;
 
-  static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-
+  static constexpr bool evolve_ccm = false;
 };
 }  // namespace
 

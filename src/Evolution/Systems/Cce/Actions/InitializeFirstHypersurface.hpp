@@ -45,8 +45,7 @@ namespace Actions {
  * boundary component, as the type of initial data is decided by the type of the
  * worldtube boundary data.
  */
-template <bool UsesPartiallyFlatCartesianCoordinates,
-          typename BoundaryComponent>
+template <bool EvolveCcm, typename BoundaryComponent>
 struct InitializeFirstHypersurface {
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
@@ -83,10 +82,8 @@ struct InitializeFirstHypersurface {
           make_not_null(hdf5_lock));
     } else {
       db::mutate_apply<
-          typename InitializeJ::InitializeJ<
-              UsesPartiallyFlatCartesianCoordinates>::mutate_tags,
-          typename InitializeJ::InitializeJ<
-              UsesPartiallyFlatCartesianCoordinates>::argument_tags>(
+          typename InitializeJ::InitializeJ<EvolveCcm>::mutate_tags,
+          typename InitializeJ::InitializeJ<EvolveCcm>::argument_tags>(
           db::get<Tags::InitializeJBase>(box), make_not_null(&box),
           make_not_null(hdf5_lock));
     }

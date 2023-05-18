@@ -316,9 +316,9 @@ struct GaugeAdjustInitialJ {
 /// \cond
 struct NoIncomingRadiation;
 struct ZeroNonSmooth;
-template <bool uses_partially_flat_cartesian_coordinates>
+template <bool evolve_ccm>
 struct InverseCubic;
-template <bool uses_partially_flat_cartesian_coordinates>
+template <bool evolve_ccm>
 struct InitializeJ;
 struct ConformalFactor;
 /// \endcond

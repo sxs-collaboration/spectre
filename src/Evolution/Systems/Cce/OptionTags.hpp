@@ -209,10 +209,9 @@ struct ScriOutputDensity {
   using group = Cce;
 };
 
-template <bool uses_partially_flat_cartesian_coordinates>
+template <bool evolve_ccm>
 struct InitializeJ {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<
-      uses_partially_flat_cartesian_coordinates>>;
+  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<evolve_ccm>>;
   static constexpr Options::String help{
       "The initialization for the first hypersurface for J"};
   using group = Cce;
@@ -506,19 +505,16 @@ struct InitializeJBase : db::BaseTag {};
 
 /// Tag for first-hypersurface initialization procedure specified by input
 /// options.
-template <bool uses_partially_flat_cartesian_coordinates>
+template <bool evolve_ccm>
 struct InitializeJ : db::SimpleTag, InitializeJBase {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<
-      uses_partially_flat_cartesian_coordinates>>;
-  using option_tags = tmpl::list<
-      OptionTags::InitializeJ<uses_partially_flat_cartesian_coordinates>>;
+  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<evolve_ccm>>;
+  using option_tags = tmpl::list<OptionTags::InitializeJ<evolve_ccm>>;
 
   static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<::Cce::InitializeJ::InitializeJ<
-      uses_partially_flat_cartesian_coordinates>>
+  static std::unique_ptr<::Cce::InitializeJ::InitializeJ<evolve_ccm>>
   create_from_options(
-      const std::unique_ptr<::Cce::InitializeJ::InitializeJ<
-          uses_partially_flat_cartesian_coordinates>>& initialize_j) {
+      const std::unique_ptr<::Cce::InitializeJ::InitializeJ<evolve_ccm>>&
+          initialize_j) {
     return initialize_j->get_clone();
   }
 };

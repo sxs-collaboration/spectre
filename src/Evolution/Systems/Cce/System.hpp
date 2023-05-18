@@ -114,12 +114,12 @@
  */
 namespace Cce {
 
-template <bool EvolvePartiallyFlatCartesianCoordinates>
+template <bool EvolveCcm>
 struct System {
   using variables_tag =
       tmpl::list<::Tags::Variables<tmpl::list<Tags::BondiJ>>,
                  ::Tags::Variables<std::conditional_t<
-                     EvolvePartiallyFlatCartesianCoordinates,
+                     EvolveCcm,
                      tmpl::list<Cce::Tags::CauchyCartesianCoords,
                                 Cce::Tags::PartiallyFlatCartesianCoords,
                                 Cce::Tags::InertialRetardedTime>,

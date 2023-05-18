@@ -249,8 +249,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &gh::BoundaryCorrections::register_derived_with_charm,
     &gh::ConstraintDamping::register_derived_with_charm,
     &Cce::register_initialize_j_with_charm<
-        metavariables::uses_partially_flat_cartesian_coordinates,
-        metavariables::cce_boundary_component>,
+        metavariables::evolve_ccm, metavariables::cce_boundary_component>,
     &register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &register_derived_classes_with_charm<intrp::SpanInterpolator>,
     &register_factory_classes_with_charm<metavariables>};
