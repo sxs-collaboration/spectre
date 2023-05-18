@@ -20,6 +20,11 @@ if(MACHINE)
     ${SPECTRE_PYTHON_PREFIX}/support/Machine.yaml
     )
   configure_file(
+    ${CMAKE_SOURCE_DIR}/support/SubmitScripts/SubmitTemplateBase.sh
+    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplateBase.sh
+    @ONLY
+    )
+  configure_file(
     ${CMAKE_SOURCE_DIR}/support/SubmitScripts/${MACHINE}.sh
     ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplate.sh
     @ONLY
