@@ -241,6 +241,9 @@ struct test_metavariables {
   using observed_reduction_data_tags = tmpl::list<>;
   using cce_boundary_component =
       Cce::AnalyticWorldtubeBoundary<test_metavariables>;
+  using ccm_psi0 = tmpl::list<
+        Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+        Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 
   using component_list =
       tmpl::list<MockCharacteristicEvolution<test_metavariables>,

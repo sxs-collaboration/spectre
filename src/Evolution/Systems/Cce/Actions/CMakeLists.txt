@@ -21,6 +21,7 @@ spectre_target_headers(
   InitializeFirstHypersurface.hpp
   InitializeWorldtubeBoundary.hpp
   InsertInterpolationScriData.hpp
+  Psi0Matching.hpp
   ReceiveGhWorldtubeData.hpp
   ReceiveWorldtubeData.hpp
   RequestBoundaryData.hpp

@@ -14,8 +14,9 @@ set(LIBRARY_SOURCES
   Test_H5BoundaryCommunication.cpp
   Test_InitializeCharacteristicEvolution.cpp
   Test_InitializeWorldtubeBoundary.cpp
-  Test_SendGhVarsToCce.cpp
+  Test_Psi0Matching.cpp
   Test_RequestBoundaryData.cpp
+  Test_SendGhVarsToCce.cpp
   Test_ScriObserveInterpolated.cpp
   Test_TimeManagement.cpp
   Test_UpdateGauge.cpp
