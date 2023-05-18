@@ -24,8 +24,6 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
-#include "Evolution/DgSubcell/SliceData.hpp"
-#include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"

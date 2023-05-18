@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <unordered_set>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -166,11 +167,9 @@ void test(const fd::DerivativeOrder correction_order) {
     FluxVars neighbor_vars(mesh.number_of_grid_points(), 0.0);
     set_polynomial(&neighbor_vars, neighbor_logical_coords);
 
-    DirectionMap<Dim, bool> directions_to_slice{};
-    directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::slice_data(
         neighbor_vars, mesh.extents(), number_of_ghost_points,
-        directions_to_slice, 0);
+        std::unordered_set{direction.opposite()}, 0);
     CAPTURE(number_of_ghost_points);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

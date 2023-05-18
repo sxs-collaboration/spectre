@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -36,8 +37,7 @@ void slice_variable(
 
   // Slice volume variables. Note that the return type of the
   // `slice_data_impl()` function is DataVector.
-  DirectionMap<Dim, bool> directions_to_slice{};
-  directions_to_slice[direction] = true;
+  std::unordered_set directions_to_slice{direction};
 
   const DataVector sliced_data{detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),

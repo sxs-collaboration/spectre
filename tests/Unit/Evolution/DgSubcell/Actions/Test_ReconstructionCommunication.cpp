@@ -8,6 +8,7 @@
 #include <deque>
 #include <iterator>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -29,6 +30,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
@@ -318,14 +320,7 @@ void test(const bool use_cell_centered_flux) {
   CHECK(rdmp_tci_data.min_variables_values[0] ==
         min(get(get<Var1>(evolved_vars))));
   // Check data sent to neighbors
-  DirectionMap<Dim, bool> directions_to_slice{};
-  for (const auto& direction_neighbors : element.neighbors()) {
-    if (direction_neighbors.second.size() == 0) {
-      directions_to_slice[direction_neighbors.first] = false;
-    } else {
-      directions_to_slice[direction_neighbors.first] = true;
-    }
-  }
+  const auto& directions_to_slice = element.internal_boundaries();
   const size_t ghost_zone_size = 2;
   const size_t rdmp_size = rdmp_tci_data.max_variables_values.size() +
                            rdmp_tci_data.min_variables_values.size();

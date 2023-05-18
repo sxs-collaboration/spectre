@@ -70,14 +70,9 @@ void prepare_neighbor_data(
       db::get<::evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
   const auto& element = db::get<::domain::Tags::Element<Dim>>(*box);
 
-  DirectionMap<Dim, bool> directions_to_slice{};
-  for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
-    if (neighbors_in_direction.size() == 0) {
-      directions_to_slice[direction] = false;
-    } else {
-      directions_to_slice[direction] = true;
-    }
-  }
+  const std::unordered_set<Direction<Dim>>& directions_to_slice =
+      element.internal_boundaries();
+
   const auto& neighbor_meshes =
       db::get<evolution::dg::Tags::NeighborMesh<Dim>>(*box);
   const subcell::RdmpTciData& rdmp_data =
@@ -121,24 +116,21 @@ void prepare_neighbor_data(
                            Spectral::Basis::Legendre;
                   })) {
     *ghost_data_mesh = dg_mesh;
-    const auto total_to_slice = static_cast<size_t>(alg::count_if(
-        directions_to_slice, [](const auto& t) { return t.second; }));
+    const size_t total_to_slice = directions_to_slice.size();
     size_t slice_count = 0;
-    for (const auto& [direction, slice] : directions_to_slice) {
-      if (slice) {
-        ++slice_count;
-        // Move instead of copy on the last iteration. Elides a memory
-        // allocation and copy.
-        [[maybe_unused]] const auto insert_result =
-            UNLIKELY(slice_count == total_to_slice)
-                ? all_neighbor_data_for_reconstruction->insert_or_assign(
-                      direction, std::move(ghost_variables))
-                : all_neighbor_data_for_reconstruction->insert_or_assign(
-                      direction, ghost_variables);
-        ASSERT(all_neighbor_data_for_reconstruction->size() == total_to_slice or
-                   insert_result.second,
-               "Failed to insert the neighbor data in direction " << direction);
-      }
+    for (const auto& direction : directions_to_slice) {
+      ++slice_count;
+      // Move instead of copy on the last iteration. Elides a memory
+      // allocation and copy.
+      [[maybe_unused]] const auto insert_result =
+          UNLIKELY(slice_count == total_to_slice)
+              ? all_neighbor_data_for_reconstruction->insert_or_assign(
+                    direction, std::move(ghost_variables))
+              : all_neighbor_data_for_reconstruction->insert_or_assign(
+                    direction, ghost_variables);
+      ASSERT(all_neighbor_data_for_reconstruction->size() == total_to_slice or
+                 insert_result.second,
+             "Failed to insert the neighbor data in direction " << direction);
     }
   } else {
     *ghost_data_mesh = subcell_mesh;

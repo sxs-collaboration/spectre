@@ -12,6 +12,7 @@
 #include <map>
 #include <optional>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -134,14 +135,6 @@ struct SendDataForReconstruction {
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const size_t ghost_zone_size =
         Metavariables::SubcellOptions::ghost_zone_size(box);
-    DirectionMap<Dim, bool> directions_to_slice{};
-    for (const auto& direction_neighbors : element.neighbors()) {
-      if (direction_neighbors.second.size() == 0) {
-        directions_to_slice[direction_neighbors.first] = false;
-      } else {
-        directions_to_slice[direction_neighbors.first] = true;
-      }
-    }
 
     // Optimization note: could save a copy+allocation if we moved
     // all_sliced_data when possible before sending.
@@ -167,7 +160,7 @@ struct SendDataForReconstruction {
     }
     const DirectionMap<Dim, DataVector> all_sliced_data =
         slice_data(volume_data_to_slice, subcell_mesh.extents(),
-                   ghost_zone_size, directions_to_slice, 0);
+                   ghost_zone_size, element.internal_boundaries(), 0);
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);

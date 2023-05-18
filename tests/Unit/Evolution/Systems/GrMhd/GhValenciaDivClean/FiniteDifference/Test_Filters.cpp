@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -85,11 +86,9 @@ void set_solution(
                      make_not_null(&neighbor_vars));
     set_polynomial(&neighbor_dvs, neighbor_logical_coords, degree);
 
-    DirectionMap<3, bool> directions_to_slice{};
-    directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars), mesh.extents(), deriv_order / 2 + 1,
-        directions_to_slice, 0);
+        std::unordered_set{direction.opposite()}, 0);
     CAPTURE(deriv_order / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

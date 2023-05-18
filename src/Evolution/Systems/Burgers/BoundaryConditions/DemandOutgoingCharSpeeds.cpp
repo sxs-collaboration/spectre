@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

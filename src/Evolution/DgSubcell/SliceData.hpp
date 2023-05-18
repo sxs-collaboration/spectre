@@ -4,12 +4,15 @@
 #pragma once
 
 #include <cstddef>
+#include <unordered_set>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
-class DataVector;
+template <size_t Dim>
+class Direction;
 template <size_t Dim, typename T>
 class DirectionMap;
 template <size_t Dim>
@@ -22,7 +25,7 @@ template <size_t Dim>
 DirectionMap<Dim, DataVector> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice,
+    const std::unordered_set<Direction<Dim>>& directions_to_slice,
     size_t additional_buffer);
 }  // namespace detail
 
@@ -51,7 +54,7 @@ template <size_t Dim>
 DirectionMap<Dim, DataVector> slice_data(
     const DataVector& volume_subcell_vars, const Index<Dim>& subcell_extents,
     const size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice,
+    const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer) {
   return detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
@@ -63,7 +66,7 @@ template <size_t Dim, typename TagList>
 DirectionMap<Dim, DataVector> slice_data(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice,
+    const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   const DataVector view{const_cast<double*>(volume_subcell_vars.data()),

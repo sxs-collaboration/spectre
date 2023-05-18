@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -68,11 +69,10 @@ void set_solution(
     set_polynomial(&neighbor_var1, &neighbor_var2, neighbor_logical_coords,
                    degree);
 
-    DirectionMap<Dim, bool> directions_to_slice{};
-    directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars.data(), neighbor_vars.size()),
-        mesh.extents(), deriv_order / 2 + 1, directions_to_slice, 0);
+        mesh.extents(), deriv_order / 2 + 1,
+        std::unordered_set{direction.opposite()}, 0);
     CAPTURE(deriv_order / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

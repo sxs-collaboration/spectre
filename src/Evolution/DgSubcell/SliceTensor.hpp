@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <unordered_set>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -23,8 +24,7 @@ void slice_tensor_for_subcell(
     const Tensor<VectorType, Symmetry<>, index_list<>>& volume_scalar,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const Direction<Dim>& direction) {
-  DirectionMap<Dim, bool> directions_to_slice{};
-  directions_to_slice[direction] = true;
+  std::unordered_set directions_to_slice{direction};
 
   auto& scalar_dv = get(volume_scalar);
   auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
@@ -49,8 +49,7 @@ void slice_tensor_for_subcell(
     const Tensor<VectorType, Structure...>& volume_tensor,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const Direction<Dim>& direction) {
-  DirectionMap<Dim, bool> directions_to_slice{};
-  directions_to_slice[direction] = true;
+  std::unordered_set directions_to_slice{direction};
 
   for (size_t i = 0; i < volume_tensor.size(); i++) {
     auto& ti = volume_tensor[i];

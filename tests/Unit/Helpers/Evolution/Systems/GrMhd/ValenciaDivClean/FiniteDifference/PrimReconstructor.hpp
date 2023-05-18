@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -67,12 +68,11 @@ compute_ghost_data(
     const auto neighbor_vars_for_reconstruction =
         compute_variables_of_neighbor_data(neighbor_logical_coords);
 
-    DirectionMap<3, bool> directions_to_slice{};
-    directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars_for_reconstruction.data(),
                        neighbor_vars_for_reconstruction.size()),
-        subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
+        subcell_mesh.extents(), ghost_zone_size,
+        std::unordered_set{direction.opposite()}, 0);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
     ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};

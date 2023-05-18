@@ -6,6 +6,8 @@
 #include <array>
 #include <cstddef>
 #include <numeric>
+#include <optional>
+#include <unordered_set>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -74,10 +76,12 @@ void check_slice<1>(
 }
 
 template <size_t Dim>
-void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
-  CAPTURE(do_not_slice_in_direction.value_or(-1));
+void test_slice_data(
+    const std::optional<Direction<Dim>> do_not_slice_in_direction) {
+  CAPTURE(do_not_slice_in_direction);
   const size_t additional_buffer_size = 7;
   CAPTURE(additional_buffer_size);
+  const auto& all_directions = Direction<Dim>::all_directions();
   for (size_t number_of_ghost_points = 1; number_of_ghost_points < 5;
        ++number_of_ghost_points) {
     for (size_t num_pts_1d = 5; num_pts_1d < 7; ++num_pts_1d) {
@@ -88,23 +92,18 @@ void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
       std::iota(volume_vars.data(), volume_vars.data() + volume_vars.size(),
                 0.0);
 
-      DirectionMap<Dim, bool> directions_to_slice{};
-      for (const auto& direction : Direction<Dim>::all_directions()) {
-        directions_to_slice[direction] = true;
-      }
-
+      std::unordered_set<Direction<Dim>> directions_to_slice(
+          std::begin(all_directions), std::end(all_directions));
       if (do_not_slice_in_direction.has_value()) {
-        directions_to_slice[gsl::at(Direction<Dim>::all_directions(),
-                                    *do_not_slice_in_direction)] = false;
+        directions_to_slice.erase(*do_not_slice_in_direction);
       }
 
       const auto sliced_data =
           subcell::slice_data(volume_vars, extents, number_of_ghost_points,
                               directions_to_slice, additional_buffer_size);
-      for (const auto& direction : Direction<Dim>::all_directions()) {
+      for (const auto& direction : all_directions) {
         CAPTURE(direction);
-        if (directions_to_slice.count(direction) == 1 and
-            directions_to_slice.at(direction)) {
+        if (directions_to_slice.count(direction) == 1) {
           REQUIRE(sliced_data.count(direction) == 1);
           Index<Dim> subcell_slice_extents = extents;
           subcell_slice_extents[direction.dimension()] = number_of_ghost_points;
@@ -155,8 +154,8 @@ template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   test_slice_data<Dim>(std::nullopt);
-  for (size_t i = 0; i < 2 * Dim; ++i) {
-    test_slice_data<Dim>(i);
+  for (const auto& direction : Direction<Dim>::all_directions()) {
+    test_slice_data(std::optional{direction});
   }
 }
 
