@@ -1,7 +1,8 @@
 #!/bin/bash -
 #SBATCH -o spectre.stdout
 #SBATCH -e spectre.stderr
-#SBATCH --ntasks-per-node 32
+#SBATCH --ntasks-per-node 2
+#SBATCH --cpus-per-task 28
 #SBATCH -J KerrSchild
 #SBATCH --nodes 2
 #SBATCH -p any
@@ -15,6 +16,7 @@
 # - Set the -J, --nodes, and -t options above, which correspond to job name,
 #   number of nodes, and wall time limit in HH:MM:SS, respectively.
 # - Set an `#SBATCH -A` argument for the computing account id.
+# - Or set --reservation=RES_NAME if there is a reservation available
 # - Set the build directory, run directory, executable name,
 #   and input file below.
 #
@@ -64,32 +66,27 @@ umask 0022
 # Set the path to include the build directory's bin directory
 export PATH=${SPECTRE_BUILD_DIR}/bin:$PATH
 
-# Generate the nodefile
-echo "Running on the following nodes:"
-echo ${SLURM_NODELIST}
-touch nodelist.$SLURM_JOBID
-for node in $(echo $SLURM_NODELIST | scontrol show hostnames); do
-  echo "host ${node}" >> nodelist.$SLURM_JOBID
-done
+CHARM_PPN=$(expr ${SLURM_CPUS_PER_TASK} - 1)
 
-WORKER_THREADS_PER_NODE=$((SLURM_NTASKS_PER_NODE - 1))
-WORKER_THREADS=$((SLURM_NPROCS - SLURM_NNODES))
-SPECTRE_COMMAND="${SPECTRE_EXECUTABLE} ++np ${SLURM_NNODES} \
-++p ${WORKER_THREADS} ++ppn ${WORKER_THREADS_PER_NODE} \
-++nodelist nodelist.${SLURM_JOBID}"
+echo "###################################"
+echo "######       JOB INFO        ######"
+echo "###################################"
+echo
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Run Directory: ${SPECTRE_RUN_DIR}"
+echo "Submit Directory: ${SLURM_SUBMIT_DIR}"
+echo "Queue: ${SLURM_JOB_PARTITION}"
+echo "Nodelist: ${SLURM_JOB_NODELIST}"
+echo "Tasks: ${SLURM_NTASKS}"
+echo "CPUs per Task: ${SLURM_CPUS_PER_TASK}"
+echo "Charm ppn: ${CHARM_PPN}"
+echo "PATH: ${PATH}"
+echo
+echo "###################################"
+echo "######   Executable Output   ######"
+echo "###################################"
+echo
 
-# When invoking through `charmrun`, charm will initiate remote sessions which
-# will wipe out environment settings unless it is forced to re-initialize the
-# spectre environment between the start of the remote session and starting the
-# spectre executable
-echo "#!/bin/sh
-source ${SPECTRE_HOME}/support/Environments/caltech_hpc_gcc.sh
-module use ${SPECTRE_MODULE_DIR}
-spectre_load_modules
-\$@
-" > runscript
-
-chmod u+x ./runscript
-
-charmrun ++runscript ./runscript ${SPECTRE_COMMAND} \
-         --input-file ${SPECTRE_INPUT_FILE}
+mpirun -n ${SLURM_NTASKS} \
+    ${SPECTRE_EXECUTABLE} ++ppn ${CHARM_PPN} +setcpuaffinity \
+    --input-file ${SPECTRE_INPUT_FILE}

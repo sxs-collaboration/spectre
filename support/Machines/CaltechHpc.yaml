@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: CaltechHPC
+  Description: |
+    Public supercomputer at Caltech.
+    More information:
+    https://www.hpc.caltech.edu/documentation
+  # Split one physical 56 core node into two charm nodes
+  DefaultTasksPerNode: 2
+  DefaultProcsPerTasks: 28
+  DefaultQueue: "any"
+  DefaultTimeLimit: "1-00:00:00"
