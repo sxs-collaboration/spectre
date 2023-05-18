@@ -34,4 +34,8 @@ namespace ControlErrors {}
  */
 namespace Systems {}
 
+/// \ingroup ControlSystemGroup
+/// Classes and functions used in implementation of size control
+namespace size {}
+
 }  // namespace control_system
