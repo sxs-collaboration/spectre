@@ -59,24 +59,30 @@ all of these dependencies.
 [Clang](https://clang.llvm.org/) 10.0 or later, or AppleClang 11.0.0 or later
 * [CMake](https://cmake.org/) 3.18.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
+  \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8. It can be
   beneficial to install Blaze with CMake so some configuration options are
-  determined automatically, such as cache sizes.
+  determined automatically, such as cache sizes. \cite Blaze1 \cite Blaze2
 * [Boost](http://www.boost.org/) 1.60.0 or later
-* [Brigand](https://github.com/edouarda/brigand) at commit 1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
-* [Catch](https://github.com/catchorg/Catch2) 2.8.0 or later, but not 3.x as SpECTRE doesn't support v3 yet (If installing from source, it is easiest to use single-header installation)
-* [GSL](https://www.gnu.org/software/gsl/)
+* [Brigand](https://github.com/edouarda/brigand) at commit
+  1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
+* [Catch](https://github.com/catchorg/Catch2) 2.8.0 or later, but not 3.x as
+  SpECTRE doesn't support v3 yet (If installing from source, it is easiest to
+  use single-header installation)
+* [GSL](https://www.gnu.org/software/gsl/) \cite Gsl
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
+  \cite Hdf5
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * LAPACK
 * [libsharp](https://github.com/Libsharp/libsharp) should be built with
   support disabled for openmp and mpi, as we want all of our parallelism to
-  be accomplished via Charm++.
+  be accomplished via Charm++. \cite Libsharp
 * [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later
+  \cite Libxsmm
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 or later.
-  Building with shared library support is also recommended.
+  Building with shared library support is also recommended. \cite Yamlcpp
 * [Python](https://www.python.org/) 3.7 or later.
 * Python dependencies listed in `support/Python/requirements.txt`.
   Install with `pip3 install -r support/Python/requirements.txt`.
@@ -91,7 +97,7 @@ all of these dependencies.
 
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
-  bindings
+  bindings \cite Pybind11
 * [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 or later — to
   generate documentation
 * Python dev dependencies listed in `support/Python/dev_requirements.txt`
@@ -114,8 +120,11 @@ all of these dependencies.
 * [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 * [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
   graph partition based load balancer in charm++.
-* [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with matplotlib
+* [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with
+  matplotlib
 * [xsimd](https://github.com/xtensor-stack/xsimd) - for manual vectorization
+* [ParaView](https://www.paraview.org/) - for visualization \cite Paraview1
+  \cite Paraview2
 
 ## Clone the SpECTRE repository
 
