@@ -23,14 +23,16 @@
 
 template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
-  using gh_base = GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
+    : public GeneralizedHarmonicTemplateBase<VolumeDim,
+                                             UseNumericalInitialData> {
+  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_numeric_id = UseNumericalInitialData;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::dg_registration_list;
   using initialization_actions =
-      typename gh_base::template initialization_actions<false>;
+      typename gh_base::template initialization_actions<EvolutionMetavars,
+                                                        false>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::observed_reduction_data_tags;
   using typename gh_base::step_actions;
@@ -42,7 +44,7 @@ struct EvolutionMetavars
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              UseNumericalInitialData,
+              use_numeric_id,
               tmpl::list<Parallel::PhaseActions<
                              Parallel::Phase::RegisterWithElementDataReader,
                              tmpl::list<importers::Actions::
@@ -79,7 +81,7 @@ struct EvolutionMetavars
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
-      std::conditional_t<UseNumericalInitialData,
+      std::conditional_t<use_numeric_id,
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array>>;

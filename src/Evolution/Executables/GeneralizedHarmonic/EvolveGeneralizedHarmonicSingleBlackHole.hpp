@@ -66,12 +66,13 @@
 
 template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
-  using gh_base = GeneralizedHarmonicTemplateBase<EvolutionMetavars>;
+    : public GeneralizedHarmonicTemplateBase<VolumeDim,
+                                             UseNumericalInitialData> {
+  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_numeric_id = UseNumericalInitialData;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
-  static constexpr size_t volume_dim = VolumeDim;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "
@@ -181,12 +182,12 @@ struct EvolutionMetavars
 
   using initialization_actions = tmpl::push_back<
       tmpl::pop_back<typename gh_base::template initialization_actions<
-          use_control_systems>>,
+          EvolutionMetavars, use_control_systems>>,
       control_system::Actions::InitializeMeasurements<control_systems>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
       tmpl::back<typename gh_base::template initialization_actions<
-          use_control_systems>>>;
+          EvolutionMetavars, use_control_systems>>>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
@@ -194,7 +195,7 @@ struct EvolutionMetavars
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              UseNumericalInitialData,
+              use_numeric_id,
               tmpl::list<Parallel::PhaseActions<
                              Parallel::Phase::RegisterWithElementDataReader,
                              tmpl::list<importers::Actions::
@@ -232,7 +233,7 @@ struct EvolutionMetavars
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
-      std::conditional_t<UseNumericalInitialData,
+      std::conditional_t<use_numeric_id,
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
