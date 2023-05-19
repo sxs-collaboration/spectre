@@ -327,3 +327,17 @@ TimeDelta abs(TimeDelta t) {
 std::ostream& operator<<(std::ostream& os, const TimeDelta& dt) {
   return os << dt.slab() << ":" << dt.fraction();
 }
+
+size_t hash_value(const TimeDelta& t) {
+  size_t h = 0;
+  boost::hash_combine(h, t.slab());
+  boost::hash_combine(h, t.fraction());
+  return h;
+}
+
+// NOLINTNEXTLINE(cert-dcl58-cpp)
+namespace std {
+size_t hash<TimeDelta>::operator()(const TimeDelta& dt) const {
+  return boost::hash<TimeDelta>{}(dt);
+}
+}  // namespace std

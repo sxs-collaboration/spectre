@@ -112,14 +112,15 @@ void test_integration() {
   for (size_t substep = 0; substep < 3; ++substep) {
     db::mutate<history_tag, alternative_history_tag>(
         make_not_null(&box),
-        [&rhs, &substep, &substep_times](
+        [&rhs, &substep, &substep_times, &time_step](
             const gsl::not_null<typename history_tag::type*> history,
             const gsl::not_null<typename alternative_history_tag::type*>
                 alternative_history,
             const double vars) {
           const double time = gsl::at(substep_times, substep).value();
-          history->insert(TimeStepId(true, 0, substep_times[0], substep, time),
-                          vars, rhs(time, vars));
+          history->insert(
+              TimeStepId(true, 0, substep_times[0], substep, time_step, time),
+              vars, rhs(time, vars));
           *alternative_history = *history;
         },
         db::get<Var>(box));
@@ -185,17 +186,17 @@ void test_stepper_error() {
   const std::array<TimeDelta, 3> substep_offsets{
       {0 * slab.duration(), time_step, time_step / 2}};
 
-  const auto do_substep = [&box, &substep_offsets](const Time& step_start,
-                                                   const size_t substep) {
+  const auto do_substep = [&box, &substep_offsets, &time_step](
+                              const Time& step_start, const size_t substep) {
     db::mutate<history_tag>(
         make_not_null(&box),
-        [&step_start, &substep, &substep_offsets](
+        [&step_start, &substep, &substep_offsets, &time_step](
             const gsl::not_null<typename history_tag::type*> history,
             const double vars) {
           const Time time = step_start + gsl::at(substep_offsets, substep);
           history->insert(
-              TimeStepId(true, 0, step_start, substep, time.value()), vars,
-              vars);
+              TimeStepId(true, 0, step_start, substep, time_step, time.value()),
+              vars, vars);
         },
         db::get<variables_tag>(box));
 

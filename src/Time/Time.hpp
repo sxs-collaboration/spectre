@@ -183,3 +183,12 @@ struct hash<Time> {
 TimeDelta abs(TimeDelta t);
 
 std::ostream& operator<<(std::ostream& os, const TimeDelta& dt);
+
+size_t hash_value(const TimeDelta& dt);
+
+namespace std {
+template <>
+struct hash<TimeDelta> {
+  size_t operator()(const TimeDelta& dt) const;
+};
+}  // namespace std
