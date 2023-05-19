@@ -143,6 +143,9 @@ void test(const TestThis test_this, const int expected_tci_status,
   db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
 
+  const auto original_rest_mass_density =
+      get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars);
+
   // set B and Phi to 0 since they should be set by recovery
   db::mutate<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
              hydro::Tags::DivergenceCleaningField<DataVector>>(
@@ -154,6 +157,15 @@ void test(const TestThis test_this, const int expected_tci_status,
       });
 
   const size_t point_to_change = mesh.number_of_grid_points() / 2;
+
+  if (test_this == TestThis::AllGood) {
+    // slightly modify D to ensure that after the con2prim, the original density
+    // does not match the new density
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] *= 1.001;
+        });
+  }
   if (test_this == TestThis::SmallTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
@@ -297,6 +309,11 @@ void test(const TestThis test_this, const int expected_tci_status,
               prim_vars));
     CHECK(db::get<hydro::Tags::DivergenceCleaningField<DataVector>>(box) ==
           get<hydro::Tags::DivergenceCleaningField<DataVector>>(prim_vars));
+    if (test_this == TestThis::AllGood) {
+      // Density should not be the same for an updated Dtilde
+      CHECK_FALSE(db::get<hydro::Tags::RestMassDensity<DataVector>>(box) ==
+                  original_rest_mass_density);
+    }
   } else {
     CHECK(get<0>(result) == expected_tci_status);
     // Ensure data before does not equal data after, if TCI is in trouble

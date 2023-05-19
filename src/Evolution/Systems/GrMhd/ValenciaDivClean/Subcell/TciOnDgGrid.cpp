@@ -109,6 +109,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
 
   Variables<hydro::grmhd_tags<DataVector>> pre_tci_prims(num_dg_pts);
 
+  // Get a pressure guess that may be needed for con2prim
   get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims) =
       get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars);
 
@@ -193,18 +194,13 @@ TciOnDgGrid<RecoveryScheme>::apply(
   {
     // require: tilde{B}^2 <= 2sqrt{gamma}(1-epsilon_B)\tilde{tau}
     Scalar<DataVector>& tilde_b_squared =
-        get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims);
+        get<hydro::Tags::RestMassDensity<DataVector>>(*dg_prim_vars);
     dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
                 spatial_metric);
     for (size_t i = 0; i < num_dg_pts; ++i) {
       if (get(tilde_b_squared)[i] >
           (1.0 - tci_options.safety_factor_for_magnetic_field) * 2.0 *
               get(tilde_tau)[i] * get(sqrt_det_spatial_metric)[i]) {
-        // copy over original density that was just overwritten by b^2
-        // before con2prim call
-        get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims) =
-            get<hydro::Tags::RestMassDensity<DataVector>>(*dg_prim_vars);
-
         equate_pre_tci_prims();
         return {-3, std::move(rdmp_tci_data)};
       }
@@ -220,11 +216,6 @@ TciOnDgGrid<RecoveryScheme>::apply(
     equate_pre_tci_prims();
     return {-4, std::move(rdmp_tci_data)};
   }
-
-  // Return to original density b/c overwritten from b^2 term
-  // for B^2 check
-  get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims) =
-      get<hydro::Tags::RestMassDensity<DataVector>>(*dg_prim_vars);
 
   // Check if we are in atmosphere after recovery. Unlikely we'd hit this and
   // not the check before the recovery, but just in case.
