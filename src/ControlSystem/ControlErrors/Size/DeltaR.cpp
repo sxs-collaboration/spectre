@@ -17,14 +17,14 @@ void DeltaR::update(const gsl::not_null<Info*> info,
                     const StateUpdateArgs& update_args,
                     const CrossingTimeInfo& crossing_time_info) const {
   // If update_args.control_error_delta_r is larger than
-  // delta_r_control_signal_threshold (and neither char speed nor
+  // delta_r_control_error_threshold (and neither char speed nor
   // delta radius is in danger), then the timescale is decreased to
   // keep the control error small. This behavior is similar to what
   // TimecaleTuners do, but is triggered only in some situations. The
   // value of 1e-3 was chosen by trial and error in SpEC but it might
   // be helpful to decrease this value in the future if size control
   // needs to be very tight.
-  constexpr double delta_r_control_signal_threshold = 1.e-3;
+  constexpr double delta_r_control_error_threshold = 1.e-3;
 
   // Note that delta_radius_is_in_danger and char_speed_is_in_danger
   // can be different for different States.
@@ -68,7 +68,7 @@ void DeltaR::update(const gsl::not_null<Info*> info,
     info->suggested_time_scale = crossing_time_info.t_delta_radius;
   } else if (update_args.min_comoving_char_speed > 0.0 and
              std::abs(update_args.control_error_delta_r) >
-                 delta_r_control_signal_threshold) {
+                 delta_r_control_error_threshold) {
     // delta_r_state_decrease_factor should be slightly less than unity.
     // The value of 0.99 below was chosen arbitrarily in SpEC and never
     // needed to be changed.
@@ -80,10 +80,9 @@ void DeltaR::update(const gsl::not_null<Info*> info,
   // state DeltaRDriftOutward will go.
 }
 
-double DeltaR::control_signal(
-    const Info& /*info*/,
-    const ControlSignalArgs& control_signal_args) const {
-  return control_signal_args.control_error_delta_r;
+double DeltaR::control_error(const Info& /*info*/,
+                             const ControlErrorArgs& control_error_args) const {
+  return control_error_args.control_error_delta_r;
 }
 
 PUP::able::PUP_ID DeltaR::my_PUP_ID = 0;

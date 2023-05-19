@@ -11,9 +11,9 @@ spectre_target_sources(
   Info.cpp
   AhSpeed.cpp
   DeltaR.cpp
+  Error.cpp
   Initial.cpp
   RegisterDerivedWithCharm.cpp
-  Signal.cpp
   )
 
 spectre_target_headers(
@@ -24,9 +24,9 @@ spectre_target_headers(
   State.hpp
   AhSpeed.hpp
   DeltaR.hpp
+  Error.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
-  Signal.hpp
   )
 
 target_link_libraries(

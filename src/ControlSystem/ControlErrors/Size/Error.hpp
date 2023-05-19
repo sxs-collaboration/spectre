@@ -26,7 +26,7 @@ class ZeroCrossingPredictor;
 namespace control_system::size {
 
 /*!
- * \brief Computes the size control signal, updating the stored info.
+ * \brief Computes the size control error, updating the stored info.
  *
  * \tparam Frame should be ::Frame::Distorted if ::Frame::Distorted exists.
  * \param info struct containing parameters that will be used/filled. Some of
@@ -37,7 +37,7 @@ namespace control_system::size {
  * \param predictor_comoving_char_speed ZeroCrossingPredictor for the
  *        comoving characteristic speed.
  * \param predictor_delta_radius ZeroCrossingPredictor for the difference
- *        in radius between the horizon and the exision boundary.
+ *        in radius between the horizon and the excision boundary.
  * \param time the current time.
  * \param apparent_horizon the current horizon in frame Frame.
  * \param excision_boundary a Strahlkorper representing the excision
@@ -108,7 +108,7 @@ namespace control_system::size {
  * in different frames.
  */
 template <typename Frame>
-double control_signal(
+double control_error(
     const gsl::not_null<Info*> info,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*>

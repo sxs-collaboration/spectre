@@ -54,13 +54,12 @@ void Initial::update(const gsl::not_null<Info*> info,
   // Otherwise, no change.
 }
 
-double Initial::control_signal(
-    const Info& info,
-    const ControlSignalArgs& control_signal_args) const {
+double Initial::control_error(
+    const Info& info, const ControlErrorArgs& control_error_args) const {
   // The return value is the Q that directly controls the speed of the
   // excision boundary in the distorted frame relative to the grid frame.
   return info.target_drift_velocity -
-         control_signal_args.time_deriv_of_lambda_00;
+         control_error_args.time_deriv_of_lambda_00;
 }
 
 PUP::able::PUP_ID Initial::my_PUP_ID = 0;

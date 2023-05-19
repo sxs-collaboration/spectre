@@ -10,10 +10,10 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
-#include "ControlSystem/ControlErrors/Size/Signal.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -28,7 +28,7 @@
 namespace {
 
 template <typename InitialState, typename FinalState>
-void test_size_signal_one_step(
+void test_size_error_one_step(
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
@@ -39,7 +39,7 @@ void test_size_signal_one_step(
     const double distorted_horizon_velocity, const double target_char_speed,
     const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&
         function_of_time,
-    const double expected_signal) {
+    const double expected_error) {
   const double initial_damping_time = 0.1;
   const double initial_target_drift_velocity = 0.0;
   const double initial_suggested_time_scale = 0.0;
@@ -109,31 +109,31 @@ void test_size_signal_one_step(
                            cartesian_coords.get(i) /
                            distorted_excision_boundary_radius_initial;
   }
-  auto signal = control_system::size::control_signal(
+  auto error = control_system::size::control_error(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
       predictor_delta_radius, time, horizon, excision_boundary,
       grid_excision_boundary_radius, time_deriv_horizon, lapse, shifty_quantity,
       spatial_metric, inverse_spatial_metric, function_of_time);
 
-  // Check signal and parts of info.
+  // Check error and parts of info.
   //
   // Note that Test_SizeControlStates does extensive tests
   // of control_system::size::State::update() and
-  // control_system::size::State::control_signal(), which are the
-  // main thing that happens inside of control_signal.
-  // Here we merely check that control_signal does the correct
+  // control_system::size::State::control_error(), which are the
+  // main thing that happens inside of control_error.
+  // Here we merely check that control_error does the correct
   // thing for a few cases.
   CHECK(dynamic_cast<FinalState*>(info.state.get()) != nullptr);
-  CHECK(signal == approx(expected_signal));
+  CHECK(error == approx(expected_error));
 }
 
 template <typename InitialState, typename FinalState>
-void test_size_signal(const double grid_excision_boundary_radius,
-                      const double distorted_excision_boundary_radius_initial,
-                      const double distorted_excision_boundary_velocity,
-                      const double distorted_horizon_velocity,
-                      const double target_char_speed,
-                      const double expected_signal) {
+void test_size_error(const double grid_excision_boundary_radius,
+                     const double distorted_excision_boundary_radius_initial,
+                     const double distorted_excision_boundary_velocity,
+                     const double distorted_horizon_velocity,
+                     const double target_char_speed,
+                     const double expected_error) {
   const double initial_time = 0.0;
   const double Y00 = 0.25 * M_2_SQRTPI;
   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> function_of_time(
@@ -152,31 +152,31 @@ void test_size_signal(const double grid_excision_boundary_radius,
   intrp::ZeroCrossingPredictor predictor_comoving_char_speed;
   intrp::ZeroCrossingPredictor predictor_delta_radius;
 
-  test_size_signal_one_step<InitialState, FinalState>(
+  test_size_error_one_step<InitialState, FinalState>(
       make_not_null(&predictor_char_speed),
       make_not_null(&predictor_comoving_char_speed),
       make_not_null(&predictor_delta_radius), initial_time,
       grid_excision_boundary_radius, distorted_excision_boundary_radius_initial,
       distorted_excision_boundary_velocity, distorted_horizon_velocity,
-      target_char_speed, function_of_time, expected_signal);
+      target_char_speed, function_of_time, expected_error);
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.SizeSignal", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
-  // Should go to DeltaR state with signal of zero, since ComovingMinCharSpeed
+  // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
-  test_size_signal<control_system::size::States::Initial,
-                   control_system::size::States::DeltaR>(1.98, 1.98, 0.0, 0.0,
-                                                         0.0, 0.0);
+  test_size_error<control_system::size::States::Initial,
+                  control_system::size::States::DeltaR>(1.98, 1.98, 0.0, 0.0,
+                                                        0.0, 0.0);
   // Should remain in Initial state, since ComovingMinCharSpeed will
   // be negative.  Note that the way we make ComovingMinCharSpeed negative
   // is we put the excision boundary outside (!) the horizon, which normally
   // should never happen but here it serves the purpose of this test.
-  test_size_signal<control_system::size::States::Initial,
-                   control_system::size::States::Initial>(2.01, 2.01, 0.0, 0.0,
-                                                          0.0, 0.0);
+  test_size_error<control_system::size::States::Initial,
+                  control_system::size::States::Initial>(2.01, 2.01, 0.0, 0.0,
+                                                         0.0, 0.0);
   const double Y00 = 0.25 * M_2_SQRTPI;
   const double horizon_velocity = 0.01;
   const double excision_velocity = 0.03;
@@ -185,14 +185,14 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeSignal", "[Domain][Unit]") {
   {
     // The following is computed by hand from arxiv:1211.6079 eq. 96.
     const double excision_distorted = 1.98;
-    const double expected_control_signal =
+    const double expected_control_error =
         (-horizon_velocity * 0.5 * excision_distorted + excision_velocity) /
         Y00;
     // Should stay in state DeltaR.
-    test_size_signal<control_system::size::States::DeltaR,
-                     control_system::size::States::DeltaR>(
+    test_size_error<control_system::size::States::DeltaR,
+                    control_system::size::States::DeltaR>(
         excision_grid, excision_distorted, excision_velocity, horizon_velocity,
-        target_char_speed, expected_control_signal);
+        target_char_speed, expected_control_error);
   }
 
   {
@@ -208,12 +208,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeSignal", "[Domain][Unit]") {
     const double shifty_quantity_mag = radial_shift_mag + excision_velocity;
     const double char_speed =
         -lapse + normal_radial_one_form_mag * shifty_quantity_mag;
-    const double expected_control_signal =
+    const double expected_control_error =
         (char_speed - target_char_speed) / (Y00 * normal_radial_one_form_mag);
     // Should stay in state AhSpeed.
-    test_size_signal<control_system::size::States::AhSpeed,
-                     control_system::size::States::AhSpeed>(
+    test_size_error<control_system::size::States::AhSpeed,
+                    control_system::size::States::AhSpeed>(
         excision_grid, excision_distorted, excision_velocity, horizon_velocity,
-        target_char_speed, expected_control_signal);
+        target_char_speed, expected_control_error);
   }
 }

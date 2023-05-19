@@ -19,9 +19,9 @@ class Initial : public State {
   void update(const gsl::not_null<Info*> info,
               const StateUpdateArgs& update_args,
               const CrossingTimeInfo& crossing_time_info) const override;
-  double control_signal(
+  double control_error(
       const Info& info,
-      const ControlSignalArgs& control_signal_args) const override;
+      const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(Initial); // NOLINT
   explicit Initial(CkMigrateMessage* const /*msg*/) {}

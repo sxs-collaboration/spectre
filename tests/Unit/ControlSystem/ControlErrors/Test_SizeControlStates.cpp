@@ -359,10 +359,10 @@ void test_size_control_update() {
       test_params, true, 0.0, test_params.original_target_char_speed);
 }
 
-void test_size_control_signal() {
+void test_size_control_error() {
   // This is a very rudimentary test.  It just computes
   // the same thing as the thing it is testing, but coded differently.
-  const control_system::size::ControlSignalArgs args{0.01, 0.03, 1.2, 0.33};
+  const control_system::size::ControlErrorArgs args{0.01, 0.03, 1.2, 0.33};
   const control_system::size::Info info{
       std::make_unique<control_system::size::States::Initial>(),
       1.1,
@@ -370,11 +370,11 @@ void test_size_control_signal() {
       1.e-3,
       2.e-3,
       false};
-  CHECK(control_system::size::States::Initial{}.control_signal(info, args) ==
+  CHECK(control_system::size::States::Initial{}.control_error(info, args) ==
         -0.329);
-  CHECK(control_system::size::States::AhSpeed{}.control_signal(info, args) ==
+  CHECK(control_system::size::States::AhSpeed{}.control_error(info, args) ==
         approx(0.001 * sqrt(4.0 * M_PI) / 1.2));
-  CHECK(control_system::size::States::DeltaR{}.control_signal(info, args) ==
+  CHECK(control_system::size::States::DeltaR{}.control_error(info, args) ==
         0.03);
 }
 
@@ -413,7 +413,7 @@ void test_name_and_number() {
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeControlStates", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
   test_size_control_update();
-  test_size_control_signal();
+  test_size_control_error();
   test_clone_and_serialization<control_system::size::States::Initial>();
   test_clone_and_serialization<control_system::size::States::AhSpeed>();
   test_clone_and_serialization<control_system::size::States::DeltaR>();

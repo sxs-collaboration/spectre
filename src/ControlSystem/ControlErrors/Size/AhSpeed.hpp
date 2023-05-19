@@ -20,9 +20,9 @@ class AhSpeed : public State {
               const StateUpdateArgs& update_args,
               const CrossingTimeInfo& crossing_time_info) const override;
   /// The return value is Q from Eq. 92 of \cite Hemberger2012jz.
-  double control_signal(
+  double control_error(
       const Info& info,
-      const ControlSignalArgs& control_signal_args) const override;
+      const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(AhSpeed); // NOLINT
   explicit AhSpeed(CkMigrateMessage* const /*msg*/) {}

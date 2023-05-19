@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ControlSystem/ControlErrors/Size/Signal.hpp"
+#include "ControlSystem/ControlErrors/Size/Error.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -27,7 +27,7 @@
 namespace control_system::size {
 
 template <typename Frame>
-double control_signal(
+double control_error(
     const gsl::not_null<Info*> info,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
@@ -221,18 +221,18 @@ double control_signal(
                        comoving_char_speed_crossing_time,
                        delta_radius_crossing_time});
 
-  // Return the control signal.
-  return info->state->control_signal(
-      *info, ControlSignalArgs{min_char_speed, control_error_delta_r,
-                               avg_distorted_normal_dot_unit_coord_vector,
-                               dt_lambda_00});
+  // Return the control error.
+  return info->state->control_error(
+      *info, ControlErrorArgs{min_char_speed, control_error_delta_r,
+                              avg_distorted_normal_dot_unit_coord_vector,
+                              dt_lambda_00});
 }
 }  // namespace control_system::size
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template double control_system::size::control_signal(                        \
+  template double control_system::size::control_error(                         \
       const gsl::not_null<control_system::size::Info*> info,                   \
       const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed, \
       const gsl::not_null<intrp::ZeroCrossingPredictor*>                       \
