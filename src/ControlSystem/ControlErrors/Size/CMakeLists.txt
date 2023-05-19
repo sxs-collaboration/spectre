@@ -13,6 +13,7 @@ spectre_target_sources(
   DeltaR.cpp
   Initial.cpp
   RegisterDerivedWithCharm.cpp
+  Signal.cpp
   )
 
 spectre_target_headers(
@@ -25,14 +26,17 @@ spectre_target_headers(
   DeltaR.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
+  Signal.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  ApparentHorizons
   Boost::boost
   DataStructures
   ErrorHandling
   GSL::gsl
+  Interpolation
   Parallel
   )
