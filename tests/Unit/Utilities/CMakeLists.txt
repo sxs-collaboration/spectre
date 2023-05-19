@@ -57,5 +57,16 @@ add_test_library(
   ${LIBRARY}
   "Utilities"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;Options;Serialization;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  CoordinateMaps
+  DataStructures
+  Options
+  Serialization
+  Utilities
+)

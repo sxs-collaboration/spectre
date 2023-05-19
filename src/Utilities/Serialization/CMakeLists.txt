@@ -25,6 +25,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
+  Boost::boost
   Charmxx::pup
   Utilities
   )
