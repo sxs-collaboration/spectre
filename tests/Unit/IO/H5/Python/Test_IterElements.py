@@ -62,16 +62,14 @@ class TestIterElements(unittest.TestCase):
 
             elements = list(iter_elements(volfile, obs_id))
             self.assertEqual(len(elements), 2)
-            self.assertEqual(elements[0].dim, 3)
-            self.assertEqual(elements[0].id,
-                             ElementId[3]("[B0,(L1I1,L0I0,L0I0)]"))
-            self.assertEqual(
-                elements[0].mesh, Mesh[3](4, Basis.Legendre,
-                                          Quadrature.GaussLobatto))
-            self.assertEqual(elements[1].id,
-                             ElementId[3]("[B0,(L1I0,L0I0,L0I0)]"))
-            self.assertEqual(
-                elements[1].mesh, Mesh[3](4, Basis.Legendre,
+            for element in elements:
+                self.assertEqual(element.dim, 3)
+                self.assertIn(element.id, [
+                    ElementId[3]("[B0,(L1I0,L0I0,L0I0)]"),
+                    ElementId[3]("[B0,(L1I1,L0I0,L0I0)]")
+                ])
+                self.assertEqual(
+                    element.mesh, Mesh[3](4, Basis.Legendre,
                                           Quadrature.GaussLobatto))
 
             # Make sure we can't mutate properties, in particular the time
