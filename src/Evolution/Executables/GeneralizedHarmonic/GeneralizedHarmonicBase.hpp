@@ -147,9 +147,6 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename EvolutionMetavarsDerived>
-struct GeneralizedHarmonicTemplateBase;
-
 namespace detail {
 template <bool UseNumericalInitialData>
 constexpr auto make_default_phase_order() {
@@ -311,13 +308,10 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
 };
 }  // namespace detail
 
-template <template <size_t, bool> class EvolutionMetavarsDerived,
-          size_t VolumeDim, bool UseNumericalInitialData>
-struct GeneralizedHarmonicTemplateBase<
-    EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>> {
-  using derived_metavars =
-      EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>;
+template <size_t VolumeDim, bool UseNumericalInitialData>
+struct GeneralizedHarmonicTemplateBase {
   static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_numeric_id = UseNumericalInitialData;
   using system = gh::System<volume_dim>;
   static constexpr bool local_time_stepping = false;
 
@@ -325,8 +319,7 @@ struct GeneralizedHarmonicTemplateBase<
   void pup(PUP::er& /*p*/) {}
 
   using factory_creation =
-      detail::FactoryCreation<volume_dim, local_time_stepping,
-                              UseNumericalInitialData>;
+      detail::FactoryCreation<volume_dim, local_time_stepping, use_numeric_id>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
@@ -352,7 +345,7 @@ struct GeneralizedHarmonicTemplateBase<
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
   static constexpr auto default_phase_order =
-      detail::make_default_phase_order<UseNumericalInitialData>();
+      detail::make_default_phase_order<use_numeric_id>();
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
@@ -377,15 +370,15 @@ struct GeneralizedHarmonicTemplateBase<
                              gh::Tags::Pi<DataVector, volume_dim>,
                              gh::Tags::Phi<DataVector, volume_dim>>>>>>;
 
-  template <bool UseControlSystems>
+  template <typename DerivedMetavars, bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, local_time_stepping>,
+          Initialization::TimeStepping<DerivedMetavars, local_time_stepping>,
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
-          Initialization::TimeStepperHistory<derived_metavars>>,
+          Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
-          UseNumericalInitialData, tmpl::list<>,
+          use_numeric_id, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<

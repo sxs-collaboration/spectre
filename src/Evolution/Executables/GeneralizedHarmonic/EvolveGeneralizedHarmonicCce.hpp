@@ -75,11 +75,12 @@ class CProxy_GlobalCache;
 
 template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars
-    : public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<VolumeDim, UseNumericalInitialData>>,
+    : public GeneralizedHarmonicTemplateBase<VolumeDim,
+                                             UseNumericalInitialData>,
       public CharacteristicExtractDefaults<false> {
-  using gh_base = GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
+  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_numeric_id = UseNumericalInitialData;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, use_numeric_id>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
 
@@ -89,9 +90,9 @@ struct EvolutionMetavars
   struct CceWorldtubeTarget;
 
   using interpolator_source_vars =
-      tmpl::list<::gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
-                 ::gh::Tags::Phi<DataVector, VolumeDim>,
-                 ::gh::Tags::Pi<DataVector, VolumeDim>>;
+      tmpl::list<::gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
+                 ::gh::Tags::Phi<DataVector, volume_dim>,
+                 ::gh::Tags::Pi<DataVector, volume_dim>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,
@@ -110,25 +111,25 @@ struct EvolutionMetavars
           Cce::Actions::SendGhVarsToCce<CceWorldtubeTarget<true>>,
           Cce::Actions::SendGhVarsToCce<CceWorldtubeTarget<false>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
-          VolumeDim, system, dg_step_choosers, local_time_stepping>,
+          volume_dim, system, dg_step_choosers, local_time_stepping>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, VolumeDim, true>>>,
+                             local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, VolumeDim, false>>,
+                         system, volume_dim, false>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, VolumeDim, false>,
+                  system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
-                  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, VolumeDim>,
-                             gh::Tags::Pi<DataVector, VolumeDim>,
-                             gh::Tags::Phi<DataVector, VolumeDim>>>>>>;
+                  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
+                             gh::Tags::Pi<DataVector, volume_dim>,
+                             gh::Tags::Phi<DataVector, volume_dim>>>>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -144,23 +145,23 @@ struct EvolutionMetavars
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
-          evolution::dg::Initialization::Domain<VolumeDim>,
+          evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
-          UseNumericalInitialData, tmpl::list<>,
+          use_numeric_id, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<VolumeDim, Frame::ElementLogical>>>,
+              domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
           typename system::variables_tag,
-          domain::Tags::InverseJacobian<VolumeDim, Frame::ElementLogical,
+          domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,
-      gh::Actions::InitializeGhAnd3Plus1Variables<VolumeDim>,
+      gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>,
-      ::evolution::dg::Initialization::Mortars<VolumeDim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
@@ -172,7 +173,7 @@ struct EvolutionMetavars
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              UseNumericalInitialData,
+              use_numeric_id,
               tmpl::list<Parallel::PhaseActions<
                              Parallel::Phase::RegisterWithElementDataReader,
                              tmpl::list<importers::Actions::
@@ -233,7 +234,7 @@ struct EvolutionMetavars
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
-      std::conditional_t<UseNumericalInitialData,
+      std::conditional_t<use_numeric_id,
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
