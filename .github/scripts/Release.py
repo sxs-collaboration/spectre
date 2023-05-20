@@ -22,6 +22,7 @@ import uplink
 import yaml
 from pybtex.backends.plaintext import Backend as PlaintextBackend
 from pybtex.style.formatting.plain import Style as PlainStyle
+from cffconvert.citation import Citation
 
 logger = logging.getLogger(__name__)
 
@@ -227,11 +228,15 @@ def to_cff_person(person: pybtex.database.Person) -> dict:
         "prelast": "name-particle",
         "lineage": "name-suffix",
     }
-    return {
+    result = {
         cff_field: " ".join(person.get_part(bibtex_field))
         for bibtex_field, cff_field in name_fields.items()
         if person.get_part(bibtex_field)
     }
+    # Use CFF "entity" format if BibTex has no first & last names
+    if list(result.keys()) == ["family-names"]:
+        return {"name": result["family-names"]}
+    return result
 
 
 def to_cff_reference(bib_entry: pybtex.database.Entry) -> dict:
@@ -240,9 +245,37 @@ def to_cff_reference(bib_entry: pybtex.database.Entry) -> dict:
     The format is defined here:
     https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md#definitionsreference
     """
+    def _cff_transform(cff_field, bib_value):
+        if cff_field == "type":
+            if bib_value == "inproceedings":
+                return "article"
+            elif bib_value == "incollection":
+                return "article"
+        elif cff_field == "publisher":
+            return {"name": bib_value}
+        elif cff_field == "month":
+            try:
+                return int(bib_value)
+            except ValueError:
+                return {
+                    "jan": 1,
+                    "feb": 2,
+                    "mar": 3,
+                    "apr": 4,
+                    "may": 5,
+                    "jun": 6,
+                    "jul": 7,
+                    "aug": 8,
+                    "sep": 9,
+                    "oct": 10,
+                    "nov": 11,
+                    "dec": 12
+                }[bib_value[:3].lower()]
+        return bib_value
+
     cff_reference = {
         'type':
-        bib_entry.type,
+        _cff_transform(cff_field="type", bib_value=bib_entry.type),
         'authors':
         [to_cff_person(person) for person in bib_entry.persons['author']],
     }
@@ -262,11 +295,14 @@ def to_cff_reference(bib_entry: pybtex.database.Entry) -> dict:
         "version": "version",
         "volume": "volume",
         "year": "year",
+        "booktitle": "collection-title",
     }
     for bibtex_field, value in bib_entry.fields.items():
+        bibtex_field = bibtex_field.lower()
         if bibtex_field in fields:
             cff_field = fields[bibtex_field]
-            cff_reference[cff_field] = value
+            cff_reference[cff_field] = _cff_transform(cff_field=cff_field,
+                                                      bib_value=value)
     return cff_reference
 
 
@@ -303,7 +339,7 @@ def collect_citation_metadata(metadata: dict,
     citation_references = [to_cff_reference(entry) for entry in references]
     return {
         'cff-version':
-        "1.1.0",
+        "1.2.0",
         'message':
         "Please cite SpECTRE in any publications that make use of its code "
         "or data. Cite the latest version that you use in your publication. "
@@ -524,6 +560,8 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
 """
     citation_file_content += yaml.safe_dump(citation_data, allow_unicode=True)
     write_file_or_check(citation_file, citation_file_content)
+    # Validate the CFF file
+    Citation(citation_file_content, src=citation_file).validate()
 
     # Get the BibTeX entry and write to file
     bibtex_entry = build_bibtex_entry(metadata)
@@ -775,6 +813,7 @@ if __name__ == "__main__":
 
     # Set the log level
     logging.basicConfig(level=logging.WARNING - args.verbose * 10)
+    logging.getLogger("pykwalify").setLevel(logging.CRITICAL)
     del args.verbose
 
     # Load the project metadata
