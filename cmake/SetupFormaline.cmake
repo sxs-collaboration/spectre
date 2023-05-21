@@ -22,7 +22,9 @@ set(SPECTRE_FORMALINE_LOCATIONS
   external
   LICENSE.txt
   Metadata.yaml
+  pyproject.toml
   README.md
+  setup.cfg
   src
   support
   tests
