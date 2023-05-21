@@ -243,6 +243,12 @@ run_tests() {
 standard_checks=()
 
 # Check for lines longer than 80 characters
+# Some patterns are allowed to exceed the line limit. Notes:
+# - Black Python formatting prefers to end single-line docstrings on the same
+#   line even if the '"""' exceeds the line limit.
+# - Black also prefers to avoid backslashes even if that means a long import
+#   statements exceeds the line limit (in case breaking the line with
+#   parentheseses is not possible).
 long_lines_exclude() {
     grep -Ev 'https?://' | \
         grep -v 'mailto:' | \
@@ -250,7 +256,9 @@ long_lines_exclude() {
         grep -v '// NOLINT' | \
         grep -v '\\snippet' | \
         grep -v '\\image' | \
-        grep -v 'a href='
+        grep -v 'a href=' | \
+        grep -v '"""' | \
+        grep -v 'import'
 }
 long_lines() {
     whitelist "$1" \
