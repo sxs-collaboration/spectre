@@ -59,8 +59,8 @@ Stylistic Items:
   equation.
 * When addressing requests on a PR, the commit message must start with
   `fixup` followed by a descriptive message.
-* All python code must comply with the yapf (v0.29.0 currently) formatting
-  specified by the `.style.yapf` file in the directory.
+* All python code must comply with the [black](https://github.com/psf/black)
+  formatting specified by the `pyproject.toml` file.
 
 Code Quality Items:
 

@@ -18,6 +18,5 @@ beautifulsoup4
 coverxygen
 nbconvert
 pybtex
-# Code formatting. Using a specific version in order to avoid formatting
-# differences between versions.
-yapf==0.29.0
+# Code formatting. The required version is locked in the pyproject.toml config.
+black ~= 23.3

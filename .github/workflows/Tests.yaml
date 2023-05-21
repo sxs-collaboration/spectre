@@ -129,6 +129,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip3 install -r .github/scripts/requirements-release.txt
+          pip3 install -r support/Python/dev_requirements.txt
       - name: Test tools
         run: |
           python3 -m unittest discover -p 'Test_CompileReleaseNotes.py' \
@@ -136,7 +137,7 @@ jobs:
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
-          ./tools/CheckPythonFormatting.sh
+          black --check .
       - name: Test script
         run: |
           cd $GITHUB_WORKSPACE

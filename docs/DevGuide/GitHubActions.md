@@ -41,8 +41,7 @@ The following build jobs are launched:
   - testing
   - rebase
 * CHECK_FILES runs the script `tools/CheckFiles.sh` (which also runs the script
-  `tools/FileTestDefs.sh`), and `tools/CheckPythonFormatting.sh`. The checks
-  fail if any of the following are true:
+  `tools/FileTestDefs.sh`). The checks fail if any of the following are true:
   - Any file,
     * contains a line over 80 characters (We allow exceptions for certain file
       types and inherently long strings like URLs and include lines.
@@ -77,8 +76,8 @@ The following build jobs are launched:
     * lists a `C++` file that is not present in the directory
   - A `c++` or `python` file contains a `TODO` (case-insensitive) comment
   - The file `tests/Unit/RunSingleTest/CMakeLists.txt` wasn't modified
-  - A python file is not formatted according to the `.style.yapf` file in the
-    root of the repository.
+  In addition, the CHECK_FILES job tests Python formatting, the release
+  workflow, and other tools in `tools/`.
 * RUN_CLANG_TIDY runs clang-tidy on the source code. This is done for both
   `Release` and `Debug` builds.
 * TEST_CHECK_FILES runs `tools/CheckFiles.sh --test` which tests the checks

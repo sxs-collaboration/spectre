@@ -410,7 +410,6 @@ license() {
               '.json' \
               '.nojekyll' \
               '.png' \
-              '.style.yapf' \
               '.svg' \
               '.patch' \
               '.xmf' \

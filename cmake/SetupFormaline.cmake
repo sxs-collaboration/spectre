@@ -12,7 +12,6 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .dockerignore
   .github
   .gitignore
-  .style.yapf
   citation.bib
   CITATION.cff
   cmake
