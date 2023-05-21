@@ -1,20 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import (
-    ElementMap,
-    deserialize_domain,
-    deserialize_functions_of_time,
-    ElementId,
-)
+import os
+import unittest
 
 import numpy as np
 import numpy.testing as npt
-import os
+
 import spectre.IO.H5 as spectre_h5
-import unittest
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Frame
+from spectre.DataStructures.Tensor import Frame, tnsr
+from spectre.Domain import (
+    ElementId,
+    ElementMap,
+    deserialize_domain,
+    deserialize_functions_of_time,
+)
 from spectre.Domain.CoordinateMaps import (
     CoordinateMapElementLogicalToInertial1D,
 )

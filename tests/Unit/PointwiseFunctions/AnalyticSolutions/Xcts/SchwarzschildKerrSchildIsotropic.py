@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-from numpy import sqrt, exp
+from numpy import exp, sqrt
 from scipy.optimize import newton
 
 # Areal Kerr-Schild coordinates

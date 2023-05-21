@@ -4,6 +4,7 @@
 # See LICENSE.txt for details.
 
 import click
+
 import spectre.IO.H5 as spectre_h5
 
 

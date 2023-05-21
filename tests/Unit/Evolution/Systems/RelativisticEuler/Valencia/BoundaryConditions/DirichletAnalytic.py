@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import PointwiseFunctions.AnalyticSolutions.Hydro.SmoothFlow as hydro
 import Evolution.Systems.RelativisticEuler.Valencia.Fluxes as flux
+import numpy as np
+import PointwiseFunctions.AnalyticSolutions.Hydro.SmoothFlow as hydro
 
 
 def soln_error(

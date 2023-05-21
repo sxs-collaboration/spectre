@@ -1,9 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-import math
 import cmath
+import math
+
+import numpy as np
 
 from .ProjectionOperators import transverse_projection_operator
 from .WeylPropagating import weyl_propagating_modes

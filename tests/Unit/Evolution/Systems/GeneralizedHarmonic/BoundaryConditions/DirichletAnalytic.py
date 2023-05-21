@@ -2,10 +2,9 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 import PointwiseFunctions.AnalyticSolutions.GeneralRelativity.GaugeWave as gw
-import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as gr
 import PointwiseFunctions.GeneralRelativity.ComputeGhQuantities as gh
+import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as gr
 
 
 def error(

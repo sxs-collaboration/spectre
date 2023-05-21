@@ -1,9 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain.Creators import Interval, DomainCreator1D
-from spectre.Domain.CoordinateMaps import Distribution
 import unittest
+
+from spectre.Domain.CoordinateMaps import Distribution
+from spectre.Domain.Creators import DomainCreator1D, Interval
 
 
 class TestInterval(unittest.TestCase):

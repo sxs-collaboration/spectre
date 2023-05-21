@@ -1,12 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import PointwiseFunctions.AnalyticSolutions.ForceFree.FastWave as fastwave
-import PointwiseFunctions.AnalyticData.ForceFree.FfeBreakdown as breakdown
-import Evolution.Systems.ForceFree.Fluxes as fluxes
 import Evolution.Systems.ForceFree.ElectricCurrentDensity as current
+import Evolution.Systems.ForceFree.Fluxes as fluxes
+import numpy as np
+import PointwiseFunctions.AnalyticData.ForceFree.FfeBreakdown as breakdown
+import PointwiseFunctions.AnalyticSolutions.ForceFree.FastWave as fastwave
 
 
 def soln_error(

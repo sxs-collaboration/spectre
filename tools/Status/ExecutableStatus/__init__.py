@@ -6,7 +6,7 @@ import re
 
 from .EvolveGhBinaryBlackHole import EvolveGhBinaryBlackHole
 from .EvolveGhSingleBlackHole import EvolveGhSingleBlackHole
-from .ExecutableStatus import ExecutableStatus, EvolutionStatus
+from .ExecutableStatus import EvolutionStatus, ExecutableStatus
 
 logger = logging.getLogger(__name__)
 

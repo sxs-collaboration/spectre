@@ -3,15 +3,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
-    extract_input_source_from_h5_command,
-)
+import os
+import unittest
+
+from click.testing import CliRunner
 
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
-import unittest
-import os
-from click.testing import CliRunner
+from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
+    extract_input_source_from_h5_command,
+)
 
 
 class TestExtractInputSourceYAMLFromH5(unittest.TestCase):

@@ -3,9 +3,9 @@
 
 import numpy as np
 import scipy.integrate as integrate
-from scipy.special import jv
-from Elasticity.ConstitutiveRelations import IsotropicHomogeneous
 from Elasticity import PotentialEnergy
+from Elasticity.ConstitutiveRelations import IsotropicHomogeneous
+from scipy.special import jv
 
 
 def beam_profile(k, beam_width):

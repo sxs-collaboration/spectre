@@ -3,10 +3,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import subprocess
 import os
-import sys
 import re
+import subprocess
+import sys
 
 # List of all the clang-format versions we are willing to use
 # The general case is needed on a Mac

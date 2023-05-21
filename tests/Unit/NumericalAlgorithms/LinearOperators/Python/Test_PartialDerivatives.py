@@ -1,14 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
-
 import unittest
+
 import numpy as np
 import numpy.testing as npt
+
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import Scalar, InverseJacobian
-from spectre.Spectral import Mesh, Basis, Quadrature, collocation_points
+from spectre.DataStructures.Tensor import InverseJacobian, Scalar
+from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
+from spectre.Spectral import Basis, Mesh, Quadrature, collocation_points
 
 
 def polynomial(x):

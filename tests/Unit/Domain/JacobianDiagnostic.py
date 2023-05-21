@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
 import unittest
+
+import numpy as np
 
 
 def jacobian_diagnostic(analytic_jacobian, numeric_jacobian_transpose):

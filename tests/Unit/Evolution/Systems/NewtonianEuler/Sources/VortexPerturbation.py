@@ -2,13 +2,12 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 from PointwiseFunctions.AnalyticSolutions.NewtonianEuler.IsentropicVortex import (
     deriv_of_perturbation_profile,
     mass_density,
-    velocity,
-    specific_internal_energy,
     pressure,
+    specific_internal_energy,
+    velocity,
 )
 
 

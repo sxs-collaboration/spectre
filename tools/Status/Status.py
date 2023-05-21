@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import subprocess
+import time
 from io import StringIO
 from pathlib import Path
 from typing import Any, Optional, Sequence
@@ -15,10 +16,9 @@ import click
 import humanize
 import pandas as pd
 import rich.console
-import rich.table
-import rich.rule
 import rich.live
-import time
+import rich.rule
+import rich.table
 import yaml
 
 from .ExecutableStatus import match_executable_status

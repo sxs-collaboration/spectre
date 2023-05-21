@@ -3,12 +3,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import git
 import itertools
 import logging
 import re
 from dataclasses import dataclass
 from typing import List, Optional, Union
+
+import git
 
 logger = logging.getLogger(__name__)
 

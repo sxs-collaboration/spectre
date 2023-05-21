@@ -4,13 +4,15 @@
 import os
 import shutil
 import unittest
+
 import yaml
 from click.testing import CliRunner
+
 from spectre import Informer
 from spectre.tools.CleanOutput import (
+    MissingExpectedOutputError,
     clean_output,
     clean_output_command,
-    MissingExpectedOutputError,
 )
 
 

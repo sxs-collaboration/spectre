@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from ._PyTensor import *
-
-from .Frame import Frame
-
 # Define Tensor type lookup tables
 import itertools
+
 from spectre.DataStructures import DataVector
+
+from ._PyTensor import *
+from .Frame import Frame
 
 
 def _dtype_to_name(dtype: type):

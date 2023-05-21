@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
+
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import tnsr
 from spectre.Domain import radially_compressed_coordinates

@@ -1,24 +1,26 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
 import logging
-import numpy as np
 import multiprocessing
+from typing import Iterable, Sequence, Union
+
+import click
+import numpy as np
 import rich
+
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import tnsr
 from spectre.Domain import (
+    ElementId,
     block_logical_coordinates,
-    element_logical_coordinates,
     deserialize_domain,
     deserialize_functions_of_time,
-    ElementId,
+    element_logical_coordinates,
 )
 from spectre.Interpolation import Irregular
 from spectre.Spectral import Mesh
-from typing import Iterable, Union, Sequence
 
 logger = logging.getLogger(__name__)
 

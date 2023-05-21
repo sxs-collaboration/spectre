@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import Fluxes, Sources
+import Fluxes
+import Sources
 
 
 def non_flux_terms_dt_tilde_e(

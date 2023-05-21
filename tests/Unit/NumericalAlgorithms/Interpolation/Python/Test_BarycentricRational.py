@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Interpolation import BarycentricRational
-
 import unittest
-import scipy.interpolate
+
 import numpy as np
 import numpy.testing as npt
+import scipy.interpolate
+
+from spectre.Interpolation import BarycentricRational
 
 
 class TestBarycentricRational(unittest.TestCase):

@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import PointwiseFunctions.AnalyticSolutions.RadiationTransport.M1Grey.TestFunctions as soln
 import Evolution.Systems.RadiationTransport.M1Grey.Fluxes as fluxes
+import numpy as np
+import PointwiseFunctions.AnalyticSolutions.RadiationTransport.M1Grey.TestFunctions as soln
 
 
 def soln_error(

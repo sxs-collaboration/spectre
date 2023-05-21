@@ -1,9 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
 import logging
 import os
+
+import click
 import yaml
 
 

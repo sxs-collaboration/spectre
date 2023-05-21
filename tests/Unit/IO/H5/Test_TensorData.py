@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
+
 from spectre.DataStructures import DataVector
 from spectre.Domain import ElementId
 from spectre.IO.H5 import ElementVolumeData, TensorComponent

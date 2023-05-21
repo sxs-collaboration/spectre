@@ -5,6 +5,7 @@ import os
 import unittest
 
 import yaml
+
 from spectre.Informer import unit_test_build_path
 from spectre.support.Machines import Machine, UnknownMachineError, this_machine
 

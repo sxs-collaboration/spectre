@@ -5,9 +5,10 @@
 
 import logging
 import os
-from bs4 import BeautifulSoup
-import pybtex.database
 import re
+
+import pybtex.database
+from bs4 import BeautifulSoup
 
 
 def append_eprint_links_to_citelist(html_dir, references_files):

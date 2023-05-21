@@ -1,22 +1,23 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import logging
+import os
+import shutil
+import unittest
+
+import numpy as np
+from click.testing import CliRunner
+
+import spectre.IO.H5 as spectre_h5
+from spectre import Spectral
+from spectre.DataStructures import DataVector
+from spectre.Informer import unit_test_build_path
+from spectre.IO.H5 import ElementVolumeData, TensorComponent
 from spectre.Visualization.InterpolateToMesh import (
     interpolate_to_mesh,
     interpolate_to_mesh_command,
 )
-
-import unittest
-from click.testing import CliRunner
-from spectre.Informer import unit_test_build_path
-import spectre.IO.H5 as spectre_h5
-from spectre.IO.H5 import TensorComponent, ElementVolumeData
-from spectre.DataStructures import DataVector
-from spectre import Spectral
-import os
-import numpy as np
-import logging
-import shutil
 
 
 class TestInterpolateToMesh(unittest.TestCase):

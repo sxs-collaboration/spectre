@@ -3,17 +3,19 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import git
 import os
 import textwrap
 import unittest
+
+import git
 import yaml
+
 from tools.CompileReleaseNotes import (
+    PullRequest,
+    compile_release_notes,
     get_last_release,
     get_merged_pull_requests,
     get_upgrade_instructions,
-    compile_release_notes,
-    PullRequest,
 )
 
 

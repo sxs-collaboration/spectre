@@ -20,9 +20,9 @@ import pybtex.database
 import requests
 import uplink
 import yaml
+from cffconvert.citation import Citation
 from pybtex.backends.plaintext import Backend as PlaintextBackend
 from pybtex.style.formatting.plain import Style as PlainStyle
-from cffconvert.citation import Citation
 
 logger = logging.getLogger(__name__)
 

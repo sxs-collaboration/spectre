@@ -1,11 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.NumericalAlgorithms.LinearOperators import definite_integral
-
 import unittest
+
 from spectre.DataStructures import DataVector
-from spectre.Spectral import Mesh, Basis, Quadrature, collocation_points
+from spectre.NumericalAlgorithms.LinearOperators import definite_integral
+from spectre.Spectral import Basis, Mesh, Quadrature, collocation_points
 
 
 # Integral [-1, 1] is 2

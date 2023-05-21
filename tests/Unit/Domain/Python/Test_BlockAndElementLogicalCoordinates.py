@@ -1,20 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import (
-    block_logical_coordinates,
-    element_logical_coordinates,
-    deserialize_domain,
-    deserialize_functions_of_time,
-    ElementId,
-)
+import os
+import unittest
 
 import numpy as np
-import os
+
 import spectre.IO.H5 as spectre_h5
-import unittest
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Frame
+from spectre.DataStructures.Tensor import Frame, tnsr
+from spectre.Domain import (
+    ElementId,
+    block_logical_coordinates,
+    deserialize_domain,
+    deserialize_functions_of_time,
+    element_logical_coordinates,
+)
 from spectre.Informer import unit_test_src_path
 
 

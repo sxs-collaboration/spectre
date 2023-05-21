@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import jacobian_diagnostic
+import unittest
 
 import numpy.testing as npt
-import unittest
+
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Frame, Jacobian
+from spectre.DataStructures.Tensor import Frame, Jacobian, tnsr
+from spectre.Domain import jacobian_diagnostic
 from spectre.Spectral import Basis, Mesh, Quadrature, collocation_points
 
 

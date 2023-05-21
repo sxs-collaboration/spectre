@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain.Creators import Sphere, DomainCreator3D
 import unittest
+
+from spectre.Domain.Creators import DomainCreator3D, Sphere
 
 
 class TestSphere(unittest.TestCase):

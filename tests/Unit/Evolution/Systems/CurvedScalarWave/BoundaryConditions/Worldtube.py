@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import numpy as np
+
 from Evolution.Systems.CurvedScalarWave import Characteristics
 
 

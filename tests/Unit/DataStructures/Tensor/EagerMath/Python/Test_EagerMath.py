@@ -1,14 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures.Tensor.EagerMath import determinant, magnitude
-
 import itertools
+import unittest
+
 import numpy as np
 import numpy.testing as npt
-import unittest
+
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Scalar, Jacobian
+from spectre.DataStructures.Tensor import Jacobian, Scalar, tnsr
+from spectre.DataStructures.Tensor.EagerMath import determinant, magnitude
 
 
 def to_numpy(tensor):

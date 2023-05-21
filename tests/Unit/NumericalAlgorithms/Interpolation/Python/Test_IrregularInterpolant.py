@@ -2,12 +2,14 @@
 # See LICENSE.txt for details.
 
 import unittest
+
 import numpy as np
-import numpy.testing as npt
 import numpy.random
+import numpy.testing as npt
+
 from spectre.DataStructures import DataVector
 from spectre.Interpolation import Irregular
-from spectre.Spectral import Mesh, Basis, Quadrature, logical_coordinates
+from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
 
 
 class TestIrregular(unittest.TestCase):

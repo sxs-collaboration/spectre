@@ -1,17 +1,19 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import spectre.IO.H5 as spectre_h5
-from spectre.IO.H5 import TensorComponent, ElementVolumeData
-from spectre.DataStructures import DataVector
-from spectre import Spectral, Interpolation
-import numpy as np
-import sys
-from multiprocessing import Pool
-import click
-import re
 import glob
 import logging
+import re
+import sys
+from multiprocessing import Pool
+
+import click
+import numpy as np
+
+import spectre.IO.H5 as spectre_h5
+from spectre import Interpolation, Spectral
+from spectre.DataStructures import DataVector
+from spectre.IO.H5 import ElementVolumeData, TensorComponent
 
 logger = logging.getLogger(__name__)
 

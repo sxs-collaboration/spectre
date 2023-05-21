@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as gr
 
 

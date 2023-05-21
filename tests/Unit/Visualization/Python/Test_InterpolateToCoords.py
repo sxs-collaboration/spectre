@@ -1,19 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import os
+import shutil
+import unittest
+
+import numpy as np
+import numpy.testing as npt
+from click.testing import CliRunner
+
+import spectre.IO.H5 as spectre_h5
+from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.Visualization.InterpolateToCoords import (
     interpolate_to_coords,
     interpolate_to_coords_command,
 )
-
-import numpy as np
-import numpy.testing as npt
-import os
-import shutil
-import spectre.IO.H5 as spectre_h5
-import unittest
-from click.testing import CliRunner
-from spectre.Informer import unit_test_build_path, unit_test_src_path
 
 
 class TestInterpolateToCoords(unittest.TestCase):

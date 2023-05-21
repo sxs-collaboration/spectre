@@ -1,11 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import DataVector
-import unittest
 import math
+import unittest
+
 import numpy as np
 import numpy.testing as npt
+
+from spectre.DataStructures import DataVector
 
 
 class TestDataVector(unittest.TestCase):

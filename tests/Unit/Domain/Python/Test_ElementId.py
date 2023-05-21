@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import ElementId, SegmentId
 import unittest
+
+from spectre.Domain import ElementId, SegmentId
 
 
 class TestElementId(unittest.TestCase):

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Optional, Sequence, Union
 
 import numpy as np
+
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures.Tensor.EagerMath import determinant
 from spectre.Domain import (

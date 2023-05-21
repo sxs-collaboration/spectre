@@ -1,15 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Visualization.PlotDatFile import plot_dat_command
+import os
+import unittest
 
 import click
 import h5py
-import spectre.Informer as spectre_informer
 import numpy as np
-import os
-import unittest
 from click.testing import CliRunner
+
+import spectre.Informer as spectre_informer
+from spectre.Visualization.PlotDatFile import plot_dat_command
 
 
 class TestPlotDatFile(unittest.TestCase):

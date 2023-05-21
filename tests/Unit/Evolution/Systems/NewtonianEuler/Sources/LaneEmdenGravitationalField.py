@@ -2,10 +2,9 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 from PointwiseFunctions.AnalyticSolutions.NewtonianEuler.LaneEmdenStar import (
-    mass_density,
     gravitational_field,
+    mass_density,
 )
 
 

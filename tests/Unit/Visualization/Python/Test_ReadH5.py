@@ -7,6 +7,7 @@ import unittest
 import h5py
 import numpy as np
 import pandas.testing as pdt
+
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
 from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe

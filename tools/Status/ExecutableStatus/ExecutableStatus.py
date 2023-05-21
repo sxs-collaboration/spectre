@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import h5py
 import numpy as np
 import pandas as pd
+
 from spectre.Visualization.ReadH5 import to_dataframe
 from spectre.Visualization.ReadInputFile import find_event
 

@@ -1,13 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
+import unittest
 
 import numpy as np
 import numpy.testing as npt
-import unittest
+
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar
+from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
 
 
 class TestBindings(unittest.TestCase):

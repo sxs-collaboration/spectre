@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import unittest
+
 from spectre.tools.CharmSimplifyTraces import extract_first_template_parameter
 
 

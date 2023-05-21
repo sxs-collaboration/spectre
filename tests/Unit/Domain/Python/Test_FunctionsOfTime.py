@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import deserialize_functions_of_time
-
 import math
 import os
-import spectre.IO.H5 as spectre_h5
 import unittest
+
+import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
+from spectre.Domain import deserialize_functions_of_time
 from spectre.Informer import unit_test_src_path
 
 

@@ -1,13 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.PointwiseFunctions.GeneralRelativity import *
-from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Scalar
+import unittest
 
 import numpy as np
 import numpy.testing as npt
-import unittest
+
+from spectre.DataStructures import DataVector
+from spectre.DataStructures.Tensor import Scalar, tnsr
+from spectre.PointwiseFunctions.GeneralRelativity import *
 
 
 class TestBindings(unittest.TestCase):

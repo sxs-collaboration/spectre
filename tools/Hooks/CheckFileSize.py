@@ -3,9 +3,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import os
 import subprocess
 import sys
-import os
 
 # The maximum file-size for a file to be committed in kB
 max_file_size = 200.0

@@ -1,13 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-import scipy.signal
-
-import Reconstruction
-
 import Minmod
 import MonotonisedCentral
+import numpy as np
+import Reconstruction
+import scipy.signal
 
 
 def wcns5z(q):

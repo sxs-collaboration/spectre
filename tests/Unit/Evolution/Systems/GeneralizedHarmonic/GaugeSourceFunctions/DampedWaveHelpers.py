@@ -2,11 +2,10 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 from PointwiseFunctions.GeneralRelativity.ComputeGhQuantities import (
-    spacetime_deriv_detg,
     deriv_lapse,
     dt_lapse,
+    spacetime_deriv_detg,
 )
 
 

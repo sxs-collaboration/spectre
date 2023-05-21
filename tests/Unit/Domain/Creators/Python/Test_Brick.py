@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain.Creators import Brick
 import unittest
+
+from spectre.Domain.Creators import Brick
 
 
 class TestBrick(unittest.TestCase):

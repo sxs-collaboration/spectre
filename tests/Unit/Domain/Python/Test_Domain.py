@@ -6,6 +6,7 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
+
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Frame, tnsr

@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-from numpy import sqrt, exp, pi
+from numpy import exp, pi, sqrt
 
 
 def normal_dot_minus_stress(x, n, beam_width):

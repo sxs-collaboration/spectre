@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre import Informer
-
 import unittest
+
+from spectre import Informer
 
 VERSION_PATTERN = r"\d{4}\.\d{2}\.\d{2}(\.\d+)?"
 

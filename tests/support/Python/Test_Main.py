@@ -7,6 +7,7 @@ import unittest
 
 import yaml
 from click.testing import CliRunner
+
 from spectre.__main__ import cli
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.tools.CleanOutput import MissingExpectedOutputError

@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import spectre.PointwiseFunctions.AnalyticSolutions.RelativisticEuler as spectre_re_solutions
-import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
-
 import unittest
+
 import numpy as np
 import numpy.testing as npt
+
+import spectre.PointwiseFunctions.AnalyticSolutions.RelativisticEuler as spectre_re_solutions
+import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
 
 
 class TestTov(unittest.TestCase):

@@ -1,13 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
-import h5py
 import logging
 import os
 import shutil
 import subprocess
 import tempfile
+
+import click
+import h5py
 
 logger = logging.getLogger(__name__)
 

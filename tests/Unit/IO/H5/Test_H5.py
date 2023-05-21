@@ -1,13 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre import DataStructures
-import spectre.IO.H5 as spectre_h5
-import unittest
-import numpy as np
 import os
-import numpy.testing as npt
+import unittest
+
 import h5py
+import numpy as np
+import numpy.testing as npt
+
+import spectre.IO.H5 as spectre_h5
+from spectre import DataStructures
 
 
 class TestIOH5File(unittest.TestCase):

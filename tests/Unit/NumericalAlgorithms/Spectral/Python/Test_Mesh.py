@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Spectral import Mesh
-from spectre.Spectral import Basis, Quadrature
+import pickle
+import random
+import unittest
 
 import numpy as np
-import pickle
-import unittest
-import random
+
+from spectre.Spectral import Basis, Mesh, Quadrature
 
 
 class TestMesh(unittest.TestCase):

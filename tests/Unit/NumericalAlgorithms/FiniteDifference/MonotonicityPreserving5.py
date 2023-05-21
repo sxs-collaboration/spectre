@@ -1,11 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-from numpy import asarray, sign
-
-import Reconstruction
 import Minmod  # for minmod() function with 2 args
+import numpy as np
+import Reconstruction
+from numpy import asarray, sign
 
 
 def mp5(v):

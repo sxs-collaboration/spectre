@@ -1,20 +1,22 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import (
-    tnsr,
-    Frame,
-    Scalar,
-    Jacobian,
-    InverseJacobian,
-)
 import unittest
+
 import numpy as np
 import numpy.testing as npt
+
+from spectre.DataStructures import DataVector
+from spectre.DataStructures.Tensor import (
+    Frame,
+    InverseJacobian,
+    Jacobian,
+    Scalar,
+    tnsr,
+)
 from spectre.Domain import jacobian_diagnostic
-from spectre.Spectral import Mesh, Basis, Quadrature
 from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
+from spectre.Spectral import Basis, Mesh, Quadrature
 
 
 class TestTensor(unittest.TestCase):

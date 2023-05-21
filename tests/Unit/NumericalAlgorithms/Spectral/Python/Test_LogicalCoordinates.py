@@ -1,19 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import unittest
+from random import randint
+
+import numpy as np
+import numpy.testing as npt
+
+from spectre.DataStructures import DataVector
 from spectre.Spectral import (
-    Mesh,
     Basis,
+    Mesh,
     Quadrature,
     collocation_points,
     logical_coordinates,
 )
-
-import numpy as np
-import numpy.testing as npt
-import unittest
-from random import randint
-from spectre.DataStructures import DataVector
 
 
 class TestLogicalCoordinates(unittest.TestCase):

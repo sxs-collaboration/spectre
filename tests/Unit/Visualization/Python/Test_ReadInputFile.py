@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 import yaml
+
 from spectre.Informer import unit_test_src_path
 from spectre.Visualization.ReadInputFile import find_event, find_phase_change
 

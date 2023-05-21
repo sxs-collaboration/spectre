@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
-
 import unittest
+
+import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
 
 
 class TestPiecewisePolytropicFluid(unittest.TestCase):

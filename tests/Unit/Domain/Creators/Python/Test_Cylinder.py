@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain.Creators import Cylinder, DomainCreator3D
 import unittest
+
+from spectre.Domain.Creators import Cylinder, DomainCreator3D
 
 
 class TestCylinder(unittest.TestCase):

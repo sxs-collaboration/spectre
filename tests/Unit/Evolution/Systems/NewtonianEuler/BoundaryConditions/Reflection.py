@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import Evolution.Systems.NewtonianEuler.TimeDerivative as Flux
 import Evolution.Systems.NewtonianEuler.TestFunctions as TestFunctions
+import Evolution.Systems.NewtonianEuler.TimeDerivative as Flux
+import numpy as np
 
 
 def error(

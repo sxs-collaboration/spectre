@@ -1,10 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import Matrix
-import unittest
 import math
+import unittest
+
 import numpy as np
+
+from spectre.DataStructures import Matrix
 
 
 class TestMatrix(unittest.TestCase):

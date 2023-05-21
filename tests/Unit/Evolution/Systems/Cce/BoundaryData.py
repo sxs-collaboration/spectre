@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
 import math
+
+import numpy as np
 
 
 def cartesian_to_angular_coordinates(

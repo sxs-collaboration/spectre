@@ -1,9 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
 import Evolution.Systems.RelativisticEuler.Valencia.TestFunctions as valencia
+import numpy as np
 
 
 def dg_package_data_tilde_d(

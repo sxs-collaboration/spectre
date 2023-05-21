@@ -3,13 +3,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
 import glob
-import h5py
 import logging
+import sys
+
+import click
+import h5py
 import numpy as np
 import rich
-import sys
+
 from spectre.Visualization.ReadH5 import available_subfiles
 
 

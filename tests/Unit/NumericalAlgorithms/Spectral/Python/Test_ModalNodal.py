@@ -1,19 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import unittest
+
+import numpy as np
+from numpy.polynomial import chebyshev, legendre
+
+from spectre.DataStructures import DataVector
 from spectre.Spectral import (
-    Mesh1D,
     Basis,
+    Mesh1D,
     Quadrature,
+    collocation_points,
     modal_to_nodal_matrix,
     nodal_to_modal_matrix,
-    collocation_points,
 )
-from spectre.DataStructures import DataVector
-
-from numpy.polynomial import legendre, chebyshev
-import numpy as np
-import unittest
 
 
 class TestModalNodal(unittest.TestCase):

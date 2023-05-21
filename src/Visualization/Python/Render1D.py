@@ -11,8 +11,9 @@ from typing import Dict, Optional
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-import spectre.IO.H5 as spectre_h5
 from scipy.interpolate import lagrange
+
+import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Frame, tnsr
 from spectre.Domain import (

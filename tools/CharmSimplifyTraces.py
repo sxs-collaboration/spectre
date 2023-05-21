@@ -3,9 +3,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import click
-import re
 import json
+import re
+
+import click
 
 
 def extract_first_template_parameter(string):

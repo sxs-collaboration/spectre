@@ -1,15 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import DataVector
-from spectre.Spectral import Basis, Quadrature
-import spectre.IO.H5 as spectre_h5
-from spectre.IO.H5 import TensorComponent, ElementVolumeData
-from spectre import Informer
-import unittest
-import numpy as np
 import os
+import unittest
+
+import numpy as np
 import numpy.testing as npt
+
+import spectre.IO.H5 as spectre_h5
+from spectre import Informer
+from spectre.DataStructures import DataVector
+from spectre.IO.H5 import ElementVolumeData, TensorComponent
+from spectre.Spectral import Basis, Quadrature
 
 
 class TestVolumeDataWriting(unittest.TestCase):

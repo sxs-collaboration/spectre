@@ -3,14 +3,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
-
-import h5py
 import os
 import shutil
 import unittest
+
+import h5py
 from click.testing import CliRunner
-from spectre.Informer import unit_test_src_path, unit_test_build_path
+
+from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
 
 
 class TestDeleteSubfiles(unittest.TestCase):

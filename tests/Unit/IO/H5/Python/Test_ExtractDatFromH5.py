@@ -3,19 +3,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.IO.H5.ExtractDatFromH5 import (
-    extract_dat_files,
-    extract_dat_command,
-)
+import os
+import shutil
+import unittest
+
+import numpy as np
+import numpy.testing as npt
+from click.testing import CliRunner
 
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
-import numpy as np
-import numpy.testing as npt
-import unittest
-import os
-import shutil
-from click.testing import CliRunner
+from spectre.IO.H5.ExtractDatFromH5 import (
+    extract_dat_command,
+    extract_dat_files,
+)
 
 
 class TestExtractDatFromH5(unittest.TestCase):

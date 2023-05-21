@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.NumericalAlgorithms.LinearOperators import power_monitors
-from spectre.Spectral import Mesh2D, Basis, Quadrature
-from spectre.DataStructures import DataVector
+import unittest
 
 import numpy as np
-import unittest
+
+from spectre.DataStructures import DataVector
+from spectre.NumericalAlgorithms.LinearOperators import power_monitors
+from spectre.Spectral import Basis, Mesh2D, Quadrature
 
 
 class TestPowerMonitors(unittest.TestCase):

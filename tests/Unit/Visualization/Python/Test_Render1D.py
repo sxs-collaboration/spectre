@@ -8,8 +8,9 @@ import shutil
 import unittest
 
 import numpy as np
-import spectre.IO.H5 as spectre_h5
 from click.testing import CliRunner
+
+import spectre.IO.H5 as spectre_h5
 from spectre.Domain import ElementId, serialize_domain
 from spectre.Domain.Creators import Interval
 from spectre.Informer import unit_test_build_path

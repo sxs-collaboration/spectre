@@ -2,19 +2,18 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 from Evolution.Systems.CurvedScalarWave.Characteristics import (
-    char_speed_vpsi,
-    char_speed_vzero,
-    char_speed_vplus,
-    char_speed_vminus,
+    char_field_vminus,
+    char_field_vplus,
     char_field_vpsi,
     char_field_vzero,
-    char_field_vplus,
-    char_field_vminus,
-    evol_field_psi,
-    evol_field_pi,
+    char_speed_vminus,
+    char_speed_vplus,
+    char_speed_vpsi,
+    char_speed_vzero,
     evol_field_phi,
+    evol_field_pi,
+    evol_field_psi,
 )
 
 

@@ -16,10 +16,11 @@
 import os
 import sys
 
+from pybtex.plugin import register_plugin
+
 # pybtex.* are needed for customizing the reference formatting.
 from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 from pybtex.style.labels import BaseLabelStyle
-from pybtex.plugin import register_plugin
 
 sys.path.insert(0, "@CMAKE_SOURCE_DIR@/docs")
 

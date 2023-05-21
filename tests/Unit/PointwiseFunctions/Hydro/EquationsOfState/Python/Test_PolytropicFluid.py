@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
+
 import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar

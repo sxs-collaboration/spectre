@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
 import PointwiseFunctions.AnalyticSolutions.RelativisticEuler.FishboneMoncriefDisk as fm_disk
 import PointwiseFunctions.GeneralRelativity.KerrSchildCoords as ks_coords
 

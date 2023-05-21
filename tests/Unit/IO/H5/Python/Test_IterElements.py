@@ -9,6 +9,7 @@ from dataclasses import FrozenInstanceError
 
 import numpy as np
 import numpy.testing as npt
+
 import spectre.IO.H5 as spectre_h5
 from spectre.Domain import ElementId, deserialize_functions_of_time
 from spectre.Informer import unit_test_src_path

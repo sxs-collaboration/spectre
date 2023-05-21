@@ -2,26 +2,26 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-
+import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as ComputeSpacetimeQuantities
 from PointwiseFunctions.GeneralRelativity.ComputeGhQuantities import (
-    spacetime_deriv_detg,
     deriv_lapse,
-    dt_lapse,
-    deriv_spatial_metric,
-    dt_spatial_metric,
     deriv_shift,
+    deriv_spatial_metric,
+    dt_lapse,
     dt_shift,
+    dt_spatial_metric,
+    spacetime_deriv_detg,
 )
 from PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities import (
     derivatives_of_spacetime_metric,
     inverse_spacetime_metric,
     spacetime_normal_vector,
 )
-import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as ComputeSpacetimeQuantities
+
 from .DampedWaveHelpers import (
-    spatial_weight_function,
-    spacetime_deriv_spatial_weight_function,
     log_fac,
+    spacetime_deriv_spatial_weight_function,
+    spatial_weight_function,
 )
 
 

@@ -1,19 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import glob
+import logging
+import os
+import shutil
+import unittest
+
+import h5py
+from click.testing import CliRunner
+
+import spectre.Informer as spectre_informer
 from spectre.Visualization.GenerateXdmf import (
     generate_xdmf,
     generate_xdmf_command,
 )
-
-import spectre.Informer as spectre_informer
-import unittest
-import glob
-import h5py
-import logging
-import os
-import shutil
-from click.testing import CliRunner
 
 
 class TestGenerateXdmf(unittest.TestCase):

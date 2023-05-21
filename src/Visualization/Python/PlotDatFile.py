@@ -3,13 +3,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import logging
+import os
+
 import click
 import h5py
-import logging
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import rich
+
 from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)

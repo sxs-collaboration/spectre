@@ -3,10 +3,10 @@
 
 import numpy as np
 from Evolution.Systems.CurvedScalarWave.Characteristics import (
+    char_speed_vminus,
+    char_speed_vplus,
     char_speed_vpsi,
     char_speed_vzero,
-    char_speed_vplus,
-    char_speed_vminus,
 )
 
 

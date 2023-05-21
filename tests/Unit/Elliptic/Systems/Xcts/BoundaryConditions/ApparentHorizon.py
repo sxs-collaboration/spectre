@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-from numpy import sqrt, abs
+from numpy import abs, sqrt
 
 
 def make_metric_riemannian(inv_conformal_metric):

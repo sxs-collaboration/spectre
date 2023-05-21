@@ -10,8 +10,9 @@ from typing import Iterable, Optional, Sequence, Union
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-import spectre.IO.H5 as spectre_h5
 from matplotlib.colors import LinearSegmentedColormap
+
+import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name

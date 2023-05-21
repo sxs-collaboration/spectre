@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain.Creators import Rectangle, DomainCreator2D
 import unittest
+
+from spectre.Domain.Creators import DomainCreator2D, Rectangle
 
 
 class TestRectangle(unittest.TestCase):

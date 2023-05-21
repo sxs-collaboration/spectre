@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import Fluxes
 import numpy as np
-import Sources, Fluxes
+import Sources
 
 
 def source_tilde_d(

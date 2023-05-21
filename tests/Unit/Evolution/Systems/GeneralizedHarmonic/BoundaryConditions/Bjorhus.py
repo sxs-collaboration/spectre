@@ -2,9 +2,9 @@
 # See LICENSE.txt for details.
 
 import itertools as it
-import numpy as np
 
 import Evolution.Systems.GeneralizedHarmonic.TestFunctions as ght
+import numpy as np
 import PointwiseFunctions.GeneralRelativity.Christoffel as ch
 import PointwiseFunctions.GeneralRelativity.ComputeGhQuantities as gh
 import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as gr

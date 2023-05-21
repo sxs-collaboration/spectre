@@ -6,12 +6,13 @@ import shutil
 import unittest
 
 from click.testing import CliRunner
+
+from spectre.Domain.Creators import Cylinder
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.Visualization.PlotPowerMonitors import (
     find_block_or_group,
     plot_power_monitors_command,
 )
-from spectre.Domain.Creators import Cylinder
 
 
 class TestPlotPowerMonitors(unittest.TestCase):

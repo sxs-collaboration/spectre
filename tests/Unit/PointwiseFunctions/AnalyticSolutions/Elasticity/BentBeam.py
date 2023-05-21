@@ -3,8 +3,8 @@
 
 import numpy as np
 from Elasticity.ConstitutiveRelations.IsotropicHomogeneous import (
-    youngs_modulus,
     poisson_ratio,
+    youngs_modulus,
 )
 
 

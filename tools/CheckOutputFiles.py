@@ -3,12 +3,13 @@
 
 import argparse
 import glob
-import h5py
 import logging
-import numpy as np
-import numpy.testing as npt
 import os
 import unittest
+
+import h5py
+import numpy as np
+import numpy.testing as npt
 import yaml
 
 

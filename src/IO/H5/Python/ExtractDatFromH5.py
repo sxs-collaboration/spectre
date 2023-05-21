@@ -3,14 +3,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Visualization.ReadH5 import available_subfiles
-import h5py
-import click
 import multiprocessing as mp
-import numpy as np
 import os
-import pandas as pd
 import shutil
+
+import click
+import h5py
+import numpy as np
+import pandas as pd
+
+from spectre.Visualization.ReadH5 import available_subfiles
 
 
 def write_dat_data(dat_path, h5_filename, out_dir, precision):

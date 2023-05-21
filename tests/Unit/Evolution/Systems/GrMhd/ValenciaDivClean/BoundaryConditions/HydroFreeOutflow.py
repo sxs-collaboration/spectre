@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import Evolution.Systems.GrMhd.ValenciaDivClean.TestFunctions as cons
 import Evolution.Systems.GrMhd.ValenciaDivClean.Fluxes as fluxes
+import Evolution.Systems.GrMhd.ValenciaDivClean.TestFunctions as cons
+import numpy as np
 
 
 def _exterior_spatial_velocity(

@@ -1,12 +1,10 @@
 ## Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import numpy as np
-
-import Reconstruction
-
 import Minmod
 import MonotonisedCentral
+import numpy as np
+import Reconstruction
 
 
 def _minmod(q):

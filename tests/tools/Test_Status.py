@@ -7,12 +7,12 @@ import shutil
 import unittest
 
 import numpy as np
-import spectre.IO.H5 as spectre_h5
 import yaml
-from spectre.Informer import unit_test_build_path
 
-from spectre.tools.Status.Status import get_input_file, get_executable_name
+import spectre.IO.H5 as spectre_h5
+from spectre.Informer import unit_test_build_path
 from spectre.tools.Status.ExecutableStatus import match_executable_status
+from spectre.tools.Status.Status import get_executable_name, get_input_file
 
 
 class TestExecutableStatus(unittest.TestCase):

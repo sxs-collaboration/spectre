@@ -1,8 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from PolytropicFluid import polytropic_pressure_from_density
-from PolytropicFluid import polytropic_specific_internal_energy_from_density
+from PolytropicFluid import (
+    polytropic_pressure_from_density,
+    polytropic_specific_internal_energy_from_density,
+)
 
 
 def hybrid_polytrope_pressure_from_density_and_energy(
