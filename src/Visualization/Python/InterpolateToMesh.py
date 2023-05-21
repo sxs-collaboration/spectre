@@ -23,15 +23,17 @@ def forward_kwargs(kwargs):
     interpolate_to_mesh(**kwargs)
 
 
-def interpolate_to_mesh(source_file_path,
-                        target_mesh,
-                        target_file_path,
-                        source_volume_data,
-                        target_volume_data,
-                        components_to_interpolate=None,
-                        obs_start=-np.inf,
-                        obs_end=np.inf,
-                        obs_stride=1):
+def interpolate_to_mesh(
+    source_file_path,
+    target_mesh,
+    target_file_path,
+    source_volume_data,
+    target_volume_data,
+    components_to_interpolate=None,
+    obs_start=-np.inf,
+    obs_end=np.inf,
+    obs_stride=1,
+):
     """Interpolates an h5 file to a desired grid
 
     The function reads data from `source_volume_data` inside `source_file_path`,
@@ -84,7 +86,8 @@ def interpolate_to_mesh(source_file_path,
         if source_volume_data == target_volume_data:
             raise NameError(
                 "If the source and target files are the same, "
-                "the source and target volume_data need to be different.")
+                "the source and target volume_data need to be different."
+            )
         source_file = spectre_h5.H5File(source_file_path, "r+")
         target_file = source_file
     else:
@@ -96,7 +99,8 @@ def interpolate_to_mesh(source_file_path,
     version = source_vol.get_version()
     # apply observation filter
     observations = [
-        obs for obs in source_vol.list_observation_ids()
+        obs
+        for obs in source_vol.list_observation_ids()
         if obs_start <= source_vol.get_observation_value(obs) <= obs_end
     ][::obs_stride]
 
@@ -118,14 +122,20 @@ def interpolate_to_mesh(source_file_path,
 
         if components_to_interpolate:
             tensor_names = list(
-                set(tensor_name for pattern in components_to_interpolate
+                set(
+                    tensor_name
+                    for pattern in components_to_interpolate
                     for tensor_name in tensor_names
-                    if re.match(pattern, tensor_name)))
+                    if re.match(pattern, tensor_name)
+                )
+            )
 
         # pre-load all tensors to avoid loading the full tensor for each element
         tensors = [
-            np.array(source_vol.get_tensor_component(obs, name).data,
-                     copy=False) for name in tensor_names
+            np.array(
+                source_vol.get_tensor_component(obs, name).data, copy=False
+            )
+            for name in tensor_names
         ]
 
         source_file.close_current_object()
@@ -133,32 +143,40 @@ def interpolate_to_mesh(source_file_path,
         volume_data = []
         # iterate over elements
         for grid_name, extent, basis, quadrature in zip(
-                grid_names, extents, bases, quadratures):
+            grid_names, extents, bases, quadratures
+        ):
             source_mesh = Spectral.Mesh[dim](extent, basis, quadrature)
 
-            interpolant = Interpolation.RegularGrid[dim](source_mesh,
-                                                         target_mesh)
+            interpolant = Interpolation.RegularGrid[dim](
+                source_mesh, target_mesh
+            )
 
             tensor_comps = []
             offset, length = spectre_h5.offset_and_length_for_grid(
-                grid_name, grid_names, extents)
+                grid_name, grid_names, extents
+            )
             # iterate over tensors
             for j, tensor in enumerate(tensors):
-                component_data = DataVector(tensor[offset:offset + length],
-                                            copy=False)
+                component_data = DataVector(
+                    tensor[offset : offset + length], copy=False
+                )
                 interpolated_tensor = interpolant.interpolate(component_data)
                 tensor_path = tensor_names[j]
                 tensor_comps.append(
                     TensorComponent(
-                        tensor_path, DataVector(interpolated_tensor,
-                                                copy=False)))
+                        tensor_path, DataVector(interpolated_tensor, copy=False)
+                    )
+                )
 
             volume_data.append(
-                ElementVolumeData(element_name=grid_name,
-                                  components=tensor_comps,
-                                  extents=target_mesh.extents(),
-                                  basis=target_mesh.basis(),
-                                  quadrature=target_mesh.quadrature()))
+                ElementVolumeData(
+                    element_name=grid_name,
+                    components=tensor_comps,
+                    extents=target_mesh.extents(),
+                    basis=target_mesh.basis(),
+                    quadrature=target_mesh.quadrature(),
+                )
+            )
         target_file.close_current_object()
         target_vol = target_file.get_vol(target_volume_data)
         target_vol.write_volume_data(obs, obs_value, volume_data)
@@ -172,12 +190,19 @@ def interpolate_to_mesh(source_file_path,
 @click.option(
     "--source-file-prefix",
     required=True,
-    help=("The prefix for the .h5 source files. All files starting with the "
-          "prefix followed by a number will be interpolated."))
-@click.option("--source-subfile-name",
-              required=True,
-              help=("The name of the volume data subfile within the "
-                    "source files in which the data is contained"))
+    help=(
+        "The prefix for the .h5 source files. All files starting with the "
+        "prefix followed by a number will be interpolated."
+    ),
+)
+@click.option(
+    "--source-subfile-name",
+    required=True,
+    help=(
+        "The name of the volume data subfile within the "
+        "source files in which the data is contained"
+    ),
+)
 @click.option(
     "--target-file-prefix",
     default=None,
@@ -185,60 +210,96 @@ def interpolate_to_mesh(source_file_path,
         "The prefix for the target files where the interpolated data is "
         "written. When no target file is specified, the interpolated data is "
         "written to the corresponding source file in a new volume data "
-        "subfile."))
-@click.option("--target-subfile-name",
-              required=True,
-              help=("The name of the volume data subfile within the target "
-                    "files where the data will be written."))
-@click.option("--tensor-component",
-              "-t",
-              multiple=True,
-              help=("The names of the tensors that are to be interpolated. "
-                    "Accepts regular expression. "
-                    "If none are specified, all tensors are interpolated."))
+        "subfile."
+    ),
+)
+@click.option(
+    "--target-subfile-name",
+    required=True,
+    help=(
+        "The name of the volume data subfile within the target "
+        "files where the data will be written."
+    ),
+)
+@click.option(
+    "--tensor-component",
+    "-t",
+    multiple=True,
+    help=(
+        "The names of the tensors that are to be interpolated. "
+        "Accepts regular expression. "
+        "If none are specified, all tensors are interpolated."
+    ),
+)
 @click.option(
     "--target-extents",
-    callback=(lambda ctx, param, value: list(map(int, value.split(',')))
-              if value else []),
+    callback=(
+        lambda ctx, param, value: (
+            list(map(int, value.split(","))) if value else []
+        )
+    ),
     required=True,
-    help=("The extents of the target grid, as a comma-separated list without "
-          "spaces. Can be different for each dimension e.g. '3,5,4'"))
+    help=(
+        "The extents of the target grid, as a comma-separated list without "
+        "spaces. Can be different for each dimension e.g. '3,5,4'"
+    ),
+)
 @click.option(
     "--target-basis",
     type=click.Choice(Spectral.Basis.__members__),
     callback=lambda ctx, param, value: Spectral.Basis.__members__[value],
     required=True,
-    help=("The basis of the target grid."))
+    help="The basis of the target grid.",
+)
 @click.option(
     "--target-quadrature",
     type=click.Choice(Spectral.Quadrature.__members__),
     callback=lambda ctx, param, value: Spectral.Quadrature.__members__[value],
     required=True,
-    help=("The quadrature of the target grid."))
-@click.option("--start-time",
-              type=float,
-              default=-np.inf,
-              help=("Disregard all observations with value before this point"))
-@click.option("--stop-time",
-              type=float,
-              default=np.inf,
-              help=("Disregard all observations with value after this point"))
-@click.option("--stride",
-              type=int,
-              default=1,
-              help=("Stride through observations with this step size."))
+    help="The quadrature of the target grid.",
+)
+@click.option(
+    "--start-time",
+    type=float,
+    default=-np.inf,
+    help="Disregard all observations with value before this point",
+)
+@click.option(
+    "--stop-time",
+    type=float,
+    default=np.inf,
+    help="Disregard all observations with value after this point",
+)
+@click.option(
+    "--stride",
+    type=int,
+    default=1,
+    help="Stride through observations with this step size.",
+)
 @click.option(
     "-j",
     "--num-jobs",
     type=int,
     default=None,
-    help=("The maximum number of processes to be started. "
-          "A process is spawned for each source file up to this number."))
-def interpolate_to_mesh_command(source_file_prefix, source_subfile_name,
-                                target_file_prefix, target_subfile_name,
-                                target_extents, target_basis,
-                                target_quadrature, tensor_component,
-                                start_time, stop_time, stride, num_jobs):
+    help=(
+        "The maximum number of processes to be started. "
+        "A process is spawned for each source file up to this number."
+    ),
+)
+def interpolate_to_mesh_command(
+    source_file_prefix,
+    source_subfile_name,
+    target_file_prefix,
+    target_subfile_name,
+    target_extents,
+    target_basis,
+    target_quadrature,
+    tensor_component,
+    start_time,
+    stop_time,
+    stride,
+    num_jobs,
+):
     _rich_traceback_guard = True  # Hide traceback until here
 
     source_files = glob.glob(source_file_prefix + "[0-9]*.h5")
@@ -254,28 +315,36 @@ def interpolate_to_mesh_command(source_file_prefix, source_subfile_name,
         raise NameError("No files found matching the input pattern.")
 
     dim = len(target_extents)
-    target_mesh = Spectral.Mesh[dim](target_extents, target_basis,
-                                     target_quadrature)
+    target_mesh = Spectral.Mesh[dim](
+        target_extents, target_basis, target_quadrature
+    )
 
     interpolate_kwargs = []
     logger.info("Source and target files/volumes are as follows:")
 
     for source_file_path, target_file_path in zip(source_files, target_files):
         interpolate_kwargs.append(
-            dict(source_file_path=source_file_path,
-                 target_mesh=target_mesh,
-                 target_file_path=target_file_path,
-                 source_volume_data=source_subfile_name,
-                 target_volume_data=target_subfile_name,
-                 components_to_interpolate=tensor_component,
-                 obs_start=start_time,
-                 obs_end=stop_time,
-                 obs_stride=stride))
+            dict(
+                source_file_path=source_file_path,
+                target_mesh=target_mesh,
+                target_file_path=target_file_path,
+                source_volume_data=source_subfile_name,
+                target_volume_data=target_subfile_name,
+                components_to_interpolate=tensor_component,
+                obs_start=start_time,
+                obs_end=stop_time,
+                obs_stride=stride,
+            )
+        )
 
-        logger.info("{}{} => {}{}".format(source_file_path,
-                                          source_subfile_name,
-                                          target_file_path,
-                                          target_subfile_name))
+        logger.info(
+            "{}{} => {}{}".format(
+                source_file_path,
+                source_subfile_name,
+                target_file_path,
+                target_subfile_name,
+            )
+        )
 
     with Pool(num_jobs) as p:
         p.map(forward_kwargs, interpolate_kwargs)

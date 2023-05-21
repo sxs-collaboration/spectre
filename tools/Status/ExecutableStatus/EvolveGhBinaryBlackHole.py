@@ -27,7 +27,8 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         try:
             reductions_file = input_file["Observers"]["ReductionFileName"]
             open_reductions_file = h5py.File(
-                os.path.join(work_dir, reductions_file + ".h5"), "r")
+                os.path.join(work_dir, reductions_file + ".h5"), "r"
+            )
         except:
             logger.debug("Unable to open reductions file.", exc_info=True)
             return {}
@@ -37,37 +38,51 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
             try:
                 rotation_z = to_dataframe(
                     open_reductions_file["ControlSystems/Rotation/z.dat"],
-                    slice=np.s_[-1:])
+                    slice=np.s_[-1:],
+                )
                 # Assume the initial rotation angle is 0 for now. We can update
                 # this to read the initial rotation angle once we can read
                 # previous segments / checkpoints of a simulation.
                 covered_angle = rotation_z["FunctionOfTime"].iloc[-1]
-                result["Orbits"] = covered_angle / (2. * np.pi)
+                result["Orbits"] = covered_angle / (2.0 * np.pi)
             except:
                 logger.debug("Unable to extract orbits.", exc_info=True)
             # Euclidean separation between horizons
             try:
                 ah_centers = [
-                    to_dataframe(open_reductions_file[
-                        f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"],
-                                 slice=np.s_[-1:]).iloc[-1] for ab in "AB"
+                    to_dataframe(
+                        open_reductions_file[
+                            f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"
+                        ],
+                        slice=np.s_[-1:],
+                    ).iloc[-1]
+                    for ab in "AB"
                 ]
                 ah_separation = np.sqrt(
-                    sum((ah_centers[0]["InertialCenter" + xyz] -
-                         ah_centers[1]["InertialCenter" + xyz])**2
-                        for xyz in ["_x", "_y", "_z"]))
+                    sum(
+                        (
+                            ah_centers[0]["InertialCenter" + xyz]
+                            - ah_centers[1]["InertialCenter" + xyz]
+                        )
+                        ** 2
+                        for xyz in ["_x", "_y", "_z"]
+                    )
+                )
                 result["Separation"] = ah_separation
             except:
                 logger.debug("Unable to extract separation.", exc_info=True)
             # Norms
             try:
-                norms = to_dataframe(open_reductions_file["Norms.dat"],
-                                     slice=np.s_[-1:])
+                norms = to_dataframe(
+                    open_reductions_file["Norms.dat"], slice=np.s_[-1:]
+                )
                 result["Constraint Energy"] = norms.iloc[-1][
-                    "L2Norm(ConstraintEnergy)"]
+                    "L2Norm(ConstraintEnergy)"
+                ]
             except:
-                logger.debug("Unable to extract constraint energy.",
-                             exc_info=True)
+                logger.debug(
+                    "Unable to extract constraint energy.", exc_info=True
+                )
         return result
 
     def format(self, field, value):

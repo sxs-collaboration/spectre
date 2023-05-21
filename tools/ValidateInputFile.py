@@ -28,9 +28,14 @@ class InvalidInputFileError(Exception):
         parse error, such as '["DomainCreator", "Interval", "LowerBound"]'.
       message: Error message emitted by the option parsing.
     """
-    def __init__(self, input_file_path: Union[str, Path],
-                 line_number: Optional[int], yaml_path: Sequence[str],
-                 message: Optional[str]):
+
+    def __init__(
+        self,
+        input_file_path: Union[str, Path],
+        line_number: Optional[int],
+        yaml_path: Sequence[str],
+        message: Optional[str],
+    ):
         self.input_file_path = Path(input_file_path)
         self.line_number = line_number
         self.yaml_path = yaml_path
@@ -41,23 +46,26 @@ class InvalidInputFileError(Exception):
     def render_context(self) -> rich.console.RenderResult:
         if self.line_number is not None:
             yield f"{self.input_file_path.resolve()}:{self.line_number}"
-            yield rich.syntax.Syntax(self.input_file_path.read_text(),
-                                     theme="ansi_dark",
-                                     lexer="yaml",
-                                     line_range=(self.line_number - 2,
-                                                 self.line_number + 2),
-                                     highlight_lines={self.line_number},
-                                     line_numbers=True)
+            yield rich.syntax.Syntax(
+                self.input_file_path.read_text(),
+                theme="ansi_dark",
+                lexer="yaml",
+                line_range=(self.line_number - 2, self.line_number + 2),
+                highlight_lines={self.line_number},
+                line_numbers=True,
+            )
             yield ""
         if self.yaml_path:
             yield "In [bold]" + ".".join(self.yaml_path) + ":"
             yield ""
 
 
-def validate_input_file(input_file_path: Union[str, Path],
-                        executable: Optional[Union[str, Path]] = None,
-                        print_context: bool = True,
-                        raise_exception: bool = True):
+def validate_input_file(
+    input_file_path: Union[str, Path],
+    executable: Optional[Union[str, Path]] = None,
+    print_context: bool = True,
+    raise_exception: bool = True,
+):
     """Check an input file for parse errors
 
     Invokes the executable with the '--check-options' flag to check for parse
@@ -77,14 +85,14 @@ def validate_input_file(input_file_path: Union[str, Path],
     # Resolve the executable
     if not executable:
         with open(input_file_path, "r") as open_input_file:
-            executable = next(
-                yaml.safe_load_all(open_input_file))["Executable"]
+            executable = next(yaml.safe_load_all(open_input_file))["Executable"]
 
     # Use the executable to validate the input file
     process = subprocess.run(
         [executable, "--input-file", input_file_path, "--check-options"],
         capture_output=True,
-        text=True)
+        text=True,
+    )
 
     if process.returncode == 0:
         return
@@ -119,10 +127,12 @@ def validate_input_file(input_file_path: Union[str, Path],
                 msg.append(line)
 
     # Print context and raise exception
-    error = InvalidInputFileError(input_file_path=input_file_path,
-                                  line_number=line_number,
-                                  yaml_path=path,
-                                  message="\n".join(msg).strip())
+    error = InvalidInputFileError(
+        input_file_path=input_file_path,
+        line_number=line_number,
+        yaml_path=path,
+        message="\n".join(msg).strip(),
+    )
     if print_context:
         rich.print(error.render_context())
     if raise_exception:
@@ -131,17 +141,25 @@ def validate_input_file(input_file_path: Union[str, Path],
 
 
 @click.command()
-@click.argument('input_file_path',
-                type=click.Path(exists=True,
-                                file_okay=True,
-                                dir_okay=False,
-                                readable=True,
-                                path_type=Path))
-@click.option('--executable',
-              '-e',
-              help=("Name or path of the executable. "
-                    "If unspecified, the 'Executable:' in the input file "
-                    "metadata is used."))
+@click.argument(
+    "input_file_path",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=Path,
+    ),
+)
+@click.option(
+    "--executable",
+    "-e",
+    help=(
+        "Name or path of the executable. "
+        "If unspecified, the 'Executable:' in the input file "
+        "metadata is used."
+    ),
+)
 def validate_input_file_command(**kwargs):
     """Check an input file for parse errors"""
     validate_input_file(**kwargs)

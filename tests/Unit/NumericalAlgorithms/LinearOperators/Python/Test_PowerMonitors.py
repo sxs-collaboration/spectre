@@ -1,8 +1,8 @@
-#Distributed under the MIT License.
-#See LICENSE.txt for details.
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
 
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
-from spectre.Spectral import (Mesh2D, Basis, Quadrature)
+from spectre.Spectral import Mesh2D, Basis, Quadrature
 from spectre.DataStructures import DataVector
 
 import numpy as np
@@ -37,5 +37,5 @@ class TestPowerMonitors(unittest.TestCase):
         np.testing.assert_allclose(np_test_array, np_check_array, 1e-12, 1e-12)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

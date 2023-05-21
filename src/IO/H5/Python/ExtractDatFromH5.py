@@ -19,29 +19,31 @@ def write_dat_data(dat_path, h5_filename, out_dir, precision):
         legend = dat_file.attrs["Legend"]
         dat_data = np.array(dat_file)
 
-    header = "\n".join(f"[{i}] " + "{}"
-                       for i in range(len(legend))).format(*legend)
+    header = "\n".join(f"[{i}] " + "{}" for i in range(len(legend))).format(
+        *legend
+    )
 
     format_string = f"%.{precision}e"
 
     # Write to stdout
     if not out_dir:
         print(
-            pd.DataFrame(dat_data).to_string(index=False,
-                                             header=legend,
-                                             float_format=format_string,
-                                             justify="left"))
+            pd.DataFrame(dat_data).to_string(
+                index=False,
+                header=legend,
+                float_format=format_string,
+                justify="left",
+            )
+        )
         return
 
     dat_dir = os.path.join(out_dir, os.path.dirname(dat_path))
     os.makedirs(dat_dir, exist_ok=True)
     dat_filename = os.path.join(out_dir, dat_path)
 
-    np.savetxt(dat_filename,
-               dat_data,
-               delimiter=' ',
-               fmt=format_string,
-               header=header)
+    np.savetxt(
+        dat_filename, dat_data, delimiter=" ", fmt=format_string, header=header
+    )
 
 
 def get_all_dat_files(filename):
@@ -49,13 +51,15 @@ def get_all_dat_files(filename):
         return available_subfiles(h5file, extension=".dat")
 
 
-def extract_dat_files(filename,
-                      out_dir,
-                      num_cores,
-                      precision,
-                      list=False,
-                      force=False,
-                      subfiles=None):
+def extract_dat_files(
+    filename,
+    out_dir,
+    num_cores,
+    precision,
+    list=False,
+    force=False,
+    subfiles=None,
+):
     """Extract dat files from an H5 file
 
     Extract all Dat files inside a SpECTRE HDF5 file. The resulting files will
@@ -81,12 +85,14 @@ def extract_dat_files(filename,
                 os.mkdir(out_dir)
             else:
                 raise ValueError(
-                    f"Could not make directory '{out_dir}'. Already exists.")
+                    f"Could not make directory '{out_dir}'. Already exists."
+                )
     else:
         if subfiles and len(subfiles) > 1:
             raise ValueError(
                 "If no output directory is specified, can only write "
-                f"one subfile to stdout, not {len(subfiles)}")
+                f"one subfile to stdout, not {len(subfiles)}"
+            )
 
     num_dat_files = len(all_dat_files)
 
@@ -96,8 +102,13 @@ def extract_dat_files(filename,
         with mp.Pool(processes=num_cores) as pool:
             pool.starmap(
                 write_dat_data,
-                zip(all_dat_files, [filename] * num_dat_files,
-                    [out_dir] * num_dat_files, [precision] * num_dat_files))
+                zip(
+                    all_dat_files,
+                    [filename] * num_dat_files,
+                    [out_dir] * num_dat_files,
+                    [precision] * num_dat_files,
+                ),
+            )
     else:
         for dat_filename in all_dat_files:
             write_dat_data(dat_filename, filename, out_dir, precision)
@@ -107,37 +118,48 @@ def extract_dat_files(filename,
 
 
 @click.command(help=extract_dat_files.__doc__)
-@click.argument("filename",
-                type=click.Path(exists=True,
-                                file_okay=True,
-                                dir_okay=False,
-                                readable=True))
-@click.argument("out_dir",
-                type=click.Path(file_okay=False, dir_okay=True, writable=True),
-                required=False)
-@click.option('--num-cores',
-              '-j',
-              default=1,
-              show_default=True,
-              help="Number of cores to run on.")
-@click.option('--precision',
-              '-p',
-              default=16,
-              show_default=True,
-              help="Precision with which to save (or print) the data.")
-@click.option('--force',
-              '-f',
-              is_flag=True,
-              help="If the output directory already exists, overwrite it.")
-@click.option('--list',
-              '-l',
-              is_flag=True,
-              help="List all dat files in the HDF5 file and exit.")
-@click.option('--subfile',
-              '-d',
-              "subfiles",
-              multiple=True,
-              help="Full path of subfile to extract (including extension).")
+@click.argument(
+    "filename",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+)
+@click.argument(
+    "out_dir",
+    type=click.Path(file_okay=False, dir_okay=True, writable=True),
+    required=False,
+)
+@click.option(
+    "--num-cores",
+    "-j",
+    default=1,
+    show_default=True,
+    help="Number of cores to run on.",
+)
+@click.option(
+    "--precision",
+    "-p",
+    default=16,
+    show_default=True,
+    help="Precision with which to save (or print) the data.",
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="If the output directory already exists, overwrite it.",
+)
+@click.option(
+    "--list",
+    "-l",
+    is_flag=True,
+    help="List all dat files in the HDF5 file and exit.",
+)
+@click.option(
+    "--subfile",
+    "-d",
+    "subfiles",
+    multiple=True,
+    help="Full path of subfile to extract (including extension).",
+)
 def extract_dat_command(**kwargs):
     _rich_traceback_guard = True  # Hide traceback until here
     extract_dat_files(**kwargs)

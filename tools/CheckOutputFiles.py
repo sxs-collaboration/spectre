@@ -28,9 +28,18 @@ class H5Check:
         absolute_tolerance: The absolute tolerance for approximation checks
         relative_tolerance: The relative tolerance for approximation checks
     """
-    def __init__(self, unit_test, test_h5_label, h5_glob, test_h5_entity,
-                 expected_h5_entity, absolute_tolerance, relative_tolerance,
-                 skip_columns):
+
+    def __init__(
+        self,
+        unit_test,
+        test_h5_label,
+        h5_glob,
+        test_h5_entity,
+        expected_h5_entity,
+        absolute_tolerance,
+        relative_tolerance,
+        skip_columns,
+    ):
         """Initializer for H5Check
 
         Note: the `unit_test` argument must be the unit test object -- this
@@ -50,9 +59,10 @@ class H5Check:
         # example.
         self.expected_h5_entity = expected_h5_entity
         self.absolute_tolerance = float(absolute_tolerance)
-        self.relative_tolerance = (0.0 if relative_tolerance is None else
-                                   float(relative_tolerance))
-        self.skip_columns = ([] if skip_columns is None else skip_columns)
+        self.relative_tolerance = (
+            0.0 if relative_tolerance is None else float(relative_tolerance)
+        )
+        self.skip_columns = [] if skip_columns is None else skip_columns
 
     def check_h5_file(self, h5_file, test_entity, expected_entity):
         """Perform the unit test comparisons between the dataset or group
@@ -68,8 +78,9 @@ class H5Check:
 
         if isinstance(h5_file[test_entity], h5py.Dataset):
             logging.info("Checking dataset : " + test_entity)
-            with self.unit_test.subTest(test_entity=test_entity,
-                                        expected_entity=expected_entity):
+            with self.unit_test.subTest(
+                test_entity=test_entity, expected_entity=expected_entity
+            ):
                 test_data = h5_file[test_entity][()]
                 column_mask = [
                     x not in self.skip_columns
@@ -78,33 +89,46 @@ class H5Check:
                 if self.expected_h5_entity is not None:
                     expected_data = h5_file[expected_entity][()]
                     self.unit_test.assertEqual(
-                        test_data.shape, expected_data.shape,
-                        "test and expected h5 datasets must have identical"
-                        " sizes.")
+                        test_data.shape,
+                        expected_data.shape,
+                        (
+                            "test and expected h5 datasets must have identical"
+                            " sizes."
+                        ),
+                    )
                     self.unit_test.assertEqual(
-                        test_data.dtype, expected_data.dtype,
-                        "test and expected h5 datasets must have identical"
-                        " types.")
-                    if (test_data.dtype == float
-                            or test_data.dtype == complex):
-                        npt.assert_allclose(test_data[:, column_mask],
-                                            expected_data[:, column_mask],
-                                            rtol=self.relative_tolerance,
-                                            atol=self.absolute_tolerance)
+                        test_data.dtype,
+                        expected_data.dtype,
+                        (
+                            "test and expected h5 datasets must have identical"
+                            " types."
+                        ),
+                    )
+                    if test_data.dtype == float or test_data.dtype == complex:
+                        npt.assert_allclose(
+                            test_data[:, column_mask],
+                            expected_data[:, column_mask],
+                            rtol=self.relative_tolerance,
+                            atol=self.absolute_tolerance,
+                        )
                     else:
                         self.unit_test.assertEqual(test_data, expected_data)
                 else:
-                    if (test_data.dtype == float
-                            or test_data.dtype == complex):
-                        npt.assert_allclose(test_data[:, column_mask],
-                                            0.0,
-                                            rtol=self.relative_tolerance,
-                                            atol=self.absolute_tolerance)
+                    if test_data.dtype == float or test_data.dtype == complex:
+                        npt.assert_allclose(
+                            test_data[:, column_mask],
+                            0.0,
+                            rtol=self.relative_tolerance,
+                            atol=self.absolute_tolerance,
+                        )
                     else:
                         self.assertTrue(
                             False,
-                            msg="cannot test non-numeric data without an"
-                            " expected data set to compare against")
+                            msg=(
+                                "cannot test non-numeric data without an"
+                                " expected data set to compare against"
+                            ),
+                        )
         elif isinstance(h5_file[test_entity], h5py.Group):
             test_keys = set(h5_file[self.test_entity].keys())
             checks_passed = True
@@ -112,19 +136,27 @@ class H5Check:
                 expected_keys = set(h5_file[self.expected_entity].keys())
                 keys_difference = test_keys ^ expected_keys
                 self.unit_test.assertEqual(
-                    keys_difference, {},
-                    "test and expected h5 groups must have identical" +
-                    "subgroups and data members. Found differences: " +
-                    str(keys_difference) + "\nin comparing group " +
-                    test_entity + " to group " + expected_entity)
+                    keys_difference,
+                    {},
+                    "test and expected h5 groups must have identical"
+                    + "subgroups and data members. Found differences: "
+                    + str(keys_difference)
+                    + "\nin comparing group "
+                    + test_entity
+                    + " to group "
+                    + expected_entity,
+                )
                 for key in test_keys:
                     checks_passed = checks_passed and self.check_h5_file(
-                        h5_file, test_entity + "/" + key,
-                        expected_entity + "/" + key)
+                        h5_file,
+                        test_entity + "/" + key,
+                        expected_entity + "/" + key,
+                    )
             else:
                 for key in test_keys:
                     checks_passed = checks_passed and self.check_h5_file(
-                        h5_file, test_entity + "/" + key, None)
+                        h5_file, test_entity + "/" + key, None
+                    )
             return checks_passed
 
     def perform_check(self, run_directory):
@@ -140,44 +172,64 @@ class H5Check:
         found_test_entity = False
         found_expected_entity = False
         files_and_entities = ""
-        logging.info("Performing checks: " +
-                     os.path.join(run_directory, self.h5_glob))
+        logging.info(
+            "Performing checks: " + os.path.join(run_directory, self.h5_glob)
+        )
         for filename in glob.glob(os.path.join(run_directory, self.h5_glob)):
             logging.info("Checking file: " + filename)
             with self.unit_test.subTest(filename=filename):
-                with h5py.File(filename, 'r') as check_h5:
-                    files_and_entities = (files_and_entities + filename +
-                                          ": " + str(list(check_h5.keys())) +
-                                          "\n")
+                with h5py.File(filename, "r") as check_h5:
+                    files_and_entities = (
+                        files_and_entities
+                        + filename
+                        + ": "
+                        + str(list(check_h5.keys()))
+                        + "\n"
+                    )
                     found_test_entity = found_test_entity or (
-                        self.test_h5_entity in check_h5)
+                        self.test_h5_entity in check_h5
+                    )
                     found_expected_entity = found_expected_entity or (
                         self.expected_h5_entity is not None
-                        and self.expected_h5_entity in check_h5)
+                        and self.expected_h5_entity in check_h5
+                    )
 
                     if self.test_h5_entity in check_h5 or (
-                            self.expected_h5_entity is not None
-                            and self.expected_h5_entity in check_h5):
+                        self.expected_h5_entity is not None
+                        and self.expected_h5_entity in check_h5
+                    ):
                         self.unit_test.assertTrue(
-                            self.test_h5_entity in check_h5)
+                            self.test_h5_entity in check_h5
+                        )
                         self.unit_test.assertTrue(
                             self.expected_h5_entity is None
-                            or self.expected_h5_entity in check_h5)
-                        self.check_h5_file(check_h5, self.test_h5_entity,
-                                           self.expected_h5_entity)
+                            or self.expected_h5_entity in check_h5
+                        )
+                        self.check_h5_file(
+                            check_h5,
+                            self.test_h5_entity,
+                            self.expected_h5_entity,
+                        )
         self.unit_test.assertTrue(
             found_test_entity,
-            "Failed to find the subfile '" + self.test_h5_entity +
-            "' using glob:\n" + os.path.join(run_directory, self.h5_glob) +
-            "\nFiles and entities:\n" + files_and_entities)
+            "Failed to find the subfile '"
+            + self.test_h5_entity
+            + "' using glob:\n"
+            + os.path.join(run_directory, self.h5_glob)
+            + "\nFiles and entities:\n"
+            + files_and_entities,
+        )
         if self.expected_h5_entity is not None:
             self.unit_test.assertTrue(
                 found_expected_entity,
                 "Failed to find the expected entity/subfile (i.e. the data set "
-                "to which the test data is compared to) '" +
-                self.expected_h5_entity + "' using glob:\n" +
-                os.path.join(run_directory, self.h5_glob) +
-                "\nFiles and entities:\n" + files_and_entities)
+                "to which the test data is compared to) '"
+                + self.expected_h5_entity
+                + "' using glob:\n"
+                + os.path.join(run_directory, self.h5_glob)
+                + "\nFiles and entities:\n"
+                + files_and_entities,
+            )
 
 
 class H5CheckTestCase(unittest.TestCase):
@@ -206,20 +258,25 @@ class H5CheckTestCase(unittest.TestCase):
         SkipColumns: [0, 1]
     ```
     """
+
     def test_h5_output(self):
         h5_check_list = []
         with open(self.input_filename, "r") as open_input_file:
             parsed_yaml = next(yaml.safe_load_all(open_input_file))
-        for check_block in parsed_yaml['OutputFileChecks']:
+        for check_block in parsed_yaml["OutputFileChecks"]:
             logging.info("Parsed File check : " + check_block.get("Label"))
             h5_check_list.append(
-                H5Check(self, check_block.get("Label"),
-                        check_block.get("FileGlob"),
-                        check_block.get("Subfile"),
-                        check_block.get("ExpectedDataSubfile"),
-                        check_block.get("AbsoluteTolerance"),
-                        check_block.get("RelativeTolerance"),
-                        check_block.get("SkipColumns")))
+                H5Check(
+                    self,
+                    check_block.get("Label"),
+                    check_block.get("FileGlob"),
+                    check_block.get("Subfile"),
+                    check_block.get("ExpectedDataSubfile"),
+                    check_block.get("AbsoluteTolerance"),
+                    check_block.get("RelativeTolerance"),
+                    check_block.get("SkipColumns"),
+                )
+            )
         for h5_check in h5_check_list:
             with self.subTest(test=h5_check.test_h5_label):
                 h5_check.perform_check(self.run_directory)
@@ -227,11 +284,12 @@ class H5CheckTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input-filename')
-    parser.add_argument('--run-directory')
+    parser.add_argument("--input-filename")
+    parser.add_argument("--run-directory")
     logging.basicConfig(level=logging.INFO)
     duplicate_test_case, remaining_args = parser.parse_known_args(
-        namespace=H5CheckTestCase)
+        namespace=H5CheckTestCase
+    )
     del duplicate_test_case
     # Use of full command-line arguments breaks the unit-test framework
     # (which needs to take its own command-line arguments), so we only pass

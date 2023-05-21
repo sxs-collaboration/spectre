@@ -75,12 +75,14 @@ def gauge_wave_sqrt_det_spatial_metric(x, t, amplitude, wavelength):
 def gauge_wave_extrinsic_curvature(x, t, amplitude, wavelength):
     extrinsic_curvature = np.zeros((len(x), len(x)))
     extrinsic_curvature[0, 0] = gauge_wave_dh_over_2_sqrt_h(
-        x, t, amplitude, wavelength)
+        x, t, amplitude, wavelength
+    )
     return extrinsic_curvature
 
 
 def gauge_wave_inverse_spatial_metric(x, t, amplitude, wavelength):
     inverse_spatial_metric = np.diag(np.ones_like(x))
-    inverse_spatial_metric[0,
-                           0] = 1.0 / gauge_wave_h(x, t, amplitude, wavelength)
+    inverse_spatial_metric[0, 0] = 1.0 / gauge_wave_h(
+        x, t, amplitude, wavelength
+    )
     return inverse_spatial_metric

@@ -29,11 +29,13 @@ class ExecutableStatus:
         units. For example: {"Time": "M", "Orbits": None} if the subclass
         provides time in units of mass and orbits with no unit.
     """
+
     executable_name_patterns: List[str] = []
     fields: Dict[str, Optional[str]] = {}
 
-    def status(self, input_file: Optional[dict],
-               work_dir: Optional[str]) -> dict:
+    def status(
+        self, input_file: Optional[dict], work_dir: Optional[str]
+    ) -> dict:
         """Provide status information of an executable run.
 
         Arguments:
@@ -71,16 +73,16 @@ class EvolutionStatus(ExecutableStatus):
     determines the current time and run speed. This class can be subclassed
     further to use the 'time_status' function in subclasses.
     """
+
     executable_name_patterns = [r"^Evolve"]
     fields = {
         "Time": None,
         "Speed": "1/h",
     }
 
-    def time_status(self,
-                    input_file: dict,
-                    open_reductions_file,
-                    avg_num_slabs: int = 50) -> dict:
+    def time_status(
+        self, input_file: dict, open_reductions_file, avg_num_slabs: int = 50
+    ) -> dict:
         """Report the simulation time and speed.
 
         Uses the 'ObserveTimeStep' event, so the status information is only as
@@ -101,8 +103,9 @@ class EvolutionStatus(ExecutableStatus):
         Returns: Status fields "Time" in code units and "Speed" in simulation
           time per hour.
         """
-        assert avg_num_slabs >= 2, (
-            "Need at least 'avg_num_slabs >= 2' to estimate simulation speed.")
+        assert (
+            avg_num_slabs >= 2
+        ), "Need at least 'avg_num_slabs >= 2' to estimate simulation speed."
         observe_time_event = find_event("ObserveTimeStep", input_file)
         if observe_time_event is None:
             return {}
@@ -111,8 +114,9 @@ class EvolutionStatus(ExecutableStatus):
         try:
             # Time steps are sampled at most once per slab, so we load data
             # going back `avg_num_slabs`
-            time_steps = to_dataframe(open_reductions_file[subfile_name],
-                                      slice=np.s_[-avg_num_slabs:])
+            time_steps = to_dataframe(
+                open_reductions_file[subfile_name], slice=np.s_[-avg_num_slabs:]
+            )
         except:
             logger.debug("Unable to read time steps.", exc_info=True)
             return {}
@@ -124,17 +128,26 @@ class EvolutionStatus(ExecutableStatus):
             # Average over the last `avg_num_slabs` slabs, but at least the last
             # two observations
             start_time = min(
-                time_steps.iloc[-1]["Time"] -
-                time_steps.iloc[-1]["Slab size"] * (avg_num_slabs - 1),
-                time_steps.iloc[-2]["Time"])
+                time_steps.iloc[-1]["Time"]
+                - time_steps.iloc[-1]["Slab size"] * (avg_num_slabs - 1),
+                time_steps.iloc[-2]["Time"],
+            )
             time_window = time_steps[time_steps["Time"] >= start_time]
             dt_sim = time_window.iloc[-1]["Time"] - time_window.iloc[0]["Time"]
-            dt_wall_min = (time_window.iloc[-1]["Minimum Walltime"] -
-                           time_window.iloc[0]["Minimum Walltime"])
-            dt_wall_max = (time_window.iloc[-1]["Maximum Walltime"] -
-                           time_window.iloc[0]["Maximum Walltime"])
-            speed = (dt_sim / dt_wall_min +
-                     dt_sim / dt_wall_max) / 2. * 60. * 60.
+            dt_wall_min = (
+                time_window.iloc[-1]["Minimum Walltime"]
+                - time_window.iloc[0]["Minimum Walltime"]
+            )
+            dt_wall_max = (
+                time_window.iloc[-1]["Maximum Walltime"]
+                - time_window.iloc[0]["Maximum Walltime"]
+            )
+            speed = (
+                (dt_sim / dt_wall_min + dt_sim / dt_wall_max)
+                / 2.0
+                * 60.0
+                * 60.0
+            )
             result["Speed"] = speed
         except:
             logger.debug("Unable to estimate simulation speed.", exc_info=True)
@@ -144,7 +157,8 @@ class EvolutionStatus(ExecutableStatus):
         try:
             reductions_file = input_file["Observers"]["ReductionFileName"]
             open_reductions_file = h5py.File(
-                os.path.join(work_dir, reductions_file + ".h5"), "r")
+                os.path.join(work_dir, reductions_file + ".h5"), "r"
+            )
         except:
             logger.debug("Unable to open reductions file.", exc_info=True)
             return {}

@@ -25,7 +25,8 @@ class EvolveGhSingleBlackHole(EvolutionStatus):
         try:
             reductions_file = input_file["Observers"]["ReductionFileName"]
             open_reductions_file = h5py.File(
-                os.path.join(work_dir, reductions_file + ".h5"), "r")
+                os.path.join(work_dir, reductions_file + ".h5"), "r"
+            )
         except:
             logger.debug("Unable to open reductions file.", exc_info=True)
             return {}
@@ -33,13 +34,16 @@ class EvolveGhSingleBlackHole(EvolutionStatus):
             result = self.time_status(input_file, open_reductions_file)
             # Norms
             try:
-                norms = to_dataframe(open_reductions_file["Norms.dat"],
-                                     slice=np.s_[-1:])
+                norms = to_dataframe(
+                    open_reductions_file["Norms.dat"], slice=np.s_[-1:]
+                )
                 result["Constraint Energy"] = norms.iloc[-1][
-                    "L2Norm(ConstraintEnergy)"]
+                    "L2Norm(ConstraintEnergy)"
+                ]
             except:
-                logger.debug("Unable to extract constraint energy.",
-                             exc_info=True)
+                logger.debug(
+                    "Unable to extract constraint energy.", exc_info=True
+                )
         return result
 
     def format(self, field, value):

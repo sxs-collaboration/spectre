@@ -5,4 +5,4 @@ import numpy as np
 
 
 def normal_dot_flux(normal, flux_tensor):
-    return np.einsum('i,i...', normal, flux_tensor)
+    return np.einsum("i,i...", normal, flux_tensor)

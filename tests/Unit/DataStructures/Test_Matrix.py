@@ -29,7 +29,8 @@ class TestMatrix(unittest.TestCase):
         M[1, 1] = 4
         self.assertEqual(
             str(M),
-            '(            1            2 )\n(            3            4 )\n')
+            "(            1            2 )\n(            3            4 )\n",
+        )
 
     def test_bounds_check(self):
         a = Matrix(2, 2)
@@ -61,5 +62,5 @@ class TestMatrix(unittest.TestCase):
         self.assertEquals(M_from_array[1, 1], -2.3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

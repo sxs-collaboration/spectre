@@ -17,8 +17,9 @@ class TestVolumeDataWriting(unittest.TestCase):
     def setUp(self):
         # The tests in this class involve inserting vol files, the h5 file
         # will be deleted and recreated for each test
-        self.file_name = os.path.join(Informer.unit_test_build_path(),
-                                      "IO/TestVolumeDataWriting.h5")
+        self.file_name = os.path.join(
+            Informer.unit_test_build_path(), "IO/TestVolumeDataWriting.h5"
+        )
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
         self.h5_file = spectre_h5.H5File(file_name=self.file_name, mode="a")
@@ -48,8 +49,9 @@ class TestVolumeData(unittest.TestCase):
     def setUp(self):
         # The tests in this class use a volume data file written using
         # the write_volume_data() function
-        self.file_name = os.path.join(Informer.unit_test_build_path(),
-                                      "IO/TestVolumeData.h5")
+        self.file_name = os.path.join(
+            Informer.unit_test_build_path(), "IO/TestVolumeData.h5"
+        )
 
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
@@ -74,15 +76,17 @@ class TestVolumeData(unittest.TestCase):
                 element_name=grid_names[0],
                 components=[
                     TensorComponent(
-                        "field_1",
-                        DataVector(self.tensor_component_data[2 * i])),
+                        "field_1", DataVector(self.tensor_component_data[2 * i])
+                    ),
                     TensorComponent(
                         "field_2",
-                        DataVector(self.tensor_component_data[2 * i + 1]))
+                        DataVector(self.tensor_component_data[2 * i + 1]),
+                    ),
                 ],
                 extents=3 * [2],
                 basis=3 * [basis],
-                quadrature=3 * [quad])
+                quadrature=3 * [quad],
+            )
             for i, observation_id in enumerate(observation_ids)
         ]
 
@@ -92,14 +96,16 @@ class TestVolumeData(unittest.TestCase):
                 components=[
                     TensorComponent(
                         "field_1",
-                        DataVector(self.tensor_component_data[2 * i + 1])),
+                        DataVector(self.tensor_component_data[2 * i + 1]),
+                    ),
                     TensorComponent(
-                        "field_2",
-                        DataVector(self.tensor_component_data[2 * i]))
+                        "field_2", DataVector(self.tensor_component_data[2 * i])
+                    ),
                 ],
                 extents=3 * [2],
                 basis=3 * [basis],
-                quadrature=3 * [quad])
+                quadrature=3 * [quad],
+            )
             for i, observation_id in enumerate(observation_ids)
         ]
 
@@ -107,10 +113,13 @@ class TestVolumeData(unittest.TestCase):
 
         for i, observation_id in enumerate(observation_ids):
             self.vol_file.write_volume_data(
-                observation_id, observation_values[observation_id], [
+                observation_id,
+                observation_values[observation_id],
+                [
                     self.element_vol_data_grid_1[i],
-                    self.element_vol_data_grid_2[i]
-                ])
+                    self.element_vol_data_grid_2[i],
+                ],
+            )
 
     def tearDown(self):
         self.h5_file.close()
@@ -128,7 +137,8 @@ class TestVolumeData(unittest.TestCase):
         for obs_id in expected_obs_ids:
             self.assertEqual(
                 self.vol_file.get_observation_value(observation_id=obs_id),
-                expected_obs_values[obs_id])
+                expected_obs_values[obs_id],
+            )
 
     # Test to make sure information about the computation elements was found
     def test_grids(self):
@@ -158,19 +168,25 @@ class TestVolumeData(unittest.TestCase):
         obs_id = 0
         # Test tensor component names
         tensor_component_names = set(
-            self.vol_file.list_tensor_components(observation_id=obs_id))
-        expected_tensor_component_names = ['field_1', 'field_2']
-        self.assertEqual(tensor_component_names,
-                         set(expected_tensor_component_names))
+            self.vol_file.list_tensor_components(observation_id=obs_id)
+        )
+        expected_tensor_component_names = ["field_1", "field_2"]
+        self.assertEqual(
+            tensor_component_names, set(expected_tensor_component_names)
+        )
         # Test tensor component data at specified obs_id
-        for i, expected_tensor_component_data in \
-                enumerate(self.tensor_component_data[:2]):
+        for i, expected_tensor_component_data in enumerate(
+            self.tensor_component_data[:2]
+        ):
             npt.assert_almost_equal(
                 np.asarray(
                     self.vol_file.get_tensor_component(
                         observation_id=obs_id,
-                        tensor_component=expected_tensor_component_names[i]).
-                    data)[0:8], expected_tensor_component_data)
+                        tensor_component=expected_tensor_component_names[i],
+                    ).data
+                )[0:8],
+                expected_tensor_component_data,
+            )
 
     def test_get_data_by_element(self):
         obs_id = 0
@@ -181,47 +197,75 @@ class TestVolumeData(unittest.TestCase):
         self.assertEqual(volume_data[0][0], 1)
         self.assertEqual(volume_data[0][1], 1.3)
         self.assertEqual(volume_data[0][2][0].element_name, "grid_1")
-        self.assertEqual(volume_data[0][2][0].basis,
-                         self.element_vol_data_grid_1[1].basis)
-        self.assertEqual(volume_data[0][2][0].quadrature,
-                         self.element_vol_data_grid_1[1].quadrature)
-        self.assertEqual(volume_data[0][2][0].extents,
-                         self.element_vol_data_grid_1[1].extents)
-        self.assertEqual(volume_data[0][2][0].tensor_components,
-                         self.element_vol_data_grid_1[1].tensor_components)
+        self.assertEqual(
+            volume_data[0][2][0].basis, self.element_vol_data_grid_1[1].basis
+        )
+        self.assertEqual(
+            volume_data[0][2][0].quadrature,
+            self.element_vol_data_grid_1[1].quadrature,
+        )
+        self.assertEqual(
+            volume_data[0][2][0].extents,
+            self.element_vol_data_grid_1[1].extents,
+        )
+        self.assertEqual(
+            volume_data[0][2][0].tensor_components,
+            self.element_vol_data_grid_1[1].tensor_components,
+        )
 
         self.assertEqual(volume_data[0][2][1].element_name, "grid_2")
-        self.assertEqual(volume_data[0][2][1].basis,
-                         self.element_vol_data_grid_2[1].basis)
-        self.assertEqual(volume_data[0][2][1].quadrature,
-                         self.element_vol_data_grid_2[1].quadrature)
-        self.assertEqual(volume_data[0][2][1].extents,
-                         self.element_vol_data_grid_2[1].extents)
-        self.assertEqual(volume_data[0][2][1].tensor_components,
-                         self.element_vol_data_grid_2[1].tensor_components)
+        self.assertEqual(
+            volume_data[0][2][1].basis, self.element_vol_data_grid_2[1].basis
+        )
+        self.assertEqual(
+            volume_data[0][2][1].quadrature,
+            self.element_vol_data_grid_2[1].quadrature,
+        )
+        self.assertEqual(
+            volume_data[0][2][1].extents,
+            self.element_vol_data_grid_2[1].extents,
+        )
+        self.assertEqual(
+            volume_data[0][2][1].tensor_components,
+            self.element_vol_data_grid_2[1].tensor_components,
+        )
 
         # Check both grids at second observation time
         self.assertEqual(volume_data[1][0], 0)
         self.assertEqual(volume_data[1][1], 7.0)
         self.assertEqual(volume_data[1][2][0].element_name, "grid_1")
-        self.assertEqual(volume_data[1][2][0].basis,
-                         self.element_vol_data_grid_1[1].basis)
-        self.assertEqual(volume_data[1][2][0].quadrature,
-                         self.element_vol_data_grid_1[1].quadrature)
-        self.assertEqual(volume_data[1][2][0].extents,
-                         self.element_vol_data_grid_1[1].extents)
-        self.assertEqual(volume_data[1][2][0].tensor_components,
-                         self.element_vol_data_grid_1[0].tensor_components)
+        self.assertEqual(
+            volume_data[1][2][0].basis, self.element_vol_data_grid_1[1].basis
+        )
+        self.assertEqual(
+            volume_data[1][2][0].quadrature,
+            self.element_vol_data_grid_1[1].quadrature,
+        )
+        self.assertEqual(
+            volume_data[1][2][0].extents,
+            self.element_vol_data_grid_1[1].extents,
+        )
+        self.assertEqual(
+            volume_data[1][2][0].tensor_components,
+            self.element_vol_data_grid_1[0].tensor_components,
+        )
 
         self.assertEqual(volume_data[1][2][1].element_name, "grid_2")
-        self.assertEqual(volume_data[1][2][1].basis,
-                         self.element_vol_data_grid_2[1].basis)
-        self.assertEqual(volume_data[1][2][1].quadrature,
-                         self.element_vol_data_grid_2[1].quadrature)
-        self.assertEqual(volume_data[1][2][1].extents,
-                         self.element_vol_data_grid_2[1].extents)
-        self.assertEqual(volume_data[1][2][1].tensor_components,
-                         self.element_vol_data_grid_2[0].tensor_components)
+        self.assertEqual(
+            volume_data[1][2][1].basis, self.element_vol_data_grid_2[1].basis
+        )
+        self.assertEqual(
+            volume_data[1][2][1].quadrature,
+            self.element_vol_data_grid_2[1].quadrature,
+        )
+        self.assertEqual(
+            volume_data[1][2][1].extents,
+            self.element_vol_data_grid_2[1].extents,
+        )
+        self.assertEqual(
+            volume_data[1][2][1].tensor_components,
+            self.element_vol_data_grid_2[0].tensor_components,
+        )
 
     # Test that the offset and length for certain grid is retrieved correctly
     def test_offset_and_length_for_grid(self):
@@ -230,10 +274,13 @@ class TestVolumeData(unittest.TestCase):
         all_extents = self.vol_file.get_extents(observation_id=obs_id)
         self.assertEqual(
             spectre_h5.offset_and_length_for_grid(
-                grid_name='grid_1',
+                grid_name="grid_1",
                 all_grid_names=all_grid_names,
-                all_extents=all_extents), (0, 8))
+                all_extents=all_extents,
+            ),
+            (0, 8),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -26,11 +26,13 @@ from .ExecutableStatus import match_executable_status
 logger = logging.getLogger(__name__)
 
 
-def fetch_job_data(fields: Sequence[str],
-                   user: Optional[str],
-                   allusers: bool = False,
-                   state: Optional[str] = None,
-                   starttime: Optional[str] = None) -> pd.DataFrame:
+def fetch_job_data(
+    fields: Sequence[str],
+    user: Optional[str],
+    allusers: bool = False,
+    state: Optional[str] = None,
+    starttime: Optional[str] = None,
+) -> pd.DataFrame:
     """Query Slurm 'sacct' to get metadata of recent jobs on the machine.
 
     Arguments:
@@ -48,29 +50,33 @@ def fetch_job_data(fields: Sequence[str],
     Returns: Pandas DataFrame with the job data.
     """
     completed_process = subprocess.run(
-        ["sacct", "-PX", "--format", ",".join(fields)] +
-        (["-u", user] if user else []) + (["-a"] if allusers else []) +
-        (["-s", state] if state else []) +
-        (["-S", starttime] if starttime else []),
+        ["sacct", "-PX", "--format", ",".join(fields)]
+        + (["-u", user] if user else [])
+        + (["-a"] if allusers else [])
+        + (["-s", state] if state else [])
+        + (["-S", starttime] if starttime else []),
         capture_output=True,
-        text=True)
+        text=True,
+    )
     try:
         completed_process.check_returncode()
     except subprocess.CalledProcessError as err:
         raise ValueError(completed_process.stderr) from err
-    job_data = pd.read_table(StringIO(completed_process.stdout),
-                             sep="|",
-                             keep_default_na=False)
+    job_data = pd.read_table(
+        StringIO(completed_process.stdout), sep="|", keep_default_na=False
+    )
     # Parse dates and times. Do this in postprocessing because
     # `pd.read_table(parse_dates=...)` doesn't handle NaN values well.
     date_cols = set(fields).intersection({"Start", "End"})
     for date_col in date_cols:
         job_data[date_col] = job_data[date_col].apply(
-            lambda v: v.replace("Unknown", "NaN"))
+            lambda v: v.replace("Unknown", "NaN")
+        )
         # infer_datetime_format is deprecated in version 2.0.0
         # so just use the actual SLURM format
-        job_data[date_col] = pd.to_datetime(job_data[date_col],
-                                            format='%Y-%m-%dT%H:%M:%S')
+        job_data[date_col] = pd.to_datetime(
+            job_data[date_col], format="%Y-%m-%dT%H:%M:%S"
+        )
     # We could parse the elapsed time as a timedelta, but the string
     # representation is fine so we don't right now. Here's the code for it:
     # if "Elapsed" in fields:
@@ -94,27 +100,32 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
     if comment:
         # Get the input file from the Slurm comment if the submission
         # specified it
-        match = re.search(r"^SPECTRE_INPUT_FILE=(.*)",
-                          comment,
-                          flags=re.MULTILINE)
+        match = re.search(
+            r"^SPECTRE_INPUT_FILE=(.*)", comment, flags=re.MULTILINE
+        )
         if match:
             return match.group(1)
         else:
-            logger.debug("Could not find 'SPECTRE_INPUT_FILE' "
-                         "in Slurm comment:\n" + comment)
+            logger.debug(
+                "Could not find 'SPECTRE_INPUT_FILE' in Slurm comment:\n"
+                + comment
+            )
     # Fallback: Check if there's a single YAML file in the work dir
     yaml_files = glob.glob(os.path.join(work_dir, "*.yaml"))
     if len(yaml_files) == 1:
         return yaml_files[0]
     else:
-        logger.debug("No input file found. "
-                     f"Didn't find a single YAML file in '{work_dir}'. "
-                     f"YAML files found: {yaml_files}")
+        logger.debug(
+            "No input file found. "
+            f"Didn't find a single YAML file in '{work_dir}'. "
+            f"YAML files found: {yaml_files}"
+        )
         return None
 
 
-def get_executable_name(comment: Optional[str],
-                        input_file_path: Optional[str]) -> Optional[str]:
+def get_executable_name(
+    comment: Optional[str], input_file_path: Optional[str]
+) -> Optional[str]:
     """Determine the executable name of a job.
 
     Arguments:
@@ -128,14 +139,16 @@ def get_executable_name(comment: Optional[str],
     if comment:
         # Get the executable from the Slurm comment if the submission
         # specified it
-        match = re.search(r"^SPECTRE_EXECUTABLE=(.*)",
-                          comment,
-                          flags=re.MULTILINE)
+        match = re.search(
+            r"^SPECTRE_EXECUTABLE=(.*)", comment, flags=re.MULTILINE
+        )
         if match:
             return os.path.basename(match.group(1))
         else:
-            logger.debug("Could not find 'SPECTRE_EXECUTABLE' "
-                         "in Slurm comment:\n" + comment)
+            logger.debug(
+                "Could not find 'SPECTRE_EXECUTABLE' in Slurm comment:\n"
+                + comment
+            )
     # Fallback: See if the executable is specified in the input file metadata
     if not input_file_path:
         return None
@@ -145,8 +158,9 @@ def get_executable_name(comment: Optional[str],
         return os.path.basename(metadata["Executable"])
     # Backwards compatibility for input files without metadata (can be removed
     # as soon as most people have rebased)
-    match = re.search(r'#\s+Executable:\s+(.+)',
-                      Path(input_file_path).read_text())
+    match = re.search(
+        r"#\s+Executable:\s+(.+)", Path(input_file_path).read_text()
+    )
     if match:
         return match.group(1)
     return None
@@ -154,7 +168,12 @@ def get_executable_name(comment: Optional[str],
 
 def _state_order(state):
     order = [
-        "RUNNING", "PENDING", "COMPLETED", "TIMEOUT", "FAILED", "CANCELLED"
+        "RUNNING",
+        "PENDING",
+        "COMPLETED",
+        "TIMEOUT",
+        "FAILED",
+        "CANCELLED",
     ]
     try:
         return order.index(state)
@@ -185,18 +204,21 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
 
 @rich.console.group()
 def render_status(show_paths, show_unidentified, state_styles, **kwargs):
-    job_data = fetch_job_data([
-        "JobID",
-        "User",
-        "JobName",
-        "NCPUS",
-        "NNodes",
-        "Elapsed",
-        "End",
-        "State",
-        "WorkDir",
-        "Comment",
-    ], **kwargs)
+    job_data = fetch_job_data(
+        [
+            "JobID",
+            "User",
+            "JobName",
+            "NCPUS",
+            "NNodes",
+            "Elapsed",
+            "End",
+            "State",
+            "WorkDir",
+            "Comment",
+        ],
+        **kwargs,
+    )
 
     # Do nothing if job list is empty
     if len(job_data) == 0:
@@ -213,9 +235,10 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
 
     # Get the executable name corresponding to each job.
     job_data["ExecutableName"] = [
-        get_executable_name(comment,
-                            input_file) for comment, input_file in zip(
-                                job_data["Comment"], job_data["InputFile"])
+        get_executable_name(comment, input_file)
+        for comment, input_file in zip(
+            job_data["Comment"], job_data["InputFile"]
+        )
     ]
 
     # Invalidate older jobs that ran in the same work dir because they would
@@ -227,13 +250,16 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
         # Jobs are already sorted by JobID, so just keep the latest job
         # associated and invalidate the others.
         latest_job_id = duplicate_jobs.iloc[0]["JobID"]
-        job_data.loc[(job_data["WorkDir"] == work_dir) &
-                     (job_data["JobID"] != latest_job_id),
-                     ["WorkDir", "NewJobID"]] = [None, latest_job_id]
+        job_data.loc[
+            (job_data["WorkDir"] == work_dir)
+            & (job_data["JobID"] != latest_job_id),
+            ["WorkDir", "NewJobID"],
+        ] = [None, latest_job_id]
 
     # Normalize "cancelled" job state (remove "by X")
-    job_data.loc[job_data["State"].str.contains("CANCELLED"),
-                 "State"] = "CANCELLED"
+    job_data.loc[job_data["State"].str.contains("CANCELLED"), "State"] = (
+        "CANCELLED"
+    )
 
     # Add metadata so jobs can be grouped by state
     job_data["StateOrder"] = job_data["State"].apply(_state_order)
@@ -268,15 +294,16 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
         yield ""
         executable_status = match_executable_status(executable_name)
 
-        extra_columns = [(field + f" [{unit}]") if unit else field
-                         for field, unit in executable_status.fields.items()]
+        extra_columns = [
+            (field + f" [{unit}]") if unit else field
+            for field, unit in executable_status.fields.items()
+        ]
         columns = standard_columns + extra_columns
         table = rich.table.Table(*columns, box=None)
 
         # Group by job state
         for state_index, data in exec_data.groupby("StateOrder"):
             for _, row in data.iterrows():
-
                 # Extract job status and format row for output
                 row_formatted = [
                     _format(field, row[field], state_styles)
@@ -293,15 +320,20 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                     logger.debug("Unable to load input file.", exc_info=True)
                     input_file = None
                 try:
-                    status = executable_status.status(input_file,
-                                                      row["WorkDir"])
+                    status = executable_status.status(
+                        input_file, row["WorkDir"]
+                    )
                 except:
-                    logger.debug("Unable to extract executable status.",
-                                 exc_info=True)
+                    logger.debug(
+                        "Unable to extract executable status.", exc_info=True
+                    )
                     status = {}
                 row_formatted += [
-                    executable_status.format(field, status[field])
-                    if field in status else "-"
+                    (
+                        executable_status.format(field, status[field])
+                        if field in status
+                        else "-"
+                    )
                     for field in executable_status.fields.keys()
                 ]
                 table.add_row(*row_formatted)
@@ -311,10 +343,18 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
                     yield table
                     # Print WorkDir in its own line so it wraps nicely in the
                     # terminal and can be copied
-                    yield (" [bold]WorkDir:[/bold] " +
-                           (row['WorkDir'] if row['WorkDir'] else
-                            f"[italic]Same as job {row['NewJobID']}[/italic]"))
-                    yield " [bold]InputFile:[/bold] " + str(row['InputFile'])
+                    yield (
+                        " [bold]WorkDir:[/bold] "
+                        + (
+                            row["WorkDir"]
+                            if row["WorkDir"]
+                            else (
+                                "[italic]Same as job"
+                                f" {row['NewJobID']}[/italic]"
+                            )
+                        )
+                    )
+                    yield " [bold]InputFile:[/bold] " + str(row["InputFile"])
                     table = rich.table.Table(*columns, box=None)
         if not show_paths:
             yield table
@@ -336,58 +376,81 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
 
 
 @click.command()
-@click.option("-u",
-              "--uid",
-              "--user",
-              "user",
-              show_default="you",
-              help=("User name or user ID. "
-                    "See documentation for 'sacct -u' for details."))
-@click.option("-a",
-              "--allusers",
-              is_flag=True,
-              help=("Show jobs for all users. "
-                    "See documentation for 'sacct -a' for details."))
-@click.option("-p",
-              "--show-paths",
-              is_flag=True,
-              help=("Show job working directory and input file paths."))
-@click.option("-U",
-              "--show-unidentified",
-              is_flag=True,
-              help=("Also show jobs that were not identified "
-                    "as SpECTRE executables."))
-@click.option("-s",
-              "--state",
-              help=("Show only jobs with this state, "
-                    "e.g. running (r) or completed (cd). "
-                    "See documentation for 'sacct -s' for details."))
-@click.option("-S",
-              "--starttime",
-              show_default="start of today",
-              help=("Show jobs eligible after this time, e.g. 'now-2days'. "
-                    "See documentation for 'sacct -S' for details."))
-@click.option("-w",
-              "--watch",
-              "refresh_rate",
-              type=float,
-              default=None,
-              help=("On a new screen, refresh jobs every 'watch' number "
-                    "of seconds. Exit out with Ctl+C."))
-@click.option("--state-styles",
-              type=dict,
-              default={},
-              help=("Dictionary between sacct states and rich modifiers for "
-                    "how the state will be printed. Rather than always having "
-                    "to specify a dict on the command line, you can add this "
-                    "to the spectre config file. \n\n"
-                    "An example for the config file would be\n\n"
-                    "\b\n"
-                    "status:\n"
-                    "  state_styles:\n"
-                    "    RUNNING: '[green]'\n"
-                    "    COMPLETED: '[bold][red]'\n\n"
-                    "See `spectre -h` for its path."))
+@click.option(
+    "-u",
+    "--uid",
+    "--user",
+    "user",
+    show_default="you",
+    help="User name or user ID. See documentation for 'sacct -u' for details.",
+)
+@click.option(
+    "-a",
+    "--allusers",
+    is_flag=True,
+    help=(
+        "Show jobs for all users. See documentation for 'sacct -a' for details."
+    ),
+)
+@click.option(
+    "-p",
+    "--show-paths",
+    is_flag=True,
+    help="Show job working directory and input file paths.",
+)
+@click.option(
+    "-U",
+    "--show-unidentified",
+    is_flag=True,
+    help="Also show jobs that were not identified as SpECTRE executables.",
+)
+@click.option(
+    "-s",
+    "--state",
+    help=(
+        "Show only jobs with this state, "
+        "e.g. running (r) or completed (cd). "
+        "See documentation for 'sacct -s' for details."
+    ),
+)
+@click.option(
+    "-S",
+    "--starttime",
+    show_default="start of today",
+    help=(
+        "Show jobs eligible after this time, e.g. 'now-2days'. "
+        "See documentation for 'sacct -S' for details."
+    ),
+)
+@click.option(
+    "-w",
+    "--watch",
+    "refresh_rate",
+    type=float,
+    default=None,
+    help=(
+        "On a new screen, refresh jobs every 'watch' number "
+        "of seconds. Exit out with Ctl+C."
+    ),
+)
+@click.option(
+    "--state-styles",
+    type=dict,
+    default={},
+    help=(
+        "Dictionary between sacct states and rich modifiers for "
+        "how the state will be printed. Rather than always having "
+        "to specify a dict on the command line, you can add this "
+        "to the spectre config file. \n\n"
+        "An example for the config file would be\n\n"
+        "\b\n"
+        "status:\n"
+        "  state_styles:\n"
+        "    RUNNING: '[green]'\n"
+        "    COMPLETED: '[bold][red]'\n\n"
+        "See `spectre -h` for its path."
+    ),
+)
 def status_command(refresh_rate, **kwargs):
     """Gives an overview of simulations running on this machine."""
 
@@ -400,10 +463,12 @@ def status_command(refresh_rate, **kwargs):
 
     try:
         logging.disable()
-        with rich.live.Live(render_status(**kwargs),
-                            console=console,
-                            auto_refresh=False,
-                            screen=True) as live:
+        with rich.live.Live(
+            render_status(**kwargs),
+            console=console,
+            auto_refresh=False,
+            screen=True,
+        ) as live:
             while True:
                 time.sleep(refresh_rate)
                 live.update(render_status(**kwargs), refresh=True)

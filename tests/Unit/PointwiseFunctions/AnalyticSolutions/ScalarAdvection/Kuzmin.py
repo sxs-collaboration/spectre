@@ -7,7 +7,7 @@ r0 = 0.15
 
 
 def r_xy(x, x0, y, y0):
-    return np.sqrt((x - x0)**2.0 + (y - y0)**2.0) / r0
+    return np.sqrt((x - x0) ** 2.0 + (y - y0) ** 2.0) / r0
 
 
 def u_initial(x_grid):
@@ -18,7 +18,7 @@ def u_initial(x_grid):
     r_hump = r_xy(x, 0.25, y, 0.5)
 
     if r_cylinder <= 1.0:
-        if ((np.abs(x - 0.5) >= 0.025) or (y >= 0.85)):
+        if (np.abs(x - 0.5) >= 0.025) or (y >= 0.85):
             u = 1.0
         else:
             u = 0.0

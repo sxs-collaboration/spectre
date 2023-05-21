@@ -1,8 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import spectre.PointwiseFunctions.AnalyticSolutions.RelativisticEuler \
-    as spectre_re_solutions
+import spectre.PointwiseFunctions.AnalyticSolutions.RelativisticEuler as spectre_re_solutions
 import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
 
 import unittest
@@ -12,10 +11,12 @@ import numpy.testing as npt
 
 class TestTov(unittest.TestCase):
     def test_creation(self):
-        eos = spectre_eos.RelativisticPolytropicFluid(polytropic_constant=8,
-                                                      polytropic_exponent=2)
-        tov = spectre_re_solutions.Tov(equation_of_state=eos,
-                                       central_mass_density=1e-3)
+        eos = spectre_eos.RelativisticPolytropicFluid(
+            polytropic_constant=8, polytropic_exponent=2
+        )
+        tov = spectre_re_solutions.Tov(
+            equation_of_state=eos, central_mass_density=1e-3
+        )
         # Just making sure we can call the member functions
         outer_radius = tov.outer_radius()
         self.assertAlmostEqual(outer_radius, 3.4685521362)
@@ -23,27 +24,32 @@ class TestTov(unittest.TestCase):
         self.assertAlmostEqual(tov.total_mass(), expected_mass)
         self.assertAlmostEqual(
             tov.injection_energy(),
-            np.sqrt(1. - 2. * tov.total_mass() / outer_radius))
+            np.sqrt(1.0 - 2.0 * tov.total_mass() / outer_radius),
+        )
         self.assertAlmostEqual(
-            tov.mass_over_radius(outer_radius) * outer_radius, expected_mass)
-        self.assertAlmostEqual(tov.log_specific_enthalpy(outer_radius), 0.)
+            tov.mass_over_radius(outer_radius) * outer_radius, expected_mass
+        )
+        self.assertAlmostEqual(tov.log_specific_enthalpy(outer_radius), 0.0)
         # Test vectorization of member functions
-        radii = np.array([0., outer_radius])
+        radii = np.array([0.0, outer_radius])
         npt.assert_allclose(
-            tov.mass_over_radius(radii) * radii, np.array([0., expected_mass]))
+            tov.mass_over_radius(radii) * radii, np.array([0.0, expected_mass])
+        )
         # Testing `log_specific_enthalpy` only at outer radius because we
         # haven't wrapped any EOS functions yet, so it's not trivial to compute
         # the specific enthalpy at other points
-        npt.assert_allclose(tov.log_specific_enthalpy(
-            np.array([outer_radius, outer_radius])),
-                            np.array([0., 0.]),
-                            atol=1e-14,
-                            rtol=0.0)
+        npt.assert_allclose(
+            tov.log_specific_enthalpy(np.array([outer_radius, outer_radius])),
+            np.array([0.0, 0.0]),
+            atol=1e-14,
+            rtol=0.0,
+        )
         # Test accessing interpolants
         self.assertTrue(len(tov.mass_over_radius_interpolant.y_values()) > 0)
         self.assertTrue(
-            len(tov.log_specific_enthalpy_interpolant.y_values()) > 0)
+            len(tov.log_specific_enthalpy_interpolant.y_values()) > 0
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

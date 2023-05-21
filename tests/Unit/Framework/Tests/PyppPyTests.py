@@ -28,19 +28,19 @@ def test_unordered_map(a, b):
 
 def test_tuple(a, b):
     if a[0] != 0.35 or a[1] != "test 1" or b[0] != "test 2" or b[1] != 100:
-        raise RuntimeError('Failed test_tuple')
+        raise RuntimeError("Failed test_tuple")
     return 0.48, "test 3"
 
 
 def test_tuple_list(a, b):
     if a[0] != 0.35 or a[1] != "test 1" or b[0] != "test 2" or b[1] != 100:
-        raise RuntimeError('Failed test_tuple')
+        raise RuntimeError("Failed test_tuple")
     return 0.48, [0.98, "test 4"]
 
 
 def test_string(a):
     if a != "test string":
-        raise RuntimeError('Failed string test')
+        raise RuntimeError("Failed string test")
     return "back test string"
 
 
@@ -49,12 +49,14 @@ def test_string(a):
 
 def two_dim_ndarray():
     import numpy as np
-    return np.array([[1., 2.], [3., 4]])
+
+    return np.array([[1.0, 2.0], [3.0, 4]])
 
 
 def ndarray_of_floats():
     import numpy as np
-    return np.array([1., 2.], dtype='float32')
+
+    return np.array([1.0, 2.0], dtype="float32")
 
 
 # These are used to check converting to a Tensor works
@@ -69,32 +71,55 @@ def scalar_from_ndarray():
 
 
 def vector():
-    return np.array([3., 4., 5., 6.])
+    return np.array([3.0, 4.0, 5.0, 6.0])
 
 
 def tnsr_ia():
-    return np.array([[i + 2 * j + 1. for j in range(4)] for i in range(3)])
+    return np.array([[i + 2 * j + 1.0 for j in range(4)] for i in range(3)])
 
 
 def tnsr_AA():
-    return np.array([[i + j + 1. for j in range(4)] for i in range(4)])
+    return np.array([[i + j + 1.0 for j in range(4)] for i in range(4)])
 
 
 def tnsr_iaa():
-    return np.array([[[2. * (k + 1) * (j + 1) + i + 1. for k in range(4)]
-                      for j in range(4)] for i in range(3)])
+    return np.array(
+        [
+            [
+                [2.0 * (k + 1) * (j + 1) + i + 1.0 for k in range(4)]
+                for j in range(4)
+            ]
+            for i in range(3)
+        ]
+    )
 
 
 def tnsr_aia():
-    a = np.array([[[2. * (k + 1) * (i + 1) + j + 1.5 for k in range(4)]
-                   for j in range(3)] for i in range(4)])
+    a = np.array(
+        [
+            [
+                [2.0 * (k + 1) * (i + 1) + j + 1.5 for k in range(4)]
+                for j in range(3)
+            ]
+            for i in range(4)
+        ]
+    )
     return a
 
 
 def tnsr_aBcc():
-    return np.array([[[[3. * i + j + (k + 1) * (l + 1) + 1. for l in range(4)]
-                       for k in range(4)] for j in range(4)]
-                     for i in range(4)])
+    return np.array(
+        [
+            [
+                [
+                    [3.0 * i + j + (k + 1) * (l + 1) + 1.0 for l in range(4)]
+                    for k in range(4)
+                ]
+                for j in range(4)
+            ]
+            for i in range(4)
+        ]
+    )
 
 
 # Test conversion from Tensor to numpy array works
@@ -143,7 +168,8 @@ def identity(a):
 
 def test_einsum(scalar, t_A, t_ia, t_AA, t_iaa):
     return scalar * np.einsum("a,ia->i", t_A, t_ia) + np.einsum(
-        "ab, iab->i", t_AA, t_iaa)
+        "ab, iab->i", t_AA, t_iaa
+    )
 
 
 def check_single_not_null0(t0):
@@ -249,10 +275,12 @@ def mixed_complex_real_function_1(spin_weighted, complex_tensor, real_tensor):
 
 # returns a real rank one tensor of dimension 2
 def mixed_complex_real_function_2(spin_weighted, complex_tensor, real_tensor):
-    return np.array([
-        np.real(spin_weighted * complex_tensor[0] * real_tensor[1]),
-        np.imag(complex_tensor[1] * real_tensor[0] / spin_weighted)
-    ])
+    return np.array(
+        [
+            np.real(spin_weighted * complex_tensor[0] * real_tensor[1]),
+            np.imag(complex_tensor[1] * real_tensor[0] / spin_weighted),
+        ]
+    )
 
 
 def add_scalars(a, b):

@@ -10,7 +10,7 @@ from spectre.Spectral import Mesh, Basis, Quadrature, collocation_points
 
 # Integral [-1, 1] is 2
 def polynomial(x):
-    return 3. * x**2 + 2. * x
+    return 3.0 * x**2 + 2.0 * x
 
 
 class TestDefiniteIntegral(unittest.TestCase):
@@ -19,8 +19,8 @@ class TestDefiniteIntegral(unittest.TestCase):
         x = collocation_points(mesh)
         integrand = polynomial(x)
         integral = definite_integral(integrand, mesh)
-        self.assertAlmostEqual(integral, 2.)
+        self.assertAlmostEqual(integral, 2.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

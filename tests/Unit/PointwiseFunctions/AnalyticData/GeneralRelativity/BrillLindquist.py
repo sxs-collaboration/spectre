@@ -23,26 +23,31 @@ def r_b(x, center_b):
 
 
 def conformal_factor(x, mass_a, mass_b, center_a, center_b):
-    return 1.0 + 0.5 * mass_a / r_a(x, center_a) + 0.5 * mass_b / r_b(
-        x, center_b)
+    return (
+        1.0 + 0.5 * mass_a / r_a(x, center_a) + 0.5 * mass_b / r_b(x, center_b)
+    )
 
 
 def deriv_conformal_factor(x, mass_a, mass_b, center_a, center_b):
     return -0.5 * mass_a * x_minus_center_a(x, center_a) / np.power(
-        r_a(x, center_a), 3) - 0.5 * mass_b * x_minus_center_b(
-            x, center_b) / np.power(r_b(x, center_b), 3)
+        r_a(x, center_a), 3
+    ) - 0.5 * mass_b * x_minus_center_b(x, center_b) / np.power(
+        r_b(x, center_b), 3
+    )
 
 
 def spatial_metric(x, mass_a, mass_b, center_a, center_b):
     spatial_metric = np.diag(np.ones_like(x))
     return spatial_metric * np.power(
-        conformal_factor(x, mass_a, mass_b, center_a, center_b), 4)
+        conformal_factor(x, mass_a, mass_b, center_a, center_b), 4
+    )
 
 
 def d_spatial_metric(x, mass_a, mass_b, center_a, center_b):
     d_spatial_metric = np.zeros((len(x), len(x), len(x)))
     four_psi_cubed = 4.0 * np.power(
-        conformal_factor(x, mass_a, mass_b, center_a, center_b), 3)
+        conformal_factor(x, mass_a, mass_b, center_a, center_b), 3
+    )
     d_psi = deriv_conformal_factor(x, mass_a, mass_b, center_a, center_b)
     d_spatial_metric[:, 0, 0] = four_psi_cubed * d_psi
     d_spatial_metric[:, 1, 1] = four_psi_cubed * d_psi
@@ -80,7 +85,8 @@ def d_shift(x, mass_a, mass_b, center_a, center_b):
 
 def sqrt_det_spatial_metric(x, mass_a, mass_b, center_a, center_b):
     return np.sqrt(
-        np.linalg.det(spatial_metric(x, mass_a, mass_b, center_a, center_b)))
+        np.linalg.det(spatial_metric(x, mass_a, mass_b, center_a, center_b))
+    )
 
 
 def extrinsic_curvature(x, mass_a, mass_b, center_a, center_b):

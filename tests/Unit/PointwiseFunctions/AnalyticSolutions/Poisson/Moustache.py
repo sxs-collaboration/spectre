@@ -9,18 +9,24 @@ def poly(x, coeffs):
 
 
 def field(x):
-    return np.prod(x * (1. - x)) * np.sum((x - 0.5)**2)**(3. / 2.)
+    return np.prod(x * (1.0 - x)) * np.sum((x - 0.5) ** 2) ** (3.0 / 2.0)
 
 
 def field_gradient(x):
     if len(x) == 1:
         return np.abs(x - 0.5) * poly(x, [0.25, -3, 7.5, -5])
     elif len(x) == 2:
-        return np.sqrt(np.sum((x - 0.5)**2)) * np.array([
-            x[d - 1] * (1. - x[d - 1]) *
-            (poly(x[d], [0.5, poly(x[d - 1], [-3.5, 2, -2]), 7.5, -5]) +
-             poly(x[d - 1], [0, -1, 1])) for d in range(len(x))
-        ])
+        return np.sqrt(np.sum((x - 0.5) ** 2)) * np.array(
+            [
+                x[d - 1]
+                * (1.0 - x[d - 1])
+                * (
+                    poly(x[d], [0.5, poly(x[d - 1], [-3.5, 2, -2]), 7.5, -5])
+                    + poly(x[d - 1], [0, -1, 1])
+                )
+                for d in range(len(x))
+            ]
+        )
 
 
 def field_flux(x):
@@ -29,9 +35,14 @@ def field_flux(x):
 
 def source(x):
     if len(x) == 1:
-        return np.abs(x[0] - 0.5) * (20. * (x[0] - 0.5)**2 - 1.5)
+        return np.abs(x[0] - 0.5) * (20.0 * (x[0] - 0.5) ** 2 - 1.5)
     elif len(x) == 2:
         r = np.linalg.norm(x - 0.5)
-        return r * (-0.5625 + 6.25 * r**2 - 6.125 * r**4 + 4.125 *
-                    (x[0] - 0.5)**4 - 24.75 * (x[0] - 0.5)**2 *
-                    (x[1] - 0.5)**2 + 4.125 * (x[1] - 0.5)**4)
+        return r * (
+            -0.5625
+            + 6.25 * r**2
+            - 6.125 * r**4
+            + 4.125 * (x[0] - 0.5) ** 4
+            - 24.75 * (x[0] - 0.5) ** 2 * (x[1] - 0.5) ** 2
+            + 4.125 * (x[1] - 0.5) ** 4
+        )

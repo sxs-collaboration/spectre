@@ -24,8 +24,9 @@ class TensorMeta:
         self.name = name
 
     def _getitem(self, dtype: type, dim: int, frame: Frame = Frame.Inertial):
-        return globals(
-        )[f"Tensor{self.name}{_dtype_to_name(dtype)}{dim}{frame.name}"]
+        return globals()[
+            f"Tensor{self.name}{_dtype_to_name(dtype)}{dim}{frame.name}"
+        ]
 
     def __getitem__(self, key):
         try:
@@ -39,9 +40,14 @@ class JacobianMeta(TensorMeta):
         self.inverse = inverse
 
     def _getitem(self, dtype: type, dim: int, frame: Frame = Frame.Inertial):
-        return globals()[f"Jacobian{_dtype_to_name(dtype)}{dim}" +
-                         (f"{frame.name}ToElementLogical" if self.
-                          inverse else f"ElementLogicalTo{frame.name}")]
+        return globals()[
+            f"Jacobian{_dtype_to_name(dtype)}{dim}"
+            + (
+                f"{frame.name}ToElementLogical"
+                if self.inverse
+                else f"ElementLogicalTo{frame.name}"
+            )
+        ]
 
 
 # Define Tensor types that aren't in 'tnsr.py'

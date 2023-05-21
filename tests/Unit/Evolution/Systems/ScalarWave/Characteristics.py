@@ -6,19 +6,19 @@ import numpy as np
 
 # Test functions for characteristic speeds
 def char_speed_vpsi(unit_normal):
-    return 0.
+    return 0.0
 
 
 def char_speed_vzero(unit_normal):
-    return 0.
+    return 0.0
 
 
 def char_speed_vplus(unit_normal):
-    return 1.
+    return 1.0
 
 
 def char_speed_vminus(unit_normal):
-    return -1.
+    return -1.0
 
 
 # End test functions for characteristic speeds
@@ -31,20 +31,21 @@ def char_field_vpsi(gamma2, psi, pi, phi, normal_one_form):
 
 def char_field_vzero(gamma2, psi, pi, phi, normal_one_form):
     normal_vector = normal_one_form
-    projection_tensor = np.identity(len(normal_vector)) -\
-        np.einsum('i,j', normal_one_form, normal_vector)
-    return np.einsum('ij,j->i', projection_tensor, phi)
+    projection_tensor = np.identity(len(normal_vector)) - np.einsum(
+        "i,j", normal_one_form, normal_vector
+    )
+    return np.einsum("ij,j->i", projection_tensor, phi)
 
 
 def char_field_vplus(gamma2, psi, pi, phi, normal_one_form):
     normal_vector = normal_one_form
-    phi_dot_normal = np.einsum('i,i->', normal_vector, phi)
+    phi_dot_normal = np.einsum("i,i->", normal_vector, phi)
     return pi + phi_dot_normal - (gamma2 * psi)
 
 
 def char_field_vminus(gamma2, psi, pi, phi, normal_one_form):
     normal_vector = normal_one_form
-    phi_dot_normal = np.einsum('i,i->', normal_vector, phi)
+    phi_dot_normal = np.einsum("i,i->", normal_vector, phi)
     return pi - phi_dot_normal - (gamma2 * psi)
 
 

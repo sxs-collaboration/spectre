@@ -19,6 +19,7 @@ try:
     from functools import cache
 except ImportError:
     from functools import lru_cache
+
     cache = lru_cache(maxsize=None)
 
 import yaml
@@ -50,7 +51,8 @@ class Machine(yaml.YAMLObject):
       DefaultTimeLimit: Default wall time limit for submitted jobs. For
         acceptable formats, see: https://slurm.schedmd.com/sbatch.html#OPT_time
     """
-    yaml_tag = '!Machine'
+
+    yaml_tag = "!Machine"
     yaml_loader = yaml.SafeLoader
     # The YAML machine files can have these attributes:
     Name: str
@@ -61,17 +63,19 @@ class Machine(yaml.YAMLObject):
 
 
 # Parse YAML machine files as Machine objects
-yaml.SafeLoader.add_path_resolver('!Machine', ['Machine'], dict)
+yaml.SafeLoader.add_path_resolver("!Machine", ["Machine"], dict)
 
 
 class UnknownMachineError(Exception):
     """Indicates we were unsuccessful in identifying the current machine"""
+
     pass
 
 
 @cache
-def this_machine(machinefile_path=os.path.join(os.path.dirname(__file__),
-                                               'Machine.yaml')) -> Machine:
+def this_machine(
+    machinefile_path=os.path.join(os.path.dirname(__file__), "Machine.yaml")
+) -> Machine:
     """Determine the machine we are running on.
 
     Raises `UnknownMachineError` if no machine was selected. Specify the
@@ -87,6 +91,7 @@ def this_machine(machinefile_path=os.path.join(os.path.dirname(__file__),
             "No machine was selected. Specify the 'MACHINE' option when "
             "configuring the build with CMake. If you are running on a new "
             "machine, please add it to 'support/Machines/'. The machine file "
-            f"was expected at the following path:\n  {machinefile_path}")
-    with open(machinefile_path, 'r') as open_machinefile:
-        return yaml.safe_load(open_machinefile)['Machine']
+            f"was expected at the following path:\n  {machinefile_path}"
+        )
+    with open(machinefile_path, "r") as open_machinefile:
+        return yaml.safe_load(open_machinefile)["Machine"]

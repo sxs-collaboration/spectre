@@ -13,7 +13,8 @@ class MissingExpectedOutputError(Exception):
 
     def __str__(self):
         return "Expected output files are missing: {}".format(
-            self.missing_files)
+            self.missing_files
+        )
 
 
 def clean_output(input_file, output_dir, force):
@@ -30,12 +31,13 @@ def clean_output(input_file, output_dir, force):
       - Volume0.h5
     ```
     """
-    with open(input_file, 'r') as open_input_file:
+    with open(input_file, "r") as open_input_file:
         metadata = next(yaml.safe_load_all(open_input_file))
 
     if "ExpectedOutput" not in metadata:
         logging.warning(
-            f"Input file {input_file} does not list 'ExpectedOutput' files.")
+            f"Input file {input_file} does not list 'ExpectedOutput' files."
+        )
         return
 
     # Validate the user input. We have to be careful that we don't iterate over
@@ -43,7 +45,8 @@ def clean_output(input_file, output_dir, force):
     expected_output = metadata["ExpectedOutput"]
     assert not isinstance(expected_output, str), (
         f"'ExpectedOutput' in file '{input_file}' should be a list of files, "
-        "not a string.")
+        "not a string."
+    )
 
     missing_files = []
     for expected_output_file in expected_output:
@@ -55,27 +58,26 @@ def clean_output(input_file, output_dir, force):
         elif not force:
             missing_files.append(expected_output_file)
             logging.error(
-                f"Expected file {expected_output_file} was not found.")
+                f"Expected file {expected_output_file} was not found."
+            )
     # Raise an error if expected files were not found
     if len(missing_files) > 0:
         raise MissingExpectedOutputError(missing_files)
 
 
 @click.command(help=clean_output.__doc__)
-@click.argument('input_file',
-                type=click.Path(exists=True,
-                                file_okay=True,
-                                dir_okay=False,
-                                readable=True))
-@click.option('--output-dir',
-              '-o',
-              type=click.Path(exists=True,
-                              file_okay=False,
-                              dir_okay=True,
-                              readable=True),
-              required=True,
-              help="Output directory of the run to clean up")
-@click.option('--force', '-f', is_flag=True, help="Suppress all errors")
+@click.argument(
+    "input_file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+)
+@click.option(
+    "--output-dir",
+    "-o",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
+    required=True,
+    help="Output directory of the run to clean up",
+)
+@click.option("--force", "-f", is_flag=True, help="Suppress all errors")
 def clean_output_command(**kwargs):
     _rich_traceback_guard = True  # Hide traceback until here
     clean_output(**kwargs)

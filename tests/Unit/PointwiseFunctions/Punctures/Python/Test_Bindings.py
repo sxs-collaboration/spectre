@@ -18,8 +18,9 @@ class TestBindings(unittest.TestCase):
         result = adm_mass_integrand(field, alpha, beta)
         npt.assert_allclose(
             np.array(result),
-            1. / (2. * np.pi) * beta * (alpha * (1. + field) + 1.)**(-7))
+            1.0 / (2.0 * np.pi) * beta * (alpha * (1.0 + field) + 1.0) ** (-7),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

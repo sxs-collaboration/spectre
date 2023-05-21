@@ -27,8 +27,10 @@ def momentum_density(mass_density, velocity, specific_internal_energy):
 
 
 def energy_density(mass_density, velocity, specific_internal_energy):
-    return (0.5 * mass_density * np.dot(velocity, velocity) +
-            mass_density * specific_internal_energy)
+    return (
+        0.5 * mass_density * np.dot(velocity, velocity)
+        + mass_density * specific_internal_energy
+    )
 
 
 # End functions for testing ConservativeFromPrimitive.cpp
@@ -40,13 +42,14 @@ def mass_density(mass_density_cons, momentum_density, energy_density):
 
 
 def velocity(mass_density_cons, momentum_density, energy_density):
-    return (momentum_density / mass_density_cons)
+    return momentum_density / mass_density_cons
 
 
-def specific_internal_energy(mass_density_cons, momentum_density,
-                             energy_density):
+def specific_internal_energy(
+    mass_density_cons, momentum_density, energy_density
+):
     veloc = velocity(mass_density_cons, momentum_density, energy_density)
-    return (energy_density / mass_density_cons - 0.5 * np.dot(veloc, veloc))
+    return energy_density / mass_density_cons - 0.5 * np.dot(veloc, veloc)
 
 
 # Hard-coded for PolytropicFluid (representative ThermoDim = 1 case)
@@ -56,8 +59,13 @@ def pressure_1d(mass_density_cons, momentum_density, energy_density):
 
 # Hard-coded for IdealFluid (representative ThermoDim = 2 case)
 def pressure_2d(mass_density_cons, momentum_density, energy_density):
-    return ((2.0 / 3.0) * mass_density_cons * specific_internal_energy(
-        mass_density_cons, momentum_density, energy_density))
+    return (
+        (2.0 / 3.0)
+        * mass_density_cons
+        * specific_internal_energy(
+            mass_density_cons, momentum_density, energy_density
+        )
+    )
 
 
 # End functions for testing PrimitiveFromConservative.cpp

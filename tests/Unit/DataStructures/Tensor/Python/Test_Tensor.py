@@ -2,8 +2,13 @@
 # See LICENSE.txt for details.
 
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import (tnsr, Frame, Scalar, Jacobian,
-                                           InverseJacobian)
+from spectre.DataStructures.Tensor import (
+    tnsr,
+    Frame,
+    Scalar,
+    Jacobian,
+    InverseJacobian,
+)
 import unittest
 import numpy as np
 import numpy.testing as npt
@@ -14,9 +19,10 @@ from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
 
 class TestTensor(unittest.TestCase):
     def test_tensor(self):
-        coords = tnsr.I[DataVector, 3, Frame.Inertial](num_points=4, fill=0.)
-        spacetime_coords = tnsr.A[DataVector, 3, Frame.Inertial](num_points=1,
-                                                                 fill=0.)
+        coords = tnsr.I[DataVector, 3, Frame.Inertial](num_points=4, fill=0.0)
+        spacetime_coords = tnsr.A[DataVector, 3, Frame.Inertial](
+            num_points=1, fill=0.0
+        )
         self.assertEqual(coords.rank, 1)
         self.assertEqual(coords.size, 3)
         self.assertEqual(coords.dim, 3)
@@ -28,9 +34,9 @@ class TestTensor(unittest.TestCase):
         npt.assert_equal(coords[0], np.zeros(4))
         npt.assert_equal(coords[1], np.zeros(4))
         npt.assert_equal(coords[2], np.zeros(4))
-        coords[0] = DataVector(4, 1.)
-        coords[1] = DataVector(4, 2.)
-        coords[2] = DataVector(4, 3.)
+        coords[0] = DataVector(4, 1.0)
+        coords[1] = DataVector(4, 2.0)
+        coords[2] = DataVector(4, 3.0)
         for d, xyz in enumerate(coords):
             npt.assert_equal(xyz, np.ones(4) * (d + 1))
             npt.assert_equal(xyz, coords.get(d))
@@ -63,22 +69,26 @@ class TestTensor(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "3 independent components"):
             tnsr.I[DataVector, 3](np.random.rand(2, 4))
         # Implicit conversion from Numpy array to scalar
-        adm_mass_integrand(field=np.random.rand(4),
-                           alpha=np.random.rand(4),
-                           beta=np.random.rand(4))
+        adm_mass_integrand(
+            field=np.random.rand(4),
+            alpha=np.random.rand(4),
+            beta=np.random.rand(4),
+        )
         # Implicit conversion from Numpy array to vector
         mesh = Mesh[3](3, Basis.Legendre, Quadrature.GaussLobatto)
         jac = Jacobian[DataVector, 3](np.random.rand(9, 27))
-        jacobian_diagnostic(jacobian=jac,
-                            inertial_coords=np.random.rand(3, 27),
-                            mesh=mesh)
+        jacobian_diagnostic(
+            jacobian=jac, inertial_coords=np.random.rand(3, 27), mesh=mesh
+        )
         # Higher-rank tensor don't convert implicitly
-        with self.assertRaisesRegex(TypeError,
-                                    "incompatible function arguments"):
-            jacobian_diagnostic(jacobian=np.random.rand(9, 27),
-                                inertial_coords=np.random.rand(3, 27),
-                                mesh=Mesh[3](3, Basis.Legendre,
-                                             Quadrature.GaussLobatto))
+        with self.assertRaisesRegex(
+            TypeError, "incompatible function arguments"
+        ):
+            jacobian_diagnostic(
+                jacobian=np.random.rand(9, 27),
+                inertial_coords=np.random.rand(3, 27),
+                mesh=Mesh[3](3, Basis.Legendre, Quadrature.GaussLobatto),
+            )
 
     def test_buffer_strides(self):
         # The transpose should set up data with non-unit strides
@@ -93,14 +103,14 @@ class TestTensor(unittest.TestCase):
             coords = tnsr.I[DataVector, 3, Frame.Inertial](data, copy=False)
 
     def test_tensor_double(self):
-        coords = tnsr.I[float, 3, Frame.Inertial](fill=0.)
-        coords[0] = 1.
-        coords[1] = 2.
-        coords[2] = 3.
-        npt.assert_equal(np.array(coords), [1., 2., 3.])
+        coords = tnsr.I[float, 3, Frame.Inertial](fill=0.0)
+        coords[0] = 1.0
+        coords[1] = 2.0
+        coords[2] = 3.0
+        npt.assert_equal(np.array(coords), [1.0, 2.0, 3.0])
 
     def test_scalar(self):
-        scalar = Scalar[DataVector](num_points=4, fill=1.)
+        scalar = Scalar[DataVector](num_points=4, fill=1.0)
         self.assertEqual(scalar.size, 1)
         self.assertEqual(scalar.rank, 0)
         self.assertEqual(scalar.dim, None)
@@ -108,13 +118,13 @@ class TestTensor(unittest.TestCase):
         npt.assert_equal(scalar[0], scalar.get())
 
     def test_jacobian(self):
-        jac = Jacobian[DataVector, 3](num_points=4, fill=1.)
-        inv_jac = InverseJacobian[DataVector, 3](num_points=4, fill=1.)
+        jac = Jacobian[DataVector, 3](num_points=4, fill=1.0)
+        inv_jac = InverseJacobian[DataVector, 3](num_points=4, fill=1.0)
         npt.assert_equal(np.array(jac), np.ones((9, 4)))
         npt.assert_equal(np.array(inv_jac), np.ones((9, 4)))
         self.assertEqual(jac.rank, 2)
         self.assertEqual(inv_jac.rank, 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

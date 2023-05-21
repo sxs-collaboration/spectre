@@ -9,11 +9,11 @@ def flat_cartesian_fluxes(field_gradient):
 
 
 def curved_fluxes(inv_spatial_metric, field_gradient):
-    return np.einsum('ij,j', inv_spatial_metric, field_gradient)
+    return np.einsum("ij,j", inv_spatial_metric, field_gradient)
 
 
 def add_curved_sources(christoffel_contracted, field_flux):
-    return -np.einsum('i,i', christoffel_contracted, field_flux)
+    return -np.einsum("i,i", christoffel_contracted, field_flux)
 
 
 def auxiliary_fluxes(field, dim):

@@ -8,12 +8,18 @@ from typing import Dict, Iterable, Optional, Sequence, Union
 import numpy as np
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures.Tensor.EagerMath import determinant
-from spectre.Domain import (ElementId, ElementMap, FunctionOfTime,
-                            deserialize_domain, deserialize_functions_of_time)
+from spectre.Domain import (
+    ElementId,
+    ElementMap,
+    FunctionOfTime,
+    deserialize_domain,
+    deserialize_functions_of_time,
+)
 from spectre.Domain.CoordinateMaps import (
     CoordinateMapElementLogicalToInertial1D,
     CoordinateMapElementLogicalToInertial2D,
-    CoordinateMapElementLogicalToInertial3D)
+    CoordinateMapElementLogicalToInertial3D,
+)
 from spectre.Spectral import Mesh, logical_coordinates
 
 # functools.cached_property was added in Py 3.8. Fall back to a plain
@@ -28,9 +34,11 @@ except ImportError:
 class Element:
     id: Union[ElementId[1], ElementId[2], ElementId[3]]
     mesh: Union[Mesh[1], Mesh[2], Mesh[3]]
-    map: Union[CoordinateMapElementLogicalToInertial1D,
-               CoordinateMapElementLogicalToInertial2D,
-               CoordinateMapElementLogicalToInertial3D]
+    map: Union[
+        CoordinateMapElementLogicalToInertial1D,
+        CoordinateMapElementLogicalToInertial2D,
+        CoordinateMapElementLogicalToInertial3D,
+    ]
     time: Optional[float]
     functions_of_time: Optional[Dict[str, FunctionOfTime]]
     # Offset and length in contiguous tensor data corresponding to this element
@@ -46,18 +54,21 @@ class Element:
 
     @cached_property
     def inertial_coordinates(self):
-        return self.map(self.logical_coordinates, self.time,
-                        self.functions_of_time)
+        return self.map(
+            self.logical_coordinates, self.time, self.functions_of_time
+        )
 
     @cached_property
     def inv_jacobian(self):
-        return self.map.inv_jacobian(self.logical_coordinates, self.time,
-                                     self.functions_of_time)
+        return self.map.inv_jacobian(
+            self.logical_coordinates, self.time, self.functions_of_time
+        )
 
     @cached_property
     def jacobian(self):
-        return self.map.jacobian(self.logical_coordinates, self.time,
-                                 self.functions_of_time)
+        return self.map.jacobian(
+            self.logical_coordinates, self.time, self.functions_of_time
+        )
 
     @cached_property
     def det_jacobian(self):
@@ -75,9 +86,10 @@ def stripped_element_name(
     return str(element_id).strip("[]")
 
 
-def include_element(element_id: Union[str, ElementId[1], ElementId[2],
-                                      ElementId[3]],
-                    element_patterns: Optional[Sequence[str]]) -> bool:
+def include_element(
+    element_id: Union[str, ElementId[1], ElementId[2], ElementId[3]],
+    element_patterns: Optional[Sequence[str]],
+) -> bool:
     """Whether or not the 'element_id' matches any of the 'element_patterns'
 
     The 'element_patterns' are interpreted as glob patterns.
@@ -88,14 +100,16 @@ def include_element(element_id: Union[str, ElementId[1], ElementId[2],
         return True
     return any(
         fnmatch.fnmatch(stripped_element_name(element_id), element_pattern)
-        for element_pattern in element_patterns)
+        for element_pattern in element_patterns
+    )
 
 
-def iter_elements(volfiles: Union[spectre_h5.H5Vol,
-                                  Iterable[spectre_h5.H5Vol]],
-                  obs_ids: Optional[Union[int, Sequence[int]]],
-                  tensor_components: Optional[Iterable[str]] = None,
-                  element_patterns: Optional[Sequence[str]] = None):
+def iter_elements(
+    volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
+    obs_ids: Optional[Union[int, Sequence[int]]],
+    tensor_components: Optional[Iterable[str]] = None,
+    element_patterns: Optional[Sequence[str]] = None,
+):
     """Return volume data by element
 
     Arguments:
@@ -135,7 +149,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             all_grid_names = volfile.get_grid_names(obs_id)
             if element_patterns is not None:
                 grid_names = [
-                    grid_name for grid_name in all_grid_names
+                    grid_name
+                    for grid_name in all_grid_names
                     if include_element(grid_name, element_patterns)
                 ]
             else:
@@ -150,7 +165,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             meshes = [
                 Mesh[dim](extents, bases, quadratures)
                 for grid_name, extents, bases, quadratures in zip(
-                    all_grid_names, all_extents, all_bases, all_quadratures)
+                    all_grid_names, all_extents, all_bases, all_quadratures
+                )
                 if grid_name in grid_names
             ]
             # Deserialize domain and functions of time
@@ -159,30 +175,37 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             time = volfile.get_observation_value(obs_id)
             if domain.is_time_dependent():
                 functions_of_time = deserialize_functions_of_time(
-                    volfile.get_functions_of_time(obs_id))
+                    volfile.get_functions_of_time(obs_id)
+                )
             else:
                 functions_of_time = None
             # Pre-load the tensor data because it's stored contiguously for all
             # grids in the file
             if tensor_components:
-                tensor_data = np.asarray([
-                    volfile.get_tensor_component(obs_id, component).data
-                    for component in tensor_components
-                ])
+                tensor_data = np.asarray(
+                    [
+                        volfile.get_tensor_component(obs_id, component).data
+                        for component in tensor_components
+                    ]
+                )
             # Iterate elements in this file
-            for grid_name, element_id, mesh in zip(grid_names, element_ids,
-                                                   meshes):
+            for grid_name, element_id, mesh in zip(
+                grid_names, element_ids, meshes
+            ):
                 offset, length = spectre_h5.offset_and_length_for_grid(
-                    grid_name, all_grid_names, all_extents)
+                    grid_name, all_grid_names, all_extents
+                )
                 data_slice = slice(offset, offset + length)
                 element_map = ElementMap(element_id, domain)
-                element = Element(element_id,
-                                  mesh=mesh,
-                                  map=element_map,
-                                  time=time,
-                                  functions_of_time=functions_of_time,
-                                  data_slice=data_slice)
+                element = Element(
+                    element_id,
+                    mesh=mesh,
+                    map=element_map,
+                    time=time,
+                    functions_of_time=functions_of_time,
+                    data_slice=data_slice,
+                )
                 if tensor_components:
-                    yield element, tensor_data[:, offset:offset + length]
+                    yield element, tensor_data[:, offset : offset + length]
                 else:
                     yield element

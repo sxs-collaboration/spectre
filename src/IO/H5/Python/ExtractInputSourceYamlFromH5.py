@@ -8,11 +8,10 @@ import spectre.IO.H5 as spectre_h5
 
 
 @click.command()
-@click.argument("h5_file",
-                type=click.Path(exists=True,
-                                file_okay=True,
-                                dir_okay=False,
-                                readable=True))
+@click.argument(
+    "h5_file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+)
 @click.argument("output_file", required=False, type=click.File("w"))
 def extract_input_source_from_h5_command(h5_file, output_file):
     """Extract input file from an H5 file
@@ -28,9 +27,9 @@ def extract_input_source_from_h5_command(h5_file, output_file):
     else:
         import rich.syntax
 
-        syntax = rich.syntax.Syntax(input_source,
-                                    lexer="yaml",
-                                    theme="ansi_dark")
+        syntax = rich.syntax.Syntax(
+            input_source, lexer="yaml", theme="ansi_dark"
+        )
         rich.print(syntax)
 
 

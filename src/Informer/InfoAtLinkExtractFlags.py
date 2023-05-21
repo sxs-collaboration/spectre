@@ -19,14 +19,14 @@ parser.add_argument("compiler")
 # Strip the object file name
 parser.add_argument("-o", required=True)
 # Strip stage selection for an object file
-parser.add_argument("-c", action='store_true')
+parser.add_argument("-c", action="store_true")
 # Strip depfile flags
-parser.add_argument("-MD", action='store_true')
+parser.add_argument("-MD", action="store_true")
 parser.add_argument("-MT", required=False)
 parser.add_argument("-MF", required=False)
 # Strip `-Werror` so `-fuse-ld=gold` compiler warnings from clang don't disrupt
 # the linking. See issue: https://github.com/sxs-collaboration/spectre/issues/2703
-parser.add_argument("-Werror", nargs='?')
+parser.add_argument("-Werror", nargs="?")
 # Parse the CLI args, discarding the arguments specified above and extracting
 # the remaining compiler flags
 args, compiler_flags = parser.parse_known_args()
@@ -38,4 +38,4 @@ with open(output_filename, "w") as output_file:
     output_file.write(" ".join(compiler_flags))
 # Write a stub object file so CMake only re-runs this script when the
 # build configuration changed.
-open(args.o, 'w').close()
+open(args.o, "w").close()

@@ -14,8 +14,14 @@ import numpy as np
 import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import (Frame, InverseJacobian, Jacobian,
-                                           Scalar, Tensor, tnsr)
+from spectre.DataStructures.Tensor import (
+    Frame,
+    InverseJacobian,
+    Jacobian,
+    Scalar,
+    Tensor,
+    tnsr,
+)
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
@@ -41,14 +47,17 @@ def parse_pybind11_signatures(callable) -> Iterable[inspect.Signature]:
     # Therefore, we parse the docstring. Its first line is always the function
     # signature.
     logger.debug(callable.__doc__)
-    all_matches = re.findall(callable.__name__ + r"\((.+)\) -> (.+)",
-                             callable.__doc__)
+    all_matches = re.findall(
+        callable.__name__ + r"\((.+)\) -> (.+)", callable.__doc__
+    )
     if not all_matches:
         raise ValueError(
             f"Unable to extract signature for function '{callable.__name__}'. "
             "Please make sure it is a pybind11 binding of a C++ function. "
             "If it is, please file an issue and include the following "
-            "docstring:\n\n" + callable.__doc__)
+            "docstring:\n\n"
+            + callable.__doc__
+        )
     for match_args, match_ret in all_matches:
         parameters = []
         for arg in match_args.split(","):
@@ -60,16 +69,21 @@ def parse_pybind11_signatures(callable) -> Iterable[inspect.Signature]:
             name, annotation = arg.split(": ")
             annotation = locate(annotation)
             parameters.append(
-                inspect.Parameter(name=name,
-                                  kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                                  default=default,
-                                  annotation=annotation))
-        yield inspect.Signature(parameters=parameters,
-                                return_annotation=locate(match_ret))
+                inspect.Parameter(
+                    name=name,
+                    kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    default=default,
+                    annotation=annotation,
+                )
+            )
+        yield inspect.Signature(
+            parameters=parameters, return_annotation=locate(match_ret)
+        )
 
 
-def get_tensor_component_names(tensor_name: str,
-                               tensor_type: Type[Tensor]) -> List[str]:
+def get_tensor_component_names(
+    tensor_name: str, tensor_type: Type[Tensor]
+) -> List[str]:
     """Lists all independent components like 'Vector_x', 'Vector_y', etc."""
     # Pybind11 doesn't support class methods, so `component_suffix` is a member
     # function. Construct a proxy object to call it.
@@ -82,6 +96,7 @@ def get_tensor_component_names(tensor_name: str,
 
 class KernelArg:
     """Subclasses provide data for a kernel function argument"""
+
     def get(self, all_tensor_data: Dict[str, Tensor], element: Element):
         """Get the data that will be passed to the kernel function"""
         raise NotImplementedError
@@ -90,6 +105,7 @@ class KernelArg:
 @dataclass(frozen=True)
 class TensorArg(KernelArg):
     """Kernel argument loaded from a volume file tensor dataset"""
+
     tensor_type: Type[Tensor]
     dataset_name: str
     extract_single_component: bool = False
@@ -98,8 +114,9 @@ class TensorArg(KernelArg):
     def component_names(self):
         return get_tensor_component_names(self.dataset_name, self.tensor_type)
 
-    def get(self, all_tensor_data: Dict[str, Tensor],
-            element: Optional[Element]):
+    def get(
+        self, all_tensor_data: Dict[str, Tensor], element: Optional[Element]
+    ):
         tensor_data = all_tensor_data[self.dataset_name]
         if element:
             components = np.asarray(tensor_data)[:, element.data_slice]
@@ -117,14 +134,16 @@ class TensorArg(KernelArg):
 @dataclass(frozen=True)
 class ElementArg(KernelArg):
     """Kernel argument retrieved from an element in the computational domain"""
+
     element_attr: str
 
     def get(self, all_tensor_data: Dict[str, Tensor], element: Element):
         return getattr(element, self.element_attr)
 
 
-def parse_kernel_arg(arg: inspect.Parameter,
-                     map_input_names: Dict[str, str]) -> KernelArg:
+def parse_kernel_arg(
+    arg: inspect.Parameter, map_input_names: Dict[str, str]
+) -> KernelArg:
     """Determine how data for a kernel function argument will be retrieved
 
     Examines the name and type annotation of the argument. The following
@@ -171,7 +190,8 @@ def parse_kernel_arg(arg: inspect.Parameter,
     if arg.annotation is inspect.Parameter.empty:
         raise ValueError(
             "Please annotate all arguments in the kernel function. "
-            f"Argument '{arg.name}' has no annotation.")
+            f"Argument '{arg.name}' has no annotation."
+        )
 
     if arg.annotation in Mesh.values():
         return ElementArg("mesh")
@@ -180,38 +200,45 @@ def parse_kernel_arg(arg: inspect.Parameter,
             tnsr.I[DataVector, 1, Frame.ElementLogical],
             tnsr.I[DataVector, 2, Frame.ElementLogical],
             tnsr.I[DataVector, 3, Frame.ElementLogical],
-        ], (f"Argument '{arg.name}' has unexpected type "
+        ], (
+            f"Argument '{arg.name}' has unexpected type "
             f"'{arg.annotation}'. Expected a "
             "'tnsr.I[DataVector, Dim, Frame.ElementLogical]' "
-            "for logical coordinates.")
+            "for logical coordinates."
+        )
         return ElementArg("logical_coordinates")
     elif arg.name in ["inertial_coords", "inertial_coordinates", "x"]:
         assert arg.annotation in [
             tnsr.I[DataVector, 1, Frame.Inertial],
             tnsr.I[DataVector, 2, Frame.Inertial],
             tnsr.I[DataVector, 3, Frame.Inertial],
-        ], (f"Argument '{arg.name}' has unexpected type "
+        ], (
+            f"Argument '{arg.name}' has unexpected type "
             f"'{arg.annotation}'. Expected a "
             "'tnsr.I[DataVector, Dim, Frame.Inertial]' "
-            "for inertial coordinates.")
+            "for inertial coordinates."
+        )
         return ElementArg("inertial_coordinates")
     elif arg.annotation in [
-            Jacobian[DataVector, 1],
-            Jacobian[DataVector, 2],
-            Jacobian[DataVector, 3],
+        Jacobian[DataVector, 1],
+        Jacobian[DataVector, 2],
+        Jacobian[DataVector, 3],
     ]:
         return ElementArg("jacobian")
     elif arg.annotation in [
-            InverseJacobian[DataVector, 1],
-            InverseJacobian[DataVector, 2],
-            InverseJacobian[DataVector, 3],
+        InverseJacobian[DataVector, 1],
+        InverseJacobian[DataVector, 2],
+        InverseJacobian[DataVector, 3],
     ]:
         return ElementArg("inv_jacobian")
     elif arg.annotation == DataVector:
-        return TensorArg(tensor_type=Scalar[DataVector],
-                         dataset_name=map_input_names.get(
-                             arg.name, snake_case_to_camel_case(arg.name)),
-                         extract_single_component=True)
+        return TensorArg(
+            tensor_type=Scalar[DataVector],
+            dataset_name=map_input_names.get(
+                arg.name, snake_case_to_camel_case(arg.name)
+            ),
+            extract_single_component=True,
+        )
     else:
         try:
             arg.annotation.rank
@@ -220,14 +247,19 @@ def parse_kernel_arg(arg: inspect.Parameter,
                 f"Unknown argument type '{arg.annotation}' for argument "
                 f"'{arg.name}'. It must be either a Tensor or one of "
                 "the supported structural types listed in "
-                "'TransformVolumeData.parse_kernel_arg'.")
-        return TensorArg(tensor_type=arg.annotation,
-                         dataset_name=map_input_names.get(
-                             arg.name, snake_case_to_camel_case(arg.name)))
+                "'TransformVolumeData.parse_kernel_arg'."
+            )
+        return TensorArg(
+            tensor_type=arg.annotation,
+            dataset_name=map_input_names.get(
+                arg.name, snake_case_to_camel_case(arg.name)
+            ),
+        )
 
 
-def parse_kernel_output(output, output_name: str,
-                        num_points: int) -> Dict[str, Tensor]:
+def parse_kernel_output(
+    output, output_name: str, num_points: int
+) -> Dict[str, Tensor]:
     """Transform the return value of a kernel to a dict of tensor datasets
 
     The following return values of kernels are supported:
@@ -264,13 +296,15 @@ def parse_kernel_output(output, output_name: str,
     if isinstance(output, DataVector):
         assert len(output) == num_points, (
             f"DataVector output named '{output_name}' has size "
-            f"{len(output)}, but expected size {num_points}.")
+            f"{len(output)}, but expected size {num_points}."
+        )
         return {output_name: Scalar[DataVector]([output])}
     # Numpy array: parse as scalar or vector
     if isinstance(output, np.ndarray):
         assert output.shape[-1] == num_points, (
             f"Array output named '{output_name}' has shape {output.shape}, "
-            f"but expected {num_points} points in last dimension.")
+            f"but expected {num_points} points in last dimension."
+        )
         if output.ndim == 1 or (output.ndim == 2 and len(output) == 1):
             return {output_name: Scalar[DataVector](output)}
         elif output.ndim == 2 and len(output) in [1, 2, 3]:
@@ -282,7 +316,8 @@ def parse_kernel_output(output, output_name: str,
                 "scalars or vectors. For higher-rank tensors, construct and "
                 "return the Tensor. "
                 f"Kernel output named '{output_name}' has shape "
-                f"{output.shape}.")
+                f"{output.shape}."
+            )
     # Single number: parse as constant scalar
     if isinstance(output, (int, float)):
         return {
@@ -301,23 +336,29 @@ def parse_kernel_output(output, output_name: str,
         result = {}
         for i, value in enumerate(output):
             result.update(
-                parse_kernel_output(value, output_name + "_" + str(i + 1),
-                                    num_points))
+                parse_kernel_output(
+                    value, output_name + "_" + str(i + 1), num_points
+                )
+            )
         return result
     except AttributeError:
         pass
-    raise ValueError(f"Unsupported kernel output type '{type(output)}' "
-                     f"(named '{output_name}'). "
-                     "See 'TransformVolumeData.parse_kernel_output' "
-                     "for supported kernel output types.")
+    raise ValueError(
+        f"Unsupported kernel output type '{type(output)}' "
+        f"(named '{output_name}'). "
+        "See 'TransformVolumeData.parse_kernel_output' "
+        "for supported kernel output types."
+    )
 
 
 class Kernel:
-    def __init__(self,
-                 callable,
-                 map_input_names: Dict[str, str] = {},
-                 output_name: Optional[str] = None,
-                 elementwise: Optional[bool] = None):
+    def __init__(
+        self,
+        callable,
+        map_input_names: Dict[str, str] = {},
+        output_name: Optional[str] = None,
+        elementwise: Optional[bool] = None,
+    ):
         """Transforms volume data with a Python function
 
         Arguments:
@@ -368,36 +409,46 @@ class Kernel:
                     f"The function '{callable.__name__}' has no overload "
                     "with supported arguments. See "
                     "'TransformVolumeData.parse_kernel_arg' for a list of "
-                    "supported arguments. The overloads are: " +
-                    rich.pretty.pretty_repr(overloads))
+                    "supported arguments. The overloads are: "
+                    + rich.pretty.pretty_repr(overloads)
+                )
         # If any argument is not a Tensor then we have to call the kernel
         # elementwise
         if elementwise:
             self.elementwise = True
         else:
             self.elementwise = any(
-                isinstance(arg, ElementArg) for arg in self.args)
+                isinstance(arg, ElementArg) for arg in self.args
+            )
             assert elementwise is None or elementwise == self.elementwise, (
                 f"Kernel '{callable.__name__}' must be called elementwise "
-                "because an argument is not a pointwise tensor.")
+                "because an argument is not a pointwise tensor."
+            )
         # Use provided output name, or transform function name to CamelCase
-        self.output_name = (output_name
-                            or snake_case_to_camel_case(callable.__name__))
+        self.output_name = output_name or snake_case_to_camel_case(
+            callable.__name__
+        )
 
-    def __call__(self, all_tensor_data: Dict[str, Tensor],
-                 element: Optional[Element]) -> Dict[str, Tensor]:
-        output = self.callable(*(arg.get(all_tensor_data, element)
-                                 for arg in self.args))
+    def __call__(
+        self, all_tensor_data: Dict[str, Tensor], element: Optional[Element]
+    ) -> Dict[str, Tensor]:
+        output = self.callable(
+            *(arg.get(all_tensor_data, element) for arg in self.args)
+        )
         # Get the number of grid points from the element or from any tensor
-        num_points = (element.mesh.number_of_grid_points() if element else len(
-            next(iter(all_tensor_data.values()))[0]))
+        num_points = (
+            element.mesh.number_of_grid_points()
+            if element
+            else len(next(iter(all_tensor_data.values()))[0])
+        )
         return parse_kernel_output(output, self.output_name, num_points)
 
 
 def transform_volume_data(
-        volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
-        kernels: Sequence[Kernel],
-        integrate: bool = False) -> Union[None, Dict[str, Sequence[float]]]:
+    volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
+    kernels: Sequence[Kernel],
+    integrate: bool = False,
+) -> Union[None, Dict[str, Sequence[float]]]:
     """Transforms data in the 'volfiles' with a sequence of 'kernels'
 
     Arguments:
@@ -432,7 +483,8 @@ def transform_volume_data(
                     "Two tensor arguments with the same name "
                     f"'{tensor_name}' have different types: "
                     f"'{all_tensors[tensor_name].tensor_type}' "
-                    f"and '{tensor_type}'")
+                    f"and '{tensor_type}'"
+                )
             else:
                 all_tensors[tensor_name] = tensor_arg
     logger.debug("Input datasets: " + str(list(all_tensors.keys())))
@@ -459,15 +511,20 @@ def transform_volume_data(
             # Load tensor data for all kernels
             all_tensor_data = {
                 tensor_name: tensor_arg.tensor_type(
-                    np.array([
-                        volfile.get_tensor_component(obs_id,
-                                                     component_name).data
-                        for component_name in tensor_arg.component_names
-                    ]))
+                    np.array(
+                        [
+                            volfile.get_tensor_component(
+                                obs_id, component_name
+                            ).data
+                            for component_name in tensor_arg.component_names
+                        ]
+                    )
+                )
                 for tensor_name, tensor_arg in all_tensors.items()
             }
             total_num_points = np.sum(
-                np.prod(volfile.get_extents(obs_id), axis=1))
+                np.prod(volfile.get_extents(obs_id), axis=1)
+            )
 
             # For integrals we call the kernels elementwise, take the integral
             # over the elements, and sum up the contributions. We then skip
@@ -478,20 +535,25 @@ def transform_volume_data(
                     # Integrate volume
                     volume = integrals.setdefault("Volume", np.zeros(num_obs))
                     volume[i_obs] += definite_integral(
-                        element.det_jacobian.get(), element.mesh)
+                        element.det_jacobian.get(), element.mesh
+                    )
                     # Integrate kernels
                     for kernel in kernels:
                         transformed_tensors = kernel(all_tensor_data, element)
-                        for output_name, transformed_tensor in (
-                                transformed_tensors.items()):
+                        for (
+                            output_name,
+                            transformed_tensor,
+                        ) in transformed_tensors.items():
                             for i, component in enumerate(transformed_tensor):
                                 component_integral = integrals.setdefault(
-                                    output_name +
-                                    transformed_tensor.component_suffix(i),
-                                    np.zeros(num_obs))
+                                    output_name
+                                    + transformed_tensor.component_suffix(i),
+                                    np.zeros(num_obs),
+                                )
                                 component_integral[i_obs] += definite_integral(
                                     element.det_jacobian.get() * component,
-                                    element.mesh)
+                                    element.mesh,
+                                )
                 continue
 
             # Apply kernels
@@ -499,43 +561,60 @@ def transform_volume_data(
                 # Elementwise kernels need to slice the tensor data into
                 # elements, and reassemble the result into a contiguous dataset
                 if kernel.elementwise:
-                    transformed_tensors_data: Dict[str,
-                                                   Tuple[np.ndarray,
-                                                         Type[Tensor]]] = {}
+                    transformed_tensors_data: Dict[
+                        str, Tuple[np.ndarray, Type[Tensor]]
+                    ] = {}
                     for element in iter_elements(volfile, obs_id):
                         transformed_tensors = kernel(all_tensor_data, element)
-                        for output_name, transformed_tensor in (
-                                transformed_tensors.items()):
+                        for (
+                            output_name,
+                            transformed_tensor,
+                        ) in transformed_tensors.items():
                             transformed_tensor_data = (
                                 transformed_tensors_data.setdefault(
                                     output_name,
-                                    (np.zeros((transformed_tensor.size,
-                                               total_num_points)),
-                                     type(transformed_tensor))))[0]
+                                    (
+                                        np.zeros(
+                                            (
+                                                transformed_tensor.size,
+                                                total_num_points,
+                                            )
+                                        ),
+                                        type(transformed_tensor),
+                                    ),
+                                )
+                            )[0]
                             for i, component in enumerate(transformed_tensor):
                                 transformed_tensor_data[
-                                    i, element.data_slice] = component
+                                    i, element.data_slice
+                                ] = component
                     transformed_tensors = {
-                        output_name: tensor_type(transformed_tensor_data,
-                                                 copy=False)
+                        output_name: tensor_type(
+                            transformed_tensor_data, copy=False
+                        )
                         for output_name, (
                             transformed_tensor_data,
-                            tensor_type) in transformed_tensors_data.items()
+                            tensor_type,
+                        ) in transformed_tensors_data.items()
                     }
                 else:
                     transformed_tensors = kernel(all_tensor_data, None)
 
                 # Write result back into volfile
-                for output_name, transformed_tensor in (
-                        transformed_tensors.items()):
+                for (
+                    output_name,
+                    transformed_tensor,
+                ) in transformed_tensors.items():
                     output_names.add(output_name)
                     for i, component in enumerate(transformed_tensor):
                         volfile.write_tensor_component(
                             obs_id,
                             component_name=(
-                                output_name +
-                                transformed_tensor.component_suffix(i)),
-                            contiguous_tensor_data=component)
+                                output_name
+                                + transformed_tensor.component_suffix(i)
+                            ),
+                            contiguous_tensor_data=component,
+                        )
     if integrate:
         return integrals
     else:
@@ -547,7 +626,7 @@ def parse_input_names(ctx, param, all_values):
         return {}
     input_names = {}
     for value in all_values:
-        key, value = value.split('=')
+        key, value = value.split("=")
         input_names[key] = value
     return input_names
 
@@ -560,72 +639,102 @@ def parse_kernels(kernels, exec_files, map_input_names):
     for kernel in kernels:
         if "." in kernel:
             # A module path was specified. Import function from the module
-            kernel_module_path, kernel_function = kernel.rsplit(".",
-                                                                maxsplit=1)
+            kernel_module_path, kernel_function = kernel.rsplit(".", maxsplit=1)
             kernel_module = importlib.import_module(kernel_module_path)
-            yield Kernel(getattr(kernel_module, kernel_function),
-                         map_input_names)
+            yield Kernel(
+                getattr(kernel_module, kernel_function), map_input_names
+            )
         else:
             # Only a function name was specified. Look up in 'globals()'.
             yield Kernel(globals()[kernel], map_input_names)
 
 
 @click.command()
-@click.argument("h5files",
-                nargs=-1,
-                type=click.Path(exists=True,
-                                file_okay=True,
-                                dir_okay=False,
-                                readable=True))
-@click.option("--subfile-name",
-              "-d",
-              help="Name of volume data subfile within each h5 file.")
-@click.option("--kernel",
-              "-k",
-              "kernels",
-              multiple=True,
-              help=("Python function(s) to apply to the volume data. "
-                    "Specify as 'path.to.module.function_name', where the "
-                    "module must be available to import. "
-                    "Alternatively, specify just 'function_name' if the "
-                    "function is defined in one of the '--exec' / '-e' "
-                    "files."))
-@click.option("--exec",
-              "-e",
-              "exec_files",
-              type=click.File("r"),
-              multiple=True,
-              help=("Python file(s) to execute before loading kernels. "
-                    "Load kernels from these files with the '--kernel' / '-k' "
-                    "option."))
-@click.option("--input-name",
-              "-i",
-              "map_input_names",
-              multiple=True,
-              callback=parse_input_names,
-              help=("Map of function argument names to dataset names "
-                    "in the volume data file. Specify key-value pairs "
-                    "like 'spatial_metric=SpatialMetric'. If unspecified, "
-                    "the argument name is transformed to CamelCase."))
-@click.option("--integrate",
-              is_flag=True,
-              help=("Compute the volume integral over the kernels instead of "
-                    "writing them back into the data files. "
-                    "Specify '--output' / '-o' to write the integrals to "
-                    "a file."))
-@click.option("--output",
-              "-o",
-              type=click.Path(writable=True),
-              help=("Output file for integrals. Either a '.txt' file "
-                    "or a '.h5' file. Also requires the '--output-subfile' "
-                    "option if a '.h5' file is used. "
-                    "Only used if the '--integrate' flag is set."))
-@click.option("--output-subfile",
-              help=("Subfile name in the '--output' / '-o' file, if it is "
-                    "an H5 file."))
-def transform_volume_data_command(h5files, subfile_name, kernels, exec_files,
-                                  map_input_names, integrate, output,
-                                  output_subfile, **kwargs):
+@click.argument(
+    "h5files",
+    nargs=-1,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+)
+@click.option(
+    "--subfile-name",
+    "-d",
+    help="Name of volume data subfile within each h5 file.",
+)
+@click.option(
+    "--kernel",
+    "-k",
+    "kernels",
+    multiple=True,
+    help=(
+        "Python function(s) to apply to the volume data. "
+        "Specify as 'path.to.module.function_name', where the "
+        "module must be available to import. "
+        "Alternatively, specify just 'function_name' if the "
+        "function is defined in one of the '--exec' / '-e' "
+        "files."
+    ),
+)
+@click.option(
+    "--exec",
+    "-e",
+    "exec_files",
+    type=click.File("r"),
+    multiple=True,
+    help=(
+        "Python file(s) to execute before loading kernels. "
+        "Load kernels from these files with the '--kernel' / '-k' "
+        "option."
+    ),
+)
+@click.option(
+    "--input-name",
+    "-i",
+    "map_input_names",
+    multiple=True,
+    callback=parse_input_names,
+    help=(
+        "Map of function argument names to dataset names "
+        "in the volume data file. Specify key-value pairs "
+        "like 'spatial_metric=SpatialMetric'. If unspecified, "
+        "the argument name is transformed to CamelCase."
+    ),
+)
+@click.option(
+    "--integrate",
+    is_flag=True,
+    help=(
+        "Compute the volume integral over the kernels instead of "
+        "writing them back into the data files. "
+        "Specify '--output' / '-o' to write the integrals to "
+        "a file."
+    ),
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(writable=True),
+    help=(
+        "Output file for integrals. Either a '.txt' file "
+        "or a '.h5' file. Also requires the '--output-subfile' "
+        "option if a '.h5' file is used. "
+        "Only used if the '--integrate' flag is set."
+    ),
+)
+@click.option(
+    "--output-subfile",
+    help="Subfile name in the '--output' / '-o' file, if it is an H5 file.",
+)
+def transform_volume_data_command(
+    h5files,
+    subfile_name,
+    kernels,
+    exec_files,
+    map_input_names,
+    integrate,
+    output,
+    output_subfile,
+    **kwargs,
+):
     """Transform volume data with Python functions
 
     Run Python functions (kernels) over all volume data in the 'H5FILES' and
@@ -672,6 +781,7 @@ def transform_volume_data_command(h5files, subfile_name, kernels, exec_files,
     # Print available subfile names and exit
     if not subfile_name:
         import rich.columns
+
         rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
         return
 
@@ -689,19 +799,20 @@ def transform_volume_data_command(h5files, subfile_name, kernels, exec_files,
 
     # Apply!
     import rich.progress
+
     progress = rich.progress.Progress(
         rich.progress.TextColumn("[progress.description]{task.description}"),
         rich.progress.BarColumn(),
         rich.progress.MofNCompleteColumn(),
         rich.progress.TimeRemainingColumn(),
-        disable=(len(volfiles) == 1))
+        disable=(len(volfiles) == 1),
+    )
     task_id = progress.add_task("Applying to files")
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:
-        integrals = transform_volume_data(volfiles_progress,
-                                          kernels=kernels,
-                                          integrate=integrate,
-                                          **kwargs)
+        integrals = transform_volume_data(
+            volfiles_progress, kernels=kernels, integrate=integrate, **kwargs
+        )
         progress.update(task_id, completed=len(volfiles))
 
     # Write integrals to output file or print to terminal
@@ -713,21 +824,24 @@ def transform_volume_data_command(h5files, subfile_name, kernels, exec_files,
                 if not output_subfile:
                     raise click.UsageError(
                         "The '--output-subfile' option is required "
-                        "when writing to H5 files.")
+                        "when writing to H5 files."
+                    )
                 if not output_subfile.startswith("/"):
                     output_subfile = "/" + output_subfile
                 if output_subfile.endswith(".dat"):
                     output_subfile = output_subfile[:-4]
                 with spectre_h5.H5File(output, "a") as open_output_file:
                     integrals_file = open_output_file.insert_dat(
-                        output_subfile, legend=integral_names, version=1)
+                        output_subfile, legend=integral_names, version=1
+                    )
                     integrals_file.append(integral_values)
             else:
-                np.savetxt(output,
-                           integral_values,
-                           header=",".join(integral_names))
+                np.savetxt(
+                    output, integral_values, header=",".join(integral_names)
+                )
         else:
             import rich.table
+
             table = rich.table.Table(*integral_names, box=None)
             for i in range(len(integral_values)):
                 table.add_row(*[f"{v:g}" for v in integral_values[i]])
