@@ -14,3 +14,8 @@ required-version = 23
 # this feature is tracked in this issue:
 # https://github.com/psf/black/issues/2188
 preview = true
+
+[tool.isort]
+profile = "black"
+line_length = 80
+skip_gitignore = true
