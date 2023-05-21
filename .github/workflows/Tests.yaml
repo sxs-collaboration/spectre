@@ -138,6 +138,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           black --check .
+          isort --check-only .
       - name: Test script
         run: |
           cd $GITHUB_WORKSPACE

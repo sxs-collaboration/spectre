@@ -57,6 +57,17 @@ if [ ${#python_files[@]} -ne 0 ]; then
             printf "Please run 'black .' in the repository.\n"
         fi
     fi
+
+    # Use isort to check python import order, only if it is installed.
+    @Python_EXECUTABLE@ -m isort --version > /dev/null
+    if [ $? -eq 0 ]; then
+        @Python_EXECUTABLE@ -m isort --check-only --quiet ${python_files[@]}
+        if [ $? -ne 0 ]; then
+            found_error=1
+            printf "Found unsorted Python imports.\n"
+            printf "Please run 'isort .' in the repository.\n"
+        fi
+    fi
 fi
 
 ###############################################################################

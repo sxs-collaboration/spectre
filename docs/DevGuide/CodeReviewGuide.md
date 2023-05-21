@@ -61,6 +61,9 @@ Stylistic Items:
   `fixup` followed by a descriptive message.
 * All python code must comply with the [black](https://github.com/psf/black)
   formatting specified by the `pyproject.toml` file.
+* Imports in Python code must be sorted to comply to the
+  [isort](https://github.com/PyCQA/isort) formatting specified in the
+  `pyproject.toml` file.
 
 Code Quality Items:
 
