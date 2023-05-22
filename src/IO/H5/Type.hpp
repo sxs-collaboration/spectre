@@ -69,7 +69,10 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<unsigned long long>() {
 }
 template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<char>() {
-  return H5T_NATIVE_CHAR;  // LCOV_EXCL_LINE
+  // Work around issue https://github.com/sxs-collaboration/spectre/issues/5029
+  // by always writing/reading signed chars. See issue for more suggestions for
+  // more permanent solutions.
+  return H5T_NATIVE_SCHAR;  // LCOV_EXCL_LINE
 }
 template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<bool>() {
