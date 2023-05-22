@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -20,9 +21,9 @@
 
 // using for overload resolution with blaze
 // clang-tidy doesn't want these in the global namespace
-using std::conj; //NOLINT
-using std::imag; //NOLINT
-using std::real; //NOLINT
+using std::conj;  // NOLINT
+using std::imag;  // NOLINT
+using std::real;  // NOLINT
 
 /*!
  * \ingroup UtilitiesGroup
@@ -32,8 +33,9 @@ template <typename T>
 SPECTRE_ALWAYS_INLINE T number_of_digits(const T number) {
   static_assert(tt::is_integer_v<std::decay_t<T>>,
                 "Must call number_of_digits with an integer number");
-  return number == 0 ? 1 : static_cast<decltype(number)>(
-                               std::ceil(std::log10(std::abs(number) + 1)));
+  return number == 0 ? 1
+                     : static_cast<decltype(number)>(
+                           std::ceil(std::log10(std::abs(number) + 1)));
 }
 
 /*!
@@ -161,4 +163,23 @@ constexpr T sgn(const T& val, std::false_type /*is_signed*/) {
 template <typename T>
 constexpr T sgn(const T& val) {
   return sgn_detail::sgn(val, std::is_signed<T>{});
+}
+
+/// \ingroup UtilitiesGroup
+/// \brief Raises a double to the integer power n.
+inline double integer_pow(const double x, const int e) {
+  ASSERT(e >= 0, "Negative powers are not implemented");
+  int ecount = e;
+  int bitcount = 1;
+  while (ecount >>= 1) {
+    ++bitcount;
+  }
+  double result = 1.;
+  while (bitcount) {
+    result *= result;
+    if ((e >> --bitcount) & 0x1) {
+      result *= x;
+    }
+  }
+  return result;
 }
