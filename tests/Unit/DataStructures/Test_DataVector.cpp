@@ -6,6 +6,7 @@
 #include <cmath>
 #include <tuple>
 
+#include "DataStructures/Blaze/IntegerPow.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -85,6 +86,19 @@ void test_norms() {
   CHECK(l1norm == approx(l1Norm(vector)));
   CHECK(l2norm == approx(l2Norm(vector)));
 }
+
+void test_integer_pow() {
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<double> dist{-5, 10};
+  DataVector vector(30);
+  fill_with_random_values(make_not_null(&vector), make_not_null(&gen),
+                          make_not_null(&dist));
+  for (size_t e = 0; e < 15; ++e) {
+    const DataVector int_pow = integer_pow(vector, e);
+    const DataVector double_pow = pow(vector, static_cast<double>(e));
+    CHECK_ITERABLE_APPROX(int_pow, double_pow);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
@@ -112,5 +126,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   {
     INFO("test norms of DataVectors");
     test_norms();
+  }
+  {
+    INFO("test integer power of DataVectors");
+    test_integer_pow();
   }
 }
