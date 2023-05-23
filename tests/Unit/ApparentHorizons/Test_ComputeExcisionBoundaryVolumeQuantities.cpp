@@ -10,9 +10,11 @@
 #include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "Domain/Block.hpp"
+#include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -35,6 +37,10 @@ namespace {
 template <typename IsTimeDependent, typename TargetFrame, typename SrcTags,
           typename DestTags>
 void test_compute_excision_boundary_volume_quantities() {
+  const bool is_time_dependent = IsTimeDependent::value;
+  const std::string target_frame = pretty_type::name<TargetFrame>();
+  CAPTURE(is_time_dependent);
+  CAPTURE(target_frame);
   const size_t number_of_grid_points = 8;
 
   // slab and temporal_id used only in the TimeDependent version.
@@ -44,16 +50,25 @@ void test_compute_excision_boundary_volume_quantities() {
   // Create a brick offset from the origin, so a KerrSchild solution
   // doesn't have a singularity or excision_boundary in the domain.
   std::unique_ptr<DomainCreator<3>> domain_creator;
-  if constexpr (IsTimeDependent::value) {
+  if constexpr (is_time_dependent) {
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dep{};
+    if constexpr (std::is_same_v<TargetFrame, Frame::Distorted>) {
+      time_dep = std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array<double, 3>{0.01, 0.02, 0.03},
+          std::array<double, 3>{0.01, 0.02, 0.03});
+    } else {
+      time_dep = std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array<double, 3>{0.01, 0.02, 0.03});
+    }
     domain_creator = std::make_unique<domain::creators::Brick>(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
                               number_of_grid_points},
-        std::array<bool, 3>{false, false, false},
-        std::make_unique<
-            domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, std::array<double, 3>{0.01, 0.02, 0.03}));
+        std::array<bool, 3>{false, false, false}, std::move(time_dep));
   } else {
     domain_creator = std::make_unique<domain::creators::Brick>(
         std::array<double, 3>{3.1, 3.2, 3.3},
@@ -64,10 +79,13 @@ void test_compute_excision_boundary_volume_quantities() {
   }
   const auto domain = domain_creator->create_domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
+  const Block<3>& block = domain.blocks()[0];
+  const auto functions_of_time = domain_creator->functions_of_time();
+  const double time = temporal_id.step_time().value();
+  (void)time;  // For the time independent case
 
   const auto element_ids = initial_element_ids(
-      domain.blocks()[0].id(),
-      domain_creator->initial_refinement_levels()[domain.blocks()[0].id()]);
+      block.id(), domain_creator->initial_refinement_levels()[block.id()]);
   ASSERT(element_ids.size() == 1, "Expected a Domain with only one element");
 
   // Set up target coordinates, and jacobians.
@@ -76,6 +94,7 @@ void test_compute_excision_boundary_volume_quantities() {
   const Mesh mesh{domain_creator->initial_extents()[element_ids[0].block_id()],
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
   tnsr::I<DataVector, 3, TargetFrame> target_frame_coords{};
   Jacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       jacobian_logical_to_inertial{};
@@ -89,18 +108,17 @@ void test_compute_excision_boundary_volume_quantities() {
       jacobian_logical_to_target{};
   InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
       inv_jacobian_logical_to_target{};
-  tnsr::I<DataVector, 3, Frame::Inertial> frame_velocity_grid_to_inertial{};
-  if constexpr (IsTimeDependent::value) {
+  tnsr::I<DataVector, 3, Frame::Inertial> frame_velocity_target_to_inertial{};
+  tnsr::I<DataVector, 3, TargetFrame> frame_velocity_grid_to_target{
+      mesh.number_of_grid_points(), 0.0};
+  if constexpr (is_time_dependent) {
     ElementMap<3, Frame::Grid> map_logical_to_grid{
-        element_ids[0],
-        domain.blocks()[0].moving_mesh_logical_to_grid_map().get_clone()};
+        element_ids[0], block.moving_mesh_logical_to_grid_map().get_clone()};
     const auto inv_jacobian_logical_to_grid =
-        map_logical_to_grid.inv_jacobian(logical_coordinates(mesh));
+        map_logical_to_grid.inv_jacobian(logical_coords);
     const auto inv_jacobian_grid_to_inertial =
-        domain.blocks()[0].moving_mesh_grid_to_inertial_map().inv_jacobian(
-            map_logical_to_grid(logical_coordinates(mesh)),
-            temporal_id.step_time().value(),
-            domain_creator->functions_of_time());
+        block.moving_mesh_grid_to_inertial_map().inv_jacobian(
+            map_logical_to_grid(logical_coords), time, functions_of_time);
     inv_jacobian_logical_to_inertial =
         InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>(
             mesh.number_of_grid_points(), 0.0);
@@ -113,14 +131,26 @@ void test_compute_excision_boundary_volume_quantities() {
         }
       }
     }
+
     if constexpr (std::is_same_v<TargetFrame, Frame::Grid>) {
       jacobian_target_to_inertial =
-          domain.blocks()[0].moving_mesh_grid_to_inertial_map().jacobian(
-              map_logical_to_grid(logical_coordinates(mesh)),
-              temporal_id.step_time().value(),
-              domain_creator->functions_of_time());
+          block.moving_mesh_grid_to_inertial_map().jacobian(
+              map_logical_to_grid(logical_coords), time, functions_of_time);
       inv_jacobian_logical_to_target = inv_jacobian_logical_to_grid;
-      target_frame_coords = map_logical_to_grid(logical_coordinates(mesh));
+      target_frame_coords = map_logical_to_grid(logical_coords);
+    } else if constexpr (std::is_same_v<TargetFrame, Frame::Distorted>) {
+      const domain::CoordinateMaps::Composition map_logical_to_distorted{
+          domain::element_to_block_logical_map(element_ids[0]),
+          block.moving_mesh_logical_to_grid_map().get_clone(),
+          block.moving_mesh_grid_to_distorted_map().get_clone()};
+      jacobian_target_to_inertial =
+          block.moving_mesh_distorted_to_inertial_map().jacobian(
+              map_logical_to_distorted(logical_coords, time, functions_of_time),
+              time, functions_of_time);
+      inv_jacobian_logical_to_target = map_logical_to_distorted.inv_jacobian(
+          logical_coords, time, functions_of_time);
+      target_frame_coords =
+          map_logical_to_distorted(logical_coords, time, functions_of_time);
     } else {
       static_assert(std::is_same_v<TargetFrame, Frame::Inertial>,
                     "TargetFrame must be the Inertial frame");
@@ -132,11 +162,8 @@ void test_compute_excision_boundary_volume_quantities() {
       for (size_t i = 0; i < 3; ++i) {
         jacobian_target_to_inertial.get(i, i) = 1.0;
       }
-      target_frame_coords =
-          domain.blocks()[0].moving_mesh_grid_to_inertial_map()(
-              map_logical_to_grid(logical_coordinates(mesh)),
-              temporal_id.step_time().value(),
-              domain_creator->functions_of_time());
+      target_frame_coords = block.moving_mesh_grid_to_inertial_map()(
+          map_logical_to_grid(logical_coords), time, functions_of_time);
     }
   } else {
     // time-independent.
@@ -144,10 +171,10 @@ void test_compute_excision_boundary_volume_quantities() {
                   "TargetFrame must be the Inertial frame");
     // Don't need to define jacobian_target_to_inertial
     ElementMap<3, Frame::Inertial> map_logical_to_inertial{
-        element_ids[0], domain.blocks()[0].stationary_map().get_clone()};
-    target_frame_coords = map_logical_to_inertial(logical_coordinates(mesh));
+        element_ids[0], block.stationary_map().get_clone()};
+    target_frame_coords = map_logical_to_inertial(logical_coords);
     inv_jacobian_logical_to_inertial =
-        map_logical_to_inertial.inv_jacobian(logical_coordinates(mesh));
+        map_logical_to_inertial.inv_jacobian(logical_coords);
     inv_jacobian_logical_to_target = inv_jacobian_logical_to_inertial;
   }
 
@@ -191,6 +218,59 @@ void test_compute_excision_boundary_volume_quantities() {
 
     get<::gr::Tags::SpacetimeMetric<DataVector, 3, TargetFrame>>(src_vars) =
         gr::spacetime_metric(lapse, shift, spatial_metric);
+  } else if constexpr (std::is_same_v<TargetFrame, Frame::Distorted>) {
+    // First figure out jacobians
+    const auto coords_frame_velocity_jacobians =
+        block.moving_mesh_distorted_to_inertial_map()
+            .coords_frame_velocity_jacobians(target_frame_coords, time,
+                                             functions_of_time);
+    const auto& inv_jacobian_distorted_to_inertial =
+        std::get<1>(coords_frame_velocity_jacobians);
+    const auto& jacobian_distorted_to_inertial =
+        std::get<2>(coords_frame_velocity_jacobians);
+    frame_velocity_target_to_inertial =
+        std::get<3>(coords_frame_velocity_jacobians);
+    inv_jacobian_target_to_inertial =
+        std::get<1>(coords_frame_velocity_jacobians);
+    jacobian_target_to_inertial = std::get<2>(coords_frame_velocity_jacobians);
+
+    ElementMap<3, Frame::Grid> map_logical_to_grid{
+        element_ids[0], block.moving_mesh_logical_to_grid_map().get_clone()};
+    frame_velocity_grid_to_target = std::get<3>(
+        block.moving_mesh_grid_to_distorted_map()
+            .coords_frame_velocity_jacobians(
+                map_logical_to_grid(logical_coords), time, functions_of_time));
+
+    // Now compute metric variables and transform them into the
+    // inertial frame.  We transform lapse, shift, 3-metric.  Then we
+    // will numerically differentiate transformed 3-metric because we
+    // don't have Hessians and therefore we cannot transform the GH
+    // Phi variable directly.
+
+    // Just copy lapse, since it doesn't transform. Need it for derivs.
+    get<gr::Tags::Lapse<DataVector>>(inertial_metric_vars) = lapse;
+
+    // Transform shift
+    auto& shift_inertial =
+        get<::gr::Tags::Shift<DataVector, 3>>(inertial_metric_vars);
+    for (size_t k = 0; k < 3; ++k) {
+      shift_inertial.get(k) = -frame_velocity_target_to_inertial.get(k);
+      for (size_t j = 0; j < 3; ++j) {
+        shift_inertial.get(k) +=
+            jacobian_distorted_to_inertial.get(k, j) * shift.get(j);
+      }
+    }
+
+    // Transform lower metric.
+    auto& lower_metric_inertial =
+        get<::gr::Tags::SpatialMetric<DataVector, 3>>(inertial_metric_vars);
+    transform::to_different_frame(make_not_null(&lower_metric_inertial),
+                                  spatial_metric,
+                                  inv_jacobian_distorted_to_inertial);
+
+    // Now fill src_vars
+    get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(src_vars) =
+        gr::spacetime_metric(lapse, shift_inertial, lower_metric_inertial);
   } else {
     static_assert(std::is_same_v<TargetFrame, Frame::Grid>,
                   "TargetFrame must be the Grid frame");
@@ -199,16 +279,14 @@ void test_compute_excision_boundary_volume_quantities() {
 
     // First figure out jacobians
     const auto coords_frame_velocity_jacobians =
-        domain.blocks()[0]
-            .moving_mesh_grid_to_inertial_map()
-            .coords_frame_velocity_jacobians(
-                target_frame_coords, temporal_id.step_time().value(),
-                domain_creator->functions_of_time());
+        block.moving_mesh_grid_to_inertial_map()
+            .coords_frame_velocity_jacobians(target_frame_coords, time,
+                                             functions_of_time);
     const auto& inv_jacobian_grid_to_inertial =
         std::get<1>(coords_frame_velocity_jacobians);
     const auto& jacobian_grid_to_inertial =
         std::get<2>(coords_frame_velocity_jacobians);
-    frame_velocity_grid_to_inertial =
+    frame_velocity_target_to_inertial =
         std::get<3>(coords_frame_velocity_jacobians);
     inv_jacobian_target_to_inertial =
         std::get<1>(coords_frame_velocity_jacobians);
@@ -227,7 +305,7 @@ void test_compute_excision_boundary_volume_quantities() {
     auto& shift_inertial =
         get<::gr::Tags::Shift<DataVector, 3>>(inertial_metric_vars);
     for (size_t k = 0; k < 3; ++k) {
-      shift_inertial.get(k) = -frame_velocity_grid_to_inertial.get(k);
+      shift_inertial.get(k) = -frame_velocity_target_to_inertial.get(k);
       for (size_t j = 0; j < 3; ++j) {
         shift_inertial.get(k) +=
             jacobian_grid_to_inertial.get(k, j) * shift.get(j);
@@ -248,12 +326,12 @@ void test_compute_excision_boundary_volume_quantities() {
 
   // Compute dest_vars
   Variables<DestTags> dest_vars(mesh.number_of_grid_points());
-  if constexpr (IsTimeDependent::value) {
+  if constexpr (is_time_dependent) {
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
-        inv_jacobian_logical_to_target, frame_velocity_grid_to_inertial,
-        tnsr::I<DataVector, 3, TargetFrame>{});
+        inv_jacobian_logical_to_target, frame_velocity_target_to_inertial,
+        frame_velocity_grid_to_target);
   } else {
     // time-independent.
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
@@ -381,6 +459,19 @@ SPECTRE_TEST_CASE(
                  gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
                  gr::Tags::Shift<DataVector, 3, Frame::Grid>>>();
+
+  // Distorted frame.
+  test_compute_excision_boundary_volume_quantities<
+      std::true_type, Frame::Distorted,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+                 Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                             Frame::Inertial>,
+                 gh::ConstraintDamping::Tags::ConstraintGamma1>,
+      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Distorted>,
+                 gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3, Frame::Distorted>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
