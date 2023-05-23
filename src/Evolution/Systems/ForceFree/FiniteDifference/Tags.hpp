@@ -16,11 +16,12 @@
 namespace ForceFree::fd {
 
 // A tag list of variables used for FD reconstruction process. For the ForceFree
-// evolution system, we just use the whole set of evolved variables.
-using tags_for_reconstruction =
-    tmpl::list<ForceFree::Tags::TildeE, ForceFree::Tags::TildeB,
-               ForceFree::Tags::TildePsi, ForceFree::Tags::TildePhi,
-               ForceFree::Tags::TildeQ>;
+// evolution system, we use the whole set of evolved variables and the
+// generalized current density TildeJ.
+using tags_list_for_reconstruction =
+    tmpl::list<ForceFree::Tags::TildeJ, ForceFree::Tags::TildeE,
+               ForceFree::Tags::TildeB, ForceFree::Tags::TildePsi,
+               ForceFree::Tags::TildePhi, ForceFree::Tags::TildeQ>;
 
 namespace OptionTags {
 /*!
