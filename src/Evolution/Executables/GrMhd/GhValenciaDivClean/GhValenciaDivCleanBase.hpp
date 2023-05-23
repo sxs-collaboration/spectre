@@ -128,6 +128,8 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
+#include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -182,6 +184,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
+#include "PointwiseFunctions/Hydro/MassWeightedFluidItems.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -397,7 +400,11 @@ struct GhValenciaDivCleanTemplateBase<
           typename system::primitive_variables_tag::tags_list,
           tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                               error_tags>,
-          tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
+          tmpl::list<hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
+                     hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
+                     hydro::Tags::TildeDUnboundUtCriterionCompute<
+                         DataVector, volume_dim, domain_frame>,
+                     gr::Tags::SpacetimeNormalOneFormCompute<
                          DataVector, volume_dim, domain_frame>,
                      gr::Tags::SpacetimeNormalVectorCompute<
                          DataVector, volume_dim, domain_frame>,
@@ -427,6 +434,13 @@ struct GhValenciaDivCleanTemplateBase<
               volume_dim, Frame::Inertial>,
           ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
                                                      Frame::Inertial>>>;
+  using integrand_fields = tmpl::append<
+      typename system::variables_tag::tags_list,
+      tmpl::list<hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
+                 hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
+                 hydro::Tags::TildeDUnboundUtCriterionCompute<
+                     DataVector, volume_dim, domain_frame>>>;
+
   using non_tensor_compute_tags = tmpl::append<
       tmpl::conditional_t<
           use_dg_subcell,
@@ -475,6 +489,11 @@ struct GhValenciaDivCleanTemplateBase<
                 dg::Events::field_observations<volume_dim, Tags::Time,
                                                observe_fields,
                                                non_tensor_compute_tags>,
+                dg::Events::ObserveVolumeIntegrals<volume_dim, Tags::Time,
+                                                   integrand_fields,
+                                                   non_tensor_compute_tags>,
+                Events::ObserveAtExtremum<Tags::Time, observe_fields,
+                                          non_tensor_compute_tags>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,
