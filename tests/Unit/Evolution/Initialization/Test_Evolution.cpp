@@ -4,11 +4,13 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Increase.hpp"
@@ -20,8 +22,10 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace {
+template <typename TimeStepperType>
 struct TestMetavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -29,6 +33,9 @@ struct TestMetavariables {
         StepChooser<StepChooserUse::LtsStep>,
         tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>>>>;
   };
+  using component_list = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::TimeStepper<TimeStepperType>>;
 };
 
 void test_gts() {
@@ -46,15 +53,28 @@ void test_gts() {
   const TimeDelta expected_time_step = time.slab().duration();
   const TimeDelta expected_next_time_step = expected_time_step;
 
-  auto box = db::create<db::AddSimpleTags<
-      ::Tags::Time, Initialization::Tags::InitialTimeDelta,
-      Initialization::Tags::InitialSlabSize<false>,
-      ::Tags::TimeStepper<TimeStepper>, ::Tags::Next<::Tags::TimeStepId>,
-      ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
-      initial_time, initial_dt, initial_slab_size, std::move(time_stepper),
-      TimeStepId{}, TimeDelta{}, TimeDelta{});
+  tuples::TaggedTuple<::Tags::TimeStepper<TimeStepper>>
+      const_global_cache_items(std::move(time_stepper));
 
-  db::mutate_apply<Initialization::TimeStepping<TestMetavariables, false>>(
+  Parallel::MutableGlobalCache<TestMetavariables<TimeStepper>>
+      mutable_global_cache(tuples::TaggedTuple<>{});
+
+  Parallel::GlobalCache<TestMetavariables<TimeStepper>> global_cache(
+      std::move(const_global_cache_items), &mutable_global_cache);
+  auto box = db::create<
+      db::AddSimpleTags<
+          Parallel::Tags::GlobalCacheImpl<TestMetavariables<TimeStepper>>,
+          ::Tags::Time, Initialization::Tags::InitialTimeDelta,
+          Initialization::Tags::InitialSlabSize<false>,
+          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+          ::Tags::Next<::Tags::TimeStep>>,
+      tmpl::list<
+          Parallel::Tags::FromGlobalCache<::Tags::TimeStepper<TimeStepper>>>>(
+      &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
+      TimeDelta{}, TimeDelta{});
+
+  db::mutate_apply<
+      Initialization::TimeStepping<TestMetavariables<TimeStepper>, false>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
@@ -80,15 +100,29 @@ void test_lts() {
   const TimeDelta expected_time_step = choose_lts_step_size(time, initial_dt);
   const TimeDelta expected_next_time_step = expected_time_step;
 
-  auto box = db::create<db::AddSimpleTags<
-      ::Tags::Time, Initialization::Tags::InitialTimeDelta,
-      Initialization::Tags::InitialSlabSize<true>,
-      ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::Next<::Tags::TimeStepId>,
-      ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
-      initial_time, initial_dt, initial_slab_size, std::move(lts_time_stepper),
-      TimeStepId{}, TimeDelta{}, TimeDelta{});
+  tuples::TaggedTuple<::Tags::TimeStepper<LtsTimeStepper>>
+      const_global_cache_items(std::move(lts_time_stepper));
 
-  db::mutate_apply<Initialization::TimeStepping<TestMetavariables, true>>(
+  Parallel::MutableGlobalCache<TestMetavariables<TimeStepper>>
+      mutable_global_cache(tuples::TaggedTuple<>{});
+
+  Parallel::GlobalCache<TestMetavariables<LtsTimeStepper>> global_cache(
+      std::move(const_global_cache_items), &mutable_global_cache);
+
+  auto box = db::create<
+      db::AddSimpleTags<
+          Parallel::Tags::GlobalCacheImpl<TestMetavariables<LtsTimeStepper>>,
+          ::Tags::Time, Initialization::Tags::InitialTimeDelta,
+          Initialization::Tags::InitialSlabSize<true>,
+          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+          ::Tags::Next<::Tags::TimeStep>>,
+      tmpl::list<Parallel::Tags::FromGlobalCache<
+          ::Tags::TimeStepper<LtsTimeStepper>>>>(
+      &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
+      TimeDelta{}, TimeDelta{});
+
+  db::mutate_apply<
+      Initialization::TimeStepping<TestMetavariables<LtsTimeStepper>, true>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
