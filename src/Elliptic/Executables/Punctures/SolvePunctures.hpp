@@ -8,6 +8,7 @@
 
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
@@ -56,7 +57,9 @@ struct Metavariables {
   using observe_fields = tmpl::append<
       typename system::primal_fields, typename system::background_fields,
       // Add ADM quantities here
-      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 domain::Tags::RadiallyCompressedCoordinatesCompute<
+                     volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
 
@@ -85,7 +88,8 @@ struct Metavariables {
   };
 
   // Additional items to store in the global cache
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::RadiallyCompressedCoordinatesOptions>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags =

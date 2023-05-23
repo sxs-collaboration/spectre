@@ -96,6 +96,8 @@ LinearSolver:
     SkipResets: True
     ObservePerCoreReductions: False
 
+RadiallyCompressedCoordinates: None
+
 EventsAndTriggers:
   - Trigger: HasConverged
     Events:
