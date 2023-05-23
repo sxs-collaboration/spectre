@@ -40,6 +40,7 @@
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -234,6 +235,7 @@ struct EvolutionMetavars
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
+      mem_monitor::MemoryMonitor<EvolutionMetavars>,
       std::conditional_t<use_numeric_id,
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
