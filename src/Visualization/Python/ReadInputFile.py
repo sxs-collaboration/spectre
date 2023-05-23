@@ -19,9 +19,6 @@ The functions in this module provide additional functionality to work with input
 files.
 """
 
-import re
-from typing import Optional
-
 
 def find_event(event_name: str, input_file: dict) -> dict:
     """Find a particular event in the "EventsAndTriggers" of the input file.
@@ -43,4 +40,27 @@ def find_event(event_name: str, input_file: dict) -> dict:
             for event in trigger_and_events[1]:
                 if event_name in event:
                     return event[event_name]
+    return None
+
+
+def find_phase_change(phase_change_name: str, input_file: dict) -> dict:
+    """Find a particular phase change in the "PhaseChangeAndTriggers"
+
+    Arguments:
+      phase_change_name: The name of a phase change like
+        "CheckpointAndExitAfterWallclock".
+      input_file: The input file read in as a dictionary.
+
+    Returns: The phase change as a dictionary, or None if the phase change
+      wasn't found.
+    """
+    if not "PhaseChangeAndTriggers" in input_file:
+        return None
+    for trigger_and_phase_changes in input_file["PhaseChangeAndTriggers"]:
+        for phase_change in trigger_and_phase_changes["PhaseChanges"]:
+            if isinstance(phase_change, str):
+                if phase_change == phase_change_name:
+                    return {}
+            elif phase_change_name in phase_change:
+                return phase_change[phase_change_name]
     return None

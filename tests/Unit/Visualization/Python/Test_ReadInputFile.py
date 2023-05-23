@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 from spectre.Informer import unit_test_src_path
-from spectre.Visualization.ReadInputFile import find_event
+from spectre.Visualization.ReadInputFile import find_event, find_phase_change
 
 
 class TestReadInputFile(unittest.TestCase):
@@ -20,6 +20,14 @@ class TestReadInputFile(unittest.TestCase):
         self.assertEqual(
             find_event("ChangeSlabSize", input_file)["DelayChange"], 5)
         self.assertIsNone(find_event("NonexistentEvent", input_file))
+
+    def test_find_phase_change(self):
+        with self.input_file.open() as open_input_file:
+            _, input_file = yaml.safe_load_all(open_input_file)
+        self.assertEqual(
+            find_phase_change("VisitAndReturn(LoadBalancing)", input_file), {})
+        self.assertIsNone(
+            find_phase_change("NonexistentPhaseChange", input_file))
 
 
 if __name__ == '__main__':
