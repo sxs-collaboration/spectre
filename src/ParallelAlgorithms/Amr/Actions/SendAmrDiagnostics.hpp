@@ -50,11 +50,13 @@ struct SendAmrDiagnostics {
       // number of grid points
       Parallel::ReductionDatum<size_t, funcl::Plus<>>,
       // average refinement level by dimension
-      Parallel::ReductionDatum<std::vector<size_t>,
-                               funcl::ElementWise<funcl::Plus<>>>,
+      Parallel::ReductionDatum<
+          std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<1>>,
       // average number of grid points by dimension
-      Parallel::ReductionDatum<std::vector<size_t>,
-                               funcl::ElementWise<funcl::Plus<>>>>;
+      Parallel::ReductionDatum<
+          std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<1>>>;
 
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -69,14 +71,12 @@ struct SendAmrDiagnostics {
         Parallel::get_parallel_component<ParallelComponent>(cache)[element_id];
     const auto& target_proxy =
         Parallel::get_parallel_component<amr::Component<Metavariables>>(cache);
-    std::vector<size_t> refinement_levels_by_dim(Dim);
-    std::vector<size_t> extents_by_dim(Dim);
+    std::vector<double> refinement_levels_by_dim(Dim);
+    std::vector<double> extents_by_dim(Dim);
     const auto refinement_levels = element_id.refinement_levels();
-    size_t number_of_grid_points = 1;
     for (size_t d = 0; d < Dim; ++d) {
       refinement_levels_by_dim[d] = gsl::at(refinement_levels, d);
       extents_by_dim[d] = mesh.extents(d);
-      number_of_grid_points *= mesh.extents(d);
     }
     if (db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box) >=
         Verbosity::Debug) {
@@ -86,7 +86,7 @@ struct SendAmrDiagnostics {
     }
     Parallel::contribute_to_reduction<amr::Actions::RunAmrDiagnostics>(
         ReductionData{amr::fraction_of_block_volume(element_id), 1,
-                      number_of_grid_points, refinement_levels_by_dim,
+                      mesh.number_of_grid_points(), refinement_levels_by_dim,
                       extents_by_dim},
         my_proxy, target_proxy);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

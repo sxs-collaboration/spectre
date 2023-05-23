@@ -46,13 +46,11 @@ struct RunAmrDiagnostics {
                     const boost::rational<size_t>& volume,
                     const size_t number_of_elements,
                     const size_t number_of_grid_points,
-                    std::vector<size_t> refinement_levels_by_dim,
-                    std::vector<size_t> extents_by_dim) {
+                    const std::vector<double>& avg_refinement_levels_by_dim,
+                    const std::vector<double>& avg_extents_by_dim) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     const boost::rational<size_t> number_of_blocks{
-        db::get<::domain::Tags::Domain<Metavariables::volume_dim>>(box)
-            .blocks()
-            .size()};
+        db::get<::domain::Tags::Domain<volume_dim>>(box).blocks().size()};
     if (number_of_blocks != volume) {
       sys::abort(MakeString{} << "Check Domain failed!  Expected volume "
                               << number_of_blocks << ", not " << volume
@@ -60,14 +58,11 @@ struct RunAmrDiagnostics {
     }
     if (db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box) >=
         Verbosity::Quiet) {
-      for (size_t d = 0; d < volume_dim; ++d) {
-        extents_by_dim[d] /= number_of_elements;
-        refinement_levels_by_dim[d] /= number_of_elements;
-      }
       const std::string string_gcc_needs_to_use_in_order_for_printf_to_compile =
           MakeString{} << "Average refinement levels: "
-                       << refinement_levels_by_dim
-                       << "\nAverage grid points: " << extents_by_dim << "\n";
+                       << avg_refinement_levels_by_dim
+                       << "\nAverage grid points: " << avg_extents_by_dim
+                       << "\n";
       Parallel::printf(
           "Number of elements: %zu\n"
           "Number of grid points: %zu\n"
