@@ -3,10 +3,8 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
-#include <deque>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"
@@ -28,10 +26,9 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
-#include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
@@ -112,29 +109,10 @@ struct RandomAmrMetavars {
   void pup(PUP::er& /*p*/) {}
 };
 
-template <typename Component>
-void register_amr_callbacks() {
-  using ArrayIndex = typename Component::array_index;
-  register_classes_with_charm(
-      tmpl::list<
-          Parallel::SimpleActionCallback<
-              amr::Actions::CreateChild,
-              CProxy_AlgorithmSingleton<amr::Component<metavariables>, int>,
-              CProxy_AlgorithmArray<Component, ArrayIndex>, ArrayIndex,
-              std::vector<ArrayIndex>, size_t>,
-          Parallel::SimpleActionCallback<
-              amr::Actions::SendDataToChildren,
-              CProxyElement_AlgorithmArray<Component, ArrayIndex>,
-              std::vector<ArrayIndex>>,
-          Parallel::SimpleActionCallback<
-              amr::Actions::CollectDataFromChildren,
-              CProxyElement_AlgorithmArray<Component, ArrayIndex>, ArrayIndex,
-              std::deque<ArrayIndex>>>{});
-}
-
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>,
-    &register_amr_callbacks<typename metavariables::dg_element_array>};
+    &amr::register_callbacks<metavariables,
+                             typename metavariables::dg_element_array>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions, &enable_segfault_handler};
