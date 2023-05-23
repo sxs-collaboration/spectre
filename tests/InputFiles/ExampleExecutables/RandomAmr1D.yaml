@@ -10,10 +10,11 @@ Timeout: 10
 
 ---
 
-Criteria:
-  - Random:
-      ChangeRefinementFraction: 0.8
-      MaximumRefinementLevel: 8
+Amr:
+  Criteria:
+    - Random:
+        ChangeRefinementFraction: 0.8
+        MaximumRefinementLevel: 8
 
 DomainCreator:
   Interval:

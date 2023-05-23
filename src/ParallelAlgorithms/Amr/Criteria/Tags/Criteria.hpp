@@ -5,10 +5,12 @@
 
 #include <memory>
 #include <unordered_set>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
-#include "ParallelAlgorithms/Amr/Criteria/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -20,6 +22,7 @@ namespace OptionTags {
 struct Criteria {
   static constexpr Options::String help = "Options for AMR criteria";
   using type = std::vector<std::unique_ptr<amr::Criterion>>;
+  using group = amr::OptionTags::AmrGroup;
 };
 }  // namespace OptionTags
 
