@@ -199,8 +199,7 @@ void test_compute_face_coordinates() {
     const auto grid_coords = element_map(logical_coordinates(mesh));
 
     auto box = db::create<
-        db::AddSimpleTags<::domain::Tags::Domain<3>, ::Tags::Time,
-                          Tags::ExcisionSphere<3>,
+        db::AddSimpleTags<::Tags::Time, Tags::ExcisionSphere<3>,
                           domain::Tags::FunctionsOfTimeInitialize,
                           domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
                           domain::Tags::Coordinates<Dim, Frame::Grid>,
@@ -216,8 +215,8 @@ void test_compute_face_coordinates() {
             Tags::FaceCoordinatesCompute<3, Frame::Grid, false>,
             Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>,
             Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>>(
-        domain_creator->create_domain(), initial_time, excision_sphere,
-        domain_creator->functions_of_time(), element, mesh, grid_coords,
+        initial_time, excision_sphere, domain_creator->functions_of_time(),
+        element, mesh, grid_coords,
         my_block.moving_mesh_grid_to_inertial_map().get_clone());
     const auto centered_grid_1 =
         db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, true>>(box);
