@@ -3,9 +3,17 @@
 
 Executable: RandomAmr1D
 Testing:
-  Check: parse;execute
+  Check: parse;execute_check_output
+ExpectedOutput:
+ - SpectreCheckpoint000000
+Timeout: 10
 
 ---
+
+Criteria:
+  - Random:
+      ChangeRefinementFraction: 0.8
+      MaximumRefinementLevel: 8
 
 DomainCreator:
   Interval:
@@ -17,6 +25,16 @@ DomainCreator:
     InitialGridPoints: [2]
     TimeDependence: None
     IsPeriodicIn: [False]
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Always
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 0.001
 
 ResourceInfo:
   AvoidGlobalProc0: false

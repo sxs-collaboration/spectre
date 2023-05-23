@@ -8,6 +8,9 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/AdjustDomain.hpp"
+#include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup AmrGroup
@@ -38,6 +41,20 @@ struct Component {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy);
     Parallel::get_parallel_component<Component>(local_cache)
         .start_phase(next_phase);
+    if constexpr (tmpl::list_contains_v<
+                      typename Parallel::GlobalCache<Metavariables>::tags_list,
+                      amr::Criteria::Tags::Criteria>) {
+      if (Parallel::Phase::EvaluateAmrCriteria == next_phase) {
+        Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
+            Parallel::get_parallel_component<
+                typename metavariables::dg_element_array>(local_cache));
+      }
+      if (Parallel::Phase::AdjustDomain == next_phase) {
+        Parallel::simple_action<::amr::Actions::AdjustDomain>(
+            Parallel::get_parallel_component<
+                typename metavariables::dg_element_array>(local_cache));
+      }
+    }
   }
 };
 }  // namespace amr
