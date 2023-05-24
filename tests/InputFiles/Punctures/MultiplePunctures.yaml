@@ -111,3 +111,5 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           OverrideObservationValue: None
+      - ObserveVolumeIntegrals:
+          SubfileName: VolumeIntegrals

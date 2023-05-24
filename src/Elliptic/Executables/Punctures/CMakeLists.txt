@@ -30,6 +30,7 @@ set(LIBS_TO_LINK
   Punctures
   PuncturesAnalyticData
   PuncturesBoundaryConditions
+  PuncturesPointwiseFunctions
   PuncturesSolutions
   )
 
