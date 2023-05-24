@@ -668,7 +668,7 @@ void compute_dest_vars_from_source_vars(
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
           dest_vars, source_vars, mesh, jac_grid_to_inertial,
           invjac_grid_to_inertial, jac_logical_to_grid, invjac_logical_to_grid,
-          inertial_mesh_velocity);
+          inertial_mesh_velocity, tnsr::I<DataVector, 3, Frame::Grid>{});
     } else if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
                          any_index_in_frame_v<typename InterpolationTargetTag::
                                                   vars_to_interpolate_to_target,
@@ -683,6 +683,9 @@ void compute_dest_vars_from_source_vars(
               domain::element_to_block_logical_map(element_id),
               block.moving_mesh_logical_to_grid_map().get_clone(),
               block.moving_mesh_grid_to_distorted_map().get_clone()};
+      const domain::CoordinateMaps::Composition element_logical_to_grid_map{
+          domain::element_to_block_logical_map(element_id),
+          block.moving_mesh_logical_to_grid_map().get_clone()};
       const auto logical_coords = logical_coordinates(mesh);
       const auto time =
           InterpolationTarget_detail::get_temporal_id_value(temporal_id);
@@ -694,6 +697,12 @@ void compute_dest_vars_from_source_vars(
                   element_logical_to_distorted_map(logical_coords, time,
                                                    functions_of_time),
                   time, functions_of_time);
+      const auto grid_to_distorted_mesh_velocity =
+          get<3>(block.moving_mesh_grid_to_distorted_map()
+                     .coords_frame_velocity_jacobians(
+                         element_logical_to_grid_map(logical_coords, time,
+                                                     functions_of_time),
+                         time, functions_of_time));
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
           dest_vars, source_vars, mesh, jac_distorted_to_inertial,
           invjac_distorted_to_inertial,
@@ -701,7 +710,7 @@ void compute_dest_vars_from_source_vars(
                                                     functions_of_time),
           element_logical_to_distorted_map.inv_jacobian(logical_coords, time,
                                                         functions_of_time),
-          distorted_to_inertial_mesh_velocity);
+          distorted_to_inertial_mesh_velocity, grid_to_distorted_mesh_velocity);
     } else {
       // No frame transformations needed.
       InterpolationTargetTag::compute_vars_to_interpolate::apply(

@@ -92,8 +92,14 @@ struct ComputeVarsToInterpolate {
             std::declval<const Mesh<Dim>&>(),
             std::declval<const Jacobian<DataVector, Dim, Frame::Grid,
                                         Frame::Inertial>&>(),
+            std::declval<const InverseJacobian<DataVector, Dim, Frame::Grid,
+                                               Frame::Inertial>&>(),
+            std::declval<const Jacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Grid>&>(),
             std::declval<const InverseJacobian<
-                DataVector, Dim, Frame::ElementLogical, Frame::Grid>&>()))>>
+                DataVector, Dim, Frame::ElementLogical, Frame::Grid>&>(),
+            std::declval<const tnsr::I<DataVector, Dim, Frame::Inertial>&>(),
+            std::declval<const tnsr::I<DataVector, Dim, Frame::Grid>&>()))>>
         : std::true_type {};
 
     static_assert(has_signature_1<ConformingType, 1>::value or

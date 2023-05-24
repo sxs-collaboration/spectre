@@ -351,7 +351,8 @@ void test_compute_horizon_volume_quantities() {
     ah::ComputeHorizonVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
-        inv_jacobian_logical_to_target, inertial_mesh_velocity);
+        inv_jacobian_logical_to_target, inertial_mesh_velocity,
+        tnsr::I<DataVector, 3, TargetFrame>{});
   } else {
     // time-independent.
     ah::ComputeHorizonVolumeQuantities::apply(make_not_null(&dest_vars),

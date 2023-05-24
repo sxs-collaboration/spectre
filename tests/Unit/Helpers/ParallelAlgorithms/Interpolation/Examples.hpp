@@ -104,10 +104,16 @@ struct ExampleComputeVarsToInterpolate
       const gsl::not_null<Variables<DestTagList>*> /*target_vars*/,
       const Variables<SrcTagList>& /*src_vars*/, const Mesh<Dim>& /*mesh*/,
       const Jacobian<DataVector, Dim, TargetFrame,
-                     Frame::Inertial>& /*jacobian*/,
-      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            TargetFrame>&
-      /*inverse_jacobian*/) {
+                     Frame::Inertial>& /*jacobian_target_to_inertial*/,
+      const InverseJacobian<DataVector, Dim, TargetFrame, Frame::Inertial>&
+      /*inverse_jacobian_target_to_inertial*/,
+      const Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
+      /*jac_logical_to_target*/,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
+      /*invjac_logical_to_target*/,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& /*inertial_mesh_velocity*/,
+      const tnsr::I<DataVector, 3, TargetFrame>&
+      /*grid_to_target_frame_mesh_velocity*/) {
     // Need to switch frames first
     // Do some GR calculations to get correct variables
     // Then modify target_vars
