@@ -116,6 +116,22 @@ class TestBindings(unittest.TestCase):
                                      sign=1.0)
         npt.assert_allclose(weyl_prop, 0)
 
+    def test_weyl_magnetic(self):
+        grad_extrinsic_curvature = tnsr.ijj[DataVector, 3](num_points=1,
+                                                           fill=1.)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.)
+        sqrt_det_spatial_metric = Scalar[DataVector](num_points=1, fill=1.)
+        weyl_mag = weyl_magnetic(grad_extrinsic_curvature, spatial_metric,
+                                 sqrt_det_spatial_metric)
+        npt.assert_allclose(weyl_mag, 0)
+
+    def test_weyl_magnetic_scalar(self):
+        weyl_magnetic = tnsr.ii[DataVector, 3](num_points=1, fill=1.)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=0.)
+        weyl_mag_scalar = weyl_magnetic_scalar(weyl_magnetic,
+                                               inverse_spatial_metric)
+        npt.assert_allclose(weyl_mag_scalar, 0)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
