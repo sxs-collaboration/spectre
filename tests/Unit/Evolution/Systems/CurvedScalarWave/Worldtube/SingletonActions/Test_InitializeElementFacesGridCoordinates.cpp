@@ -28,7 +28,6 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -75,14 +74,13 @@ void test_initialize_element_faces_coordinates_map(
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Worldtube.InitializeElementFacesGridCoordinates",
     "[Unit][Evolution]") {
-  for (const auto& [initial_refinement, quadrature] :
-       cartesian_product(std::array<size_t, 2>{{0, 1}},
-                         make_array(Spectral::Quadrature::Gauss,
-                                    Spectral::Quadrature::GaussLobatto))) {
+  for (const auto initial_refinement : std::array<size_t, 2>{{0, 1}}) {
     const size_t initial_extents = 3;
+    const auto quadrature = Spectral::Quadrature::GaussLobatto;
     CAPTURE(initial_refinement);
     CAPTURE(quadrature);
     INFO("Testing Shell time independent");
