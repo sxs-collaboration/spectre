@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
@@ -14,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 
 namespace py = pybind11;
 
@@ -52,6 +54,17 @@ void bind_spacetime_impl(py::module& m) {  // NOLINT
 
 template <size_t Dim>
 void bind_impl(py::module& m) {  // NOLINT
+  m.def(
+      "extrinsic_curvature",
+      py::overload_cast<
+          const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::iJ<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::ijj<DataVector, Dim>&>(
+          &gr::extrinsic_curvature<DataVector, Dim, Frame::Inertial>),
+      py::arg("lapse"), py::arg("shift"), py::arg("deriv_shift"),
+      py::arg("spatial_metric"), py::arg("dt_spatial_metric"),
+      py::arg("deriv_spatial_metric"));
+
   m.def("lapse",
         static_cast<Scalar<DataVector> (*)(const tnsr::I<DataVector, Dim>&,
                                            const tnsr::aa<DataVector, Dim>&)>(
@@ -119,6 +132,20 @@ void bind_impl(py::module& m) {  // NOLINT
                                                const tnsr::I<DataVector, 3>&)>(
             &::gr::spacetime_normal_vector),
         py::arg("lapse"), py::arg("shift"));
+
+  m.def("weyl_propagating",
+        py::overload_cast<
+            const tnsr::ii<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+            const tnsr::II<DataVector, Dim>&, const tnsr::ijj<DataVector, Dim>&,
+            const tnsr::I<DataVector, Dim>&, const tnsr::II<DataVector, Dim>&,
+            const tnsr::ii<DataVector, Dim>&, const tnsr::Ij<DataVector, Dim>&,
+            const double>(
+            &gr::weyl_propagating<DataVector, Dim, Frame::Inertial>),
+        py::arg("ricci"), py::arg("extrinsic_curvature"),
+        py::arg("inverse_spatial_metric"),
+        py::arg("cov_deriv_extrinsic_curvature"),
+        py::arg("unit_interface_normal_vector"), py::arg("projection_IJ"),
+        py::arg("projection_ij"), py::arg("projection_Ij"), py::arg("sign"));
 }
 }  // namespace
 
