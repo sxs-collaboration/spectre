@@ -40,6 +40,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -435,7 +436,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &register_factory_classes_with_charm<TestMetavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions};
+    &enable_floating_point_exceptions, &enable_segfault_handler};
 // [charm_init_funcs_example]
 
 // [charm_main_example]

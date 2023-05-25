@@ -18,6 +18,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/System/Abort.hpp"
 #include "Utilities/System/Exit.hpp"
 
@@ -25,6 +26,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   setup_error_handling();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
+  enable_segfault_handler();
   Catch::StringMaker<double>::precision =
       std::numeric_limits<double>::max_digits10;
   Catch::StringMaker<float>::precision =

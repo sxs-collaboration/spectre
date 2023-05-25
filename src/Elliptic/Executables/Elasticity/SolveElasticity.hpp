@@ -63,6 +63,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -302,5 +303,5 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &elliptic::subdomain_preconditioners::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions};
+    &enable_floating_point_exceptions, &enable_segfault_handler};
 /// \endcond
