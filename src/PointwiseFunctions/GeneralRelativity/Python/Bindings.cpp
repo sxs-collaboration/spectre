@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 
 namespace py = pybind11;
@@ -132,6 +133,21 @@ void bind_impl(py::module& m) {  // NOLINT
                                                const tnsr::I<DataVector, 3>&)>(
             &::gr::spacetime_normal_vector),
         py::arg("lapse"), py::arg("shift"));
+
+  m.def("weyl_magnetic",
+        static_cast<tnsr::ii<DataVector, 3, Frame::Inertial> (*)(
+            const tnsr::ijj<DataVector, 3, Frame::Inertial>&,
+            const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+            const Scalar<DataVector>&)>(&gr::weyl_magnetic),
+        py::arg("grad_extrinsic_curvature"), py::arg("spatial_metric"),
+        py::arg("sqrt_det_spatial_metric"));
+
+  m.def("weyl_magnetic_scalar",
+        static_cast<Scalar<DataVector> (*)(
+            const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+            const tnsr::II<DataVector, 3, Frame::Inertial>&)>(
+            &gr::weyl_magnetic_scalar),
+        py::arg("weyl_magnetic"), py::arg("inverse_spatial_metric"));
 
   m.def("weyl_propagating",
         py::overload_cast<
