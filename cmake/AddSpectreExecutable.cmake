@@ -32,6 +32,8 @@ function(add_spectre_executable TARGET_NAME)
     PROPERTIES
     RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
     LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
+    # Expose readable symbol names in backtrace (adds flags like -rdynamic)
+    ENABLE_EXPORTS ON
     )
   target_link_options(${TARGET_NAME} PRIVATE "-DEXECUTABLE_NAME=${TARGET_NAME}")
   # The `WrapExecutableLinker.sh` script needs the `InfoAtLink_flags.txt` file
