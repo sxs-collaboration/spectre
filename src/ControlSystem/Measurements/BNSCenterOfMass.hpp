@@ -16,6 +16,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -37,10 +38,6 @@ struct Mesh;
 template <size_t Dim, typename Frame>
 struct Coordinates;
 }  // namespace domain::Tags
-namespace Events::Tags {
-template <typename InputFrame, typename OutputFrame>
-struct ObserverDetInvJacobian;
-}
 namespace grmhd::ValenciaDivClean {
 struct TildeD;
 }
@@ -88,6 +85,8 @@ void center_of_mass_integral_on_element(
 /// Measurement providing the location of the center of mass of the
 /// matter in the \f$x>0\f$ and \f$x<0\f$ regions (assumed to correspond to the
 /// center of mass of the two neutron stars in a BNS merger).
+/// We use Events::Tags::ObserverXXX for tags that might need to be retrieved
+/// from either the Subcell or DG grid.
 struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
   struct FindTwoCenters : tt::ConformsTo<protocols::Submeasurement> {
     static std::string name() { return "BothNSCenters::FindTwoCenters"; }
@@ -97,11 +96,11 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
 
     /// Tags for the arguments to the apply function.
     using argument_tags =
-        tmpl::list<domain::Tags::Mesh<3>,
+        tmpl::list<Events::Tags::ObserverMesh<3>,
                    Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                         Frame::Inertial>,
                    grmhd::ValenciaDivClean::TildeD,
-                   domain::Tags::Coordinates<3, Frame::Distorted>>;
+                   Events::Tags::ObserverCoordinates<3, Frame::Distorted>>;
 
     /// Calculate integrals needed for CoM computation on each element,
     /// then reduce the data.
@@ -169,7 +168,7 @@ struct PostReductionSendBNSStarCentersToControlSystem {
                     const std::array<double, 3>& first_moment_a,
                     const std::array<double, 3>& first_moment_b) {
     // Function called after reduction of the CoM data.
-    // 1. Calculate CoM from integrals
+    // Calculate CoM from integrals
     std::array<double, 3> center_a = first_moment_a / mass_a;
     std::array<double, 3> center_b = first_moment_b / mass_b;
     const auto center_databox = db::create<
