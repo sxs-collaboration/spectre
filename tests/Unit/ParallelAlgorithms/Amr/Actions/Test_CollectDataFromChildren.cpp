@@ -22,6 +22,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -217,83 +218,116 @@ struct Component {
 
 struct Metavariables {
   static constexpr size_t volume_dim = 2;
-  using component_list = tmpl::list<Component<Metavariables>>;
+  using component_list = tmpl::list<Component<Metavariables>,
+                                    TestHelpers::amr::Registrar<Metavariables>>;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  template <typename ParallelComponent>
+  struct registration_list {
+    using type = std::conditional_t<
+        std::is_same_v<ParallelComponent, Component<Metavariables>>,
+        tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
+  };
 };
 
 void test() {
-  using my_component = Component<Metavariables>;
+  using array_component = Component<Metavariables>;
+  using registrar = TestHelpers::amr::Registrar<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
-  ActionTesting::emplace_component_and_initialize<my_component>(
+  ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_1_id,
       {child_1(), child_1_mesh(), child_flags(), child_1_neighbor_flags()});
-  ActionTesting::emplace_component_and_initialize<my_component>(
+  ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_2_id,
       {child_2(), child_2_mesh(), child_flags(), child_2_neighbor_flags()});
-  ActionTesting::emplace_component_and_initialize<my_component>(
+  ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_3_id,
       {child_3(), child_3_mesh(), child_flags(), child_3_neighbor_flags()});
-  ActionTesting::emplace_component_and_initialize<my_component>(
+  ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_4_id,
       {child_4(), child_4_mesh(), child_flags(), child_4_neighbor_flags()});
-  ActionTesting::emplace_component<my_component>(&runner, parent_id);
+  ActionTesting::emplace_component<array_component>(&runner, parent_id);
+  ActionTesting::emplace_group_component_and_initialize<registrar>(
+      &runner,
+      std::unordered_set{child_1_id, child_2_id, child_3_id, child_4_id});
 
   for (const auto& id :
        std::vector{child_1_id, child_2_id, child_3_id, child_4_id, parent_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
 
-  ActionTesting::simple_action<my_component,
+  ActionTesting::simple_action<array_component,
                                amr::Actions::CollectDataFromChildren>(
       make_not_null(&runner), child_1_id, parent_id,
       std::deque{child_2_id, child_3_id});
   for (const auto& id :
        std::vector{child_1_id, child_3_id, child_4_id, parent_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
-  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+  CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
             runner, child_2_id) == 1);
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0) ==
+        std::unordered_set{child_2_id, child_3_id, child_4_id});
 
-  ActionTesting::invoke_queued_simple_action<my_component>(
+  ActionTesting::invoke_queued_simple_action<array_component>(
       make_not_null(&runner), child_2_id);
   for (const auto& id :
        std::vector{child_1_id, child_2_id, child_4_id, parent_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
-  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+  CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
             runner, child_3_id) == 1);
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0) == std::unordered_set{child_3_id, child_4_id});
 
-  ActionTesting::invoke_queued_simple_action<my_component>(
+  ActionTesting::invoke_queued_simple_action<array_component>(
       make_not_null(&runner), child_3_id);
   for (const auto& id :
        std::vector{child_1_id, child_2_id, child_3_id, parent_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
-  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+  CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
             runner, child_4_id) == 1);
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0) == std::unordered_set{child_4_id});
 
-  ActionTesting::invoke_queued_simple_action<my_component>(
+  ActionTesting::invoke_queued_simple_action<array_component>(
       make_not_null(&runner), child_4_id);
   for (const auto& id :
        std::vector{child_1_id, child_2_id, child_3_id, child_4_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
-  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+  CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
             runner, parent_id) == 1);
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0) == std::unordered_set<ElementId<2>>{});
 
-  ActionTesting::invoke_queued_simple_action<my_component>(
+  ActionTesting::invoke_queued_simple_action<array_component>(
       make_not_null(&runner), parent_id);
   for (const auto& id :
        std::vector{child_1_id, child_2_id, child_3_id, child_4_id, parent_id}) {
-    CHECK(
-        ActionTesting::is_simple_action_queue_empty<my_component>(runner, id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
+                                                                       id));
   }
 }
 }  // namespace

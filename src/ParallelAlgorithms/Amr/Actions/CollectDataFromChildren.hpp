@@ -16,6 +16,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Amr/Actions/InitializeParent.hpp"
@@ -56,6 +57,8 @@ struct CollectDataFromChildren {
     Parallel::simple_action<CollectDataFromChildren>(
         array_proxy[next_child_id], parent_id, sibling_ids_to_collect,
         std::move(children_data));
+
+    Parallel::deregister_element<ParallelComponent>(box, cache, child_id);
     array_proxy[child_id].ckDestroy();
   }
 
@@ -115,6 +118,8 @@ struct CollectDataFromChildren {
           array_proxy[next_child_id], parent_id, sibling_ids_to_collect,
           std::move(children_data));
     }
+
+    Parallel::deregister_element<ParallelComponent>(box, cache, child_id);
     array_proxy[child_id].ckDestroy();
   }
 };

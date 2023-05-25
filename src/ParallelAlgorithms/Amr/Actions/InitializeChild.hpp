@@ -19,6 +19,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
@@ -51,7 +52,7 @@ struct InitializeChild {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename... Tags>
   static void apply(db::DataBox<DbTagList>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ElementId<Metavariables::volume_dim>& child_id,
                     const tuples::TaggedTuple<Tags...>& parent_items) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
@@ -77,6 +78,8 @@ struct InitializeChild {
 
     // In the near future, add the capability of updating all data needed for
     // an evolution or elliptic system
+
+    Parallel::register_element<ParallelComponent>(box, cache, child_id);
   }
 };
 }  // namespace amr::Actions

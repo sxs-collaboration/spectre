@@ -30,6 +30,7 @@
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
@@ -72,22 +73,6 @@ namespace Parallel {
 template <typename ParallelComponent, typename PhaseDepActionList>
 class DistributedObject;
 /// \endcond
-
-namespace Algorithm_detail {
-template <typename Metavariables, typename Component, typename = std::void_t<>>
-struct has_registration_list : std::false_type {};
-
-template <typename Metavariables, typename Component>
-struct has_registration_list<
-    Metavariables, Component,
-  std::void_t<
-    typename Metavariables::template registration_list<Component>::type>>
-    : std::true_type {};
-
-template <typename Metavariables, typename Component>
-constexpr bool has_registration_list_v =
-    has_registration_list<Metavariables, Component>::value;
-}  // namespace Algorithm_detail
 
 /*!
  * \ingroup ParallelGroup
@@ -692,25 +677,13 @@ void DistributedObject<
   if (phase_ == Parallel::Phase::LoadBalancing) {
     // The deregistration and registration below does not actually insert
     // anything into the PUP::er stream, so nothing is done on a sizing pup.
-    if constexpr (Algorithm_detail::has_registration_list_v<
-                      metavariables, ParallelComponent>) {
-      using registration_list =
-          typename metavariables::template registration_list<
-              ParallelComponent>::type;
-      if (p.isPacking()) {
-        tmpl::for_each<registration_list>([this](auto registration_v) {
-          using registration = typename decltype(registration_v)::type;
-          registration::template perform_deregistration<ParallelComponent>(
-              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
-        });
-      }
-      if (p.isUnpacking()) {
-        tmpl::for_each<registration_list>([this](auto registration_v) {
-          using registration = typename decltype(registration_v)::type;
-          registration::template perform_registration<ParallelComponent>(
-              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
-        });
-      }
+    if (p.isPacking()) {
+      deregister_element<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+    }
+    if (p.isUnpacking()) {
+      register_element<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
     }
   }
 }
