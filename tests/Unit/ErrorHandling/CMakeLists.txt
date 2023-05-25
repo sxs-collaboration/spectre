@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_AssertAndError.cpp
   Test_Exceptions.cpp
   Test_FloatingPointExceptions.cpp
+  Test_SegfaultHandler.cpp
   )
 
 add_test_library(
