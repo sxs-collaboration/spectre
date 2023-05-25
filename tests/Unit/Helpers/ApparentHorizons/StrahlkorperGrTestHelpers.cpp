@@ -95,8 +95,9 @@ Scalar<DataType> horizon_ricci_scalar(const Scalar<DataType>& horizon_radius,
 template <typename DataType>
 Scalar<DataType> horizon_ricci_scalar(
     const Scalar<DataType>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
-    const double mass, const std::array<double, 3>& dimensionless_spin) {
+    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis,
+    const ylm::YlmSpherepack& ylm, const double mass,
+    const std::array<double, 3>& dimensionless_spin) {
   // get the dimensionless spin magnitude and direction
   const double spin_magnitude = magnitude(dimensionless_spin);
   const double spin_theta =
@@ -107,10 +108,10 @@ Scalar<DataType> horizon_ricci_scalar(
   // to avoid a floating-point exception. The choice of eps here is arbitrary.
   const double eps = 1.e-10;
 
-  // There are 2 YlmSpherepacks: i) ylm, for the actual black hole, with spin
-  // in a generic direction, and ii) ylm_with_spin_on_z_axis, for a black hole
-  // with the same spin magnitude but with the spin in the +z direction.
-  // To get the horizon Ricci scalar for the actual black hole, do this:
+  // There are 2 ylm::YlmSpherepacks: i) ylm, for the actual black hole, with
+  // spin in a generic direction, and ii) ylm_with_spin_on_z_axis, for a black
+  // hole with the same spin magnitude but with the spin in the +z direction. To
+  // get the horizon Ricci scalar for the actual black hole, do this:
   //    1. Find the horizon Ricci scalar for the aligned spin
   //    2. Let the generic spin point in direction (spin_theta, spin_phi).
   //       Rotate the ylm.theta_phi_points by -spin_phi about the z axis and
@@ -222,5 +223,6 @@ template Scalar<DataVector> TestHelpers::Kerr::horizon_ricci_scalar(
     const double dimensionless_spin_z);
 template Scalar<DataVector> TestHelpers::Kerr::horizon_ricci_scalar(
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
-    const double mass, const std::array<double, 3>& spin);
+    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis,
+    const ylm::YlmSpherepack& ylm, const double mass,
+    const std::array<double, 3>& spin);

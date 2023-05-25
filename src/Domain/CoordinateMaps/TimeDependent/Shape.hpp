@@ -44,7 +44,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  * coefficients \f$\lambda_{lm}(t)\f$:
  *
  * 1. A single FunctionOfTime which specifies all coefficients. This
- *    FunctionOfTime should have `YlmSpherepack::spectral_size()` number of
+ *    FunctionOfTime should have `ylm::YlmSpherepack::spectral_size()` number of
  *    components. These are in Spherepack order and should be the Spherepack
  *    coefficients, *not* the spherical harmonic coefficients. See the note
  *    below. To use this, set the `size_function_of_time_name` argument of the
@@ -201,7 +201,7 @@ class Shape {
   std::array<double, 3> center_{};
   size_t l_max_ = 2;
   size_t m_max_ = 2;
-  YlmSpherepack ylm_{2, 2};
+  ylm::YlmSpherepack ylm_{2, 2};
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 

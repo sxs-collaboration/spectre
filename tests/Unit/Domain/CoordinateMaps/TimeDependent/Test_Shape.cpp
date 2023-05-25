@@ -492,9 +492,9 @@ void test_inverse(const gsl::not_null<Generator*> generator) {
       std::array{0.0, 0.0, 0.0}, 10, 10,
       std::make_unique<TransitionFunc>(sphere_transition), "Shape"};
 
-  DataVector coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
-  DataVector dt_coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
-  DataVector d2t_coefs{YlmSpherepack::spectral_size(10, 10), 0.0};
+  DataVector coefs{ylm::YlmSpherepack::spectral_size(10, 10), 0.0};
+  DataVector dt_coefs{ylm::YlmSpherepack::spectral_size(10, 10), 0.0};
+  DataVector d2t_coefs{ylm::YlmSpherepack::spectral_size(10, 10), 0.0};
 
   const double factor = sqrt(2.0 / M_PI);
 

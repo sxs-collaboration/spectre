@@ -103,10 +103,10 @@ void test() {
                                  {gsl::at(size_B_values, 2)},
                                  {0.0}}},
       expiration_times.at(gsl::at(TimeDependentMapOptions::size_names, 1))};
-  const DataVector shape_A_zeros{YlmSpherepack::spectral_size(l_max_A, l_max_A),
-                                 0.0};
-  const DataVector shape_B_zeros{YlmSpherepack::spectral_size(l_max_B, l_max_B),
-                                 0.0};
+  const DataVector shape_A_zeros{
+      ylm::YlmSpherepack::spectral_size(l_max_A, l_max_A), 0.0};
+  const DataVector shape_B_zeros{
+      ylm::YlmSpherepack::spectral_size(l_max_B, l_max_B), 0.0};
   ShapeFoT shape_A{
       initial_time,
       std::array<DataVector, 3>{shape_A_zeros, shape_A_zeros, shape_A_zeros},

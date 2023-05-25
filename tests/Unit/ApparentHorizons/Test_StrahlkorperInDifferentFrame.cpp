@@ -83,7 +83,7 @@ void test_strahlkorper_in_different_frame() {
   // Now compare.
   std::unique_ptr<Strahlkorper<DestFrame>> strahlkorper_expected;
   if constexpr (Aligned) {
-    const YlmSpherepack ylm{l_max, l_max};
+    const ylm::YlmSpherepack ylm{l_max, l_max};
     const DataVector new_radius =
         get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
             2.0, ylm.theta_phi_points(), 1.0,

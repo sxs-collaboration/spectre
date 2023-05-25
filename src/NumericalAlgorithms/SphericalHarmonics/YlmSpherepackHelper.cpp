@@ -6,7 +6,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-namespace YlmSpherepack_detail {
+namespace ylm::YlmSpherepack_detail {
 
 ConstStorage::ConstStorage(const size_t l_max, const size_t m_max)
     : l_max_(l_max), m_max_(m_max) {
@@ -176,4 +176,4 @@ void MemoryPool::clear() {
   }
 }
 
-}  // namespace YlmSpherepack_detail
+}  // namespace ylm::YlmSpherepack_detail

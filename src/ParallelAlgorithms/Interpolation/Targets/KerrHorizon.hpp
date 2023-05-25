@@ -173,7 +173,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     ::Strahlkorper<Frame> strahlkorper(
         kerr_horizon.l_max, kerr_horizon.l_max,
         get(gr::Solutions::kerr_horizon_radius(
-            ::YlmSpherepack(kerr_horizon.l_max, kerr_horizon.l_max)
+            ::ylm::YlmSpherepack(kerr_horizon.l_max, kerr_horizon.l_max)
                 .theta_phi_points(),
             kerr_horizon.mass, kerr_horizon.dimensionless_spin)),
         kerr_horizon.center);

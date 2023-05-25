@@ -17,6 +17,9 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 
+/// Items related to spherical harmonics
+namespace ylm {
+
 /*!
  * \ingroup SpectralGroup
  *
@@ -518,3 +521,5 @@ class YlmSpherepack {
 
 bool operator==(const YlmSpherepack& lhs, const YlmSpherepack& rhs);
 bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs);
+
+}  // namespace ylm

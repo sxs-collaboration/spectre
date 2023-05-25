@@ -10,7 +10,9 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 class YlmSpherepack;
+}  // namespace ylm
 template <typename Frame>
 class Strahlkorper;
 template <typename X, typename Symm, typename IndexList>

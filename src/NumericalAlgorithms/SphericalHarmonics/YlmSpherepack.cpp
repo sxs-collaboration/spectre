@@ -22,6 +22,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Spherepack.hpp"
 
+namespace ylm {
 //============================================================================
 // Note that SPHEREPACK (which is wrapped by YlmSpherepack) takes
 // n_theta and n_phi as input, and is ok with arbitrary values of
@@ -941,3 +942,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
+
+}  // namespace ylm

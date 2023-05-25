@@ -14,7 +14,7 @@
 
 namespace YlmTestFunctions {
 
-using SecondDeriv = YlmSpherepack::SecondDeriv;
+using SecondDeriv = ylm::YlmSpherepack::SecondDeriv;
 
 class ScalarFunctionWithDerivs {
  public:

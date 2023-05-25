@@ -10,10 +10,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace YlmSpherepack_detail {
+namespace ylm::YlmSpherepack_detail {
 
 /// Holds the various constant 'work' arrays for YlmSpherepack.
-/// These are computed only once during YlmSpherepack construction
+/// These are computed only once during ylm::YlmSpherepack construction
 /// and are re-used over and over again.
 class ConstStorage {
  public:
@@ -46,7 +46,7 @@ class ConstStorage {
 /// This is a quick way of providing temporary space that is
 /// re-utilized many times without the expense of mallocs.  This
 /// turned out to be important for optimizing SpEC (because
-/// YlmSpherepack is used for the basis functions in the most
+/// ylm::YlmSpherepack is used for the basis functions in the most
 /// expensive subdomains) but may or may not be important for SpECTRE.
 class MemoryPool {
  public:
@@ -61,8 +61,8 @@ class MemoryPool {
     bool currently_in_use{false};
   };
   // It turns out that the maximum number of temporaries needed in a
-  // single YlmSpherepack calculation is 9.
+  // single ylm::YlmSpherepack calculation is 9.
   static const constexpr size_t num_temps_ = 9;
   std::array<StorageAndAvailability, num_temps_> memory_pool_;
 };
-}  // namespace YlmSpherepack_detail
+}  // namespace ylm::YlmSpherepack_detail

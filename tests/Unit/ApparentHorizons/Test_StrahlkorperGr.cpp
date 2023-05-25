@@ -614,7 +614,7 @@ void test_dimensionful_spin_magnitude(
     const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis, const double expected,
+    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis, const double expected,
     const double tolerance) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
@@ -708,7 +708,7 @@ void test_spin_vector(
     const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis) {
+    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<

@@ -178,7 +178,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   // `m_max_` which causes an aliasing error. We need an additional order to
   // represent it. This is in theory not needed for the distorted_radii
   // calculation but saves calculating the `interpolation_info` twice.
-  const YlmSpherepack extended_ylm(l_max_ + 1, m_max_ + 1);
+  const ylm::YlmSpherepack extended_ylm(l_max_ + 1, m_max_ + 1);
   const auto interpolation_info =
       extended_ylm.set_up_interpolation_info(theta_phis);
 
@@ -324,10 +324,11 @@ void Shape::check_coefficients([[maybe_unused]] const DataVector& coefs) const {
   // The expected format of the coefficients passed from the control system can
   // be changed depending on what turns out to be most convenient for the
   // control system
-  ASSERT(coefs.size() == ylm_.spectral_size(),
-         "Spectral coefficients are expected to be in YlmSpherepack format "
-         "with size 2 * (l_max + 1) * (m_max + 1) = "
-             << ylm_.spectral_size() << ", but have size " << coefs.size());
+  ASSERT(
+      coefs.size() == ylm_.spectral_size(),
+      "Spectral coefficients are expected to be in ylm::YlmSpherepack format "
+      "with size 2 * (l_max + 1) * (m_max + 1) = "
+          << ylm_.spectral_size() << ", but have size " << coefs.size());
 #endif  // SPECTRE_DEBUG
 }
 
@@ -396,7 +397,7 @@ void Shape::pup(PUP::er& p) {
   }
 
   if (p.isUnpacking()) {
-    ylm_ = YlmSpherepack(l_max_, m_max_);
+    ylm_ = ylm::YlmSpherepack(l_max_, m_max_);
   }
 }
 

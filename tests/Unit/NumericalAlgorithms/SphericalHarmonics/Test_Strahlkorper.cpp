@@ -35,7 +35,8 @@ void test_invert_spec_phys_transform() {
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
 
   // Create radius as a function of angle
-  DataVector radius(YlmSpherepack::physical_size(l_grid, l_grid), avg_radius);
+  DataVector radius(ylm::YlmSpherepack::physical_size(l_grid, l_grid),
+                    avg_radius);
   {
     std::uniform_real_distribution<double> ran(0.0, 1.0);
     MAKE_GENERATOR(gen);

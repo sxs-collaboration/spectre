@@ -35,7 +35,7 @@ void test_strahlkorper() {
   constexpr std::array<double, 3> center{{5.0, 6.0, 7.0}};
   const Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max, sphere_radius,
                                                    center};
-  const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
+  const ylm::YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
   const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
   const DataVector theta = theta_phi[0];
   const DataVector phi = theta_phi[1];

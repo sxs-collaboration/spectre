@@ -61,7 +61,7 @@ struct ObserveSurfaceData
                     const TemporalId& temporal_id) {
     const Strahlkorper<HorizonFrame>& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<HorizonFrame>>(box);
-    const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
+    const ylm::YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
 
     // Output the inertial-frame coordinates of the Stralhlkorper.
     // Note that these coordinates are not

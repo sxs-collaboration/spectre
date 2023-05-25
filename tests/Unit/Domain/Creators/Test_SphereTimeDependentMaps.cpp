@@ -78,7 +78,8 @@ void test(const bool use_non_zero_shape, const bool use_size_from_shape) {
       initial_time,
       std::array<DataVector, 4>{{size_func, size_deriv, size_2nd_deriv, {0.0}}},
       expiration_times.at(TimeDependentMapOptions::size_name)};
-  const DataVector shape_zeros{YlmSpherepack::spectral_size(l_max, l_max), 0.0};
+  const DataVector shape_zeros{ylm::YlmSpherepack::spectral_size(l_max, l_max),
+                               0.0};
   PP2 shape_all_zero{
       initial_time,
       std::array<DataVector, 3>{shape_zeros, shape_zeros, shape_zeros},

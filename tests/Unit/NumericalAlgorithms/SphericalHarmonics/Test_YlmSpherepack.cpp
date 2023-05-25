@@ -18,6 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 
+namespace ylm {
 namespace {
 
 using SecondDeriv = YlmSpherepack::SecondDeriv;
@@ -801,3 +802,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
   CHECK(s_copy == s);
   test_move_semantics(std::move(s), s_copy, 6_st, 5_st);
 }
+
+}  // namespace ylm

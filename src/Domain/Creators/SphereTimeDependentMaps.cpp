@@ -60,14 +60,14 @@ TimeDependentMapOptions::create_functions_of_time(
   }
 
   DataVector shape_zeros{
-      YlmSpherepack::spectral_size(initial_l_max_, initial_l_max_), 0.0};
+      ylm::YlmSpherepack::spectral_size(initial_l_max_, initial_l_max_), 0.0};
   DataVector shape_func{};
   double size_func_from_shape = std::numeric_limits<double>::signaling_NaN();
 
   if (initial_shape_values_.has_value()) {
     if (std::holds_alternative<KerrSchildFromBoyerLindquist>(
             initial_shape_values_.value())) {
-      const YlmSpherepack ylm{initial_l_max_, initial_l_max_};
+      const ylm::YlmSpherepack ylm{initial_l_max_, initial_l_max_};
       const auto& mass_and_spin =
           std::get<KerrSchildFromBoyerLindquist>(initial_shape_values_.value());
       const DataVector radial_distortion =
