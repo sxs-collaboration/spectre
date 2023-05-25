@@ -7,10 +7,12 @@
 #include "NumericalAlgorithms/Interpolation/Python/CubicSpline.hpp"
 #include "NumericalAlgorithms/Interpolation/Python/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/Python/RegularGridInterpolant.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_PyInterpolation, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.Spectral");
   intrp::py_bindings::bind_barycentric_rational(m);

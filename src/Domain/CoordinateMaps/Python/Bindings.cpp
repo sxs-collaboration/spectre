@@ -5,12 +5,14 @@
 
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Python/CoordinateMap.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 namespace domain {
 
 PYBIND11_MODULE(_PyCoordinateMaps, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py::enum_<CoordinateMaps::Distribution>(m, "Distribution")

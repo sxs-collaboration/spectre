@@ -6,10 +6,12 @@
 #include "NumericalAlgorithms/Spectral/Python/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Python/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Python/Spectral.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_PySpectral, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   Spectral::py_bindings::bind_basis(m);
