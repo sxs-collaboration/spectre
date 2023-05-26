@@ -700,8 +700,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # to create the cache.
       SPECTRE_SPACK_DEPS: >-
         blaze boost brigand catch2 charmpp gsl hdf5 libsharp libxsmm openblas
-        py-h5py py-humanize py-numpy py-matplotlib py-pandas py-pybind11
-        py-scipy py-pyyaml yaml-cpp
+        py-pybind11 yaml-cpp
       CCACHE_DIR: $HOME/ccache
       CCACHE_MAXSIZE: 700M
       CCACHE_COMPRESS: 1
@@ -758,10 +757,17 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack env create spectre support/DevEnvironments/spack.yaml
           spack env activate spectre
-          spack remove doxygen jemalloc py-nbconvert
+          spack remove doxygen jemalloc
           spack concretize --reuse
           spack install --no-check-signature
           spack find -v
+      # Install remaining pure Python dependencies with pip because the Spack
+      # package index can be incomplete (it can't mirror all of pip)
+      - name: Install Python dependencies
+        run: |
+          source $HOME/spack/share/spack/setup-env.sh
+          spack env activate spectre
+          pip install -r support/Python/requirements.txt
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
       - name: Clear ccache from dependencies
