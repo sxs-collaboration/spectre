@@ -10,8 +10,13 @@ ExpectedOutput:
 
 ---
 
+Amr:
+  Criteria:
+  Verbosity: Quiet
+
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 DomainCreator:
   Brick:
@@ -48,3 +53,5 @@ EventsAndTriggers:
 Observers:
   VolumeFileName: "ExportCoordinates3DVolume"
   ReductionFileName: "ExportCoordinates3DReductions"
+
+PhaseChangeAndTriggers:

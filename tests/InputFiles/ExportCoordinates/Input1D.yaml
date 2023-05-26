@@ -10,8 +10,16 @@ ExpectedOutput:
 
 ---
 
+Amr:
+  Criteria:
+    - Random:
+        ChangeRefinementFraction: 0.8
+        MaximumRefinementLevel: 4
+  Verbosity: Verbose
+
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 DomainCreator:
   Interval:
@@ -50,3 +58,11 @@ Evolution:
 Observers:
   VolumeFileName: "ExportCoordinates1DVolume"
   ReductionFileName: "ExportCoordinates1DReductions"
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Always
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
