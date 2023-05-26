@@ -82,10 +82,9 @@ inline void print_helper(Printer&& printer, const std::string& format,
 template <typename Printer, typename... Args>
 inline void call_printer(Printer&& printer, const std::string& format,
                          Args&&... args) {
-  disable_floating_point_exceptions();
+  const ScopedFpeState disable_fpes(false);
   print_helper(printer, format,
                stream_object_to_string(std::forward<Args>(args))...);
-  enable_floating_point_exceptions();
 }
 }  // namespace detail
 
