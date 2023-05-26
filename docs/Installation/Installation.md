@@ -125,6 +125,10 @@ all of these dependencies.
 * [xsimd](https://github.com/xtensor-stack/xsimd) - for manual vectorization
 * [ParaView](https://www.paraview.org/) - for visualization \cite Paraview1
   \cite Paraview2
+* [SpEC](https://www.black-holes.org/code/SpEC.html) - to load SpEC data.
+  Compile the exporter in SpEC's `Support/ApplyObservers/Exporter/` directory
+  (see the `Makefile` in that directory). Also make sure to compile SpEC with
+  the same compiler and MPI as SpECTRE to avoid compatibility issues.
 
 ## Clone the SpECTRE repository
 
