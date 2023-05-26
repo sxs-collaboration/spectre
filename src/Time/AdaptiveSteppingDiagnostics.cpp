@@ -5,6 +5,23 @@
 
 #include <pup.h>
 
+#include "Utilities/ErrorHandling/Assert.hpp"
+
+AdaptiveSteppingDiagnostics& AdaptiveSteppingDiagnostics::operator+=(
+    const AdaptiveSteppingDiagnostics& other) {
+  ASSERT(number_of_slabs == other.number_of_slabs,
+         "Unequal number of slabs(" << number_of_slabs << ","
+                                    << other.number_of_slabs << ")");
+  ASSERT(number_of_slab_size_changes == other.number_of_slab_size_changes,
+         "Unequal number of slab_size_changes("
+             << number_of_slab_size_changes << ","
+             << other.number_of_slab_size_changes << ")");
+  number_of_steps += other.number_of_steps;
+  number_of_step_fraction_changes += other.number_of_step_fraction_changes;
+  number_of_step_rejections += other.number_of_step_rejections;
+  return *this;
+}
+
 void AdaptiveSteppingDiagnostics::pup(PUP::er& p) {
   p | number_of_slabs;
   p | number_of_slab_size_changes;

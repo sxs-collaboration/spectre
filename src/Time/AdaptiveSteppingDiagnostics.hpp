@@ -18,6 +18,9 @@ struct AdaptiveSteppingDiagnostics {
   uint64_t number_of_step_fraction_changes = 0;
   uint64_t number_of_step_rejections = 0;
 
+  AdaptiveSteppingDiagnostics& operator+=(
+      const AdaptiveSteppingDiagnostics& other);
+
   void pup(PUP::er& p);
 };
 
