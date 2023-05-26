@@ -11,7 +11,7 @@ ExpectedOutput:
   - GhKerrSchildSurfaces.h5
 OutputFileChecks:
   - Label: "check_horizon_find"
-    Subfile: "/AhA.dat"
+    Subfile: "/ApparentHorizon.dat"
     FileGlob: "GhKerrSchildReductions.h5"
     AbsoluteTolerance: 1e2
 
@@ -166,8 +166,8 @@ EventsAndTriggers:
           Interval: 5
           Offset: 2
     Events:
-      - AhA
-      - ExcisionBoundaryA
+      - ApparentHorizon
+      - ExcisionBoundary
   - Trigger:
       Slabs:
         Specified:
@@ -186,7 +186,7 @@ Interpolator:
   DumpVolumeDataOnFailure: false
 
 ApparentHorizons:
-  AhA: &AhA
+  ApparentHorizon: &Ah
     InitialGuess:
       LMax: &LMax 4
       Radius: 2.2
@@ -201,10 +201,10 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
-  ControlSystemSingleAh: *AhA
+  ControlSystemSingleAh: *Ah
 
 InterpolationTargets:
-  ExcisionBoundaryA:
+  ExcisionBoundary:
     LMax: *LMax
     Center: *Center
     Radius: *InnerRadius
