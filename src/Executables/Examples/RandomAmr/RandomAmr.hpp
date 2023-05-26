@@ -107,6 +107,8 @@ struct RandomAmrMetavars {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  using amr_mutators = tmpl::list<>;
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

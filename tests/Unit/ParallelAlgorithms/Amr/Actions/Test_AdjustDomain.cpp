@@ -114,6 +114,8 @@ struct Metavariables {
                                     SingletonComponent<Metavariables>>;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  using amr_mutators = tmpl::list<>;
 };
 
 void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,

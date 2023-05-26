@@ -54,10 +54,7 @@ namespace amr::Actions {
 /// - Updates the Neighbors of the Element
 /// - Resets amr::Tags::Flag%s to amr::Flag::Undefined
 /// - Resets amr::Tags::NeighborFlags to an empty map
-///
-/// \warning At the moment, this action only updates the Mesh for a p-refined
-/// Element.  It does not update any data related to evolution or elliptic
-/// solves.
+/// - Mutates all return_tags of Metavariables::amr_mutators
 struct AdjustDomain {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables>
@@ -101,34 +98,58 @@ struct AdjustDomain {
       }
 
     } else {
+      const auto old_mesh_and_element =
+          std::make_pair(db::get<::domain::Tags::Mesh<volume_dim>>(box),
+                         db::get<::domain::Tags::Element<volume_dim>>(box));
+      const auto& old_mesh = old_mesh_and_element.first;
+
+      // Determine new neighbors and update the Element
+      {  // avoid shadowing when mutating flags below
+        const auto& amr_flags_of_neighbors =
+            db::get<amr::Tags::NeighborFlags<volume_dim>>(box);
+        db::mutate<::domain::Tags::Element<volume_dim>>(
+            [&element_id, &amr_flags_of_neighbors](
+                const gsl::not_null<Element<volume_dim>*> element) {
+              auto new_neighbors = element->neighbors();
+              for (auto& [direction, neighbors] : new_neighbors) {
+                neighbors.set_ids_to(amr::new_neighbor_ids(
+                    element_id, direction, neighbors, amr_flags_of_neighbors));
+              }
+              *element = Element<volume_dim>(element_id, new_neighbors);
+            },
+            make_not_null(&box));
+      }
+
       // Check for p-refinement
       if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
             return (flag == amr::Flag::IncreaseResolution or
                     flag == amr::Flag::DecreaseResolution);
           })) {
         db::mutate<::domain::Tags::Mesh<volume_dim>>(
-            [&my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
-              *mesh = amr::projectors::mesh(*mesh, my_amr_flags);
+            [&old_mesh,
+             &my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
+              *mesh = amr::projectors::mesh(old_mesh, my_amr_flags);
             },
             make_not_null(&box));
       }
 
-      // Need to reset AMR flags and determine new neighbors
-      db::mutate<::domain::Tags::Element<volume_dim>,
-                 amr::Tags::Flags<volume_dim>,
+      // Run the mutators on all elements, even if they did no h-refinement.
+      // This allows mutators to update mutable items that depend upon the
+      // neighbors of the element.
+      tmpl::for_each<typename Metavariables::amr_mutators>(
+          [&box, &old_mesh_and_element](auto mutator_v) {
+            using mutator = typename decltype(mutator_v)::type;
+            db::mutate_apply<mutator>(make_not_null(&box),
+                                      old_mesh_and_element);
+          });
+
+      // Reset the AMR flags
+      db::mutate<amr::Tags::Flags<volume_dim>,
                  amr::Tags::NeighborFlags<volume_dim>>(
-          [&element_id](
-              const gsl::not_null<Element<volume_dim>*> element,
-              const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags,
-              const gsl::not_null<std::unordered_map<
-                  ElementId<volume_dim>, std::array<amr::Flag, volume_dim>>*>
-                  amr_flags_of_neighbors) {
-            auto new_neighbors = element->neighbors();
-            for (auto& [direction, neighbors] : new_neighbors) {
-              neighbors.set_ids_to(amr::new_neighbor_ids(
-                  element_id, direction, neighbors, *amr_flags_of_neighbors));
-            }
-            *element = Element<volume_dim>(element_id, new_neighbors);
+          [](const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags,
+             const gsl::not_null<std::unordered_map<
+                 ElementId<volume_dim>, std::array<amr::Flag, volume_dim>>*>
+                 amr_flags_of_neighbors) {
             amr_flags_of_neighbors->clear();
             for (size_t d = 0; d < volume_dim; ++d) {
               (*amr_flags)[d] = amr::Flag::Undefined;
@@ -136,9 +157,6 @@ struct AdjustDomain {
           },
           make_not_null(&box));
     }
-
-    // In the near future, add the capability of updating all data needed for
-    // an evolution or elliptic system
   }
 };
 }  // namespace amr::Actions

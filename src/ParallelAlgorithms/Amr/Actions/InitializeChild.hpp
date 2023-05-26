@@ -37,14 +37,11 @@ namespace amr::Actions {
 /// \brief Initializes the data of a newly created child element from the data
 /// of its parent element
 ///
-/// \warning At the moment, this action only initializes the Element, Mesh,
-/// and amr::Flag%s of the child element.  It does not initialize any data
-/// related to evolution or elliptic solves.
-///
 /// DataBox:
 /// - Modifies:
 ///   * domain::Tags::Element<volume_dim>
 ///   * domain::Tags::Mesh<volume_dim>
+///   * all return_tags of Metavariables::amr_mutators
 ///
 /// \details This action is meant to be invoked by
 /// amr::Actions::SendDataToChildren
@@ -76,8 +73,11 @@ struct InitializeChild {
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
         make_not_null(&box), std::move(child), std::move(child_mesh));
 
-    // In the near future, add the capability of updating all data needed for
-    // an evolution or elliptic system
+    tmpl::for_each<typename Metavariables::amr_mutators>(
+        [&box, &parent_items](auto mutator_v) {
+          using mutator = typename decltype(mutator_v)::type;
+          db::mutate_apply<mutator>(make_not_null(&box), parent_items);
+        });
 
     Parallel::register_element<ParallelComponent>(box, cache, child_id);
   }

@@ -59,6 +59,8 @@ struct Metavariables {
         std::is_same_v<ParallelComponent, Component<Metavariables>>,
         tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
   };
+
+  using amr_mutators = tmpl::list<>;
 };
 
 void test() {
