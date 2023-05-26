@@ -153,6 +153,8 @@ struct EvolutionMetavars {
                               tmpl::list<evolution::dg::subcell::Tags::
                                              TciStatusCompute<volume_dim>>,
                               tmpl::list<>>>,
+      ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
+                                                    Frame::Inertial>,
       tmpl::conditional_t<
           use_dg_subcell,
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,

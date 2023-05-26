@@ -158,6 +158,8 @@ struct EvolutionMetavars {
       tmpl::flatten<tmpl::list<
           tmpl::append<typename system::variables_tag::tags_list,
                        typename deriv_compute::type::tags_list>,
+          ::Events::Tags::ObserverDetInvJacobianCompute<
+            Frame::ElementLogical, Frame::Inertial>,
           CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
           CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>>>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,

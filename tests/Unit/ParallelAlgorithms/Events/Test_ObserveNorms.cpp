@@ -165,7 +165,6 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<Event, tmpl::list<ObserveNormsEvent<ArraySectionIdTag>>>>;
   };
-
 };
 
 template <typename ArraySectionIdTag, typename ObserveEvent>
@@ -199,7 +198,8 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   const auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       ::Events::Tags::ObserverMesh<3>,
-      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>,
       ::Tags::Time, Tags::Variables<typename decltype(vars)::tags_list>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, mesh, det_inv_jacobian, observation_time, vars, section);
@@ -245,9 +245,8 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.reduction_names[1] == "NumberOfPoints");
   CHECK(results.number_of_grid_points == num_points);
   CHECK(results.reduction_names[2] == "Volume");
-  if (basis != Spectral::Basis::FiniteDifference) {
-    CHECK(results.volume == approx(expected_volume));
-  }
+  CHECK(results.volume == approx(expected_volume));
+
   // Check max values
   CHECK(results.reduction_names[3] == "Max(Var0)");
   CHECK(results.reduction_names[4] == "Max(Var0)");
@@ -273,15 +272,20 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.l2_norm_values[3] == approx(95.3187634554008838));
 
   // Check L2 integral norms
+  CHECK(results.reduction_names[15] == "L2IntegralNorm(Var1)");
+  CHECK(results.reduction_names[16] == "L2IntegralNorm(Var1_x)");
+  CHECK(results.reduction_names[17] == "L2IntegralNorm(Var1_y)");
+  CHECK(results.reduction_names[18] == "L2IntegralNorm(Var1_z)");
   if (basis != Spectral::Basis::FiniteDifference) {
-    CHECK(results.reduction_names[15] == "L2IntegralNorm(Var1)");
-    CHECK(results.reduction_names[16] == "L2IntegralNorm(Var1_x)");
-    CHECK(results.reduction_names[17] == "L2IntegralNorm(Var1_y)");
-    CHECK(results.reduction_names[18] == "L2IntegralNorm(Var1_z)");
     CHECK(results.l2_integral_norm_values[0] == approx(124.18131904598212145));
     CHECK(results.l2_integral_norm_values[1] == approx(41.36826480931165406));
     CHECK(results.l2_integral_norm_values[2] == approx(68.22267462752640199));
     CHECK(results.l2_integral_norm_values[3] == approx(95.15951520123110186));
+  } else {
+    for (size_t i = 0; i < 4; i++) {
+      CHECK(results.l2_integral_norm_values[i] ==
+            approx(results.l2_norm_values[i]));
+    }
   }
 }
 }  // namespace
@@ -356,7 +360,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                   {"Var0TimesTwo", "Max", "Individual"},
                   {"Var0TimesThree", "Max", "Individual"},
                   {"Var1", "L2Norm", "Sum"},
+                  {"Var1", "L2IntegralNorm", "Sum"},
                   {"Var1", "L2Norm", "Individual"},
+                  {"Var1", "L2IntegralNorm", "Individual"},
                   {"Var1", "Min", "Sum"}}}),
              Spectral::Basis::FiniteDifference,
              Spectral::Quadrature::CellCentered, std::nullopt);
