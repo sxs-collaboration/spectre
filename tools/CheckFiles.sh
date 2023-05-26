@@ -82,6 +82,8 @@ check_cmakelists_for_missing_cxx() {
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/InterpolateFromSpec.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.cpp$' \
+                   'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp$' \
+                   'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.cpp$' \
       && [ -f $cmakelists ] \
       && [ $(grep -L "^  $base" $cmakelists) ]
 }

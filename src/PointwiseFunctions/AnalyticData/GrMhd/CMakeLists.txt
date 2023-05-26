@@ -50,4 +50,24 @@ target_link_libraries(
   Serialization
   )
 
+if (TARGET SpEC::Exporter)
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    SpecInitialData.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    SpecInitialData.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    GeneralRelativityAnalyticData
+    SpEC::Exporter
+    )
+endif()
+
 add_subdirectory(InitialMagneticFields)
