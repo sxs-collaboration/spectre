@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -210,7 +211,9 @@ void strahlkorper_in_different_frame(
   };
 
   // We try to roughly bracket the root between r_min and r_max.
-  const auto [r_min, r_max] = [&dest_cartesian_coords, &center_dest]() {
+  double r_min{};
+  double r_max{};
+  std::tie(r_min, r_max) = [&dest_cartesian_coords, &center_dest]() {
     const DataVector dest_radius =
         sqrt(square(get<0>(dest_cartesian_coords) - center_dest[0]) +
              square(get<1>(dest_cartesian_coords) - center_dest[1]) +

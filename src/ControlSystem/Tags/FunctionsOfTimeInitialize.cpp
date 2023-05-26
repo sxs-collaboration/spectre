@@ -18,7 +18,9 @@ void check_expiration_time_consistency(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  for (const auto& [name, expr_time] : initial_expiration_times) {
+  for (const auto& expiration_entry : initial_expiration_times) {
+    const auto& name = expiration_entry.first;
+    const auto& expr_time = expiration_entry.second;
     // Only need to check the expiration times if the control system is active
     if (is_active_map.at(name)) {
       if (functions_of_time.count(name) == 0) {

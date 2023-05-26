@@ -209,4 +209,10 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.ScopedFpeState",
     CHECK(not exceptions_enabled());
   }
   CHECK(exceptions_enabled());
+
+  // Test that ERROR preserves the state.  This primarily matters for
+  // tests.
+  enable_floating_point_exceptions();
+  CHECK_THROWS_WITH([]() { ERROR("BOOM"); }(), Catch::Contains("BOOM"));
+  CHECK(exceptions_enabled());
 }
