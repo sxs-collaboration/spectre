@@ -94,6 +94,15 @@ class TestBindings(unittest.TestCase):
         inverse_metric = tnsr.AA[DataVector, 3](num_points=1, fill=0.)
         ricci_scalar(spatial_ricci, inverse_metric)
 
+    def test_weyl_electric(self):
+        spatial_ricci = tnsr.ii[DataVector, 3](num_points=1, fill=0.)
+        extrinsic_curvature = tnsr.ii[DataVector, 3](num_points=1, fill=0.)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.)
+        weyl_electric_tensor = weyl_electric(spatial_ricci,
+                                             extrinsic_curvature,
+                                             inverse_spatial_metric)
+        weyl_electric_scalar(weyl_electric_tensor, inverse_spatial_metric)
+
     def test_weyl_propagating(self):
         ricci = tnsr.ii[DataVector, 3](num_points=1, fill=0.)
         extrinsic_curvature = tnsr.ii[DataVector, 3](num_points=1, fill=0.)

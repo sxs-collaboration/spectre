@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 
@@ -124,15 +125,28 @@ void bind_impl(py::module& m) {  // NOLINT
       py::arg("spacetime_metric"), py::arg("inverse_spatial_metric"));
 
   m.def("spacetime_normal_one_form",
-        static_cast<tnsr::a<DataVector, 3> (*)(const Scalar<DataVector>&)>(
+        static_cast<tnsr::a<DataVector, Dim> (*)(const Scalar<DataVector>&)>(
             &::gr::spacetime_normal_one_form),
         py::arg("lapse"));
 
   m.def("spacetime_normal_vector",
-        static_cast<tnsr::A<DataVector, 3> (*)(const Scalar<DataVector>&,
-                                               const tnsr::I<DataVector, 3>&)>(
+        static_cast<tnsr::A<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&)>(
             &::gr::spacetime_normal_vector),
         py::arg("lapse"), py::arg("shift"));
+
+  m.def("weyl_electric",
+        static_cast<tnsr::ii<DataVector, Dim> (*)(
+            const tnsr::ii<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+            const tnsr::II<DataVector, Dim>&)>(&::gr::weyl_electric),
+        py::arg("spatial_ricci"), py::arg("extrinsic_curvature"),
+        py::arg("inverse_spatial_metric"));
+
+  m.def("weyl_electric_scalar",
+        static_cast<Scalar<DataVector> (*)(const tnsr::ii<DataVector, Dim>&,
+                                           const tnsr::II<DataVector, Dim>&)>(
+            &::gr::weyl_electric_scalar),
+        py::arg("weyl_electric"), py::arg("inverse_spatial_metric"));
 
   m.def("weyl_magnetic",
         static_cast<tnsr::ii<DataVector, 3, Frame::Inertial> (*)(
