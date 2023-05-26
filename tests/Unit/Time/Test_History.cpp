@@ -167,14 +167,16 @@ void test_history() {
   CHECK(const_history[3].value.has_value());
   history.insert_in_place(
       TimeStepId(true, 0, slab.start() + slab.duration() / 2),
-      // Avoid overwriting the cached allocation for testing.
-      [&](const auto v) { *v = as_const(make_value(2.0)); },
+      [&](const auto v) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(v->data() == cached_value);
+        }
+        // Avoid overwriting the cached allocation for testing.
+        *v = as_const(make_value(2.0));
+      },
       [&](const auto d) { *d = as_const(make_deriv(20.0)); });
   // [(-1/2, -3, -300), (-1/4, X, -20), (0, X, -100), (1/4, 1, 10),
   //  (1/2, 2, 20)] []
-  if constexpr (tt::is_a_v<Variables, Vars>) {
-    CHECK(const_history.back().value->data() == cached_value);
-  }
   CHECK(*const_history.back().value == make_value(2.0));
   CHECK(const_history.back().derivative == make_deriv(20.0));
 
@@ -223,14 +225,22 @@ void test_history() {
   // [(-1/4, X, -20), (0, X, -100), (1/4, X, 10), (1/2, 2, 20)] []
   CHECK(const_history.size() == 4);
   CHECK(const_history.front().derivative == make_deriv(-20.0));
-  history.insert(TimeStepId(true, 0, slab.start() + slab.duration() * 3 / 4),
-                 make_value(3.0), make_deriv(30.0));
+  history.insert_in_place(
+      TimeStepId(true, 0, slab.start() + slab.duration() * 3 / 4),
+      [&](const auto v) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(v->data() == cached_value);
+        }
+        *v = as_const(make_value(3.0));
+      },
+      [&](const auto d) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(d->data() == cached_deriv);
+        }
+        *d = as_const(make_deriv(30.0));
+      });
   // [(-1/4, X, -20), (0, X, -100), (1/4, X, 10), (1/2, 2, 20), (3/4, 3, 30)]
   // []
-  if constexpr (tt::is_a_v<Variables, Vars>) {
-    CHECK(const_history.back().value->data() == cached_value);
-    CHECK(const_history.back().derivative.data() == cached_deriv);
-  }
 
   history.pop_front();
   // [(0, X, -100), (1/4, X, 10), (1/2, 2, 20), (3/4, 3, 30)] []
@@ -410,45 +420,51 @@ void test_history() {
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] []
   CHECK(const_history.size() == 3);
   CHECK(as_const(const_history.substeps()).empty());
-  history.insert(
-      TimeStepId(true, 1, step_time2, 1, step_size2, slab.end().value()),
-      History::no_value, make_deriv(70.0));
-  // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70)]
   history.insert_in_place(
-      TimeStepId(true, 1, step_time2, 2, step_size2, slab.end().value()),
-      History::no_value,
-      [&](const auto d) { *d = as_const(make_deriv(80.0)); });
-  // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70), (1, X, 80)]
+      TimeStepId(true, 1, step_time2, 1, step_size2, slab.end().value()),
+      History::no_value, [&](const auto d) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(d->data() == cached_deriv);
+        }
+        *d = as_const(make_deriv(70.0));
+      });
+  // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70)]
   history.insert(
+      TimeStepId(true, 1, step_time2, 2, step_size2, slab.end().value()),
+      History::no_value, make_deriv(80.0));
+  // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70), (1, X, 80)]
+  history.insert_in_place(
       TimeStepId(true, 1, step_time2, 3, step_size2, slab.end().value()),
-      make_value(9.0), make_deriv(90.0));
+      [&](const auto v) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(v->data() == cached_value);
+        }
+        *v = as_const(make_value(9.0));
+      },
+      [&](const auto d) { *d = as_const(make_deriv(90.0)); });
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)]
   //     [3/4: (1, X, 70), (1, X, 80), (1, 9, 90)]
-
-  if constexpr (tt::is_a_v<Variables, Vars>) {
-    CHECK(const_history.substeps().back().value->data() == cached_value);
-    CHECK(const_history.substeps().front().derivative.data() == cached_deriv);
-  }
 
   history.undo_latest();
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)] [3/4: (1, X, 70), (1, X, 80)]
   history.shrink_to_fit();
 
-  // Allocate some memory to reduce the likelihood that a new entry
-  // happens to get placed in the same location as the old one.
-  [[maybe_unused]] const auto created_value = make_value(0.0);
-  [[maybe_unused]] const auto created_deriv = make_deriv(0.0);
-
-  history.insert(
+  history.insert_in_place(
       TimeStepId(true, 1, step_time2, 3, step_size2, slab.end().value()),
-      make_value(9.0), make_deriv(90.0));
+      [&](const auto v) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(v->size() == 0);
+        }
+        *v = as_const(make_value(9.0));
+      },
+      [&](const auto d) {
+        if constexpr (tt::is_a_v<Variables, Vars>) {
+          CHECK(d->size() == 0);
+        }
+        *d = as_const(make_deriv(90.0));
+      });
   // [(1/4, X, 10), (1/2, 2, 20), (3/4, 6, 60)]
   //     [3/4: (1, X, 70), (1, X, 80), (1, 8, 80)]
-
-  if constexpr (tt::is_a_v<Variables, Vars>) {
-    CHECK(const_history.substeps().back().value->data() != cached_value);
-    CHECK(const_history.substeps().back().derivative.data() != cached_deriv);
-  }
 
   const auto check_copy = [&history](const auto& copy) {
     CHECK(copy.integration_order() == history.integration_order());
