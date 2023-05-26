@@ -146,6 +146,24 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
 };
 
 /*!
+ * \brief Holds a quantity that's similar to the shift, but isn't the shift.
+ *
+ * \details This holds
+ *
+ * \f{equation}{
+ * \beta^i \frac{\partial x^\hat{i}}{\partial x^i} =
+ * \hat{beta}^\hat{i} + \frac{\partial x^\hat{i}}{\partial t}
+ * \f}
+ *
+ * where hatted quantities are in the distorted frame and non-hatted quantities
+ * are in the grid frame.
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ShiftyQuantity : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
+
+/*!
  * \brief Computes the spatial Ricci tensor from the spatial
  * Christoffel symbol of the second kind and its derivative.
  */

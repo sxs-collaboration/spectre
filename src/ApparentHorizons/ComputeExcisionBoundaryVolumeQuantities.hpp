@@ -93,6 +93,7 @@ struct ComputeExcisionBoundaryVolumeQuantities
                  gr::Tags::SpacetimeMetric<DataVector, 3, TargetFrame>,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, 3, TargetFrame>,
+                 gr::Tags::ShiftyQuantity<DataVector, 3, TargetFrame>,
                  gh::ConstraintDamping::Tags::ConstraintGamma1>;
 
   template <typename TargetFrame>
