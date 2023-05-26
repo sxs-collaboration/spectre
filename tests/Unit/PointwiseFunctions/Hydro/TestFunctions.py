@@ -24,6 +24,18 @@ def tilde_d_unbound_ut_criterion(
     return tilde_d * (u_t < -1.0)
 
 
+def mass_weighted_coords_none(tilde_d, grid_coords, compute_coords):
+    return tilde_d * compute_coords
+
+
+def mass_weighted_coords_a(tilde_d, grid_coords, compute_coords):
+    return tilde_d * compute_coords * np.heaviside(grid_coords, 0)
+
+
+def mass_weighted_coords_b(tilde_d, grid_coords, compute_coords):
+    return tilde_d * compute_coords * np.heaviside(grid_coords * (-1.0), 0)
+
+
 # Functions testing the MassWeightedFluidItems
 
 

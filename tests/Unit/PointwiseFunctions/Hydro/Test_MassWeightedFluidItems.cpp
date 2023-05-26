@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -29,6 +30,36 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassWeightedFluidItems",
   pypp::check_with_random_values<1>(
       &tilde_d_unbound_ut_criterion<DataVector, 1, Frame::Inertial>,
       "TestFunctions", {"tilde_d_unbound_ut_criterion"}, {{{0.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<1>(
+      &mass_weighted_coords<::domain::ObjectLabel::None, DataVector, 1,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_none"}, {{{0.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<3>(
+      &mass_weighted_coords<::domain::ObjectLabel::None, DataVector, 3,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_none"}, {{{0.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<1>(
+      &mass_weighted_coords<::domain::ObjectLabel::A, DataVector, 1,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_a"}, {{{-1.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<3>(
+      &mass_weighted_coords<::domain::ObjectLabel::A, DataVector, 3,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_a"}, {{{-1.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<1>(
+      &mass_weighted_coords<::domain::ObjectLabel::B, DataVector, 1,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_b"}, {{{-1.0, 1.0}}},
+      used_for_size);
+  pypp::check_with_random_values<3>(
+      &mass_weighted_coords<::domain::ObjectLabel::B, DataVector, 3,
+                            Frame::Inertial>,
+      "TestFunctions", {"mass_weighted_coords_b"}, {{{-1.0, 1.0}}},
       used_for_size);
 }
 
