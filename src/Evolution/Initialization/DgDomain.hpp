@@ -15,6 +15,7 @@
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/FixedHashMap.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
@@ -42,6 +43,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -152,6 +154,51 @@ struct Domain {
                         ? my_block.moving_mesh_logical_to_grid_map().get_clone()
                         : my_block.stationary_map().get_to_grid_frame()};
 
+    if (my_block.is_time_dependent()) {
+      *grid_to_inertial_map =
+          my_block.moving_mesh_grid_to_inertial_map().get_clone();
+    } else {
+      *grid_to_inertial_map =
+          ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+              ::domain::CoordinateMaps::Identity<Dim>{});
+    }
+  }
+};
+
+/// \brief Initialize/update items related to coordinate maps after an AMR
+/// change
+template <size_t Dim>
+struct ProjectDomain {
+  using return_tags = tmpl::list<::domain::Tags::ElementMap<Dim, Frame::Grid>,
+                                 ::domain::CoordinateMaps::Tags::CoordinateMap<
+                                     Dim, Frame::Grid, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<::domain::Tags::Domain<Dim>, ::domain::Tags::Element<Dim>>;
+
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Grid>*> /*element_map*/,
+      const gsl::not_null<std::unique_ptr<
+          ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>*>
+      /*grid_to_inertial_map*/,
+      const ::Domain<Dim>& /*domain*/, const Element<Dim>& /*element*/,
+      const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {
+    // Do not change anything for p-refinement
+  }
+
+  template <typename ParentOrChildrenItemsType>
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Grid>*> element_map,
+      const gsl::not_null<std::unique_ptr<
+          ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>*>
+          grid_to_inertial_map,
+      const ::Domain<Dim>& domain, const Element<Dim>& element,
+      const ParentOrChildrenItemsType& /*parent_or_children_items*/) {
+    const ElementId<Dim>& element_id = element.id();
+    const auto& my_block = domain.blocks()[element_id.block_id()];
+    *element_map = ElementMap<Dim, Frame::Grid>{
+        element_id, my_block.is_time_dependent()
+                        ? my_block.moving_mesh_logical_to_grid_map().get_clone()
+                        : my_block.stationary_map().get_to_grid_frame()};
     if (my_block.is_time_dependent()) {
       *grid_to_inertial_map =
           my_block.moving_mesh_grid_to_inertial_map().get_clone();

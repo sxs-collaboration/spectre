@@ -39,11 +39,10 @@
  * downcasting `map_base` and then comparing to `map`. Returns false if the
  * downcast fails.
  */
-template <typename Map>
-bool are_maps_equal(
-    const Map& map,
-    const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
-                                    Map::dim>& map_base) {
+template <typename Map, typename SourceFrame, typename TargetFrame>
+bool are_maps_equal(const Map& map,
+                    const domain::CoordinateMapBase<SourceFrame, TargetFrame,
+                                                    Map::dim>& map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }

@@ -22,19 +22,28 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "Time/Tags/Time.hpp"
@@ -43,6 +52,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace control_system::Tags {
 struct FunctionsOfTimeInitialize;
@@ -514,6 +524,270 @@ void test(const Spectral::Quadrature quadrature) {
   }
 }
 
+namespace test_projectors {
+struct TestMetavariables {
+  using component_list = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<1>>;
+};
+
+using items_type =
+    tuples::TaggedTuple<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+                        ::domain::Tags::ElementMap<1, Frame::Grid>,
+                        ::domain::CoordinateMaps::Tags::CoordinateMap<
+                            1, Frame::Grid, Frame::Inertial>,
+                        ::domain::Tags::Element<1>>;
+
+using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<1>;
+using AffineMap = domain::CoordinateMaps::Affine;
+template <typename TargetFrame>
+using TimeIndependentMap =
+    domain::CoordinateMap<Frame::BlockLogical, TargetFrame, AffineMap>;
+using TimeDependentMap =
+    domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>;
+using GridToInertialMap =
+    domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 1>;
+
+template <typename TargetFrame>
+TimeIndependentMap<TargetFrame> create_affine_map() {
+  return TimeIndependentMap<TargetFrame>{AffineMap{-1.0, 1.0, 2.0, 7.2}};
+}
+
+template <bool IsTimeDependent>
+Parallel::GlobalCache<TestMetavariables> make_global_cache() {
+  static Parallel::MutableGlobalCache<TestMetavariables> mutable_global_cache(
+      tuples::TaggedTuple<>{});
+
+  std::vector<Block<1>> blocks{1};
+  blocks[0] = Block<1>{std::make_unique<TimeIndependentMap<Frame::Inertial>>(
+                           create_affine_map<Frame::Inertial>()),
+                       0,
+                       {}};
+  Domain<1> domain{std::move(blocks)};
+
+  if (IsTimeDependent) {
+    domain.inject_time_dependent_map_for_block(
+        0, std::make_unique<TimeDependentMap>(
+               TimeDependentMap(TranslationMap("Translation"))));
+  }
+
+  tuples::TaggedTuple<domain::Tags::Domain<1>> const_global_cache_items(
+      std::move(domain));
+
+  return {std::move(const_global_cache_items), &mutable_global_cache};
+}
+
+template <bool IsTimeDependent>
+void check_maps(const ElementId<1>& expected_element_id,
+                const ElementMap<1, Frame::Grid>& element_map,
+                const GridToInertialMap& grid_to_inertial_map) {
+  CHECK(expected_element_id == element_map.element_id());
+  const auto expected_block_map = create_affine_map<Frame::Grid>();
+  CHECK(are_maps_equal(expected_block_map, element_map.block_map()));
+  if constexpr (IsTimeDependent) {
+    const auto expected_grid_to_inertial_map =
+        TimeDependentMap{TranslationMap("Translation")};
+    CHECK(are_maps_equal(expected_grid_to_inertial_map, grid_to_inertial_map));
+  } else {
+    const auto expected_grid_to_inertial_map =
+        ::domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<1>{});
+    CHECK(are_maps_equal(expected_grid_to_inertial_map, grid_to_inertial_map));
+  }
+}
+
+template <bool IsTimeDependent>
+void test_p_refine() {
+  auto global_cache = make_global_cache<IsTimeDependent>();
+  const ElementId<1> element_id{0};
+  Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{}};
+  const Domain<1>& domain = get<::domain::Tags::Domain<1>>(global_cache);
+  const auto& my_block = domain.blocks()[element_id.block_id()];
+  ElementMap<1, Frame::Grid> element_map{
+      element_id, my_block.is_time_dependent()
+                      ? my_block.moving_mesh_logical_to_grid_map().get_clone()
+                      : my_block.stationary_map().get_to_grid_frame()};
+  std::unique_ptr<GridToInertialMap> grid_to_inertial_map = nullptr;
+  if (my_block.is_time_dependent()) {
+    grid_to_inertial_map =
+        my_block.moving_mesh_grid_to_inertial_map().get_clone();
+  } else {
+    grid_to_inertial_map =
+        ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<1>{});
+  }
+
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+                        ::domain::Tags::ElementMap<1, Frame::Grid>,
+                        ::domain::CoordinateMaps::Tags::CoordinateMap<
+                            1, Frame::Grid, Frame::Inertial>,
+                        ::domain::Tags::Element<1>>,
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      &global_cache, std::move(element_map), std::move(grid_to_inertial_map),
+      std::move(element));
+
+  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
+      make_not_null(&box), std::make_pair(mesh, element));
+  check_maps<IsTimeDependent>(
+      element_id, db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(box),
+      db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                            Frame::Inertial>>(
+          box));
+}
+
+template <bool IsTimeDependent>
+void test_split() {
+  auto global_cache = make_global_cache<IsTimeDependent>();
+
+  const ElementId<1> parent_id{0};
+  const ElementId<1> child_1_id{0, std::array{SegmentId{1, 0}}};
+  const ElementId<1> child_2_id{0, std::array{SegmentId{1, 1}}};
+
+  Element<1> parent{parent_id, DirectionMap<1, Neighbors<1>>{}};
+  const Domain<1>& domain = get<::domain::Tags::Domain<1>>(global_cache);
+  const auto& my_block = domain.blocks()[parent_id.block_id()];
+  ElementMap<1, Frame::Grid> element_map{
+      parent_id, my_block.is_time_dependent()
+                     ? my_block.moving_mesh_logical_to_grid_map().get_clone()
+                     : my_block.stationary_map().get_to_grid_frame()};
+  std::unique_ptr<GridToInertialMap> grid_to_inertial_map = nullptr;
+  if (my_block.is_time_dependent()) {
+    grid_to_inertial_map =
+        my_block.moving_mesh_grid_to_inertial_map().get_clone();
+  } else {
+    grid_to_inertial_map =
+        ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<1>{});
+  }
+  const items_type parent_items{&global_cache, std::move(element_map),
+                                std::move(grid_to_inertial_map),
+                                std::move(parent)};
+
+  Element<1> child_1{
+      child_1_id,
+      DirectionMap<1, Neighbors<1>>{std::pair{
+          Direction<1>::upper_xi(),
+          Neighbors<1>{std::unordered_set{child_2_id}, OrientationMap<1>{}}}}};
+  auto child_1_box = db::create<
+      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+                        ::domain::Tags::ElementMap<1, Frame::Grid>,
+                        ::domain::CoordinateMaps::Tags::CoordinateMap<
+                            1, Frame::Grid, Frame::Inertial>,
+                        ::domain::Tags::Element<1>>,
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      &global_cache, ElementMap<1, Frame::Grid>{},
+      std::unique_ptr<GridToInertialMap>{nullptr}, std::move(child_1));
+
+  db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
+      make_not_null(&child_1_box), parent_items);
+  check_maps<IsTimeDependent>(
+      child_1_id,
+      db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(child_1_box),
+      db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                            Frame::Inertial>>(
+          child_1_box));
+
+  Element<1> child_2{
+      child_2_id,
+      DirectionMap<1, Neighbors<1>>{std::pair{
+          Direction<1>::lower_xi(),
+          Neighbors<1>{std::unordered_set{child_1_id}, OrientationMap<1>{}}}}};
+  auto child_2_box = db::create<
+      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+                        ::domain::Tags::ElementMap<1, Frame::Grid>,
+                        ::domain::CoordinateMaps::Tags::CoordinateMap<
+                            1, Frame::Grid, Frame::Inertial>,
+                        ::domain::Tags::Element<1>>,
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      &global_cache, ElementMap<1, Frame::Grid>{},
+      std::unique_ptr<GridToInertialMap>{nullptr}, std::move(child_2));
+
+  db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
+      make_not_null(&child_2_box), parent_items);
+  check_maps<IsTimeDependent>(
+      child_2_id,
+      db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(child_2_box),
+      db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                            Frame::Inertial>>(
+          child_2_box));
+}
+
+template <bool IsTimeDependent>
+void test_join() {
+  auto global_cache = make_global_cache<IsTimeDependent>();
+
+  const ElementId<1> parent_id{0};
+  const ElementId<1> child_1_id{0, std::array{SegmentId{1, 0}}};
+  const ElementId<1> child_2_id{0, std::array{SegmentId{1, 1}}};
+
+  Element<1> child_1{
+      child_1_id,
+      DirectionMap<1, Neighbors<1>>{std::pair{
+          Direction<1>::upper_xi(),
+          Neighbors<1>{std::unordered_set{child_2_id}, OrientationMap<1>{}}}}};
+  Element<1> child_2{
+      child_2_id,
+      DirectionMap<1, Neighbors<1>>{std::pair{
+          Direction<1>::lower_xi(),
+          Neighbors<1>{std::unordered_set{child_1_id}, OrientationMap<1>{}}}}};
+  const Domain<1>& domain = get<::domain::Tags::Domain<1>>(global_cache);
+  const auto& my_block = domain.blocks()[child_1_id.block_id()];
+  ElementMap<1, Frame::Grid> element_map_1{
+      child_1_id, my_block.is_time_dependent()
+                      ? my_block.moving_mesh_logical_to_grid_map().get_clone()
+                      : my_block.stationary_map().get_to_grid_frame()};
+  ElementMap<1, Frame::Grid> element_map_2{
+      child_2_id, my_block.is_time_dependent()
+                      ? my_block.moving_mesh_logical_to_grid_map().get_clone()
+                      : my_block.stationary_map().get_to_grid_frame()};
+  std::unique_ptr<GridToInertialMap> grid_to_inertial_map_1 = nullptr;
+  std::unique_ptr<GridToInertialMap> grid_to_inertial_map_2 = nullptr;
+  if (my_block.is_time_dependent()) {
+    grid_to_inertial_map_1 =
+        my_block.moving_mesh_grid_to_inertial_map().get_clone();
+    grid_to_inertial_map_2 =
+        my_block.moving_mesh_grid_to_inertial_map().get_clone();
+  } else {
+    grid_to_inertial_map_1 =
+        ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<1>{});
+    grid_to_inertial_map_2 =
+        ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<1>{});
+  }
+  std::unordered_map<ElementId<1>, items_type> children_items;
+  children_items.emplace(
+      child_1_id,
+      items_type{&global_cache, std::move(element_map_1),
+                 std::move(grid_to_inertial_map_1), std::move(child_1)});
+  children_items.emplace(
+      child_2_id,
+      items_type{&global_cache, std::move(element_map_2),
+                 std::move(grid_to_inertial_map_2), std::move(child_2)});
+
+  Element<1> parent{parent_id, DirectionMap<1, Neighbors<1>>{}};
+  auto parent_box = db::create<
+      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+                        ::domain::Tags::ElementMap<1, Frame::Grid>,
+                        ::domain::CoordinateMaps::Tags::CoordinateMap<
+                            1, Frame::Grid, Frame::Inertial>,
+                        ::domain::Tags::Element<1>>,
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      &global_cache, ElementMap<1, Frame::Grid>{},
+      std::unique_ptr<GridToInertialMap>{nullptr}, std::move(parent));
+  db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
+      make_not_null(&parent_box), children_items);
+  check_maps<IsTimeDependent>(
+      parent_id,
+      db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(parent_box),
+      db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                            Frame::Inertial>>(
+          parent_box));
+}
+}  // namespace test_projectors
+
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
                   "[Parallel][Unit]") {
   for (const auto quadrature :
@@ -526,5 +800,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
     test<2, false>(quadrature);
     test<3, false>(quadrature);
   }
+  test_projectors::test_p_refine<true>();
+  test_projectors::test_p_refine<false>();
+  test_projectors::test_split<true>();
+  test_projectors::test_split<false>();
+  test_projectors::test_join<true>();
+  test_projectors::test_join<false>();
 }
 }  // namespace

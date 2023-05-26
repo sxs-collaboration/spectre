@@ -33,6 +33,8 @@ target_link_libraries(
   Amr
   AmrCriteria
   AmrProjectors
+  CoordinateMaps
+  Domain
   DomainStructure
   Utilities
   )
