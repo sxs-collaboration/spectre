@@ -8,8 +8,8 @@ set(LIBRARY_SOURCES
   Test_DgDomain.cpp
   Test_Evolution.cpp
   Test_NonconservativeSystem.cpp
-  Test_Tags.cpp
   Test_SetVariables.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
@@ -22,6 +22,7 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Amr
   DataStructures
   Domain
   Evolution
