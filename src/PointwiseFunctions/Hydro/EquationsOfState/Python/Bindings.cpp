@@ -6,12 +6,14 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/PolytropicFluid.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 namespace EquationsOfState {
 
 PYBIND11_MODULE(_PyEquationsOfState, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   // Abstract base class

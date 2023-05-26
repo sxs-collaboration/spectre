@@ -18,6 +18,7 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
@@ -180,6 +181,7 @@ void bind_impl(py::module& m) {  // NOLINT
 }  // namespace
 
 PYBIND11_MODULE(_PyGeneralRelativity, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py::module_::import("spectre.Spectral");

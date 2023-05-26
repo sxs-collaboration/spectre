@@ -34,6 +34,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -507,7 +508,7 @@ struct TestMetavariables {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting};
 static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions};
+    &enable_floating_point_exceptions, &enable_segfault_handler};
 
 using charmxx_main_component = Parallel::Main<TestMetavariables>;
 

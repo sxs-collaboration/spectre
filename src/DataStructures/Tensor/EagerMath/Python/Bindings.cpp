@@ -5,10 +5,12 @@
 
 #include "DataStructures/Tensor/EagerMath/Python/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/Python/Magnitude.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_PyTensorEagerMath, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py_bindings::bind_determinant(m);

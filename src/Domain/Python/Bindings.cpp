@@ -13,12 +13,14 @@
 #include "Domain/Python/JacobianDiagnostic.hpp"
 #include "Domain/Python/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Python/SegmentId.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 namespace domain {
 
 PYBIND11_MODULE(_PyDomain, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py::module_::import("spectre.Domain.CoordinateMaps");

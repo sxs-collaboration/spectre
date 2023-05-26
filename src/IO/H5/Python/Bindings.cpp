@@ -7,10 +7,12 @@
 #include "IO/H5/Python/File.hpp"
 #include "IO/H5/Python/TensorData.hpp"
 #include "IO/H5/Python/VolumeData.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_PyH5, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.Spectral");
   py_bindings::bind_h5file(m);

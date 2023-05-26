@@ -32,6 +32,7 @@
 #include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -587,7 +588,7 @@ PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;  // NOLINT
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting};
 static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions};
+    &enable_floating_point_exceptions, &enable_segfault_handler};
 
 using charmxx_main_component = Test_GlobalCache<TestMetavariables>;
 

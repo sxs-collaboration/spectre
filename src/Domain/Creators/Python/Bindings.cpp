@@ -11,12 +11,14 @@
 #include "Domain/Creators/Python/Sphere.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
 
 namespace domain::creators {
 
 PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
+  enable_segfault_handler();
   py::module_::import("spectre.Domain");
   py::module_::import("spectre.Domain.CoordinateMaps");
   domain::creators::register_derived_with_charm();

@@ -11,6 +11,7 @@ spectre_target_sources(
   AbortWithErrorMessage.cpp
   Breakpoint.cpp
   FloatingPointExceptions.cpp
+  SegfaultHandler.cpp
   )
 
 spectre_target_headers(
@@ -24,6 +25,7 @@ spectre_target_headers(
   Exceptions.hpp
   ExpectsAndEnsures.hpp
   FloatingPointExceptions.hpp
+  SegfaultHandler.hpp
   StaticAssert.hpp
   )
 
