@@ -374,6 +374,8 @@ available to build with `make` or `ninja`:
     in parallel to avoid running out of memory.
 - all-pybindings
   - Build Python bindings. See \ref spectre_using_python for details.
+- cli
+  - Same as all-pybindings
 - install
   - Install targets that have been built to the `CMAKE_INSTALL_PREFIX`. Doesn't
     try to build anything else.

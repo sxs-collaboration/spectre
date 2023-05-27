@@ -407,8 +407,8 @@ Follow these steps:
      Compile `test-executables` and run `ctest` to run all tests, including
      executables. To compile `test-executables` you may have to reduce the
      number of cores you build on in parallel to avoid running out of memory.
-   - To use the Python bindings, compile the `all-pybindings` target (see
-     \ref spectre_using_python).
+   - To use the Python bindings (and CLI entry points), compile the
+     `all-pybindings` (or `cli`) target (see \ref spectre_using_python).
 
 ## Code Coverage Analysis
 
