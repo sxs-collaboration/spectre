@@ -8,6 +8,7 @@
 
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
@@ -26,6 +27,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -38,6 +40,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/Punctures/AdmIntegrals.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -54,10 +57,14 @@ struct Metavariables {
   using system = Punctures::FirstOrderSystem;
   using solver = elliptic::nonlinear_solver::Solver<Metavariables>;
 
+  using observe_integral_fields =
+      tmpl::list<Punctures::Tags::AdmMassIntegrandCompute>;
   using observe_fields = tmpl::append<
       typename system::primal_fields, typename system::background_fields,
-      // Add ADM quantities here
-      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+      observe_integral_fields,
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 domain::Tags::RadiallyCompressedCoordinatesCompute<
+                     volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
 
@@ -79,6 +86,10 @@ struct Metavariables {
                 dg::Events::field_observations<
                     volume_dim, typename solver::nonlinear_solver_iteration_id,
                     observe_fields, observer_compute_tags,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>,
+                dg::Events::ObserveVolumeIntegrals<
+                    volume_dim, typename solver::nonlinear_solver_iteration_id,
+                    observe_integral_fields, observer_compute_tags,
                     LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger,
                    elliptic::Triggers::all_triggers<
@@ -86,7 +97,8 @@ struct Metavariables {
   };
 
   // Additional items to store in the global cache
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::RadiallyCompressedCoordinatesOptions>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags =
