@@ -15,6 +15,7 @@
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/FlatLogicalMetric.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/JacobianDiagnostic.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
@@ -165,6 +166,16 @@ struct ExportCoordinates {
           jac_diag.get(i));
     }
 
+    // Also output the computation domain metric
+    const auto& flat_logical_metric =
+        db::get<domain::Tags::FlatLogicalMetric<Dim>>(box);
+    for (size_t i = 0; i < flat_logical_metric.size(); ++i) {
+      components.emplace_back(
+          db::tag_name<domain::Tags::FlatLogicalMetric<Dim>>() +
+              flat_logical_metric.component_suffix(i),
+          flat_logical_metric[i]);
+    }
+
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -279,15 +290,17 @@ struct Metavariables {
           tmpl::list<
               Parallel::PhaseActions<
                   Parallel::Phase::Initialization,
-                  tmpl::list<Initialization::Actions::InitializeItems<
-                                 Initialization::TimeStepping<
-                                     Metavariables, local_time_stepping>,
-                                 evolution::dg::Initialization::Domain<Dim>,
-                                 Initialization::SetMeshType<Dim>>,
-                             Initialization::Actions::AddComputeTags<
-                                 ::domain::Tags::MinimumGridSpacingCompute<
-                                     Dim, Frame::Inertial>>,
-                             Parallel::Actions::TerminatePhase>>,
+                  tmpl::list<
+                      Initialization::Actions::InitializeItems<
+                          Initialization::TimeStepping<Metavariables,
+                                                       local_time_stepping>,
+                          evolution::dg::Initialization::Domain<Dim>,
+                          Initialization::SetMeshType<Dim>>,
+                      Initialization::Actions::AddComputeTags<tmpl::list<
+                          ::domain::Tags::MinimumGridSpacingCompute<
+                              Dim, Frame::Inertial>,
+                          ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                      Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Parallel::Phase::Register,
                   tmpl::list<observers::Actions::RegisterWithObservers<

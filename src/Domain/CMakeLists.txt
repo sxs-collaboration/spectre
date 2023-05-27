@@ -19,6 +19,7 @@ spectre_target_sources(
   ElementMap.cpp
   ElementToBlockLogicalMap.cpp
   FaceNormal.cpp
+  FlatLogicalMetric.cpp
   InterfaceLogicalCoordinates.cpp
   JacobianDiagnostic.cpp
   MinimumGridSpacing.cpp
@@ -43,6 +44,7 @@ spectre_target_headers(
   ElementMap.hpp
   ElementToBlockLogicalMap.hpp
   FaceNormal.hpp
+  FlatLogicalMetric.hpp
   InterfaceComputeTags.hpp
   InterfaceHelpers.hpp
   InterfaceLogicalCoordinates.hpp
