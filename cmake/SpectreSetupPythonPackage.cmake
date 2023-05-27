@@ -360,3 +360,7 @@ function(SPECTRE_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS
   endif()
   spectre_add_python_test(${TEST_NAME} ${FILE} "${TAGS}" ${PY_MODULE_DEPENDENCY})
 endfunction()
+
+# Add a convenient target name for the pybindings.
+add_custom_target(cli)
+add_dependencies(cli all-pybindings)
