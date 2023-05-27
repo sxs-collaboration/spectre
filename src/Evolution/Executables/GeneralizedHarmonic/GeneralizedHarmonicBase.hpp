@@ -30,8 +30,7 @@
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
-#include "Evolution/Initialization/SetVariables.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -150,28 +149,6 @@ class CProxy_GlobalCache;
 /// \endcond
 
 namespace detail {
-template <bool UseNumericalInitialData>
-constexpr auto make_default_phase_order() {
-  if constexpr (UseNumericalInitialData) {
-    // Register needs to be before InitializeTimeStepperHistory so that CCE is
-    // properly registered when the self-start happens
-    return std::array{Parallel::Phase::Initialization,
-                      Parallel::Phase::RegisterWithElementDataReader,
-                      Parallel::Phase::ImportInitialData,
-                      Parallel::Phase::InitializeInitialDataDependentQuantities,
-                      Parallel::Phase::Register,
-                      Parallel::Phase::InitializeTimeStepperHistory,
-                      Parallel::Phase::Evolve,
-                      Parallel::Phase::Exit};
-  } else {
-    return std::array{Parallel::Phase::Initialization,
-                      Parallel::Phase::InitializeInitialDataDependentQuantities,
-                      Parallel::Phase::Register,
-                      Parallel::Phase::InitializeTimeStepperHistory,
-                      Parallel::Phase::Evolve,
-                      Parallel::Phase::Exit};
-  }
-}
 
 template <size_t volume_dim>
 struct ObserverTags {
@@ -272,8 +249,7 @@ struct ObserverTags {
                                      non_tensor_compute_tags>;
 };
 
-template <size_t volume_dim, bool LocalTimeStepping,
-          bool UseNumericalInitialData>
+template <size_t volume_dim, bool LocalTimeStepping>
 struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using system = gh::System<volume_dim>;
 
@@ -291,10 +267,12 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
           gh::BoundaryConditions::BoundaryCondition<volume_dim>,
           gh::BoundaryConditions::standard_boundary_conditions<volume_dim>>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
-      tmpl::pair<evolution::initial_data::InitialData,
-                 tmpl::conditional_t<UseNumericalInitialData,
-                                     tmpl::list<gh::NumericInitialData>,
-                                     gh::Solutions::all_solutions<volume_dim>>>,
+      tmpl::pair<
+          evolution::initial_data::InitialData,
+          tmpl::append<gh::Solutions::all_solutions<volume_dim>,
+                       tmpl::conditional_t<volume_dim == 3,
+                                           tmpl::list<gh::NumericInitialData>,
+                                           tmpl::list<>>>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -312,10 +290,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
 };
 }  // namespace detail
 
-template <size_t VolumeDim, bool UseNumericalInitialData>
+template <size_t VolumeDim>
 struct GeneralizedHarmonicTemplateBase {
   static constexpr size_t volume_dim = VolumeDim;
-  static constexpr bool use_numeric_id = UseNumericalInitialData;
   using system = gh::System<volume_dim>;
   static constexpr bool local_time_stepping = false;
 
@@ -323,7 +300,7 @@ struct GeneralizedHarmonicTemplateBase {
   void pup(PUP::er& /*p*/) {}
 
   using factory_creation =
-      detail::FactoryCreation<volume_dim, local_time_stepping, use_numeric_id>;
+      detail::FactoryCreation<volume_dim, local_time_stepping>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
@@ -348,8 +325,15 @@ struct GeneralizedHarmonicTemplateBase {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  static constexpr auto default_phase_order =
-      detail::make_default_phase_order<use_numeric_id>();
+  // Register needs to be before InitializeTimeStepperHistory so that CCE is
+  // properly registered when the self-start happens
+  static constexpr std::array<Parallel::Phase, 8> default_phase_order{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::RegisterWithElementDataReader,
+       Parallel::Phase::ImportInitialData,
+       Parallel::Phase::InitializeInitialDataDependentQuantities,
+       Parallel::Phase::Register, Parallel::Phase::InitializeTimeStepperHistory,
+       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
@@ -381,10 +365,6 @@ struct GeneralizedHarmonicTemplateBase {
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      std::conditional_t<
-          use_numeric_id, tmpl::list<>,
-          evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
           typename system::variables_tag,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,

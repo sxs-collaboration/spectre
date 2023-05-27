@@ -6,6 +6,6 @@
 #include <cstddef>
 
 /// \cond
-template <size_t VolumeDim, bool UseNumericalInitialData>
+template <size_t VolumeDim>
 struct EvolutionMetavars;
 /// \endcond
