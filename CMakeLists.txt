@@ -92,8 +92,6 @@ include(SpectreAddInterfaceLibraryHeaders)
 include(SpectreTargetHeaders)
 include(SpectreTargetSources)
 include(SetupFormaline)
-# We need yapf before we set up the git hooks
-include(SetupYapf)
 include(SetupGitHooks)
 include(SetBuildType)
 include(SetupPic)

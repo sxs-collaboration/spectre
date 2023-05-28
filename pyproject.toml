@@ -1,0 +1,21 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 80
+target-version = ["py37", "py38", "py39", "py310", "py311"]
+required-version = 23
+# Enable experimental string processing so long strings are wrapped
+# automatically. This is very convenient but not quite stable yet. Stability of
+# this feature is tracked in this issue:
+# https://github.com/psf/black/issues/2188
+preview = true
+
+[tool.isort]
+profile = "black"
+line_length = 80
+skip_gitignore = true

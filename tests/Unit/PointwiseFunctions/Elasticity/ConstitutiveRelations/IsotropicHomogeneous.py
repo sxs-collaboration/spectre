@@ -12,23 +12,34 @@ def stress(strain, x, bulk_modulus, shear_modulus):
     if dim == 3:
         trace_factor = bulk_modulus
     elif dim == 2:
-        trace_factor = 9 * bulk_modulus * shear_modulus \
+        trace_factor = (
+            9
+            * bulk_modulus
+            * shear_modulus
             / (3 * bulk_modulus + 4 * shear_modulus)
+        )
     else:
         raise NotImplementedError
-    return -trace_factor * strain_trace * krond \
+    return (
+        -trace_factor * strain_trace * krond
         - 2 * shear_modulus * traceless_strain
+    )
 
 
 def youngs_modulus(bulk_modulus, shear_modulus):
-    return 9. * bulk_modulus * shear_modulus / \
-        (3. * bulk_modulus + shear_modulus)
+    return (
+        9.0
+        * bulk_modulus
+        * shear_modulus
+        / (3.0 * bulk_modulus + shear_modulus)
+    )
 
 
 def poisson_ratio(bulk_modulus, shear_modulus):
-    return (3. * bulk_modulus - 2. * shear_modulus) / \
-        (6. * bulk_modulus + 2. * shear_modulus)
+    return (3.0 * bulk_modulus - 2.0 * shear_modulus) / (
+        6.0 * bulk_modulus + 2.0 * shear_modulus
+    )
 
 
 def lame_parameter(bulk_modulus, shear_modulus):
-    return bulk_modulus - 2 / 3. * shear_modulus
+    return bulk_modulus - 2 / 3.0 * shear_modulus

@@ -12,9 +12,9 @@ def solution_wave_frame(coords_prime):
 
     magnetic_field[0] = 1.0
     magnetic_field[1] = 1.0
-    magnetic_field[2] = np.where(x > -0.1,
-                                 1.0 + 0.15 * (1.0 + np.sin(5 * np.pi * x)),
-                                 1.0)
+    magnetic_field[2] = np.where(
+        x > -0.1, 1.0 + 0.15 * (1.0 + np.sin(5 * np.pi * x)), 1.0
+    )
     magnetic_field[2] = np.where(x > 0.1, 1.3, magnetic_field[2])
 
     electric_field[0] = -magnetic_field[2]
@@ -33,15 +33,19 @@ def lorentz_transform_em_field(v, em_fields_tuple):
 
     lorentz_factor = 1.0 / np.sqrt(1 - v**2)
 
-    electric_field_prime[1] = lorentz_factor * (electric_field[1] -
-                                                v * magnetic_field[2])
-    electric_field_prime[2] = lorentz_factor * (electric_field[2] +
-                                                v * magnetic_field[1])
+    electric_field_prime[1] = lorentz_factor * (
+        electric_field[1] - v * magnetic_field[2]
+    )
+    electric_field_prime[2] = lorentz_factor * (
+        electric_field[2] + v * magnetic_field[1]
+    )
 
-    magnetic_field_prime[1] = lorentz_factor * (magnetic_field[1] +
-                                                v * electric_field[2])
-    magnetic_field_prime[2] = lorentz_factor * (magnetic_field[2] -
-                                                v * electric_field[1])
+    magnetic_field_prime[1] = lorentz_factor * (
+        magnetic_field[1] + v * electric_field[2]
+    )
+    magnetic_field_prime[2] = lorentz_factor * (
+        magnetic_field[2] - v * electric_field[1]
+    )
 
     return (electric_field_prime, magnetic_field_prime)
 
@@ -51,18 +55,18 @@ def TildeE(x, t, wave_speed):
     x0 = x * 1.0
     x0[0] -= wave_speed * t
 
-    return lorentz_transform_em_field(-wave_speed,
-                                      solution_wave_frame(lorentz_factor *
-                                                          x0))[0]
+    return lorentz_transform_em_field(
+        -wave_speed, solution_wave_frame(lorentz_factor * x0)
+    )[0]
 
 
 def TildeB(x, t, wave_speed):
     lorentz_factor = 1.0 / np.sqrt(1 - wave_speed**2)
     x0 = x * 1.0
     x0[0] -= wave_speed * t
-    return lorentz_transform_em_field(-wave_speed,
-                                      solution_wave_frame(lorentz_factor *
-                                                          x0))[1]
+    return lorentz_transform_em_field(
+        -wave_speed, solution_wave_frame(lorentz_factor * x0)
+    )[1]
 
 
 def TildePsi(x, t, wave_speed):
@@ -81,5 +85,6 @@ def solution_charge_wave_frame(x):
 
 def TildeQ(x, t, wave_speed):
     lorentz_factor = 1.0 / np.sqrt(1 - wave_speed**2)
-    return lorentz_factor * solution_charge_wave_frame(lorentz_factor *
-                                                       (x[0] - wave_speed * t))
+    return lorentz_factor * solution_charge_wave_frame(
+        lorentz_factor * (x[0] - wave_speed * t)
+    )

@@ -3,11 +3,11 @@
 
 import numpy as np
 
-centers = [-5., 6.]
+centers = [-5.0, 6.0]
 masses = [1.1, 0.43]
 angular_velocity = 0.02
 radial_velocity = 0.01
-falloff_widths = [7., 8.]
+falloff_widths = [7.0, 8.0]
 
 
 def conformal_metric_bbh_isotropic(x):
@@ -23,12 +23,14 @@ def deriv_conformal_metric_bbh_isotropic(x):
 
 
 def extrinsic_curvature_trace_bbh_isotropic(x):
-    return 0.
+    return 0.0
 
 
 def shift_background(x):
-    return (np.array([-angular_velocity * x[1], angular_velocity * x[0], 0.]) +
-            radial_velocity * x)
+    return (
+        np.array([-angular_velocity * x[1], angular_velocity * x[0], 0.0])
+        + radial_velocity * x
+    )
 
 
 def longitudinal_shift_background_bbh_isotropic(x):
@@ -36,18 +38,20 @@ def longitudinal_shift_background_bbh_isotropic(x):
 
 
 def conformal_factor_bbh_isotropic(x):
-    r1 = np.sqrt((x[0] - centers[0])**2 + x[1]**2 + x[2]**2)
-    r2 = np.sqrt((x[0] - centers[1])**2 + x[1]**2 + x[2]**2)
-    return 1. + 0.5 * (np.exp(-r1**2 / falloff_widths[0]**2) * masses[0] / r1 +
-                       np.exp(-r2**2 / falloff_widths[1]**2) * masses[1] / r2)
+    r1 = np.sqrt((x[0] - centers[0]) ** 2 + x[1] ** 2 + x[2] ** 2)
+    r2 = np.sqrt((x[0] - centers[1]) ** 2 + x[1] ** 2 + x[2] ** 2)
+    return 1.0 + 0.5 * (
+        np.exp(-(r1**2) / falloff_widths[0] ** 2) * masses[0] / r1
+        + np.exp(-(r2**2) / falloff_widths[1] ** 2) * masses[1] / r2
+    )
 
 
 def energy_density_bbh_isotropic(x):
-    return 0.
+    return 0.0
 
 
 def stress_trace_bbh_isotropic(x):
-    return 0.
+    return 0.0
 
 
 def momentum_density_bbh_isotropic(x):

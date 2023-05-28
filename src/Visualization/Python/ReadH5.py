@@ -29,8 +29,9 @@ def available_subfiles(h5file: h5py.File, extension: str) -> List[str]:
     return subfiles
 
 
-def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"],
-                 slice=None) -> "pandas.DataFrame":
+def to_dataframe(
+    open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"], slice=None
+) -> "pandas.DataFrame":
     """Convert a '.dat' subfile to a Pandas DataFrame
 
     This function isn't particularly complex, but it allows to convert a
@@ -54,6 +55,7 @@ def to_dataframe(open_subfile: Union[h5py.Dataset, "spectre.IO.H5.H5Dat"],
       attribute of the dat file.
     """
     import pandas as pd
+
     try:
         # SpECTRE H5 dat subfile
         data = np.asarray(open_subfile.get_data())

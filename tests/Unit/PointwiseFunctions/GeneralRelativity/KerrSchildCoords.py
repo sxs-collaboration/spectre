@@ -5,9 +5,13 @@ import numpy as np
 
 
 def r_coord_squared(coords, bh_mass, bh_dimless_spin):
-    a_squared = (bh_mass * bh_dimless_spin)**2
-    temp = 0.5 * (coords[0] * coords[0] + coords[1] * coords[1] +
-                  coords[2] * coords[2] - a_squared)
+    a_squared = (bh_mass * bh_dimless_spin) ** 2
+    temp = 0.5 * (
+        coords[0] * coords[0]
+        + coords[1] * coords[1]
+        + coords[2] * coords[2]
+        - a_squared
+    )
     return temp + np.sqrt(temp * temp + a_squared * coords[2] * coords[2])
 
 
@@ -18,10 +22,12 @@ def jacobian(coords, bh_mass, bh_dimless_spin):
     r_squared = r_coord_squared(coords, bh_mass, bh_dimless_spin)
     r = np.sqrt(r_squared)
     sin_theta = np.sqrt(
-        (coords[0]**2 + coords[1]**2) / (r_squared + a_squared))
+        (coords[0] ** 2 + coords[1] ** 2) / (r_squared + a_squared)
+    )
     cos_theta = coords[2] / r
     inv_denom = 1.0 / np.sqrt(
-        (coords[0]**2 + coords[1]**2) * (r_squared + a_squared))
+        (coords[0] ** 2 + coords[1] ** 2) * (r_squared + a_squared)
+    )
     sin_phi = (coords[1] * r - spin_a * coords[0]) * inv_denom
     cos_phi = (coords[0] * r + spin_a * coords[1]) * inv_denom
 
@@ -37,8 +43,9 @@ def jacobian(coords, bh_mass, bh_dimless_spin):
     return result
 
 
-def cartesian_from_spherical_ks(vector, cartesian_coords, bh_mass,
-                                bh_dimless_spin):
-    return np.einsum("ij,j",
-                     jacobian(cartesian_coords, bh_mass, bh_dimless_spin),
-                     vector)
+def cartesian_from_spherical_ks(
+    vector, cartesian_coords, bh_mass, bh_dimless_spin
+):
+    return np.einsum(
+        "ij,j", jacobian(cartesian_coords, bh_mass, bh_dimless_spin), vector
+    )

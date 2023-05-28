@@ -3,27 +3,37 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
-    extract_input_source_from_h5_command)
+import os
+import unittest
+
+from click.testing import CliRunner
 
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
-import unittest
-import os
-from click.testing import CliRunner
+from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
+    extract_input_source_from_h5_command,
+)
 
 
 class TestExtractInputSourceYAMLFromH5(unittest.TestCase):
     def test_cli(self):
-        h5_path = os.path.join(spectre_informer.unit_test_src_path(),
-                               'Visualization/Python', 'SurfaceTestData.h5')
-        output_path = os.path.join(spectre_informer.unit_test_build_path(),
-                                   "IO/H5", "ExtractedInput.yaml")
+        h5_path = os.path.join(
+            spectre_informer.unit_test_src_path(),
+            "Visualization/Python",
+            "SurfaceTestData.h5",
+        )
+        output_path = os.path.join(
+            spectre_informer.unit_test_build_path(),
+            "IO/H5",
+            "ExtractedInput.yaml",
+        )
 
         runner = CliRunner()
-        runner.invoke(extract_input_source_from_h5_command,
-                      [h5_path, output_path],
-                      catch_exceptions=False)
+        runner.invoke(
+            extract_input_source_from_h5_command,
+            [h5_path, output_path],
+            catch_exceptions=False,
+        )
 
         with open(output_path, "r") as open_file:
             extracted_input_source = open_file.read()
@@ -32,5 +42,5 @@ class TestExtractInputSourceYAMLFromH5(unittest.TestCase):
         self.assertEqual(extracted_input_source, expected_input_source)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

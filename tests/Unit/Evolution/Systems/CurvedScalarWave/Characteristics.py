@@ -7,7 +7,7 @@ import numpy as np
 
 
 def char_speed_vpsi(gamma1, lapse, shift, unit_normal):
-    return -(1. + gamma1) * np.dot(shift, unit_normal)
+    return -(1.0 + gamma1) * np.dot(shift, unit_normal)
 
 
 def char_speed_vzero(gamma1, lapse, shift, unit_normal):
@@ -32,9 +32,10 @@ def char_field_vpsi(gamma2, psi, pi, phi, normal_one_form, normal_vector):
 
 
 def char_field_vzero(gamma2, psi, pi, phi, normal_one_form, normal_vector):
-    projection_tensor = np.identity(len(normal_vector)) -\
-        np.einsum('i,j', normal_one_form, normal_vector)
-    return np.einsum('ij,j->i', projection_tensor, phi)
+    projection_tensor = np.identity(len(normal_vector)) - np.einsum(
+        "i,j", normal_one_form, normal_vector
+    )
+    return np.einsum("ij,j->i", projection_tensor, phi)
 
 
 def char_field_vplus(gamma2, psi, pi, phi, normal_one_form, normal_vector):

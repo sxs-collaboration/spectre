@@ -5,16 +5,37 @@ import numpy as np
 from Hydro.SmoothFlow import *
 
 
-def electron_fraction(x, t, mean_velocity, wave_vector, pressure,
-                      adiabatic_index, density_amplitude):
+def electron_fraction(
+    x,
+    t,
+    mean_velocity,
+    wave_vector,
+    pressure,
+    adiabatic_index,
+    density_amplitude,
+):
     return 0.1
 
 
-def magnetic_field(x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
-                   density_amplitude):
+def magnetic_field(
+    x,
+    t,
+    mean_velocity,
+    wave_vector,
+    pressure,
+    adiabatic_index,
+    density_amplitude,
+):
     return np.array([0.0, 0.0, 0.0])
 
 
-def divergence_cleaning_field(x, t, mean_velocity, wave_vector, pressure,
-                              adiabatic_index, density_amplitude):
+def divergence_cleaning_field(
+    x,
+    t,
+    mean_velocity,
+    wave_vector,
+    pressure,
+    adiabatic_index,
+    density_amplitude,
+):
     return 0.0

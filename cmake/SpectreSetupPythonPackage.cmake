@@ -69,10 +69,10 @@ list(REMOVE_ITEM SPECTRE_PY_DEV_DEPS "")
 list(JOIN SPECTRE_PY_DEPS "\n    " SPECTRE_PY_DEPS_OUTPUT)
 list(JOIN SPECTRE_PY_DEV_DEPS "\n    " SPECTRE_PY_DEV_DEPS_OUTPUT)
 configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/support/Python/pyproject.toml"
+  "${CMAKE_SOURCE_DIR}/pyproject.toml"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
 configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/support/Python/setup.cfg"
+  "${CMAKE_SOURCE_DIR}/setup.cfg"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
 set(_JEMALLOC_MESSAGE "")

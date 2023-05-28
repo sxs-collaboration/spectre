@@ -1,13 +1,13 @@
-#Distributed under the MIT License.
-#See LICENSE.txt for details.
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
 
-from spectre.Spectral import Mesh
-from spectre.Spectral import Basis, Quadrature
+import pickle
+import random
+import unittest
 
 import numpy as np
-import pickle
-import unittest
-import random
+
+from spectre.Spectral import Basis, Mesh, Quadrature
 
 
 class TestMesh(unittest.TestCase):
@@ -15,8 +15,10 @@ class TestMesh(unittest.TestCase):
         random.seed(42)
         self.bases = [Basis.Legendre, Basis.Chebyshev, Basis.FiniteDifference]
         self.quadratures = [
-            Quadrature.Gauss, Quadrature.GaussLobatto, Quadrature.CellCentered,
-            Quadrature.FaceCentered
+            Quadrature.Gauss,
+            Quadrature.GaussLobatto,
+            Quadrature.CellCentered,
+            Quadrature.FaceCentered,
         ]
         self.extents = range(12)
 
@@ -42,8 +44,9 @@ class TestMesh(unittest.TestCase):
                         self.assertEqual(mesh.dim, dim)
                         self.check_extents(mesh, [extent for _ in range(dim)])
                         self.check_basis(mesh, [basis for _ in range(dim)])
-                        self.check_quadrature(mesh,
-                                              [quadrature for _ in range(dim)])
+                        self.check_quadrature(
+                            mesh, [quadrature for _ in range(dim)]
+                        )
 
     def test_nonuniform_extents(self):
         for dim in [1, 2, 3]:
@@ -78,14 +81,23 @@ class TestMesh(unittest.TestCase):
                     extents = [random.choice(self.extents) for _ in range(dim)]
                     mesh = Mesh[dim](extents, basis, quadrature)
                     self.assertTrue(
-                        mesh == Mesh[dim](extents, basis, quadrature))
+                        mesh == Mesh[dim](extents, basis, quadrature)
+                    )
                     self.assertFalse(
-                        mesh != Mesh[dim](extents, basis, quadrature))
-                    self.assertTrue(mesh != Mesh[dim]
-                                    ([ex + 1
-                                      for ex in extents], basis, quadrature))
-                    self.assertFalse(mesh == Mesh[dim](
-                        [ex + 1 for ex in extents], basis, quadrature))
+                        mesh != Mesh[dim](extents, basis, quadrature)
+                    )
+                    self.assertTrue(
+                        mesh
+                        != Mesh[dim](
+                            [ex + 1 for ex in extents], basis, quadrature
+                        )
+                    )
+                    self.assertFalse(
+                        mesh
+                        == Mesh[dim](
+                            [ex + 1 for ex in extents], basis, quadrature
+                        )
+                    )
 
     def test_slices(self):
         for dim in [1, 2, 3]:
@@ -93,11 +105,14 @@ class TestMesh(unittest.TestCase):
                 for quadrature in self.quadratures:
                     extents = [random.choice(self.extents) for _ in range(dim)]
                     mesh = Mesh[dim](extents, basis, quadrature)
-                    self.assertEqual(mesh.slices(), [
-                        Mesh[1](extent, basis, quadrature)
-                        for extent in extents
-                    ])
+                    self.assertEqual(
+                        mesh.slices(),
+                        [
+                            Mesh[1](extent, basis, quadrature)
+                            for extent in extents
+                        ],
+                    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

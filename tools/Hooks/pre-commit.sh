@@ -36,25 +36,36 @@ printf '%s\0' "${commit_files[@]}" | \
 # Use git-clang-format to check for any suspicious formatting of code.
 @Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
-###############################################################################
-# Use yapf to check python file formatting, only if it is installed.
-if command -v @YAPF_EXECUTABLE@ >/dev/null 2>&1; then
-    python_files=()
+# Filter Python files
+python_files=()
+for commit_file in ${commit_files[@]}
+do
+    if [[ $commit_file =~ .*\.py$ ]]; then
+        python_files+=("${commit_file}")
+    fi
+done
 
-    for commit_file in ${commit_files[@]}
-    do
-        if [[ $commit_file =~ .*\.py$ ]]; then
-            python_files+=("${commit_file}")
-        fi
-    done
-
-    if [ ${#python_files[@]} -ne 0 ]; then
-        @YAPF_EXECUTABLE@ -q ${python_files[@]}
+# Python file checks
+if [ ${#python_files[@]} -ne 0 ]; then
+    # Use black to check Python file formatting, only if it is installed.
+    @Python_EXECUTABLE@ -m black --version > /dev/null
+    if [ $? -eq 0 ]; then
+        @Python_EXECUTABLE@ -m black --check --quiet ${python_files[@]}
         if [ $? -ne 0 ]; then
             found_error=1
-            printf "Found python formatting errors. Please run the script\n"
-            printf "'tools/FormatPythonCode.sh' to format the whole repo\n"
-            printf "or run yapf on the files you've added directly.\n"
+            printf "Found Python formatting errors.\n"
+            printf "Please run 'black .' in the repository.\n"
+        fi
+    fi
+
+    # Use isort to check python import order, only if it is installed.
+    @Python_EXECUTABLE@ -m isort --version > /dev/null
+    if [ $? -eq 0 ]; then
+        @Python_EXECUTABLE@ -m isort --check-only --quiet ${python_files[@]}
+        if [ $? -ne 0 ]; then
+            found_error=1
+            printf "Found unsorted Python imports.\n"
+            printf "Please run 'isort .' in the repository.\n"
         fi
     fi
 fi

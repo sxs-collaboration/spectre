@@ -17,12 +17,14 @@ def lorentz_boost_matrix(velocity):
         boost_matrix.itemset((0, i + 1), lorentz_factor * velocity[i])
         boost_matrix.itemset((i + 1, 0), lorentz_factor * velocity[i])
         for j in np.arange(0, velocity.size, 1):
-            if (i == j):
+            if i == j:
                 boost_matrix.itemset(
                     (i + 1, j + 1),
-                    (velocity[i] * velocity[j] * prefactor) + 1.0)
+                    (velocity[i] * velocity[j] * prefactor) + 1.0,
+                )
             else:
-                boost_matrix.itemset((i + 1, j + 1),
-                                     (velocity[i] * velocity[j] * prefactor))
+                boost_matrix.itemset(
+                    (i + 1, j + 1), (velocity[i] * velocity[j] * prefactor)
+                )
 
     return boost_matrix

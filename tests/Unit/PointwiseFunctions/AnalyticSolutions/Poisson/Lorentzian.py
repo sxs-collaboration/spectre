@@ -5,11 +5,11 @@ import numpy as np
 
 
 def field(x):
-    return 1. / np.sqrt(1. + np.dot(x, x))
+    return 1.0 / np.sqrt(1.0 + np.dot(x, x))
 
 
 def field_gradient(x):
-    return -np.asarray(x) / np.sqrt(1. + np.dot(x, x))**3
+    return -np.asarray(x) / np.sqrt(1.0 + np.dot(x, x)) ** 3
 
 
 def field_flux(x):
@@ -17,4 +17,4 @@ def field_flux(x):
 
 
 def source(x):
-    return 3. / np.sqrt(1. + np.dot(x, x))**5
+    return 3.0 / np.sqrt(1.0 + np.dot(x, x)) ** 5

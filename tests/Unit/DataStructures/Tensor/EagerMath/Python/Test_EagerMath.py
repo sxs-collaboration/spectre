@@ -1,14 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures.Tensor.EagerMath import determinant, magnitude
-
 import itertools
+import unittest
+
 import numpy as np
 import numpy.testing as npt
-import unittest
+
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Scalar, Jacobian
+from spectre.DataStructures.Tensor import Jacobian, Scalar, tnsr
+from spectre.DataStructures.Tensor.EagerMath import determinant, magnitude
 
 
 def to_numpy(tensor):
@@ -17,8 +18,8 @@ def to_numpy(tensor):
     # inefficient way to store the data because it ignores symmetries, which is
     # why it currently isn't a public function.
     num_points = len(tensor[0])
-    result = np.zeros(tensor.rank * (tensor.dim, ) + (num_points, ))
-    for indices in itertools.product(*(tensor.rank * (range(tensor.dim), ))):
+    result = np.zeros(tensor.rank * (tensor.dim,) + (num_points,))
+    for indices in itertools.product(*(tensor.rank * (range(tensor.dim),))):
         result[indices] = tensor.get(*indices)
     return result
 
@@ -43,9 +44,10 @@ class TestEagerMath(unittest.TestCase):
         metric = tnsr.ii[DataVector, 3](data_metric)
         mag = magnitude(vector, metric)
         mag_numpy = np.sqrt(
-            np.einsum("i...,j...,ij...", data, data, to_numpy(metric)))
+            np.einsum("i...,j...,ij...", data, data, to_numpy(metric))
+        )
         npt.assert_allclose(np.array(mag)[0], mag_numpy)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

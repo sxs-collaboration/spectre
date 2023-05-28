@@ -4,8 +4,14 @@
 import numpy as np
 
 
-def error(face_mesh_velocity, outward_directed_normal_covector, coords,
-          interior_gamma2, time, dim):
+def error(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    coords,
+    interior_gamma2,
+    time,
+    dim,
+):
     return None
 
 
@@ -53,22 +59,37 @@ def _1d_u(coords, time, dim):
 
 def _profile(u):
     return _gauss_amplitude() * np.exp(
-        -(u - _gauss_center())**2 / _gauss_width()**2)
+        -((u - _gauss_center()) ** 2) / _gauss_width() ** 2
+    )
 
 
 def _first_deriv(u):
-    return (-2.0 * _gauss_amplitude() /
-            _gauss_width()**2) * (u - _gauss_center()) * np.exp(
-                -(u - _gauss_center())**2 / _gauss_width()**2)
+    return (
+        (-2.0 * _gauss_amplitude() / _gauss_width() ** 2)
+        * (u - _gauss_center())
+        * np.exp(-((u - _gauss_center()) ** 2) / _gauss_width() ** 2)
+    )
 
 
-def pi(face_mesh_velocity, outward_directed_normal_covector, coords,
-       interior_gamma2, time, dim):
+def pi(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    coords,
+    interior_gamma2,
+    time,
+    dim,
+):
     return _omega(dim) * _first_deriv(_1d_u(coords, time, dim))
 
 
-def phi(face_mesh_velocity, outward_directed_normal_covector, coords,
-        interior_gamma2, time, dim):
+def phi(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    coords,
+    interior_gamma2,
+    time,
+    dim,
+):
     result = np.empty([dim])
     du = _first_deriv(_1d_u(coords, time, dim))
     for i in range(dim):
@@ -76,12 +97,24 @@ def phi(face_mesh_velocity, outward_directed_normal_covector, coords,
     return result
 
 
-def psi(face_mesh_velocity, outward_directed_normal_covector, coords,
-        interior_gamma2, time, dim):
+def psi(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    coords,
+    interior_gamma2,
+    time,
+    dim,
+):
     return _profile(_1d_u(coords, time, dim))
 
 
-def constraint_gamma2(face_mesh_velocity, outward_directed_normal_covector,
-                      coords, interior_gamma2, time, dim):
+def constraint_gamma2(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    coords,
+    interior_gamma2,
+    time,
+    dim,
+):
     assert interior_gamma2 >= 0.0  # make sure random gamma_2 is positive
     return interior_gamma2

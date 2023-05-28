@@ -6,7 +6,7 @@ import re
 
 from .EvolveGhBinaryBlackHole import EvolveGhBinaryBlackHole
 from .EvolveGhSingleBlackHole import EvolveGhSingleBlackHole
-from .ExecutableStatus import ExecutableStatus, EvolutionStatus
+from .ExecutableStatus import EvolutionStatus, ExecutableStatus
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,9 @@ def match_executable_status(executable_name: str) -> ExecutableStatus:
         for pattern in cls.executable_name_patterns:
             if re.match(pattern, executable_name):
                 return cls()
-    logger.warning("No 'ExecutableStatus' subclass matches executable name "
-                   f"'{executable_name}'. Implement one and add it to "
-                   "'executable_status_classes'.")
+    logger.warning(
+        "No 'ExecutableStatus' subclass matches executable name "
+        f"'{executable_name}'. Implement one and add it to "
+        "'executable_status_classes'."
+    )
     return ExecutableStatus()

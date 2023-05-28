@@ -1,11 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import DataVector
-import unittest
 import math
+import unittest
+
 import numpy as np
 import numpy.testing as npt
+
+from spectre.DataStructures import DataVector
 
 
 class TestDataVector(unittest.TestCase):
@@ -99,7 +101,7 @@ class TestDataVector(unittest.TestCase):
         self.assertEqual(a.acos()[0], math.acos(0.67))
         b = DataVector([1.0, -0.5])
         self.assertEqual(b.acos()[0], 0)
-        self.assertEqual(b.acos()[1], math.acos(-.5))
+        self.assertEqual(b.acos()[1], math.acos(-0.5))
 
     def test_acosh(self):
         a = DataVector(5, 1.0)
@@ -353,5 +355,5 @@ class TestDataVector(unittest.TestCase):
         self.assertEqual(a[3], 4.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

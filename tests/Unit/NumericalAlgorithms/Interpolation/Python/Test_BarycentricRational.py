@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Interpolation import BarycentricRational
-
 import unittest
-import scipy.interpolate
+
 import numpy as np
 import numpy.testing as npt
+import scipy.interpolate
+
+from spectre.Interpolation import BarycentricRational
 
 
 class TestBarycentricRational(unittest.TestCase):
@@ -19,11 +20,12 @@ class TestBarycentricRational(unittest.TestCase):
         self.assertEqual(interpolant.order(), 3)
         # Compare to scipy implementation
         scipy_interpolant = scipy.interpolate.BarycentricInterpolator(
-            x_values, y_values)
-        sample_points = [0., 1.5, 9., 10.]
+            x_values, y_values
+        )
+        sample_points = [0.0, 1.5, 9.0, 10.0]
         for x in sample_points:
             self.assertAlmostEqual(interpolant(x), scipy_interpolant(x))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -5,9 +5,10 @@ import numpy as np
 
 
 def longitudinal_operator(strain, inv_metric):
-    projection = (np.einsum('ij,kl->ikjl', inv_metric, inv_metric) -
-                  1. / 3. * np.einsum('ij,kl->ijkl', inv_metric, inv_metric))
-    return 2. * np.einsum('ijkl,kl', projection, strain)
+    projection = np.einsum(
+        "ij,kl->ikjl", inv_metric, inv_metric
+    ) - 1.0 / 3.0 * np.einsum("ij,kl->ijkl", inv_metric, inv_metric)
+    return 2.0 * np.einsum("ijkl,kl", projection, strain)
 
 
 def longitudinal_operator_flat_cartesian(strain):

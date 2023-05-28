@@ -1,8 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Domain import SegmentId
 import unittest
+
+from spectre.Domain import SegmentId
 
 
 class TestSegmentId(unittest.TestCase):
@@ -20,5 +21,5 @@ class TestSegmentId(unittest.TestCase):
         self.assertNotEqual(SegmentId(2, 0), SegmentId(1, 0))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

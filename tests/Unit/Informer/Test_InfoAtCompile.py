@@ -1,11 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre import Informer
-
 import unittest
 
-VERSION_PATTERN = r'\d{4}\.\d{2}\.\d{2}(\.\d+)?'
+from spectre import Informer
+
+VERSION_PATTERN = r"\d{4}\.\d{2}\.\d{2}(\.\d+)?"
 
 
 class TestInformer(unittest.TestCase):
@@ -15,11 +15,11 @@ class TestInformer(unittest.TestCase):
     # The unit test src path and unit test build path are unpredictable,
     # but the last 12 characters must be '/tests/Unit/'
     def test_unit_test_src_path(self):
-        self.assertEqual(Informer.unit_test_src_path()[-12:], '/tests/Unit/')
+        self.assertEqual(Informer.unit_test_src_path()[-12:], "/tests/Unit/")
 
     def test_unit_test_build_path(self):
-        self.assertEqual(Informer.unit_test_build_path()[-12:], '/tests/Unit/')
+        self.assertEqual(Informer.unit_test_build_path()[-12:], "/tests/Unit/")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)
