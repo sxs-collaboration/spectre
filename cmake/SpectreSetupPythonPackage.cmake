@@ -233,12 +233,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     add_dependencies(all-pybindings ${ARG_LIBRARY_NAME})
   endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
 
-  # Create an empty __init__.py file if none exists
-  set(INIT_FILE_LOCATION "${MODULE_LOCATION}/__init__.py")
-  if(NOT EXISTS ${INIT_FILE_LOCATION})
-    file(WRITE ${INIT_FILE_LOCATION} "")
-  endif()
-
   # configure the Python source files into the build directory
   foreach(PYTHON_FILE ${ARG_PYTHON_FILES})
     # Configure file
@@ -249,6 +243,17 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       "${MODULE_LOCATION}/${PYTHON_FILE_JUST_NAME}"
       )
   endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
+
+  # Create empty __init__.py files if none exist
+  # We walk up the tree until we get to ${SPECTRE_PYTHON_PREFIX}
+  set(CURRENT_MODULE ${MODULE_LOCATION})
+  while(NOT ${CURRENT_MODULE} STREQUAL ${SPECTRE_PYTHON_PREFIX})
+    set(INIT_FILE_LOCATION "${CURRENT_MODULE}/__init__.py")
+    if(NOT EXISTS ${INIT_FILE_LOCATION})
+      file(WRITE ${INIT_FILE_LOCATION} "")
+    endif()
+    get_filename_component(CURRENT_MODULE "${CURRENT_MODULE}/.." ABSOLUTE)
+  endwhile()
 endfunction()
 
 # Add headers if Python bindings are being built
