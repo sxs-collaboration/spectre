@@ -18,6 +18,9 @@ beautifulsoup4
 coverxygen
 nbconvert
 pybtex
+sphinx
+furo
+myst-parser
 # Code formatting. The required version is locked in the pyproject.toml config.
 black ~= 23.3
 isort ~= 5.12

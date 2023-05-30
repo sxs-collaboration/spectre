@@ -259,6 +259,10 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      # These can be installed directly in the Docker container instead
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install -r support/Python/dev_requirements.txt
       - name: Configure with cmake
         working-directory: /work
         run: >
@@ -284,6 +288,10 @@ jobs:
         working-directory: /work/build
         run: |
           make doc-coverage
+      - name: Build Python docs
+        working-directory: /work/build
+        run: |
+          make py-docs
       # Upload as an artifact to make available to PRs
       - name: Prepare for upload
         working-directory: /work/build

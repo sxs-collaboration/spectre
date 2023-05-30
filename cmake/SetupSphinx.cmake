@@ -1,46 +1,37 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# Setup Sphinx to generate documentation for our Python modules. The HTML output
+# is placed in docs/html/py/ so we can link to it from Doxygen.
 
-# We cannot fully support Sphinx+Breathe until Sphinx version 3.0.0. We have
-# an issue sxs-collaboration/spectre#2138 for tracking Sphinx bugs that
-# block us from being able to use Sphinx+Breathe.
-#
-# Some notes:
-# - Currently one must manually run make doc-xml before running Sphinx
-#   in order to get the Doxygen XML output. We will want to automate
-#   this in the future with true tracking of files needed for building
-#   Doxygen and Sphinx. Doing so will reduce the time it takes to rebuild
-#   documentation.
-# - Breathe's XML parser is horribly slow. See sxs-collaboration/spectre#2138
-option(USE_SPHINX
-  "When enabled, find and set up Sphinx+Breathe for documentation"
-  OFF)
+# We have also experimented with generating our C++ documentation with Sphinx.
+# See issue: https://github.com/sxs-collaboration/spectre/issues/2138
 
-if (DOXYGEN_FOUND AND USE_SPHINX)
-  find_package(Sphinx REQUIRED)
-  find_package(Breathe REQUIRED)
+set(SPHINX_SOURCE ${CMAKE_BINARY_DIR}/docs/sphinx)
+set(SPHINX_BUILD ${CMAKE_BINARY_DIR}/docs/html/py)
 
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/docs/conf.py
-    ${CMAKE_BINARY_DIR}/docs/conf.py
-    @ONLY
-    )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/docs/conf.py
+  ${SPHINX_SOURCE}/conf.py
+  @ONLY
+  )
 
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/docs/index.rst
-    ${CMAKE_BINARY_DIR}/docs/index.rst
-    )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/docs/index.rst
+  ${SPHINX_SOURCE}/index.rst
+  )
 
-  set(SPHINX_SOURCE ${CMAKE_BINARY_DIR}/docs)
-  set(SPHINX_BUILD ${CMAKE_BINARY_DIR}/docs/sphinx)
-  set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
+file(
+  COPY ${CMAKE_SOURCE_DIR}/docs/_templates
+  DESTINATION ${SPHINX_SOURCE}
+)
 
-  add_custom_target(Sphinx ALL
-    COMMAND
-    ${SPHINX_EXECUTABLE} -b html
-    ${SPHINX_SOURCE} ${SPHINX_BUILD}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating documentation with Sphinx"
-    )
-endif(DOXYGEN_FOUND AND USE_SPHINX)
+add_custom_target(py-docs ALL
+  COMMAND
+  ${CMAKE_COMMAND} -E env
+  ${CMAKE_BINARY_DIR}/bin/python-spectre -m sphinx -b html
+  ${SPHINX_SOURCE} ${SPHINX_BUILD}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Generating Python documentation"
+  )
+add_dependencies(py-docs all-pybindings)
