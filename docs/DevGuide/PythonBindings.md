@@ -94,7 +94,7 @@ namespace py_bindings {
 void bind_datavector(py::module& m);
 }  // namespace py_bindings
 
-PYBIND11_MODULE(_PyDataStructures, m) {
+PYBIND11_MODULE(_Pybindings, m) {
   py_bindings::bind_datavector(m);
 }
 \endcode

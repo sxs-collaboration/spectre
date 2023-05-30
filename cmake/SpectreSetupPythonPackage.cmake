@@ -212,7 +212,7 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       ${ARG_LIBRARY_NAME}
       PROPERTIES
       PREFIX ""
-      LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
+      LIBRARY_OUTPUT_NAME "_Pybindings"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
       )
     # We need --no-as-needed since each python module needs to depend on all the
