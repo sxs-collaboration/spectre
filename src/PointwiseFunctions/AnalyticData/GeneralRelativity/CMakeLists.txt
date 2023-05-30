@@ -27,4 +27,25 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   Interpolation
+  Utilities
   )
+
+if (TARGET SpEC::Exporter)
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    SpecInitialData.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    InterpolateFromSpec.hpp
+    SpecInitialData.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    SpEC::Exporter
+    )
+endif()
