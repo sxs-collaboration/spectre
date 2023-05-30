@@ -5,7 +5,7 @@ function(add_generalized_harmonic_executable_without_horizon
     DIM LIBS_TO_LINK)
   add_spectre_parallel_executable(
     "EvolveGhNoBlackHole${DIM}D"
-    EvolveGeneralizedHarmonicNoBlackHole
+    EvolveGhNoBlackHole
     Evolution/Executables/GeneralizedHarmonic
     "EvolutionMetavars<${DIM}>"
     "${LIBS_TO_LINK}"
@@ -40,7 +40,7 @@ set(LIBS_TO_LINK
 
 add_spectre_parallel_executable(
   EvolveGhSingleBlackHole
-  EvolveGeneralizedHarmonicSingleBlackHole
+  EvolveGhSingleBlackHole
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars<3>"
   "${LIBS_TO_LINK};ApparentHorizons;ControlSystem"
@@ -71,7 +71,7 @@ add_spectre_parallel_executable(
 
 add_spectre_parallel_executable(
   "EvolveGhCce"
-  EvolveGeneralizedHarmonicCce
+  EvolveGhCce
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars<3>"
   "${LIBS_TO_LINK};Cce"
