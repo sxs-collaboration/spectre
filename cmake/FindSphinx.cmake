@@ -8,10 +8,12 @@ if(NOT SPHINX_ROOT)
 endif()
 
 # Look for an executable called sphinx-build or sphinx-build2
+get_filename_component(_PY_BIN_DIR ${Python_EXECUTABLE} DIRECTORY)
 find_program(
   SPHINX_EXECUTABLE
   NAMES sphinx-build sphinx-build2
   PATHS ${SPHINX_ROOT}
+  HINTS ${_PY_BIN_DIR}
   DOC "Path to sphinx-build or sphinx-build2 executable")
 
 execute_process(COMMAND "${SPHINX_EXECUTABLE}" "--version"
