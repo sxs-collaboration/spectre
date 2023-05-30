@@ -119,12 +119,12 @@ class ObserveVolumeIntegrals<
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
-  using argument_tags = tmpl::list<
-      ::Tags::ObservationBox, ObservationValueTag,
-      ::Events::Tags::ObserverMesh<VolumeDim>,
-      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
-                                           Frame::Inertial>,
-      Tensors...>;
+  using argument_tags =
+      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
+                 ::Events::Tags::ObserverMesh<VolumeDim>,
+                 ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                                        Frame::Inertial>,
+                 Tensors...>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ArrayIndex,
