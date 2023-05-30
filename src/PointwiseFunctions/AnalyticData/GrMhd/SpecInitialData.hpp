@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "DataStructures/CachedTempBuffer.hpp"
+#include "Evolution/NumericInitialData.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -47,7 +47,7 @@ namespace grmhd::AnalyticData {
  * constant read from the input file.
  */
 class SpecInitialData : public evolution::initial_data::InitialData,
-                        public MarkAsAnalyticData,
+                        public evolution::NumericInitialData,
                         public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::EquationOfState<true, 1>;
