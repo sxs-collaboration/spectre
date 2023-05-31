@@ -13,7 +13,9 @@ spectre_target_sources(
   DerivChristoffel.cpp
   DerivLapse.cpp
   DerivZ4Constraint.cpp
-  Ricci.cpp
+  Ricci1.cpp
+  Ricci2.cpp
+  Ricci3.cpp
   RicciScalarPlusDivergenceZ4Constraint.cpp
   TimeDerivative.cpp
   Z4Constraint.cpp
@@ -29,6 +31,7 @@ spectre_target_headers(
   DerivLapse.hpp
   DerivZ4Constraint.hpp
   Ricci.hpp
+  Ricci.tpp
   RicciScalarPlusDivergenceZ4Constraint.hpp
   System.hpp
   Tags.hpp
