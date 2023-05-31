@@ -231,6 +231,14 @@ class AdamsBashforth : public LtsTimeStepper {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
+  bool neighbor_data_required(
+      const TimeStepId& next_substep_id,
+      const TimeStepId& neighbor_data_id) const override;
+
+  bool neighbor_data_required(
+      double dense_output_time,
+      const TimeStepId& neighbor_data_id) const override;
+
   WRAPPED_PUPable_decl_template(AdamsBashforth);  // NOLINT
 
   explicit AdamsBashforth(CkMigrateMessage* /*unused*/) {}

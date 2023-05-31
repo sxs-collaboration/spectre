@@ -112,6 +112,18 @@ TimeStepId AdamsBashforth::next_time_id_for_error(
   return next_time_id(current_id, time_step);
 }
 
+bool AdamsBashforth::neighbor_data_required(
+    const TimeStepId& next_substep_id,
+    const TimeStepId& neighbor_data_id) const {
+  return neighbor_data_id < next_substep_id;
+}
+
+bool AdamsBashforth::neighbor_data_required(
+    const double dense_output_time, const TimeStepId& neighbor_data_id) const {
+  return evolution_less<double>{neighbor_data_id.time_runs_forward()}(
+      neighbor_data_id.substep_time(), dense_output_time);
+}
+
 void AdamsBashforth::pup(PUP::er& p) {
   LtsTimeStepper::pup(p);
   p | order_;

@@ -80,6 +80,22 @@ class LtsTimeStepper : public virtual TimeStepper {
 #undef LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL
   /// \endcond
 
+  /// \brief Check whether a neighbor record is needed for boundary
+  /// output.
+  ///
+  /// In order to perform boundary output, all records from the
+  /// neighbor with `TimeStepId`s for which this method returns true
+  /// should have been added to the history.  Versions are provided
+  /// for a substep and for dense output.
+  /// @{
+  virtual bool neighbor_data_required(
+      const TimeStepId& next_substep_id,
+      const TimeStepId& neighbor_data_id) const = 0;
+
+  virtual bool neighbor_data_required(
+      double dense_output_time, const TimeStepId& neighbor_data_id) const = 0;
+  /// @}
+
   /// \brief Compute the change in a boundary quantity due to the
   /// coupling on the interface.
   ///

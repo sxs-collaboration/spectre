@@ -342,10 +342,31 @@ void check_lts_vts() {
     }
   }
 }
+
+void test_neighbor_data_required() {
+  // Test is order-independent
+  const TimeSteppers::AdamsBashforth stepper(4);
+  const Slab slab(0.0, 1.0);
+  CHECK(not stepper.neighbor_data_required(TimeStepId(true, 0, slab.start()),
+                                           TimeStepId(true, 0, slab.start())));
+  CHECK(not stepper.neighbor_data_required(TimeStepId(true, 0, slab.start()),
+                                           TimeStepId(true, 0, slab.end())));
+  CHECK(stepper.neighbor_data_required(TimeStepId(true, 0, slab.end()),
+                                       TimeStepId(true, 0, slab.start())));
+
+  CHECK(not stepper.neighbor_data_required(TimeStepId(false, 0, slab.end()),
+                                           TimeStepId(false, 0, slab.end())));
+  CHECK(not stepper.neighbor_data_required(TimeStepId(false, 0, slab.end()),
+                                           TimeStepId(false, 0, slab.start())));
+  CHECK(stepper.neighbor_data_required(TimeStepId(false, 0, slab.start()),
+                                       TimeStepId(false, 0, slab.end())));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
                   "[Unit][Time]") {
+  test_neighbor_data_required();
+
   // No local stepping
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);

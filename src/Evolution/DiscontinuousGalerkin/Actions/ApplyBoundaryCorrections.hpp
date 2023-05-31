@@ -210,19 +210,18 @@ bool receive_boundary_data_local_time_stepping(
           Dim>>(*inboxes);
 
   const auto needed_time = [&box]() {
-    const auto& local_next_temporal_id =
-        db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+    const LtsTimeStepper& time_stepper =
+        db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
     if constexpr (DenseOutput) {
       const auto& dense_output_time = db::get<::Tags::Time>(*box);
-      return
-          [&dense_output_time, &local_next_temporal_id](const TimeStepId& id) {
-            return evolution_less<double>{
-                local_next_temporal_id.time_runs_forward()}(
-                id.step_time().value(), dense_output_time);
-          };
+      return [&dense_output_time, &time_stepper](const TimeStepId& id) {
+        return time_stepper.neighbor_data_required(dense_output_time, id);
+      };
     } else {
-      return [&local_next_temporal_id](const TimeStepId& id) {
-        return id < local_next_temporal_id;
+      const auto& next_temporal_id =
+          db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+      return [&next_temporal_id, &time_stepper](const TimeStepId& id) {
+        return time_stepper.neighbor_data_required(next_temporal_id, id);
       };
     }
   }();
