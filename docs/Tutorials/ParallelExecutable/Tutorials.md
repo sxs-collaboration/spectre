@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Writing SpECTRE executables {#tutorials_parallel}
 
+\tableofcontents
+
 This set of tutorials will develop a parallel executable in stages,
 beginning with the simplest possible executable, and then introducing
 SpECTRE's parallel features one step at a time.  At each stage, the

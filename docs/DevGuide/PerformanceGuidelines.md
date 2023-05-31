@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # General Performance Guidelines {#general_perf_guide}
 
+\tableofcontents
+
 Below are some general guidelines for achieving decent performance.
 
 - One good measurement is worth more than a million expert opinions. We have a

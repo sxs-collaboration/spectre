@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Importing data {#dev_guide_importing}
 
+\tableofcontents
+
 The `importers` namespace holds functionality for importing data into SpECTRE.
 We currently support loading volume data files in the same format that is
 written by the `observers`.

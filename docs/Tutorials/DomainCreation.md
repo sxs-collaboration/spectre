@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # %Domain Creation {#tutorial_domain_creation}
 
+\tableofcontents
+
 ### Domain Decomposition
 The spatial domain on which the solution is computed is divided into
 non-overlapping cells. For 2D and 3D domains, we use curvilinear

@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Profiling {#profiling}
 
+\tableofcontents
+
 There are a number of tools available for profiling, each with their own
 strengths and weaknesses. This makes it difficult to recommend one "right" way
 of analyzing performance using profilers. Instead, one should use a combination

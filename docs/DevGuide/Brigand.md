@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Metaprogramming with Brigand {#brigand}
 
+\tableofcontents
+
 \note
 This document covers Brigand as of commit
 [66b3d9276ed95425ac919ac1841286d088b5f4b1](https://github.com/edouarda/brigand/commit/66b3d9276ed95425ac919ac1841286d088b5f4b1)

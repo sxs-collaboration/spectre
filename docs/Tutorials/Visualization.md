@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Running and Visualizing {#tutorial_visualization}
 
+\tableofcontents
+
 ### Building an Executable from an Existing Source File
 
 SpECTRE source files for evolution executables are located in

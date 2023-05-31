@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # OrientationMap {#tutorial_orientations}
 
+\tableofcontents
+
 ### Introduction
 Each element in a domain has a set of internal directions which it uses
 for computations in its own local coordinate system. These are referred to

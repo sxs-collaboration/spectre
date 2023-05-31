@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Parallelization in SpECTRE {#tutorial_parallel_concepts}
 
+\tableofcontents
+
 This overview describes the concepts and terminology that SpECTRE uses
 to enable parallelism.  This overview is a general discussion with no
 code examples.  Subsequent tutorials will provide a more in-depth

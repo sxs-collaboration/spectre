@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Using SpECTRE's Python modules {#spectre_using_python}
 
+\tableofcontents
+
 Some classes and functions from SpECTRE have Python bindings to make it easier
 to visualize data, write test code, and provide an introduction to numerical
 relativity without needing to delve into C++.

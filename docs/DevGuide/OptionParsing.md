@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Option Parsing {#dev_guide_option_parsing}
 
+\tableofcontents
+
 SpECTRE can read YAML configuration files at runtime to set parameters
 and choose between classes implementing an interface.  %Options are
 parsed during code initialization and can be used to construct objects

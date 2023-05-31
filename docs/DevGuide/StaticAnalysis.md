@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Static Analysis Tools {#static_analysis_tools}
 
+\tableofcontents
+
 SpECTRE code is frequently run through the
 [Clang Tidy](http://clang.llvm.org/extra/clang-tidy/) static analyzer.
 Since analyzing a single source file can take over half a minute it

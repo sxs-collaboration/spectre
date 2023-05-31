@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # SFINAE {#sfinae}
 
+\tableofcontents
+
 SFINAE, Substitution Failure Is Not An Error, means that if a deduced template
 substitution fails, compilation must continue. This can be exploited to make
 decisions at compile time. See [here](http://nilsdeppe.com/posts/tmpl-part1)

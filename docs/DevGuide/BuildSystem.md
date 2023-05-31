@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Build System {#spectre_build_system}
 
+\tableofcontents
+
 # CMake {#cmake}
 
 SpECTRE uses [CMake](https://cmake.org/) for the build system. In this

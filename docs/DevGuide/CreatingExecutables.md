@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Creating Executables {#dev_guide_creating_executables}
 
+\tableofcontents
+
 There are several different types of executables that can be built:
 - An executable that uses Charm++ to run in parallel,
   e.g. `Executables/ParallelInfo`

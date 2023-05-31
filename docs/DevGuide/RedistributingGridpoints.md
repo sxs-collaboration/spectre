@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Redistributing Gridpoints {#redistributing_gridpoints}
 
+\tableofcontents
+
 ## Introduction
 The simplest way to construct a volume map from two parameterized surfaces is
 by linearly interpolating between them:

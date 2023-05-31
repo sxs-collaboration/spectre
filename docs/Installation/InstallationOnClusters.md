@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Installation on Clusters {#installation_on_clusters}
 
+\tableofcontents
+
 The installation instructions are the same for most systems because we use shell
 scripts to set up the environment for each supercomputer. We describe the
 generic installation instructions once, and only note special instructions if

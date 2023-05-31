@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # %Running CCE {#tutorial_cce}
 
+\tableofcontents
+
 The basic instructions for getting up and running with a stand-alone
 CCE using external data are:
 - Clone spectre and build the CharacteristicExtract target
@@ -26,8 +28,8 @@ CCE using external data are:
     which is useful for finite-difference derivatives on the output data, but
     otherwise it'll just unnecessarily inflate the output files, so if you
     don't need the extra points, best just set it to 1.
-  - If you're extracting at 100M or less (which isn't currently recommended
-    due to the junk radiation being much worse), best to keep the `TargetStepSize`
+  - If you're extracting at 100M or less (which isn't currently recommended due
+    to the junk radiation being much worse), best to keep the `TargetStepSize`
     as .5 for 100M and perhaps even lower yet for nearer extraction.
   - The `InitializeJ` in the example file uses `ConformalFactor` which has been
     found to perform better than the other schemes implemented so far.

@@ -4,25 +4,7 @@ See LICENSE.txt for details.
 \endcond
 \mainpage Introduction
 
-<div class="toc">
-Table of Contents
-<ul>
-<li class="level1"><a href="#intro_sec">Introduction</a></li>
-<li class="level1"><a href="versioning_and_releases.html">Versioning and Releases</a></li>
-<li class="level1"><a href="installation.html">Installation</a></li>
-<li class="level1"><a href="installation_on_clusters.html">Installation on clusters</a></li>
-<li class="level1"><a href="tutorials.html">User tutorials</a></li>
-<li class="level1"><a href="dev_guide.html">Dev guide</a></li>
-<li class="level1"><a href="code_of_conduct.html">Code of Conduct</a></li>
-<li class="level1"><a href="contributing_to_spectre.html">Contributing to SpECTRE</a></li>
-</ul>
-Further links
-<ul>
-<li class="level1"><a href="doc_coverage/index.html">Documentation coverage</a></li>
-<li class="level1"><a href="unit-test-coverage/index.html">Unit test coverage</a></li>
-</ul>
-</div>
-
+\tableofcontents
 
 \htmlonly
 <p>
