@@ -77,6 +77,10 @@ size_t AdamsBashforth::order() const { return order_; }
 
 size_t AdamsBashforth::error_estimate_order() const { return order_ - 1; }
 
+uint64_t AdamsBashforth::number_of_substeps() const { return 1; }
+
+uint64_t AdamsBashforth::number_of_substeps_for_error() const { return 1; }
+
 size_t AdamsBashforth::number_of_past_steps() const { return order_ - 1; }
 
 double AdamsBashforth::stable_step() const {
@@ -101,6 +105,11 @@ TimeStepId AdamsBashforth::next_time_id(const TimeStepId& current_id,
                                         const TimeDelta& time_step) const {
   ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
   return current_id.next_step(time_step);
+}
+
+TimeStepId AdamsBashforth::next_time_id_for_error(
+    const TimeStepId& current_id, const TimeDelta& time_step) const {
+  return next_time_id(current_id, time_step);
 }
 
 void AdamsBashforth::pup(PUP::er& p) {

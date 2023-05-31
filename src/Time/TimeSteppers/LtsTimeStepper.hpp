@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <cstdint>
 #include <pup.h>
 #include <type_traits>
 
@@ -137,17 +136,6 @@ class LtsTimeStepper : public virtual TimeStepper {
     return boundary_dense_output_forward(&*make_math_wrapper(result),
                                          history.local(), history.remote(),
                                          history.evaluator(coupling), time);
-  }
-
-  /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps() const final { return 1; }
-
-  /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps_for_error() const final { return 1; }
-
-  TimeStepId next_time_id_for_error(const TimeStepId& current_id,
-                                    const TimeDelta& time_step) const final {
-    return next_time_id(current_id, time_step);
   }
 };
 
