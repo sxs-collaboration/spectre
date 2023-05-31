@@ -4,6 +4,7 @@
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <pup.h>
 #include <pup_stl.h>
 
@@ -55,9 +56,10 @@ double ZeroCrossingPredictor::min_positive_zero_crossing_time(
     return 0.0;
   }
   auto crossing_time = zero_crossing_time(current_time);
-  // Replace all negative crossing times with zero.
-  std::for_each(crossing_time.begin(), crossing_time.end(),
-                [](double& a) { a = std::max(0.0, a); });
+  // Replace all negative crossing times with infinity.
+  std::for_each(crossing_time.begin(), crossing_time.end(), [](double& a) {
+    a = a < 0.0 ? std::numeric_limits<double>::infinity() : a;
+  });
 
   return *std::min_element(crossing_time.begin(), crossing_time.end());
 }
