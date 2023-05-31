@@ -207,9 +207,16 @@ struct Initialize {
       const ParallelComponent* const /*meta*/) {
     const TimeDelta initial_step = db::get<::Tags::TimeStep>(box);
     // The slab number increments each time a new point is generated
-    // until it reaches zero.
+    // until it reaches zero.  The multistep integrators all need
+    // `order` control points at distinct times, even if some of those
+    // are not counted in the reported required past steps.
+    // (Predictor stages can't line up with history points.)  This
+    // doesn't count the value as the initial time, hence the "- 1".
     const auto values_needed =
-        -db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number();
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0
+            ? 0
+            : db::get<::Tags::TimeStepper<>>(box).order() - 1;
+
     TimeDelta self_start_step = initial_step;
 
     // Make sure the starting procedure fits in a slab.
@@ -316,16 +323,23 @@ struct CheckForOrderIncrease {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
-    const auto& time = db::get<::Tags::TimeStepId>(box).step_time();
+    const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
+    const auto& time = time_step_id.step_time();
     const auto& time_step = db::get<::Tags::TimeStep>(box);
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     const size_t history_integration_order =
         db::get<tmpl::front<history_tags>>(box).integration_order();
 
+    // This is correct for both AdamsBashforth and AdamsMoultonPc.
+    // The latter doesn't need as many history values, but it can't
+    // use the first step of the previous order because it would line
+    // up with the predictor stage of the first step for the current
+    // order.
     const Time required_time =
         (time_step.is_positive() ? time.slab().start() : time.slab().end()) +
         history_integration_order * time_step;
-    const bool done_with_order = time == required_time;
+    const bool done_with_order =
+        time_step_id.substep() == 0 and time == required_time;
 
     if (done_with_order) {
       db::mutate<::Tags::Next<::Tags::TimeStepId>>(
@@ -356,7 +370,7 @@ struct CheckForOrderIncrease {
                      "integration order.");
               mutable_history->integration_order(
                   mutable_history->integration_order() + 1);
-              // AdamsBashforth does cleanup internally when taking a
+              // The time steppers do cleanup internally when taking a
               // step, but since we are resetting to the start instead
               // of taking a step we have to do it here.  If we
               // skipped this the extra value would harmlessly fall
