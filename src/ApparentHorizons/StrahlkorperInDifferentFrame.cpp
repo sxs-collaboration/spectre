@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -27,7 +28,7 @@
 
 namespace {
 // Transforms cartesian coordinates of a strahlkorper
-// from one frame to another, by looping over the blocks and
+// from one frame to another, by calling block_logical_coordinates and
 // calling the correct map functions.
 template <typename SrcFrame, typename DestFrame>
 void coords_to_different_frame(
@@ -43,50 +44,44 @@ void coords_to_different_frame(
   // need to add 'if constexpr's for that case.
   static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
                 "Source frame must currently be Grid frame");
-  // We wish to map src_cartesian_coords to the destination frame.
-  // Each Block will have a different map, so the mapping must be done
-  // Block by Block.
-  // Note that if a point is on the boundary of two or more
-  // Blocks, it might get filled twice, but that's ok.
+  const auto block_logical_coords = block_logical_coordinates(
+      domain, src_cartesian_coords, time, functions_of_time);
+
   tnsr::I<double, 3, DestFrame> x_dest{};
   tnsr::I<double, 3, SrcFrame> x_src{};
   for (size_t s = 0; s < get<0>(src_cartesian_coords).size(); ++s) {
     get<0>(x_src) = get<0>(src_cartesian_coords)[s];
     get<1>(x_src) = get<1>(src_cartesian_coords)[s];
     get<2>(x_src) = get<2>(src_cartesian_coords)[s];
-    for (const auto& block : domain.blocks()) {
-      const auto& logical_to_grid_map = block.moving_mesh_logical_to_grid_map();
-      const auto x_logical = logical_to_grid_map.inverse(x_src);
-      // x_logical might be an empty std::optional.
-      if (x_logical.has_value() and get<0>(x_logical.value()) <= 1.0 and
-          get<0>(x_logical.value()) >= -1.0 and
-          get<1>(x_logical.value()) <= 1.0 and
-          get<1>(x_logical.value()) >= -1.0 and
-          get<2>(x_logical.value()) <= 1.0 and
-          get<2>(x_logical.value()) >= -1.0) {
-        // If we get here (that is, if the logical coords are between -1 and
-        // +1), then the point is in this block. So we map it.
-        if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted>) {
-          if (not block.has_distorted_frame()) {
-            throw std::runtime_error(
-                "Strahlkorper lies outside of distorted-frame region");
-          }
-          const auto& grid_to_distorted_map =
-              block.moving_mesh_grid_to_distorted_map();
-          x_dest = grid_to_distorted_map(x_src, time, functions_of_time);
-        } else {
-          static_assert(
-              std::is_same_v<DestFrame, ::Frame::Inertial>,
-              "Destination frame must currently be Distorted or Inertial");
-          const auto& grid_to_inertial_map =
-              block.moving_mesh_grid_to_inertial_map();
-          x_dest = grid_to_inertial_map(x_src, time, functions_of_time);
-        }
-        get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
-        get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
-        get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
+
+    // If this doesn't have a value, then the point isn't in the domain which is
+    // really bad.
+    ASSERT(block_logical_coords[s].has_value(),
+           "Source coordinates are not in the domain.");
+
+    const auto& block_id_and_coords = block_logical_coords[s].value();
+    const auto& block = domain.blocks()[block_id_and_coords.id.get_index()];
+
+    if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted>) {
+      if (not block.has_distorted_frame()) {
+        throw std::runtime_error(
+            "Strahlkorper lies outside of distorted-frame region");
       }
+      const auto& grid_to_distorted_map =
+          block.moving_mesh_grid_to_distorted_map();
+      x_dest = grid_to_distorted_map(x_src, time, functions_of_time);
+    } else {
+      static_assert(
+          std::is_same_v<DestFrame, ::Frame::Inertial>,
+          "Destination frame must currently be Distorted or Inertial");
+      const auto& grid_to_inertial_map =
+          block.moving_mesh_grid_to_inertial_map();
+      x_dest = grid_to_inertial_map(x_src, time, functions_of_time);
     }
+
+    get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
+    get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
+    get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
   }
 }
 }  // namespace
@@ -165,76 +160,45 @@ void strahlkorper_in_different_frame(
        &functions_of_time,
        &time](const double r_dest, const size_t s) -> std::optional<double> {
     // Get destination Cartesian coordinates of the point.
-    const tnsr::I<double, 3, DestFrame> x_dest{
-        {r_dest * get<0>(r_hat)[s] + center_dest[0],
-         r_dest * get<1>(r_hat)[s] + center_dest[1],
-         r_dest * get<2>(r_hat)[s] + center_dest[2]}};
+    const tnsr::I<DataVector, 3, DestFrame> x_dest{
+        {DataVector{r_dest * get<0>(r_hat)[s] + center_dest[0]},
+         DataVector{r_dest * get<1>(r_hat)[s] + center_dest[1]},
+         DataVector{r_dest * get<2>(r_hat)[s] + center_dest[2]}}};
 
-    // Transform to source Cartesian coordinates of the point.  This
-    // must be done block by block, since only one block will have the
-    // source coordinates (except on block boundaries, in which case
-    // multiple blocks will succeed; we use the first block that succeeds
-    // since they all should give the same result modulo roundoff).
-    for (const auto& block : domain.blocks()) {
-      // Once there are more possible source frames than the grid frame
-      // (i.e. the distorted frame), then this static_assert will change,
-      // and there will be an `if constexpr` below to treat the different
-      // possible source frames.
-      static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
-                    "Source frame must currently be Grid frame");
-      static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
-                    "Destination frame must currently be Inertial frame");
-      const auto x_src = block.moving_mesh_grid_to_inertial_map().inverse(
-          x_dest, time, functions_of_time);
-      if (x_src.has_value()) {
-        // Sometimes the inverse map might be defined, but the logical
-        // coordinates might be outside the correct range. So go back
-        // to logical coords and make sure that the logical coords are
-        // between -1 and 1.
-        const auto x_logical =
-            block.moving_mesh_logical_to_grid_map().inverse(x_src.value());
-        if (x_logical.has_value() and get<0>(x_logical.value()) <= 1.0 and
-            get<0>(x_logical.value()) >= -1.0 and
-            get<1>(x_logical.value()) <= 1.0 and
-            get<1>(x_logical.value()) >= -1.0 and
-            get<2>(x_logical.value()) <= 1.0 and
-            get<2>(x_logical.value()) >= -1.0) {
-          // Find (r_src,theta_src,phi_src) in source coordinates.
-          const double r_src =
-              std::hypot(get<0>(x_src.value()) - center_src[0],
-                         get<1>(x_src.value()) - center_src[1],
-                         get<2>(x_src.value()) - center_src[2]);
-          const double theta_src =
-              atan2(std::hypot(get<0>(x_src.value()) - center_src[0],
-                               get<1>(x_src.value()) - center_src[1]),
-                    get<2>(x_src.value()) - center_src[2]);
-          const double phi_src = atan2(get<1>(x_src.value()) - center_src[1],
-                                       get<0>(x_src.value()) - center_src[0]);
+    const auto block_logical_coords =
+        block_logical_coordinates(domain, x_dest, time, functions_of_time);
 
-          // Evaluate the radius of the surface at (theta_src,phi_src).
-          const double r_surf_src = src_strahlkorper.radius(theta_src, phi_src);
-
-          // If r_surf_src = r_src, then r_dest is on the surface.
-          return r_surf_src - r_src;
-        }
-      }
+    if (not block_logical_coords[0].has_value()) {
+      // If we get here, the inverse has failed for every block, so the point is
+      // outside the domain (e.g. inside an excision boundary or outside the
+      // outer boundary), so we return an nullopt.
+      return std::nullopt;
     }
-    // If we get here, the inverse has failed for every block, so
-    // the point is outside the domain (e.g. inside an excision
-    // boundary or outside the outer boundary), so we return an
-    // empty std::optional<double>.
 
-    // For why turning off the warning for gcc is necessary here, see
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
-    // With the warning on, CI succeeds for gcc 7 and 10, fails for gcc 8 and 9.
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 7 && __GNUC__ < 10
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__)&&!defined(__clang__)&&__GNUC__>7&&__GNUC__<10
-    return {};
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 7 && __GNUC__ < 10
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__)&&!defined(__clang__)&&__GNUC__>7&&__GNUC__<10
+    const auto& block_id_and_coords = block_logical_coords[0].value();
+    const auto& block = domain.blocks()[block_id_and_coords.id.get_index()];
+
+    static_assert(std::is_same_v<SrcFrame, ::Frame::Grid>,
+                  "Source frame must currently be Grid frame");
+    static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
+                  "Destination frame must currently be Inertial frame");
+    const auto& x_src =
+        block.moving_mesh_logical_to_grid_map()(block_id_and_coords.data);
+
+    const double r_src =
+        std::hypot(get<0>(x_src) - center_src[0], get<1>(x_src) - center_src[1],
+                   get<2>(x_src) - center_src[2]);
+    const double theta_src = atan2(std::hypot(get<0>(x_src) - center_src[0],
+                                              get<1>(x_src) - center_src[1]),
+                                   get<2>(x_src) - center_src[2]);
+    const double phi_src =
+        atan2(get<1>(x_src) - center_src[1], get<0>(x_src) - center_src[0]);
+
+    // Evaluate the radius of the surface at (theta_src,phi_src).
+    const double r_surf_src = src_strahlkorper.radius(theta_src, phi_src);
+
+    // If r_surf_src = r_src, then r_dest is on the surface.
+    return r_surf_src - r_src;
   };
 
   // This version of radius_function returns a double, not a
