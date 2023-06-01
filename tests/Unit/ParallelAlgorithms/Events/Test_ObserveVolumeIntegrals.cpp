@@ -259,8 +259,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   const double observation_time = 2.0;
   const auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
-      domain::Tags::Mesh<VolumeDim>,
-      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      ::Events::Tags::ObserverMesh<VolumeDim>,
+      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>,
       Tags::Variables<typename decltype(vars)::tags_list>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, mesh, det_inv_jacobian, vars, section);

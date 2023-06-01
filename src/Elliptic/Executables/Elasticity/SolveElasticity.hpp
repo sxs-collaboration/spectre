@@ -171,6 +171,8 @@ struct Metavariables {
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 ::Events::Tags::ObserverDetInvJacobianCompute<
+                     Frame::ElementLogical, Frame::Inertial>,
                  error_compute>;
 
   // Collect all items to store in the cache.

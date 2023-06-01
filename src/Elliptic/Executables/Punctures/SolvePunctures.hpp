@@ -66,7 +66,9 @@ struct Metavariables {
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
                      volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 ::Events::Tags::ObserverDetInvJacobianCompute<
+                     Frame::ElementLogical, Frame::Inertial>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

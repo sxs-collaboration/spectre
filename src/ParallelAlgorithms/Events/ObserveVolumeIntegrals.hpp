@@ -28,6 +28,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
@@ -118,11 +119,12 @@ class ObserveVolumeIntegrals<
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
-  using argument_tags = tmpl::list<
-      ::Tags::ObservationBox, ObservationValueTag,
-      domain::Tags::Mesh<VolumeDim>,
-      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
-      Tensors...>;
+  using argument_tags =
+      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
+                 ::Events::Tags::ObserverMesh<VolumeDim>,
+                 ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                                        Frame::Inertial>,
+                 Tensors...>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ArrayIndex,
