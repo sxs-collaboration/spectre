@@ -116,12 +116,11 @@ void AhSpeed::update(const gsl::not_null<Info*> info,
   // the same as they were.
 }
 
-double AhSpeed::control_signal(
-    const Info& info,
-    const ControlSignalArgs& control_signal_args) const {
+double AhSpeed::control_error(
+    const Info& info, const ControlErrorArgs& control_error_args) const {
   const double Y00 = sqrt(0.25 / M_PI);
-  return (info.target_char_speed - control_signal_args.min_char_speed) /
-         (Y00 * control_signal_args.avg_distorted_normal_dot_unit_coord_vector);
+  return (info.target_char_speed - control_error_args.min_char_speed) /
+         (Y00 * control_error_args.avg_distorted_normal_dot_unit_coord_vector);
 }
 
 PUP::able::PUP_ID AhSpeed::my_PUP_ID = 0;

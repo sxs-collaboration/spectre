@@ -24,9 +24,31 @@ class ZeroCrossingPredictor;
 /// \endcond
 
 namespace control_system::size {
+/*!
+ * \brief A simple struct to hold diagnostic information about computing the
+ * size control error.
+ */
+struct ErrorDiagnostics {
+  double control_error;
+  size_t state_number;
+  double lambda_00;
+  double dt_lambda_00;
+  double horizon_00;
+  double dt_horizon_00;
+  double control_error_delta_r;
+  double min_char_speed;
+  double min_comoving_char_speed;
+  double char_speed_crossing_time;
+  double comoving_char_speed_crossing_time;
+  double delta_r_crossing_time;
+  double target_char_speed;
+  double suggested_timescale;
+  double damping_timescale;
+  bool discontinuous_change_has_occurred;
+};
 
 /*!
- * \brief Computes the size control signal, updating the stored info.
+ * \brief Computes the size control error, updating the stored info.
  *
  * \tparam Frame should be ::Frame::Distorted if ::Frame::Distorted exists.
  * \param info struct containing parameters that will be used/filled. Some of
@@ -37,7 +59,7 @@ namespace control_system::size {
  * \param predictor_comoving_char_speed ZeroCrossingPredictor for the
  *        comoving characteristic speed.
  * \param predictor_delta_radius ZeroCrossingPredictor for the difference
- *        in radius between the horizon and the exision boundary.
+ *        in radius between the horizon and the excision boundary.
  * \param time the current time.
  * \param apparent_horizon the current horizon in frame Frame.
  * \param excision_boundary a Strahlkorper representing the excision
@@ -59,6 +81,10 @@ namespace control_system::size {
  * \param inverse_spatial_metric_on_excision_boundary metric in frame Frame.
  * \param function_of_time FunctionOfTime that is being controlled.
  *        This function_of_time contains DataVectors of size 1.
+ * \return Returns an `ErrorDiagnostics` object which, in addition to the actual
+ *         control error, holds a lot of diagnostic information about how the
+ *         control error was calculated. This information could be used to print
+ *         to a file if desired.
  *
  * The characteristic speed that is needed here is
  * \f{align}
@@ -108,7 +134,7 @@ namespace control_system::size {
  * in different frames.
  */
 template <typename Frame>
-double control_signal(
+ErrorDiagnostics control_error(
     const gsl::not_null<Info*> info,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
