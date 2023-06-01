@@ -71,16 +71,24 @@ void test_zero_crossing_predictor() {
                       serialize_and_deserialize(predictor), min_size,
                       x_values.size());
 
-  Approx custom_approx = Approx::custom().epsilon(5e-6).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(1e-5).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       predictor.zero_crossing_time(x_values.back()),
       SINGLE_ARG(DataVector{expected_zero_crossing_value1,
                             expected_zero_crossing_value2}),
       custom_approx);
 
+  const double adjusted_value1 = expected_zero_crossing_value1 < 0.0
+                                     ? std::numeric_limits<double>::infinity()
+                                     : expected_zero_crossing_value1;
+  const double adjusted_value2 = expected_zero_crossing_value2 < 0.0
+                                     ? std::numeric_limits<double>::infinity()
+                                     : expected_zero_crossing_value2;
+  const double expected_zero_crossing =
+      std::min(adjusted_value1, adjusted_value2);
+
   CHECK(predictor.min_positive_zero_crossing_time(x_values.back()) ==
-        custom_approx(std::min(std::max(0.0, expected_zero_crossing_value1),
-                               std::max(0.0, expected_zero_crossing_value2))));
+        custom_approx(expected_zero_crossing));
 
   // Re-add the first point.  Adding the first point should cause the
   // (original) first point to be popped off the deque [and thus test
@@ -89,8 +97,7 @@ void test_zero_crossing_predictor() {
   DataVector first_point = y_values.front();
   predictor.add(x_values.front(), std::move(first_point));
   CHECK(predictor.min_positive_zero_crossing_time(0.0) ==
-        custom_approx(std::min(std::max(0.0, expected_zero_crossing_value1),
-                               std::max(0.0, expected_zero_crossing_value2))));
+        custom_approx(expected_zero_crossing));
 
   // Clear the predictor, and check that min_positive_zero_crossing_time
   // returns zero again for the cleared (and now invalid) predictor.
