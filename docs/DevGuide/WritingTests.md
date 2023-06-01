@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Writing Unit Tests {#writing_unit_tests}
 
+\tableofcontents
+
 Unit tests are placed in the appropriate subdirectory of `tests/Unit`, which
 mirrors the directory hierarchy of `src`. The tests are all compiled into
 individual libraries to keep link time of testing executables low. Typically

@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # A Hitchhiker's Guide to Running SpECTRE {#beginners_guide}
 
+\tableofcontents
+
 SpECTRE can be a bit complicated to get started with, especially if you aren't
 familiar with our core concepts of task-based parallelism and Template
 Meta-Programming (TMP). However, <a

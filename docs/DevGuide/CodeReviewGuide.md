@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Code Review Guide {#code_review_guide}
 
+\tableofcontents
+
 Code must follow the
 <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md">C++ Core Guidelines</a>
 and the [Google style guide](https://google.github.io/styleguide/cppguide.html).

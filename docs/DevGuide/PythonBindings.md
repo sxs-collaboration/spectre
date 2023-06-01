@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Writing Python Bindings {#spectre_writing_python_bindings}
 
+\tableofcontents
+
 ## CMake and Directory Layout
 
 To allow users to analyze output from simulations and take advantage of

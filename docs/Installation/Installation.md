@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Installation {#installation}
 
+\tableofcontents
+
 This page details the installation procedure for SpECTRE on personal computers
 using x86-64 processors. For instructions on installing SpECTRE on clusters
 please refer to the \subpage installation_on_clusters page. For instructions on

@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Observers Infrastructure {#observers_infrastructure_dev_guide}
 
+\tableofcontents
+
 The observers infrastructure works with two parallel components: a group and a
 nodegroup. We have two types of observations: `Reduction` and `Volume` (see the
 enum `observers::TypeOfObservation`). `Reduction` data is anything that is

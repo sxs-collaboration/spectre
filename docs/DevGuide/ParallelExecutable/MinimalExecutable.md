@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # The minimal SpECTRE executable {#tutorial_minimal_parallel_executable}
 
+\tableofcontents
+
 This tutorial will illustrate what is needed to compile the minimal
 SpECTRE executable that will simply print some useful information
 about the executable and then exit.

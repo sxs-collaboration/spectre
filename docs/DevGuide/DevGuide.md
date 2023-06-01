@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Developer Guides {#dev_guide}
 
+\tableofcontents
+
 ### Charm++ Interface
 - \subpage load_balancing_notes "Load Balancing Notes and Recommendations"
 

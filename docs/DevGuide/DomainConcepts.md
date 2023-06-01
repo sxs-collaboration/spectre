@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Domain Concepts {#domain_concepts}
 
+\tableofcontents
+
 * Computational Domain:<br>
   The region of spacetime on which a numerical simulation is performed.
 

@@ -45,9 +45,10 @@ if (DOXYGEN_FOUND)
 
   # Make sure the Doxygen version is compatible with the CSS, or print a
   # warning. Notes:
-  # - We use https://github.com/jothepro/doxygen-awesome-css release v2.0.3,
-  #   which ensures compatibility with Doxygen v1.9.2. When upgrading Doxygen,
-  #   it's probably also a good idea to upgrade the CSS files in `docs/config/`.
+  # - We use https://github.com/jothepro/doxygen-awesome-css release v2.2.0,
+  #   which ensures compatibility with Doxygen v1.9.1 - v1.9.4 and v1.9.6.
+  #   When upgrading Doxygen, it's probably also a good idea to upgrade the CSS
+  #   files in `docs/config/`.
   # - The Doxygen release v1.9.1 has a bug so namespaces don't show up in
   #   groups. It is fixed in v1.9.2.
   # - The Doxygen release v1.9.2 breaks the ordering of pages in the tree view

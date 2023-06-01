@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # SpECTRE Code of Conduct - Reporting Guide {#reporting_guide}
 
+\tableofcontents
+
 If you believe someone is violating the code of conduct, you can
 always file a report by emailing conduct@spectre-code.org, or discuss
 it informally and confidentially with one of the project leaders.

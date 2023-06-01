@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # %Setting up checkpoints and restarts {#tutorial_checkpoint_restart}
 
+\tableofcontents
+
 SpECTRE executables can write checkpoints that save their instantaneous state to
 disc; the execution can be restarted later from a saved checkpoint. This feature
 is useful for expensive simulations that would run longer than the wallclock

@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Code development quick-start with Docker and Visual Studio Code {#dev_guide_quick_start_docker_vscode}
 
+\tableofcontents
+
 This page describes how to get started developing SpECTRE on Mac, Linux, or
 Windows using [Docker](https://docker.com) and the [Visual Studio
 Code](https://code.visualstudio.com) editor. This is a particularly quick way to
