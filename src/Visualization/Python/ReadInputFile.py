@@ -3,14 +3,14 @@
 """Tools for parsing YAML input files
 
 To simply read an input file as a dictionary, use a standard YAML parser like
-PyYAML or ruaml.yaml:
+PyYAML or ruaml.yaml::
 
     import yaml
     with open(input_file_path) as open_input_file:
         metadata, input_file = yaml.safe_load_all(open_input_file)
 
 It's also possible to load just the metadata without the overhead of parsing the
-full input file:
+full input file::
 
     with open(input_file_path) as open_input_file:
         metadata = next(yaml.safe_load_all(open_input_file))

@@ -6,7 +6,7 @@ import itertools
 
 from spectre.DataStructures import DataVector
 
-from ._PyTensor import *
+from ._Pybindings import *
 from .Frame import Frame
 
 

@@ -16,17 +16,9 @@
 import os
 import sys
 
-from pybtex.plugin import register_plugin
-
-# pybtex.* are needed for customizing the reference formatting.
-from pybtex.style.formatting.unsrt import Style as UnsrtStyle
-from pybtex.style.labels import BaseLabelStyle
-
-sys.path.insert(0, "@CMAKE_SOURCE_DIR@/docs")
-
 # -- Project information -----------------------------------------------------
 
-project = "SpECTRE"
+project = "SpECTRE Python interface"
 copyright = "2017-2023, SXS Collaboration"
 author = "SXS Collaboration"
 
@@ -37,10 +29,22 @@ author = "SXS Collaboration"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
-    "sphinxcontrib.bibtex",
-    "breathe",
+    # Parse Numpy-style docstrings
+    "sphinx.ext.napoleon",
+    # Support markdown files
+    "myst_parser",
+    # "breathe",
 ]
+
+# Autodoc configuration
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "inherited-members": True,
+}
+autodoc_preserve_defaults = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -50,27 +54,32 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-# Tell sphinx what the primary language being documented is.
-primary_domain = "cpp"
-
-# Tell sphinx what the pygments highlight language should be.
-highlight_language = "cpp"
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# -- C++ documentation with Breathe + Exhale ---------------------------------
+
+# We have also experimented with generating our C++ documentation with Sphinx.
+# See issue: https://github.com/sxs-collaboration/spectre/issues/2138
+
+# Tell sphinx what the primary language being documented is.
+# primary_domain = "cpp"
+
+# Tell sphinx what the pygments highlight language should be.
+# highlight_language = "cpp"
+
 # Configure Breathe for parsing and including C++ documentation.
-breathe_projects = {"SpECTRE": "@CMAKE_BINARY_DIR@/docs/xml"}
-breathe_default_project = "SpECTRE"
+# breathe_projects = {"SpECTRE": "@CMAKE_BINARY_DIR@/docs/xml"}
+# breathe_default_project = "SpECTRE"
 
 # Setup the Exhale extension for automatically building namespace,
 # file, and group documentation. We have had issues with Exhale

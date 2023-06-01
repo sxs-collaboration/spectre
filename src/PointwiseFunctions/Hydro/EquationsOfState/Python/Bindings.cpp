@@ -12,7 +12,7 @@ namespace py = pybind11;
 
 namespace EquationsOfState {
 
-PYBIND11_MODULE(_PyEquationsOfState, m) {  // NOLINT
+PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");

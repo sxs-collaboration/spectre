@@ -17,7 +17,7 @@ namespace py = pybind11;
 
 namespace domain::creators {
 
-PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
+PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.Domain");
   py::module_::import("spectre.Domain.CoordinateMaps");

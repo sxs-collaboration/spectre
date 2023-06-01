@@ -8,7 +8,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(_PyRelativisticEulerSolutions, m) {  // NOLINT
+PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.Interpolation");
   py::module_::import("spectre.PointwiseFunctions.Hydro.EquationsOfState");
