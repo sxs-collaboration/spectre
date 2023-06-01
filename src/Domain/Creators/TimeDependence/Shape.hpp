@@ -66,7 +66,7 @@ namespace domain::creators::time_dependence {
  * \note The quantities stored in the FunctionOfTime are not the
  * complex spherical-harmonic coefficients \f$\lambda_{lm}(t)\f$, but
  * instead are the real-valued SPHEREPACK coefficients
- * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack.  The
+ * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by Spherepack.  The
  * relationship between these two sets of coefficients is
  * \f{align}
  * a_{l0} & = \sqrt{\frac{2}{\pi}}\lambda_{l0}&\qquad l\geq 0,\\

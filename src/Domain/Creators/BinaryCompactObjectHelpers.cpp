@@ -19,7 +19,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -129,8 +129,8 @@ TimeDependentMapOptions::create_functions_of_time(
   // ShapeMap FunctionOfTime for objects A and B
   for (size_t i = 0; i < shape_names.size(); i++) {
     const DataVector shape_zeros{
-        ylm::YlmSpherepack::spectral_size(gsl::at(initial_l_max_, i),
-                                          gsl::at(initial_l_max_, i)),
+        ylm::Spherepack::spectral_size(gsl::at(initial_l_max_, i),
+                                       gsl::at(initial_l_max_, i)),
         0.0};
     result[gsl::at(shape_names, i)] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(

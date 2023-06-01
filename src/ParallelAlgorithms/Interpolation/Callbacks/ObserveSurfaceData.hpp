@@ -15,9 +15,9 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/VolumeActions.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -61,7 +61,7 @@ struct ObserveSurfaceData
                     const TemporalId& temporal_id) {
     const Strahlkorper<HorizonFrame>& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<HorizonFrame>>(box);
-    const ylm::YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
+    const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
 
     // Output the inertial-frame coordinates of the Stralhlkorper.
     // Note that these coordinates are not

@@ -3,10 +3,10 @@
 
 #include <ostream>
 
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackHelper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-namespace ylm::YlmSpherepack_detail {
+namespace ylm::Spherepack_detail {
 
 ConstStorage::ConstStorage(const size_t l_max, const size_t m_max)
     : l_max_(l_max), m_max_(m_max) {
@@ -98,7 +98,7 @@ void ConstStorage::point_spans_to_data_vector(const bool allocate) {
                            4 * theta_work_size + 2 * phi_work_size +
                            2 * interp_work_size + interp_work_pmm_size;
 
-  if(allocate) {
+  if (allocate) {
     work_interp_index.resize(interp_work_size);
     quadrature_weights.resize(quad_work_size);
     theta.resize(theta_work_size);
@@ -169,11 +169,11 @@ void MemoryPool::free(const gsl::not_null<double*> to_be_freed) {
 
 void MemoryPool::clear() {
   for (auto& elem : memory_pool_) {
-    if(elem.currently_in_use) {
+    if (elem.currently_in_use) {
       ERROR("Attempt to clear element that is in use");
     }
     elem.storage.clear();
   }
 }
 
-}  // namespace ylm::YlmSpherepack_detail
+}  // namespace ylm::Spherepack_detail

@@ -15,9 +15,9 @@
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,8 +35,7 @@ void test_invert_spec_phys_transform() {
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
 
   // Create radius as a function of angle
-  DataVector radius(ylm::YlmSpherepack::physical_size(l_grid, l_grid),
-                    avg_radius);
+  DataVector radius(ylm::Spherepack::physical_size(l_grid, l_grid), avg_radius);
   {
     std::uniform_real_distribution<double> ran(0.0, 1.0);
     MAKE_GENERATOR(gen);

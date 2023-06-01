@@ -147,7 +147,7 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
     expiration_time = initial_expiration_times.at(function_of_time_name_);
   }
 
-  const ylm::YlmSpherepack ylm{l_max_, l_max_};
+  const ylm::Spherepack ylm{l_max_, l_max_};
   const DataVector radial_distortion =
       1.0 - get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
                 inner_radius_, ylm.theta_phi_points(), mass_, spin_)) /

@@ -12,7 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DynamicBuffer.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackHelper.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -25,7 +25,7 @@ namespace ylm {
  *
  * \brief Defines the C++ interface to SPHEREPACK.
  *
- * \details The class `YlmSpherepack` defines the C++ interface to the fortran
+ * \details The class `Spherepack` defines the C++ interface to the fortran
  * library SPHEREPACK used for computations on the surface of a sphere.
  *
  * Given a real-valued, scalar function \f$g(\theta, \phi)\f$, SPHEREPACK
@@ -127,12 +127,12 @@ namespace ylm {
  * function at arbitrary angles \f$\theta\f$, \f$\phi\f$, these values have to
  * be "interpolated" (i.e. the new expansion evaluated) using `interpolate`.
  *
- * YlmSpherepack stores two types of quantities:
+ * Spherepack stores two types of quantities:
  *   1. storage_, which is filled in the constructor and is always const.
  *   2. memory_pool_, which is dynamic and thread_local, and is overwritten
  *      by various member functions that need temporary storage.
  */
-class YlmSpherepack {
+class Spherepack {
  public:
   /// Type returned by gradient function.
   using FirstDeriv = tnsr::i<DataVector, 2, Frame::ElementLogical>;
@@ -143,8 +143,7 @@ class YlmSpherepack {
   /// points.
   template <typename T>
   struct InterpolationInfo {
-    InterpolationInfo(size_t l_max, size_t m_max,
-                      const gsl::span<double> pmm,
+    InterpolationInfo(size_t l_max, size_t m_max, const gsl::span<double> pmm,
                       const std::array<T, 2>& target_points);
     T cos_theta;
     // cos(m*phi)
@@ -166,13 +165,13 @@ class YlmSpherepack {
 
   /// Here l_max and m_max are the largest fully-represented l and m in
   /// the Ylm expansion.
-  YlmSpherepack(size_t l_max, size_t m_max);
+  Spherepack(size_t l_max, size_t m_max);
 
   /// @{
   /// Static functions to return the correct sizes of vectors of
   /// collocation points and spectral coefficients for a given l_max
   /// and m_max.  Useful for allocating space without having to create
-  /// a YlmSpherepack.
+  /// a Spherepack.
   SPECTRE_ALWAYS_INLINE static constexpr size_t physical_size(
       const size_t l_max, const size_t m_max) {
     return (l_max + 1) * (2 * m_max + 1);
@@ -474,7 +473,7 @@ class YlmSpherepack {
   /// This is done by truncation (restriction) or padding with zeros
   /// (prolongation).
   DataVector prolong_or_restrict(const DataVector& spectral_coefs,
-                                 const YlmSpherepack& target) const;
+                                 const Spherepack& target) const;
 
  private:
   // Spectral transformations and gradient.
@@ -508,18 +507,18 @@ class YlmSpherepack {
   size_t l_max_, m_max_, n_theta_, n_phi_;
   size_t spectral_size_;
   // memory_pool_ will be shared by multiple instances of
-  // YlmSpherepack on the same thread.  Because these instances are on
+  // Spherepack on the same thread.  Because these instances are on
   // the same thread, member functions of two or more of these
   // instances cannot be called simultaneously.  Note that member
   // functions do not make any assumptions about the contents of
   // memory_pool_ on entry, so between calls to member functions it is
   // safe to resize objects in memory_pool_ or to overwrite them with
   // arbitrary data.
-  static thread_local YlmSpherepack_detail::MemoryPool memory_pool_;
-  YlmSpherepack_detail::ConstStorage storage_;
-};  // class YlmSpherepack
+  static thread_local Spherepack_detail::MemoryPool memory_pool_;
+  Spherepack_detail::ConstStorage storage_;
+};  // class Spherepack
 
-bool operator==(const YlmSpherepack& lhs, const YlmSpherepack& rhs);
-bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs);
+bool operator==(const Spherepack& lhs, const Spherepack& rhs);
+bool operator!=(const Spherepack& lhs, const Spherepack& rhs);
 
 }  // namespace ylm

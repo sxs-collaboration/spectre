@@ -14,7 +14,7 @@ namespace gr::Solutions {
  *
  * \details Computes the radius of a surface of constant Boyer-Lindquist radius
  * as a function of angles.  The input argument `theta_phi` is typically the
- * output of the `theta_phi_points()` method of a `ylm::YlmSpherepack` object;
+ * output of the `theta_phi_points()` method of a `ylm::Spherepack` object;
  * i.e., a std::array of two DataVectors containing the values of theta and
  * phi at each point on a Strahlkorper.
  *

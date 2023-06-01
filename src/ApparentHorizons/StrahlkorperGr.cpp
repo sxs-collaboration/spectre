@@ -15,10 +15,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -75,7 +75,7 @@ template <typename Fr>
 tnsr::I<DataVector, 2, Frame::Spherical<Fr>> get_trace_christoffel_second_kind(
     const tnsr::ii<DataVector, 2, Frame::Spherical<Fr>>& surface_metric,
     const tnsr::II<DataVector, 2, Frame::Spherical<Fr>>& inverse_surface_metric,
-    const Scalar<DataVector>& sin_theta, const ylm::YlmSpherepack& ylm) {
+    const Scalar<DataVector>& sin_theta, const ylm::Spherepack& ylm) {
   const Scalar<DataVector> cos_theta{cos(ylm.theta_phi_points()[0])};
 
   // Because the surface metric components are not representable in terms
@@ -84,12 +84,12 @@ tnsr::I<DataVector, 2, Frame::Spherical<Fr>> get_trace_christoffel_second_kind(
   // square(sin_theta) * the metric component, then
   // compute from that the gradient of just the metric component itself.
   //
-  // Note: the method implemented here works with ylm::YlmSpherepack but will
+  // Note: the method implemented here works with ylm::Spherepack but will
   // fail for other expansions that, unlike Spherepack, include a collocation
   // point at theta = 0. Before switching to such an expansion, first
   // reimplement this code to avoid dividing by sin(theta).
   //
-  // Note: ylm::YlmSpherepack gradients are flat-space Pfaffian derivatives.
+  // Note: ylm::Spherepack gradients are flat-space Pfaffian derivatives.
   auto grad_surface_metric_theta_theta =
       ylm.gradient(square(get(sin_theta)) * get<0, 0>(surface_metric));
   get<0>(grad_surface_metric_theta_theta) /= square(get(sin_theta));
@@ -132,7 +132,7 @@ tnsr::I<DataVector, 2, Frame::Spherical<Fr>> get_trace_christoffel_second_kind(
 // A x = lambda B x, where A and B are NxN, where N is the
 // number of elements with l > 0 and l < ntheta - 2,
 // i.e. l < l_max + 1 - 2 = l_max - 1. This function computes N.
-size_t get_matrix_dimension(const ylm::YlmSpherepack& ylm) {
+size_t get_matrix_dimension(const ylm::Spherepack& ylm) {
   // If l_max == m_max, there are square(l_max+1) Ylms total
   size_t matrix_dimension = square(ylm.l_max() + 1);
   // If l_max > m_max, there are
@@ -157,7 +157,7 @@ void get_left_and_right_eigenproblem_matrices(
     const tnsr::I<DataVector, 2, Frame::Spherical<Fr>>&
         trace_christoffel_second_kind,
     const Scalar<DataVector>& sin_theta, const Scalar<DataVector>& ricci_scalar,
-    const ylm::YlmSpherepack& ylm) {
+    const ylm::Spherepack& ylm) {
   const auto grad_ricci_scalar = ylm.gradient(get(ricci_scalar));
   // loop over all terms with 0<l<l_max-1: each makes a column of
   // the matrices for the eigenvalue problem
@@ -265,7 +265,7 @@ void get_left_and_right_eigenproblem_matrices(
 // Note: uses the fact that eigenvalues should be real
 std::array<DataVector, 3> get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
     const DataVector& eigenvalues_real_part, const Matrix& eigenvectors,
-    const ylm::YlmSpherepack& ylm) {
+    const ylm::Spherepack& ylm) {
   size_t index_smallest = 0;
   size_t index_second_smallest = 0;
   size_t index_third_smallest = 0;
@@ -317,7 +317,7 @@ std::array<DataVector, 3> get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
 // is set to (horizon area)^3/(48*pi), as it is for Kerr.
 std::array<DataVector, 3> get_normalized_spin_potentials(
     const std::array<DataVector, 3>& eigenvectors_for_potentials,
-    const ylm::YlmSpherepack& ylm, const Scalar<DataVector>& area_element) {
+    const ylm::Spherepack& ylm, const Scalar<DataVector>& area_element) {
   const double area = ylm.definite_integral(get(area_element).data());
 
   std::array<DataVector, 3> potentials;
@@ -347,7 +347,7 @@ std::array<DataVector, 3> get_normalized_spin_potentials(
 double get_spin_magnitude(const std::array<DataVector, 3>& potentials,
                           const Scalar<DataVector>& spin_function,
                           const Scalar<DataVector>& area_element,
-                          const ylm::YlmSpherepack& ylm) {
+                          const ylm::Spherepack& ylm) {
   double spin_magnitude_squared = 0.0;
 
   DataVector spin_density(get(area_element));

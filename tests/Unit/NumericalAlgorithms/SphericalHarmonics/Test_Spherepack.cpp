@@ -13,18 +13,18 @@
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackHelper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 
 namespace ylm {
 namespace {
 
-using SecondDeriv = YlmSpherepack::SecondDeriv;
+using SecondDeriv = Spherepack::SecondDeriv;
 
 void test_prolong_restrict() {
-  YlmSpherepack ylm_a(10, 10);
+  Spherepack ylm_a(10, 10);
 
   const YlmTestFunctions::FuncA func_a{};
   const YlmTestFunctions::FuncB func_b{};
@@ -39,7 +39,7 @@ void test_prolong_restrict() {
 
   const auto u_coef_a = ylm_a.phys_to_spec(u_a);
   {
-    YlmSpherepack ylm_b(10, 7);
+    Spherepack ylm_b(10, 7);
     const auto u_coef_a2b = ylm_a.prolong_or_restrict(u_coef_a, ylm_b);
     const auto u_coef_a2b2a = ylm_b.prolong_or_restrict(u_coef_a2b, ylm_a);
     const auto u_b_test = ylm_a.spec_to_phys(u_coef_a2b2a);
@@ -47,7 +47,7 @@ void test_prolong_restrict() {
   }
 
   {
-    YlmSpherepack ylm_c(6, 2);
+    Spherepack ylm_c(6, 2);
     const auto u_coef_a2c = ylm_a.prolong_or_restrict(u_coef_a, ylm_c);
     const auto u_coef_a2c2a = ylm_c.prolong_or_restrict(u_coef_a2c, ylm_a);
     const auto u_c_test = ylm_a.spec_to_phys(u_coef_a2c2a);
@@ -58,7 +58,7 @@ void test_prolong_restrict() {
 void test_loop_over_offset(
     const size_t l_max, const size_t m_max, const size_t physical_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
 
   // Fill data vectors
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
@@ -154,7 +154,7 @@ void test_loop_over_offset(
 void test_theta_phi_points(
     const size_t l_max, const size_t m_max,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
 
   // Fill with analytic function
   const auto& theta = ylm_spherepack.theta_points();
@@ -181,7 +181,7 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
   const size_t physical_size = n_th * n_ph * physical_stride;
   const size_t spectral_size = 2 * (l_max + 1) * (m_max + 1) * spectral_stride;
 
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   CHECK(physical_size == ylm_spherepack.physical_size() * physical_stride);
   CHECK(spectral_size == ylm_spherepack.spectral_size() * spectral_stride);
 
@@ -227,7 +227,7 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
 void test_gradient(const size_t l_max, const size_t m_max,
                    const size_t physical_stride, const size_t spectral_stride,
                    const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -322,7 +322,7 @@ void test_second_derivative(
     const size_t l_max, const size_t m_max, const size_t physical_stride,
     const size_t spectral_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -390,7 +390,7 @@ void test_scalar_laplacian(
     const size_t l_max, const size_t m_max, const size_t physical_stride,
     const size_t spectral_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -446,10 +446,10 @@ void test_interpolation(
     const size_t l_max, const size_t m_max, const size_t physical_stride,
     const size_t spectral_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   // test with a seperate instance if it can use interpolation_info from the
   // first one.
-  YlmSpherepack ylm_spherepack_2(l_max, m_max);
+  Spherepack ylm_spherepack_2(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -593,7 +593,7 @@ void test_interpolation(
 void test_integral(const size_t l_max, const size_t m_max,
                    const size_t physical_stride, const size_t spectral_stride,
                    const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
-  YlmSpherepack ylm_spherepack(l_max, m_max);
+  Spherepack ylm_spherepack(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -641,10 +641,9 @@ void test_integral(const size_t l_max, const size_t m_max,
   }
 }
 
-void test_YlmSpherepack(
-    const size_t l_max, const size_t m_max, const size_t physical_stride,
-    const size_t spectral_stride,
-    const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
+void test_Spherepack(const size_t l_max, const size_t m_max,
+                     const size_t physical_stride, const size_t spectral_stride,
+                     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
   test_phys_to_spec(l_max, m_max, physical_stride, spectral_stride, func);
   test_gradient(l_max, m_max, physical_stride, spectral_stride, func);
   test_second_derivative(l_max, m_max, physical_stride, spectral_stride, func);
@@ -658,7 +657,7 @@ void test_YlmSpherepack(
 
 void test_memory_pool() {
   const size_t n_pts = 100;
-  YlmSpherepack_detail::MemoryPool pool;
+  Spherepack_detail::MemoryPool pool;
 
   // Fill all the temps.
   std::vector<double>& tmp1 = pool.get(n_pts);
@@ -726,17 +725,17 @@ void test_memory_pool() {
 }
 
 void test_ylm_errors() {
-  CHECK_THROWS_WITH((YlmSpherepack(1, 1)),
+  CHECK_THROWS_WITH((Spherepack(1, 1)),
                     Catch::Contains("Must use l_max>=2, not l_max=1"));
-  CHECK_THROWS_WITH((YlmSpherepack(2, 1)),
+  CHECK_THROWS_WITH((Spherepack(2, 1)),
                     Catch::Contains("Must use m_max>=2, not m_max=1"));
   CHECK_THROWS_WITH(
       ([]() {
-        YlmSpherepack ylm(4, 3);
+        Spherepack ylm(4, 3);
         const auto interp_info =
             ylm.set_up_interpolation_info(std::array<DataVector, 2>{
                 DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
-        YlmSpherepack ylm_wrong_l_max(5, 3);
+        Spherepack ylm_wrong_l_max(5, 3);
         DataVector res{2};
         // no need to initialize as the values should not be accessed
         const DataVector spectral_values{ylm_wrong_l_max.spectral_size()};
@@ -744,14 +743,14 @@ void test_ylm_errors() {
                                                spectral_values, interp_info);
       }()),
       Catch::Contains("Different l_max for InterpolationInfo (4) "
-                      "and YlmSpherepack instance (5)"));
+                      "and Spherepack instance (5)"));
   CHECK_THROWS_WITH(
       ([]() {
-        YlmSpherepack ylm(4, 3);
+        Spherepack ylm(4, 3);
         const auto interp_info =
             ylm.set_up_interpolation_info(std::array<DataVector, 2>{
                 DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
-        YlmSpherepack ylm_wrong_m_max(4, 4);
+        Spherepack ylm_wrong_m_max(4, 4);
         DataVector res{2};
         // no need to initialize as the values should not be accessed
         const DataVector spectral_values{ylm_wrong_m_max.spectral_size()};
@@ -759,12 +758,12 @@ void test_ylm_errors() {
                                                spectral_values, interp_info);
       }()),
       Catch::Contains("Different m_max for InterpolationInfo (3) "
-                      "and YlmSpherepack instance (4)"));
+                      "and Spherepack instance (4)"));
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.Spherepack",
                   "[ApparentHorizons][Unit]") {
   test_memory_pool();
   test_ylm_errors();
@@ -775,12 +774,12 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
            physical_stride += 3) {
         for (size_t spectral_stride = 1; spectral_stride <= 4;
              spectral_stride += 3) {
-          test_YlmSpherepack(l_max, m_max, physical_stride, spectral_stride,
-                             YlmTestFunctions::Y00());
-          test_YlmSpherepack(l_max, m_max, physical_stride, spectral_stride,
-                             YlmTestFunctions::Y10());
-          test_YlmSpherepack(l_max, m_max, physical_stride, spectral_stride,
-                             YlmTestFunctions::Y11());
+          test_Spherepack(l_max, m_max, physical_stride, spectral_stride,
+                          YlmTestFunctions::Y00());
+          test_Spherepack(l_max, m_max, physical_stride, spectral_stride,
+                          YlmTestFunctions::Y10());
+          test_Spherepack(l_max, m_max, physical_stride, spectral_stride,
+                          YlmTestFunctions::Y11());
         }
       }
     }
@@ -797,7 +796,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
 
   test_prolong_restrict();
 
-  YlmSpherepack s(4, 4);
+  Spherepack s(4, 4);
   auto s_copy(s);
   CHECK(s_copy == s);
   test_move_semantics(std::move(s), s_copy, 6_st, 5_st);

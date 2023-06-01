@@ -10,9 +10,9 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Transpose.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -173,7 +173,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     ::Strahlkorper<Frame> strahlkorper(
         kerr_horizon.l_max, kerr_horizon.l_max,
         get(gr::Solutions::kerr_horizon_radius(
-            ::ylm::YlmSpherepack(kerr_horizon.l_max, kerr_horizon.l_max)
+            ::ylm::Spherepack(kerr_horizon.l_max, kerr_horizon.l_max)
                 .theta_phi_points(),
             kerr_horizon.mass, kerr_horizon.dimensionless_spin)),
         kerr_horizon.center);

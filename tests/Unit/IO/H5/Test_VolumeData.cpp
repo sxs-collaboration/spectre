@@ -22,8 +22,8 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 
@@ -35,7 +35,7 @@ void test_strahlkorper() {
   constexpr std::array<double, 3> center{{5.0, 6.0, 7.0}};
   const Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max, sphere_radius,
                                                    center};
-  const ylm::YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
+  const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
   const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
   const DataVector theta = theta_phi[0];
   const DataVector phi = theta_phi[1];

@@ -15,8 +15,8 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/CartesianProduct.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -104,9 +104,9 @@ void test() {
                                  {0.0}}},
       expiration_times.at(gsl::at(TimeDependentMapOptions::size_names, 1))};
   const DataVector shape_A_zeros{
-      ylm::YlmSpherepack::spectral_size(l_max_A, l_max_A), 0.0};
+      ylm::Spherepack::spectral_size(l_max_A, l_max_A), 0.0};
   const DataVector shape_B_zeros{
-      ylm::YlmSpherepack::spectral_size(l_max_B, l_max_B), 0.0};
+      ylm::Spherepack::spectral_size(l_max_B, l_max_B), 0.0};
   ShapeFoT shape_A{
       initial_time,
       std::array<DataVector, 3>{shape_A_zeros, shape_A_zeros, shape_A_zeros},

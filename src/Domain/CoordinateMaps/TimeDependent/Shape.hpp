@@ -10,7 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -44,7 +44,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  * coefficients \f$\lambda_{lm}(t)\f$:
  *
  * 1. A single FunctionOfTime which specifies all coefficients. This
- *    FunctionOfTime should have `ylm::YlmSpherepack::spectral_size()` number of
+ *    FunctionOfTime should have `ylm::Spherepack::spectral_size()` number of
  *    components. These are in Spherepack order and should be the Spherepack
  *    coefficients, *not* the spherical harmonic coefficients. See the note
  *    below. To use this, set the `size_function_of_time_name` argument of the
@@ -66,7 +66,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  * `shape_function_of_time_name` argument in the constructor that must always be
  * specified) are ***not*** the complex spherical-harmonic coefficients
  * \f$\lambda_{lm}(t)\f$, but instead are the real-valued SPHEREPACK
- * coefficients \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by YlmSpherepack. This
+ * coefficients \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ used by Spherepack. This
  * is the same for both methods of specifying FunctionOfTime%s above. The
  * relationship between these two sets of coefficients is
  * \f{align}
@@ -201,7 +201,7 @@ class Shape {
   std::array<double, 3> center_{};
   size_t l_max_ = 2;
   size_t m_max_ = 2;
-  ylm::YlmSpherepack ylm_{2, 2};
+  ylm::Spherepack ylm_{2, 2};
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 

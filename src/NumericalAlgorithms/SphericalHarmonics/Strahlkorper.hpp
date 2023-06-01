@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 
@@ -61,7 +61,7 @@ class Strahlkorper {
   /// will not be exactly `radius_at_collocation_points`.  Instead,
   /// the constructed Strahlkorper will match the shape given by
   /// `radius_at_collocation_points` only to order (`l_max`,`m_max`).
-  /// This is because the ylm::YlmSpherepack representation of the
+  /// This is because the ylm::Spherepack representation of the
   /// Strahlkorper has more collocation points than spectral
   /// coefficients.  Specifically, `radius_at_collocation_points` has
   /// \f$(l_{\rm max} + 1) (2 m_{\rm max} + 1)\f$ degrees of freedom,
@@ -144,7 +144,7 @@ class Strahlkorper {
 
   /// Radius at a particular angle \f$(\theta,\phi)\f$.
   /// This is inefficient if done at multiple points many times.
-  /// See ylm::YlmSpherepack for alternative ways of computing this.
+  /// See ylm::Spherepack for alternative ways of computing this.
   double radius(double theta, double phi) const;
 
   /// Determine if a point `x` is contained inside the surface.
@@ -153,13 +153,13 @@ class Strahlkorper {
   /// This is inefficient if done at multiple points many times.
   bool point_is_contained(const std::array<double, 3>& x) const;
 
-  SPECTRE_ALWAYS_INLINE const ylm::YlmSpherepack& ylm_spherepack() const {
+  SPECTRE_ALWAYS_INLINE const ylm::Spherepack& ylm_spherepack() const {
     return ylm_;
   }
 
  private:
   size_t l_max_{2}, m_max_{2};
-  ylm::YlmSpherepack ylm_{2, 2};
+  ylm::Spherepack ylm_{2, 2};
   std::array<double, 3> center_{{0.0, 0.0, 0.0}};
   DataVector strahlkorper_coefs_ = DataVector(ylm_.spectral_size(), 0.0);
 };

@@ -23,10 +23,10 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -614,7 +614,7 @@ void test_dimensionful_spin_magnitude(
     const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis, const double expected,
+    const ylm::Spherepack& ylm_with_spin_on_z_axis, const double expected,
     const double tolerance) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
@@ -708,7 +708,7 @@ void test_spin_vector(
     const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const ylm::YlmSpherepack& ylm_with_spin_on_z_axis) {
+    const ylm::Spherepack& ylm_with_spin_on_z_axis) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<

@@ -74,7 +74,7 @@ std::string size_name() {
  * horizon. The coefficients \f$ \lambda_{lm}(t) \f$ (*not* including \f$ l=0
  * \f$) and \f$ S_{lm}\f$ (including \f$ l=0 \f$) are stored as the real-valued
  * coefficients \f$ a_{lm} \f$ and \f$ b_{lm} \f$ of the SPHEREPACK
- * spherical-harmonic expansion (in ylm::YlmSpherepack). The $\lambda_{00}(t)$
+ * spherical-harmonic expansion (in ylm::Spherepack). The $\lambda_{00}(t)$
  * coefficient, on the other hand, is stored as the complex coefficient \f$
  * A_{00} \f$ of the standard \f$ Y_{lm} \f$ decomposition. Because \f$ a_{00} =
  * \sqrt{\frac{2}{\pi}}A_{00} \f$, there is an extra factor of \f$

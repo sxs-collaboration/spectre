@@ -11,7 +11,7 @@
 /// \cond
 class DataVector;
 namespace ylm {
-class YlmSpherepack;
+class Spherepack;
 }  // namespace ylm
 template <typename Frame>
 class Strahlkorper;

@@ -60,7 +60,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  *
  * \note The quantity stored in the FunctionOfTime is really
  * the spherical-harmonic coefficient \f$\lambda_{00}(t)\f$.  This is
- * different from the Shape map, which stores ylm::YlmSpherepack coefficients
+ * different from the Shape map, which stores ylm::Spherepack coefficients
  * \f$a_{lm}(t)\f$ and \f$b_{lm}(t)\f$ instead of \f$\lambda_{lm}(t)\f$.
  * See domain::CoordinateMaps::TimeDependent::Shape for more details.
  *
