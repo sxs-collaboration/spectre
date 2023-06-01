@@ -5,6 +5,8 @@ See LICENSE.txt for details.
 
 # Events and triggers {#tutorial_events_and_triggers}
 
+\tableofcontents
+
 The "events and triggers" infrastructure (and the related "events and
 dense triggers") provide some control of SpECTRE executable execution
 from the input file contents by running user-specified code on the

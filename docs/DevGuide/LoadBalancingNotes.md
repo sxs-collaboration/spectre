@@ -5,6 +5,8 @@ See LICENSE.txt for details.
 
 # Notes on SpECTRE load-balancing using Charm++'s built-in load balancers {#load_balancing_notes}
 
+\tableofcontents
+
 The goal of load-balancing (LB) is to ensure that HPC resources are well-used
 while performing large inhomogeneous simulations. In 2020-2021, Jordan Moxon
 and Francois Hebert performed a number of tests using Charm++'s built-in load

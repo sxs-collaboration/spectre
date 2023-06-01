@@ -5,6 +5,8 @@ See LICENSE.txt for details.
 
 # Automatic versioning {#dev_guide_automatic_versioning}
 
+\tableofcontents
+
 Our automated tests can tag and publish a release automatically when requested.
 The automation is implemented as a [GitHub
 Actions](https://docs.github.com/actions) workflow in the file
