@@ -5,6 +5,8 @@ See LICENSE.txt for details.
 
 # Understanding Compiler and Linker Errors {#compiler_and_linker_errors}
 
+\tableofcontents
+
 # Linker Errors {#understanding_linker_errors}
 
 There are a few common mistakes that can lead to linker problems, specifically

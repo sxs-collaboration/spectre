@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 ## Installing SpECTRE on Apple Silicon {#installation_on_apple_silicon}
 
+\tableofcontents
+
 The following instructions show how to install SpECTRE and its dependencies
 on Apple Silicon Macs. Apple Silicon is an arm64 architecture, in contrast
 to the x86-64 architecture that SpECTRE usually targets. These instructions
