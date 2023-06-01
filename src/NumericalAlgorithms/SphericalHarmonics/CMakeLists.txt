@@ -13,9 +13,9 @@ spectre_target_sources(
   SpherepackIterator.cpp
   Strahlkorper.cpp
   StrahlkorperFunctions.cpp
+  Spherepack.cpp
+  SpherepackHelper.cpp
   Tags.cpp
-  YlmSpherepack.cpp
-  YlmSpherepackHelper.cpp
   YlmToStf.cpp
   )
 
@@ -28,11 +28,11 @@ spectre_target_headers(
   SpherepackIterator.hpp
   Strahlkorper.hpp
   StrahlkorperFunctions.hpp
+  Spherepack.hpp
+  SpherepackHelper.hpp
   Tags.hpp
   TagsDeclarations.hpp
   TagsTypeAliases.hpp
-  YlmSpherepack.hpp
-  YlmSpherepackHelper.hpp
   YlmToStf.hpp
   )
 

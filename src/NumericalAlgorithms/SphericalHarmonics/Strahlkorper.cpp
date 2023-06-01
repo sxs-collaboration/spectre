@@ -27,7 +27,7 @@ Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
       // clang-tidy: do not std::move trivially constructable types
       center_(std::move(center)),  // NOLINT
       strahlkorper_coefs_(ylm_.spectral_size(), 0.0) {
-  YlmSpherepack::add_constant(&strahlkorper_coefs_, radius);
+  ylm::Spherepack::add_constant(&strahlkorper_coefs_, radius);
 }
 
 template <typename Frame>
@@ -92,7 +92,7 @@ void Strahlkorper<Frame>::pup(PUP::er& p) {
   p | strahlkorper_coefs_;
 
   if (p.isUnpacking()) {
-    ylm_ = YlmSpherepack(l_max_, m_max_);
+    ylm_ = ylm::Spherepack(l_max_, m_max_);
   }
 }
 
@@ -111,7 +111,7 @@ std::array<double, 3> Strahlkorper<Frame>::physical_center() const {
 
 template <typename Frame>
 double Strahlkorper<Frame>::average_radius() const {
-  return YlmSpherepack::average(coefficients());
+  return ylm::Spherepack::average(coefficients());
 }
 
 template <typename Frame>

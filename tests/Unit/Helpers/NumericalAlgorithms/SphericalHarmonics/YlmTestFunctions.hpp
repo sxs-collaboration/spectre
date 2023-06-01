@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace YlmTestFunctions {
 
-using SecondDeriv = YlmSpherepack::SecondDeriv;
+using SecondDeriv = ylm::Spherepack::SecondDeriv;
 
 class ScalarFunctionWithDerivs {
  public:

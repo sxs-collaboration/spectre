@@ -9,7 +9,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
-class YlmSpherepack;
+namespace ylm {
+class Spherepack;
+}  // namespace ylm
 /// \endcond
 
 namespace TestHelpers {
@@ -71,7 +73,7 @@ Scalar<DataType> horizon_ricci_scalar(const Scalar<DataType>& horizon_radius,
 template <typename DataType>
 Scalar<DataType> horizon_ricci_scalar(
     const Scalar<DataType>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
+    const ylm::Spherepack& ylm_with_spin_on_z_axis, const ylm::Spherepack& ylm,
     double mass, const std::array<double, 3>& dimensionless_spin);
 
 }  // namespace Kerr
