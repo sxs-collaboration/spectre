@@ -5,6 +5,7 @@
 
 #include <utility>
 
+#include "Evolution/TypeTraits.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Utilities/Requires.hpp"
@@ -24,7 +25,8 @@ decltype(auto) initial_data(const SolutionOrData& solution_or_data,
 
 /// \cond
 template <typename SolutionOrData, typename Coordinates, typename... Tags,
-          Requires<is_analytic_data_v<SolutionOrData>> = nullptr>
+          Requires<is_analytic_data_v<SolutionOrData> or
+                   is_numeric_initial_data_v<SolutionOrData>> = nullptr>
 decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                             Coordinates&& coordinates, const double /*time*/,
                             const tmpl::list<Tags...> tags) {

@@ -66,7 +66,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -209,9 +209,18 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
+
+// Check if SpEC is linked and therefore we can load SpEC initial data
+#ifdef HAS_SPEC_EXPORTER
+#include "PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp"
+using SpecInitialData = grmhd::AnalyticData::SpecInitialData;
+#else
+using SpecInitialData = NoSuchType;
+#endif
 
 /// \cond
 namespace Frame {
@@ -501,12 +510,15 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
-        tmpl::pair<
-            evolution::initial_data::InitialData,
-            tmpl::conditional_t<
-                use_numeric_initial_data,
-                tmpl::list<grmhd::GhValenciaDivClean::NumericInitialData>,
-                initial_data_list>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::conditional_t<
+                       use_numeric_initial_data,
+                       tmpl::flatten<tmpl::list<
+                           grmhd::GhValenciaDivClean::NumericInitialData,
+                           tmpl::conditional_t<
+                               std::is_same_v<SpecInitialData, NoSuchType>,
+                               tmpl::list<>, SpecInitialData>>>,
+                       initial_data_list>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -693,9 +705,10 @@ struct GhValenciaDivCleanTemplateBase<
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::ImportInitialData,
-          tmpl::list<grmhd::GhValenciaDivClean::Actions::ReadNumericInitialData,
-                     grmhd::GhValenciaDivClean::Actions::SetNumericInitialData,
-                     Parallel::Actions::TerminatePhase>>>;
+          tmpl::list<
+              grmhd::GhValenciaDivClean::Actions::SetInitialData,
+              grmhd::GhValenciaDivClean::Actions::ReceiveNumericInitialData,
+              Parallel::Actions::TerminatePhase>>>;
 
   using dg_element_array_component = DgElementArray<
       derived_metavars,

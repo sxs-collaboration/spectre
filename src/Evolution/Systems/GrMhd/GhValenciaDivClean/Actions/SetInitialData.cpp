@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 
 #include <boost/functional/hash.hpp>
 #include <string>
