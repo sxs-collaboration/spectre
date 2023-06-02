@@ -72,3 +72,8 @@ struct LinkedMessageIdLessComparator {
     return linked_message_id.id < id;
   }
 };
+
+template <typename Id>
+bool operator<(const LinkedMessageId<Id>& lhs, const LinkedMessageId<Id>& rhs) {
+  return LinkedMessageIdLessComparator<Id>{}(lhs, rhs);
+}

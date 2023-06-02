@@ -12,6 +12,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace intrp::Actions {
@@ -38,6 +39,23 @@ void verify_temporal_ids_and_send_points_time_independent(
           const gsl::not_null<std::deque<TemporalId>*> ids,
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
           const std::deque<TemporalId>& completed_ids) {
+        // This sort is needed because the ordering of these ids and pending ids
+        // are not guaranteed. They aren't guaranteed because the elements must
+        // send a communication to the this target with the the temporal id. So
+        // it is possible that there are two interpolations that need to happen,
+        // the earlier temporal id is sent first and the later temporal id is
+        // sent second. But the later temporal id could arrive to this target
+        // first because of charm communication latency. If this was it, then
+        // there's nothing we could do and the later interpolation would happen
+        // before the earlier one (even for sequential targets). However, there
+        // is a scenario where this happens, except there is an interpolation in
+        // progress so it doesn't send points to the interpolator when it
+        // receives the later time first. In that case, we then receive the
+        // earlier time second, and sort them here so they are in temporal
+        // order. Note that this isn't a permanent actual fix, but so far works
+        // in practice.
+        alg::sort(*ids);
+        alg::sort(*pending_ids);
         for (auto& id : *pending_ids) {
           if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
                   completed_ids.end() and
@@ -79,7 +97,7 @@ void verify_temporal_ids_and_send_points_time_dependent(
   const auto& pending_temporal_ids =
       db::get<Tags::PendingTemporalIds<TemporalId>>(*box);
   if (pending_temporal_ids.empty()) {
-    return; // Nothing to do if there are no pending temporal_ids.
+    return;  // Nothing to do if there are no pending temporal_ids.
   }
 
   auto& this_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
@@ -132,6 +150,23 @@ void verify_temporal_ids_and_send_points_time_dependent(
           const gsl::not_null<std::deque<TemporalId>*> ids,
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
           const std::deque<TemporalId>& completed_ids) {
+        // This sort is needed because the ordering of these ids and pending ids
+        // are not guaranteed. They aren't guaranteed because the elements must
+        // send a communication to the this target with the the temporal id. So
+        // it is possible that there are two interpolations that need to happen,
+        // the earlier temporal id is sent first and the later temporal id is
+        // sent second. But the later temporal id could arrive to this target
+        // first because of charm communication latency. If this was it, then
+        // there's nothing we could do and the later interpolation would happen
+        // before the earlier one (even for sequential targets). However, there
+        // is a scenario where this happens, except there is an interpolation in
+        // progress so it doesn't send points to the interpolator when it
+        // receives the later time first. In that case, we then receive the
+        // earlier time second, and sort them here so they are in temporal
+        // order. Note that this isn't a permanent actual fix, but so far works
+        // in practice.
+        alg::sort(*ids);
+        alg::sort(*pending_ids);
         for (auto it = pending_ids->begin(); it != pending_ids->end();) {
           if (InterpolationTarget_detail::get_temporal_id_value(*it) <=
                   min_expiration_time and
