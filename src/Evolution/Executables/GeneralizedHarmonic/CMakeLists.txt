@@ -77,7 +77,7 @@ endif()
 
 add_spectre_parallel_executable(
   "EvolveGhCce"
-  EvolveGhCce
+  EvolveGhAndCharacteristic
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars<3>"
   "${LIBS_TO_LINK};Cce"
