@@ -31,9 +31,14 @@ SPECTRE_TEST_CASE("Unit.Time.Tags", "[Unit][Time]") {
   TestHelpers::db::test_simple_tag<Tags::TimeStepId>("TimeStepId");
   TestHelpers::db::test_simple_tag<Tags::TimeStep>("TimeStep");
   TestHelpers::db::test_simple_tag<Tags::Time>("Time");
-  TestHelpers::db::test_simple_tag<Tags::TimeAndPrevious>("TimeAndPrevious");
-  TestHelpers::db::test_compute_tag<Tags::TimeAndPreviousCompute>(
-      "TimeAndPrevious");
+  TestHelpers::db::test_simple_tag<Tags::TimeAndPrevious<0>>(
+      "TimeAndPrevious0");
+  TestHelpers::db::test_simple_tag<Tags::TimeAndPrevious<1>>(
+      "TimeAndPrevious1");
+  TestHelpers::db::test_compute_tag<Tags::TimeAndPreviousCompute<0>>(
+      "TimeAndPrevious0");
+  TestHelpers::db::test_compute_tag<Tags::TimeAndPreviousCompute<1>>(
+      "TimeAndPrevious1");
   TestHelpers::db::test_simple_tag<
       Tags::HistoryEvolvedVariables<DummyVariablesTag>>(
       "HistoryEvolvedVariables");

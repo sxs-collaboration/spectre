@@ -73,7 +73,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         return "ControlSystemCharSpeedExcision" + ::domain::name(Object);
       }
 
-      using temporal_id = ::Tags::TimeAndPrevious;
+      using temporal_id = ::Tags::TimeAndPrevious<1>;
 
       using vars_to_interpolate_to_target =
           tmpl::list<gr::Tags::Lapse<DataVector>,
@@ -150,7 +150,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         return "ControlSystemCharSpeedAh" + ::domain::name(Object);
       }
 
-      using temporal_id = ::Tags::TimeAndPrevious;
+      using temporal_id = ::Tags::TimeAndPrevious<1>;
 
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
