@@ -46,6 +46,9 @@ enum class Phase {
   AdjustDomain,
   ///  phase in which sanity checks are done after AMR
   CheckDomain,
+  ///  phase in which sanity checks on the history of the evolved variables are
+  ///  done. Intended to be after InitializeTimeStepperHistory but before Evolve
+  CheckTimeStepperHistory,
   ///  a cleanup phase
   Cleanup,
   ///  phase in which AMR criteria are evaluated

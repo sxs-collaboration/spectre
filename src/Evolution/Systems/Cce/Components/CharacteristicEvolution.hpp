@@ -236,6 +236,8 @@ struct CharacteristicEvolution {
       Parallel::PhaseActions<Parallel::Phase::InitializeTimeStepperHistory,
                              SelfStart::self_start_procedure<
                                  self_start_extract_action_list, cce_system>>,
+      Parallel::PhaseActions<Parallel::Phase::CheckTimeStepperHistory,
+                             SelfStart::check_self_start_actions>,
       Parallel::PhaseActions<Parallel::Phase::Evolve, extract_action_list>>;
 
   static void initialize(

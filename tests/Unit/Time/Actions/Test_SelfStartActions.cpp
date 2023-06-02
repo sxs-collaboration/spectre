@@ -169,7 +169,10 @@ struct Component {
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing, action_list>>;
+      Parallel::PhaseActions<Parallel::Phase::InitializeTimeStepperHistory,
+                             action_list>,
+      Parallel::PhaseActions<Parallel::Phase::CheckTimeStepperHistory,
+                             SelfStart::check_self_start_actions>>;
 };
 
 template <bool HasPrimitives = false, bool MultipleHistories = false>
@@ -305,7 +308,8 @@ void test_actions(const size_t order, const int step_denominator) {
                                    initial_time, initial_time_step, order,
                                    initial_value);
 
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Parallel::Phase::InitializeTimeStepperHistory);
 
   {
     INFO("Initialize");
@@ -336,9 +340,9 @@ void test_actions(const size_t order, const int step_denominator) {
       CAPTURE(points);
       {
         INFO("CheckForCompletion");
-        const bool jumped = run_past<
-            tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
-            not_self_start_action>(make_not_null(&runner));
+        const bool jumped =
+            run_past<tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+                     not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
         CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                              history_tag>(runner, 0)
@@ -362,9 +366,9 @@ void test_actions(const size_t order, const int step_denominator) {
 
   {
     INFO("CheckForCompletion");
-    const bool jumped = run_past<
-        tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
-        not_self_start_action>(make_not_null(&runner));
+    const bool jumped =
+        run_past<tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+                 not_self_start_action>(make_not_null(&runner));
     CHECK(jumped);
   }
   {
@@ -396,6 +400,64 @@ void test_actions(const size_t order, const int step_denominator) {
             runner, 0)
             .integration_order() == order);
   }
+  {
+    INFO("CheckTimeStepperHistory");
+
+    ActionTesting::set_phase(make_not_null(&runner),
+                             Parallel::Phase::CheckTimeStepperHistory);
+
+    // Nothing should happen. Everything should be ok
+    ActionTesting::next_action<Component<Metavariables<>>>(
+        make_not_null(&runner), 0);
+
+    auto& box =
+        ActionTesting::get_databox<Component<Metavariables<>>, Metavariables<>>(
+            make_not_null(&runner), 0);
+
+    const auto prev_time_step_id = db::get<::Tags::TimeStepId>(box);
+    // Set the TimeStepId to something during self start (negative slab number)
+    db::mutate<::Tags::TimeStepId>(
+        make_not_null(&box),
+        [](const gsl::not_null<::TimeStepId*> time_step_id) {
+          *time_step_id = TimeStepId{true, -1, {}};
+        });
+
+    // Go back to first action
+    ActionTesting::set_phase(make_not_null(&runner),
+                             Parallel::Phase::CheckTimeStepperHistory);
+    // Check that we get an error
+    CHECK_THROWS_WITH(
+        ActionTesting::next_action<Component<Metavariables<>>>(
+            make_not_null(&runner), 0),
+        Catch::Contains(
+            "During the CheckTimeStepperHistory phase, our TimeStepId still "
+            "thinks it's self-starting."));
+
+    // Only do this next check for time stepper orders greater than 1 because
+    // the expected history size for order 1 is actually 0
+    if (order > 1) {
+      // Reset TimeStepId to its original value and change the history
+      db::mutate<::Tags::TimeStepId, history_tag>(
+          make_not_null(&box),
+          [&prev_time_step_id](const gsl::not_null<::TimeStepId*> time_step_id,
+                               const auto history_ptr) {
+            *time_step_id = prev_time_step_id;
+            *history_ptr = {};
+          });
+
+      // Go back to first action
+      ActionTesting::set_phase(make_not_null(&runner),
+                               Parallel::Phase::CheckTimeStepperHistory);
+      // Check that we get an error
+      CHECK_THROWS_WITH(
+          ActionTesting::next_action<Component<Metavariables<>>>(
+              make_not_null(&runner), 0),
+          Catch::Contains(
+              "During the CheckTimeStepperHistory phase, the history of our "
+              "evolved variables does not have the expected number of "
+              "entries"));
+    }
+  }
 }
 
 template <bool TestPrimitives, bool MultipleHistories>
@@ -415,7 +477,8 @@ double error_in_step(const size_t order, const double step) {
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
 
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Parallel::Phase::InitializeTimeStepperHistory);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));

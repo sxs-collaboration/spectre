@@ -373,6 +373,7 @@ class MockDistributedObject {
     phase_ = phase;
     algorithm_step_ = 0;
     terminate_ = number_of_actions_in_phase(phase) == 0;
+    performing_action_ = false;
     halt_algorithm_until_next_phase_ = false;
   }
   Parallel::Phase get_phase() const { return phase_; }

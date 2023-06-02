@@ -181,6 +181,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions<true>, system>>,
+          Parallel::PhaseActions<Parallel::Phase::CheckTimeStepperHistory,
+                                 SelfStart::check_self_start_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,

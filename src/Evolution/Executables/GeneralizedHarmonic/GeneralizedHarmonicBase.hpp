@@ -327,13 +327,14 @@ struct GeneralizedHarmonicTemplateBase {
 
   // Register needs to be before InitializeTimeStepperHistory so that CCE is
   // properly registered when the self-start happens
-  static constexpr std::array<Parallel::Phase, 8> default_phase_order{
+  static constexpr std::array<Parallel::Phase, 9> default_phase_order{
       {Parallel::Phase::Initialization,
        Parallel::Phase::RegisterWithElementDataReader,
        Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
        Parallel::Phase::Register, Parallel::Phase::InitializeTimeStepperHistory,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+       Parallel::Phase::CheckTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
