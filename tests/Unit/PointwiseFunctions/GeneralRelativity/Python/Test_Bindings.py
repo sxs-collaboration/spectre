@@ -49,6 +49,17 @@ class TestBindings(unittest.TestCase):
         )
         npt.assert_allclose(inverse_spacetime_metric_test, -1)
 
+    def test_interface_null_normal(self):
+        spacetime_normal_one_form = tnsr.a[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        interface_unit_normal_one_form = tnsr.i[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        inter_null_norm = interface_null_normal(
+            spacetime_normal_one_form, interface_unit_normal_one_form, sign=1.0
+        )
+
     def test_lapse_shift_normals(self):
         spacetime_metric = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
         inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
