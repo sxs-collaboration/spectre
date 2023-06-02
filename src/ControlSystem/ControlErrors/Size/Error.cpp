@@ -226,22 +226,25 @@ ErrorDiagnostics control_error(
                               avg_distorted_normal_dot_unit_coord_vector,
                               dt_lambda_00});
 
-  return ErrorDiagnostics{control_error,
-                          info->state->number(),
-                          lambda_00,
-                          dt_lambda_00,
-                          horizon_00,
-                          dt_horizon_00,
-                          control_error_delta_r,
-                          min_char_speed,
-                          min_comoving_char_speed,
-                          char_speed_crossing_time,
-                          comoving_char_speed_crossing_time,
-                          delta_radius_crossing_time,
-                          info->target_char_speed,
-                          info->suggested_time_scale,
-                          info->damping_time,
-                          info->discontinuous_change_has_occurred};
+  return ErrorDiagnostics{
+      control_error,
+      info->state->number(),
+      lambda_00,
+      dt_lambda_00,
+      horizon_00,
+      dt_horizon_00,
+      min(get(radial_distance)),
+      min(get(radial_distance)) / apparent_horizon.average_radius(),
+      control_error_delta_r,
+      min_char_speed,
+      min_comoving_char_speed,
+      char_speed_crossing_time,
+      comoving_char_speed_crossing_time,
+      delta_radius_crossing_time,
+      info->target_char_speed,
+      info->suggested_time_scale,
+      info->damping_time,
+      info->discontinuous_change_has_occurred};
 }
 }  // namespace control_system::size
 
