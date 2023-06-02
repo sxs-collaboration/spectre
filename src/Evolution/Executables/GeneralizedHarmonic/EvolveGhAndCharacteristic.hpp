@@ -74,10 +74,11 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, bool EvolveCcm>
 struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
-                           public CharacteristicExtractDefaults<false> {
+                           public CharacteristicExtractDefaults<EvolveCcm> {
   static constexpr size_t volume_dim = VolumeDim;
+  using cce_base = CharacteristicExtractDefaults<EvolveCcm>;
   using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
@@ -129,6 +130,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
                              gh::Tags::Pi<DataVector, volume_dim>,
                              gh::Tags::Phi<DataVector, volume_dim>>>>>>;
 
+  using typename cce_base::cce_step_choosers;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<

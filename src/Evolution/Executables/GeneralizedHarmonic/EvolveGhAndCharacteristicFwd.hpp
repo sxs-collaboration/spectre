@@ -21,6 +21,6 @@ struct GaugeWave;
 }  // namespace Solutions
 }  // namespace gr
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, bool EvolveCcm>
 struct EvolutionMetavars;
 /// \endcond

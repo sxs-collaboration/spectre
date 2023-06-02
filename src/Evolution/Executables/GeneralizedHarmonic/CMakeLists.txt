@@ -79,6 +79,14 @@ add_spectre_parallel_executable(
   "EvolveGhCce"
   EvolveGhAndCharacteristic
   Evolution/Executables/GeneralizedHarmonic
-  "EvolutionMetavars<3>"
+  "EvolutionMetavars<3, false>"
+  "${LIBS_TO_LINK};Cce"
+)
+
+add_spectre_parallel_executable(
+  "EvolveGhCcm"
+  EvolveGhAndCharacteristic
+  Evolution/Executables/GeneralizedHarmonic
+  "EvolutionMetavars<3, true>"
   "${LIBS_TO_LINK};Cce"
 )
