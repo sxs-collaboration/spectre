@@ -7,14 +7,20 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
@@ -68,11 +74,63 @@ void bind_impl(py::module& m) {  // NOLINT
       py::arg("spatial_metric"), py::arg("dt_spatial_metric"),
       py::arg("deriv_spatial_metric"));
 
+  m.def("inverse_spacetime_metric",
+        static_cast<tnsr::AA<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::II<DataVector, Dim>&)>(&::gr::inverse_spacetime_metric),
+        py::arg("lapse"), py::arg("shift"), py::arg("inverse_spatial_metric"));
+
   m.def("lapse",
         static_cast<Scalar<DataVector> (*)(const tnsr::I<DataVector, Dim>&,
                                            const tnsr::aa<DataVector, Dim>&)>(
             &::gr::lapse),
         py::arg("shift"), py::arg("spacetime_metric"));
+
+  m.def("derivatives_of_spacetime_metric",
+        static_cast<tnsr::abb<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const Scalar<DataVector>&,
+            const tnsr::i<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::I<DataVector, Dim>&, const tnsr::iJ<DataVector, Dim>&,
+            const tnsr::ii<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+            const tnsr::ijj<DataVector, Dim>&)>(
+            &::gr::derivatives_of_spacetime_metric),
+        py::arg("lapse"), py::arg("dt_lapse"), py::arg("deriv_lapse"),
+        py::arg("shift"), py::arg("dt_shift"), py::arg("deriv_shift"),
+        py::arg("spatial_metric"), py::arg("dt_spatial_metric"),
+        py::arg("deriv_spatial_metric"));
+
+  m.def("spacetime_metric",
+        static_cast<tnsr::aa<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::ii<DataVector, Dim>&)>(&::gr::spacetime_metric),
+        py::arg("lapse"), py::arg("shift"), py::arg("spatial_metric"));
+
+  m.def("spatial_metric",
+        static_cast<tnsr::ii<DataVector, Dim> (*)(
+            const tnsr::aa<DataVector, Dim>&)>(&::gr::spatial_metric),
+        py::arg("spacetime_metric"));
+
+  m.def(
+      "time_derivative_of_spacetime_metric",
+      static_cast<tnsr::aa<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const Scalar<DataVector>&,
+          const tnsr::I<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&)>(
+          &::gr::time_derivative_of_spacetime_metric),
+      py::arg("lapse"), py::arg("dt_lapse"), py::arg("shift"),
+      py::arg("dt_shift"), py::arg("spatial_metric"),
+      py::arg("dt_spatial_metric"));
+
+  m.def(
+      "time_derivative_of_spatial_metric",
+      static_cast<tnsr::ii<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::iJ<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+          const tnsr::ijj<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&)>(
+          &::gr::time_derivative_of_spatial_metric),
+      py::arg("lapse"), py::arg("shift"), py::arg("deriv_shift"),
+      py::arg("spatial_metric"), py::arg("deriv_spatial_metric"),
+      py::arg("extrinsic_curvature"));
 
   m.def("transverse_projection_operator",
         static_cast<tnsr::II<DataVector, Dim> (*)(

@@ -32,6 +32,15 @@ class TestBindings(unittest.TestCase):
         )
         npt.assert_allclose(extrinsic_curv, 0)
 
+    def test_inverse_spacetime_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=-1.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=0.0)
+        inverse_spacetime_metric_test = inverse_spacetime_metric(
+            lapse, shift, inverse_spatial_metric
+        )
+        npt.assert_allclose(inverse_spacetime_metric_test, -1)
+
     def test_lapse_shift_normals(self):
         spacetime_metric = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
         inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
@@ -120,6 +129,70 @@ class TestBindings(unittest.TestCase):
         )
         inverse_metric = tnsr.AA[DataVector, 3](num_points=1, fill=0.0)
         ricci_scalar(spatial_ricci, inverse_metric)
+
+    def test_derivatives_of_spacetime_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
+        deriv_lapse = tnsr.i[DataVector, 3](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        deriv_shift = tnsr.iJ[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        dt_spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        deriv_spatial_metric = tnsr.ijj[DataVector, 3](num_points=1, fill=0.0)
+        derivatives_of_spacetime_metric_test = derivatives_of_spacetime_metric(
+            lapse,
+            dt_lapse,
+            deriv_lapse,
+            shift,
+            dt_shift,
+            deriv_shift,
+            spatial_metric,
+            dt_spatial_metric,
+            deriv_spatial_metric,
+        )
+        npt.assert_allclose(derivatives_of_spacetime_metric_test, 0)
+
+    def test_spacetime_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        spacetime_metric_test = spacetime_metric(lapse, shift, spatial_metric)
+        npt.assert_allclose(spacetime_metric_test, 0)
+
+    def test_spatial_metric(self):
+        spacetime_metric = tnsr.aa[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric_test = spatial_metric(spacetime_metric)
+        npt.assert_allclose(spatial_metric_test, 0)
+
+    def test_time_derivative_of_spacetime_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        dt_spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        t_deriv_of_spacetime_metric_test = time_derivative_of_spacetime_metric(
+            lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric
+        )
+        npt.assert_allclose(t_deriv_of_spacetime_metric_test, 0)
+
+    def test_time_derivative_of_spatial_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        deriv_shift = tnsr.iJ[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        deriv_spatial_metric = tnsr.ijj[DataVector, 3](num_points=1, fill=0.0)
+        extrinsic_curvature = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        t_deriv_of_spatial_metric_test = time_derivative_of_spatial_metric(
+            lapse,
+            shift,
+            deriv_shift,
+            spatial_metric,
+            deriv_spatial_metric,
+            extrinsic_curvature,
+        )
+        npt.assert_allclose(t_deriv_of_spatial_metric_test, 0)
 
     def test_weyl_electric(self):
         spatial_ricci = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
