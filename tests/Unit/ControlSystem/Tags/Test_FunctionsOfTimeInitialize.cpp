@@ -218,9 +218,11 @@ void test_functions_of_time_tag() {
   // Controller. This value for the timescale was chosen to give an expiration
   // time between the two expiration times used above in the TestCreator
   const double timescale = 27.0;
+  const double timescale2 = 0.1;
   const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
                               1.0e-2, 1.0e-4, 1.01, 0.99);
-  const TimescaleTuner tuner2(0.1, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner2(timescale2, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                              0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
@@ -235,17 +237,16 @@ void test_functions_of_time_tag() {
 
   // First test construction with only control systems and no
   // override_functions_of_time
-  const double initial_time_step = 1.0;
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      measurements_per_update, creator, initial_time, initial_time_step,
-      option_holder1, option_holder2, option_holder3);
+      measurements_per_update, creator, initial_time, option_holder1,
+      option_holder2, option_holder3);
 
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
         std::numeric_limits<double>::infinity());
   CHECK(functions_of_time.at("Controlled2")->time_bounds()[1] ==
         initial_time + update_fraction * timescale);
   CHECK(functions_of_time.at("Controlled3")->time_bounds()[1] ==
-        initial_time + initial_time_step);
+        initial_time + update_fraction * timescale2);
   CHECK(functions_of_time.at("Uncontrolled")->time_bounds()[1] ==
         std::numeric_limits<double>::infinity());
 
@@ -255,8 +256,7 @@ void test_functions_of_time_tag() {
           tmpl::list<
               control_system::OptionTags::MeasurementsPerUpdate,
               domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
-              ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
-              ControlSysInputs<FakeControlSystem<1>>,
+              ::OptionTags::InitialTime, ControlSysInputs<FakeControlSystem<1>>,
               ControlSysInputs<FakeControlSystem<2>>,
               ControlSysInputs<FakeControlSystem<3>>>>);
 
@@ -322,15 +322,14 @@ void test_functions_of_time_tag() {
                     MetavariablesReplace::volume_dim>,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap,
-                ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
+                ::OptionTags::InitialTime,
                 ControlSysInputs<FakeControlSystem<1>>,
                 ControlSysInputs<FakeControlSystem<2>>,
                 ControlSysInputs<FakeControlSystem<3>>>>);
     auto replace_functions_of_time =
         fot_tag::create_from_options<MetavariablesReplace>(
             measurements_per_update, creator, {test_filename}, test_name_map,
-            initial_time, initial_time_step, option_holder1, option_holder2,
-            option_holder3);
+            initial_time, option_holder1, option_holder2, option_holder3);
 
     const double final_time = expected_times[number_of_times - 1];
     CHECK(replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
@@ -345,14 +344,13 @@ void test_functions_of_time_tag() {
     auto no_replace_functions_of_time =
         fot_tag::create_from_options<MetavariablesReplace>(
             measurements_per_update, creator, std::nullopt, test_name_map,
-            initial_time, initial_time_step, option_holder1, option_holder2,
-            option_holder3);
+            initial_time, option_holder1, option_holder2, option_holder3);
     CHECK(no_replace_functions_of_time.at("Controlled1")->time_bounds()[1] ==
           std::numeric_limits<double>::infinity());
     CHECK(no_replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
           initial_time + update_fraction * timescale);
     CHECK(no_replace_functions_of_time.at("Controlled3")->time_bounds()[1] ==
-          initial_time + initial_time_step);
+          initial_time + update_fraction * timescale2);
     CHECK(no_replace_functions_of_time.at("Uncontrolled")->time_bounds()[1] ==
           std::numeric_limits<double>::infinity());
 
@@ -436,11 +434,10 @@ void not_controlling(const bool is_active) {
   OptionHolder<4> option_holder4(is_active, averager, controller, tuner,
                                  control_error);
 
-  const double initial_time_step = 1.0;
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          measurements_per_update, creator, initial_time, initial_time_step,
-          option_holder1, option_holder2, option_holder3, option_holder4);
+          measurements_per_update, creator, initial_time, option_holder1,
+          option_holder2, option_holder3, option_holder4);
 }
 
 void incompatible(const bool is_active) {
@@ -460,11 +457,10 @@ void incompatible(const bool is_active) {
   OptionHolder<3> option_holder3(is_active, averager, controller, tuner,
                                  control_error);
 
-  const double initial_time_step = 1.0;
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          measurements_per_update, creator, initial_time, initial_time_step,
-          option_holder1, option_holder2, option_holder3);
+          measurements_per_update, creator, initial_time, option_holder1,
+          option_holder2, option_holder3);
 }
 
 void test_errors(const bool is_active) {

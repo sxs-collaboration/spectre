@@ -103,24 +103,17 @@ double measurement_expiration_time(const double time,
  *
  * If the control system isn't active then expiration time is
  * `std::numeric_limits<double>::infinity()`.
- *
- * To protect against bad inputs, if the initial expiration time that is
- * calculated is smaller than the initial time step, then the expiration time is
- * simply set to the initial time step. However, the MeasurementTimescales have
- * the same protection so if this does happen, then something is most likely
- * wrong with your initial parameters for the control system.
  */
 template <size_t Dim, typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(
-    const double initial_time, const double initial_time_step,
-    const int measurements_per_update,
+    const double initial_time, const int measurements_per_update,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const OptionHolders&... option_holders) {
   std::unordered_map<std::string, double> initial_expiration_times{};
 
   [[maybe_unused]] const auto gather_initial_expiration_times =
-      [&initial_time, &initial_time_step, &measurements_per_update,
-       &domain_creator, &initial_expiration_times](const auto& option_holder) {
+      [&initial_time, &measurements_per_update, &domain_creator,
+       &initial_expiration_times](const auto& option_holder) {
         const auto& controller = option_holder.controller;
         const std::string& name =
             std::decay_t<decltype(option_holder)>::control_system::name();
@@ -138,8 +131,7 @@ std::unordered_map<std::string, double> initial_expiration_times(
         // Don't have to worry about if functions of time are being overridden
         // because that will be taken care of elsewhere.
         initial_expiration_times[name] =
-            option_holder.is_active ? std::max(initial_time + initial_time_step,
-                                               initial_expiration_time)
+            option_holder.is_active ? initial_expiration_time
                                     : std::numeric_limits<double>::infinity();
       };
 

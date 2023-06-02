@@ -52,7 +52,7 @@ struct MeasurementTimescales : db::SimpleTag {
 
   template <typename Metavariables>
   using option_tags = typename detail::OptionList<
-      Metavariables, true,
+      Metavariables, true, true,
       ::detail::has_override_functions_of_time_v<Metavariables>>::type;
 
   /// This version of create_from_options is used if the metavariables
@@ -92,11 +92,6 @@ struct MeasurementTimescales : db::SimpleTag {
 
           DataVector measurement_timescales = calculate_measurement_timescales(
               controller, tuner, measurements_per_update);
-          for (size_t i = 0; i < measurement_timescales.size(); i++) {
-            measurement_timescales[i] =
-                std::max(initial_time_step / measurements_per_update,
-                         measurement_timescales[i]);
-          }
 
           double expr_time = measurement_expiration_time(
               initial_time, DataVector{measurement_timescales.size(), 0.0},
