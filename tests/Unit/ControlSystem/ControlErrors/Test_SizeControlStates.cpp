@@ -80,6 +80,13 @@ void do_test(const TestParams& test_params,
   CHECK(info.suggested_time_scale == expected_suggested_time_scale);
   CHECK(info.discontinuous_change_has_occurred ==
         expected_discontinuous_change_has_occurred);
+
+  info.reset();
+  CHECK(info.damping_time == test_params.damping_time);
+  CHECK(info.target_char_speed == expected_target_char_speed);
+  CHECK(info.target_drift_velocity == target_drift_velocity);
+  CHECK_FALSE(info.suggested_time_scale.has_value());
+  CHECK_FALSE(info.discontinuous_change_has_occurred);
 }
 
 void test_size_control_update() {

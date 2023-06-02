@@ -44,6 +44,14 @@ void Info::pup(PUP::er& p) {
   p | discontinuous_change_has_occurred;
 }
 
+void Info::reset() {
+  suggested_time_scale = std::nullopt;
+  discontinuous_change_has_occurred = false;
+  // Currently nothing actually sets this, but we may want to reset it in the
+  // future when we add more States
+  // target_drift_velocity = 0.0;
+}
+
 void Info::set_all_but_state(const Info& info) {
   damping_time = info.damping_time;
   target_char_speed = info.target_char_speed;

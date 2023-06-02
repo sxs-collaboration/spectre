@@ -52,6 +52,9 @@ struct Info {
   /// the control signal jumps discontinuously in time.
   bool discontinuous_change_has_occurred;
 
+  /// Reset `discontinuous_change_has_occurred` and `suggested_time_scale`
+  void reset();
+
  private:
   void set_all_but_state(const Info& info);
 };
