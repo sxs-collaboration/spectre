@@ -8,6 +8,7 @@ set(LIBRARY "Test_Spectral")
 set(LIBRARY_SOURCES
   Test_ChebyshevGauss.cpp
   Test_ChebyshevGaussLobatto.cpp
+  Test_Clenshaw.cpp
   Test_ComplexDataView.cpp
   Test_Filtering.cpp
   Test_FiniteDifference.cpp
