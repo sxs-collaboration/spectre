@@ -48,3 +48,5 @@ spectre_target_headers(
   TimeDerivOfSpatialMetric.hpp
   TimeDerivativeOfSpacetimeMetric.hpp
 )
+
+add_subdirectory(Python)

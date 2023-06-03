@@ -6,3 +6,9 @@ spectre_add_python_bindings_test(
   Test_Bindings.py
   "Unit;GeneralRelativity;Python"
   PyGeneralRelativity)
+
+spectre_add_python_bindings_test(
+  "Unit.GeneralizedHarmonic.Python"
+  Test_GhBindings.py
+  "Unit;GeneralizedHarmonic;Python"
+  PyGeneralizedHarmonic)
