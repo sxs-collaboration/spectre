@@ -134,7 +134,7 @@ class TestStatus(unittest.TestCase):
     def test_get_input_file(self):
         self.assertEqual(
             get_input_file(self.slurm_comment, self.work_dir),
-            "path/to/input/file",
+            os.path.join(self.work_dir, "path/to/input/file"),
         )
         self.assertIsNone(
             get_input_file("", os.path.join(self.work_dir, "nonexistent"))
