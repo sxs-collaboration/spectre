@@ -52,6 +52,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(TypeTraits)
 add_subdirectory(Serialization)
+add_subdirectory(System)
 
 add_test_library(
   ${LIBRARY}
