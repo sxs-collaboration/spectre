@@ -59,7 +59,6 @@ void check_expiration_times(
 
 void test_expiration_time_construction() {
   const double initial_time = 0.9;
-  const double initial_time_step = 0.1;
   constexpr int measurements_per_update = 4;
 
   const double timescale = 2.0;
@@ -96,7 +95,7 @@ void test_expiration_time_construction() {
     INFO("No control systems");
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, measurements_per_update, creator1);
+            initial_time, measurements_per_update, creator1);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{};
@@ -108,8 +107,7 @@ void test_expiration_time_construction() {
     INFO("One control system");
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, measurements_per_update, creator2,
-            option_holder1);
+            initial_time, measurements_per_update, creator2, option_holder1);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{
@@ -128,8 +126,8 @@ void test_expiration_time_construction() {
     INFO("Three control system");
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, measurements_per_update, creator3,
-            option_holder1, option_holder2, option_holder3);
+            initial_time, measurements_per_update, creator3, option_holder1,
+            option_holder2, option_holder3);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{
@@ -141,7 +139,12 @@ void test_expiration_time_construction() {
                  measurements_per_update)},
             {FakeControlSystem<2>::name(),
              std::numeric_limits<double>::infinity()},
-            {FakeControlSystem<3>::name(), initial_time + initial_time_step}};
+            {FakeControlSystem<3>::name(),
+             control_system::function_of_time_expiration_time(
+                 initial_time, DataVector{0.0},
+                 control_system::calculate_measurement_timescales(
+                     controller, tuner2, measurements_per_update),
+                 measurements_per_update)}};
 
     check_expiration_times(expected_initial_expiration_times,
                            initial_expiration_times);
