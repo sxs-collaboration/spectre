@@ -251,6 +251,10 @@ void write_connectivity(const hid_t group_id,
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
 }
 
+void delete_connectivity(const hid_t group_id) {
+  H5Ldelete(group_id, "connectivity", h5p_default());
+}
+
 std::vector<std::string> get_group_names(const hid_t file_id,
                                          const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the groups
@@ -365,8 +369,7 @@ std::vector<T> read_rank1_attribute(const hid_t group_id,
   }
   const auto size = [&attr_id, &name] {
     const hid_t dataspace_id = H5Aget_space(attr_id);
-    const auto rank_of_space =
-        H5Sget_simple_extent_ndims(dataspace_id);
+    const auto rank_of_space = H5Sget_simple_extent_ndims(dataspace_id);
     if (UNLIKELY(rank_of_space < 0)) {
       ERROR("Failed to get the rank of the dataspace inside the attribute "
             << name);
@@ -598,8 +601,8 @@ bool contains_attribute(const hid_t file_id, const std::string& group_name,
 }
 
 hid_t open_dataset(const hid_t group_id, const std::string& dataset_name) {
-  const hid_t dataset_id = H5Dopen2(
-                           group_id, dataset_name.c_str(), h5p_default());
+  const hid_t dataset_id =
+      H5Dopen2(group_id, dataset_name.c_str(), h5p_default());
   CHECK_H5(dataset_id, "Failed to open dataset '" << dataset_name << "'");
   return dataset_id;
 }
@@ -628,8 +631,7 @@ T read_data(const hid_t group_id, const std::string& dataset_name) {
       H5Sget_simple_extent_dims(dataspace_id, nullptr, nullptr)) {
     ERROR("Incorrect rank in get_data(). Expected rank = "
           << Rank << " but received array with rank = "
-          << H5Sget_simple_extent_dims(dataspace_id, nullptr,
-                                       nullptr));
+          << H5Sget_simple_extent_dims(dataspace_id, nullptr, nullptr));
   }
   H5Sget_simple_extent_dims(dataspace_id, size.data(), max_size.data());
   close_dataspace(dataspace_id);
@@ -647,10 +649,9 @@ T read_data(const hid_t group_id, const std::string& dataset_name) {
                       std::vector<tt::get_fundamental_type_t<T>>>
       data(total_number_of_components);
 
-  CHECK_H5(H5Dread(dataset_id,
-                     h5_type<tt::get_fundamental_type_t<T>>(),
-                     h5s_all(), h5s_all(), h5p_default(), data.data()),
-             "Failed to read dataset: '" << dataset_name << "'");
+  CHECK_H5(H5Dread(dataset_id, h5_type<tt::get_fundamental_type_t<T>>(),
+                   h5s_all(), h5s_all(), h5p_default(), data.data()),
+           "Failed to read dataset: '" << dataset_name << "'");
   close_dataset(dataset_id);
   return VectorTo<Rank, T>::apply(std::move(data), size);
 }
