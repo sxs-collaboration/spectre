@@ -35,6 +35,8 @@ struct ErrorDiagnostics {
   double dt_lambda_00;
   double horizon_00;
   double dt_horizon_00;
+  double min_delta_r;
+  double min_relative_delta_r;
   double control_error_delta_r;
   double min_char_speed;
   double min_comoving_char_speed;
