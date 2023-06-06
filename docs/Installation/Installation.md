@@ -125,6 +125,10 @@ all of these dependencies.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with
   matplotlib
 * [xsimd](https://github.com/xtensor-stack/xsimd) - for manual vectorization
+* [libbacktrace](https://github.com/ianlancetaylor/libbacktrace) - to show
+  source files and line numbers in backtraces of errors and asserts. Available
+  by default on many systems, so you may not have to install it at all. The
+  CMake configuration will tell you if you have libbacktrace installed.
 * [ParaView](https://www.paraview.org/) - for visualization \cite Paraview1
   \cite Paraview2
 * [SpEC](https://www.black-holes.org/code/SpEC.html) - to load SpEC data.
