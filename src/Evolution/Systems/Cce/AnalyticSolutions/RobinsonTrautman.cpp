@@ -23,7 +23,7 @@
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
-#include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"

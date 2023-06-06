@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Options/Options.hpp"
 #include "Options/Tags.hpp"
 
 namespace Parallel::Tags {

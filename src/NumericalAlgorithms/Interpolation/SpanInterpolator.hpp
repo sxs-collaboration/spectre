@@ -9,7 +9,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 

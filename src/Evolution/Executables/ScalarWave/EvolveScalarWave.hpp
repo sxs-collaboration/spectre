@@ -44,8 +44,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 #include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"  // IWYU pragma: keep
-#include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Options/String.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"

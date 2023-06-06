@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 

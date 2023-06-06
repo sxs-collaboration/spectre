@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"

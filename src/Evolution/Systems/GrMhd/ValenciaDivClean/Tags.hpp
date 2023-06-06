@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "Evolution/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 class DataVector;

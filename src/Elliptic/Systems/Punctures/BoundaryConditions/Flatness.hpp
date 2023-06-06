@@ -11,7 +11,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

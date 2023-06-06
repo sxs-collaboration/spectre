@@ -11,7 +11,7 @@
 #include <variant>
 
 #include "DataStructures/DataVector.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 namespace PUP {

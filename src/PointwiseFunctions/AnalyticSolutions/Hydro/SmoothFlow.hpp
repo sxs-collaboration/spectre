@@ -8,7 +8,7 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"

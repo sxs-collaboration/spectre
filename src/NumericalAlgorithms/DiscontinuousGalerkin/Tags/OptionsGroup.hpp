@@ -4,7 +4,7 @@
 #pragma once
 
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 namespace dg::OptionTags {
 /*!

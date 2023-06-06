@@ -20,7 +20,7 @@
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

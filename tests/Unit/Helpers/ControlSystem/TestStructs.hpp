@@ -13,7 +13,7 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"

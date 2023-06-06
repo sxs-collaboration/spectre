@@ -9,6 +9,7 @@
 #include <pup_stl.h>
 #include <utility>
 
+#include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace TimeSequences {

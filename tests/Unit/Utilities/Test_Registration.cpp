@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "Framework/TestCreation.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 

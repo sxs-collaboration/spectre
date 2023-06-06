@@ -17,6 +17,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace domain::creators {

@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"               // IWYU pragma: keep
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
-#include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

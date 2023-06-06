@@ -10,7 +10,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellSolver.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ForceFree::fd {

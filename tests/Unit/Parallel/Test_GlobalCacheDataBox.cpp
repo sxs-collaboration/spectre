@@ -11,7 +11,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

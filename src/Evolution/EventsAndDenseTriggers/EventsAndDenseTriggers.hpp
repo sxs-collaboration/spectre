@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

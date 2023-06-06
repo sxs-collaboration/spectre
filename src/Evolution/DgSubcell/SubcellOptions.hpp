@@ -12,7 +12,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 

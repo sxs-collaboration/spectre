@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/Serialization/Serialize.hpp"

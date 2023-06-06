@@ -25,8 +25,10 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
+#include "Options/ParseError.hpp"
 #include "Options/Tags.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -131,7 +133,7 @@ T Option::parse_as() const {
             "separate line, indented and preceeded by a dash (  - foo).";
     }
     PARSE_ERROR(error_context, ss.str());
-  } catch (const Options_detail::propagate_context& e) {
+  } catch (const Options::detail::propagate_context& e) {
     Context error_context = context();
     // Avoid line numbers in the middle of the trace
     error_context.line = -1;
@@ -1196,7 +1198,7 @@ struct create_from_yaml<std::variant<T...>> {
                                                                  Metavariables>(
               options, alternative_parsable_types{});
           constructed = true;
-        } catch (const Options_detail::propagate_context& e) {
+        } catch (const Options::detail::propagate_context& e) {
           // This alternative failed, but a later one may succeed.
           errors += "\n\n" + e.message();
         }
@@ -1216,7 +1218,7 @@ struct create_from_yaml<std::variant<T...>> {
         try {
           result = options.parse_as<Alternative, Metavariables>();
           constructed = true;
-        } catch (const Options_detail::propagate_context& e) {
+        } catch (const Options::detail::propagate_context& e) {
           // This alternative failed, but a later one may succeed.
           errors += "\n\n" + e.message();
         }
@@ -1226,8 +1228,8 @@ struct create_from_yaml<std::variant<T...>> {
         try {
           options.parse_as<Options_detail::variant_parse_error<T...>,
                            Metavariables>();
-        } catch (const Options_detail::propagate_context& e) {
-          throw Options_detail::propagate_context(
+        } catch (const Options::detail::propagate_context& e) {
+          throw Options::detail::propagate_context(
               e.message() + "\n\nPossible errors:" + errors);
         }
       }

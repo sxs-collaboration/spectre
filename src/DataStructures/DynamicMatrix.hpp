@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace PUP {

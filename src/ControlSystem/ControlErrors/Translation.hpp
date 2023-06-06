@@ -17,7 +17,7 @@
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

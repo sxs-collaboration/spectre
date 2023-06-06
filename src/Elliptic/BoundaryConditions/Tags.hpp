@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic {

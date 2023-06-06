@@ -11,7 +11,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -18,7 +18,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 

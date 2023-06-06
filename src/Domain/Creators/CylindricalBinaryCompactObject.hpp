@@ -20,7 +20,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 

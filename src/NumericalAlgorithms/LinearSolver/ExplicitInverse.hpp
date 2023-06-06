@@ -13,7 +13,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"

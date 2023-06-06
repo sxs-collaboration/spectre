@@ -22,6 +22,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Options/ParseError.hpp"
 
 namespace domain::creators {
 RotatedIntervals::RotatedIntervals(

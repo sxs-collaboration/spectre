@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"

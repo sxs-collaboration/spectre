@@ -16,7 +16,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 

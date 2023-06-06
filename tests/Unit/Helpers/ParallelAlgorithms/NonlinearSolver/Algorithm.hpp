@@ -21,7 +21,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"

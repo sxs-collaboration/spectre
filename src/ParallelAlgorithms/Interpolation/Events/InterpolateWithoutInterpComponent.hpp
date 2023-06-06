@@ -14,7 +14,7 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"

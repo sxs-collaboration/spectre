@@ -12,7 +12,7 @@
 
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"

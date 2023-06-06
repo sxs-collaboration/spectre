@@ -24,7 +24,7 @@
 #include "Elliptic/Tags.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"

@@ -9,7 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 namespace ForceFree {
 

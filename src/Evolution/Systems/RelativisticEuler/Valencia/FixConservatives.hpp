@@ -8,7 +8,8 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

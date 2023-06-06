@@ -10,7 +10,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellSolver.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/FilterOptions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {

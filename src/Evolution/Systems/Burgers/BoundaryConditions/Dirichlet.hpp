@@ -14,7 +14,7 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"

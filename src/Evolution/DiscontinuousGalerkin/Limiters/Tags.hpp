@@ -6,7 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {

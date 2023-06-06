@@ -12,7 +12,7 @@
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep

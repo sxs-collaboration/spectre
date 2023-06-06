@@ -9,7 +9,7 @@
 #include <utility>
 #include <type_traits>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"

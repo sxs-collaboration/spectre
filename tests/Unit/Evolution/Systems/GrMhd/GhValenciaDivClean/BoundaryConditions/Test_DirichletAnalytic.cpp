@@ -26,7 +26,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/ArrayIndex.hpp"

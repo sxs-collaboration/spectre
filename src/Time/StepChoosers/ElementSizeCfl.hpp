@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/SizeOfElement.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"

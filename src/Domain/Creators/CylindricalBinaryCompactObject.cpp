@@ -30,6 +30,7 @@
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "Options/ParseError.hpp"
 
 namespace {
 std::array<double, 3> rotate_to_z_axis(const std::array<double, 3> input) {

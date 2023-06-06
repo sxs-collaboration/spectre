@@ -13,7 +13,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"

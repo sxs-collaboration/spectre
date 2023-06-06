@@ -11,7 +11,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "IO/Logging/Verbosity.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -14,7 +14,7 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

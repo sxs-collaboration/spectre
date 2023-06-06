@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

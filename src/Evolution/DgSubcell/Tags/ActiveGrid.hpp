@@ -6,7 +6,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 namespace evolution::dg::subcell {
 namespace OptionTags {

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Helpers/ParallelAlgorithms/NonlinearSolver/Algorithm.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"

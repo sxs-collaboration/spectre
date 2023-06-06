@@ -18,7 +18,6 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/ReadSpecPiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"

@@ -11,7 +11,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"

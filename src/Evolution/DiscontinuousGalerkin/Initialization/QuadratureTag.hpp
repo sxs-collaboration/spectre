@@ -6,7 +6,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/OptionsGroup.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg {

@@ -18,7 +18,7 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/PrettyType.hpp"

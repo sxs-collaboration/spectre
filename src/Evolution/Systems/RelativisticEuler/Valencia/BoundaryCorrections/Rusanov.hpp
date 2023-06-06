@@ -11,7 +11,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"

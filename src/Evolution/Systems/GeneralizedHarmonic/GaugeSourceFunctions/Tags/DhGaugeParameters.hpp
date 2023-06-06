@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DhGaugeParameters.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 namespace gh::OptionTags {

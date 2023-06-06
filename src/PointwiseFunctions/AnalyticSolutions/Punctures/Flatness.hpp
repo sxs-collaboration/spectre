@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Punctures/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

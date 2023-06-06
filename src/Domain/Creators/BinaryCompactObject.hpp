@@ -24,7 +24,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 

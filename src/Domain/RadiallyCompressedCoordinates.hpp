@@ -10,7 +10,7 @@
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Tags.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

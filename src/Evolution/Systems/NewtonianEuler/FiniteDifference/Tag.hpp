@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellSolver.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 namespace NewtonianEuler::fd {
 /// Option tags for reconstruction

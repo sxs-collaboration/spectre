@@ -17,7 +17,8 @@
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

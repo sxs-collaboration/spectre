@@ -16,8 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
-#include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 

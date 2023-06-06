@@ -5,6 +5,7 @@
 
 #include <pup.h>
 
+#include "Options/ParseError.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {

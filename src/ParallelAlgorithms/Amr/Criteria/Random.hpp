@@ -8,7 +8,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "Utilities/MakeArray.hpp"

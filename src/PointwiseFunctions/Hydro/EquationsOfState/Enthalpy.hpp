@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "Utilities/Math.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

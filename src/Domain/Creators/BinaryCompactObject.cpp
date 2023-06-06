@@ -42,6 +42,7 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ExcisionSphere.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {

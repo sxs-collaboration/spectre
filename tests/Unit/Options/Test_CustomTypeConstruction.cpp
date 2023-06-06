@@ -6,8 +6,10 @@
 #include <string>
 #include <utility>
 
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

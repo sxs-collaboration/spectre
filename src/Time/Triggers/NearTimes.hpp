@@ -11,7 +11,10 @@
 #include <string>
 #include <utility>
 
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
