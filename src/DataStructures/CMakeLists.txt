@@ -30,6 +30,7 @@ spectre_target_headers(
   ApplyMatrices.hpp
   BoostMultiArray.hpp
   CachedTempBuffer.hpp
+  CircularDeque.hpp
   ComplexDataVector.hpp
   ComplexDiagonalModalOperator.hpp
   ComplexModalVector.hpp
