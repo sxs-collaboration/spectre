@@ -18,7 +18,8 @@ namespace gr::AnalyticData {
 SpecInitialData::SpecInitialData(std::string data_directory)
     : data_directory_(std::move(data_directory)),
       spec_exporter_(std::make_unique<spec::Exporter>(
-          sys::number_of_procs(), data_directory_, vars_to_interpolate_)) {}
+          sys::procs_on_node(sys::my_node()), data_directory_,
+          vars_to_interpolate_)) {}
 
 SpecInitialData::SpecInitialData(const SpecInitialData& rhs)
     : evolution::initial_data::InitialData(rhs) {
@@ -27,8 +28,9 @@ SpecInitialData::SpecInitialData(const SpecInitialData& rhs)
 
 SpecInitialData& SpecInitialData::operator=(const SpecInitialData& rhs) {
   data_directory_ = rhs.data_directory_;
-  spec_exporter_ = std::make_unique<spec::Exporter>(
-      sys::number_of_procs(), data_directory_, vars_to_interpolate_);
+  spec_exporter_ =
+      std::make_unique<spec::Exporter>(sys::procs_on_node(sys::my_node()),
+                                       data_directory_, vars_to_interpolate_);
   return *this;
 }
 
@@ -43,8 +45,9 @@ void SpecInitialData::pup(PUP::er& p) {
   InitialData::pup(p);
   p | data_directory_;
   if (p.isUnpacking()) {
-    spec_exporter_ = std::make_unique<spec::Exporter>(
-        sys::number_of_procs(), data_directory_, vars_to_interpolate_);
+    spec_exporter_ =
+        std::make_unique<spec::Exporter>(sys::procs_on_node(sys::my_node()),
+                                         data_directory_, vars_to_interpolate_);
   }
 }
 
@@ -56,7 +59,7 @@ tuples::tagged_tuple_from_typelist<
 SpecInitialData::interpolate_from_spec(const tnsr::I<DataType, 3>& x) const {
   return gr::AnalyticData::interpolate_from_spec<interpolated_tags<DataType>>(
       make_not_null(spec_exporter_.get()), x,
-      static_cast<size_t>(sys::my_proc()));
+      static_cast<size_t>(sys::my_local_rank()));
 }
 
 template tuples::tagged_tuple_from_typelist<
