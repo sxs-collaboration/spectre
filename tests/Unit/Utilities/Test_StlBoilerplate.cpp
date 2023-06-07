@@ -237,7 +237,7 @@ void test_random_access_iterator() {
 // [RandomAccessSequence]
 template <typename T>
 class SequenceView
-    : public stl_boilerplate::RandomAccessSequence<SequenceView<T>, T> {
+    : public stl_boilerplate::RandomAccessSequence<SequenceView<T>, T, true> {
  public:
   SequenceView(const gsl::not_null<T*> data, const size_t size)
       : data_(data), size_(size) {}

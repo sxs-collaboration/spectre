@@ -76,8 +76,8 @@ bool operator!=(const UntypedStepRecord<T>& a, const UntypedStepRecord<T>& b);
 /// \tparam T One of the types in \ref MATH_WRAPPER_TYPES
 template <typename T>
 class ConstUntypedHistory
-    : public stl_boilerplate::RandomAccessSequence<ConstUntypedHistory<T>,
-                                                   const UntypedStepRecord<T>> {
+    : public stl_boilerplate::RandomAccessSequence<
+          ConstUntypedHistory<T>, const UntypedStepRecord<T>, false> {
   static_assert(tmpl::list_contains_v<tmpl::list<MATH_WRAPPER_TYPES>, T>);
 
  protected:
@@ -92,8 +92,9 @@ class ConstUntypedHistory
   using WrapperType = T;
 
   /// \cond
-  class UntypedSubsteps : public stl_boilerplate::RandomAccessSequence<
-                              UntypedSubsteps, const UntypedStepRecord<T>> {
+  class UntypedSubsteps
+      : public stl_boilerplate::RandomAccessSequence<
+            UntypedSubsteps, const UntypedStepRecord<T>, true> {
    public:
     UntypedSubsteps() = delete;
     UntypedSubsteps(const UntypedSubsteps&) = delete;
@@ -341,8 +342,9 @@ class UntypedAccessCommon : public UntypedBase {
 /// allocate internally, then this class will perform no heap
 /// allocations under any circumstances.
 template <typename Vars>
-class History : public stl_boilerplate::RandomAccessSequence<History<Vars>,
-                                                             StepRecord<Vars>> {
+class History
+    : public stl_boilerplate::RandomAccessSequence<History<Vars>,
+                                                   StepRecord<Vars>, false> {
  public:
   using DerivVars = db::prefix_variables<::Tags::dt, Vars>;
 
@@ -417,9 +419,8 @@ class History : public stl_boilerplate::RandomAccessSequence<History<Vars>,
     gsl::not_null<History*> history_;
   };
 
-  class ConstSubsteps
-      : public stl_boilerplate::RandomAccessSequence<ConstSubsteps,
-                                                     const StepRecord<Vars>> {
+  class ConstSubsteps : public stl_boilerplate::RandomAccessSequence<
+                            ConstSubsteps, const StepRecord<Vars>, true> {
    public:
     ConstSubsteps() = delete;
     ConstSubsteps(const ConstSubsteps&) = delete;
@@ -446,7 +447,7 @@ class History : public stl_boilerplate::RandomAccessSequence<History<Vars>,
 
   class MutableSubsteps
       : public stl_boilerplate::RandomAccessSequence<MutableSubsteps,
-                                                     StepRecord<Vars>> {
+                                                     StepRecord<Vars>, true> {
    public:
     MutableSubsteps() = delete;
     MutableSubsteps(const MutableSubsteps&) = delete;
@@ -967,11 +968,8 @@ void History<Vars>::insert_initial_impl(TimeStepId time_step_id,
 
 template <typename Vars>
 bool operator==(const History<Vars>& a, const History<Vars>& b) {
-  using BaseSequence =
-      stl_boilerplate::RandomAccessSequence<History<Vars>, StepRecord<Vars>>;
   return a.integration_order() == b.integration_order() and
-         static_cast<const BaseSequence&>(a) ==
-             static_cast<const BaseSequence&>(b) and
+         a.size() == b.size() and std::equal(a.begin(), a.end(), b.begin()) and
          a.substeps() == b.substeps();
 }
 
