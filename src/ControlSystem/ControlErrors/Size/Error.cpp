@@ -242,7 +242,7 @@ ErrorDiagnostics control_error(
       comoving_char_speed_crossing_time,
       delta_radius_crossing_time,
       info->target_char_speed,
-      info->suggested_time_scale,
+      info->suggested_time_scale.value_or(0.0),
       info->damping_time,
       info->discontinuous_change_has_occurred};
 }
