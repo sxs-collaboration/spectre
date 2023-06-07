@@ -11,7 +11,7 @@ list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 list(APPEND _TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
-                                    CHECK_TYPE TIMEOUT)
+                                    CHECK_TYPE TIMEOUT EXPECTED_EXIT_CODE)
   # Extract just the name of the input file
   get_filename_component(INPUT_FILE_NAME "${INPUT_FILE}" NAME)
 
@@ -43,29 +43,27 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
     RUN_DIRECTORY
     "${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${CHECK_TYPE}"
     )
+  if("${CHECK_TYPE}" STREQUAL "execute_check_output")
+    set(_CHECK_OUTPUT_FILES "true")
+  else()
+    set(_CHECK_OUTPUT_FILES "false")
+  endif()
+
   if ("${CHECK_TYPE}" STREQUAL "parse")
     add_test(
       NAME ${CTEST_NAME}
       COMMAND ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}
       --check-options --input-file ${INPUT_FILE}
       )
-  elseif("${CHECK_TYPE}" STREQUAL "execute")
+  elseif("${CHECK_TYPE}" STREQUAL "execute" OR
+         "${CHECK_TYPE}" STREQUAL "execute_check_output")
     add_test(
       NAME ${CTEST_NAME}
       # This script is written below, and only once
-      COMMAND sh ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
-      ${EXECUTABLE} ${INPUT_FILE} ${COMMAND_LINE_ARGS}
-      # Make sure we run the test in the build directory for cleaning its output
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      )
-  elseif("${CHECK_TYPE}" STREQUAL "execute_check_output")
-    add_test(
-      NAME "${CTEST_NAME}"
-      # This script is written below, and only once
-      COMMAND sh ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
-      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY} "${COMMAND_LINE_ARGS}"
-      # Make sure we run the test in the build directory for cleaning its output
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND sh ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh
+      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY}
+      ${EXPECTED_EXIT_CODE} ${_CHECK_OUTPUT_FILES}
+      "${COMMAND_LINE_ARGS}"
       )
   else()
     message(FATAL_ERROR "Unknown check for input file: ${CHECK_TYPE}."
@@ -82,7 +80,6 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
   set_tests_properties(
     ${CTEST_NAME}
     PROPERTIES
-    FAIL_REGULAR_EXPRESSION "ERROR"
     TIMEOUT ${TIMEOUT}
     LABELS "${TAGS}"
     ENVIRONMENT "${_TEST_ENV_VARS}")
@@ -123,6 +120,15 @@ function(add_input_file_tests INPUT_FILE_DIR)
     string(REGEX REPLACE "CommandLineArgs:[ ]*" ""
       COMMAND_LINE_ARGS "${COMMAND_LINE_ARGS}")
     string(STRIP "${COMMAND_LINE_ARGS}" COMMAND_LINE_ARGS)
+
+    string(REGEX MATCH "ExpectedExitCode:[^\n]+"
+      EXPECTED_EXIT_CODE "${INPUT_FILE_CONTENTS}")
+    string(REGEX REPLACE "ExpectedExitCode:[ ]*" ""
+      EXPECTED_EXIT_CODE "${EXPECTED_EXIT_CODE}")
+    string(STRIP "${EXPECTED_EXIT_CODE}" EXPECTED_EXIT_CODE)
+    if("${EXPECTED_EXIT_CODE}" STREQUAL "")
+      set(EXPECTED_EXIT_CODE "0")
+    endif()
 
     # Read what tests to do. Currently "execute" and "parse" are available.
     string(REGEX MATCH "Check:[^\n]+"
@@ -170,6 +176,7 @@ function(add_input_file_tests INPUT_FILE_DIR)
         "${COMMAND_LINE_ARGS}"
         ${CHECK_TYPE}
         ${INPUT_FILE_TIMEOUT}
+        ${EXPECTED_EXIT_CODE}
         )
     endforeach()
     add_dependencies(test-executables ${INPUT_FILE_EXECUTABLE})
@@ -181,23 +188,9 @@ add_custom_target(test-executables)
 
 # Write command to execute an input file and clean its output into a shell
 # script, which makes it easier to chain multiple commands
-file(
-  WRITE
-  ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
-  "\
-#!/bin/sh\n\
-${Python_EXECUTABLE} -m spectre.tools.CleanOutput --force \
---output-dir ${CMAKE_BINARY_DIR} $2
-${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 \${3} && \
-${Python_EXECUTABLE} -m spectre.tools.CleanOutput \
---output-dir ${CMAKE_BINARY_DIR} $2\n"
-)
-
-# Write command to execute an input file and clean its output into a shell
-# script, which makes it easier to chain multiple commands
 configure_file(
-  ${CMAKE_SOURCE_DIR}/cmake/ExecuteCheckOutputFilesAndClean.sh
-  ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
+  ${CMAKE_SOURCE_DIR}/cmake/RunInputFileTest.sh
+  ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh
   @ONLY)
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")
