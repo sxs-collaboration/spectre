@@ -83,8 +83,8 @@ struct H5WorldtubeBoundary
   using base_type::execute_next_phase;
   using base_type::initialize;
   using typename base_type::chare_type;
-  using const_global_cache_tags = tmpl::list<Tags::InitializeJ<
-      Metavariables::uses_partially_flat_cartesian_coordinates>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::InitializeJ<Metavariables::evolve_ccm>>;
   using typename base_type::metavariables;
   using typename base_type::options;
   using typename base_type::phase_dependent_action_list;
@@ -168,8 +168,8 @@ struct GhWorldtubeBoundary
   using base_type::execute_next_phase;
   using base_type::initialize;
   using typename base_type::chare_type;
-  using const_global_cache_tags = tmpl::list<Tags::InitializeJ<
-      Metavariables::uses_partially_flat_cartesian_coordinates>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::InitializeJ<Metavariables::evolve_ccm>>;
   using typename base_type::metavariables;
   using typename base_type::options;
   using typename base_type::phase_dependent_action_list;

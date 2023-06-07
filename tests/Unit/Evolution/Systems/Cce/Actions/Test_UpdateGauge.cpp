@@ -66,12 +66,11 @@ struct mock_characteristic_evolution {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
-          tmpl::list<Actions::UpdateGauge<
-              Metavariables::uses_partially_flat_cartesian_coordinates>>>>;
+          tmpl::list<Actions::UpdateGauge<Metavariables::evolve_ccm>>>>;
 };
 
 struct metavariables {
-  static constexpr bool uses_partially_flat_cartesian_coordinates = true;
+  static constexpr bool evolve_ccm = true;
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
 };
@@ -145,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
                        Tags::PartiallyFlatGaugeOmega>>(
       make_not_null(&expected_box));
 
-  if (metavariables::uses_partially_flat_cartesian_coordinates) {
+  if (metavariables::evolve_ccm) {
     db::mutate_apply<GaugeUpdateAngularFromCartesian<
         Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
         make_not_null(&expected_box));
@@ -199,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
   CHECK_ITERABLE_APPROX(interpolated_points_from_computed,
                         interpolated_points_from_expected);
 
-  if (metavariables::uses_partially_flat_cartesian_coordinates) {
+  if (metavariables::evolve_ccm) {
     const Spectral::Swsh::SwshInterpolator& computed_interpolator_inertial =
         ActionTesting::get_databox_tag<component,
                                        Spectral::Swsh::Tags::SwshInterpolator<

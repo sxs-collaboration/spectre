@@ -99,8 +99,7 @@ template <class Metavariables>
 struct CharacteristicEvolution {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using cce_system =
-      Cce::System<Metavariables::uses_partially_flat_cartesian_coordinates>;
+  using cce_system = Cce::System<Metavariables::evolve_ccm>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
@@ -137,11 +136,10 @@ struct CharacteristicEvolution {
                   tt::is_a_v<AnalyticWorldtubeBoundary,
                              typename Metavariables::cce_boundary_component>,
                   tmpl::list<>,
-                  tmpl::conditional_t<
-                      Metavariables::uses_partially_flat_cartesian_coordinates,
-                      ::Actions::MutateApply<
-                          GaugeUpdateInertialTimeDerivatives>,
-                      tmpl::list<>>>,
+                  tmpl::conditional_t<Metavariables::evolve_ccm,
+                                      ::Actions::MutateApply<
+                                          GaugeUpdateInertialTimeDerivatives>,
+                                      tmpl::list<>>>,
               ::Actions::MutateApply<
                   GaugeAdjustedBoundaryValue<Tags::DuRDividedByR>>,
               ::Actions::MutateApply<PrecomputeCceDependencies<
@@ -172,18 +170,17 @@ struct CharacteristicEvolution {
       // note that the initialization will only actually happen on the
       // iterations immediately following restarts
       Actions::InitializeFirstHypersurface<
-          Metavariables::uses_partially_flat_cartesian_coordinates,
+          Metavariables::evolve_ccm,
           typename Metavariables::cce_boundary_component>,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
           Actions::UpdateGauge<false>,
-          Actions::UpdateGauge<
-              Metavariables::uses_partially_flat_cartesian_coordinates>>,
+          Actions::UpdateGauge<Metavariables::evolve_ccm>>,
       Actions::PrecomputeGlobalCceDependencies,
-      tmpl::conditional_t<
-          Metavariables::uses_partially_flat_cartesian_coordinates,
-          Actions::CalculatePsi0AndDerivAtInnerBoundary, tmpl::list<>>,
+      tmpl::conditional_t<Metavariables::evolve_ccm,
+                          Actions::CalculatePsi0AndDerivAtInnerBoundary,
+                          tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
@@ -203,18 +200,17 @@ struct CharacteristicEvolution {
       ::Actions::Label<CceEvolutionLabelTag>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface<
-          Metavariables::uses_partially_flat_cartesian_coordinates,
+          Metavariables::evolve_ccm,
           typename Metavariables::cce_boundary_component>,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
           Actions::UpdateGauge<false>,
-          Actions::UpdateGauge<
-              Metavariables::uses_partially_flat_cartesian_coordinates>>,
+          Actions::UpdateGauge<Metavariables::evolve_ccm>>,
       Actions::PrecomputeGlobalCceDependencies,
-      tmpl::conditional_t<
-          Metavariables::uses_partially_flat_cartesian_coordinates,
-          Actions::CalculatePsi0AndDerivAtInnerBoundary, tmpl::list<>>,
+      tmpl::conditional_t<Metavariables::evolve_ccm,
+                          Actions::CalculatePsi0AndDerivAtInnerBoundary,
+                          tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,

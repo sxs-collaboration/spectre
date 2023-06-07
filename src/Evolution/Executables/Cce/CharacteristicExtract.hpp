@@ -55,7 +55,7 @@ class er;
 
 template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
-  using system = Cce::System<uses_partially_flat_cartesian_coordinates>;
+  using system = Cce::System<evolve_ccm>;
   static constexpr bool local_time_stepping = true;
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
@@ -95,8 +95,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &Cce::register_initialize_j_with_charm<
-        metavariables::uses_partially_flat_cartesian_coordinates,
-        metavariables::cce_boundary_component>,
+        metavariables::evolve_ccm, metavariables::cce_boundary_component>,
     &register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &register_derived_classes_with_charm<

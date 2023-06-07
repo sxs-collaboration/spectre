@@ -98,8 +98,8 @@ struct mock_characteristic_evolution {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tags = tmpl::list<Tags::InitializeJ<
-      metavariables::uses_partially_flat_cartesian_coordinates>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::InitializeJ<metavariables::evolve_ccm>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -109,15 +109,14 @@ struct mock_characteristic_evolution {
           Parallel::Phase::Testing,
           tmpl::list<
               Actions::InitializeFirstHypersurface<
-                  metavariables::uses_partially_flat_cartesian_coordinates,
-                  dummy_boundary<Metavariables>>,
+                  metavariables::evolve_ccm, dummy_boundary<Metavariables>>,
               ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
                   Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
               ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
                   Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
                   Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
               std::conditional_t<
-                  Metavariables::uses_partially_flat_cartesian_coordinates,
+                  Metavariables::evolve_ccm,
                   tmpl::list<
                       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
                           Tags::PartiallyFlatAngularCoords,
@@ -129,21 +128,18 @@ struct mock_characteristic_evolution {
                   tmpl::list<>>>>>;
 };
 
-template <bool EvolvePartiallyFlatCartesianCoordinates>
+template <bool EvolveCcm>
 struct metavariables {
   using component_list =
       tmpl::list<mock_observer_writer<metavariables>,
                  mock_characteristic_evolution<metavariables>>;
 
-  static constexpr bool uses_partially_flat_cartesian_coordinates =
-      EvolvePartiallyFlatCartesianCoordinates;
-
+  static constexpr bool evolve_ccm = EvolveCcm;
 };
 
-template <bool EvolvePartiallyFlatCartesianCoordinates>
+template <bool EvolveCcm>
 void test_InitializeFirstHypersurface() {
-  register_derived_classes_with_charm<
-      InitializeJ::InitializeJ<EvolvePartiallyFlatCartesianCoordinates>>();
+  register_derived_classes_with_charm<InitializeJ::InitializeJ<EvolveCcm>>();
 
   MAKE_GENERATOR(gen);
   // limited l_max distribution because test depends on an analytic
@@ -154,13 +150,10 @@ void test_InitializeFirstHypersurface() {
   UniformCustomDistribution<double> coefficient_distribution{-2.0, 2.0};
   CAPTURE(l_max);
 
-  using component = mock_characteristic_evolution<
-      metavariables<EvolvePartiallyFlatCartesianCoordinates>>;
-  ActionTesting::MockRuntimeSystem<
-      metavariables<EvolvePartiallyFlatCartesianCoordinates>>
-      runner{{std::make_unique<InitializeJ::InverseCubic<
-                  EvolvePartiallyFlatCartesianCoordinates>>(),
-              l_max, number_of_radial_points}};
+  using component = mock_characteristic_evolution<metavariables<EvolveCcm>>;
+  ActionTesting::MockRuntimeSystem<metavariables<EvolveCcm>> runner{
+      {std::make_unique<InitializeJ::InverseCubic<EvolveCcm>>(), l_max,
+       number_of_radial_points}};
 
   Variables<tmpl::append<real_cauchy_boundary_tags_to_compute,
                          real_inertial_boundary_tags_to_compute>>
@@ -193,9 +186,9 @@ void test_InitializeFirstHypersurface() {
         8);
   });
 
-  ActionTesting::emplace_component_and_initialize<mock_observer_writer<
-      metavariables<EvolvePartiallyFlatCartesianCoordinates>>>(
-      &runner, 0, {Parallel::NodeLock{}});
+  ActionTesting::emplace_component_and_initialize<
+      mock_observer_writer<metavariables<EvolveCcm>>>(&runner, 0,
+                                                      {Parallel::NodeLock{}});
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {real_variables, swsh_variables, swsh_volume_variables, time_step_id});
@@ -212,19 +205,18 @@ void test_InitializeFirstHypersurface() {
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
+  if constexpr (EvolveCcm) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
 
   // apply the corresponding mutators to the `expected_box`
   auto node_lock = Parallel::NodeLock{};
-  db::mutate_apply<typename Cce::InitializeJ::InitializeJ<
-                       EvolvePartiallyFlatCartesianCoordinates>::mutate_tags,
-                   typename Cce::InitializeJ::InitializeJ<
-                       EvolvePartiallyFlatCartesianCoordinates>::argument_tags>(
-      Cce::InitializeJ::InverseCubic<EvolvePartiallyFlatCartesianCoordinates>{},
-      make_not_null(&expected_box), make_not_null(&node_lock));
+  db::mutate_apply<
+      typename Cce::InitializeJ::InitializeJ<EvolveCcm>::mutate_tags,
+      typename Cce::InitializeJ::InitializeJ<EvolveCcm>::argument_tags>(
+      Cce::InitializeJ::InverseCubic<EvolveCcm>{}, make_not_null(&expected_box),
+      make_not_null(&node_lock));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
@@ -232,7 +224,7 @@ void test_InitializeFirstHypersurface() {
       Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
-  if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
+  if constexpr (EvolveCcm) {
     db::mutate_apply<GaugeUpdateAngularFromCartesian<
         Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
         make_not_null(&expected_box));
@@ -256,7 +248,7 @@ void test_InitializeFirstHypersurface() {
         CHECK_ITERABLE_APPROX(test_lhs, test_rhs);
       });
 
-  if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
+  if constexpr (EvolveCcm) {
     tmpl::for_each<tmpl::append<real_inertial_boundary_tags_to_compute,
                                 swsh_inertial_boundary_tags_to_compute>>(
         [&runner, &expected_box](auto tag_v) {

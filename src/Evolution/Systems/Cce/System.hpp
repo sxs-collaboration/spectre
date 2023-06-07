@@ -28,9 +28,8 @@
  * Einstein field equations (currently the only one implemented in SpECTRE is
  * Generalized Harmonic) must be translated to Bondi spin-weighted scalars at
  * the extraction sphere. Relevant utilities for this conversion are
- * `Cce::WorldtubeDataManager`, `Cce::ReducedWorldtubeDataManager`,
- * `Cce::create_bondi_boundary_data`. Relevant parts of the parallel
- * infrastructure are `Cce::H5WorldtubeBoundary`,
+ * `Cce::WorldtubeDataManager`, `Cce::create_bondi_boundary_data`. Relevant
+ * parts of the parallel infrastructure are `Cce::H5WorldtubeBoundary`,
  * `Cce::Actions::BoundaryComputeAndSendToEvolution`,
  * `Cce::Actions::RequestBoundaryData`, and
  * `Cce::Actions::ReceiveWorldtubeData`.
@@ -111,15 +110,18 @@
  * `Cce::Actions::InsertInterpolationScriData` and
  * `Cce::Actions::ScriObserveInterpolated`.
  *
+ * The template parameter `EvolveCcm` will add an extra evolved variable to the
+ * characteristic system, namely `Cce::Tags::PartiallyFlatCartesianCoords`.
+ *
  */
 namespace Cce {
 
-template <bool EvolvePartiallyFlatCartesianCoordinates>
+template <bool EvolveCcm>
 struct System {
   using variables_tag =
       tmpl::list<::Tags::Variables<tmpl::list<Tags::BondiJ>>,
                  ::Tags::Variables<std::conditional_t<
-                     EvolvePartiallyFlatCartesianCoordinates,
+                     EvolveCcm,
                      tmpl::list<Cce::Tags::CauchyCartesianCoords,
                                 Cce::Tags::PartiallyFlatCartesianCoords,
                                 Cce::Tags::InertialRetardedTime>,

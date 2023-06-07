@@ -16,8 +16,7 @@ struct LinearizedBondiSachs;
 
 /// A function for registering all of the InitializeJ derived classes with
 /// charm, including the ones not intended to be directly option-creatable
-template <bool UsesPartiallyFlatCartesianCoordinates,
-          typename BoundaryComponent>
+template <bool EvolveCcm, typename BoundaryComponent>
 void register_initialize_j_with_charm() {
   PUPable_reg(SINGLE_ARG(Solutions::LinearizedBondiSachs_detail::InitializeJ::
                          LinearizedBondiSachs));
@@ -26,7 +25,7 @@ void register_initialize_j_with_charm() {
     register_derived_classes_with_charm<Cce::InitializeJ::InitializeJ<false>>();
   } else {
     register_derived_classes_with_charm<
-        Cce::InitializeJ::InitializeJ<UsesPartiallyFlatCartesianCoordinates>>();
+        Cce::InitializeJ::InitializeJ<EvolveCcm>>();
   }
 }
 }  // namespace Cce

@@ -74,10 +74,11 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, bool EvolveCcm>
 struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
-                           public CharacteristicExtractDefaults<false> {
+                           public CharacteristicExtractDefaults<EvolveCcm> {
   static constexpr size_t volume_dim = VolumeDim;
+  using cce_base = CharacteristicExtractDefaults<EvolveCcm>;
   using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
@@ -129,6 +130,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
                              gh::Tags::Pi<DataVector, volume_dim>,
                              gh::Tags::Phi<DataVector, volume_dim>>>>>>;
 
+  using typename cce_base::cce_step_choosers;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
@@ -249,8 +251,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &gh::BoundaryCorrections::register_derived_with_charm,
     &gh::ConstraintDamping::register_derived_with_charm,
     &Cce::register_initialize_j_with_charm<
-        metavariables::uses_partially_flat_cartesian_coordinates,
-        metavariables::cce_boundary_component>,
+        metavariables::evolve_ccm, metavariables::cce_boundary_component>,
     &register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &register_derived_classes_with_charm<intrp::SpanInterpolator>,
     &register_factory_classes_with_charm<metavariables>};
