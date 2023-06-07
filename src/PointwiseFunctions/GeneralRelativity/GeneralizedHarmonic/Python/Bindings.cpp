@@ -28,7 +28,7 @@ void bind_impl(py::module& m) {  // NOLINT
 }
 }  // namespace
 
-PYBIND11_MODULE(_PyGeneralizedHarmonic, m) {  // NOLINT
+PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
