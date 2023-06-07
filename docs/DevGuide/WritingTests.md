@@ -291,3 +291,27 @@ run it use `BUILD_DIR/bin/RunSingleTest Unit.Test.Name`.
 `Parallel::abort` does not work correctly in the `RunSingleTest` executable
 because a segfault occurs inside Charm++ code after the abort message is
 printed.
+
+## Input file tests
+
+We have a suite of input file tests in addition to unit tests. Every input file
+in the `tests/InputFiles/` directory is added to the test suite automatically.
+The input file must specify the `Executable` it should run with in the input
+file metadata (above the `---` marker in the input file). Properties of the test
+are controlled by the `Testing` section in the input file metadata. The
+following properties are available:
+
+- `Check`: Semicolon-separated list of checks, e.g. `parse;execute`. The
+  following checks are available:
+    - `parse`: Just check that the input file passes option parsing.
+    - `execute`: Run the executable. If the input file metadata has an
+      `ExpectedOutput` field, check that these files have been written. See
+      `spectre.tools.CleanOutput` for details.
+    - `execute_check_output`: In additional to `execute`, check the contents of
+      some output files. The checks are defined by the `OutputFileChecks` in the
+      input file metadata. See `spectre.tools.CheckOutputFiles` for details.
+- `CommandLineArgs` (optional): Additional command-line arguments passed to the
+  executable.
+- `ExpectedExitCode` (optional): The expected exit code of the executable.
+  Default: `0`. See `Parallel::ExitCode` for possible exit codes.
+- `Timeout` (optional): Timeout for the test. Default: 2 seconds.

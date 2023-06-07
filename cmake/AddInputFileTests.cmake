@@ -85,16 +85,8 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
     ENVIRONMENT "${_TEST_ENV_VARS}")
 endfunction()
 
-# Searches the directory INPUT_FILE_DIR for .yaml files and adds a
-# test for each one. The input files must contain a line of the form:
-# '# Executable: EvolveScalarWave1D'
-# with the name of the executable that should be able to parse and run
-# using the input file, and a line of the form:
-# '# Check: parse;execute'
-# OR
-# '# Check:'
-# If 'execute' is present then the input file will not just be parsed,
-# but the simulation will be run.
+# Searches the directory INPUT_FILE_DIR for .yaml files and adds a test for each
+# one. See `WritingTests.md` for details on controlling input file tests.
 function(add_input_file_tests INPUT_FILE_DIR)
   set(INPUT_FILE_LIST "")
   file(GLOB_RECURSE INPUT_FILE_LIST ${INPUT_FILE_DIR} "${INPUT_FILE_DIR}*.yaml")
