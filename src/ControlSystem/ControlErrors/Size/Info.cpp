@@ -3,16 +3,18 @@
 
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 
 #include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace control_system::size {
 Info::Info(std::unique_ptr<State> in_state, double in_damping_time,
            double in_target_char_speed, double in_target_drift_velocity,
-           double in_suggested_time_scale,
+           std::optional<double> in_suggested_time_scale,
            bool in_discontinuous_change_has_occurred)
     : state(std::move(in_state)),
       damping_time(in_damping_time),

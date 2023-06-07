@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <pup.h>
 
 /// \cond
@@ -24,7 +25,7 @@ struct Info {
 
   Info(std::unique_ptr<State> in_state, double in_damping_time,
        double in_target_char_speed, double in_target_drift_velocity,
-       double in_suggested_time_scale,
+       std::optional<double> in_suggested_time_scale,
        bool in_discontinuous_change_has_occurred);
 
   // Info needs to be serializable because it will be
@@ -43,8 +44,9 @@ struct Info {
   /// Label::Initial.
   double target_drift_velocity;
   /// Sometimes State::update will request that damping_time
-  /// be changed; the new suggested value is suggested_time_scale.
-  double suggested_time_scale;
+  /// be changed; the new suggested value is suggested_time_scale. If it is a
+  /// `std::nullopt` then there is no suggestion.
+  std::optional<double> suggested_time_scale;
   /// discontinuous_change_has_occurred is set to true by
   /// State::update if it changes anything in such a way that
   /// the control signal jumps discontinuously in time.
