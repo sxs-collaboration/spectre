@@ -22,6 +22,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -131,14 +132,20 @@ struct Time : db::SimpleTag {
 /// ::evolution::Tags::PreviousTriggerTime tag is set. Any Events that request
 /// this tag in their `argument_tags` type alias, must be triggered by a
 /// DenseTrigger.
+///
+/// \note The Index is just so we can have multiple of this tag in the same
+/// DataBox.
+template <size_t Index>
 struct TimeAndPrevious : db::SimpleTag {
   using type = LinkedMessageId<double>;
+  static std::string name() { return "TimeAndPrevious" + get_output(Index); }
 };
 
-struct TimeAndPreviousCompute : TimeAndPrevious, db::ComputeTag {
+template <size_t Index>
+struct TimeAndPreviousCompute : TimeAndPrevious<Index>, db::ComputeTag {
   using argument_tags =
       tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime>;
-  using base = TimeAndPrevious;
+  using base = TimeAndPrevious<Index>;
   using return_type = LinkedMessageId<double>;
 
   static void function(

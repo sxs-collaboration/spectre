@@ -68,7 +68,7 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
         return "ControlSystemSingleAh" + ::domain::name(Horizon);
       }
 
-      using temporal_id = ::Tags::TimeAndPrevious;
+      using temporal_id = ::Tags::TimeAndPrevious<0>;
 
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
