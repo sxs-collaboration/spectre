@@ -6,12 +6,12 @@ Testing:
   Check: parse;execute_check_output
   Timeout: 20
 ExpectedOutput:
-  - CharacteristicExtractVolume0.h5
+  - CharacteristicExtractReduction.h5
 OutputFileChecks:
   - Label: "check_news"
-    Subfile: "/News_Noninertial.dat"
-    FileGlob: "CharacteristicExtractVolume*.h5"
-    ExpectedDataSubfile: "/News_Noninertial_expected.dat"
+    Subfile: "/Cce/News_Noninertial.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    ExpectedDataSubfile: "/Cce/News_Noninertial_expected.dat"
     AbsoluteTolerance: 5e-11
 
 ---
@@ -31,8 +31,8 @@ ResourceInfo:
       Exclusive: false
 
 Observers:
-  VolumeFileName: "CharacteristicExtractVolume"
-  ReductionFileName: "CharacteristicExtractUnusedReduction"
+  VolumeFileName: "CharacteristicExtractUnusedVolume"
+  ReductionFileName: "CharacteristicExtractReduction"
 
 Cce:
   Evolution:
