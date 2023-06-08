@@ -5,10 +5,10 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
+import spectre.PointwiseFunctions.GeneralRelativity.GeneralizedHarmonic as gh
 
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
-from spectre.PointwiseFunctions.GeneralRelativity.GeneralizedHarmonic import *
 
 
 class TestBindings(unittest.TestCase):
@@ -17,15 +17,15 @@ class TestBindings(unittest.TestCase):
         shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
         inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
         spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
-        phi_ = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
-        pi_ = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
-        time_deriv_of_shift(
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        gh.time_deriv_of_shift(
             lapse,
             shift,
             inverse_spatial_metric,
             spacetime_unit_normal,
-            phi_,
-            pi_,
+            phi,
+            pi,
         )
 
 

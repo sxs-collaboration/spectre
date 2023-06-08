@@ -32,7 +32,6 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
-  py::module_::import("spectre.Spectral");
   py_bindings::bind_impl<1>(m);
   py_bindings::bind_impl<2>(m);
   py_bindings::bind_impl<3>(m);
