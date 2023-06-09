@@ -35,7 +35,8 @@ SpecInitialData::SpecInitialData(
       density_cutoff_(density_cutoff),
       electron_fraction_(electron_fraction),
       spec_exporter_(std::make_unique<spec::Exporter>(
-          sys::number_of_procs(), data_directory_, vars_to_interpolate_)) {}
+          sys::procs_on_node(sys::my_node()), data_directory_,
+          vars_to_interpolate_)) {}
 
 SpecInitialData::SpecInitialData(const SpecInitialData& rhs)
     : evolution::initial_data::InitialData(rhs) {
@@ -47,8 +48,9 @@ SpecInitialData& SpecInitialData::operator=(const SpecInitialData& rhs) {
   equation_of_state_ = rhs.equation_of_state_->get_clone();
   density_cutoff_ = rhs.density_cutoff_;
   electron_fraction_ = rhs.electron_fraction_;
-  spec_exporter_ = std::make_unique<spec::Exporter>(
-      sys::number_of_procs(), data_directory_, vars_to_interpolate_);
+  spec_exporter_ =
+      std::make_unique<spec::Exporter>(sys::procs_on_node(sys::my_node()),
+                                       data_directory_, vars_to_interpolate_);
   return *this;
 }
 
@@ -66,8 +68,9 @@ void SpecInitialData::pup(PUP::er& p) {
   p | density_cutoff_;
   p | electron_fraction_;
   if (p.isUnpacking()) {
-    spec_exporter_ = std::make_unique<spec::Exporter>(
-        sys::number_of_procs(), data_directory_, vars_to_interpolate_);
+    spec_exporter_ =
+        std::make_unique<spec::Exporter>(sys::procs_on_node(sys::my_node()),
+                                         data_directory_, vars_to_interpolate_);
   }
 }
 
@@ -79,7 +82,7 @@ tuples::tagged_tuple_from_typelist<
 SpecInitialData::interpolate_from_spec(const tnsr::I<DataType, 3>& x) const {
   return gr::AnalyticData::interpolate_from_spec<interpolated_tags<DataType>>(
       make_not_null(spec_exporter_.get()), x,
-      static_cast<size_t>(sys::my_proc()));
+      static_cast<size_t>(sys::my_local_rank()));
 }
 
 template <typename DataType>
