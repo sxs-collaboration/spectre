@@ -214,6 +214,7 @@ void test_names() {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Rotation",
                   "[ControlSystem][Unit]") {
   test_names();
