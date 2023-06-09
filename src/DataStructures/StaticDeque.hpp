@@ -38,7 +38,7 @@ constexpr static bool is_input_iterator = not std::is_integral_v<U>;
 template <typename T, size_t Capacity>
 class StaticDeque
     : public stl_boilerplate::RandomAccessSequence<StaticDeque<T, Capacity>,
-                                                   T> {
+                                                   T, true> {
  public:
   // Aliases needed in the class definition.  The rest can just be
   // inherited.
