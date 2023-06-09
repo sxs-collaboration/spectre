@@ -3,6 +3,7 @@
 
 import logging
 import os
+import shutil
 
 import click
 import yaml
@@ -54,7 +55,10 @@ def clean_output(input_file, output_dir, force):
         expected_output_file = os.path.join(output_dir, expected_output_file)
         logging.debug(f"Attempting to remove file {expected_output_file}...")
         if os.path.exists(expected_output_file):
-            os.remove(expected_output_file)
+            if os.path.isfile(expected_output_file):
+                os.remove(expected_output_file)
+            else:
+                shutil.rmtree(expected_output_file)
             logging.info(f"Removed file {expected_output_file}.")
         elif not force:
             missing_files.append(expected_output_file)

@@ -77,6 +77,9 @@ struct CheckpointAndExitRequested {
  * \brief Phase control object that runs the WriteCheckpoint and Exit phases
  * after a specified amount of wallclock time has elapsed.
  *
+ * When the executable exits from here, it does so with
+ * `Parallel::ExitCode::ContinueFromCheckpoint`.
+ *
  * This phase control is useful for running SpECTRE executables performing
  * lengthy computations that may exceed a supercomputer's wallclock limits.
  * Writing a single checkpoint at the end of the job's allocated time allows
@@ -123,7 +126,8 @@ struct CheckpointAndExitAfterWallclock : public PhaseChange {
   using options = tmpl::list<WallclockHours>;
   static constexpr Options::String help{
       "Once the wallclock time has exceeded the specified amount, trigger "
-      "writing a checkpoint and then exit."};
+      "writing a checkpoint and then exit with the 'ContinueFromCheckpoint' "
+      "exit code."};
 
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<>;

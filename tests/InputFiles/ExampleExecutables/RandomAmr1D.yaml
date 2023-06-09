@@ -3,10 +3,11 @@
 
 Executable: RandomAmr1D
 Testing:
-  Check: parse;execute_check_output
+  Check: parse;execute
+  Timeout: 10
+  ExpectedExitCode: 2
 ExpectedOutput:
- - SpectreCheckpoint000000
-Timeout: 10
+  - SpectreCheckpoint000000
 
 ---
 
