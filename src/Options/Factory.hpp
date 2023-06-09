@@ -15,6 +15,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"

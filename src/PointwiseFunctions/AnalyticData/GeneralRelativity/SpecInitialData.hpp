@@ -6,7 +6,7 @@
 #include <Exporter.hpp>  // The SpEC Exporter
 #include <memory>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GeneralRelativity/AnalyticData.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"

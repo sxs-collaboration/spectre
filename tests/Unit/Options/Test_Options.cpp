@@ -15,8 +15,10 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/String.hpp"
 #include "Options/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"

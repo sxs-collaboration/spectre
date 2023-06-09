@@ -10,7 +10,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/OptionsGroup.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg::subcell {

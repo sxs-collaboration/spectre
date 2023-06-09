@@ -8,7 +8,7 @@
 #include <pup.h>
 #include <utility>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Time/Utilities.hpp"

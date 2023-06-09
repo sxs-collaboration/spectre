@@ -22,6 +22,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Options/ParseError.hpp"
 
 namespace Frame {
 struct Inertial;

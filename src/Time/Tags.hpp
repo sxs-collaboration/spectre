@@ -16,7 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "Evolution/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep

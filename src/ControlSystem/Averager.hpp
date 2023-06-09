@@ -11,7 +11,7 @@
 #include <pup_stl.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 

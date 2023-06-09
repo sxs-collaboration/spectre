@@ -13,7 +13,7 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"

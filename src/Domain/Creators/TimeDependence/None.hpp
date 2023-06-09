@@ -11,7 +11,7 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

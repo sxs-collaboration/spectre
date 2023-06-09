@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 namespace gh::OptionTags {

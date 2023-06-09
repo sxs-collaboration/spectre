@@ -8,7 +8,6 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace mem_monitor {

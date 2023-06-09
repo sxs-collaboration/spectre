@@ -5,6 +5,8 @@
 
 #include <pup.h>
 
+#include "Options/ParseError.hpp"
+
 namespace intrp::OptionHolders {
 
 WedgeSectionTorus::WedgeSectionTorus(

@@ -10,9 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -302,7 +304,7 @@ struct Options::create_from_yaml<IsCreatableMessageHack> {
     try {
       options.parse_as<std::unique_ptr<IsCreatableBase>, Metavariables>();
       return {};
-    } catch (const Options::Options_detail::propagate_context& e) {
+    } catch (const Options::detail::propagate_context& e) {
       return {e.message()};
     }
   }

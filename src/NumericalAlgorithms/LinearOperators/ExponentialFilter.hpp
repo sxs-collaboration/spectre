@@ -10,7 +10,7 @@
 #include <unordered_set>
 
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

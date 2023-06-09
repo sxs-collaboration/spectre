@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

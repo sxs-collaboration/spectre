@@ -5,6 +5,7 @@
 
 #include <pup.h>
 
+#include "Options/ParseError.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

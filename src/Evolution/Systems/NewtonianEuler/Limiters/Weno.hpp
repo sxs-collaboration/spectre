@@ -21,7 +21,7 @@
 #include "Evolution/Systems/NewtonianEuler/Limiters/VariablesToLimit.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 

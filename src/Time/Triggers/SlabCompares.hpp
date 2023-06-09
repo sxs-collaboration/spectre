@@ -7,7 +7,7 @@
 #include <pup.h>
 
 #include "Options/Comparator.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

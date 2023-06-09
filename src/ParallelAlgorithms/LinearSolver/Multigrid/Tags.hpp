@@ -16,7 +16,7 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"

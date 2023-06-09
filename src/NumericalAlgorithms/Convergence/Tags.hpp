@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace Convergence {

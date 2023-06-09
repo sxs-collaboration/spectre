@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/ExitCode.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"

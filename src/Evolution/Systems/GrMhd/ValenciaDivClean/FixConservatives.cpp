@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/TMPL.hpp"

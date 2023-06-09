@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 

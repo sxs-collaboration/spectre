@@ -13,7 +13,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

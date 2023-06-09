@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"

@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
 #include "Utilities/PrettyType.hpp"

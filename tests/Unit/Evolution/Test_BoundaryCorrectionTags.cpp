@@ -9,7 +9,7 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 namespace {
 struct BoundaryCorrection;

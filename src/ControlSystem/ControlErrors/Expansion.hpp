@@ -14,7 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

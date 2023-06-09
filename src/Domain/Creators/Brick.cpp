@@ -21,6 +21,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Options/ParseError.hpp"
 
 namespace Frame {
 struct BlockLogical;

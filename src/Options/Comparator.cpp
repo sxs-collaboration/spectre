@@ -7,7 +7,9 @@
 #include <pup_stl.h>
 #include <string>
 
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
 #include "Options/ParseOptions.hpp"
 
 namespace Options {

@@ -20,7 +20,7 @@
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"

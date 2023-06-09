@@ -3,6 +3,8 @@
 
 #include "Time/Triggers/NearTimes.hpp"
 
+#include "Options/ParseError.hpp"
+
 namespace Triggers {
 bool NearTimes::operator()(const double now, const TimeDelta& time_step) const {
   const bool time_runs_forward = time_step.is_positive();

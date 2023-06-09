@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"

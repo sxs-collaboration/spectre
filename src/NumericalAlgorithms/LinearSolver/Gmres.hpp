@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"

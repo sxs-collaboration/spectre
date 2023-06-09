@@ -6,7 +6,8 @@
 #include <array>
 #include <string>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace PUP {

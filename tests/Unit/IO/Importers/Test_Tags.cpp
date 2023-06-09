@@ -12,6 +12,7 @@
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/String.hpp"
 
 namespace {
 struct ExampleVolumeData {

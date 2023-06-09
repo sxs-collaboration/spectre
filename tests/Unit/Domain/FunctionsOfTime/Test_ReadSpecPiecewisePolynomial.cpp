@@ -31,7 +31,6 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/FileSystem.hpp"

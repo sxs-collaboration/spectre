@@ -15,7 +15,7 @@
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"

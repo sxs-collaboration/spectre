@@ -29,7 +29,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

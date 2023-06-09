@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <memory>
 
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 template <size_t Dim>

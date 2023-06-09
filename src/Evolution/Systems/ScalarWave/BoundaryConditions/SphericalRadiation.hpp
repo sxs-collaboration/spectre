@@ -17,6 +17,7 @@
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Time/Tags.hpp"

@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"

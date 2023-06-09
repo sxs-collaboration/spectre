@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"

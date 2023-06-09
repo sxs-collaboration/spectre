@@ -16,7 +16,7 @@
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 
 /// Functionality related to discontinuous Galerkin schemes

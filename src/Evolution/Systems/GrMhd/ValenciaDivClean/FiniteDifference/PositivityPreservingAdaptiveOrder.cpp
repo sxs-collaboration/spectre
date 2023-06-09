@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

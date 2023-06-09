@@ -17,7 +17,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
+#include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"

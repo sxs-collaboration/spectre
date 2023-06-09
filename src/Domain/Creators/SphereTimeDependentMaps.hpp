@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

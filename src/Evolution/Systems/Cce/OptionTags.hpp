@@ -17,7 +17,7 @@
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Parallel/Printf.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/PrettyType.hpp"

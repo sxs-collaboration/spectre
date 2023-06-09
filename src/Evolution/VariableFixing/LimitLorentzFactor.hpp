@@ -4,7 +4,7 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

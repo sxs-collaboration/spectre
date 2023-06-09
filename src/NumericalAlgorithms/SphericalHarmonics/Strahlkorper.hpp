@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace PUP {

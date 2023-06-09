@@ -18,7 +18,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
-#include "Options/Options.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Time/Tags.hpp"
