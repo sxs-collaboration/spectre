@@ -7,6 +7,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
 #include "Options/String.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace evolution::dg::subcell {
 namespace OptionTags {
