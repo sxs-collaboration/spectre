@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -44,6 +45,19 @@ template <typename DataType>
 struct TildeDUnboundUtCriterion : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+
+/// Contains TildeD * (coordinates in frame Fr).
+/// Label allows us to restrict the data to the x>0 (A) or x<0 (B)
+/// plane in grid coordinates (useful for NSNS). Use ObjectLabel::None
+/// to use the entire volume data.
+template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+          typename Fr = Frame::Inertial>
+struct MassWeightedCoords : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Fr>;
+  static std::string name() {
+    return "MassWeightedCoords" + domain::name(Label);
+  }
+};
 }  // namespace Tags
 
 /// Compute tilde_d * specific_internal_energy
@@ -71,6 +85,18 @@ void tilde_d_unbound_ut_criterion(
     const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
     const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
+
+/// Returns tilde_d * compute_coords
+/// The output is set to 0 for x<0 if Label=::domain::ObjectLabel::A
+/// and for x>0 for label B, where x is the first component of the
+/// grid coordinates.
+template <domain::ObjectLabel Label, typename DataType, size_t Dim,
+          typename Fr = Frame::Inertial>
+void mass_weighted_coords(
+    const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
+    const tnsr::I<DataType, Dim, Fr>& compute_coords);
 
 namespace Tags {
 /// Compute item for mass-weighted internal energy
@@ -137,5 +163,29 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
       &tilde_d_unbound_ut_criterion<DataType, Dim, Fr>);
 };
 
+/// Compute item for TildeD * (coordinates in frame Fr).
+/// Label allows us to restrict the data to the
+/// x>0 (A) or x<0 (B) plane in grid coordinates. Use ObjectLabel::None
+/// for unrestricted data.
+/// Can be retrieved using `hydro::Tags::MassWeightedCoords'
+template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+          typename GridCoordsTag, typename OutputCoordsTag,
+          typename Fr = Frame::Inertial>
+struct MassWeightedCoordsCompute : MassWeightedCoords<DataType, Dim, Label>,
+                                   db::ComputeTag {
+  using argument_tags = tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                   GridCoordsTag, OutputCoordsTag>;
+
+  using return_type = tnsr::I<DataType, Dim, Fr>;
+
+  using base = MassWeightedCoords<DataType, Dim, Label, Fr>;
+
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
+      const Scalar<DataType>& tilde_d,
+      const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
+      const tnsr::I<DataType, Dim, Fr>& compute_coords)>(
+      &mass_weighted_coords<Label, DataType, Dim, Fr>);
+};
 }  // namespace Tags
 }  // namespace hydro

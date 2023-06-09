@@ -413,6 +413,11 @@ struct GhValenciaDivCleanTemplateBase<
                      hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
                      hydro::Tags::TildeDUnboundUtCriterionCompute<
                          DataVector, volume_dim, domain_frame>,
+                     hydro::Tags::MassWeightedCoordsCompute<
+                         DataVector, volume_dim, ::domain::ObjectLabel::None,
+                         Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+                         Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+                         Frame::Inertial>,
                      gr::Tags::SpacetimeNormalOneFormCompute<
                          DataVector, volume_dim, domain_frame>,
                      gr::Tags::SpacetimeNormalVectorCompute<
@@ -448,7 +453,12 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::list<hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
                  hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
                  hydro::Tags::TildeDUnboundUtCriterionCompute<
-                     DataVector, volume_dim, domain_frame>>>;
+                     DataVector, volume_dim, domain_frame>,
+                 hydro::Tags::MassWeightedCoordsCompute<
+                     DataVector, volume_dim, ::domain::ObjectLabel::None,
+                     Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+                     Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+                     Frame::Inertial>>>;
 
   using non_tensor_compute_tags = tmpl::append<
       tmpl::conditional_t<
