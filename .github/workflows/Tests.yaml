@@ -341,11 +341,12 @@ jobs:
           - build_type: Release
             ccache_max_size: 500M
           # Generate code coverage report for a single build
-          - compiler: gcc-9
-            build_type: Debug
-            COVERAGE: ON
-            TEST_TIMEOUT_FACTOR: 3
-            ccache_max_size: 2G
+          # Note: currently disabled because it exceeds the available disk space
+          # - compiler: gcc-9
+          #   build_type: Debug
+          #   COVERAGE: ON
+          #   TEST_TIMEOUT_FACTOR: 3
+          #   ccache_max_size: 2G
           # This configuration seems to run consistently slower than newer gcc
           # or clang builds, so we increase the test timeout a bit
           - compiler: gcc-10
