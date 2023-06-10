@@ -79,12 +79,9 @@ struct ComputeTimeDerivative {
     using argument_tag = tmpl::conditional_t<
         Metavariables::system::has_primitive_and_conservative_vars,
         PrimitiveVar, Var>;
-    db::mutate<Tags::dt<Var>>(
-        make_not_null(&box),
-        [](const gsl::not_null<double*> dt_var, const double var) {
-          *dt_var = exp(var);
-        },
-        db::get<argument_tag>(box));
+    db::mutate<Tags::dt<Var>>([](const gsl::not_null<double*> dt_var,
+                                 const double var) { *dt_var = exp(var); },
+                              make_not_null(&box), db::get<argument_tag>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -64,9 +64,10 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.Tags",
                   .at(overlap_id)) == DataVector(3, 0.));
     // Test mutating the individual tags
     db::mutate<Tags::Overlaps<ScalarFieldTag<0>, 1, DummyOptionsGroup>>(
-        make_not_null(&box), [&overlap_id](const auto scalar0_overlaps) {
+        [&overlap_id](const auto scalar0_overlaps) {
           get(scalar0_overlaps->at(overlap_id)) = 1.;
-        });
+        },
+        make_not_null(&box));
     CHECK(get(get<Tags::Overlaps<ScalarFieldTag<0>, 1, DummyOptionsGroup>>(box)
                   .at(overlap_id)) == DataVector(3, 1.));
     CHECK(

@@ -208,7 +208,6 @@ void test_initialize_j_zero_nonsmooth(
   db::mutate<Tags::BoundaryValue<Tags::BondiR>,
              Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
              Tags::BoundaryValue<Tags::BondiJ>>(
-      make_not_null(&box_to_initialize),
       [&generator, &dist, &l_max](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               boundary_r,
@@ -245,7 +244,8 @@ void test_initialize_j_zero_nonsmooth(
                            10.0;
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
-      });
+      },
+      make_not_null(&box_to_initialize));
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
@@ -602,7 +602,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
              Tags::BoundaryValue<Tags::BondiBeta>,
              Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
              Tags::BoundaryValue<Tags::BondiJ>>(
-      make_not_null(&box_to_initialize),
       [&generator, &dist, &l_max](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               boundary_r,
@@ -640,7 +639,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
 
         get(*boundary_dr_j) = -get(*boundary_j) / get(*boundary_r);
-      });
+      },
+      make_not_null(&box_to_initialize));
   {
     INFO("Check inverse cubic initial data generator");
     test_initialize_j_inverse_cubic(make_not_null(&box_to_initialize), l_max,

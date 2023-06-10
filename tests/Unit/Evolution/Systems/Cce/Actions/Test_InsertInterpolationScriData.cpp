@@ -95,23 +95,23 @@ struct SetRandomBoundaryValues {
         [&gen, &value_dist, &box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
-              make_not_null(&box),
               [&gen, &value_dist](
                   const gsl::not_null<typename tag::type*> scri_value) {
                 fill_with_random_values(make_not_null(&get(*scri_value).data()),
                                         make_not_null(&gen),
                                         make_not_null(&value_dist));
-              });
+              },
+              make_not_null(&box));
         });
 
     db::mutate<Tags::InertialRetardedTime>(
-        make_not_null(&box),
         [&gen,
          &value_dist](const gsl::not_null<Scalar<DataVector>*> scri_value) {
           fill_with_random_values(make_not_null(&get(*scri_value)),
                                   make_not_null(&gen),
                                   make_not_null(&value_dist));
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

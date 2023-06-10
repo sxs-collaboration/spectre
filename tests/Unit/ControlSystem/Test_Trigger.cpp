@@ -105,8 +105,8 @@ void test_trigger_no_replace() {
 
   const auto set_time = [&box](const double time) {
     db::mutate<Tags::Time>(
-        make_not_null(&box),
-        [&time](const gsl::not_null<double*> box_time) { *box_time = time; });
+        [&time](const gsl::not_null<double*> box_time) { *box_time = time; },
+        make_not_null(&box));
   };
 
   MeasureTrigger typed_trigger = serialize_and_deserialize(MeasureTrigger{});

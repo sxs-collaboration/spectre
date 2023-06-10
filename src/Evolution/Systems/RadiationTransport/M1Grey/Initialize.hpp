@@ -71,14 +71,14 @@ struct InitializeM1Tags {
         db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     db::mutate<evolved_variables_tag>(
-        make_not_null(&box),
         [&cache, initial_time,
          &inertial_coords](const gsl::not_null<EvolvedVars*> evolved_vars) {
           evolved_vars->assign_subset(evolution::Initialization::initial_data(
               Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
               inertial_coords, initial_time,
               typename evolved_variables_tag::tags_list{}));
-        });
+        },
+        make_not_null(&box));
 
     // Get hydro variables
     HydroVars hydro_variables{num_grid_points};

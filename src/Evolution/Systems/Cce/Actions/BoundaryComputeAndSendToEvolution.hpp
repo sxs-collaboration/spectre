@@ -103,7 +103,6 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
     db::mutate<Tags::H5WorldtubeBoundaryDataManager,
                ::Tags::Variables<
                    typename Metavariables::cce_boundary_communication_tags>>(
-        make_not_null(&box),
         [&successfully_populated, &time, &hdf5_lock](
             const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager>*>
                 worldtube_data_manager,
@@ -115,7 +114,8 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                   ->populate_hypersurface_boundary_data(boundary_variables,
                                                         time.substep_time(),
                                                         hdf5_lock);
-        });
+        },
+        make_not_null(&box));
     if (not successfully_populated) {
       ERROR("Insufficient boundary data to proceed, exiting early at time " +
             std::to_string(time.substep_time()));
@@ -156,7 +156,6 @@ struct BoundaryComputeAndSendToEvolution<
     db::mutate<Tags::AnalyticBoundaryDataManager,
                ::Tags::Variables<
                    typename Metavariables::cce_boundary_communication_tags>>(
-        make_not_null(&box),
         [&successfully_populated, &time](
             const gsl::not_null<Cce::AnalyticBoundaryDataManager*>
                 worldtube_data_manager,
@@ -167,7 +166,8 @@ struct BoundaryComputeAndSendToEvolution<
               (*worldtube_data_manager)
                   .populate_hypersurface_boundary_data(boundary_variables,
                                                        time.substep_time());
-        });
+        },
+        make_not_null(&box));
 
     if (not successfully_populated) {
       ERROR("Insufficient boundary data to proceed, exiting early at time "
@@ -228,10 +228,10 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
         };
     if (SelfStart::is_self_starting(time)) {
       db::mutate<Tags::SelfStartGhInterfaceManager>(
-          make_not_null(&box), retrieve_data_and_send_to_evolution);
+          retrieve_data_and_send_to_evolution, make_not_null(&box));
     } else {
-      db::mutate<Tags::GhInterfaceManager>(make_not_null(&box),
-                                           retrieve_data_and_send_to_evolution);
+      db::mutate<Tags::GhInterfaceManager>(retrieve_data_and_send_to_evolution,
+                                           make_not_null(&box));
     }
   }
 };
@@ -262,7 +262,6 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
       const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi) {
     db::mutate<::Tags::Variables<
         typename Metavariables::cce_boundary_communication_tags>>(
-        make_not_null(&box),
         [&spacetime_metric, &phi, &pi](
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>
@@ -272,7 +271,7 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
                                      spacetime_metric, extraction_radius,
                                      l_max);
         },
-        db::get<InitializationTags::ExtractionRadius>(box),
+        make_not_null(&box), db::get<InitializationTags::ExtractionRadius>(box),
         db::get<Tags::LMax>(box));
     Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(

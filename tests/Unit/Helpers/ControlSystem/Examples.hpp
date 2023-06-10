@@ -51,11 +51,12 @@ struct SomeControlSystemUpdater {
                     const ArrayIndex& /*array_index*/, const double time,
                     tuples::TaggedTuple<SubmeasurementTag> data) {
     db::mutate<MeasurementResultTime, MeasurementResultTag>(
-        box, [&time, &data](const gsl::not_null<double*> stored_time,
-                            const gsl::not_null<double*> stored_data) {
+        [&time, &data](const gsl::not_null<double*> stored_time,
+                       const gsl::not_null<double*> stored_data) {
           *stored_time = time;
           *stored_data = tuples::get<SubmeasurementTag>(data);
-        });
+        },
+        box);
   }
 };
 

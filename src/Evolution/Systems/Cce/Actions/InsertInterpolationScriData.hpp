@@ -171,7 +171,6 @@ struct InsertInterpolationScriData {
 
       // insert the target times into the interpolator.
       db::mutate<Tags::InterpolationManager<ComplexDataVector, Tag>>(
-          make_not_null(&box),
           [&this_time, &time_delta_estimate](
               const gsl::not_null<
                   ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
@@ -184,6 +183,7 @@ struct InsertInterpolationScriData {
                       static_cast<double>(number_of_interpolated_times));
             }
           },
+          make_not_null(&box),
           db::get<InitializationTags::ScriOutputDensity>(box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

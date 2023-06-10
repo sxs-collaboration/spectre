@@ -167,17 +167,15 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
                            tmpl::list<TagsToFilter...>>>::
             template f<evolved_vars_tags_list, TagsToFilter...>::value) {
       db::mutate<typename Metavariables::system::variables_tag>(
-          make_not_null(&box),
           [&filter](const gsl::not_null<
                         typename Metavariables::system::variables_tag::type*>
                         vars,
                     const auto& local_mesh) {
             *vars = apply_matrices(filter, *vars, local_mesh.extents());
           },
-          mesh);
+          make_not_null(&box), mesh);
     } else {
       db::mutate<TagsToFilter...>(
-          make_not_null(&box),
           [&filter](const gsl::not_null<
                         typename TagsToFilter::type*>... tensors_to_filter,
                     const auto& local_mesh) {
@@ -193,7 +191,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
             };
             EXPAND_PACK_LEFT_TO_RIGHT(helper(tensors_to_filter));
           },
-          mesh);
+          make_not_null(&box), mesh);
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

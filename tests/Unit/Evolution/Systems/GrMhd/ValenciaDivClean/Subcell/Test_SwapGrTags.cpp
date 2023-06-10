@@ -50,9 +50,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.SwapGrTags",
                                  evolution::dg::subcell::ActiveGrid::Subcell,
                                  evolution::dg::subcell::ActiveGrid::Dg}) {
     db::mutate<evolution::dg::subcell::Tags::ActiveGrid>(
-        make_not_null(&box), [&active_grid](const auto active_grid_ptr) {
+        [&active_grid](const auto active_grid_ptr) {
           *active_grid_ptr = active_grid;
-        });
+        },
+        make_not_null(&box));
 
     db::mutate_apply<grmhd::ValenciaDivClean::subcell::SwapGrTags>(
         make_not_null(&box));

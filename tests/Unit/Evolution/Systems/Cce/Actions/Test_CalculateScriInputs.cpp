@@ -238,7 +238,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
         using swsh_derivative_tag =
             typename decltype(swsh_derivative_tag_v)::type;
         db::mutate<swsh_derivative_tag>(
-            make_not_null(&expected_box),
             [&l_max](const gsl::not_null<typename swsh_derivative_tag::type*>
                          derivative,
                      const typename swsh_derivative_tag::derivative_of::type&
@@ -247,6 +246,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
                   tmpl::list<typename swsh_derivative_tag::derivative_kind>>(
                   l_max, 1, make_not_null(&get(*derivative)), get(argument));
             },
+            make_not_null(&expected_box),
             db::get<typename swsh_derivative_tag::derivative_of>(expected_box));
       });
 

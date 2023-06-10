@@ -30,7 +30,6 @@ void store_reconstruction_order_in_databox(
         reconstruction_order) {
   if (reconstruction_order.has_value()) {
     db::mutate<evolution::dg::subcell::Tags::ReconstructionOrder<Dim>>(
-        box,
         [&reconstruction_order](const auto recons_order_ptr,
                                 const ::Mesh<Dim>& subcell_mesh) {
           if (UNLIKELY(not recons_order_ptr->has_value())) {
@@ -53,27 +52,27 @@ void store_reconstruction_order_in_databox(
                             d)[j * (subcell_mesh.extents(d) + 2) + i + 1];
               }
             }
-              if (d == 1) {
-                // Order is (y, z, x) -> (x, y, z)
-                transpose(make_not_null(&recons_order_ptr->value().get(d)),
-                          get<0>(recons_order_ptr->value()),
-                          subcell_mesh.extents(1) *
-                              (Dim > 2 ? subcell_mesh.extents(2) : 1),
-                          subcell_mesh.number_of_grid_points() /
-                              (subcell_mesh.extents(1) *
-                               (Dim > 2 ? subcell_mesh.extents(2) : 1)));
-              } else if (d == 2) {
-                // Order is (z, x, y) -> (x, y, z)
-                transpose(make_not_null(&recons_order_ptr->value().get(d)),
-                          get<0>(recons_order_ptr->value()),
-                          subcell_mesh.extents(2),
-                          subcell_mesh.number_of_grid_points() /
-                              subcell_mesh.extents(2));
-              }
+            if (d == 1) {
+              // Order is (y, z, x) -> (x, y, z)
+              transpose(make_not_null(&recons_order_ptr->value().get(d)),
+                        get<0>(recons_order_ptr->value()),
+                        subcell_mesh.extents(1) *
+                            (Dim > 2 ? subcell_mesh.extents(2) : 1),
+                        subcell_mesh.number_of_grid_points() /
+                            (subcell_mesh.extents(1) *
+                             (Dim > 2 ? subcell_mesh.extents(2) : 1)));
+            } else if (d == 2) {
+              // Order is (z, x, y) -> (x, y, z)
+              transpose(make_not_null(&recons_order_ptr->value().get(d)),
+                        get<0>(recons_order_ptr->value()),
+                        subcell_mesh.extents(2),
+                        subcell_mesh.number_of_grid_points() /
+                            subcell_mesh.extents(2));
+            }
             // }
           }
         },
-        db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box));
+        box, db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box));
   }
 }
 }  // namespace evolution::dg::subcell

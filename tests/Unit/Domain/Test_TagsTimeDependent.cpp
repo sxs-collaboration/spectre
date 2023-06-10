@@ -332,8 +332,8 @@ void test() {
   check_helper(3.0);
 
   db::mutate<Tags::Time>(
-      make_not_null(&box),
-      [](const gsl::not_null<double*> local_time) { *local_time = 4.5; });
+      [](const gsl::not_null<double*> local_time) { *local_time = 4.5; },
+      make_not_null(&box));
   check_helper(4.5);
 }
 

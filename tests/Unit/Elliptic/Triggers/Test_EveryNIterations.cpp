@@ -58,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.EveryNIterations",
        {false, false, false, false, false, true, false, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) { (*iteration_id)++; });
+        [](const gsl::not_null<size_t*> iteration_id) { (*iteration_id)++; },
+        make_not_null(&box));
   }
 }

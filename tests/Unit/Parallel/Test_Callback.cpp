@@ -60,9 +60,8 @@ struct IncrementValue {
   static void apply(db::DataBox<DbTagList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
-    db::mutate<Value>(
-        make_not_null(&box),
-        [](const gsl::not_null<double*> value) { *value += 1.0; });
+    db::mutate<Value>([](const gsl::not_null<double*> value) { *value += 1.0; },
+                      make_not_null(&box));
   }
 };
 
@@ -73,8 +72,8 @@ struct MultiplyValueByFactor {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double factor) {
     db::mutate<Value>(
-        make_not_null(&box),
-        [&factor](const gsl::not_null<double*> value) { *value *= factor; });
+        [&factor](const gsl::not_null<double*> value) { *value *= factor; },
+        make_not_null(&box));
   }
 };
 
@@ -89,12 +88,12 @@ struct DoubleValueOfElement0 {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<TimesIterableActionCalled>(
-        make_not_null(&box),
-        [](const gsl::not_null<int*> counter) { ++(*counter); });
+        [](const gsl::not_null<int*> counter) { ++(*counter); },
+        make_not_null(&box));
     if (array_index == 0) {
       db::mutate<Value>(
-          make_not_null(&box),
-          [](const gsl::not_null<double*> value) { *value *= 2.0; });
+          [](const gsl::not_null<double*> value) { *value *= 2.0; },
+          make_not_null(&box));
       if (db::get<TimesIterableActionCalled>(box) < 5) {
         return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }

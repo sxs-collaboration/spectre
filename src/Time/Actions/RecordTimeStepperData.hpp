@@ -31,14 +31,13 @@ void record_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
   using history_tag = Tags::HistoryEvolvedVariables<VariablesTag>;
 
   db::mutate<history_tag>(
-      box,
       [](const gsl::not_null<typename history_tag::type*> history,
          const TimeStepId& time_step_id,
          const typename VariablesTag::type& vars,
          const typename dt_variables_tag::type& dt_vars) {
         history->insert(time_step_id, vars, dt_vars);
       },
-      db::get<Tags::TimeStepId>(*box), db::get<VariablesTag>(*box),
+      box, db::get<Tags::TimeStepId>(*box), db::get<VariablesTag>(*box),
       db::get<dt_variables_tag>(*box));
 }
 }  // namespace record_time_stepper_data_detail

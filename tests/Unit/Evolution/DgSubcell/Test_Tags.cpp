@@ -352,18 +352,19 @@ void test(const bool moving_mesh) {
 
   check_box(db::get<domain::Tags::Mesh<Dim>>(active_coords_box));
   db::mutate<subcell::Tags::ActiveGrid>(
-      make_not_null(&active_coords_box), [](const auto active_grid_ptr) {
+      [](const auto active_grid_ptr) {
         *active_grid_ptr = subcell::ActiveGrid::Subcell;
-      });
+      },
+      make_not_null(&active_coords_box));
   check_box(db::get<subcell::Tags::Mesh<Dim>>(active_coords_box));
   db::mutate<subcell::Tags::ReconstructionOrder<Dim>>(
-      make_not_null(&active_coords_box),
       [](const auto recons_order_ptr, const size_t num_pts) {
         (*recons_order_ptr) = ReconsOrder{num_pts};
         for (size_t i = 0; i < Dim; ++i) {
           recons_order_ptr->value()[i] = static_cast<double>(i) + 3.0;
         }
       },
+      make_not_null(&active_coords_box),
       db::get<subcell::Tags::Mesh<Dim>>(active_coords_box)
           .number_of_grid_points());
   check_box(db::get<subcell::Tags::Mesh<Dim>>(active_coords_box));

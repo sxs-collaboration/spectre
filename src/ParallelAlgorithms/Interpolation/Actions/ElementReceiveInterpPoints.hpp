@@ -40,14 +40,14 @@ struct ElementReceiveInterpPoints {
               typename InterpolationTargetTag::compute_target_points::frame>&&
           coords) {
     db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(
-        make_not_null(&box),
         [&coords](const gsl::not_null<
                   typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
                       point_infos) {
           get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
                                         Metavariables::volume_dim>>(
               *point_infos) = std::move(coords);
-        });
+        },
+        make_not_null(&box));
   }
 };
 }  // namespace Actions

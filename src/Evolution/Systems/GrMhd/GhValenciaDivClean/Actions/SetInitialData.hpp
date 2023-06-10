@@ -250,7 +250,7 @@ struct SetInitialData {
                                               Frame::Inertial>>(*box);
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>(
-        box, &gh::initial_gh_variables_from_adm<3>, spatial_metric, lapse,
+        &gh::initial_gh_variables_from_adm<3>, box, spatial_metric, lapse,
         shift, extrinsic_curvature, mesh, inv_jacobian);
 
     // Move hydro vars directly into the DataBox
@@ -327,7 +327,6 @@ struct ReceiveNumericInitialData {
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::SpecificEnthalpy<DataVector>>(
-        make_not_null(&box),
         [&initial_data, &numeric_data, &mesh, &inv_jacobian,
          &equation_of_state](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
@@ -348,7 +347,8 @@ struct ReceiveNumericInitialData {
               div_cleaning_field, lorentz_factor, pressure, specific_enthalpy,
               make_not_null(&numeric_data), mesh, inv_jacobian,
               equation_of_state);
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

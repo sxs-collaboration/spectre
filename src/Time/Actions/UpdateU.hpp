@@ -46,7 +46,6 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
       db::mutate<Tags::StepperErrorUpdated, VariablesTag, error_tag,
                  previous_error_tag, history_tag>(
-          box,
           [](const gsl::not_null<bool*> stepper_error_updated,
              const gsl::not_null<typename VariablesTag::type*> vars,
              const gsl::not_null<typename error_tag::type*> error,
@@ -71,7 +70,8 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
               swap(*error, *previous_error);
             }
           },
-          db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+          box, db::get<Tags::TimeStep>(*box),
+          db::get<Tags::TimeStepper<>>(*box));
     } else {
       ERROR(
           "Cannot update the stepper error measure -- "
@@ -79,13 +79,12 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
     }
   } else {
     db::mutate<VariablesTag, history_tag>(
-        box,
         [](const gsl::not_null<typename VariablesTag::type*> vars,
            const gsl::not_null<typename history_tag::type*> history,
            const ::TimeDelta& time_step, const auto& time_stepper) {
           time_stepper.update_u(vars, history, time_step);
         },
-        db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+        box, db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
   }
 }
 }  // namespace update_u_detail

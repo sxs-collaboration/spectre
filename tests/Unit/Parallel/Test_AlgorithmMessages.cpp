@@ -190,10 +190,10 @@ struct SendAddressOfVector0 {
                     const ArrayIndex& /*array_index*/,
                     const std::string& sent_address) {
     db::mutate<Tags::AddressOfVector0OnSender>(
-        make_not_null(&box),
         [&sent_address](const gsl::not_null<std::string*> address) {
           *address = sent_address;
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -296,11 +296,11 @@ struct ReceiveMessage {
       auto& boundary_message_ptr = inbox.at(array_index);
 
       db::mutate<Tags::Vector1>(
-          make_not_null(&box),
           [&boundary_message_ptr](const gsl::not_null<DataVector*> vector_1) {
             vector_1->set_data_ref(boundary_message_ptr->dg_flux_data,
                                    boundary_message_ptr->dg_flux_data_size);
-          });
+          },
+          make_not_null(&box));
 
       const int my_node = db::get<Tags::MyNode>(box);
       const int node_of_element_to_receive_from =

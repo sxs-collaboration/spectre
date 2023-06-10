@@ -113,7 +113,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
   db::mutate<pre_swsh_derivatives_variables_tag, swsh_derivatives_variables_tag,
              separated_pre_swsh_derivatives_angular_data,
              separated_pre_swsh_derivatives_radial_modes>(
-      make_not_null(&expected_box),
       [&generator](
           const gsl::not_null<
               typename pre_swsh_derivatives_variables_tag::type*>
@@ -143,7 +142,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
             pre_swsh_separated_angular_data, pre_swsh_separated_radial_modes,
             make_not_null(&generator), boundary_r, l_max,
             number_of_radial_grid_points);
-      });
+      },
+      make_not_null(&expected_box));
 
   auto computation_box =
       db::create<db::AddSimpleTags<Tags::LMax, Tags::Integrand<Tags::BondiBeta>,
@@ -202,12 +202,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
       [&spare_computation_box, &generator, &dist](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         db::mutate<tag>(
-            make_not_null(&spare_computation_box),
             [&generator,
              &dist](const gsl::not_null<typename tag::type*> to_generate) {
               fill_with_random_values(to_generate, make_not_null(&generator),
                                       make_not_null(&dist));
-            });
+            },
+            make_not_null(&spare_computation_box));
       });
   db::mutate_apply<
       PrecomputeCceDependencies<Tags::BoundaryValue, Tags::OneMinusY>>(

@@ -147,10 +147,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   MutableGlobalCache<Metavars> mutable_cache2{tuples::TaggedTuple<>{}};
   GlobalCache<Metavars> cache2{std::move(tuple2), &mutable_cache2};
   db::mutate<Tags::GlobalCache>(
-      make_not_null(&box),
       [&cache2](const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
         *t = std::addressof(cache2);
-      });
+      },
+      make_not_null(&box));
 
   CHECK(db::get<Tags::GlobalCache>(box) == &cache2);
   CHECK(std::array<int, 3>{{10, -3, 700}} == db::get<Tags::IntegerList>(box));

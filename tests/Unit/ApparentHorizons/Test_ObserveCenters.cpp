@@ -78,7 +78,6 @@ void test() {
     db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
                StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
                StrahlkorperTags::EuclideanAreaElement<Frame>>(
-        make_not_null(&box),
         [&grid_center, &inertial_center](
             gsl::not_null<Strahlkorper<Frame>*> box_grid_horizon,
             gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
@@ -108,7 +107,8 @@ void test() {
                                           gsl::at(inertial_center, i) -
                                           gsl::at(grid_center, i);
           }
-        });
+        },
+        make_not_null(&box));
   };
 
   // times to write

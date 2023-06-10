@@ -149,12 +149,13 @@ void test(const TestThis test_this, const int expected_tci_status,
   // set B and Phi to 0 since they should be set by recovery
   db::mutate<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
              hydro::Tags::DivergenceCleaningField<DataVector>>(
-      make_not_null(&box), [](const auto mag_field_ptr, const auto phi_ptr) {
+      [](const auto mag_field_ptr, const auto phi_ptr) {
         for (size_t i = 0; i < 3; ++i) {
           mag_field_ptr->get(i) = 0;
         }
         get(*phi_ptr) = 0;
-      });
+      },
+      make_not_null(&box));
 
   const size_t point_to_change = mesh.number_of_grid_points() / 2;
 
@@ -162,76 +163,87 @@ void test(const TestThis test_this, const int expected_tci_status,
     // slightly modify D to ensure that after the con2prim, the original density
     // does not match the new density
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 1.001;
-        });
+        },
+        make_not_null(&box));
   }
   if (test_this == TestThis::SmallTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = 1.0e-30;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::InAtmosphere) {
     // Make sure the PerssonTCI would trigger in the atmosphere to verify that
     // the reason we didn't mark the cell as troubled is because we're in
     // atmosphere.
     db::mutate<hydro::Tags::Pressure<DataVector>>(
-        make_not_null(&box), [point_to_change](const auto pressure_ptr) {
+        [point_to_change](const auto pressure_ptr) {
           get(*pressure_ptr)[point_to_change] *= 1.5;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::TildeB2TooBig) {
     const double large_B_field_magnitude = 1.0e4;
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(
-        make_not_null(&box),
+
         [&large_B_field_magnitude, point_to_change](const auto tilde_b_ptr) {
           get<0>(*tilde_b_ptr)[point_to_change] = large_B_field_magnitude;
           get<1>(*tilde_b_ptr)[point_to_change] = large_B_field_magnitude;
           get<2>(*tilde_b_ptr)[point_to_change] = large_B_field_magnitude;
-        });
+        },
+        make_not_null(&box));
     max_B_field = std::max(max_B_field, large_B_field_magnitude);
 
   } else if (test_this == TestThis::PrimRecoveryFailed) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(
-        make_not_null(&box), [point_to_change](const auto tilde_s_ptr) {
+        [point_to_change](const auto tilde_s_ptr) {
           // Manipulate one of the conserved variable in an (very) inconsistent
           // way so that primitive recovery fails.
           get<0>(*tilde_s_ptr)[point_to_change] = 1e3;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::PerssonPressure) {
     db::mutate<hydro::Tags::Pressure<DataVector>>(
-        make_not_null(&box), [point_to_change](const auto pressure_ptr) {
+        [point_to_change](const auto pressure_ptr) {
           get(*pressure_ptr)[point_to_change] *= 2.0;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::PerssonTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::PerssonTildeB) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<>>(
-        make_not_null(&box),
+
         [&max_B_field, point_to_change](const auto tilde_b_ptr) {
           for (size_t i = 0; i < 3; ++i) {
             tilde_b_ptr->get(i)[point_to_change] = 6.0;
             max_B_field =
                 std::max(max_B_field, tilde_b_ptr->get(i)[point_to_change]);
           }
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::NegativeTildeDSubcell) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = 1.0e-200;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::NegativeTildeTauSubcell) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = 1.0e-200;
-        });
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::NegativeTildeTau) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+        [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
-        });
+        },
+        make_not_null(&box));
   }
 
   // Set the RDMP TCI past data.
@@ -279,7 +291,6 @@ void test(const TestThis test_this, const int expected_tci_status,
 
   // Modify past data if we are expecting an RDMP TCI failure.
   db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-      make_not_null(&box),
       [&past_rdmp_tci_data, &test_this](const auto rdmp_tci_data_ptr) {
         *rdmp_tci_data_ptr = past_rdmp_tci_data;
         if (test_this == TestThis::RdmpTildeD) {
@@ -292,7 +303,8 @@ void test(const TestThis test_this, const int expected_tci_status,
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
         }
-      });
+      },
+      make_not_null(&box));
 
   const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnDgGrid<

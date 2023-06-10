@@ -99,13 +99,13 @@ struct MockSendPointsToInterpolator {
     // whether this function was called.  This isn't the usual usage
     // of IndicesOfFilledInterpPoints; this is done only for the test.
     db::mutate<intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
-        make_not_null(&box),
         [&temporal_id](
             const gsl::not_null<std::unordered_map<temporal_id_type,
                                                    std::unordered_set<size_t>>*>
                 indices) {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -153,10 +153,10 @@ struct MockCleanUpInterpolator {
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
     db::mutate<intrp::Tags::NumberOfElements>(
-        make_not_null(&box),
         [](const gsl::not_null<size_t*> number_of_elements) {
           ++(*number_of_elements);
-        });
+        },
+        make_not_null(&box));
   }
 };
 

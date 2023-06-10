@@ -232,12 +232,12 @@ struct PrepareAndSendMortarData<
     typename PrimalFluxesTag::type primal_fluxes;
     typename all_mortar_data_tag::type all_mortar_data;
     db::mutate<PrimalFluxesTag, all_mortar_data_tag>(
-        make_not_null(&box),
         [&primal_fluxes, &all_mortar_data](const auto local_primal_fluxes,
                                            const auto local_all_mortar_data) {
           primal_fluxes = std::move(*local_primal_fluxes);
           all_mortar_data = std::move(*local_all_mortar_data);
-        });
+        },
+        make_not_null(&box));
 
     // Prepare mortar data
     //
@@ -279,12 +279,12 @@ struct PrepareAndSendMortarData<
 
     // Move the mutated data back into the DataBox
     db::mutate<PrimalFluxesTag, all_mortar_data_tag>(
-        make_not_null(&box),
         [&primal_fluxes, &all_mortar_data](const auto local_primal_fluxes,
                                            const auto local_all_mortar_data) {
           *local_primal_fluxes = std::move(primal_fluxes);
           *local_all_mortar_data = std::move(all_mortar_data);
-        });
+        },
+        make_not_null(&box));
 
     // Send mortar data to neighbors
     auto& receiver_proxy =
@@ -382,22 +382,22 @@ struct ReceiveMortarDataAndApplyOperator<
                         .extract(temporal_id)
                         .mapped());
       db::mutate<all_mortar_data_tag>(
-          make_not_null(&box),
           [&received_mortar_data, &temporal_id](const auto all_mortar_data) {
             for (auto& [mortar_id, mortar_data] : received_mortar_data) {
               all_mortar_data->at(mortar_id).remote_insert(
                   temporal_id, std::move(mortar_data));
             }
-          });
+          },
+          make_not_null(&box));
     }
 
     // Apply DG operator
     db::mutate<OperatorAppliedToFieldsTag, all_mortar_data_tag>(
-        make_not_null(&box),
         [](const auto&... args) {
           elliptic::dg::apply_operator<System, Linearized>(args...);
         },
-        db::get<PrimalFieldsTag>(box), db::get<PrimalFluxesTag>(box), element,
+        make_not_null(&box), db::get<PrimalFieldsTag>(box),
+        db::get<PrimalFluxesTag>(box), element,
         db::get<domain::Tags::Mesh<Dim>>(box),
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
@@ -567,9 +567,10 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
     // we're done.
     typename FixedSourcesTag::type fixed_sources;
     db::mutate<FixedSourcesTag>(
-        make_not_null(&box), [&fixed_sources](const auto local_fixed_sources) {
+        [&fixed_sources](const auto local_fixed_sources) {
           fixed_sources = std::move(*local_fixed_sources);
-        });
+        },
+        make_not_null(&box));
 
     using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
     using fluxes_args_volume_tags =
@@ -604,9 +605,10 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
 
     // Move the mutated data back into the DataBox
     db::mutate<FixedSourcesTag>(
-        make_not_null(&box), [&fixed_sources](const auto local_fixed_sources) {
+        [&fixed_sources](const auto local_fixed_sources) {
           *local_fixed_sources = std::move(fixed_sources);
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

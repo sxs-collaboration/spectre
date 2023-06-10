@@ -166,7 +166,7 @@ struct Initialize {
                             subcell_allowed_in_element;
 
     db::mutate<Tags::NeighborTciDecisions<Dim>>(
-        make_not_null(&box), [&element](const auto neighbor_decisions_ptr) {
+        [&element](const auto neighbor_decisions_ptr) {
           neighbor_decisions_ptr->clear();
           for (const auto& [direction, neighbors_in_direction] :
                element.neighbors()) {
@@ -175,7 +175,8 @@ struct Initialize {
                   std::pair{std::pair{direction, neighbor}, 0});
             }
           }
-        });
+        },
+        make_not_null(&box));
 
     db::mutate_apply<
         tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
@@ -257,9 +258,10 @@ struct Initialize {
         // Set analytic variables on subcells.
         if constexpr (System::has_primitive_and_conservative_vars) {
           db::mutate<typename System::primitive_variables_tag>(
-              make_not_null(&box), [&subcell_mesh](const auto prim_vars_ptr) {
+              [&subcell_mesh](const auto prim_vars_ptr) {
                 prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
-              });
+              },
+              make_not_null(&box));
         }
         evolution::Initialization::Actions::
             SetVariables<Tags::Coordinates<Dim, Frame::ElementLogical>>::apply(
@@ -273,16 +275,15 @@ struct Initialize {
         // reverse (which we currently do).
         if constexpr (System::has_primitive_and_conservative_vars) {
           db::mutate<typename System::primitive_variables_tag>(
-              make_not_null(&box),
               [&dg_mesh, &subcell_mesh](const auto prim_vars_ptr) {
                 *prim_vars_ptr = fd::project(*prim_vars_ptr, dg_mesh,
                                              subcell_mesh.extents());
-              });
+              },
+              make_not_null(&box));
         }
       }
       db::mutate<
           db::add_tag_prefix<::Tags::dt, typename System::variables_tag>>(
-          make_not_null(&box),
           [&dg_mesh, &subcell_mesh](const auto dt_vars_ptr) {
             ASSERT(dt_vars_ptr->number_of_grid_points() ==
                        dg_mesh.number_of_grid_points(),
@@ -291,7 +292,8 @@ struct Initialize {
                        << dg_mesh.number_of_grid_points() << ") but got "
                        << dt_vars_ptr->number_of_grid_points());
             dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points(), 0.0);
-          });
+          },
+          make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

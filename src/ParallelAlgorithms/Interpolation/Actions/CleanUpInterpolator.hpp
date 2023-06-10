@@ -69,7 +69,6 @@ struct CleanUpInterpolator {
       const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
     // Signal that this InterpolationTarget is done at this time.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
-        make_not_null(&box),
         [&temporal_id](
             const gsl::not_null<
                 typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
@@ -77,7 +76,8 @@ struct CleanUpInterpolator {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(*holders)
               .temporal_ids_when_data_has_been_interpolated.push_back(
                   temporal_id);
-        });
+        },
+        make_not_null(&box));
 
     // If we don't need any of the volume data anymore for this
     // temporal_id, we will remove them.
@@ -119,19 +119,18 @@ struct CleanUpInterpolator {
     if (this_temporal_id_is_done) {
       db::mutate<Tags::VolumeVarsInfo<
           Metavariables, typename InterpolationTargetTag::temporal_id>>(
-          make_not_null(&box),
           [&temporal_id](
               const gsl::not_null<typename Tags::VolumeVarsInfo<
                   Metavariables,
                   typename InterpolationTargetTag::temporal_id>::type*>
-                  volume_vars_info) { volume_vars_info->erase(temporal_id); });
+                  volume_vars_info) { volume_vars_info->erase(temporal_id); },
+          make_not_null(&box));
 
       // Clean up temporal_ids_when_data_has_been_interpolated, if
       // it is too large.
       [[maybe_unused]] constexpr size_t finished_temporal_ids_max_size = 1000;
 
       db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
-          make_not_null(&box),
           [](const gsl::not_null<
               typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
                  holders_l) {
@@ -157,7 +156,8 @@ struct CleanUpInterpolator {
                     }
                   }
                 });
-          });
+          },
+          make_not_null(&box));
     }
   }
 };

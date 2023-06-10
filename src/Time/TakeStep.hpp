@@ -40,13 +40,14 @@ void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
       update_u<System>(box);
     } while (not change_step_size<StepChoosersToUse>(box));
     db::mutate<Tags::AdaptiveSteppingDiagnostics>(
-        box, [&](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
-                 const TimeDelta& new_step) {
+        [&](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
+            const TimeDelta& new_step) {
           diags->number_of_step_rejections += step_attempts - 1;
           if (original_step != new_step) {
             ++diags->number_of_step_fraction_changes;
           }
-        }, db::get<Tags::TimeStep>(*box));
+        },
+        box, db::get<Tags::TimeStep>(*box));
   } else {
     update_u<System>(box);
   }

@@ -49,7 +49,6 @@ struct MockWriteReductionDataRow {
     if constexpr (::db::tag_is_retrievable_v<MockReductionFileTag,
                                              ::db::DataBox<DbTagsList>>) {
       ::db::mutate<MockReductionFileTag>(
-          make_not_null(&box),
           [subfile_name, legend,
            in_reduction_data](const gsl::not_null<MockH5File*> mock_h5_file) {
             auto& dat_file = (*mock_h5_file).try_insert(subfile_name);
@@ -66,7 +65,8 @@ struct MockWriteReductionDataRow {
                 });
 
             dat_file.append(legend, data);
-          });
+          },
+          make_not_null(&box));
     } else {
       (void)subfile_name;
       (void)legend;

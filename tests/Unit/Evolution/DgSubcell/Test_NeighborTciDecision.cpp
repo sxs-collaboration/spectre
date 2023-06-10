@@ -57,17 +57,18 @@ void test() {
       Catch::Matchers::Contains(
           "The NeighborTciDecisions tag does not contain the neighbor"));
 #endif
-  db::mutate<tag>(make_not_null(&box), [&id_xi, &id_eta, &id_zeta](
-                                           const auto neighbor_decisions_ptr) {
-    (void)id_eta, (void)id_zeta;
-    neighbor_decisions_ptr->insert(std::pair{id_xi, 0});
-    if constexpr (Dim > 1) {
-      neighbor_decisions_ptr->insert(std::pair{id_eta, 0});
-    }
-    if constexpr (Dim > 2) {
-      neighbor_decisions_ptr->insert(std::pair{id_zeta, 0});
-    }
-  });
+  db::mutate<tag>(
+      [&id_xi, &id_eta, &id_zeta](const auto neighbor_decisions_ptr) {
+        (void)id_eta, (void)id_zeta;
+        neighbor_decisions_ptr->insert(std::pair{id_xi, 0});
+        if constexpr (Dim > 1) {
+          neighbor_decisions_ptr->insert(std::pair{id_eta, 0});
+        }
+        if constexpr (Dim > 2) {
+          neighbor_decisions_ptr->insert(std::pair{id_zeta, 0});
+        }
+      },
+      make_not_null(&box));
   neighbor_tci_decision(make_not_null(&box), neighbor_data);
   CHECK(db::get<tag>(box).at(id_xi) == 10);
   if constexpr (Dim > 1) {

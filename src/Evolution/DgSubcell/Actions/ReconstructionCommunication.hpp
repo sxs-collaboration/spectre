@@ -125,10 +125,11 @@ struct SendDataForReconstruction {
     using flux_variables = typename Metavariables::system::flux_variables;
 
     db::mutate<Tags::GhostDataForReconstruction<Dim>>(
-        make_not_null(&box), [](const auto ghost_data_ptr) {
+        [](const auto ghost_data_ptr) {
           // Clear the previous neighbor data and add current local data
           ghost_data_ptr->clear();
-        });
+        },
+        make_not_null(&box));
 
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
@@ -331,7 +332,6 @@ struct ReceiveDataForReconstruction {
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
                evolution::dg::Tags::NeighborMesh<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
-        make_not_null(&box),
         [&current_time_step_id, &element,
          ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
          &received_data, &subcell_mesh](
@@ -421,7 +421,8 @@ struct ReceiveDataForReconstruction {
                   std::get<5>(received_data[directional_element_id]);
             }
           }
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

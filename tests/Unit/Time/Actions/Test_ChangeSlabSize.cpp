@@ -106,7 +106,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics>(
-        make_not_null(&box),
         [&get_step, &start_time, &time_runs_forward](
             const gsl::not_null<TimeStepId*> id,
             const gsl::not_null<TimeStepId*> next_id,
@@ -120,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           *next_id = stepper.next_time_id(*id, *step);
           *diags = AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5};
         },
-        db::get<Tags::TimeStepper<>>(box));
+        make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
 
     using ExpectedMessages =
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox;
@@ -188,7 +187,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     // Check interior of slab
     {
       db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>>(
-          make_not_null(&box),
           [&start_time, &time_runs_forward](
               const gsl::not_null<TimeStepId*> id,
               const gsl::not_null<TimeStepId*> next_id, const TimeDelta& step,
@@ -196,7 +194,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
             *id = TimeStepId(time_runs_forward, 3, start_time + step);
             *next_id = stepper.next_time_id(*id, step);
           },
-          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
+          make_not_null(&box), db::get<Tags::TimeStep>(box),
+          db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
@@ -217,7 +216,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     // Check at a substep
     {
       db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>>(
-          make_not_null(&box),
           [](const gsl::not_null<TimeStepId*> id,
              const gsl::not_null<TimeStepId*> next_id, const TimeDelta& step,
              const TimeStepper& stepper) {
@@ -229,7 +227,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
               *next_id = stepper.next_time_id(*id, step);
             }
           },
-          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
+          make_not_null(&box), db::get<Tags::TimeStep>(box),
+          db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});

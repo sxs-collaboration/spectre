@@ -143,11 +143,12 @@ SPECTRE_TEST_CASE(
   // Switch to subcell grid and check we compute Pi correctly
   db::mutate<evolution::dg::subcell::Tags::ActiveGrid,
              ::Tags::Variables<evolved_vars_tags>>(
-      make_not_null(&box), [&initial_subcell_vars](const auto active_grid_ptr,
-                                                   const auto variables_ptr) {
+      [&initial_subcell_vars](const auto active_grid_ptr,
+                              const auto variables_ptr) {
         *active_grid_ptr = evolution::dg::subcell::ActiveGrid::Subcell;
         *variables_ptr = initial_subcell_vars;
-      });
+      },
+      make_not_null(&box));
   db::mutate_apply<grmhd::GhValenciaDivClean::SetPiFromGauge>(
       make_not_null(&box));
   check(db::get<evolution::dg::subcell::Tags::Mesh<3>>(box),
@@ -156,11 +157,11 @@ SPECTRE_TEST_CASE(
   // // Switch back to DG and check we compute Pi correctly
   db::mutate<evolution::dg::subcell::Tags::ActiveGrid,
              ::Tags::Variables<evolved_vars_tags>>(
-      make_not_null(&box),
       [&initial_dg_vars](const auto active_grid_ptr, const auto variables_ptr) {
         *active_grid_ptr = evolution::dg::subcell::ActiveGrid::Dg;
         *variables_ptr = initial_dg_vars;
-      });
+      },
+      make_not_null(&box));
   db::mutate_apply<grmhd::GhValenciaDivClean::SetPiFromGauge>(
       make_not_null(&box));
   check(db::get<domain::Tags::Mesh<3>>(box), initial_dg_vars);

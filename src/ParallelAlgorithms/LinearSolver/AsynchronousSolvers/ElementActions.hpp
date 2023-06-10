@@ -268,7 +268,6 @@ struct PrepareSolve {
 
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
                Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [](const gsl::not_null<size_t*> local_iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
            const size_t num_iterations) {
@@ -276,6 +275,7 @@ struct PrepareSolve {
           *has_converged =
               Convergence::HasConverged{num_iterations, iteration_id};
         },
+        make_not_null(&box),
         get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     if constexpr (ObserveInitialResidual) {
@@ -359,7 +359,6 @@ struct CompleteStep {
     // Prepare for next iteration
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
                Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
            const size_t num_iterations) {
@@ -367,6 +366,7 @@ struct CompleteStep {
           *has_converged =
               Convergence::HasConverged{num_iterations, *iteration_id};
         },
+        make_not_null(&box),
         get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe element-local residual magnitude

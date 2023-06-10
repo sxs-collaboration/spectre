@@ -107,17 +107,16 @@ struct AdjustDomain {
                     flag == amr::Flag::DecreaseResolution);
           })) {
         db::mutate<::domain::Tags::Mesh<volume_dim>>(
-            make_not_null(&box),
             [&my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
               *mesh = amr::projectors::mesh(*mesh, my_amr_flags);
-            });
+            },
+            make_not_null(&box));
       }
 
       // Need to reset AMR flags and determine new neighbors
       db::mutate<::domain::Tags::Element<volume_dim>,
                  amr::Tags::Flags<volume_dim>,
                  amr::Tags::NeighborFlags<volume_dim>>(
-          make_not_null(&box),
           [&element_id](
               const gsl::not_null<Element<volume_dim>*> element,
               const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags,
@@ -134,7 +133,8 @@ struct AdjustDomain {
             for (size_t d = 0; d < volume_dim; ++d) {
               (*amr_flags)[d] = amr::Flag::Undefined;
             }
-          });
+          },
+          make_not_null(&box));
     }
 
     // In the near future, add the capability of updating all data needed for

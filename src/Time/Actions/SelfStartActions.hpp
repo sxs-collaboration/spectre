@@ -232,12 +232,12 @@ struct Initialize {
         tmpl::push_back<detail::vars_to_save<System>, ::Tags::TimeStep,
                         ::Tags::Next<::Tags::TimeStep>>>::apply(box);
     db::mutate<::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>(
-        make_not_null(&box),
         [&self_start_step](const gsl::not_null<::TimeDelta*> time_step,
                            const gsl::not_null<::TimeDelta*> next_time_step) {
           *time_step = self_start_step;
           *next_time_step = self_start_step;
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -275,12 +275,11 @@ struct CheckForCompletion {
       tmpl::for_each<detail::vars_to_save<System>>([&box](auto tag) {
         using Tag = tmpl::type_from<decltype(tag)>;
         db::mutate<Tag>(
-            make_not_null(&box),
             [](const gsl::not_null<typename Tag::type*> value,
                const std::tuple<typename Tag::type>& initial_value) {
               *value = get<0>(initial_value);
             },
-            db::get<Tags::InitialValue<Tag>>(box));
+            make_not_null(&box), db::get<Tags::InitialValue<Tag>>(box));
       });
     }
 
@@ -343,7 +342,6 @@ struct CheckForOrderIncrease {
 
     if (done_with_order) {
       db::mutate<::Tags::Next<::Tags::TimeStepId>>(
-          make_not_null(&box),
           [](const gsl::not_null<::TimeStepId*> next_time_id,
              const ::TimeStepId& current_time_id) {
             const Slab slab = current_time_id.step_time().slab();
@@ -353,12 +351,11 @@ struct CheckForOrderIncrease {
                            current_time_id.time_runs_forward() ? slab.start()
                                                                : slab.end());
           },
-          db::get<::Tags::TimeStepId>(box));
+          make_not_null(&box), db::get<::Tags::TimeStepId>(box));
       tmpl::for_each<history_tags>([&box,
                                     &history_integration_order](auto tag_v) {
         using history_tag = typename decltype(tag_v)::type;
         db::mutate<history_tag>(
-            make_not_null(&box),
             [&history_integration_order](
                 const gsl::not_null<typename history_tag::type*>
                     mutable_history) {
@@ -382,7 +379,8 @@ struct CheckForOrderIncrease {
               for (const auto& record : *mutable_history) {
                 mutable_history->discard_value(record.time_step_id);
               }
-            });
+            },
+            make_not_null(&box));
       });
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -425,7 +423,6 @@ struct Cleanup {
     // Reset the time step to the value requested by the user.  The
     // variables were reset in CheckForCompletion.
     db::mutate<::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>(
-        make_not_null(&box),
         [](const gsl::not_null<::TimeDelta*> time_step,
            const gsl::not_null<::TimeDelta*> next_time_step,
            const std::tuple<::TimeDelta>& initial_step,
@@ -433,7 +430,7 @@ struct Cleanup {
           *time_step = get<0>(initial_step);
           *next_time_step = get<0>(initial_next_step);
         },
-        db::get<initial_step_tag>(box),
+        make_not_null(&box), db::get<initial_step_tag>(box),
         db::get<Tags::InitialValue<::Tags::Next<::Tags::TimeStep>>>(box));
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
     // reset each tag to default constructed values to reduce memory usage (Data
@@ -442,9 +439,11 @@ struct Cleanup {
     // constructing more DataBox types with and without this handful of tags.
     tmpl::for_each<remove_tags>([&box](auto tag_v) {
       using tag = typename decltype(tag_v)::type;
-      db::mutate<tag>(make_not_null(&box), [](auto tag_value) {
-        *tag_value = std::decay_t<decltype(*tag_value)>{};
-      });
+      db::mutate<tag>(
+          [](auto tag_value) {
+            *tag_value = std::decay_t<decltype(*tag_value)>{};
+          },
+          make_not_null(&box));
     });
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     tmpl::for_each<history_tags>([&box](auto tag_v) {

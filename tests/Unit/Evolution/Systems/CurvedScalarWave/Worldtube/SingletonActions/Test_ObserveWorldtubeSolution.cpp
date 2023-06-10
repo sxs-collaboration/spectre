@@ -138,8 +138,8 @@ void check_observe_worldtube_solution(
   // mutate time so we trigger an observation
   const double new_time = 3.9;
   db::mutate<::Tags::Time>(
-      make_not_null(&box),
-      [&new_time](const gsl::not_null<double*> time) { *time = new_time; });
+      [&new_time](const gsl::not_null<double*> time) { *time = new_time; },
+      make_not_null(&box));
 
   ActionTesting::next_action<worldtube_chare>(make_not_null(&runner), 0);
   CHECK_FALSE(

@@ -67,7 +67,6 @@ struct ContributeVolumeData {
                     const observers::ArrayComponentId& sender_array_id,
                     ElementVolumeData&& received_volume_data) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
-        make_not_null(&box),
         [&array_index, &cache, &received_volume_data, &observation_id,
          &sender_array_id, &subfile_name](
             const gsl::not_null<std::unordered_map<
@@ -142,6 +141,7 @@ struct ContributeVolumeData {
             volume_data->erase(observation_id);
           }
         },
+        make_not_null(&box),
         db::get<Tags::ExpectedContributorsForObservations>(box));
   }
 };
@@ -226,7 +226,6 @@ struct ContributeVolumeDataToWriter {
       const std::lock_guard hold_lock(*node_lock);
       db::mutate<TensorDataTag, Tags::ContributorsOfTensorData,
                  Tags::VolumeDataLock, Tags::H5FileLock>(
-          make_not_null(&box),
           [&observation_id, &observations_registered_with_id,
            &observer_group_id, &all_volume_data, &volume_observers_contributed,
            &volume_data_lock, &volume_file_lock](
@@ -257,6 +256,7 @@ struct ContributeVolumeDataToWriter {
                 observations_registered.at(key).size();
             volume_file_lock = &*volume_file_lock_ptr;
           },
+          make_not_null(&box),
           db::get<Tags::ExpectedContributorsForObservations>(box));
     }
 

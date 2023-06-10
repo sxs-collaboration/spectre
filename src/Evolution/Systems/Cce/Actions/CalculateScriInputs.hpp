@@ -81,7 +81,6 @@ struct CalculateScriInputs {
                                        const size_t l_max,
                                        tmpl::list<TagPack...> /*meta*/) {
     db::mutate<TagPack...>(
-        make_not_null(&box),
         [&l_max](const gsl::not_null<typename TagPack::type*>... derivatives,
                  const typename TagPack::derivative_of::type&... arguments) {
           Spectral::Swsh::angular_derivatives<
@@ -89,7 +88,7 @@ struct CalculateScriInputs {
               l_max, 1, make_not_null(&get(*derivatives))...,
               get(arguments)...);
         },
-        db::get<typename TagPack::derivative_of>(box)...);
+        make_not_null(&box), db::get<typename TagPack::derivative_of>(box)...);
   }
 };
 }  // namespace Actions

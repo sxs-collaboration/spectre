@@ -56,16 +56,18 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
        {false, false, false, true, false, false, true, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
     db::mutate<Tags::TimeStepId>(
-        make_not_null(&box), [&slab](const gsl::not_null<TimeStepId*> time_id) {
+        [&slab](const gsl::not_null<TimeStepId*> time_id) {
           *time_id = TimeStepId(true, time_id->slab_number(),
                                 time_id->step_time(), 1, slab.duration(),
                                 time_id->step_time().value());
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(sent_trigger->is_triggered(box));
     db::mutate<Tags::TimeStepId>(
-        make_not_null(&box), [](const gsl::not_null<TimeStepId*> time_id) {
+        [](const gsl::not_null<TimeStepId*> time_id) {
           *time_id = TimeStepId(true, time_id->slab_number() + 1,
                                 time_id->step_time());
-        });
+        },
+        make_not_null(&box));
   }
 }

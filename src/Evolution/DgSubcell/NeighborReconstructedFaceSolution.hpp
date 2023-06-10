@@ -82,8 +82,8 @@ void neighbor_reconstructed_face_solution(
   constexpr size_t volume_dim = Metavariables::volume_dim;
   db::mutate<subcell::Tags::GhostDataForReconstruction<volume_dim>,
              subcell::Tags::DataForRdmpTci>(
-      box, [&received_temporal_id_and_data](const auto subcell_ghost_data_ptr,
-                                            const auto rdmp_tci_data_ptr) {
+      [&received_temporal_id_and_data](const auto subcell_ghost_data_ptr,
+                                       const auto rdmp_tci_data_ptr) {
         const size_t number_of_evolved_vars =
             rdmp_tci_data_ptr->max_variables_values.size();
         for (auto& received_mortar_data :
@@ -136,7 +136,8 @@ void neighbor_reconstructed_face_solution(
                                       number_of_evolved_vars)),
                     neighbor_data.begin());
         }
-      });
+      },
+      box);
   std::vector<std::pair<Direction<volume_dim>, ElementId<volume_dim>>>
       mortars_to_reconstruct_to{};
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {

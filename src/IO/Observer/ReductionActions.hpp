@@ -128,7 +128,6 @@ struct ContributeReductionData {
                     const bool observe_per_core = false) {
     db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionDataNames<Ts...>,
                Tags::ContributorsOfReductionData>(
-        make_not_null(&box),
         [&array_index, &cache, &observation_id,
          reduction_data = std::move(reduction_data), &reduction_names,
          &sender_array_id, &subfile_name, &formatter, &observe_per_core](
@@ -206,6 +205,7 @@ struct ContributeReductionData {
             reduction_observers_contributed->erase(observation_id);
           }
         },
+        make_not_null(&box),
         db::get<Tags::ExpectedContributorsForObservations>(box));
     // Silence a gcc <= 9 unused-variable warning
     (void)observe_per_core;
@@ -300,7 +300,6 @@ struct CollectReductionDataOnNode {
                  Tags::ReductionDataNames<ReductionDatums...>,
                  Tags::ContributorsOfReductionData, Tags::ReductionDataLock,
                  Tags::H5FileLock>(
-          make_not_null(&box),
           [&reduction_data, &reduction_names_map,
            &reduction_observers_contributed, &reduction_data_lock,
            &reduction_file_lock, &observation_id, &observer_group_id,
@@ -339,6 +338,7 @@ struct CollectReductionDataOnNode {
             observations_registered_with_id =
                 observations_registered.at(key).size();
           },
+          make_not_null(&box),
           db::get<Tags::ExpectedContributorsForObservations>(box));
     }
 
@@ -504,7 +504,6 @@ struct WriteReductionData {
                  Tags::ReductionDataNames<ReductionDatums...>,
                  Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
                  Tags::H5FileLock>(
-          make_not_null(&box),
           [&nodes_contributed, &reduction_data, &reduction_names_map,
            &reduction_data_lock, &reduction_file_lock, &observation_id,
            &observations_registered_with_id, &sender_node_number](
@@ -544,6 +543,7 @@ struct WriteReductionData {
             observations_registered_with_id =
                 nodes_registered_for_reductions.at(key).size();
           },
+          make_not_null(&box),
           db::get<Tags::NodesExpectedToContributeReductions>(box));
     }
 

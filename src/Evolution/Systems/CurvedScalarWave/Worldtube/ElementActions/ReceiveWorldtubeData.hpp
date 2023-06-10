@@ -106,7 +106,6 @@ struct ReceiveWorldtubeData {
           get(get<Tags::RegularFieldAdvectiveTerm<Dim>>(box));
 
       db::mutate<Tags::WorldtubeSolution<Dim>>(
-          make_not_null(&box),
           [&received_data, &puncture_field,
            &vars_on_face](const gsl::not_null<Variables<evolved_tags_list>*>
                               worldtube_solution) {
@@ -139,7 +138,8 @@ struct ReceiveWorldtubeData {
             get(pi) = (-get(get<dt_psi_tag>(received_data)) +
                        get(dot_product(shift, phi_inertial))) /
                       get(lapse);
-          });
+          },
+          make_not_null(&box));
       inbox.erase(time_step_id);
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

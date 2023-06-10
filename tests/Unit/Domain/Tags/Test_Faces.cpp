@@ -60,20 +60,20 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags.Faces", "[Unit][Domain]") {
     auto box = db::create<db::AddSimpleTags<vars_on_faces_tag>>(
         DirectionMap<Dim, Vars>{});
     CHECK(db::get<scalar_on_faces_tag>(box).empty());
-    db::mutate<
-        vars_on_faces_tag>(make_not_null(&box), [](const gsl::not_null<
-                                                    DirectionMap<Dim, Vars>*>
-                                                       vars_on_faces) {
-      vars_on_faces->emplace(Direction<Dim>::lower_xi(), Vars{size_t{3}, 0.});
-    });
+    db::mutate<vars_on_faces_tag>(
+        [](const gsl::not_null<DirectionMap<Dim, Vars>*> vars_on_faces) {
+          vars_on_faces->emplace(Direction<Dim>::lower_xi(),
+                                 Vars{size_t{3}, 0.});
+        },
+        make_not_null(&box));
     CHECK(db::get<scalar_on_faces_tag>(box).at(Direction<Dim>::lower_xi()) ==
           Scalar<DataVector>{size_t{3}, 0.});
     db::mutate<scalar_on_faces_tag>(
-        make_not_null(&box),
         [](const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
                scalar_on_faces) {
           get(scalar_on_faces->at(Direction<Dim>::lower_xi())) = 1.;
-        });
+        },
+        make_not_null(&box));
     CHECK(db::get<vars_on_faces_tag>(box).at(Direction<Dim>::lower_xi()) ==
           Vars{size_t{3}, 1.});
   }

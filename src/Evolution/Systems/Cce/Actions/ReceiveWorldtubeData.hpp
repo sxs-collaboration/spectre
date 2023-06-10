@@ -61,12 +61,11 @@ struct ReceiveWorldtubeData {
         [&inbox, &box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
-              make_not_null(&box),
               [&inbox](const gsl::not_null<typename tag::type*> destination,
                        const TimeStepId& time) {
                 *destination = get<tag>(inbox[time]);
               },
-              db::get<::Tags::TimeStepId>(box));
+              make_not_null(&box), db::get<::Tags::TimeStepId>(box));
         });
     inbox.erase(db::get<::Tags::TimeStepId>(box));
     return {Parallel::AlgorithmExecution::Continue,

@@ -125,10 +125,11 @@ struct SetValue {
   static void apply(db::DataBox<DbTagList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double value) {
-    db::mutate<Value>(make_not_null(&box),
-                      [&value](const gsl::not_null<double*> box_value) {
-                        *box_value = value;
-                      });
+    db::mutate<Value>(
+        [&value](const gsl::not_null<double*> box_value) {
+          *box_value = value;
+        },
+        make_not_null(&box));
   }
 };
 

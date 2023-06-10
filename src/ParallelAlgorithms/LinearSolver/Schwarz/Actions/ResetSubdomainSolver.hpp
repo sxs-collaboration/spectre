@@ -79,7 +79,7 @@ struct ResetSubdomainSolver {
       }
       db::mutate<
           LinearSolver::Schwarz::Tags::SubdomainSolverBase<OptionsGroup>>(
-          make_not_null(&box), [](const auto subdomain_solver) {
+          [](const auto subdomain_solver) {
             // Dereference the gsl::not_null pointer, and then the
             // std::unique_ptr for the subdomain solver's abstract superclass.
             // This needs adjustment if the subdomain solver is stored in the
@@ -88,7 +88,8 @@ struct ResetSubdomainSolver {
             // function, which must not be confused with the serial linear
             // solver's `reset` function here.
             (*subdomain_solver)->reset();
-          });
+          },
+          make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

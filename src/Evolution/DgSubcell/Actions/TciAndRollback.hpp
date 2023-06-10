@@ -166,10 +166,10 @@ struct TciAndRollback {
 
     const int tci_decision = std::get<0>(tci_result);
     db::mutate<Tags::TciDecision>(
-        make_not_null(&box),
         [&tci_decision](const gsl::not_null<int*> tci_decision_ptr) {
           *tci_decision_ptr = tci_decision;
-        });
+        },
+        make_not_null(&box));
 
     cell_is_troubled |= (tci_decision != 0);
 
@@ -188,19 +188,18 @@ struct TciAndRollback {
         not cell_is_troubled) {
       db::mutate<subcell::Tags::GhostDataForReconstruction<Dim>,
                  subcell::Tags::DataForRdmpTci>(
-          make_not_null(&box),
           [&tci_result](const auto neighbor_data_ptr,
                         const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr) {
             neighbor_data_ptr->clear();
             *rdmp_tci_data_ptr = std::move(std::get<1>(std::move(tci_result)));
-          });
+          },
+          make_not_null(&box));
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
                Tags::ActiveGrid, Tags::DidRollback,
                subcell::Tags::GhostDataForReconstruction<Dim>>(
-        make_not_null(&box),
         [&dg_mesh, &element, &subcell_mesh](
             const auto active_vars_ptr, const auto active_history_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
@@ -254,6 +253,7 @@ struct TciAndRollback {
           // method, since we need to lift G+D instead of the ingredients
           // that go into G+D, which is what we would be projecting here.
         },
+        make_not_null(&box),
         db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),
         Metavariables::SubcellOptions::ghost_zone_size(box));
 
@@ -276,7 +276,6 @@ struct TciAndRollback {
             SelfStart::Tags::InitialValue<variables_tag>,
             SelfStart::Tags::InitialValue<
                 typename Metavariables::system::primitive_variables_tag>>(
-            make_not_null(&box),
             [&dg_mesh, &subcell_mesh](const auto initial_vars_ptr,
                                       const auto initial_prim_vars_ptr) {
               // Note: for strict conservation, we need to project uJ
@@ -287,17 +286,18 @@ struct TciAndRollback {
               std::get<0>(*initial_prim_vars_ptr) =
                   fd::project(std::get<0>(*initial_prim_vars_ptr), dg_mesh,
                               subcell_mesh.extents());
-            });
+            },
+            make_not_null(&box));
       } else {
         db::mutate<SelfStart::Tags::InitialValue<variables_tag>>(
-            make_not_null(&box),
             [&dg_mesh, &subcell_mesh](const auto initial_vars_ptr) {
               // Note: for strict conservation, we need to project uJ
               // instead of just u.
               std::get<0>(*initial_vars_ptr) =
                   fd::project(std::get<0>(*initial_vars_ptr), dg_mesh,
                               subcell_mesh.extents());
-            });
+            },
+            make_not_null(&box));
       }
     }
 

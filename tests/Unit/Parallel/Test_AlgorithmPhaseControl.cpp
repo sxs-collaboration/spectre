@@ -239,13 +239,14 @@ struct RecordPhaseIteration {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::PhaseRecord>(
-        make_not_null(&box), [](const gsl::not_null<std::string*> phase_log) {
+        [](const gsl::not_null<std::string*> phase_log) {
           *phase_log += MakeString{} << "Running phase: " << Phase << "\n";
-        });
+        },
+        make_not_null(&box));
     if (Phase == Parallel::Phase::Evolve) {
       db::mutate<Tags::Step>(
-          make_not_null(&box),
-          [](const gsl::not_null<size_t*> step) { ++(*step); });
+          [](const gsl::not_null<size_t*> step) { ++(*step); },
+          make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -280,17 +281,17 @@ struct TerminateAndRestart {
             Parallel::get_parallel_component<OtherComponent>(cache));
 
         db::mutate<Tags::PhaseRecord>(
-            make_not_null(&box),
             [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate and Restart\n";
-            });
+            },
+            make_not_null(&box));
         return {Parallel::AlgorithmExecution::Pause, std::nullopt};
       } else {
         db::mutate<Tags::PhaseRecord>(
-            make_not_null(&box),
             [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate Completion\n";
-            });
+            },
+            make_not_null(&box));
         return {Parallel::AlgorithmExecution::Halt, std::nullopt};
       }
     }

@@ -316,9 +316,9 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename... MutateTags, typename TagList, typename Invokable,
             typename... Args>
   // clang-tidy: redundant declaration
-  friend decltype(auto) mutate(gsl::not_null<DataBox<TagList>*> box,  // NOLINT
-                               Invokable&& invokable,
-                               Args&&... args);  // NOLINT
+  friend decltype(auto) mutate(Invokable&& invokable,
+                               gsl::not_null<DataBox<TagList>*> box,  // NOLINT
+                               Args&&... args);                       // NOLINT
 
   // evaluates the compute item corresponding to ComputeTag passing along
   // items fetched via ArgumentTags
@@ -684,7 +684,7 @@ db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
  * \brief Allows changing the state of one or more non-computed elements in
  * the DataBox
  *
- * `mutate()`'s first argument is the DataBox from which to retrieve the tags
+ * `mutate()`'s second argument is the DataBox from which to retrieve the tags
  * `MutateTags`. The objects corresponding to the `MutateTags` are then passed
  * to `invokable`, which is a lambda or a function object taking as many
  * arguments as there are `MutateTags` and with the arguments being of types
@@ -711,8 +711,9 @@ db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
  */
 template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
-decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
-                      Invokable&& invokable, Args&&... args) {
+decltype(auto) mutate(Invokable&& invokable,
+                      const gsl::not_null<DataBox<TagList>*> box,
+                      Args&&... args) {
   static_assert(
       tmpl2::flat_all_v<
           detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
@@ -1237,28 +1238,26 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
                     F, const gsl::not_null<typename ReturnTags::type*>...,
                     const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     return ::db::mutate<ReturnTags...>(
-        box,
         [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
            const_item_type<ArgumentTags, BoxTags>... args_items,
            decltype(std::forward<Args>(args))... l_args) {
           return std::decay_t<F>::apply(mutated_items..., args_items...,
                                         std::forward<Args>(l_args)...);
         },
-        db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
+        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
   } else if constexpr (::tt::is_callable_v<
                            F,
                            const gsl::not_null<typename ReturnTags::type*>...,
                            const_item_type<ArgumentTags, BoxTags>...,
                            Args...>) {
     return ::db::mutate<ReturnTags...>(
-        box,
         [&f](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
              const_item_type<ArgumentTags, BoxTags>... args_items,
              decltype(std::forward<Args>(args))... l_args) {
           return f(mutated_items..., args_items...,
                    std::forward<Args>(l_args)...);
         },
-        db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
+        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
   } else {
     error_function_not_callable<F, gsl::not_null<typename ReturnTags::type*>...,
                                 const_item_type<ArgumentTags, BoxTags>...,

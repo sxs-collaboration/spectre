@@ -85,14 +85,14 @@ struct RegisterElementWithSelf {
       const observers::ArrayComponentId& array_component_id,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
     db::mutate<Tags::RegisteredElements<Dim>>(
-        make_not_null(&box),
         [&array_component_id, &inertial_coords](
             const gsl::not_null<
                 std::unordered_map<observers::ArrayComponentId,
                                    tnsr::I<DataVector, Dim, Frame::Inertial>>*>
                 registered_elements) {
           (*registered_elements)[array_component_id] = inertial_coords;
-        });
+        },
+        make_not_null(&box));
   }
 };
 

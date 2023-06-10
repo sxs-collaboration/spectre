@@ -89,8 +89,9 @@ struct SendMap {
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         std::make_pair(10, 23));
     db::mutate<Tags::MapCounter>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; });
+
+        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -112,8 +113,9 @@ struct ReceiveMap {
     }
 
     db::mutate<Tags::MapCounter>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; });
+
+        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -132,10 +134,11 @@ struct SendMemberInsert {
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
     db::mutate<Tags::MemberInsertCounter>(
-        make_not_null(&box),
+
         [](const gsl::not_null<size_t*> member_insert_counter) {
           (*member_insert_counter)++;
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -157,10 +160,11 @@ struct ReceiveMemberInsert {
     }
 
     db::mutate<Tags::MemberInsertCounter>(
-        make_not_null(&box),
+
         [](const gsl::not_null<size_t*> member_insert_counter) {
           (*member_insert_counter)++;
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -179,8 +183,9 @@ struct SendValue {
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
     db::mutate<Tags::ValueCounter>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; });
+
+        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -202,8 +207,9 @@ struct ReceiveValue {
     }
 
     db::mutate<Tags::ValueCounter>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; });
+
+        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -222,9 +228,10 @@ struct SendPushback {
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
     db::mutate<Tags::PushbackCounter>(
-        make_not_null(&box), [](const gsl::not_null<size_t*> pushback_counter) {
+        [](const gsl::not_null<size_t*> pushback_counter) {
           (*pushback_counter)++;
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -246,9 +253,10 @@ struct ReceivePushback {
     }
 
     db::mutate<Tags::PushbackCounter>(
-        make_not_null(&box), [](const gsl::not_null<size_t*> pushback_counter) {
+        [](const gsl::not_null<size_t*> pushback_counter) {
           (*pushback_counter)++;
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

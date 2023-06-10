@@ -80,13 +80,13 @@ struct MutateLog {
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::Log>(
-        make_not_null(&box),
         [&array_index](const gsl::not_null<std::string*> log) {
           const std::string component_name =
               pretty_type::short_name<ParallelComponent>() + " " +
               std::to_string(static_cast<int>(array_index));
           log->append(component_name + " invoked action MutateLog\n");
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };

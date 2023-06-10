@@ -225,7 +225,6 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
                       .extract(iteration_id)
                       .mapped());
     db::mutate<Tags::Overlaps<OverlapFields, Dim, OptionsGroup>...>(
-        make_not_null(&box),
         [&received_overlap_fields](const auto... local_overlap_fields) {
           if constexpr (sizeof...(OverlapFields) > 1) {
             for (auto& [overlap_id, overlap_fields] : received_overlap_fields) {
@@ -236,7 +235,8 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
             expand_pack((*local_overlap_fields =
                              std::move(received_overlap_fields))...);
           }
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

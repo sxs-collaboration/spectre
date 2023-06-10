@@ -177,12 +177,10 @@ void test_compute_angular_derivatives() {
       };
   // Put the collocation information derived from the generated modes in the
   // DataBox
-  db::mutate<TestTag<0, Spin0>>(make_not_null(&box),
-                                coefficients_to_analytic_collocation,
-                                expected_modes_spin_0);
-  db::mutate<TestTag<1, Spin1>>(make_not_null(&box),
-                                coefficients_to_analytic_collocation,
-                                expected_modes_spin_1);
+  db::mutate<TestTag<0, Spin0>>(coefficients_to_analytic_collocation,
+                                make_not_null(&box), expected_modes_spin_0);
+  db::mutate<TestTag<1, Spin1>>(coefficients_to_analytic_collocation,
+                                make_not_null(&box), expected_modes_spin_1);
 
   // these could be packed into a variables, but the current test wouldn't be
   // much shorter. If the test is expanded to verify more than four results at a

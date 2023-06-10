@@ -68,7 +68,6 @@ struct PrepareSolve {
       const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>, operand_tag,
                residual_tag>(
-        make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id, const auto operand,
            const auto residual, const auto& source,
            const auto& operator_applied_to_fields) {
@@ -76,7 +75,8 @@ struct PrepareSolve {
           *operand = source - operator_applied_to_fields;
           *residual = *operand;
         },
-        get<source_tag>(box), get<operator_applied_to_fields_tag>(box));
+        make_not_null(&box), get<source_tag>(box),
+        get<operator_applied_to_fields_tag>(box));
 
     // Perform global reduction to compute initial residual magnitude square for
     // residual monitor
@@ -116,11 +116,11 @@ struct InitializeHasConverged {
     auto has_converged = std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) {
           *local_has_converged = std::move(has_converged);
-        });
+        },
+        make_not_null(&box));
 
     // Skip steps entirely if the solve has already converged
     constexpr size_t step_end_index =
@@ -203,13 +203,12 @@ struct UpdateFieldValues {
     const double alpha = std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<residual_tag, fields_tag>(
-        make_not_null(&box),
         [alpha](const auto residual, const auto fields, const auto& operand,
                 const auto& operator_applied_to_operand) {
           *fields += alpha * operand;
           *residual -= alpha * operator_applied_to_operand;
         },
-        get<operand_tag>(box), get<operator_tag>(box));
+        make_not_null(&box), get<operand_tag>(box), get<operator_tag>(box));
 
     // Compute new residual norm in a second global reduction
     const auto& residual = get<residual_tag>(box);
@@ -274,7 +273,6 @@ struct UpdateOperand {
 
     db::mutate<operand_tag, Convergence::Tags::IterationId<OptionsGroup>,
                Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [res_ratio, &has_converged](
             const auto operand, const gsl::not_null<size_t*> local_iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
@@ -283,7 +281,7 @@ struct UpdateOperand {
           ++(*local_iteration_id);
           *local_has_converged = std::move(has_converged);
         },
-        get<residual_tag>(box));
+        make_not_null(&box), get<residual_tag>(box));
 
     // Repeat steps until the solve has converged
     constexpr size_t this_action_index =

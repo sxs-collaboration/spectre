@@ -14,10 +14,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.GetTciDecision",
                   "[Evolution][Unit]") {
   auto box = db::create<db::AddSimpleTags<Tags::TciDecision>>(10);
   CHECK(get_tci_decision(box) == 10);
-  db::mutate<Tags::TciDecision>(make_not_null(&box),
-                                [](const gsl::not_null<int*> tci_decision_ptr) {
-                                  *tci_decision_ptr = -7;
-                                });
+  db::mutate<Tags::TciDecision>(
+      [](const gsl::not_null<int*> tci_decision_ptr) {
+        *tci_decision_ptr = -7;
+      },
+      make_not_null(&box));
   CHECK(get_tci_decision(box) == -7);
 }
 }  // namespace evolution::dg::subcell

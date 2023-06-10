@@ -42,7 +42,6 @@ void generate_boundary_values_and_expected(
   db::mutate<Tags::BoundaryValue<Tags::BondiR>,
              Tags::BoundaryValue<Tags::DuRDividedByR>, Tags::BondiR,
              Tags::DuRDividedByR, Tags::OneMinusY, Tags::BondiJ, Tags::BondiK>(
-      expected_box,
       [&generator, &dist, &l_max, &number_of_radial_grid_points, &y](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               boundary_r,
@@ -81,7 +80,8 @@ void generate_boundary_values_and_expected(
             number_of_radial_grid_points *
                 Spectral::Swsh::number_of_swsh_collocation_points(l_max));
         get(*k).data() = sqrt(1.0 + get(*j).data() * conj(get(*j).data()));
-      });
+      },
+      expected_box);
 
   TestHelpers::CopyDataBoxTags<Tags::BoundaryValue<Tags::BondiR>,
                                Tags::BoundaryValue<Tags::DuRDividedByR>,
@@ -90,7 +90,6 @@ void generate_boundary_values_and_expected(
 
   db::mutate<Tags::EthRDividedByR, Tags::EthEthbarRDividedByR,
              Tags::EthEthRDividedByR>(
-      expected_box,
       [&l_max, &number_of_radial_grid_points](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
               eth_r_divided_by_r,
@@ -114,7 +113,7 @@ void generate_boundary_values_and_expected(
                 l_max, number_of_radial_grid_points, r_buffer) /
             (get(r));
       },
-      db::get<Tags::BondiR>(*expected_box));
+      expected_box, db::get<Tags::BondiR>(*expected_box));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",

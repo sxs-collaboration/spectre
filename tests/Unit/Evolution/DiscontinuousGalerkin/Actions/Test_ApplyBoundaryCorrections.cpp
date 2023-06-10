@@ -199,12 +199,11 @@ struct SetLocalMortarData {
               face_mesh.number_of_grid_points());
       db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<
           Metavariables::volume_dim>>(
-          make_not_null(&box),
           [&covector_and_mag](const auto covector_and_mag_ptr,
                               const auto& local_direction) {
             (*covector_and_mag_ptr)[local_direction] = covector_and_mag;
           },
-          direction);
+          make_not_null(&box), direction);
 
       for (const auto& neighbor_id : neighbor_ids) {
         std::pair mortar_id{direction, neighbor_id};
@@ -221,7 +220,6 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            make_not_null(&box),
             [&face_mesh, &mortar_id, &time_step_id,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
@@ -231,7 +229,8 @@ struct SetLocalMortarData {
               mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
                   time_step_id, face_mesh,
                   std::move(type_erased_boundary_data_on_mortar));
-            });
+            },
+            make_not_null(&box));
         ++count;
         if (LocalTimeStepping) {
           const TimeStepId past_time_step_id{true, 3,
@@ -240,10 +239,11 @@ struct SetLocalMortarData {
           // 1/4 the slab.
           db::mutate<evolution::dg::Tags::MortarNextTemporalId<
               Metavariables::volume_dim>>(
-              make_not_null(&box), [&mortar_id, &past_time_step_id](
-                                       const auto mortar_next_temporal_id_ptr) {
+              [&mortar_id,
+               &past_time_step_id](const auto mortar_next_temporal_id_ptr) {
                 mortar_next_temporal_id_ptr->at(mortar_id) = past_time_step_id;
-              });
+              },
+              make_not_null(&box));
           // We also need to set the local history one step back to get to 2nd
           // order in time.
           type_erased_boundary_data_on_mortar.destructive_resize(
@@ -292,7 +292,6 @@ struct SetLocalMortarData {
               evolution::dg::Tags::MortarData<Metavariables::volume_dim>,
               evolution::dg::Tags::MortarDataHistory<
                   Metavariables::volume_dim, typename dt_variables_tag::type>>(
-              make_not_null(&box),
               [&det_inv_jacobian, &mortar_id, &past_mortar_data,
                &past_time_step_id, &time_step_id](
                   const auto mortar_data_ptr,
@@ -349,6 +348,7 @@ struct SetLocalMortarData {
                     time_step_id, std::move(local_mortar_data));
                 local_mortar_data = {};
               },
+              make_not_null(&box),
               db::get<domain::Tags::Mesh<Metavariables::volume_dim>>(box),
               db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<
                   Metavariables::volume_dim>>(box));

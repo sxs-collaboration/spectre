@@ -196,7 +196,6 @@ struct ChangeSlabSize {
     db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId,
                ::Tags::AdaptiveSteppingDiagnostics>(
-        make_not_null(&box),
         [&new_next_time_step_id, &new_step, &new_time_step_id](
             const gsl::not_null<TimeStepId*> next_time_step_id,
             const gsl::not_null<TimeDelta*> time_step,
@@ -208,7 +207,8 @@ struct ChangeSlabSize {
           *next_time_step = new_step;
           *local_time_step_id = new_time_step_id;
           ++diags->number_of_slab_size_changes;
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

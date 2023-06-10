@@ -57,12 +57,11 @@ struct UpdateFields {
       const ParallelComponent* const /*meta*/) {
     // Update the solution fields according to the Richardson scheme
     db::mutate<FieldsTag>(
-        make_not_null(&box),
         [](const auto fields, const auto& residual,
            const double relaxation_parameter) {
           *fields += relaxation_parameter * residual;
         },
-        get<residual_tag>(box),
+        make_not_null(&box), get<residual_tag>(box),
         get<Tags::RelaxationParameter<OptionsGroup>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

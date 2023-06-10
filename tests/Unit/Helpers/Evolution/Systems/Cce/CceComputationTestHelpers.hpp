@@ -60,7 +60,6 @@ struct CopyDataBoxTags {
   static void apply(const gsl::not_null<ToDataBox*> to_data_box,
                     const FromDataBox& from_data_box) {
     db::mutate<Tags...>(
-        to_data_box,
         [](const gsl::not_null<typename Tags::type*>... to_value,
            const typename Tags::type&... from_value) {
           const auto assign = [](auto to, const auto& from) {
@@ -69,7 +68,7 @@ struct CopyDataBoxTags {
           };
           expand_pack(assign(to_value, from_value)...);
         },
-        db::get<Tags>(from_data_box)...);
+        to_data_box, db::get<Tags>(from_data_box)...);
   }
 };
 

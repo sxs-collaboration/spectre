@@ -286,11 +286,12 @@ struct InitializeSubdomain {
             auto tag_v, const Direction<Dim>& direction) {
           using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
           db::mutate<overlaps_tag<domain::Tags::Faces<Dim, tag>>>(
-              box, [&face_background_fields, &overlap_id,
-                    &direction](const auto stored_value) {
+              [&face_background_fields, &overlap_id,
+               &direction](const auto stored_value) {
                 (*stored_value)[overlap_id][direction] =
                     get<tag>(face_background_fields.at(direction));
-              });
+              },
+              box);
         };
     const auto& element =
         db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);

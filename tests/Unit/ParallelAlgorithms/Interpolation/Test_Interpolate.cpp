@@ -296,8 +296,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       box, cache, array_index, std::add_pointer_t<elem_component>{}));
 
   // Update time in box and functions of time
-  db::mutate<::Tags::Time>(make_not_null(&box),
-                           [](gsl::not_null<double*> time) { *time = 1.0; });
+  db::mutate<::Tags::Time>([](gsl::not_null<double*> time) { *time = 1.0; },
+                           make_not_null(&box));
   Parallel::mutate<domain::Tags::FunctionsOfTime,
                    control_system::UpdateFunctionOfTime>(
       cache, name, initial_expr_time, DataVector{1, 0.0}, observation_time);

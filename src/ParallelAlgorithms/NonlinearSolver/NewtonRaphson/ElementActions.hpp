@@ -138,8 +138,8 @@ struct PrepareSolve {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; });
+        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; },
+        make_not_null(&box));
 
     // Skip the initial reduction on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
@@ -235,11 +235,11 @@ struct ReceiveInitialHasConverged {
         "bug, so please file an issue.");
     auto& has_converged = get<Convergence::HasConverged>(globalization_result);
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) {
           *local_has_converged = std::move(has_converged);
-        });
+        },
+        make_not_null(&box));
 
     // Skip steps entirely if the solve has already converged
     constexpr size_t complete_step_index =
@@ -259,10 +259,10 @@ struct ReceiveInitialHasConverged {
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
         db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
-            make_not_null(&box),
             [](const gsl::not_null<size_t*> local_iteration_id) {
               *local_iteration_id = 1;
-            });
+            },
+            make_not_null(&box));
         constexpr size_t prepare_step_index =
             tmpl::index_of<ActionList,
                            PrepareStep<FieldsTag, OptionsGroup, Label,
@@ -327,7 +327,6 @@ struct PrepareStep {
                    Convergence::Tags::IterationId<OptionsGroup>>,
                NonlinearSolver::Tags::StepLength<OptionsGroup>,
                globalization_fields_tag>(
-        make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id, const auto correction,
            const auto linear_operator_applied_to_correction,
            const gsl::not_null<size_t*> globalization_iteration_id,
@@ -349,7 +348,7 @@ struct PrepareStep {
           *step_length = damping_factor;
           *globalization_fields = fields;
         },
-        db::get<fields_tag>(box),
+        make_not_null(&box), db::get<fields_tag>(box),
         db::get<NonlinearSolver::Tags::DampingFactor<OptionsGroup>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -409,12 +408,11 @@ struct PerformStep {
     // Apply the correction that the linear solve has determined to attempt
     // improving the nonlinear solution
     db::mutate<fields_tag>(
-        make_not_null(&box),
         [](const auto fields, const auto& correction, const double step_length,
            const auto& globalization_fields) {
           *fields = globalization_fields + step_length * correction;
         },
-        db::get<correction_tag>(box),
+        make_not_null(&box), db::get<correction_tag>(box),
         db::get<NonlinearSolver::Tags::StepLength<OptionsGroup>>(box),
         db::get<globalization_fields_tag>(box));
 
@@ -521,13 +519,13 @@ struct Globalize {
 
         db::mutate<Convergence::Tags::HasConverged<OptionsGroup>,
                    Convergence::Tags::IterationId<OptionsGroup>>(
-            make_not_null(&box),
             [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                                  local_has_converged,
                              const gsl::not_null<size_t*> local_iteration_id) {
               *local_has_converged = std::move(has_converged);
               ++(*local_iteration_id);
-            });
+            },
+            make_not_null(&box));
 
         return {Parallel::AlgorithmExecution::Continue,
                 get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
@@ -551,13 +549,13 @@ struct Globalize {
       db::mutate<NonlinearSolver::Tags::StepLength<OptionsGroup>,
                  NonlinearSolver::Tags::Globalization<
                      Convergence::Tags::IterationId<OptionsGroup>>>(
-          make_not_null(&box),
           [&globalization_result](
               const gsl::not_null<double*> step_length,
               const gsl::not_null<size_t*> globalization_iteration_id) {
             *step_length = get<double>(globalization_result);
             ++(*globalization_iteration_id);
-          });
+          },
+          make_not_null(&box));
       // Continue globalization by taking a step with the updated step length
       // and checking the residual again
       constexpr size_t perform_step_index =
@@ -570,11 +568,11 @@ struct Globalize {
     auto& has_converged = get<Convergence::HasConverged>(globalization_result);
 
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) {
           *local_has_converged = std::move(has_converged);
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

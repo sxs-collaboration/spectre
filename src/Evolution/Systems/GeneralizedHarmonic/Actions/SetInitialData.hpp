@@ -359,7 +359,7 @@ struct SetInitialData {
                                               Frame::Inertial>>(*box);
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>(
-        box, &gh::initial_gh_variables_from_adm<Dim>, spatial_metric, lapse,
+        &gh::initial_gh_variables_from_adm<Dim>, box, spatial_metric, lapse,
         shift, extrinsic_curvature, mesh, inv_jacobian);
 
     // No need to import numeric initial data, so we terminate the phase by
@@ -411,7 +411,6 @@ struct ReceiveNumericInitialData {
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                Tags::Pi<DataVector, 3>, Tags::Phi<DataVector, 3>>(
-        make_not_null(&box),
         [&initial_data, &numeric_data, &mesh, &inv_jacobian](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
             const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
@@ -419,7 +418,8 @@ struct ReceiveNumericInitialData {
           initial_data.set_initial_data(spacetime_metric, pi, phi,
                                         make_not_null(&numeric_data), mesh,
                                         inv_jacobian);
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

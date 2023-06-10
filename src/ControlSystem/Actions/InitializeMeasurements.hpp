@@ -61,7 +61,6 @@ struct InitializeMeasurements {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<evolution::Tags::EventsAndDenseTriggers>(
-        make_not_null(&box),
         [](const gsl::not_null<evolution::EventsAndDenseTriggers*>
                events_and_dense_triggers) {
           tmpl::for_each<metafunctions::measurements_t<ControlSystems>>(
@@ -77,7 +76,8 @@ struct InitializeMeasurements {
                         std::make_unique<
                             control_system::Event<control_system_group>>()));
               });
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

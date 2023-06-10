@@ -50,9 +50,10 @@ static void apply(const gsl::not_null<db::DataBox<DbTags>*> box,
                   tuples::TaggedTuple<Queue1, Queue2> data) {
   // [Processor::apply]
   db::mutate<ProcessorCalls>(
-      box, [&id, &data](const gsl::not_null<ProcessorCalls::type*> calls) {
+      [&id, &data](const gsl::not_null<ProcessorCalls::type*> calls) {
         calls->emplace_back(id, std::move(data));
-      });
+      },
+      box);
 }
 };
 
@@ -89,13 +90,13 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
                        decltype(queue_v), LinkedMessageQueueTag, Processor>>(
         make_not_null(&runner), 0, id, std::move(data));
     return db::mutate<ProcessorCalls>(
-        make_not_null(
-            &ActionTesting::get_databox<component>(make_not_null(&runner), 0)),
         [](const gsl::not_null<ProcessorCalls::type*> calls) {
           auto ret = std::move(*calls);
           calls->clear();
           return ret;
-        });
+        },
+        make_not_null(
+            &ActionTesting::get_databox<component>(make_not_null(&runner), 0)));
   };
 
   CHECK(processed_by_call(Queue1{}, {0, {}}, 1.23).empty());

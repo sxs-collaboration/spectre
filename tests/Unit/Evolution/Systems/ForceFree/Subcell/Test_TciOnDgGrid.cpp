@@ -102,20 +102,23 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const size_t point_to_change = dg_mesh.number_of_grid_points() / 2;
 
   if (test_this == TestThis::PerssonMagTildeE) {
-    db::mutate<TildeE>(make_not_null(&box),
-                       [point_to_change](const auto tilde_e_ptr) {
-                         (*tilde_e_ptr).get(0)[point_to_change] *= 2.0;
-                       });
+    db::mutate<TildeE>(
+        [point_to_change](const auto tilde_e_ptr) {
+          (*tilde_e_ptr).get(0)[point_to_change] *= 2.0;
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::PerssonMagTildeB) {
-    db::mutate<TildeB>(make_not_null(&box),
-                       [point_to_change](const auto tilde_b_ptr) {
-                         (*tilde_b_ptr).get(0)[point_to_change] *= 2.0;
-                       });
+    db::mutate<TildeB>(
+        [point_to_change](const auto tilde_b_ptr) {
+          (*tilde_b_ptr).get(0)[point_to_change] *= 2.0;
+        },
+        make_not_null(&box));
   } else if (test_this == TestThis::PerssonTildeQ) {
-    db::mutate<TildeQ>(make_not_null(&box),
-                       [point_to_change](const auto tilde_q_ptr) {
-                         get(*tilde_q_ptr)[point_to_change] *= 2.0;
-                       });
+    db::mutate<TildeQ>(
+        [point_to_change](const auto tilde_q_ptr) {
+          get(*tilde_q_ptr)[point_to_change] *= 2.0;
+        },
+        make_not_null(&box));
   }
 
   // Set the RDMP TCI past data.
@@ -147,7 +150,6 @@ void test(const TestThis test_this, const int expected_tci_status) {
 
   // Modify past data if we are expecting an RDMP TCI failure.
   db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-      make_not_null(&box),
       [&past_rdmp_tci_data, &test_this](const auto rdmp_tci_data_ptr) {
         *rdmp_tci_data_ptr = past_rdmp_tci_data;
         // Assumes min is positive, increase it so we fail the TCI
@@ -158,7 +160,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
         } else if (test_this == TestThis::RdmpTildeQ) {
           rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
         }
-      });
+      },
+      make_not_null(&box));
 
   const bool element_stays_on_dg = false;
   const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =

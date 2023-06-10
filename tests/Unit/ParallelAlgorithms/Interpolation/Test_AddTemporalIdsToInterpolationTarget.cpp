@@ -73,13 +73,13 @@ struct MockSendPointsToInterpolator {
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
     db::mutate<::intrp::Tags::IndicesOfFilledInterpPoints<TemporalId>>(
-        make_not_null(&box),
         [&temporal_id](
             const gsl::not_null<
                 std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
                 indices) {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
-        });
+        },
+        make_not_null(&box));
   }
 };
 

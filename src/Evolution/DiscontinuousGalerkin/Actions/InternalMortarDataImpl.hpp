@@ -355,7 +355,6 @@ void internal_mortar_data(
     tmpl::list<PackageDataVolumeTags...> /*meta*/) {
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
              evolution::dg::Tags::MortarData<Dim>>(
-      box,
       [&boundary_correction, &face_temporaries, &packaged_data_buffer,
        &element = db::get<domain::Tags::Element<Dim>>(*box), &evolved_variables,
        &logical_to_inertial_inverse_jacobian =
@@ -379,6 +378,6 @@ void internal_mortar_data(
             moving_mesh_map, mesh_velocity,
             logical_to_inertial_inverse_jacobian, package_data_volume_args...);
       },
-      db::get<PackageDataVolumeTags>(*box)...);
+      box, db::get<PackageDataVolumeTags>(*box)...);
 }
 }  // namespace evolution::dg::Actions::detail

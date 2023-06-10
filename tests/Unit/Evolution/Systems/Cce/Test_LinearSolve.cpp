@@ -41,14 +41,14 @@ void make_boundary_data(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
                         const gsl::not_null<ComplexDataVector*> expected,
                         const size_t l_max) {
   db::mutate<Tags::BoundaryValue<BondiValueTag>>(
-      box,
       [&expected, &l_max](const gsl::not_null<
                           typename Tags::BoundaryValue<BondiValueTag>::type*>
                               boundary) {
         get(*boundary).data().set_data_ref(
             expected->data(),
             Spectral::Swsh::number_of_swsh_collocation_points(l_max));
-      });
+      },
+      box);
 }
 
 template <typename DataBoxTagList, typename Generator, typename Distribution,
@@ -60,7 +60,6 @@ void generate_powers_for_tags(
     const size_t number_of_modes, tmpl::list<Tags...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(
       db::mutate<TestHelpers::RadialPolyCoefficientsFor<Tags>>(
-          box,
           [](const gsl::not_null<Scalar<ComplexModalVector>*> modes,
              const gsl::not_null<Generator*> gen,
              const gsl::not_null<Distribution*> dist,
@@ -68,7 +67,7 @@ void generate_powers_for_tags(
             get(*modes) = make_with_random_values<ComplexModalVector>(
                 gen, dist, lambda_number_of_modes);
           },
-          generator, distribution, number_of_modes));
+          box, generator, distribution, number_of_modes));
 }
 
 template <typename Tag, typename DataBoxTagList>
@@ -76,13 +75,14 @@ void zero_top_modes(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
                     const size_t number_of_modes_to_zero,
                     const size_t total_number_of_modes) {
   db::mutate<TestHelpers::RadialPolyCoefficientsFor<Tag>>(
-      box, [&number_of_modes_to_zero, &total_number_of_modes](
-               const gsl::not_null<Scalar<ComplexModalVector>*> modes) {
+      [&number_of_modes_to_zero, &total_number_of_modes](
+          const gsl::not_null<Scalar<ComplexModalVector>*> modes) {
         for (size_t i = total_number_of_modes - number_of_modes_to_zero;
              i < total_number_of_modes; ++i) {
           get(*modes)[i] = 0.0;
         }
-      });
+      },
+      box);
 }
 
 template <typename DataBoxTagList, typename... Tags>
@@ -91,7 +91,6 @@ void generate_volume_data_from_separable(
     const ComplexDataVector& angular_data, const ComplexDataVector& one_minus_y,
     tmpl::list<Tags...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(db::mutate<Tags>(
-      box,
       [](auto to_fill, const ComplexDataVector& lambda_one_minus_y,
          const ComplexDataVector& lambda_angular_data,
          const Scalar<ComplexModalVector>& modes) {
@@ -99,7 +98,7 @@ void generate_volume_data_from_separable(
             lambda_angular_data,
             radial_vector_from_power_series(get(modes), lambda_one_minus_y));
       },
-      one_minus_y, angular_data,
+      box, one_minus_y, angular_data,
       db::get<TestHelpers::RadialPolyCoefficientsFor<Tags>>(*box)));
 }
 
@@ -150,7 +149,6 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
   // use the above powers to infer the powers for the derivative
   db::mutate<
       TestHelpers::RadialPolyCoefficientsFor<Tags::Integrand<BondiValueTag>>>(
-      make_not_null(&box),
       [](const gsl::not_null<Scalar<ComplexModalVector>*> integrand_modes,
          const Scalar<ComplexModalVector>& bondi_value_modes) {
         for (size_t i = 0; i < get(bondi_value_modes).size() - 1; ++i) {
@@ -160,6 +158,7 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
         }
         get(*integrand_modes)[get(bondi_value_modes).size() - 1] = 0.0;
       },
+      make_not_null(&box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<BondiValueTag>>(box));
 
   const ComplexDataVector one_minus_y =
@@ -222,17 +221,16 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
   // and matching order-by-order in (1 - y).
   db::mutate<TestHelpers::RadialPolyCoefficientsFor<
       Tags::PoleOfIntegrand<BondiValueTag>>>(
-      make_not_null(&box),
       [](const gsl::not_null<Scalar<ComplexModalVector>*>
              pole_of_integrand_modes,
          const Scalar<ComplexModalVector>& bondi_value_modes) {
         get(*pole_of_integrand_modes)[0] = 2.0 * get(bondi_value_modes)[0];
       },
+      make_not_null(&box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<BondiValueTag>>(box));
 
   db::mutate<TestHelpers::RadialPolyCoefficientsFor<
       Tags::RegularIntegrand<BondiValueTag>>>(
-      make_not_null(&box),
       [](const gsl::not_null<Scalar<ComplexModalVector>*>
              regular_integrand_modes,
          const Scalar<ComplexModalVector>& bondi_value_modes,
@@ -245,6 +243,7 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
         }
         get(*regular_integrand_modes)[get(bondi_value_modes).size() - 1] = 0.0;
       },
+      make_not_null(&box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<BondiValueTag>>(box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<
           Tags::PoleOfIntegrand<BondiValueTag>>>(box));
@@ -274,8 +273,8 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
   make_boundary_data<BondiValueTag>(make_not_null(&box),
                                     make_not_null(&expected), l_max);
 
-  db::mutate<Tags::OneMinusY>(make_not_null(&box),
-                              TestHelpers::volume_one_minus_y, l_max);
+  db::mutate<Tags::OneMinusY>(TestHelpers::volume_one_minus_y,
+                              make_not_null(&box), l_max);
 
   db::mutate_apply<RadialIntegrateBondi<Tags::BoundaryValue, BondiValueTag>>(
       make_not_null(&box));
@@ -318,7 +317,6 @@ void test_pole_integration_with_linear_operator(
       TestHelpers::RadialPolyCoefficientsFor<Tags::LinearFactor<BondiValueTag>>,
       TestHelpers::RadialPolyCoefficientsFor<
           Tags::LinearFactorForConjugate<BondiValueTag>>>(
-      make_not_null(&box),
       [](const gsl::not_null<typename TestHelpers::RadialPolyCoefficientsFor<
              Tags::LinearFactor<BondiValueTag>>::type*>
              linear_factor_modes,
@@ -327,7 +325,8 @@ void test_pole_integration_with_linear_operator(
              linear_factor_of_conjugate_modes) {
         get(*linear_factor_modes)[0] = 1.0;
         get(*linear_factor_of_conjugate_modes)[0] = 0.0;
-      });
+      },
+      make_not_null(&box));
 
   zero_top_modes<BondiValueTag>(make_not_null(&box), 2,
                                 number_of_radial_polynomials);
@@ -376,7 +375,6 @@ void test_pole_integration_with_linear_operator(
   // consistency (from the above data, the pole of integrand is not separable).
   db::mutate<Tags::PoleOfIntegrand<BondiValueTag>,
              Tags::RegularIntegrand<BondiValueTag>>(
-      make_not_null(&box),
       [&random_angular_data, &l_max, &one_minus_y,
        &number_of_radial_grid_points](
           const gsl::not_null<
@@ -434,6 +432,7 @@ void test_pole_integration_with_linear_operator(
           }
         }
       },
+      make_not_null(&box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<BondiValueTag>>(box),
       db::get<TestHelpers::RadialPolyCoefficientsFor<
           Tags::PoleOfIntegrand<BondiValueTag>>>(box),
@@ -451,8 +450,8 @@ void test_pole_integration_with_linear_operator(
   make_boundary_data<BondiValueTag>(make_not_null(&box),
                                     make_not_null(&expected), l_max);
 
-  db::mutate<Tags::OneMinusY>(make_not_null(&box),
-                              TestHelpers::volume_one_minus_y, l_max);
+  db::mutate<Tags::OneMinusY>(TestHelpers::volume_one_minus_y,
+                              make_not_null(&box), l_max);
 
   db::mutate_apply<RadialIntegrateBondi<Tags::BoundaryValue, BondiValueTag>>(
       make_not_null(&box));

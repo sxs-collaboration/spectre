@@ -135,7 +135,6 @@ bool receive_boundary_data_global_time_stepping(
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
              evolution::dg::Tags::NeighborMesh<volume_dim>>(
-      box,
       [&received_temporal_id_and_data](
           const gsl::not_null<std::unordered_map<
               Key, evolution::dg::MortarData<volume_dim>, boost::hash<Key>>*>
@@ -176,7 +175,8 @@ bool receive_boundary_data_global_time_stepping(
                 std::move(*std::get<3>(received_mortar_data.second)));
           }
         }
-      });
+      },
+      box);
   inbox.erase(received_temporal_id_and_data);
   return true;
 }
@@ -235,7 +235,6 @@ bool receive_boundary_data_local_time_stepping(
                                              typename dt_variables_tag::type>,
       evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
       evolution::dg::Tags::NeighborMesh<volume_dim>>(
-      box,
       [&inbox, &needed_time](
           const gsl::not_null<
               std::unordered_map<Key,
@@ -307,7 +306,7 @@ bool receive_boundary_data_local_time_stepping(
         }
         return true;
       },
-      db::get<::domain::Tags::Element<volume_dim>>(*box));
+      box, db::get<::domain::Tags::Element<volume_dim>>(*box));
 
   if (not have_all_intermediate_messages) {
     return false;

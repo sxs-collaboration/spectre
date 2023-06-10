@@ -45,7 +45,6 @@ struct RegisterVolumeContributorWithObserverWriter {
                     const observers::ObservationKey& observation_key,
                     const ArrayComponentId& id_of_caller) {
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&id_of_caller, &observation_key](
             const gsl::not_null<std::unordered_map<
                 ObservationKey, std::unordered_set<ArrayComponentId>>*>
@@ -65,7 +64,8 @@ struct RegisterVolumeContributorWithObserverWriter {
           }
 
           volume_observers_registered->at(observation_key).insert(id_of_caller);
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -86,7 +86,6 @@ struct DeregisterVolumeContributorWithObserverWriter {
                     const observers::ObservationKey& observation_key,
                     const ArrayComponentId& id_of_caller) {
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&id_of_caller, &observation_key](
             const gsl::not_null<std::unordered_map<
                 ObservationKey, std::unordered_set<ArrayComponentId>>*>
@@ -113,7 +112,8 @@ struct DeregisterVolumeContributorWithObserverWriter {
                   0)) {
             volume_observers_registered->erase(observation_key);
           }
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -136,7 +136,6 @@ struct RegisterReductionNodeWithWritingNode {
                              << ", should be called from another node");
 
     db::mutate<Tags::NodesExpectedToContributeReductions>(
-        make_not_null(&box),
         [&caller_node_id, &observation_key](
             const gsl::not_null<
                 std::unordered_map<ObservationKey, std::set<size_t>>*>
@@ -154,7 +153,8 @@ struct RegisterReductionNodeWithWritingNode {
                                              << " for reduction observations.");
           }
           registered_nodes_for_key.insert(caller_node_id);
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -178,7 +178,6 @@ struct DeregisterReductionNodeWithWritingNode {
                << node_id << " should deregister other nodes in the reduction");
 
     db::mutate<Tags::NodesExpectedToContributeReductions>(
-        make_not_null(&box),
         [&caller_node_id, &observation_key](
             const gsl::not_null<
                 std::unordered_map<ObservationKey, std::set<size_t>>*>
@@ -202,7 +201,8 @@ struct DeregisterReductionNodeWithWritingNode {
           if (UNLIKELY(registered_nodes_for_key.size() == 0)) {
             reduction_observers_registered_nodes->erase(observation_key);
           }
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -226,7 +226,6 @@ struct RegisterReductionContributorWithObserverWriter {
     const auto node_id =
         Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&cache, &id_of_caller, &node_id, &observation_key](
             const gsl::not_null<std::unordered_map<
                 ObservationKey, std::unordered_set<ArrayComponentId>>*>
@@ -253,7 +252,8 @@ struct RegisterReductionContributorWithObserverWriter {
                   << id_of_caller
                   << " with observation key: " << observation_key);
           }
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -278,7 +278,6 @@ struct DeregisterReductionContributorWithObserverWriter {
     const auto node_id =
         Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&cache, &id_of_caller, &node_id, &observation_key](
             const gsl::not_null<std::unordered_map<
                 ObservationKey, std::unordered_set<ArrayComponentId>>*>
@@ -307,7 +306,8 @@ struct DeregisterReductionContributorWithObserverWriter {
                 observation_key, node_id);
             reduction_observers_registered->erase(observation_key);
           }
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -328,7 +328,6 @@ struct RegisterContributorWithObserver {
                     const TypeOfObservation& type_of_observation) {
     bool observation_key_already_registered = true;
     db::mutate<observers::Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&component_id, &observation_key, &observation_key_already_registered](
             const gsl::not_null<std::unordered_map<
                 ObservationKey, std::unordered_set<ArrayComponentId>>*>
@@ -348,7 +347,8 @@ struct RegisterContributorWithObserver {
                 << observation_key);
           }
           array_component_ids->operator[](observation_key).insert(component_id);
-        });
+        },
+        make_not_null(&box));
 
     if (observation_key_already_registered) {
       // We only need to register with the observer writer on the first call
@@ -401,7 +401,6 @@ struct DeregisterContributorWithObserver {
                     const TypeOfObservation& type_of_observation) {
     bool all_array_components_have_been_deregistered = false;
     db::mutate<observers::Tags::ExpectedContributorsForObservations>(
-        make_not_null(&box),
         [&component_id, &observation_key,
          &all_array_components_have_been_deregistered](
             const gsl::not_null<std::unordered_map<
@@ -427,7 +426,8 @@ struct DeregisterContributorWithObserver {
             array_component_ids->erase(observation_key);
             all_array_components_have_been_deregistered = true;
           }
-        });
+        },
+        make_not_null(&box));
 
     if (not all_array_components_have_been_deregistered) {
       // Only deregister with the observer writer if this deregistration

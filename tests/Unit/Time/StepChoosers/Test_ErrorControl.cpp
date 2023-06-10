@@ -128,9 +128,10 @@ std::pair<double, bool> get_suggestion(
         error_control_base->desired_step(previous_step, box));
 
   db::mutate<Tags::StepperErrorUpdated>(
-      make_not_null(&box), [](const gsl::not_null<bool*> stepper_updated) {
+      [](const gsl::not_null<bool*> stepper_updated) {
         *stepper_updated = true;
-      });
+      },
+      make_not_null(&box));
   const std::pair<double, bool> result = error_control(
       history, error, previous_error, true, time_stepper, previous_step);
   CHECK(error_control_base->desired_step(previous_step, box) == result);
@@ -281,7 +282,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                    db::AddComputeTags<
                        Tags::IsUsingTimeSteppingErrorControlCompute<true>>>();
     db::mutate<Tags::StepChoosers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
           *choosers =
               TestHelpers::test_creation<typename Tags::StepChoosers::type,
@@ -295,10 +295,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "- Increase:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
-        });
+        },
+        make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::StepChoosers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
           *choosers =
               TestHelpers::test_creation<typename Tags::StepChoosers::type,
@@ -307,15 +307,16 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "- Increase:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::StepChoosers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
           *choosers =
               TestHelpers::test_creation<typename Tags::StepChoosers::type,
                                          Metavariables<true>>("");
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
   }
   {
@@ -325,7 +326,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                    db::AddComputeTags<
                        Tags::IsUsingTimeSteppingErrorControlCompute<false>>>();
     db::mutate<Tags::EventsAndTriggers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
@@ -347,10 +347,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "              MaxFactor: 2.1\n"
               "              MinFactor: 0.5\n"
               "          - Constant: 0.5");
-        });
+        },
+        make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::EventsAndTriggers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
@@ -366,10 +366,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "          - Increase:\n"
               "              Factor: 2\n"
               "          - Constant: 0.5");
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::EventsAndTriggers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>(
@@ -379,14 +379,15 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "- Trigger: Always\n"
               "  Events:\n"
               "    - Completion");
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     db::mutate<Tags::EventsAndTriggers>(
-        make_not_null(&box),
         [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
           *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
                                                Metavariables<true>>("");
-        });
+        },
+        make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
   }
 }

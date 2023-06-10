@@ -145,14 +145,13 @@ struct ComputeOperatorAction {
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) {
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
-        make_not_null(&box),
         [](const gsl::not_null<blaze::DynamicVector<double>*>
                operator_applied_to_operand,
            const blaze::DynamicMatrix<double>& linear_operator,
            const blaze::DynamicVector<double>& operand) {
           *operator_applied_to_operand = linear_operator * operand;
         },
-        get<LinearOperator>(box), get<OperandTag>(box));
+        make_not_null(&box), get<LinearOperator>(box), get<OperandTag>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

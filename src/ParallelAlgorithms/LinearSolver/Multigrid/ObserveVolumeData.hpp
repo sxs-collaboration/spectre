@@ -116,8 +116,8 @@ struct ObserveVolumeData {
 
     // Increment observation ID
     db::mutate<Tags::ObservationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const auto local_observation_id) { ++(*local_observation_id); });
+        [](const auto local_observation_id) { ++(*local_observation_id); },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
