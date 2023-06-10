@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace evolution {
 namespace OptionTags {
