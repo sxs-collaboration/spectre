@@ -4,7 +4,6 @@
 #pragma once
 
 #include <boost/functional/hash.hpp>
-#include <brigand/sequences/back.hpp>
 #include <cstddef>
 #include <optional>
 #include <type_traits>
