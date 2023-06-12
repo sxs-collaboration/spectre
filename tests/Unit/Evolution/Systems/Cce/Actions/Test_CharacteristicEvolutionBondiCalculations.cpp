@@ -302,7 +302,6 @@ SPECTRE_TEST_CASE(
           number_of_angular_points * number_of_radial_points},
       Spectral::Swsh::SwshInterpolator{}, l_max, number_of_radial_points);
   db::mutate<boundary_variables_tag>(
-      make_not_null(&boundary_box),
       [&spatial_metric_coefficients, &dt_spatial_metric_coefficients,
        &dr_spatial_metric_coefficients, &shift_coefficients,
        &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
@@ -317,7 +316,8 @@ SPECTRE_TEST_CASE(
             shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
             lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
             extraction_radius, l_max);
-      });
+      },
+      make_not_null(&boundary_box));
 
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);

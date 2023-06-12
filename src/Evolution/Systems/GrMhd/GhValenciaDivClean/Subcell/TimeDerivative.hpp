@@ -135,9 +135,9 @@ struct ComputeTimeDerivImpl<
     using variables_tag = typename System::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
     const gsl::not_null<typename dt_variables_tag::type*> dt_vars_ptr =
-        db::mutate<dt_variables_tag>(box, [](const auto local_dt_vars_ptr) {
-          return local_dt_vars_ptr;
-        });
+        db::mutate<dt_variables_tag>(
+            [](const auto local_dt_vars_ptr) { return local_dt_vars_ptr; },
+            box);
     dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
 
     using primitives_tag = typename System::primitive_variables_tag;
@@ -437,7 +437,6 @@ struct TimeDerivative {
             db::get<grmhd::GhValenciaDivClean::fd::Tags::FilterOptions>(*box);
         filter_options.spacetime_dissipation.has_value()) {
       db::mutate<evolved_vars_tag>(
-          box,
           [&filter_options, &recons, &subcell_mesh](const auto evolved_vars_ptr,
                                                     const auto& ghost_data) {
             typename evolved_vars_tag::type filtered_vars = *evolved_vars_ptr;
@@ -449,6 +448,7 @@ struct TimeDerivative {
                 filter_options.spacetime_dissipation.value());
             *evolved_vars_ptr = filtered_vars;
           },
+          box,
           db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
               *box));
     }

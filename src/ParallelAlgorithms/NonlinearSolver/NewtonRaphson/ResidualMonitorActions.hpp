@@ -60,11 +60,11 @@ struct CheckResidualMagnitude {
 
     if (UNLIKELY(iteration_id == 0)) {
       db::mutate<initial_residual_magnitude_tag>(
-          make_not_null(&box),
           [residual_magnitude](
               const gsl::not_null<double*> initial_residual_magnitude) {
             *initial_residual_magnitude = residual_magnitude;
-          });
+          },
+          make_not_null(&box));
     } else {
       // Make sure we are converging. Far away from the solution the correction
       // determined by the linear solve might be bad, so we employ a
@@ -107,14 +107,14 @@ struct CheckResidualMagnitude {
               0.1 * step_length, 0.5 * step_length);
           db::mutate<NonlinearSolver::Tags::StepLength<OptionsGroup>,
                      prev_residual_magnitude_square_tag>(
-              make_not_null(&box),
               [step_length, next_residual_magnitude_square](
                   const gsl::not_null<double*> prev_step_length,
                   const gsl::not_null<double*> prev_residual_magnitude_square) {
                 *prev_step_length = step_length;
                 *prev_residual_magnitude_square =
                     next_residual_magnitude_square;
-              });
+              },
+              make_not_null(&box));
           // Do some logging
           if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                        ::Verbosity::Verbose)) {
@@ -152,11 +152,11 @@ struct CheckResidualMagnitude {
     }      // initial iteration
 
     db::mutate<residual_magnitude_square_tag>(
-        make_not_null(&box),
         [next_residual_magnitude_square](
             const gsl::not_null<double*> local_residual_magnitude_square) {
           *local_residual_magnitude_square = next_residual_magnitude_square;
-        });
+        },
+        make_not_null(&box));
 
     // At this point, the iteration is complete. We proceed with logging and
     // checking convergence before broadcasting back to the elements.

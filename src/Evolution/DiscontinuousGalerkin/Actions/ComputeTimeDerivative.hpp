@@ -766,7 +766,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarDataHistory<
                    Dim, typename dt_variables_tag::type>>(
-        box,
         [&element, integration_order, &time_step_id, using_gauss_points,
          &volume_det_inv_jacobian](
             const gsl::not_null<std::unordered_map<
@@ -844,7 +843,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             }
           }
         },
-        db::get<domain::Tags::Mesh<Dim>>(*box),
+        box, db::get<domain::Tags::Mesh<Dim>>(*box),
         db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box));
   }
 }

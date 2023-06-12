@@ -19,10 +19,12 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_assign_impl(
   static_assert(sizeof...(MutateTags) == sizeof...(args),
                 "The number of arguments passed to `mutate_assign` must be "
                 "equal to the number of tags passed.");
-  db::mutate<MutateTags...>(box, [&args...](const auto... box_args) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-    EXPAND_PACK_LEFT_TO_RIGHT((*box_args = std::forward<Args>(args)));
-  });
+  db::mutate<MutateTags...>(
+      [&args...](const auto... box_args) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        EXPAND_PACK_LEFT_TO_RIGHT((*box_args = std::forward<Args>(args)));
+      },
+      box);
 }
 }  // namespace detail
 

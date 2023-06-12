@@ -241,22 +241,23 @@ void EventsAndDenseTriggers::run_events(
   for (auto& trigger_entry : events_and_triggers_) {
     if (trigger_entry.is_triggered == std::optional{true}) {
       db::mutate<::evolution::Tags::PreviousTriggerTime>(
-          make_not_null(&box),
           [&trigger_entry](const gsl::not_null<std::optional<double>*>
                                previous_trigger_time) {
             *previous_trigger_time =
                 trigger_entry.trigger->previous_trigger_time();
-          });
+          },
+          make_not_null(&box));
       const auto observation_box = make_observation_box<compute_tags>(box);
       for (const auto& event : trigger_entry.events) {
         event->run(observation_box, cache, array_index, component);
       }
       db::mutate<::evolution::Tags::PreviousTriggerTime>(
-          make_not_null(&box), [](const gsl::not_null<std::optional<double>*>
-                                      previous_trigger_time) {
+          [](const gsl::not_null<std::optional<double>*>
+                 previous_trigger_time) {
             *previous_trigger_time =
                 std::numeric_limits<double>::signaling_NaN();
-          });
+          },
+          make_not_null(&box));
     }
     // Mark this trigger as handled so we will not reprocess it if
     // this method or is_ready is called again.

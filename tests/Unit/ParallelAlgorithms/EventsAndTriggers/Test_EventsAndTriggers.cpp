@@ -193,24 +193,27 @@ void test_slab_limits() {
   auto& box =
       ActionTesting::get_databox<my_component>(make_not_null(&runner), 0);
 
-  db::mutate<Tags::TimeStepId>(make_not_null(&box),
-                               [&](const gsl::not_null<TimeStepId*> id) {
-                                 *id = TimeStepId(true, 0, center);
-                               });
+  db::mutate<Tags::TimeStepId>(
+      [&](const gsl::not_null<TimeStepId*> id) {
+        *id = TimeStepId(true, 0, center);
+      },
+      make_not_null(&box));
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
   CHECK(not ActionTesting::get_terminate<my_component>(runner, 0));
 
   db::mutate<Tags::TimeStepId>(
-      make_not_null(&box), [&](const gsl::not_null<TimeStepId*> id) {
+      [&](const gsl::not_null<TimeStepId*> id) {
         *id = TimeStepId(true, 0, start, 1, slab.duration(), start.value());
-      });
+      },
+      make_not_null(&box));
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
   CHECK(not ActionTesting::get_terminate<my_component>(runner, 0));
 
-  db::mutate<Tags::TimeStepId>(make_not_null(&box),
-                               [&](const gsl::not_null<TimeStepId*> id) {
-                                 *id = TimeStepId(true, 0, start);
-                               });
+  db::mutate<Tags::TimeStepId>(
+      [&](const gsl::not_null<TimeStepId*> id) {
+        *id = TimeStepId(true, 0, start);
+      },
+      make_not_null(&box));
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
   CHECK(ActionTesting::get_terminate<my_component>(runner, 0));
 }

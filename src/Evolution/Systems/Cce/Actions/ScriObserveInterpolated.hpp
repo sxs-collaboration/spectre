@@ -159,14 +159,14 @@ struct ScriObserveInterpolated {
         using tag = typename decltype(tag_v)::type;
         std::pair<double, ComplexDataVector> interpolation;
         db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
-            make_not_null(&box),
             [&interpolation](
                 const gsl::not_null<
                     ScriPlusInterpolationManager<ComplexDataVector, tag>*>
                     interpolation_manager) {
               interpolation =
                   interpolation_manager->interpolate_and_pop_first_time();
-            });
+            },
+            make_not_null(&box));
         interpolation_time = interpolation.first;
         get(get<tag>(corrected_scri_plus_weyl)).data() = interpolation.second;
       });
@@ -201,14 +201,14 @@ struct ScriObserveInterpolated {
             using tag = typename decltype(tag_v)::type;
             std::pair<double, ComplexDataVector> interpolation;
             db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
-                make_not_null(&box),
                 [&interpolation](
                     const gsl::not_null<
                         ScriPlusInterpolationManager<ComplexDataVector, tag>*>
                         interpolation_manager) {
                   interpolation =
                       interpolation_manager->interpolate_and_pop_first_time();
-                });
+                },
+                make_not_null(&box));
             ScriObserveInterpolated::transform_and_write<
                 tag, tag::type::type::spin, ParallelComponent>(
                 interpolation.second, interpolation.first,

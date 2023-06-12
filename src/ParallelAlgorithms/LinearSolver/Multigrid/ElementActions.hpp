@@ -170,7 +170,6 @@ struct PreparePreSmoothing {
     // the fields directly, so there's nothing to prepare.
     if (element_id.grid_index() > 0) {
       db::mutate<fields_tag, operator_applied_to_fields_tag>(
-          make_not_null(&box),
           [](const auto fields, const auto operator_applied_to_fields,
              const auto& source) {
             *fields = make_with_value<typename fields_tag::type>(source, 0.);
@@ -180,13 +179,12 @@ struct PreparePreSmoothing {
                 make_with_value<typename operator_applied_to_fields_tag::type>(
                     source, 0.);
           },
-          db::get<source_tag>(box));
+          make_not_null(&box), db::get<source_tag>(box));
     }
 
     // Record pre-smoothing initial fields and source
     if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
-          make_not_null(&box),
           [](const auto volume_data, const auto& initial_fields,
              const auto& source) {
             volume_data->assign_subset(
@@ -198,7 +196,8 @@ struct PreparePreSmoothing {
                                            typename fields_tag::tags_list>>(
                     source));
           },
-          db::get<fields_tag>(box), db::get<source_tag>(box));
+          make_not_null(&box), db::get<fields_tag>(box),
+          db::get<source_tag>(box));
     }
 
     // Skip pre-smoothing, if requested
@@ -244,7 +243,6 @@ struct SkipPostSmoothingAtBottom {
     // Record pre-smoothing result fields and residual
     if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
-          make_not_null(&box),
           [](const auto volume_data, const auto& result_fields,
              const auto& residuals) {
             volume_data->assign_subset(
@@ -256,7 +254,8 @@ struct SkipPostSmoothingAtBottom {
                                            typename fields_tag::tags_list>>(
                     residuals));
           },
-          db::get<fields_tag>(box), db::get<residual_tag>(box));
+          make_not_null(&box), db::get<fields_tag>(box),
+          db::get<residual_tag>(box));
     }
 
     // Skip post-smoothing on the coarsest grid, if requested
@@ -312,7 +311,6 @@ struct SendCorrectionToFinerGrid {
     // Record post-smoothing result fields and residual
     if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
-          make_not_null(&box),
           [](const auto volume_data, const auto& result_fields,
              const auto& residuals) {
             volume_data->assign_subset(
@@ -324,7 +322,8 @@ struct SendCorrectionToFinerGrid {
                                            typename fields_tag::tags_list>>(
                     residuals));
           },
-          db::get<fields_tag>(box), db::get<residual_tag>(box));
+          make_not_null(&box), db::get<fields_tag>(box),
+          db::get<residual_tag>(box));
     }
 
     if (child_ids.empty()) {
@@ -416,15 +415,15 @@ struct ReceiveCorrectionFromCoarserGrid {
         }();
 
     // Add correction to the solution on this grid
-    db::mutate<fields_tag>(make_not_null(&box),
-                           [&prolongated_parent_correction](const auto fields) {
-                             *fields += prolongated_parent_correction;
-                           });
+    db::mutate<fields_tag>(
+        [&prolongated_parent_correction](const auto fields) {
+          *fields += prolongated_parent_correction;
+        },
+        make_not_null(&box));
 
     // Record post-smoothing initial fields and source
     if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
-          make_not_null(&box),
           [](const auto volume_data, const auto& initial_fields,
              const auto& source) {
             volume_data->assign_subset(
@@ -436,7 +435,8 @@ struct ReceiveCorrectionFromCoarserGrid {
                                            typename fields_tag::tags_list>>(
                     source));
           },
-          db::get<fields_tag>(box), db::get<source_tag>(box));
+          make_not_null(&box), db::get<fields_tag>(box),
+          db::get<source_tag>(box));
     }
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

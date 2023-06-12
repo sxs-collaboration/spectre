@@ -49,8 +49,8 @@ struct Increment {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Counter>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> counter) { (*counter)++; });
+        [](const gsl::not_null<size_t*> counter) { (*counter)++; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

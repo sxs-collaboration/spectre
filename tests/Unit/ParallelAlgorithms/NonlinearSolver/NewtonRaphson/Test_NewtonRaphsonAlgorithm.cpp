@@ -47,9 +47,8 @@ struct ApplyNonlinearOperator {
       const int /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
     db::mutate<::NonlinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
-        make_not_null(&box),
         [](const auto Ax, const auto& x) { *Ax = cube(x) - x; },
-        get<OperandTag>(box));
+        make_not_null(&box), get<OperandTag>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -65,11 +64,10 @@ struct ApplyLinearizedOperator {
       const int /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
-        make_not_null(&box),
         [](const auto Ap, const auto& dx, const auto& x) {
           *Ap = (3. * square(x) - 1) * dx;
         },
-        get<OperandTag>(box), get<FieldTag>(box));
+        make_not_null(&box), get<OperandTag>(box), get<FieldTag>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

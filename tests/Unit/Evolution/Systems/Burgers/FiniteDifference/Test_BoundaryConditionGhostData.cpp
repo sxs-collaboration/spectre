@@ -260,10 +260,10 @@ void test(const BoundaryConditionType& boundary_condition) {
       // Test when U=-1.0, which will raise ERROR by violating the
       // DemandOutgoingCharSpeeds condition.
       db::mutate<Burgers::Tags::U>(
-          make_not_null(&box),
           [](const gsl::not_null<Scalar<DataVector>*> volume_u) {
             get(*volume_u) = -1.0;
-          });
+          },
+          make_not_null(&box));
       // See if the code fails correctly.
       CHECK_THROWS_WITH(([&box, &element]() {
                           Burgers::fd::BoundaryConditionGhostData::apply(
@@ -275,14 +275,14 @@ void test(const BoundaryConditionType& boundary_condition) {
 
       // Test when the volume mesh velocity has value, which will raise ERROR.
       db::mutate<domain::Tags::MeshVelocity<1>>(
-          make_not_null(&box),
           [&subcell_mesh](
               const gsl::not_null<std::optional<tnsr::I<DataVector, 1>>*>
                   mesh_velocity) {
             tnsr::I<DataVector, 1> volume_mesh_velocity_tnsr(
                 subcell_mesh.number_of_grid_points(), 0.0);
             *mesh_velocity = volume_mesh_velocity_tnsr;
-          });
+          },
+          make_not_null(&box));
       // See if the code fails correctly.
       CHECK_THROWS_WITH(
           ([&box, &element]() {

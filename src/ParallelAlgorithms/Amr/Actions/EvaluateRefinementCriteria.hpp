@@ -121,11 +121,11 @@ struct EvaluateRefinementCriteria {
     }
 
     db::mutate<amr::Tags::Flags<Metavariables::volume_dim>>(
-        make_not_null(&box),
         [&overall_decision](
             const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags) {
           *amr_flags = overall_decision;
-        });
+        },
+        make_not_null(&box));
 
     auto& amr_element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);

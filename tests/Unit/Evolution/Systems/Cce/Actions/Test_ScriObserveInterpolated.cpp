@@ -64,12 +64,12 @@ struct SetBoundaryValues {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     ComplexDataVector set_values) {
-    db::mutate<Tag>(make_not_null(&box),
-                    [&set_values](const gsl::not_null<typename Tag::type*>
-                                      spin_weighted_scalar_quantity) {
-                      get(*spin_weighted_scalar_quantity).data() =
-                          std::move(set_values);
-                    });
+    db::mutate<Tag>(
+        [&set_values](const gsl::not_null<typename Tag::type*>
+                          spin_weighted_scalar_quantity) {
+          get(*spin_weighted_scalar_quantity).data() = std::move(set_values);
+        },
+        make_not_null(&box));
   }
 
   template <
@@ -80,11 +80,11 @@ struct SetBoundaryValues {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, DataVector set_values) {
     db::mutate<Tag>(
-        make_not_null(&box),
         [&set_values](
             const gsl::not_null<typename Tag::type*> scalar_quantity) {
           get(*scalar_quantity) = std::move(set_values);
-        });
+        },
+        make_not_null(&box));
   }
 };
 

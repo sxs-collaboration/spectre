@@ -196,7 +196,7 @@ void BoundaryConditionGhostData::apply(
     const std::pair mortar_id{direction, ElementId<1>::external_boundary_id()};
 
     db::mutate<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(
-        box, [&mortar_id, &ghost_data_vars](auto ghost_data_ptr) {
+        [&mortar_id, &ghost_data_vars](auto ghost_data_ptr) {
           (*ghost_data_ptr)[mortar_id] = evolution::dg::subcell::GhostData{1};
           DataVector& neighbor_data =
               ghost_data_ptr->at(mortar_id)
@@ -205,7 +205,8 @@ void BoundaryConditionGhostData::apply(
           std::copy(get(get<Burgers::Tags::U>(ghost_data_vars)).begin(),
                     get(get<Burgers::Tags::U>(ghost_data_vars)).end(),
                     neighbor_data.begin());
-        });
+        },
+        box);
   }
 }
 }  // namespace Burgers::fd

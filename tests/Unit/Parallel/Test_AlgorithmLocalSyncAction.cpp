@@ -80,10 +80,10 @@ struct SyncGetPointerFromNodegroup {
       // of the box.
       node_lock->lock();
       db::mutate<StepNumber>(
-          make_not_null(&box),
           [&result](const gsl::not_null<size_t*> step_number) {
             result = step_number;
-          });
+          },
+          make_not_null(&box));
       node_lock->unlock();
       return result;
     } else {
@@ -130,8 +130,8 @@ struct IncrementNodegroupStep {
       // nodegroups can have multiple actions running in separate threads.
       node_lock->lock();
       db::mutate<StepNumber>(
-          make_not_null(&box),
-          [](const gsl::not_null<size_t*> step_number) { ++(*step_number); });
+          [](const gsl::not_null<size_t*> step_number) { ++(*step_number); },
+          make_not_null(&box));
       node_lock->unlock();
     } else {
       // avoid 'unused' warnings

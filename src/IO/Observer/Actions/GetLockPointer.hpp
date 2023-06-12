@@ -33,10 +33,10 @@ struct GetLockPointer {
     Parallel::NodeLock* result_lock;
     const std::lock_guard hold_lock(*node_lock);
     db::mutate<LockTag>(
-        make_not_null(&box),
         [&result_lock](const gsl::not_null<Parallel::NodeLock*> lock) {
           result_lock = lock;
-        });
+        },
+        make_not_null(&box));
     return result_lock;
   }
 };

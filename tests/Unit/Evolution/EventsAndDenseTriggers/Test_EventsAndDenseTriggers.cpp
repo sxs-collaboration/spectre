@@ -185,10 +185,11 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 
   const auto set_tag = [&box](auto tag_v, const auto value) {
     using Tag = decltype(tag_v);
-    db::mutate<Tag>(make_not_null(&box),
-                    [&value](const gsl::not_null<typename Tag::type*> var) {
-                      *var = value;
-                    });
+    db::mutate<Tag>(
+        [&value](const gsl::not_null<typename Tag::type*> var) {
+          *var = value;
+        },
+        make_not_null(&box));
   };
 
   const auto check_events = [](const bool expected_a, const bool expected_b,

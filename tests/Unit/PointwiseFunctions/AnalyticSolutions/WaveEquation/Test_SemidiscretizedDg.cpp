@@ -226,13 +226,13 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
             tmpl::append<component::simple_tags, component::compute_tags>>(
             make_not_null(&runner), id);
         db::mutate<system::variables_tag>(
-            make_not_null(&box),
             [&solution, &time](
                 const gsl::not_null<EvolvedVariables*> vars,
                 const tnsr::I<DataVector, 1, Frame::Inertial>& coords) {
               vars->assign_subset(solution.variables(
                   coords, time, system::variables_tag::tags_list{}));
             },
+            make_not_null(&box),
             db::get<domain::Tags::Coordinates<1, Frame::Inertial>>(box));
       };
 

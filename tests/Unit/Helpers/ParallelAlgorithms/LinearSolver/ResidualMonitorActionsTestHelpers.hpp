@@ -61,7 +61,6 @@ struct MockWriteReductionData {
       Parallel::ReductionData<ReductionDatums...>&& in_reduction_data) {
     db::mutate<CheckObservationIdTag, CheckSubfileNameTag,
                CheckReductionNamesTag, CheckReductionDataTag>(
-        make_not_null(&box),
         [observation_id, subfile_name, reduction_names, in_reduction_data](
             const gsl::not_null<typename CheckObservationIdTag::type*>
                 check_observation_id,
@@ -75,7 +74,8 @@ struct MockWriteReductionData {
           *check_subfile_name = subfile_name;
           *check_reduction_names = reduction_names;
           *check_reduction_data = in_reduction_data.data();
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -93,14 +93,14 @@ struct MockWriteReductionDataRow {
                     std::tuple<Ts...>&& in_reduction_data) {
     db::mutate<CheckSubfileNameTag, CheckReductionNamesTag,
                CheckReductionDataTag>(
-        make_not_null(&box),
         [subfile_name, legend, in_reduction_data](
             const auto check_subfile_name, const auto check_reduction_names,
             const auto check_reduction_data) {
           *check_subfile_name = subfile_name;
           *check_reduction_names = legend;
           *check_reduction_data = in_reduction_data;
-        });
+        },
+        make_not_null(&box));
   }
 };
 

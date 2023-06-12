@@ -70,9 +70,10 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
     CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
                           expected_error);
     db::mutate<::Tags::Variables<tmpl::list<FieldTag>>>(
-        make_not_null(&box), [](const auto vars_ptr) {
+        [](const auto vars_ptr) {
           *vars_ptr = Variables<tmpl::list<FieldTag>>{4, 4.};
-        });
+        },
+        make_not_null(&box));
     const DataVector new_expected_error{2., 0., -2., -4.};
     CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
                           expected);

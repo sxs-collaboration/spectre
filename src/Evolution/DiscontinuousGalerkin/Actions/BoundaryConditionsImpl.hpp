@@ -330,12 +330,13 @@ void apply_boundary_condition_on_face(
       };
   // Normalize the outward facing normal vector on the interior side
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
-      box, [&direction, &interior_face_fields, &normalize_normal_vectors](
-               const auto normal_covector_and_magnitude_ptr) {
+      [&direction, &interior_face_fields, &normalize_normal_vectors](
+          const auto normal_covector_and_magnitude_ptr) {
         normalize_normal_vectors(
             make_not_null(&normal_covector_and_magnitude_ptr->at(direction)),
             make_not_null(&interior_face_fields));
-      });
+      },
+      box);
 
   const tnsr::i<DataVector, Dim, Frame::Inertial>& interior_normal_covector =
       get<evolution::dg::Tags::NormalCovector<Dim>>(
@@ -580,13 +581,14 @@ void apply_boundary_condition_on_face(
 
       // Add the flux contribution to the volume data
       db::mutate<dt_variables_tag>(
-          box, [&direction, &boundary_corrections_on_face,
-                &volume_mesh](const auto dt_variables_ptr) {
+          [&direction, &boundary_corrections_on_face,
+           &volume_mesh](const auto dt_variables_ptr) {
             add_slice_to_data(
                 dt_variables_ptr, boundary_corrections_on_face,
                 volume_mesh.extents(), direction.dimension(),
                 index_to_slice_at(volume_mesh.extents(), direction));
-          });
+          },
+          box);
     } else {
       // We are using Gauss points.
       //
@@ -610,35 +612,38 @@ void apply_boundary_condition_on_face(
                      volume_mesh.extents());
 
       db::mutate<dt_variables_tag>(
-          box, [&direction, &boundary_corrections_on_face, &face_det_jacobian,
-                &magnitude_of_interior_face_normal, &volume_det_inv_jacobian,
-                &volume_mesh](const auto dt_variables_ptr) {
+          [&direction, &boundary_corrections_on_face, &face_det_jacobian,
+           &magnitude_of_interior_face_normal, &volume_det_inv_jacobian,
+           &volume_mesh](const auto dt_variables_ptr) {
             evolution::dg::lift_boundary_terms_gauss_points(
                 dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
                 direction, boundary_corrections_on_face,
                 magnitude_of_interior_face_normal, face_det_jacobian);
-          });
+          },
+          box);
     }
   }
   // Add TimeDerivative correction to volume time derivatives.
   if constexpr (uses_time_derivative_condition) {
     if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
       db::mutate<dt_variables_tag>(
-          box, [&direction, &dt_time_derivative_correction,
-                &volume_mesh](const auto dt_variables_ptr) {
+          [&direction, &dt_time_derivative_correction,
+           &volume_mesh](const auto dt_variables_ptr) {
             add_slice_to_data(
                 dt_variables_ptr, dt_time_derivative_correction,
                 volume_mesh.extents(), direction.dimension(),
                 index_to_slice_at(volume_mesh.extents(), direction));
-          });
+          },
+          box);
     } else {
       db::mutate<dt_variables_tag>(
-          box, [&direction, &dt_time_derivative_correction,
-                &volume_mesh](const auto dt_variables_ptr) {
+          [&direction, &dt_time_derivative_correction,
+           &volume_mesh](const auto dt_variables_ptr) {
             interpolate_dt_terms_gauss_points(dt_variables_ptr, volume_mesh,
                                               direction,
                                               dt_time_derivative_correction);
-          });
+          },
+          box);
     }
   }
 }

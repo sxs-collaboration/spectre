@@ -570,12 +570,12 @@ void test(const BoundaryConditionType& boundary_condition,
       // Set shift to be zero so that the DemandOutgoingCharSpeeds condition is
       // violated. See if the code fails correctly.
       db::mutate<gr::Tags::Shift<DataVector, 3>>(
-          make_not_null(&box),
           [](const gsl::not_null<tnsr::I<DataVector, 3>*> shift_vector) {
             for (size_t i = 0; i < 3; ++i) {
               (*shift_vector).get(i) = 0.0;
             }
-          });
+          },
+          make_not_null(&box));
       CHECK_THROWS_WITH(
           ([&box, &element]() {
             fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
@@ -587,14 +587,14 @@ void test(const BoundaryConditionType& boundary_condition,
       // Test when the volume mesh velocity has value, which will raise ERROR.
       // See if the code fails correctly.
       db::mutate<domain::Tags::MeshVelocity<3>>(
-          make_not_null(&box),
           [&subcell_mesh](
               const gsl::not_null<std::optional<tnsr::I<DataVector, 3>>*>
                   mesh_velocity) {
             tnsr::I<DataVector, 3> volume_mesh_velocity_tnsr(
                 subcell_mesh.number_of_grid_points(), 0.0);
             *mesh_velocity = volume_mesh_velocity_tnsr;
-          });
+          },
+          make_not_null(&box));
       CHECK_THROWS_WITH(
           ([&box, &element]() {
             fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
@@ -658,10 +658,11 @@ void test(const BoundaryConditionType& boundary_condition,
       // Then re-compute ghost zone data to see if inward-pointing components
       // are set to zero.
       db::mutate<SpatialVelocity>(
-          make_not_null(&box), [](const gsl::not_null<tnsr::I<DataVector, 3>*>
-                                      interior_spatial_velocity) {
+          [](const gsl::not_null<tnsr::I<DataVector, 3>*>
+                 interior_spatial_velocity) {
             (*interior_spatial_velocity).get(0) = -0.2;
-          });
+          },
+          make_not_null(&box));
       fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                             ReconstructorForTest{});
 

@@ -221,11 +221,12 @@ void test_databox() {
     CHECK(db::get<test_databox_tags::Tag1>(box).empty());
     CHECK(db::get<test_databox_tags::Tag2>(box).empty());
     db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag2>(
-        make_not_null(&box), [](const gsl::not_null<double*> val,
-                                const gsl::not_null<std::string*> str) {
+        [](const gsl::not_null<double*> val,
+           const gsl::not_null<std::string*> str) {
           *val = 1.5;
           *str = "My Sample String";
-        });
+        },
+        make_not_null(&box));
     CHECK(db::get<test_databox_tags::Tag3>(box).empty());
     CHECK(db::get<test_databox_tags::Tag0>(box) == 1.5);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -383,10 +384,10 @@ void trigger_get_databox_error() {
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   db::mutate<test_databox_tags::Tag0>(
-      make_not_null(&original_box),
       [&original_box](const gsl::not_null<double*> /*tag0*/) {
         (void)db::get<Tags::DataBox>(original_box);
-      });
+      },
+      make_not_null(&original_box));
 }
 
 void test_get_databox_error() {
@@ -411,7 +412,6 @@ void test_mutate() {
   CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 3.14 * 2.0);
   // [databox_mutate_example]
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
-      make_not_null(&original_box),
       [](const gsl::not_null<double*> tag0,
          const gsl::not_null<std::vector<double>*> tag1,
          const double compute_tag0) {
@@ -419,6 +419,7 @@ void test_mutate() {
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
       },
+      make_not_null(&original_box),
       db::get<test_databox_tags::Tag4>(original_box));
   CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
   CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
@@ -426,24 +427,24 @@ void test_mutate() {
   CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 10.32 * 2.0);
 
   auto result = db::mutate<test_databox_tags::Tag0>(
-      make_not_null(&original_box),
       [](const gsl::not_null<double*> tag0, const double compute_tag0) {
         return *tag0 * compute_tag0;
       },
+      make_not_null(&original_box),
       db::get<test_databox_tags::Tag4>(original_box));
   CHECK(result == square(10.32) * 2.0);
   auto pointer_to_result = db::mutate<test_databox_tags::Tag0>(
-      make_not_null(&original_box),
       [&result](const gsl::not_null<double*> tag0, const double compute_tag0) {
         *tag0 /= compute_tag0;
         return &result;
       },
+      make_not_null(&original_box),
       db::get<test_databox_tags::Tag4>(original_box));
   CHECK(db::get<test_databox_tags::Tag0>(original_box) == 0.5);
   CHECK(pointer_to_result == &result);
 
   db::mutate<test_databox_tags::Pointer>(
-      make_not_null(&original_box), [](auto p) {
+      [](auto p) {
         static_assert(std::is_same_v<typename test_databox_tags::Pointer::type,
                                      std::unique_ptr<int>>,
                       "Wrong type for item_type on unique_ptr");
@@ -454,7 +455,8 @@ void test_mutate() {
             "Wrong type for mutate on unique_ptr");
         CHECK(**p == 3);
         *p = std::make_unique<int>(5);
-      });
+      },
+      make_not_null(&original_box));
   CHECK(db::get<test_databox_tags::Pointer>(original_box) == 5);
 }
 
@@ -466,13 +468,13 @@ void trigger_mutate_locked_get() {
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
-      make_not_null(&original_box),
       [&original_box](const gsl::not_null<double*> tag0,
                       const gsl::not_null<std::vector<double>*> tag1) {
         db::get<test_databox_tags::Tag4>(original_box);
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
-      });
+      },
+      make_not_null(&original_box));
 }
 
 void trigger_mutate_locked_mutate() {
@@ -483,14 +485,13 @@ void trigger_mutate_locked_mutate() {
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0>(
-      make_not_null(&original_box),
       [&original_box](const gsl::not_null<double*> /*unused*/) {
         db::mutate<test_databox_tags::Tag1>(
-            make_not_null(&original_box),
             [](const gsl::not_null<std::vector<double>*> tag1) {
               (*tag1)[0] = 10.0;
-            });
-      });
+            },
+            make_not_null(&original_box));
+      }, make_not_null(&original_box));
 }
 
 void test_mutate_locked() {
@@ -936,9 +937,10 @@ void test_variables() {
   check_references_match();
 
   db::mutate<test_databox_tags::ScalarTag>(
-      make_not_null(&box), [](const gsl::not_null<Scalar<DataVector>*> scalar) {
+      [](const gsl::not_null<Scalar<DataVector>*> scalar) {
         scalar->get() = 4.0;
-      });
+      },
+      make_not_null(&box));
 
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 4.)));
@@ -973,9 +975,10 @@ void test_variables() {
 
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
-      make_not_null(&box), [](const auto vars) {
+      [](const auto vars) {
         get<test_databox_tags::ScalarTag>(*vars).get() = 6.0;
-      });
+      },
+      make_not_null(&box));
 
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 6.)));
@@ -1010,11 +1013,12 @@ void test_variables() {
 
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
-      make_not_null(&box), [](const auto vars) {
+      [](const auto vars) {
         get<test_databox_tags::ScalarTag>(*vars).get() = 4.0;
         get<test_databox_tags::VectorTag>(*vars) =
             tnsr::I<DataVector, 3>(DataVector(2, 6.));
-      });
+      },
+      make_not_null(&box));
 
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 4.)));
@@ -1062,9 +1066,8 @@ void test_variables2() {
           Variables<tmpl::list<Tag1, Tag2>>(1, 1.));
 
   db::mutate<Tags::Variables<tmpl::list<Tag1, Tag2>>>(
-      make_not_null(&box), [](const auto vars) {
-        *vars = Variables<tmpl::list<Tag1, Tag2>>(1, 2.);
-      });
+      [](const auto vars) { *vars = Variables<tmpl::list<Tag1, Tag2>>(1, 2.); },
+      make_not_null(&box));
   CHECK(db::get<Tag1>(box) == Scalar<DataVector>(DataVector(1, 2.)));
 }
 
@@ -1137,8 +1140,8 @@ void test_variables_extra_reset() {
       db::AddComputeTags<ExtraResetTags::CheckResetCompute>>(
       1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
-  db::mutate<ExtraResetTags::Int>(make_not_null(&box),
-                                  [](const gsl::not_null<int*> /*unused*/) {});
+  db::mutate<ExtraResetTags::Int>([](const gsl::not_null<int*> /*unused*/) {},
+                                  make_not_null(&box));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
 }
 
@@ -1503,7 +1506,7 @@ void test_mutating_compute_item() {
       typename test_databox_tags::VectorTag::type(DataVector(10, 3.0 * 3.14)));
 
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
-      make_not_null(&original_box),
+
       [](const gsl::not_null<double*> tag0,
          const gsl::not_null<std::vector<double>*> tag1,
          const double compute_tag0) {
@@ -1511,6 +1514,7 @@ void test_mutating_compute_item() {
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
       },
+      make_not_null(&original_box),
       db::get<test_databox_tags::Tag4>(original_box));
 
   CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
@@ -1888,8 +1892,8 @@ void test_subitems() {
     CHECK(*db::get<Second<0>>(box) == 3.5);
     CHECK(*db::get<Second<1>>(box) == 7);
 
-    db::mutate<Second<0>>(make_not_null(&box),
-                          [](const gsl::not_null<double**> x) { **x = 12.; });
+    db::mutate<Second<0>>([](const gsl::not_null<double**> x) { **x = 12.; },
+                          make_not_null(&box));
 
     CHECK(*db::get<First<0>>(box) == 5);
     CHECK(*db::get<First<1>>(box) == 6);
@@ -1906,8 +1910,8 @@ void test_subitems() {
 
     {
       auto move_box = std::move(box);
-      db::mutate<First<0>>(make_not_null(&move_box),
-                           [](const gsl::not_null<int**> val) { **val = 10; });
+      db::mutate<First<0>>([](const gsl::not_null<int**> val) { **val = 10; },
+                           make_not_null(&move_box));
       CHECK(*db::get<First<0>>(move_box) == 10);
       CHECK(*db::get<First<1>>(move_box) == 11);
       CHECK(*db::get<Second<0>>(move_box) == 12.);
@@ -1923,20 +1927,20 @@ void test_subitems() {
     CHECK(db::get<Parent<0>>(box).first.ptr() == db::get<First<0>>(box));
     CHECK(db::get<Parent<0>>(box).second.ptr() == db::get<Second<0>>(box));
     db::mutate<Parent<0>>(
-        make_not_null(&box),
         [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*> val) {
           *val = std::make_pair(Boxed<int>(5), Boxed<double>(3.5));
-        });
+        },
+        make_not_null(&box));
     CHECK(*db::get<First<0>>(box) == 5);
     CHECK(*db::get<Second<0>>(box) == 3.5);
     CHECK(*db::get<First<1>>(box) == 6);
     CHECK(*db::get<Second<1>>(box) == 7.);
     db::mutate<First<0>, Second<0>>(
-        make_not_null(&box),
         [](const gsl::not_null<int**> a, const gsl::not_null<double**> b) {
           **a = 2;
           **b = 2.5;
-        });
+        },
+        make_not_null(&box));
     CHECK(*db::get<First<0>>(box) == 2);
     CHECK(*db::get<Second<0>>(box) == 2.5);
     CHECK(*db::get<First<1>>(box) == 3);
@@ -2491,8 +2495,8 @@ void serialization_subitem_compute_items() {  // NOLINT
   CHECK(CountingTagDoubleCompute<3>::count == 2);
 
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
-  db::mutate<Second<1>>(make_not_null(&serialization_test_box),
-                        [](const gsl::not_null<double**> x) { **x = 12.; });
+  db::mutate<Second<1>>([](const gsl::not_null<double**> x) { **x = 12.; },
+                        make_not_null(&serialization_test_box));
   CHECK(ParentCompute<2>::count == 1);
   CHECK(CountingTagDoubleCompute<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
@@ -2502,8 +2506,8 @@ void serialization_subitem_compute_items() {  // NOLINT
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
   CHECK(CountingTagDoubleCompute<3>::count == 3);
 
-  db::mutate<Second<1>>(make_not_null(&deserialized_serialization_test_box),
-                        [](const gsl::not_null<double**> x) { **x = -7.; });
+  db::mutate<Second<1>>([](const gsl::not_null<double**> x) { **x = -7.; },
+                        make_not_null(&deserialized_serialization_test_box));
   CHECK(ParentCompute<2>::count == 2);
   CHECK(CountingTagDoubleCompute<2>::count == 2);
   CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
@@ -2678,20 +2682,20 @@ void test_reference_item() {
   CHECK(get<test_databox_tags::SwitchTag>(box));
   CHECK(get<test_databox_tags::Tag0OrVar0>(box) == 3.14);
   CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 2. * 3.14);
-  db::mutate<tuple_tag>(make_not_null(&box), [](const auto tuple) {
-    get<test_databox_tags::Tag0>(*tuple) = 4.5;
-  });
+  db::mutate<tuple_tag>(
+      [](const auto tuple) { get<test_databox_tags::Tag0>(*tuple) = 4.5; },
+      make_not_null(&box));
   CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 9.);
   db::mutate<test_databox_tags::SwitchTag>(
-      make_not_null(&box),
-      [](const gsl::not_null<bool*> switch_value) { *switch_value = false; });
+      [](const gsl::not_null<bool*> switch_value) { *switch_value = false; },
+      make_not_null(&box));
   CHECK(get<test_databox_tags::Tag0OrVar0>(box) == 1.);
   CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 2.);
   db::mutate<test_databox_tags::Var0>(
-      make_not_null(&box),
       [](const gsl::not_null<Scalar<DataVector>*> var0_value) {
         get(*var0_value) = 0.5;
-      });
+      },
+      make_not_null(&box));
   CHECK(get<test_databox_tags::Tag0OrVar0TimesTwo>(box) == 1.);
 }
 
@@ -2841,7 +2845,6 @@ void test_exception_safety() {
   CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 1.0)));
   try {
     db::mutate<test_databox_tags::Tag0, vars1_tag, ScalarTag2>(
-        make_not_null(&box),
         [&make_vars1](const gsl::not_null<double*> tag0,
                       const gsl::not_null<vars1_tag::type*> vars,
                       const gsl::not_null<Scalar<DataVector>*> scalar) {
@@ -2849,7 +2852,8 @@ void test_exception_safety() {
           *vars = make_vars1(2, 2.0);
           get(*scalar) = 2.0;
           throw FakeError{};
-        });
+        },
+        make_not_null(&box));
   } catch (FakeError) {
   }
   CHECK(db::get<test_databox_tags::Tag4>(box) == 4.0);
@@ -2878,14 +2882,14 @@ void test_exception_safety() {
   CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 3.0)));
   // Make sure the box is still usable
   db::mutate<test_databox_tags::Tag0, vars1_tag, ScalarTag2>(
-      make_not_null(&box),
       [&make_vars1](const gsl::not_null<double*> tag0,
                     const gsl::not_null<vars1_tag::type*> vars,
                     const gsl::not_null<Scalar<DataVector>*> scalar) {
         *tag0 = 4.0;
         *vars = make_vars1(4, 4.0);
         get(*scalar) = 4.0;
-      });
+      },
+      make_not_null(&box));
   CHECK(db::get<test_databox_tags::Tag4>(box) == 8.0);
   CHECK(db::get<vars1_tag>(box).data() == get(db::get<ScalarTag>(box)).data());
   CHECK(db::get<ScalarTag>(box) == Scalar<DataVector>(DataVector(4, 4.0)));

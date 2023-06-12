@@ -193,7 +193,6 @@ void try_to_interpolate(
 
     // Clear interpolated data, since we don't need it anymore.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
-        box,
         [&temporal_id](
             const gsl::not_null<
                 typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
@@ -201,7 +200,8 @@ void try_to_interpolate(
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders_l)
               .infos.erase(temporal_id);
-        });
+        },
+        box);
   }
 }
 

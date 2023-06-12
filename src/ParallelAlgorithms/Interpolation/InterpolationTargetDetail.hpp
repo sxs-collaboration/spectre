@@ -125,7 +125,6 @@ void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
       not invalid_indices.at(temporal_id).empty()) {
     db::mutate<Tags::IndicesOfInvalidInterpPoints<TemporalId>,
                Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-        box,
         [&temporal_id](
             const gsl::not_null<
                 std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
@@ -148,7 +147,8 @@ void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
           // Further functions may test if there are invalid points.
           // Clear the invalid points now, since we have filled them.
           indices_of_invalid_points->erase(temporal_id);
-        });
+        },
+        box);
   }
 }
 
@@ -217,19 +217,19 @@ void clean_up_interpolation_target(
              Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-      box, [&temporal_id](
-               const gsl::not_null<std::deque<TemporalId>*> ids,
-               const gsl::not_null<std::deque<TemporalId>*> completed_ids,
-               const gsl::not_null<
-                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                   indices_of_filled,
-               const gsl::not_null<
-                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                   indices_of_invalid,
-               const gsl::not_null<std::unordered_map<
-                   TemporalId, Variables<typename InterpolationTargetTag::
-                                             vars_to_interpolate_to_target>>*>
-                   interpolated_vars) {
+      [&temporal_id](
+          const gsl::not_null<std::deque<TemporalId>*> ids,
+          const gsl::not_null<std::deque<TemporalId>*> completed_ids,
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+              indices_of_filled,
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+              indices_of_invalid,
+          const gsl::not_null<std::unordered_map<
+              TemporalId, Variables<typename InterpolationTargetTag::
+                                        vars_to_interpolate_to_target>>*>
+              interpolated_vars) {
         completed_ids->push_back(temporal_id);
         ASSERT(std::find(ids->begin(), ids->end(), temporal_id) != ids->end(),
                "Temporal id " << temporal_id << " does not exist in ids");
@@ -248,7 +248,8 @@ void clean_up_interpolation_target(
         indices_of_filled->erase(temporal_id);
         indices_of_invalid->erase(temporal_id);
         interpolated_vars->erase(temporal_id);
-      });
+      },
+      box);
 }
 
 /// Returns true if this InterpolationTarget has received data
@@ -410,14 +411,14 @@ void add_received_variables(
     const TemporalId& temporal_id) {
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-      box, [&temporal_id, &vars_src, &global_offsets](
-               const gsl::not_null<
-                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                   indices_of_filled,
-               const gsl::not_null<std::unordered_map<
-                   TemporalId, Variables<typename InterpolationTargetTag::
-                                             vars_to_interpolate_to_target>>*>
-                   vars_dest_all_times) {
+      [&temporal_id, &vars_src, &global_offsets](
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+              indices_of_filled,
+          const gsl::not_null<std::unordered_map<
+              TemporalId, Variables<typename InterpolationTargetTag::
+                                        vars_to_interpolate_to_target>>*>
+              vars_dest_all_times) {
         auto& vars_dest = vars_dest_all_times->at(temporal_id);
         // Here we assume that vars_dest has been allocated to the correct
         // size (but could contain garbage, since below we are filling it).
@@ -449,7 +450,8 @@ void add_received_variables(
             }
           }
         }
-      });
+      },
+      box);
 }
 
 /// Computes the block logical coordinates of an InterpolationTarget.
@@ -567,17 +569,17 @@ void set_up_interpolation(
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-      box, [&block_logical_coords, &temporal_id](
-               const gsl::not_null<
-                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                   indices_of_filled,
-               const gsl::not_null<
-                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                   indices_of_invalid_points,
-               const gsl::not_null<std::unordered_map<
-                   TemporalId, Variables<typename InterpolationTargetTag::
-                                             vars_to_interpolate_to_target>>*>
-                   vars_dest_all_times) {
+      [&block_logical_coords, &temporal_id](
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+              indices_of_filled,
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+              indices_of_invalid_points,
+          const gsl::not_null<std::unordered_map<
+              TemporalId, Variables<typename InterpolationTargetTag::
+                                        vars_to_interpolate_to_target>>*>
+              vars_dest_all_times) {
         // Because we are sending new points to the interpolator,
         // we know that none of these points have been interpolated to,
         // so clear the list.
@@ -602,7 +604,8 @@ void set_up_interpolation(
               typename InterpolationTargetTag::vars_to_interpolate_to_target>(
               block_logical_coords.size());
         }
-      });
+      },
+      box);
 }
 
 CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)

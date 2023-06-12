@@ -48,9 +48,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.HasConverged", "[Unit][Elliptic]") {
       Metavariables{}, Convergence::HasConverged{});
   CHECK_FALSE(trigger.is_triggered(box));
   db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-      make_not_null(&box),
       [](const gsl::not_null<Convergence::HasConverged*> has_converged) {
         *has_converged = Convergence::HasConverged{0, 0};
-      });
+      },
+      make_not_null(&box));
   CHECK(trigger.is_triggered(box));
 }

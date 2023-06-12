@@ -56,13 +56,13 @@ struct InitializeResidual {
     const double residual_magnitude = sqrt(residual_square);
 
     db::mutate<residual_square_tag, initial_residual_magnitude_tag>(
-        make_not_null(&box),
         [residual_square, residual_magnitude](
             const gsl::not_null<double*> local_residual_square,
             const gsl::not_null<double*> initial_residual_magnitude) {
           *local_residual_square = residual_square;
           *initial_residual_magnitude = residual_magnitude;
-        });
+        },
+        make_not_null(&box));
 
     LinearSolver::observe_detail::contribute_to_reduction_observer<
         OptionsGroup, ParallelComponent>(iteration_id, residual_magnitude,
@@ -136,10 +136,10 @@ struct UpdateResidual {
     const double res_ratio = residual_square / get<residual_square_tag>(box);
 
     db::mutate<residual_square_tag>(
-        make_not_null(&box),
         [residual_square](const gsl::not_null<double*> local_residual_square) {
           *local_residual_square = residual_square;
-        });
+        },
+        make_not_null(&box));
 
     // At this point, the iteration is complete. We proceed with observing,
     // logging and checking convergence before broadcasting back to the

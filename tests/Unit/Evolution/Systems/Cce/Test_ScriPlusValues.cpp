@@ -115,14 +115,14 @@ void check_inertial_retarded_time_utilities() {
       Scalar<DataVector>{number_of_angular_points});
 
   db::mutate<Tags::Exp2Beta>(
-      make_not_null(&time_box),
       [&gen, &value_dist](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               exp_2_beta) {
         fill_with_random_values(make_not_null(&get(*exp_2_beta).data()),
                                 make_not_null(&gen),
                                 make_not_null(&value_dist));
-      });
+      },
+      make_not_null(&time_box));
   const double random_time = value_dist(gen);
 
   db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
@@ -162,7 +162,6 @@ void check_inertial_retarded_time_utilities() {
               expected_retarded_time_intermediate_value));
   expected_eth_retarded_time.data() *= random_time_delta;
   db::mutate<Tags::ComplexInertialRetardedTime>(
-      make_not_null(&time_box),
       [&random_time_delta](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               complex_retarded_time,
@@ -170,6 +169,7 @@ void check_inertial_retarded_time_utilities() {
         get(*complex_retarded_time) = std::complex<double>(1.0, 0.0) *
                                       random_time_delta * get(dt_inertial_time);
       },
+      make_not_null(&time_box),
       db::get<::Tags::dt<Tags::InertialRetardedTime>>(time_box));
   db::mutate_apply<CalculateScriPlusValue<Tags::EthInertialRetardedTime>>(
       make_not_null(&time_box));

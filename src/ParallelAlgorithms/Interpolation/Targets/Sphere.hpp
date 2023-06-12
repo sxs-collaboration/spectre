@@ -169,11 +169,11 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
           sphere.center);
 
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>>(
-          box,
           [&strahlkorper](
               const gsl::not_null<::Strahlkorper<Frame>*> local_strahlkorper) {
             *local_strahlkorper = std::move(strahlkorper);
-          });
+          },
+          box);
 
       // This copy is ok because it's just in initialization
       auto coords = db::get<StrahlkorperTags::CartesianCoords<Frame>>(*box);

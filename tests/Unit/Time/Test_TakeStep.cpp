@@ -108,7 +108,7 @@ void test_gts() {
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       false);
   // update the rhs
-  db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
+  db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));
   take_step<typename Metavariables::system, false>(make_not_null(&box));
   // check that the state is as expected
@@ -179,8 +179,8 @@ void test_lts() {
       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   // update the rhs
-  db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
-                                         db::get<EvolvedVariable>(box));
+  db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
+                                        db::get<EvolvedVariable>(box));
   take_step<typename Metavariables::system, true>(make_not_null(&box));
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time() == 0.0);
@@ -197,7 +197,6 @@ void test_lts() {
   // advance time
   db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
              Tags::Next<Tags::TimeStep>>(
-      make_not_null(&box),
       [](const gsl::not_null<TimeStepId*> time_id,
          const gsl::not_null<TimeStepId*> next_time_id,
          const gsl::not_null<TimeDelta*> local_time_step,
@@ -212,15 +211,16 @@ void test_lts() {
         *next_time_step =
             local_time_step->with_slab(next_time_id->step_time().slab());
       },
-      db::get<Tags::TimeStepper<>>(box));
+      make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
 
-  db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
+  db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));
   // alter the grid spacing so that the CFL condition will cause rejection.
   db::mutate<domain::Tags::MinimumGridSpacing<1, Frame::Inertial>>(
-      make_not_null(&box), [](const gsl::not_null<double*> grid_spacing) {
+      [](const gsl::not_null<double*> grid_spacing) {
         *grid_spacing = 0.15 / TimeSteppers::AdamsBashforth{5}.stable_step();
-      });
+      },
+      make_not_null(&box));
   take_step<typename Metavariables::system, true>(make_not_null(&box));
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time() == approx(0.25));

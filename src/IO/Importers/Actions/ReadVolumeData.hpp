@@ -384,10 +384,10 @@ struct ReadAllVolumeDataAndDistribute {
       return;
     }
     db::mutate<Tags::ElementDataAlreadyRead>(
-        make_not_null(&box),
         [&volume_data_id](const auto local_has_read_volume_data) {
           local_has_read_volume_data->insert(volume_data_id);
-        });
+        },
+        make_not_null(&box));
 
     // This is the subset of elements that reside on this node. They have
     // registered themselves before. Our job is to fill them with volume data.

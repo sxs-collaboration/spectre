@@ -210,12 +210,13 @@ struct CollectOperatorAction {
                   static_cast<int>((element_index + 1) * number_of_grid_points),
               Ap_local.begin());
     db::mutate<local_operator_applied_to_operand_tag>(
-        make_not_null(&box), [&Ap_local, &number_of_grid_points](auto Ap) {
+        [&Ap_local, &number_of_grid_points](auto Ap) {
           *Ap = typename local_operator_applied_to_operand_tag::type{
               number_of_grid_points};
           get(get<LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
               *Ap)) = Ap_local;
-        });
+        },
+        make_not_null(&box));
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]
         .perform_algorithm(true);

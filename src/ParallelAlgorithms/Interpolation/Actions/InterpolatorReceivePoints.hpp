@@ -71,7 +71,6 @@ struct ReceivePoints {
                  tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&&
           block_logical_coords) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        make_not_null(&box),
         [&temporal_id, &block_logical_coords](
             const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
                 Metavariables>::type*>
@@ -87,7 +86,8 @@ struct ReceivePoints {
               intrp::Vars::Info<VolumeDim, typename InterpolationTargetTag::
                                                vars_to_interpolate_to_target>{
                   std::move(block_logical_coords)}));
-        });
+        },
+        make_not_null(&box));
 
     try_to_interpolate<InterpolationTargetTag>(
         make_not_null(&box), make_not_null(&cache), temporal_id);

@@ -105,7 +105,6 @@ struct nodegroup_receive {
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
-        make_not_null(&box),
         [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
                        const gsl::not_null<int*> total_receives_on_node) {
           if (static_cast<int>(array_indexs->size()) !=
@@ -116,7 +115,8 @@ struct nodegroup_receive {
           std::for_each(array_indexs->begin(), array_indexs->end(),
                         [](int& t) { t++; });
           ++*total_receives_on_node;
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -159,7 +159,6 @@ struct nodegroup_threaded_receive {
     // [threaded_action_example]
     node_lock->lock();
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
-        make_not_null(&box),
         [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
                        const gsl::not_null<int*> total_receives_on_node) {
           if (static_cast<int>(array_indexs->size()) !=
@@ -170,7 +169,8 @@ struct nodegroup_threaded_receive {
           std::for_each(array_indexs->begin(), array_indexs->end(),
                         [](int& t) { t++; });
           ++*total_receives_on_node;
-        });
+        },
+        make_not_null(&box));
     node_lock->unlock();
   }
 };

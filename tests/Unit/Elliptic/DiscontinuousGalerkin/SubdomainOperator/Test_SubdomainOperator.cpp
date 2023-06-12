@@ -151,7 +151,6 @@ struct InitializeRandomSubdomainData {
     using SubdomainData = typename SubdomainDataTag<Dim, Fields>::type;
 
     db::mutate<SubdomainDataTag<Dim, Fields>>(
-        make_not_null(&box),
         [](const auto subdomain_data, const auto& mesh, const auto& element,
            const auto& all_overlap_meshes, const auto& all_overlap_extents) {
           MAKE_GENERATOR(gen);
@@ -178,7 +177,7 @@ struct InitializeRandomSubdomainData {
             }
           }
         },
-        db::get<domain::Tags::Mesh<Dim>>(box),
+        make_not_null(&box), db::get<domain::Tags::Mesh<Dim>>(box),
         db::get<domain::Tags::Element<Dim>>(box),
         db::get<LinearSolver::Schwarz::Tags::Overlaps<domain::Tags::Mesh<Dim>,
                                                       Dim, DummyOptionsGroup>>(
@@ -295,10 +294,10 @@ struct ApplySubdomainOperator {
 
     // Store result in the DataBox for checks
     db::mutate<SubdomainOperatorAppliedToDataTag<Dim, Fields>>(
-        make_not_null(&box),
         [&subdomain_result](const auto subdomain_operator_applied_to_data) {
           *subdomain_operator_applied_to_data = std::move(subdomain_result);
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -190,13 +190,12 @@ void check_normal_covector_quantities(
     }
 
     db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
-        box,
         &evolution::dg::Actions::detail::
             unit_normal_vector_and_covector_and_magnitude<
                 tmpl::conditional_t<UseFlatSpace, FlatSpaceSystem,
                                     SystemWithInverseMetric<Dim>>,
                 Dim, field_face_tags>,
-        make_not_null(&fields_on_face), direction,
+        box, make_not_null(&fields_on_face), direction,
         unnormalized_normal_covectors,
         db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                             Frame::Inertial>>(
@@ -260,9 +259,10 @@ void test(const bool use_moving_mesh) {
     // Mutate the x component of the unnormalized normal vector to simulate
     // moving mesh
     db::mutate<ScaleZeroIndex>(
-        make_not_null(&box), [](const gsl::not_null<double*> scale_zero_index) {
+        [](const gsl::not_null<double*> scale_zero_index) {
           *scale_zero_index = 2.3;
-        });
+        },
+        make_not_null(&box));
 
     check_normal_covector_quantities<IsFlatSpace, Dim>(make_not_null(&box));
   }

@@ -45,10 +45,10 @@ struct WriteSimpleData {
     {
       const std::lock_guard hold_lock(*node_lock);
       db::mutate<Tags::H5FileLock>(
-          make_not_null(&box),
           [&file_lock](const gsl::not_null<Parallel::NodeLock*> in_file_lock) {
             file_lock = in_file_lock;
-          });
+          },
+          make_not_null(&box));
     }
 
     // scoped to close file

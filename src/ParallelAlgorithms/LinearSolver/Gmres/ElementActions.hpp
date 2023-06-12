@@ -80,8 +80,8 @@ struct PrepareSolve {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; });
+        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; },
+        make_not_null(&box));
 
     // Skip the initial reduction on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
@@ -99,7 +99,6 @@ struct PrepareSolve {
     }
 
     db::mutate<operand_tag, initial_fields_tag, basis_history_tag>(
-        make_not_null(&box),
         [](const auto operand, const auto initial_fields,
            const auto basis_history, const auto& source,
            const auto& operator_applied_to_fields, const auto& fields) {
@@ -107,8 +106,8 @@ struct PrepareSolve {
           *initial_fields = fields;
           *basis_history = typename basis_history_tag::type{};
         },
-        get<source_tag>(box), get<operator_applied_to_fields_tag>(box),
-        get<fields_tag>(box));
+        make_not_null(&box), get<source_tag>(box),
+        get<operator_applied_to_fields_tag>(box), get<fields_tag>(box));
 
     auto& section = Parallel::get_section<ParallelComponent, ArraySectionIdTag>(
         make_not_null(&box));
@@ -129,10 +128,11 @@ struct PrepareSolve {
           LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
 
       db::mutate<preconditioned_basis_history_tag>(
-          make_not_null(&box), [](const auto preconditioned_basis_history) {
+          [](const auto preconditioned_basis_history) {
             *preconditioned_basis_history =
                 typename preconditioned_basis_history_tag::type{};
-          });
+          },
+          make_not_null(&box));
     }
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -173,11 +173,11 @@ struct NormalizeInitialOperand {
     const double residual_magnitude = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) {
           *local_has_converged = std::move(has_converged);
-        });
+        },
+        make_not_null(&box));
 
     // Skip steps entirely if the solve has already converged
     constexpr size_t step_end_index =
@@ -209,11 +209,11 @@ struct NormalizeInitialOperand {
     }
 
     db::mutate<operand_tag, basis_history_tag>(
-        make_not_null(&box),
         [residual_magnitude](const auto operand, const auto basis_history) {
           *operand /= residual_magnitude;
           basis_history->push_back(*operand);
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -235,8 +235,8 @@ struct PrepareStep {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) { ++(*iteration_id); });
+        [](const gsl::not_null<size_t*> iteration_id) { ++(*iteration_id); },
+        make_not_null(&box));
 
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
@@ -266,7 +266,6 @@ struct PrepareStep {
                              operand_tag>>;
 
       db::mutate<preconditioned_operand_tag, operator_tag>(
-          make_not_null(&box),
           [](const auto preconditioned_operand,
              const auto operator_applied_to_operand, const auto& operand) {
             // Start the preconditioner at zero because we have no reason to
@@ -285,7 +284,7 @@ struct PrepareStep {
             *operator_applied_to_operand =
                 make_with_value<typename operator_tag::type>(operand, 0.);
           },
-          get<operand_tag>(box));
+          make_not_null(&box), get<operand_tag>(box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -351,23 +350,21 @@ struct PerformStep {
           LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
 
       db::mutate<preconditioned_basis_history_tag>(
-          make_not_null(&box),
           [](const auto preconditioned_basis_history,
              const auto& preconditioned_operand) {
             preconditioned_basis_history->push_back(preconditioned_operand);
           },
-          get<preconditioned_operand_tag>(box));
+          make_not_null(&box), get<preconditioned_operand_tag>(box));
     }
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
-        make_not_null(&box),
         [](const auto operand,
            const gsl::not_null<size_t*> orthogonalization_iteration_id,
            const auto& operator_action) {
           *operand = typename operand_tag::type(operator_action);
           *orthogonalization_iteration_id = 0;
         },
-        get<operator_tag>(box));
+        make_not_null(&box), get<operator_tag>(box));
 
     auto& section = Parallel::get_section<ParallelComponent, ArraySectionIdTag>(
         make_not_null(&box));
@@ -425,7 +422,6 @@ struct OrthogonalizeOperand {
         std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
-        make_not_null(&box),
         [orthogonalization](
             const auto operand,
             const gsl::not_null<size_t*> orthogonalization_iteration_id,
@@ -434,7 +430,7 @@ struct OrthogonalizeOperand {
                       gsl::at(basis_history, *orthogonalization_iteration_id);
           ++(*orthogonalization_iteration_id);
         },
-        get<basis_history_tag>(box));
+        make_not_null(&box), get<basis_history_tag>(box));
 
     const auto& next_orthogonalization_iteration_id =
         get<orthogonalization_iteration_id_tag>(box);
@@ -513,11 +509,11 @@ struct NormalizeOperandAndUpdateField {
     const auto& minres = get<1>(received_data);
     auto& has_converged = get<2>(received_data);
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) {
           *local_has_converged = std::move(has_converged);
-        });
+        },
+        make_not_null(&box));
 
     // Elements that are not part of the section jump directly to the
     // `ApplyOperationActions` for the next step.
@@ -547,7 +543,6 @@ struct NormalizeOperandAndUpdateField {
     }
 
     db::mutate<operand_tag, basis_history_tag, fields_tag>(
-        make_not_null(&box),
         [normalization, &minres](const auto operand, const auto basis_history,
                                  const auto field, const auto& initial_field,
                                  const auto& preconditioned_basis_history) {
@@ -564,7 +559,7 @@ struct NormalizeOperandAndUpdateField {
             *field += minres[i] * gsl::at(preconditioned_basis_history, i);
           }
         },
-        get<initial_fields_tag>(box),
+        make_not_null(&box), get<initial_fields_tag>(box),
         get<preconditioned_basis_history_tag>(box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

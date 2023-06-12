@@ -103,8 +103,8 @@ struct simple_action_a_mock {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int value) {
     db::mutate<ValueTag>(
-        make_not_null(&box),
-        [&value](const gsl::not_null<int*> value_box) { *value_box = value; });
+        [&value](const gsl::not_null<int*> value_box) { *value_box = value; },
+        make_not_null(&box));
   }
 };
 
@@ -121,10 +121,11 @@ struct simple_action_b {
     // verify the mock actions were actually called.
     //
     // We do some "work" here by updating the `PassedToB` tag in the DataBox.
-    db::mutate<PassedToB>(make_not_null(&box),
-                          [&to_call](const gsl::not_null<double*> passed_to_b) {
-                            *passed_to_b = to_call;
-                          });
+    db::mutate<PassedToB>(
+        [&to_call](const gsl::not_null<double*> passed_to_b) {
+          *passed_to_b = to_call;
+        },
+        make_not_null(&box));
     if (to_call == 0) {
       Parallel::simple_action<simple_action_a>(
           Parallel::get_parallel_component<
@@ -157,8 +158,8 @@ struct simple_action_c_mock {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     db::mutate<ValueTag>(
-        make_not_null(&box),
-        [](const gsl::not_null<int*> value_box) { *value_box = 25; });
+        [](const gsl::not_null<int*> value_box) { *value_box = 25; },
+        make_not_null(&box));
   }
 };
 
@@ -171,8 +172,8 @@ struct threaded_action_a {
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) {
     db::mutate<ValueTag>(
-        make_not_null(&box),
-        [](const gsl::not_null<int*> value_box) { *value_box = 35; });
+        [](const gsl::not_null<int*> value_box) { *value_box = 35; },
+        make_not_null(&box));
   }
 };
 
@@ -187,8 +188,8 @@ struct threaded_action_b_mock {
                     const int tag) {
     node_lock->lock();
     db::mutate<ValueTag>(
-        make_not_null(&box),
-        [tag](const gsl::not_null<int*> value_box) { *value_box = tag; });
+        [tag](const gsl::not_null<int*> value_box) { *value_box = tag; },
+        make_not_null(&box));
     node_lock->unlock();
   }
 };
@@ -493,8 +494,8 @@ struct ActionCalledOnComponentB {
   static void apply(db::DataBox<DbTagsList>& box,                     // NOLINT
                     Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
                     const ArrayIndex& /*array_index*/) {
-    db::mutate<ValueTag>(make_not_null(&box),
-                         [](const gsl::not_null<int*> value) { *value = 5; });
+    db::mutate<ValueTag>([](const gsl::not_null<int*> value) { *value = 5; },
+                         make_not_null(&box));
   }
 };
 
@@ -678,10 +679,11 @@ struct ActionSetValueTo {
     // We must specify all templates here explicitly otherwise it won't build
     T function_value =
         Functor::template f<ProxyType, ArrayIndex, T>(my_proxy, array_index);
-    db::mutate<Tag>(make_not_null(&box),
-                    [&function_value](const gsl::not_null<T*> value) {
-                      *value = function_value;
-                    });
+    db::mutate<Tag>(
+        [&function_value](const gsl::not_null<T*> value) {
+          *value = function_value;
+        },
+        make_not_null(&box));
   }
 };
 

@@ -231,9 +231,9 @@ struct TimeDerivative {
         db::add_tag_prefix<::Tags::dt, typename System<Dim>::variables_tag>;
     const size_t num_pts = subcell_mesh.number_of_grid_points();
     db::mutate<dt_variables_tag>(
-        box, [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
-              &fd_boundary_corrections, &subcell_mesh,
-              &one_over_delta_xi](const auto dt_vars_ptr) {
+        [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
+         &fd_boundary_corrections, &subcell_mesh,
+         &one_over_delta_xi](const auto dt_vars_ptr) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           auto& dt_u =
               get<::Tags::dt<::ScalarAdvection::Tags::U>>(*dt_vars_ptr);
@@ -246,7 +246,8 @@ struct TimeDerivative {
                 cell_centered_logical_to_grid_inv_jacobian.get(dim, dim),
                 get(u_correction), subcell_mesh.extents(), dim);
           }
-        });
+        },
+        box);
   }
 };
 }  // namespace ScalarAdvection::subcell

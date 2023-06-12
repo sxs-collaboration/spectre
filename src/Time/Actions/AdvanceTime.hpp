@@ -72,7 +72,6 @@ struct AdvanceTime {
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time, Tags::Next<Tags::TimeStep>,
                Tags::AdaptiveSteppingDiagnostics>(
-        make_not_null(&box),
         [](const gsl::not_null<TimeStepId*> time_id,
            const gsl::not_null<TimeStepId*> next_time_id,
            const gsl::not_null<TimeDelta*> time_step,
@@ -107,7 +106,8 @@ struct AdvanceTime {
               time_step->with_slab(next_time_id->step_time().slab());
           *time = time_id->substep_time();
         },
-        db::get<Tags::TimeStepper<>>(box), is_using_error_control);
+        make_not_null(&box), db::get<Tags::TimeStepper<>>(box),
+        is_using_error_control);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

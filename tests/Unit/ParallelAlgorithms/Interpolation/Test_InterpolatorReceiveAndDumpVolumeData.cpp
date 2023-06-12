@@ -146,10 +146,10 @@ struct ClearVolumeVarsInfo {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     db::mutate<intrp::Tags::VolumeVarsInfo<Metavariables, TemporalIdTag>>(
-        make_not_null(&box),
         [](const gsl::not_null<typename intrp::Tags::VolumeVarsInfo<
                Metavariables, TemporalIdTag>::type*>
-               container) { container->clear(); });
+               container) { container->clear(); },
+        make_not_null(&box));
   }
 };
 
@@ -168,7 +168,6 @@ struct AddToTemporalIdsWhenDataHasBeenInterpolated {
       const ArrayIndex& /*array_index*/,
       const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        make_not_null(&box),
         [&temporal_id](
             const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
                 Metavariables>::type*>
@@ -177,7 +176,8 @@ struct AddToTemporalIdsWhenDataHasBeenInterpolated {
               *holders)
               .temporal_ids_when_data_has_been_interpolated.push_back(
                   temporal_id);
-        });
+        },
+        make_not_null(&box));
   }
 };
 
@@ -227,11 +227,11 @@ struct MockInterpolationTargetReceiveVars {
     Slab slab(0.0, 1.0);
     TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
     db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
-        make_not_null(&box),
         [&strange_temporal_id](
             const gsl::not_null<std::deque<TemporalId>*> temporal_ids) {
           temporal_ids->push_back(strange_temporal_id);
-        });
+        },
+        make_not_null(&box));
   }
 };
 

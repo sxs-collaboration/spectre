@@ -668,10 +668,10 @@ void DistributedObject<
   // unpacking.)
   if (p.isUnpacking()) {
     db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-        make_not_null(&box_),
         [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
           (void)proxy;
-        });
+        },
+        make_not_null(&box_));
   }
   p | inboxes_;
   p | array_index_;

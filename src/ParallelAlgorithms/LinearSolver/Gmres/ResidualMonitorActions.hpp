@@ -55,11 +55,11 @@ struct InitializeResidualMagnitude {
     constexpr size_t iteration_id = 0;
 
     db::mutate<initial_residual_magnitude_tag>(
-        make_not_null(&box),
         [residual_magnitude](
             const gsl::not_null<double*> initial_residual_magnitude) {
           *initial_residual_magnitude = residual_magnitude;
-        });
+        },
+        make_not_null(&box));
 
     LinearSolver::observe_detail::contribute_to_reduction_observer<
         OptionsGroup, ParallelComponent>(iteration_id, residual_magnitude,
@@ -113,7 +113,6 @@ struct StoreOrthogonalization {
       // Append a row and a column to the orthogonalization history. Zero the
       // entries that won't be set during the orthogonalization procedure below.
       db::mutate<orthogonalization_history_tag>(
-          make_not_null(&box),
           [iteration_id](const auto orthogonalization_history) {
             orthogonalization_history->resize(iteration_id + 1, iteration_id);
             for (size_t j = 0; j < orthogonalization_history->columns() - 1;
@@ -121,19 +120,20 @@ struct StoreOrthogonalization {
               (*orthogonalization_history)(
                   orthogonalization_history->rows() - 1, j) = 0.;
             }
-          });
+          },
+          make_not_null(&box));
     }
 
     // While the orthogonalization procedure is not complete, store the
     // orthogonalization, broadcast it back to all elements and return early
     if (orthogonalization_iteration_id < iteration_id) {
       db::mutate<orthogonalization_history_tag>(
-          make_not_null(&box),
           [orthogonalization, iteration_id, orthogonalization_iteration_id](
               const auto orthogonalization_history) {
             (*orthogonalization_history)(orthogonalization_iteration_id,
                                          iteration_id - 1) = orthogonalization;
-          });
+          },
+          make_not_null(&box));
 
       Parallel::receive_data<Tags::Orthogonalization<OptionsGroup>>(
           Parallel::get_parallel_component<BroadcastTarget>(cache),
@@ -143,13 +143,13 @@ struct StoreOrthogonalization {
 
     // At this point, the orthogonalization procedure is complete.
     db::mutate<orthogonalization_history_tag>(
-        make_not_null(&box),
         [orthogonalization, iteration_id,
          orthogonalization_iteration_id](const auto orthogonalization_history) {
           (*orthogonalization_history)(orthogonalization_iteration_id,
                                        iteration_id - 1) =
               sqrt(orthogonalization);
-        });
+        },
+        make_not_null(&box));
 
     // Perform a QR decomposition of the Hessenberg matrix that was built during
     // the orthogonalization

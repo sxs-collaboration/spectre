@@ -188,9 +188,10 @@ struct TciAndSwitchToDg {
         (time_step_id.substep() != 0 or time_step_id.slab_number() < 0);
     if (UNLIKELY(db::get<subcell::Tags::DidRollback>(box))) {
       db::mutate<subcell::Tags::DidRollback>(
-          make_not_null(&box), [](const gsl::not_null<bool*> did_rollback) {
+          [](const gsl::not_null<bool*> did_rollback) {
             *did_rollback = false;
-          });
+          },
+          make_not_null(&box));
     }
 
     if (subcell_options.always_use_subcells()) {
@@ -203,9 +204,10 @@ struct TciAndSwitchToDg {
                                      only_need_rdmp_data);
 
     db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-        make_not_null(&box), [&tci_result](const auto rdmp_data_ptr) {
+        [&tci_result](const auto rdmp_data_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
-        });
+        },
+        make_not_null(&box));
 
     if (only_need_rdmp_data) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -225,10 +227,10 @@ struct TciAndSwitchToDg {
         }());
 
     db::mutate<Tags::TciDecision>(
-        make_not_null(&box),
         [&tci_decision](const gsl::not_null<int*> tci_decision_ptr) {
           *tci_decision_ptr = tci_decision;
-        });
+        },
+        make_not_null(&box));
 
     // If the cell is not troubled, then we _might_ be able to switch back to
     // DG. This depends on the type of time stepper we are using:
@@ -257,7 +259,6 @@ struct TciAndSwitchToDg {
           Tags::ActiveGrid, subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::TciGridHistory,
           evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>>(
-          make_not_null(&box),
           [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
@@ -292,7 +293,8 @@ struct TciAndSwitchToDg {
 
             // Clear the allocation for the cell-centered fluxes.
             *subcell_cell_centered_fluxes = std::nullopt;
-          });
+          },
+          make_not_null(&box));
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
@@ -302,7 +304,6 @@ struct TciAndSwitchToDg {
       // multistep methods we need the discontinuity to clear the entire
       // history before we can switch back to DG.
       db::mutate<evolution::dg::subcell::Tags::TciGridHistory>(
-          make_not_null(&box),
           [cell_is_troubled,
            &time_stepper](const gsl::not_null<
                           std::deque<evolution::dg::subcell::ActiveGrid>*>
@@ -312,7 +313,8 @@ struct TciAndSwitchToDg {
             if (tci_grid_history->size() > time_stepper.order()) {
               tci_grid_history->pop_back();
             }
-          });
+          },
+          make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

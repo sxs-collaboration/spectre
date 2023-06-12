@@ -66,7 +66,6 @@ struct ContributeMemoryData {
 
     using tag = Tags::MemoryHolder;
     db::mutate<tag>(
-        make_not_null(&box),
         [&cache, &time, &node_or_proc, &size_in_megabytes](
             const gsl::not_null<std::unordered_map<
                 std::string,
@@ -163,7 +162,8 @@ struct ContributeMemoryData {
             auto finished_time_iter = memory_holder.find(time);
             memory_holder.erase(finished_time_iter);
           }
-        });
+        },
+        make_not_null(&box));
   }
 };
 }  // namespace mem_monitor

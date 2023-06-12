@@ -50,11 +50,11 @@ struct CalculateGrVars {
         [&box, &initial_data](auto spacetime_tag_v) {
           using spacetime_tag = tmpl::type_from<decltype(spacetime_tag_v)>;
           db::mutate<spacetime_tag>(
-              make_not_null(&box),
               [&initial_data](const auto spacetime_tag_ptr) {
                 *spacetime_tag_ptr =
                     std::move(get<spacetime_tag>(initial_data));
-              });
+              },
+              make_not_null(&box));
         });
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

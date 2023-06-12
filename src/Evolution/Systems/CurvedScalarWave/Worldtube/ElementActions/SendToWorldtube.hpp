@@ -148,7 +148,6 @@ struct SendToWorldtube {
                     direction.value().dimension(),
                     index_to_slice_at(mesh.extents(), direction.value()));
       db::mutate<Tags::RegularFieldAdvectiveTerm<Dim>>(
-          make_not_null(&box),
           [&face_phi, &mesh_velocity_on_face,
            &di_psi_puncture =
                get<::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
@@ -157,7 +156,8 @@ struct SendToWorldtube {
             tenex::evaluate<>(regular_advective_term,
                               (face_phi(ti::i) - di_psi_puncture(ti::i)) *
                                   mesh_velocity_on_face(ti::I));
-          });
+          },
+          make_not_null(&box));
       // The time derivative is transformed into the grid frame using the
       // advective term which comes from the transformation of the time
       // derivative due to the moving mesh.

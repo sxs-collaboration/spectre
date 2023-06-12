@@ -120,8 +120,8 @@ struct IncrementTime {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::Time>(
-        make_not_null(&box),
-        [](const gsl::not_null<double*> time) { *time += 1.2; });
+        [](const gsl::not_null<double*> time) { *time += 1.2; },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

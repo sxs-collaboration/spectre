@@ -111,7 +111,6 @@ void test_integration() {
 
   for (size_t substep = 0; substep < 3; ++substep) {
     db::mutate<history_tag, alternative_history_tag>(
-        make_not_null(&box),
         [&rhs, &substep, &substep_times, &time_step](
             const gsl::not_null<typename history_tag::type*> history,
             const gsl::not_null<typename alternative_history_tag::type*>
@@ -123,7 +122,7 @@ void test_integration() {
               vars, rhs(time, vars));
           *alternative_history = *history;
         },
-        db::get<Var>(box));
+        make_not_null(&box), db::get<Var>(box));
 
     update_u<System>(make_not_null(&box));
     CHECK(db::get<Var>(box) == approx(gsl::at(expected_values, substep)));
@@ -189,7 +188,6 @@ void test_stepper_error() {
   const auto do_substep = [&box, &substep_offsets, &time_step](
                               const Time& step_start, const size_t substep) {
     db::mutate<history_tag>(
-        make_not_null(&box),
         [&step_start, &substep, &substep_offsets, &time_step](
             const gsl::not_null<typename history_tag::type*> history,
             const double vars) {
@@ -198,7 +196,7 @@ void test_stepper_error() {
               TimeStepId(true, 0, step_start, substep, time_step, time.value()),
               vars, vars);
         },
-        db::get<variables_tag>(box));
+        make_not_null(&box), db::get<variables_tag>(box));
 
     update_u<SingleVariableSystem>(make_not_null(&box));
   };

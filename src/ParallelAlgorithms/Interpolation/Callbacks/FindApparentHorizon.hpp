@@ -162,11 +162,11 @@ struct FindApparentHorizon
       // search.
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
                  ::ah::Tags::PreviousStrahlkorpers<Frame>>(
-          box, [&temporal_id](
-                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-                   const gsl::not_null<
-                       std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
-                       previous_strahlkorpers) {
+          [&temporal_id](
+              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+              const gsl::not_null<
+                  std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                  previous_strahlkorpers) {
             // If we have zero previous_strahlkorpers, then the
             // initial guess is already in strahlkorper, so do
             // nothing.
@@ -202,7 +202,8 @@ struct FindApparentHorizon
                   fac_0 * (*previous_strahlkorpers)[0].second.coefficients() +
                   fac_1 * (*previous_strahlkorpers)[1].second.coefficients();
             }
-          });
+          },
+          box);
     }
 
     // Deal with the possibility that some of the points might be
@@ -231,12 +232,13 @@ struct FindApparentHorizon
 
       // Do a FastFlow iteration.
       db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>>(
-          box, [&inv_g, &ex_curv, &christoffel, &status_and_info](
-                   const gsl::not_null<::FastFlow*> fast_flow,
-                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) {
+          [&inv_g, &ex_curv, &christoffel, &status_and_info](
+              const gsl::not_null<::FastFlow*> fast_flow,
+              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) {
             status_and_info = fast_flow->template iterate_horizon_finder<Frame>(
                 strahlkorper, inv_g, ex_curv, christoffel);
-          });
+          },
+          box);
 
       // Determine whether we have converged, whether we need another step,
       // or whether we have encountered an error.
@@ -281,7 +283,6 @@ struct FindApparentHorizon
     // it's previous value
     if (horizon_finder_failed) {
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>>(
-          box,
           [](const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
              const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
                  previous_strahlkorpers) {
@@ -291,7 +292,7 @@ struct FindApparentHorizon
             // to be in previous_strahlkorpers).
             *strahlkorper = previous_strahlkorpers.front().second;
           },
-          db::get<::ah::Tags::PreviousStrahlkorpers<Frame>>(*box));
+          box, db::get<::ah::Tags::PreviousStrahlkorpers<Frame>>(*box));
     } else {
       // The interpolated variables
       // Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
@@ -366,11 +367,11 @@ struct FindApparentHorizon
       // current strahlkorper already in it.
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
                  ::ah::Tags::PreviousStrahlkorpers<Frame>>(
-          box, [&temporal_id](
-                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-                   const gsl::not_null<
-                       std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
-                       previous_strahlkorpers) {
+          [&temporal_id](
+              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+              const gsl::not_null<
+                  std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                  previous_strahlkorpers) {
             // This is the number of previous strahlkorpers that we
             // keep around.
             const size_t num_previous_strahlkorpers = 3;
@@ -385,7 +386,8 @@ struct FindApparentHorizon
                    num_previous_strahlkorpers) {
               previous_strahlkorpers->pop_back();
             }
-          });
+          },
+          box);
 
       // Finally call callbacks
       tmpl::for_each<
@@ -399,9 +401,10 @@ struct FindApparentHorizon
     // Prepare for finding horizon at a new time. Regardless of if we failed or
     // not, we reset fast flow.
     db::mutate<::ah::Tags::FastFlow>(
-        box, [](const gsl::not_null<::FastFlow*> fast_flow) {
+        [](const gsl::not_null<::FastFlow*> fast_flow) {
           fast_flow->reset_for_next_find();
-        });
+        },
+        box);
 
     // We return true because we are now done with all the volume data
     // at this temporal_id, so we want it cleaned up.

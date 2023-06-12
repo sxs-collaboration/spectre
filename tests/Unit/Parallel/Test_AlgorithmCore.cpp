@@ -147,10 +147,10 @@ struct increment_count_actions_called {
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     static int a = 0;
     return {(++a >= 5 ? Parallel::AlgorithmExecution::Pause
                       : Parallel::AlgorithmExecution::Continue),
@@ -260,10 +260,10 @@ struct add_int_value_10 {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     static int a = 0;
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 10);
     return {(++a >= 5 ? Parallel::AlgorithmExecution::Pause
@@ -282,12 +282,12 @@ struct increment_int0 {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
-    db::mutate<Int0>(make_not_null(&box),
-                     [](const gsl::not_null<int*> int0) { ++*int0; });
+        },
+        make_not_null(&box));
+    db::mutate<Int0>([](const gsl::not_null<int*> int0) { ++*int0; },
+                     make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -304,12 +304,11 @@ struct remove_int0 {
       const ParallelComponent* const /*meta*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 11);
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called, const int& int0) {
           SPECTRE_PARALLEL_REQUIRE(int0 == 11);
           ++*count_actions_called;
         },
-        db::get<Int0>(box));
+        make_not_null(&box), db::get<Int0>(box));
     // default assign to "remove"
     Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -474,14 +473,14 @@ struct add_vectors_to_box_and_send {
     TimeStepId time_step_id{true, 0, Slab{0.0, 1.1}.start()};
 
     db::mutate<TemporalId1, Vector0, Vector1>(
-        make_not_null(&box),
         [&time_step_id](const gsl::not_null<TimeStepId*> time_step_id_ptr,
                         const gsl::not_null<DataVector*> vector_0_ptr,
                         const gsl::not_null<DataVector*> vector_1_ptr) {
           *time_step_id_ptr = time_step_id;
           *vector_0_ptr = DataVector{-4.6, 9.8, 3.6, -1.7};
           *vector_1_ptr = DataVector{};
-        });
+        },
+        make_not_null(&box));
 
     BoundaryMessage<3>* boundary_message = new BoundaryMessage<3>(
         0, 4, false, true, Parallel::my_node<size_t>(cache),
@@ -511,8 +510,8 @@ struct set_int0_from_receive {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     auto& inbox = tuples::get<IntReceiveTag>(inboxes);
-    db::mutate<Int1>(make_not_null(&box),
-                     [](const gsl::not_null<int*> int1) { ++*int1; });
+    db::mutate<Int1>([](const gsl::not_null<int*> int1) { ++*int1; },
+                     make_not_null(&box));
     // [retry_example]
     if (inbox.count(db::get<TemporalId0>(box)) == 0) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
@@ -520,16 +519,16 @@ struct set_int0_from_receive {
     // [retry_example]
 
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     static int a = 0;
     auto int0 = *inbox[db::get<TemporalId0>(box)].begin();
     inbox.erase(db::get<TemporalId0>(box));
     db::mutate<Int0>(
-        make_not_null(&box),
-        [&int0](const gsl::not_null<int*> int0_box) { *int0_box = int0; });
+        [&int0](const gsl::not_null<int*> int0_box) { *int0_box = int0; },
+        make_not_null(&box));
     return {++a >= 5 ? Parallel::AlgorithmExecution::Pause
                      : Parallel::AlgorithmExecution::Continue,
             std::nullopt};
@@ -554,10 +553,10 @@ struct set_vector1_from_receive {
     }
 
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
 
     auto& message_map = inbox[db::get<TemporalId1>(box)];
     // We only sent one message so there should only be one in the inbox
@@ -567,11 +566,11 @@ struct set_vector1_from_receive {
 
     // Set the data reference
     db::mutate<Vector1>(
-        make_not_null(&box),
         [&boundary_message](const gsl::not_null<DataVector*> vector1_box) {
           vector1_box->set_data_ref(boundary_message->dg_flux_data,
                                     boundary_message->dg_flux_data_size);
-        });
+        },
+        make_not_null(&box));
 
     // We shouldn't have gone through the boundary_message::pack() function, so
     // this shouldn't be true
@@ -593,10 +592,10 @@ struct update_instance {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<TemporalId0>(
-        make_not_null(&box),
         [](const gsl::not_null<TestAlgorithmArrayInstance*> temporal_id) {
           ++*temporal_id;
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -736,10 +735,10 @@ struct iterate_increment_int0 {
         std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     SPECTRE_PARALLEL_REQUIRE((db::get<CountActionsCalled>(box) - 1) / 2 ==
                              db::get<Int0>(box) - 10);
 

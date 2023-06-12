@@ -217,10 +217,10 @@ struct CountReceives {
     }
 
     db::mutate<Tags::ReceiveArrayComponentsOnceMore>(
-        make_not_null(&box),
         [](bool* const receive_array_components_once_more) {
           *receive_array_components_once_more = true;
-        });
+        },
+        make_not_null(&box));
 
     // [return_with_termination]
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
@@ -277,10 +277,10 @@ struct AddIntValue10 {
       // [broadcast_to_group]
     }
     db::mutate<Tags::CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 10);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -323,12 +323,12 @@ struct IncrementInt0 {
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
-    db::mutate<Tags::Int0>(make_not_null(&box),
-                           [](const gsl::not_null<int*> int0) { ++*int0; });
+        },
+        make_not_null(&box));
+    db::mutate<Tags::Int0>([](const gsl::not_null<int*> int0) { ++*int0; },
+                           make_not_null(&box));
     // [iterable_action_return_continue_next_action]
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     // [iterable_action_return_continue_next_action]
@@ -349,10 +349,10 @@ struct RemoveInt0 {
                   "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::Int0>(box) == 11);
     db::mutate<Tags::CountActionsCalled>(
-        make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
-        });
+        },
+        make_not_null(&box));
     // Run the iterable action sequence several times to ensure that
     // load-balancing has a chance to be invoked multiple times.
     if (db::get<Tags::CountActionsCalled>(box) < 150) {

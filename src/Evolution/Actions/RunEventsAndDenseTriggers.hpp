@@ -131,16 +131,18 @@ struct RunEventsAndDenseTriggers {
         tmpl::for_each<tensor_tags>([this](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           db::mutate<tag>(
-              box_, [this](const gsl::not_null<typename tag::type*> value) {
+              [this](const gsl::not_null<typename tag::type*> value) {
                 *value = get<tag>(tensors_);
-              });
+              },
+              box_);
         });
         tmpl::for_each<non_tensor_tags>([this](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           db::mutate<tag>(
-              box_, [this](const gsl::not_null<typename tag::type*> value) {
+              [this](const gsl::not_null<typename tag::type*> value) {
                 *value = std::move(tuples::get<tag>(*non_tensors_));
-              });
+              },
+              box_);
         });
       }
     }
@@ -211,10 +213,10 @@ struct RunEventsAndDenseTriggers {
       if (db::get<::Tags::Time>(box) != next_trigger) {
         time_restorer.save();
         db::mutate<::Tags::Time>(
-            make_not_null(&box),
             [&next_trigger](const gsl::not_null<double*> time) {
               *time = next_trigger;
-            });
+            },
+            make_not_null(&box));
       }
 
       const auto triggered = events_and_dense_triggers.is_ready(
@@ -243,7 +245,6 @@ struct RunEventsAndDenseTriggers {
           bool dense_output_succeeded = false;
           variables_restorer.save();
           db::mutate<variables_tag>(
-              make_not_null(&box),
               [&dense_output_succeeded, &next_trigger](
                   gsl::not_null<typename variables_tag::type*> vars,
                   const TimeStepper& stepper,
@@ -251,7 +252,8 @@ struct RunEventsAndDenseTriggers {
                 dense_output_succeeded =
                     stepper.dense_update_u(vars, history, next_trigger);
               },
-              db::get<::Tags::TimeStepper<>>(box), db::get<history_tag>(box));
+              make_not_null(&box), db::get<::Tags::TimeStepper<>>(box),
+              db::get<history_tag>(box));
           if (not dense_output_succeeded) {
             // Need to take another time step
             return {Parallel::AlgorithmExecution::Continue, std::nullopt};

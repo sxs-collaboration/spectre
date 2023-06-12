@@ -185,7 +185,6 @@ void compute_psi0_of_bh_on_wt(const gsl::not_null<Generator*> gen) {
       amplitude, frequency, target_time, l_max, false);
 
   db::mutate<spin_weighted_variables_tag>(
-      make_not_null(&box),
       [&spatial_metric_coefficients, &dt_spatial_metric_coefficients,
        &dr_spatial_metric_coefficients, &shift_coefficients,
        &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
@@ -198,14 +197,14 @@ void compute_psi0_of_bh_on_wt(const gsl::not_null<Generator*> gen) {
             shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
             lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
             extraction_radius, l_max);
-      });
+      },
+      make_not_null(&box));
 
   // construct the coordinate transform quantities
   const double variation_amplitude_inertial = value_dist(*gen);
   db::mutate<Tags::CauchyCartesianCoords>(
-      make_not_null(&box),
       [&l_max](const gsl::not_null<tnsr::i<DataVector, 3>*>
-                                 cauchy_cartesian_coordinates) {
+                   cauchy_cartesian_coordinates) {
         tnsr::i<DataVector, 2> cauchy_angular_coordinates{
             get<0>(*cauchy_cartesian_coordinates).size()};
         // There is a bug in Clang 10.0.0 that gives a nonsensical
@@ -233,10 +232,10 @@ void compute_psi0_of_bh_on_wt(const gsl::not_null<Generator*> gen) {
             sin(get<1>(cauchy_angular_coordinates));
         get<2>(*cauchy_cartesian_coordinates) =
             cos(get<0>(cauchy_angular_coordinates));
-      });
+      },
+      make_not_null(&box));
 
   db::mutate<Tags::PartiallyFlatCartesianCoords>(
-      make_not_null(&box),
       [&l_max, &variation_amplitude_inertial](
           const gsl::not_null<tnsr::i<DataVector, 3>*>
               inertial_cartesian_coordinates) {
@@ -269,7 +268,8 @@ void compute_psi0_of_bh_on_wt(const gsl::not_null<Generator*> gen) {
             sin(get<1>(inertial_angular_coordinates));
         get<2>(*inertial_cartesian_coordinates) =
             cos(get<0>(inertial_angular_coordinates));
-      });
+      },
+      make_not_null(&box));
 
   // Update various auxiliary boundary variables in order to prepare the
   // boundary data for BondiJ. Operartions are done for both Cauchy coordiantes

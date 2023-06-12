@@ -108,12 +108,13 @@ struct RandomizeVariables {
     // Set up the random distribution
     std::uniform_real_distribution<> dist(-amplitude, amplitude);
     // Add noise to the fields
-    db::mutate<VariablesTag>(make_not_null(&box),
-                             [&generator, &dist](const auto fields) {
-                               for (size_t i = 0; i < fields->size(); ++i) {
-                                 fields->data()[i] += dist(generator);
-                               }
-                             });
+    db::mutate<VariablesTag>(
+        [&generator, &dist](const auto fields) {
+          for (size_t i = 0; i < fields->size(); ++i) {
+            fields->data()[i] += dist(generator);
+          }
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -86,8 +86,8 @@ struct IncrementTemporalId {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    db::mutate<TemporalIdTag>(make_not_null(&box),
-                              [](const auto temporal_id) { (*temporal_id)++; });
+    db::mutate<TemporalIdTag>([](const auto temporal_id) { (*temporal_id)++; },
+                              make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

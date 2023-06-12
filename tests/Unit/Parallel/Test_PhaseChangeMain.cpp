@@ -91,8 +91,8 @@ struct IncrementStep {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     db::mutate<StepNumber>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> step_number) { ++(*step_number); });
+        [](const gsl::not_null<size_t*> step_number) { ++(*step_number); },
+        make_not_null(&box));
     SPECTRE_PARALLEL_REQUIRE(db::get<StepNumber>(box) < 31);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

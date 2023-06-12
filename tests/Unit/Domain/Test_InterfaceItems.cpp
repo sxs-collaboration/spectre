@@ -471,9 +471,10 @@ void test_interface_subitems() {
       "Interface<Dirs, Var>");
 
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
-      make_not_null(&box), [](const auto boundary_tensor) {
+      [](const auto boundary_tensor) {
         get(boundary_tensor->at(Direction<dim>::lower_xi())) *= 3.;
-      });
+      },
+      make_not_null(&box));
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
 }

@@ -61,14 +61,14 @@ struct FilterSwshVolumeQuantity {
     const size_t radial_filter_half_power =
         get<Tags::RadialFilterHalfPower>(box);
     db::mutate<BondiTag>(
-        make_not_null(&box),
         [&l_max, &l_filter_start, &radial_filter_alpha,
          &radial_filter_half_power](
             const gsl::not_null<typename BondiTag::type*> bondi_quantity) {
           Spectral::Swsh::filter_swsh_volume_quantity(
               make_not_null(&get(*bondi_quantity)), l_max, l_filter_start,
               radial_filter_alpha, radial_filter_half_power);
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

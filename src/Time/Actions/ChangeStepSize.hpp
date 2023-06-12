@@ -99,16 +99,16 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const auto new_step =
       choose_lts_step_size(next_time_id.step_time(), desired_step);
   db::mutate<Tags::Next<Tags::TimeStep>>(
-      box, [&new_step](const gsl::not_null<TimeDelta*> next_step) {
+      [&new_step](const gsl::not_null<TimeDelta*> next_step) {
         *next_step = new_step;
-      });
+      },
+      box);
   // if step accepted, just proceed. Otherwise, change Time::Next and jump
   // back to the first instance of `UpdateU`.
   if (step_accepted) {
     return true;
   } else {
     db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
-        box,
         [&time_stepper, &desired_step](
             const gsl::not_null<TimeStepId*> local_next_time_id,
             const gsl::not_null<TimeDelta*> time_step,
@@ -116,7 +116,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
           *time_step = choose_lts_step_size(time_id.step_time(), desired_step);
           *local_next_time_id = time_stepper.next_time_id(time_id, *time_step);
         },
-        db::get<Tags::TimeStepId>(*box));
+        box, db::get<Tags::TimeStepId>(*box));
     return false;
   }
 }
@@ -173,10 +173,10 @@ struct ChangeStepSize {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     } else {
       db::mutate<Tags::AdaptiveSteppingDiagnostics>(
-          make_not_null(&box),
           [](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
             ++diags->number_of_step_rejections;
-          });
+          },
+          make_not_null(&box));
       return {Parallel::AlgorithmExecution::Continue,
               tmpl::index_if<ActionList,
                              tt::is_a<Actions::UpdateU, tmpl::_1>>::value};

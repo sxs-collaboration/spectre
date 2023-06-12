@@ -99,9 +99,8 @@ struct MakeIdentityIfSkipped {
          has_converged.reason() == Convergence::Reason::MaxIterations) and
         has_converged.num_iterations() == 0) {
       db::mutate<typename LinearSolverType::fields_tag>(
-          make_not_null(&box),
           [](const auto fields, const auto& source) { *fields = source; },
-          get<typename LinearSolverType::source_tag>(box));
+          make_not_null(&box), get<typename LinearSolverType::source_tag>(box));
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     return {Parallel::AlgorithmExecution::Continue, proceed_action_index};

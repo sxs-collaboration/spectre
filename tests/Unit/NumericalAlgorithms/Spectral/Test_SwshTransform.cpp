@@ -124,12 +124,10 @@ void test_transform_and_inverse_transform() {
             number_of_radial_points,
             TestHelpers::spin_weighted_spherical_harmonic);
       };
-  db::mutate<TestTag<0, S>>(make_not_null(&box),
-                            coefficients_to_analytic_collocation,
-                            expected_modes);
-  db::mutate<TestTag<1, S>>(make_not_null(&box),
-                            coefficients_to_analytic_collocation,
-                            two_times_expected_modes);
+  db::mutate<TestTag<0, S>>(coefficients_to_analytic_collocation,
+                            make_not_null(&box), expected_modes);
+  db::mutate<TestTag<1, S>>(coefficients_to_analytic_collocation,
+                            make_not_null(&box), two_times_expected_modes);
 
   const auto source_collocation_copy = get(db::get<TestTag<0, S>>(box));
   // transform using the DataBox mutate interface
@@ -186,14 +184,14 @@ void test_transform_and_inverse_transform() {
   // clear out the existing collocation data so we know we get the
   // correct inverse transform
   db::mutate<TestTag<0, S>, TestTag<1, S>>(
-      make_not_null(&box),
       [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, S>>*>
              collocation,
          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, S>>*>
              another_collocation) {
         get(*collocation).data() = 0.0;
         get(*another_collocation).data() = 0.0;
-      });
+      },
+      make_not_null(&box));
 
   // transform using the DataBox mutate interface
   db::mutate_apply<InverseSwshTransform<

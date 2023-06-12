@@ -51,8 +51,8 @@ struct RegisterElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     db::mutate<Tags::NumberOfElements>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> num_elements) { ++(*num_elements); });
+        [](const gsl::not_null<size_t*> num_elements) { ++(*num_elements); },
+        make_not_null(&box));
   }
 };
 
@@ -78,8 +78,8 @@ struct DeregisterElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     db::mutate<Tags::NumberOfElements>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> num_elements) { --(*num_elements); });
+        [](const gsl::not_null<size_t*> num_elements) { --(*num_elements); },
+        make_not_null(&box));
   }
 };
 

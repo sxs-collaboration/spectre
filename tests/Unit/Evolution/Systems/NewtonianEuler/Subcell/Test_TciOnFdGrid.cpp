@@ -142,7 +142,6 @@ void test(const TestThis test_this) {
 
   // Modify past data if we are expected an RDMP TCI failure.
   db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-      make_not_null(&box),
       [&past_rdmp_tci_data, &test_this](const auto rdmp_tci_data_ptr) {
         *rdmp_tci_data_ptr = past_rdmp_tci_data;
         if (test_this == TestThis::RdmpMassDensity) {
@@ -152,7 +151,8 @@ void test(const TestThis test_this) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
         }
-      });
+      },
+      make_not_null(&box));
 
   const auto result =
       db::mutate_apply<NewtonianEuler::subcell::TciOnFdGrid<Dim>>(

@@ -258,7 +258,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
              Tags::BoundaryValue<Tags::DuRDividedByR>, Tags::BondiJ,
              TestHelpers::AngularCollocationsFor<Tags::BondiJ>,
              TestHelpers::RadialPolyCoefficientsFor<Tags::BondiJ>>(
-      make_not_null(&expected_box), GenerateStartingData{},
+      GenerateStartingData{}, make_not_null(&expected_box),
       make_not_null(&generator), make_not_null(&dist), l_max,
       number_of_radial_grid_points, y);
 
@@ -267,7 +267,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   db::mutate<pre_swsh_derivatives_variables_tag, swsh_derivatives_variables_tag,
              separated_angular_data_variables_tag,
              separated_radial_modes_variables_tag>(
-      make_not_null(&expected_box),
       [&generator](
           const gsl::not_null<
               typename pre_swsh_derivatives_variables_tag::type*>
@@ -288,6 +287,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
             separated_radial_modes, make_not_null(&generator), boundary_r,
             l_max, number_of_radial_grid_points);
       },
+      make_not_null(&expected_box),
       get(db::get<Tags::BoundaryValue<Tags::BondiR>>(expected_box)));
 
   auto computation_box = db::create<db::AddSimpleTags<

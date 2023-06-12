@@ -229,8 +229,8 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
           }
           return '0';
         };
-    expand_pack(db::mutate<ReceiveTags>(
-        make_not_null(&box), assemble_children_data, ReceiveTags{})...);
+    expand_pack(db::mutate<ReceiveTags>(assemble_children_data,
+                                        make_not_null(&box), ReceiveTags{})...);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

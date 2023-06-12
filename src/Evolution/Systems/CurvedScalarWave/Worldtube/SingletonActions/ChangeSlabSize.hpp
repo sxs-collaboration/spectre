@@ -70,7 +70,6 @@ struct ChangeSlabSize {
                                                            new_step);
       db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                  ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId>(
-          make_not_null(&box),
           [&new_next_time_step_id, &new_step, &inbox_time_step_id](
               const gsl::not_null<TimeStepId*> next_time_step_id,
               const gsl::not_null<TimeDelta*> time_step,
@@ -80,7 +79,8 @@ struct ChangeSlabSize {
             *time_step = new_step;
             *next_time_step = new_step;
             *local_time_step_id = inbox_time_step_id;
-          });
+          },
+          make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

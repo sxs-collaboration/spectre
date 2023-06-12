@@ -384,9 +384,10 @@ void test(const bool time_runs_forward) {
       auto& box =
           ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::TimeStepId>(
-          make_not_null(&box), [](const gsl::not_null<TimeStepId*> id) {
+          [](const gsl::not_null<TimeStepId*> id) {
             *id = TimeStepId(id->time_runs_forward(), -1, id->step_time());
-          });
+          },
+          make_not_null(&box));
     }
     CHECK(run_if_ready(make_not_null(&runner)));
     TestEvent::check_calls({});
@@ -483,7 +484,6 @@ void test(const bool time_runs_forward) {
       auto& box =
           ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
-          make_not_null(&box),
           [&deriv_vars, &initial_vars, &time_step_id](
               const gsl::not_null<History*> history,
               const TimeStepper& time_stepper) {
@@ -496,7 +496,7 @@ void test(const bool time_runs_forward) {
                         time_step_id.step_time().slab().duration() / 4),
                 initial_vars, deriv_vars);
           },
-          db::get<Tags::TimeStepper<>>(box));
+          make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
     }
     if (data_needed) {
       TestCase::check_dense(&runner, true, {});

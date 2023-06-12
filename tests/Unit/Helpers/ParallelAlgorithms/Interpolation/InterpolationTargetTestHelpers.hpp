@@ -103,7 +103,6 @@ struct MockReceivePoints {
                  tnsr::I<double, VolumeDim, typename Frame::BlockLogical>>>>&&
           block_coord_holders) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        make_not_null(&box),
         [&temporal_id, &block_coord_holders](
             const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
                 Metavariables>::type*>
@@ -119,7 +118,8 @@ struct MockReceivePoints {
               intrp::Vars::Info<VolumeDim, typename InterpolationTargetTag::
                                                vars_to_interpolate_to_target>{
                   std::move(block_coord_holders)}));
-        });
+        },
+        make_not_null(&box));
   }
 };
 

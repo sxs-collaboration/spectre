@@ -121,7 +121,6 @@ struct InterpolatorReceiveVolumeData {
     // done only for this TemporalId type and not for any other
     // VolumeVarsInfos that might be in the DataBox.)
     db::mutate<Tags::VolumeVarsInfo<Metavariables, TemporalId>>(
-        make_not_null(&box),
         [&temporal_id, &element_id, &mesh, &interpolator_source_vars](
             const gsl::not_null<
                 typename Tags::VolumeVarsInfo<Metavariables, TemporalId>::type*>
@@ -139,7 +138,8 @@ struct InterpolatorReceiveVolumeData {
                   typename Tags::VolumeVarsInfo<Metavariables,
                                                 TemporalId>::Info{
                       mesh, std::move(interpolator_source_vars), {}}));
-        });
+        },
+        make_not_null(&box));
 
     // Try to interpolate data for all InterpolationTargets for this
     // temporal_id.

@@ -75,10 +75,10 @@ struct ReceiveGhWorldtubeData {
         };
     if constexpr (DuringSelfStart) {
       db::mutate<Tags::SelfStartGhInterfaceManager>(
-          make_not_null(&box), insert_gh_data_to_interface_manager);
+          insert_gh_data_to_interface_manager, make_not_null(&box));
     } else {
-      db::mutate<Tags::GhInterfaceManager>(make_not_null(&box),
-                                           insert_gh_data_to_interface_manager);
+      db::mutate<Tags::GhInterfaceManager>(insert_gh_data_to_interface_manager,
+                                           make_not_null(&box));
     }
   }
 };

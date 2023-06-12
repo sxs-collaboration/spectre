@@ -75,7 +75,6 @@ struct TakeTimeStep {
            "Do not yet support moving mesh with DG-subcell.");
     db::mutate<fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                fd::Tags::DetInverseJacobianLogicalToGrid>(
-        make_not_null(&box),
         [](const auto inv_jac_ptr, const auto det_inv_jac_ptr,
            const auto& logical_to_grid_map, const auto& logical_coords) {
           if (not inv_jac_ptr->has_value()) {
@@ -83,6 +82,7 @@ struct TakeTimeStep {
             *det_inv_jac_ptr = determinant(**inv_jac_ptr);
           }
         },
+        make_not_null(&box),
         db::get<::domain::Tags::ElementMap<Dim, Frame::Grid>>(box),
         db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(box));
 
@@ -92,11 +92,12 @@ struct TakeTimeStep {
         *db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
 
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
-        make_not_null(&box), [](const auto mortar_data_ptr) {
+        [](const auto mortar_data_ptr) {
           for (auto& data : *mortar_data_ptr) {
             data.second = evolution::dg::MortarData<Dim>{};
           }
-        });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

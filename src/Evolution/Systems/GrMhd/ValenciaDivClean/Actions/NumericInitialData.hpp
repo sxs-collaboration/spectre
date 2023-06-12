@@ -391,7 +391,6 @@ struct SetNumericInitialData {
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::SpecificEnthalpy<DataVector>>(
-        make_not_null(&box),
         [&initial_data, &numeric_data, &inv_spatial_metric, &equation_of_state](
             const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
             const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -408,7 +407,8 @@ struct SetNumericInitialData {
               lorentz_factor, pressure, specific_enthalpy,
               make_not_null(&numeric_data), inv_spatial_metric,
               equation_of_state);
-        });
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

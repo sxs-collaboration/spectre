@@ -137,12 +137,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           expected_error);
     db::mutate<evolution::dg::subcell::Tags::ActiveGrid,
                ::Tags::Variables<tmpl::list<FieldTag>>>(
-        make_not_null(&box),
         [](const auto active_grid_ptr, const auto vars_ptr) {
           *active_grid_ptr = evolution::dg::subcell::ActiveGrid::Subcell;
           vars_ptr->initialize(7);
           *vars_ptr = Variables<tmpl::list<FieldTag>>{7, 3.};
-        });
+        },
+        make_not_null(&box));
     const DataVector subcell_expected{2., 3., 4., 5., 6., 7., 8.};
     const DataVector subcell_expected_error{1., 0., -1., -2., -3., -4., -5.};
     CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),

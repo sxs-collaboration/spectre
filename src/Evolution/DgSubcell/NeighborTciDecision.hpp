@@ -39,7 +39,6 @@ void neighbor_tci_decision(
             boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>&
         received_temporal_id_and_data) {
   db::mutate<subcell::Tags::NeighborTciDecisions<Dim>>(
-      box,
       [&received_temporal_id_and_data](const auto neighbor_tci_decisions_ptr) {
         for (const auto& [directional_element_id, neighbor_data] :
              received_temporal_id_and_data.second) {
@@ -50,6 +49,7 @@ void neighbor_tci_decision(
           neighbor_tci_decisions_ptr->at(directional_element_id) =
               std::get<5>(neighbor_data);
         }
-      });
+      },
+      box);
 }
 }  // namespace evolution::dg::subcell
