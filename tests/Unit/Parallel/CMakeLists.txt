@@ -36,8 +36,8 @@ if (NOT SHELL_EXECUTABLE)
 endif()
 
 # Run TEST_NAME twice: first with no command-line args, then with the
-# `+restart SpectreCheckpoint0` command-line arg to restart from a Charm++
-# checkpoint named `SpectreCheckpoint0`. The checkpoint file is then deleted
+# `+restart` command-line arg to restart from the written Charm++
+# checkpoint. The checkpoint file is then deleted
 # to avoid it getting in the way of future test invocations (which would try
 # to overwrite the prior checkpoint file and error).
 function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
@@ -48,7 +48,8 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     "${ALGORITHM_TEST_LINK_LIBRARIES}")
   # Executable writes checkpoint file into the dir where it runs:
   set(CHECKPOINT
-    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/${TEST_NAME}/SpectreCheckpoint000000")
+    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/${TEST_NAME}/\
+Checkpoints/Checkpoint_0000")
   add_test(
     NAME "Unit.Parallel.${TEST_NAME}"
     COMMAND

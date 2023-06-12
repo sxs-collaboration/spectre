@@ -7,7 +7,7 @@ Testing:
   Timeout: 10
   ExpectedExitCode: 2
 ExpectedOutput:
-  - SpectreCheckpoint000000
+  - Checkpoints/Checkpoint_0000
 
 ---
 
