@@ -125,9 +125,15 @@ struct InitializeCharacteristicEvolutionVariables {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
+    initialize_impl(make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+  template <typename TagList>
+  static void initialize_impl(const gsl::not_null<db::DataBox<TagList>*> box) {
+    const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(*box);
     const size_t number_of_radial_points =
-        db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(box);
+        db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(*box);
     const size_t boundary_size =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     const size_t volume_size = boundary_size * number_of_radial_points;
@@ -135,8 +141,7 @@ struct InitializeCharacteristicEvolutionVariables {
         number_of_radial_points *
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
     Initialization::mutate_assign<simple_tags_for_evolution>(
-        make_not_null(&box),
-        typename boundary_value_variables_tag::type{boundary_size},
+        box, typename boundary_value_variables_tag::type{boundary_size},
         typename coordinate_variables_tag::type{boundary_size},
         typename dt_coordinate_variables_tag::type{boundary_size},
         typename evolved_swsh_variables_tag::type{volume_size},
@@ -150,8 +155,6 @@ struct InitializeCharacteristicEvolutionVariables {
         typename swsh_derivative_variables_tag::type{volume_size, 0.0},
         Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
         typename ccm_tag::type{boundary_size});
-
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
