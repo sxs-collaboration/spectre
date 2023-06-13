@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FfeBreakdown.cpp
+  RotatingDipole.cpp
   )
 
 spectre_target_headers(
@@ -18,6 +19,7 @@ spectre_target_headers(
   AnalyticData.hpp
   Factory.hpp
   FfeBreakdown.hpp
+  RotatingDipole.hpp
   )
 
 target_link_libraries(
