@@ -237,23 +237,51 @@ class RandomAccessSequence {
       typename std::iterator_traits<const_iterator>::difference_type;
   using size_type = size_t;
 
-  iterator begin() { return {dthis(), 0}; }
-  const_iterator begin() const { return {dthis(), 0}; }
-  const_iterator cbegin() const { return begin(); }
-  iterator end() { return {dthis(), dthis()->size()}; }
-  const_iterator end() const { return {dthis(), dthis()->size()}; }
-  const_iterator cend() const { return end(); }
+  iterator begin() & { return {dthis(), 0}; }
+  const_iterator begin() const& { return {dthis(), 0}; }
+  const_iterator cbegin() const& { return begin(); }
+  iterator end() & { return {dthis(), dthis()->size()}; }
+  const_iterator end() const& { return {dthis(), dthis()->size()}; }
+  const_iterator cend() const& { return end(); }
 
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const {
+  reverse_iterator rbegin() & { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const& {
     return const_reverse_iterator(end());
   }
-  const_reverse_iterator crbegin() const { return rbegin(); }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const {
+  const_reverse_iterator crbegin() const& { return rbegin(); }
+  reverse_iterator rend() & { return reverse_iterator(begin()); }
+  const_reverse_iterator rend() const& {
     return const_reverse_iterator(begin());
   }
-  const_reverse_iterator crend() const { return rend(); }
+  const_reverse_iterator crend() const& { return rend(); }
+
+  /// Not part of the standard, but any attempt to store the results
+  /// of a call that would match one of these would be undefined
+  /// behavior.  Valid uses would be: use as temporaries, but that can
+  /// usually be better done through the normal container access; and
+  /// use in unevaluated contexts, but those should really be
+  /// explicitly requesting lvalue references if that's what they're
+  /// checking.  Either of these can be easily worked around.  If
+  /// these things happen in code outside our control we may have to
+  /// reconsider.
+  /// @{
+  void begin() && = delete;
+  void begin() const&& = delete;
+  void cbegin() && = delete;
+  void cbegin() const&& = delete;
+  void end() && = delete;
+  void end() const&& = delete;
+  void cend() && = delete;
+  void cend() const&& = delete;
+  void rbegin() && = delete;
+  void rbegin() const&& = delete;
+  void crbegin() && = delete;
+  void crbegin() const&& = delete;
+  void rend() && = delete;
+  void rend() const&& = delete;
+  void crend() && = delete;
+  void crend() const&& = delete;
+  /// @}
 
   size_type max_size() const { return std::numeric_limits<size_type>::max(); }
   bool empty() const { return begin() == end(); }
