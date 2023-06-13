@@ -47,6 +47,7 @@ target_link_libraries(
   Brigand
   Charmxx::charmxx
   Charmxx::pup
+  ErrorHandling
   hdf5::hdf5
   SpectreFlags
   )
