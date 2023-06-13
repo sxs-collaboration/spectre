@@ -46,9 +46,7 @@ void EventsAndDenseTriggers::pup(PUP::er& p) {
 }
 
 bool EventsAndDenseTriggers::initialized() const {
-  disable_floating_point_exceptions();
-  const bool result = not std::isnan(next_check_);
-  enable_floating_point_exceptions();
-  return result;
+  const ScopedFpeState disable_fpes(false);
+  return not std::isnan(next_check_);
 }
 }  // namespace evolution

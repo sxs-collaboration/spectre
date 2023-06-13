@@ -315,7 +315,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
                  "without an analytic solution.");
       }
       const auto& scalar = value(get<tag>(box));
-      const auto [component_names, components] = scalar.get_vector_of_data();
+      const auto components = get<1>(scalar.get_vector_of_data());
       if (components.size() > 1) {
         ERROR("Extremum should be taken on a scalar, yet we have "
               << components.size() << " components in tensor " << tensor_name);

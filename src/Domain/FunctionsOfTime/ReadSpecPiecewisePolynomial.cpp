@@ -33,7 +33,9 @@ void read_spec_piecewise_polynomial(
     const std::map<std::string, std::string>& dataset_name_map,
     const bool quaternion_rotation) {
   h5::H5File<h5::AccessType::ReadOnly> file{file_name};
-  for (const auto& [spec_name, spectre_name] : dataset_name_map) {
+  for (const auto& name_pair : dataset_name_map) {
+    const auto& spec_name = name_pair.first;
+    const auto& spectre_name = name_pair.second;
     file.close_current_object();
     const auto& dat_file = file.get<h5::Dat>("/" + spec_name);
     const auto& dat_data = dat_file.get_data();
@@ -244,7 +246,9 @@ void override_functions_of_time(
         function_of_time_file, function_of_time_name_map, true);
   }
 
-  for (const auto& [spec_name, spectre_name] : function_of_time_name_map) {
+  for (const auto& name_pair : function_of_time_name_map) {
+    const auto& spec_name = name_pair.first;
+    const auto& spectre_name = name_pair.second;
     (void)spec_name;
     // The FunctionsOfTime we are mutating must already have
     // an element with key==spectre_name; this action only

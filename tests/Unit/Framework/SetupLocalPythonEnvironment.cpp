@@ -70,9 +70,9 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
 
     // On some python versions init_numpy() can throw an FPE, this occurred at
     // least with python 3.6, numpy 1.14.2.
-    disable_floating_point_exceptions();
+    ScopedFpeState disable_fpes(false);
     init_numpy();
-    enable_floating_point_exceptions();
+    disable_fpes.restore_exceptions();
   }
   initialized = true;
 }

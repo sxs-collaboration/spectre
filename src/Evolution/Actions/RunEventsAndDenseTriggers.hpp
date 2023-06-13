@@ -140,7 +140,14 @@ struct RunEventsAndDenseTriggers {
           using tag = tmpl::type_from<decltype(tag_v)>;
           db::mutate<tag>(
               [this](const gsl::not_null<typename tag::type*> value) {
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
                 *value = std::move(tuples::get<tag>(*non_tensors_));
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 13
+#pragma GCC diagnostic pop
+#endif
               },
               box_);
         });

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "Evolution/Systems/Ccz4/Ricci.hpp"
 
 #include <cstddef>
@@ -138,10 +140,5 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,        \
       const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& d_field_p);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
-                        (double, DataVector))
-
-#undef INSTANTIATE
-#undef DTYPE
-#undef FRAME
-#undef DIM
+// Instantiations are split into several compilation units to reduce
+// compiler memory consumption.

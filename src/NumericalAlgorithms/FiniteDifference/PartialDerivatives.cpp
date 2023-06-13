@@ -452,6 +452,13 @@ void logical_partial_derivatives(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
+  template void detail::logical_partial_derivatives_impl(                      \
+      gsl::not_null<std::array<gsl::span<double>, DIM(data)>*> derivative,     \
+      gsl::span<double>* const buffer,                                         \
+      const gsl::span<const double>& volume_vars,                              \
+      const DirectionMap<DIM(data), gsl::span<const double>>& ghost_cell_vars, \
+      const Mesh<DIM(data)>& volume_fd_mesh, size_t number_of_variables,       \
+      size_t fd_order);                                                        \
   template void logical_partial_derivatives(                                   \
       gsl::not_null<std::array<gsl::span<double>, DIM(data)>*> derivative,     \
       const gsl::span<const double>& volume_vars,                              \

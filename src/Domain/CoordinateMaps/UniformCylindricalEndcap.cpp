@@ -8,6 +8,7 @@
 #include <optional>
 #include <pup.h>
 #include <sstream>
+#include <tuple>
 #include <utility>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -43,7 +44,7 @@ double this_function_is_zero_for_correct_rhobar(
 }
 
 // min and max values of rhobar in the inverse function.
-std::array<double, 2> rhobar_min_max(
+std::tuple<double, double> rhobar_min_max(
     const std::array<double, 3>& center_one,
     const std::array<double, 3>& center_two, const double radius_one,
     const double radius_two, const double theta_max_one,
@@ -432,8 +433,9 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
         return std::make_pair(func_to_zero, deriv_of_func_to_zero);
       };
 
-  // Non-const because might be changed below.
-  auto [rhobar_min, rhobar_max] =
+  double rhobar_min{};
+  double rhobar_max{};
+  std::tie(rhobar_min, rhobar_max) =
       rhobar_min_max(center_one_, center_two_, radius_one_, radius_two_,
                      theta_max_one_, theta_max_two_, target_coords);
 

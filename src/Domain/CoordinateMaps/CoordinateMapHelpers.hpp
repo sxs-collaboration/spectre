@@ -48,10 +48,8 @@ void apply_map(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   *t_map_point = the_map(*t_map_point, t, functions_of_time);
@@ -91,10 +89,8 @@ auto apply_map(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   return the_map(source_points, t, functions_of_time);
@@ -134,10 +130,8 @@ auto apply_inverse_map(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   return the_map.inverse(target_points, t, functions_of_time);
@@ -171,10 +165,8 @@ auto apply_frame_velocity(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   return the_map.frame_velocity(source_points, t, functions_of_time);
@@ -209,10 +201,8 @@ auto apply_jacobian(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   if (LIKELY(not the_map.is_identity())) {
@@ -250,10 +240,8 @@ auto apply_inverse_jacobian(
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
       [t]() {
-        disable_floating_point_exceptions();
-        const bool isnan = std::isnan(t);
-        enable_floating_point_exceptions();
-        return not isnan;
+        const ScopedFpeState disable_fpes(false);
+        return not std::isnan(t);
       }(),
       "The time must not be NaN for time-dependent maps.");
   if (LIKELY(not the_map.is_identity())) {

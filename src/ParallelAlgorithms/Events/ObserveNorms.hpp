@@ -374,7 +374,9 @@ operator()(const typename ObservationValueTag::type& observation_value,
         const auto& tensor = value(get<tag>(box));
 
         auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
-        const auto [component_names, components] = tensor.get_vector_of_data();
+        const auto names_and_components = tensor.get_vector_of_data();
+        const auto& component_names = names_and_components.first;
+        const auto& components = names_and_components.second;
         if (components[0].size() != number_of_points) {
           ERROR("The number of grid points of the mesh is "
                 << number_of_points << " but the tensor '" << tensor_name
