@@ -7,7 +7,6 @@
 // Include STL headers
 #include <algorithm>
 #include <array>
-#include <csignal>  // For Blaze error handling (see SetupBlaze.cmake)
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -16,6 +15,7 @@
 #include <vector>
 
 #include <Utilities/ErrorHandling/Assert.hpp>
+#include <Utilities/ErrorHandling/Error.hpp>
 #include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
 #include <blaze/math/GroupTag.h>

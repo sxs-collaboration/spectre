@@ -121,22 +121,23 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
+# Configure error handling to use our `ERROR` macro so Blaze errors print
+# backtraces
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  # CMake doesn't like function macros in target_compile_definitions, so we
-  # have to define it separately. We also need to make sure csignal is
-  # included. It is included in the PCH (see tools/SpectrePch.hpp).
-  # If there's no PCH, we need to include it here.
+  # We need to make sure Error.hpp is included. It is included in the PCH (see
+  # tools/SpectrePch.hpp). If there's no PCH, we need to include it here.
+  target_link_libraries(Blaze INTERFACE ErrorHandling)
   if (NOT USE_PCH)
     target_compile_options(Blaze
       INTERFACE
-      "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
+      "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include Utilities/ErrorHandling/Error.hpp>")
   endif()
+  # CMake doesn't like function macros in target_compile_definitions, so we
+  # have to define it separately.
   target_compile_options(Blaze
     INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
-    -D 'BLAZE_THROW(EXCEPTION)=struct sigaction handler{}\;handler.sa_handler=\
-SIG_IGN\;handler.sa_flags=0\;sigemptyset(&handler.sa_mask)\;\
-sigaction(SIGTRAP,&handler,nullptr)\;raise(SIGTRAP)\;throw EXCEPTION'
+    -D 'BLAZE_THROW(EXCEPTION)=ERROR(EXCEPTION.what())'
     >")
 else()
   # In release mode disable checks completely.
