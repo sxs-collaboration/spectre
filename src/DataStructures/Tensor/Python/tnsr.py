@@ -34,3 +34,5 @@ II = TensorMeta("II")
 ijj = TensorMeta("ijj")
 Ijj = TensorMeta("Ijj")
 iJkk = TensorMeta("iJkk")
+
+iaa = TensorMeta("iaa")
