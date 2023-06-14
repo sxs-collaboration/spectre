@@ -63,6 +63,7 @@ class InvalidInputFileError(Exception):
 def validate_input_file(
     input_file_path: Union[str, Path],
     executable: Optional[Union[str, Path]] = None,
+    work_dir: Optional[Union[str, Path]] = None,
     print_context: bool = True,
     raise_exception: bool = True,
 ):
@@ -75,6 +76,8 @@ def validate_input_file(
       input_file_path: Path to the input file on disk.
       executable: Name or path of the executable. If unspecified, use the
         'Executable:' in the input file metadata.
+      work_dir: Working directory for invoking the executable with the input
+        file. Relative paths in the input file are resolved from here.
       print_context: Print additional context where the parse error occurred
         before raising an exception (default: True).
       raise_exception: Raise an 'InvalidInputFileError' if a parse error
@@ -92,6 +95,7 @@ def validate_input_file(
         [executable, "--input-file", input_file_path, "--check-options"],
         capture_output=True,
         text=True,
+        cwd=work_dir,
     )
 
     if process.returncode == 0:

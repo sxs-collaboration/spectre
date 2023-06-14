@@ -21,6 +21,8 @@ import rich.rule
 import rich.table
 import yaml
 
+from spectre.support.DirectoryStructure import Segment
+
 from .ExecutableStatus import match_executable_status
 
 logger = logging.getLogger(__name__)
@@ -104,7 +106,7 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
             r"^SPECTRE_INPUT_FILE=(.*)", comment, flags=re.MULTILINE
         )
         if match:
-            return match.group(1)
+            return os.path.join(work_dir, match.group(1))
         else:
             logger.debug(
                 "Could not find 'SPECTRE_INPUT_FILE' in Slurm comment:\n"
@@ -203,7 +205,14 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
 
 
 @rich.console.group()
-def render_status(show_paths, show_unidentified, state_styles, **kwargs):
+def render_status(
+    show_paths,
+    show_unidentified,
+    show_deleted,
+    show_all_segments,
+    state_styles,
+    **kwargs,
+):
     job_data = fetch_job_data(
         [
             "JobID",
@@ -223,6 +232,34 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
     # Do nothing if job list is empty
     if len(job_data) == 0:
         return
+
+    # Remove deleted jobs
+    if not show_deleted:
+        deleted_jobs = job_data[~job_data["WorkDir"].map(os.path.exists)]
+        job_data.drop(deleted_jobs.index, inplace=True)
+
+    # Keep only latest in a series of segments
+    job_data[["SegmentsDir", "SegmentId"]] = [
+        (
+            (str(segment.path.resolve().parent), segment.id)
+            if segment
+            else (None, None)
+        )
+        for segment in job_data["WorkDir"].map(Segment.match)
+    ]
+    if not show_all_segments:
+        for segments_dir in pd.unique(job_data["SegmentsDir"]):
+            if not segments_dir:
+                continue
+            segments_jobs = job_data[job_data["SegmentsDir"] == segments_dir]
+            if len(segments_jobs) == 1:
+                continue
+            latest_segment_id = sorted(segments_jobs["SegmentId"])[-1]
+            drop_segment_jobs = job_data[
+                (job_data["SegmentsDir"] == segments_dir)
+                & (job_data["SegmentId"] != latest_segment_id)
+            ]
+            job_data.drop(drop_segment_jobs.index, inplace=True)
 
     # List most recent jobs first
     job_data.sort_values("JobID", inplace=True, ascending=False)
@@ -403,6 +440,18 @@ def render_status(show_paths, show_unidentified, state_styles, **kwargs):
     "--show-unidentified",
     is_flag=True,
     help="Also show jobs that were not identified as SpECTRE executables.",
+)
+@click.option(
+    "-D",
+    "--show-deleted",
+    is_flag=True,
+    help="Also show jobs that ran in directories that are now deleted.",
+)
+@click.option(
+    "-A",
+    "--show-all-segments",
+    is_flag=True,
+    help="Show all segments instead of just the latest.",
 )
 @click.option(
     "-s",
