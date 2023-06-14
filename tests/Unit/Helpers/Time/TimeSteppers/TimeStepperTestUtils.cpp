@@ -386,7 +386,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
   TimeStepId time_id(forward, 0, forward ? slab.start() : slab.end());
   double y = analytic(time_id.substep_time());
   TimeSteppers::History<double> volume_history{order};
-  TimeSteppers::BoundaryHistory<double, double, double> boundary_history{order};
+  TimeSteppers::BoundaryHistory<double, double, double> boundary_history{};
 
   {
     Time history_time = time_id.step_time();
@@ -406,9 +406,10 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
       const TimeStepId history_id(forward, 0, history_time);
       volume_history.insert_initial(history_id, analytic(history_time.value()),
                                     0.);
-      boundary_history.local_insert_initial(history_id, unused_local_deriv);
-      boundary_history.remote_insert_initial(history_id,
-                                             driver(history_time.value()));
+      boundary_history.local().insert_initial(history_id, order,
+                                              unused_local_deriv);
+      boundary_history.remote().insert_initial(history_id, order,
+                                               driver(history_time.value()));
     }
   }
 
@@ -417,8 +418,9 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
          substep < stepper.number_of_substeps();
          ++substep) {
       volume_history.insert(time_id, y, 0.);
-      boundary_history.local_insert(time_id, unused_local_deriv);
-      boundary_history.remote_insert(time_id, driver(time_id.substep_time()));
+      boundary_history.local().insert(time_id, order, unused_local_deriv);
+      boundary_history.remote().insert(time_id, order,
+                                       driver(time_id.substep_time()));
 
       stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
                        step_size);
@@ -432,8 +434,8 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
   // arbitrary, but much larger than the order of any integrators we
   // care about and much smaller than the number of time steps in the
   // test.
-  CHECK(boundary_history.local_size() < 20);
-  CHECK(boundary_history.remote_size() < 20);
+  CHECK(boundary_history.local().size() < 20);
+  CHECK(boundary_history.remote().size() < 20);
 }
 
 void check_convergence_order(const TimeStepper& stepper,
@@ -580,16 +582,17 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) {
     return TimeStepId(true, 0, t);
   };
 
-  TimeSteppers::BoundaryHistory<double, double, double> history{
-    stepper.order()};
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
   {
     const Slab init_slab = slab.retreat();
     for (size_t i = 0; i < stepper.number_of_past_steps(); ++i) {
       const Time init_time =
           init_slab.end() -
           init_slab.duration() * (i + 1) / stepper.number_of_past_steps();
-      history.local_insert_initial(make_time_id(init_time), get_value());
-      history.remote_insert_initial(make_time_id(init_time), get_value());
+      history.local().insert_initial(make_time_id(init_time), stepper.order(),
+                                     get_value());
+      history.remote().insert_initial(make_time_id(init_time), stepper.order(),
+                                      get_value());
     }
   }
 
@@ -605,9 +608,11 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) {
     const size_t side = next[0] <= next[1] ? 0 : 1;
 
     if (side == 0) {
-      history.local_insert(make_time_id(next[0]), get_value());
+      history.local().insert(make_time_id(next[0]), stepper.order(),
+                             get_value());
     } else {
-      history.remote_insert(make_time_id(next[1]), get_value());
+      history.remote().insert(make_time_id(next[1]), stepper.order(),
+                              get_value());
     }
 
     const TimeDelta this_dt = gsl::at(dt, side).front();

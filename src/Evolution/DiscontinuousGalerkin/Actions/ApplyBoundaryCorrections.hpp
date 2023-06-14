@@ -309,8 +309,12 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mortar_data.insert_neighbor_mortar_data(
                 receive_temporal_id, std::get<1>(received_mortar_data->second),
                 std::move(*std::get<3>(received_mortar_data->second)));
-            boundary_data_history->at(mortar_id).remote_insert(
-                receive_temporal_id, std::move(neighbor_mortar_data));
+            // We don't yet communicate the integration order, because
+            // we don't have any variable-order methods.  The
+            // fixed-order methods ignore the field.
+            boundary_data_history->at(mortar_id).remote().insert(
+                receive_temporal_id, std::numeric_limits<size_t>::max(),
+                std::move(neighbor_mortar_data));
           }
         }
         return true;
