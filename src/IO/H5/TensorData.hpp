@@ -68,7 +68,7 @@ struct ElementVolumeData {
   void pup(PUP::er& p);
   /// Name of the grid (should be human-readable). For standard volume data this
   /// name must be the string representation of an ElementId, such as
-  /// [B0,(I1L0,I0L0,I2L3)]. Code that reads the volume data may rely on this
+  /// [B0,(L0I1,L0I0,L3I2)]. Code that reads the volume data may rely on this
   /// pattern to reconstruct the ElementId.
   std::string element_name{};
   /// All tensor components on the grid
