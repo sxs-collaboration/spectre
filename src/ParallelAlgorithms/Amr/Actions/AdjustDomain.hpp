@@ -54,7 +54,7 @@ namespace amr::Actions {
 /// - Updates the Neighbors of the Element
 /// - Resets amr::Tags::Flag%s to amr::Flag::Undefined
 /// - Resets amr::Tags::NeighborFlags to an empty map
-/// - Mutates all return_tags of Metavariables::amr_mutators
+/// - Mutates all return_tags of Metavariables::amr::projectors
 struct AdjustDomain {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables>
@@ -133,14 +133,14 @@ struct AdjustDomain {
             make_not_null(&box));
       }
 
-      // Run the mutators on all elements, even if they did no h-refinement.
-      // This allows mutators to update mutable items that depend upon the
+      // Run the projectors on all elements, even if they did no h-refinement.
+      // This allows projectors to update mutable items that depend upon the
       // neighbors of the element.
-      tmpl::for_each<typename Metavariables::amr_mutators>(
-          [&box, &old_mesh_and_element](auto mutator_v) {
-            using mutator = typename decltype(mutator_v)::type;
-            db::mutate_apply<mutator>(make_not_null(&box),
-                                      old_mesh_and_element);
+      tmpl::for_each<typename Metavariables::amr::projectors>(
+          [&box, &old_mesh_and_element](auto projector_v) {
+            using projector = typename decltype(projector_v)::type;
+            db::mutate_apply<projector>(make_not_null(&box),
+                                        old_mesh_and_element);
           });
 
       // Reset the AMR flags

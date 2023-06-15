@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -115,7 +116,9 @@ struct Metavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
-  using amr_mutators = tmpl::list<>;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::list<>;
+  };
 };
 
 void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,

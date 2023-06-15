@@ -21,6 +21,7 @@
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
@@ -158,7 +159,7 @@ struct TimeStepping {
 
 /// \brief Initialize/update items related to time stepping after an AMR change
 template <size_t Dim>
-struct ProjectTimeStepping {
+struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
   using return_tags =
       tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
                  ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,

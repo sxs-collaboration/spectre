@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Criteria/Test_DriveToTarget.cpp
   Criteria/Test_Random.cpp
   Projectors/Test_Mesh.cpp
+  Test_Protocols.cpp
   )
 
 add_test_library(

@@ -27,6 +27,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Amr/Actions/InitializeChild.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -60,7 +61,9 @@ struct Metavariables {
         tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
   };
 
-  using amr_mutators = tmpl::list<>;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::list<>;
+  };
 };
 
 void test() {

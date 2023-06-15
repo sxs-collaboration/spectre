@@ -43,7 +43,7 @@ namespace amr::Actions {
 /// - Modifies:
 ///   * domain::Tags::Element<volume_dim>
 ///   * domain::Tags::Mesh<volume_dim>
-///   * all return_tags of Metavariables::amr_mutators
+///   * all return_tags of Metavariables::amr::projectors
 ///
 /// \details This action is meant to be invoked by
 /// amr::Actions::CollectDataFromChildren
@@ -92,10 +92,10 @@ struct InitializeParent {
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
         make_not_null(&box), std::move(parent), std::move(parent_mesh));
 
-    tmpl::for_each<typename Metavariables::amr_mutators>(
-        [&box, &children_items](auto mutator_v) {
-          using mutator = typename decltype(mutator_v)::type;
-          db::mutate_apply<mutator>(make_not_null(&box), children_items);
+    tmpl::for_each<typename Metavariables::amr::projectors>(
+        [&box, &children_items](auto projector_v) {
+          using projector = typename decltype(projector_v)::type;
+          db::mutate_apply<projector>(make_not_null(&box), children_items);
         });
 
     Parallel::register_element<ParallelComponent>(box, cache, parent_id);

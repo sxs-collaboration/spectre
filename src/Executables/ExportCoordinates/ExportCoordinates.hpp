@@ -65,6 +65,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -320,9 +321,10 @@ struct Metavariables {
                  observers::Actions::RegisterWithObservers<
                      Actions::FindGlobalMinimumGridSpacing>>;
 
-  using amr_mutators =
-      tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
-                 evolution::dg::Initialization::ProjectDomain<volume_dim>>;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors =
+        tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
+                   evolution::dg::Initialization::ProjectDomain<volume_dim>>;
   };
 
   using dg_element_array = DgElementArray<
@@ -334,12 +336,12 @@ struct Metavariables {
                              Initialization::TimeStepping<Metavariables,
                                                           local_time_stepping>,
                              evolution::dg::Initialization::Domain<Dim>,
-                             amr::Initialization::Initialize<volume_dim>,
+                             ::amr::Initialization::Initialize<volume_dim>,
                              Initialization::SetMeshType<Dim>>,
-                      Initialization::Actions::AddComputeTags<tmpl::list<
+                         Initialization::Actions::AddComputeTags<tmpl::list<
                              ::domain::Tags::MinimumGridSpacingCompute<
-                              Dim, Frame::Inertial>,
-                          ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                                 Dim, Frame::Inertial>,
+                             ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
                          Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,
@@ -363,7 +365,7 @@ struct Metavariables {
   };
 
   using component_list =
-      tmpl::list<amr::Component<Metavariables>, dg_element_array,
+      tmpl::list<::amr::Component<Metavariables>, dg_element_array,
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>;
 

@@ -42,6 +42,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -168,7 +169,7 @@ struct Domain {
 /// \brief Initialize/update items related to coordinate maps after an AMR
 /// change
 template <size_t Dim>
-struct ProjectDomain {
+struct ProjectDomain : tt::ConformsTo<amr::protocols::Projector> {
   using return_tags = tmpl::list<::domain::Tags::ElementMap<Dim, Frame::Grid>,
                                  ::domain::CoordinateMaps::Tags::CoordinateMap<
                                      Dim, Frame::Grid, Frame::Inertial>>;
