@@ -12,6 +12,14 @@ from spectre.PointwiseFunctions.GeneralRelativity import *
 
 
 class TestBindings(unittest.TestCase):
+    def test_derivative_inverse_spatial_metric(self):
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
+        d_spatial_metric = tnsr.ijj[DataVector, 3](num_points=1, fill=0.0)
+        deri_inverse_spatial_metric_tensor = deriv_inverse_spatial_metric(
+            inverse_spatial_metric,
+            d_spatial_metric,
+        )
+
     def test_extrinsic_curvature(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)

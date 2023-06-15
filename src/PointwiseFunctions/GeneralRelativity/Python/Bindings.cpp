@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -63,6 +64,13 @@ void bind_spacetime_impl(py::module& m) {  // NOLINT
 
 template <size_t Dim>
 void bind_impl(py::module& m) {  // NOLINT
+  m.def(
+      "deriv_inverse_spatial_metric",
+      static_cast<tnsr::iJJ<DataVector, Dim> (*)(
+          const tnsr::II<DataVector, Dim>&, const tnsr::ijj<DataVector, Dim>&)>(
+          &::gr::deriv_inverse_spatial_metric),
+      py::arg("inverse_spatial_metric"), py::arg("d_spatial_metric"));
+
   m.def(
       "extrinsic_curvature",
       py::overload_cast<
