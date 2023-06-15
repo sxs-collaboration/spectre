@@ -860,6 +860,7 @@ void History<Vars>::pup(PUP::er& p) {
   p | integration_order_;
   p | step_values_;
   p | substep_values_;
+  p | latest_value_if_discarded_;
 
   // Don't serialize the allocation cache.
 }
