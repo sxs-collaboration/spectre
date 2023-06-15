@@ -19,6 +19,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StlBoilerplate.hpp"
 #include "Utilities/TMPL.hpp"
@@ -858,13 +859,7 @@ template <typename Vars>
 void History<Vars>::pup(PUP::er& p) {
   p | integration_order_;
   p | step_values_;
-
-  size_t substep_size = substep_values_.size();
-  p | substep_size;
-  substep_values_.resize(substep_size);
-  for (auto& record : substep_values_) {
-    p | record;
-  }
+  p | substep_values_;
 
   // Don't serialize the allocation cache.
 }
