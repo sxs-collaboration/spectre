@@ -11,6 +11,7 @@ import yaml
 from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.support.Resubmit import resubmit, resubmit_command
 from spectre.support.Schedule import (
     Checkpoint,
     Segment,
@@ -266,6 +267,17 @@ NUM_NODES=1
             "001",
         )
 
+        # Resubmit from the second segment using `resubmit`
+        checkpoint = Checkpoint.match(
+            self.test_dir / "Segments/Segment_0001/Checkpoints/Checkpoint_0000"
+        )
+        checkpoint.path.mkdir(parents=True)
+        resubmit(self.test_dir / "Segments", submit=True)
+        self.assertEqual(
+            (self.test_dir / "Segments/Segment_0002/jobid.txt").read_text(),
+            "001",
+        )
+
     def test_cli(self):
         runner = CliRunner()
         runner.invoke(
@@ -296,6 +308,17 @@ NUM_NODES=1
                 "--submit-script-template",
                 str(self.submit_script_template),
                 "--submit",
+            ],
+            catch_exceptions=False,
+        )
+        checkpoint = Checkpoint.match(
+            self.test_dir / "Segments/Segment_0000/Checkpoints/Checkpoint_0000"
+        )
+        checkpoint.path.mkdir(parents=True)
+        runner.invoke(
+            resubmit_command,
+            [
+                str(self.test_dir / "Segments"),
             ],
             catch_exceptions=False,
         )

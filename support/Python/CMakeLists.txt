@@ -9,6 +9,7 @@ spectre_python_add_module(
   PYTHON_FILES
   DirectoryStructure.py
   Machines.py
+  Resubmit.py
   Schedule.py
 )
 
