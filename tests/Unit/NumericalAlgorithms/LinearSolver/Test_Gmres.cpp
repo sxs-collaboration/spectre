@@ -5,11 +5,19 @@
 
 #include <cstddef>
 
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+#include "Framework/TestCreation.hpp"
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 12
+#pragma GCC diagnostic pop
+#endif
+
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
-#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/LinearSolver/TestHelpers.hpp"

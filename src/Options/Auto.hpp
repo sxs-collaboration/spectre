@@ -43,6 +43,18 @@ class Auto {
   Auto() = default;
   explicit Auto(T value) : value_(std::move(value)) {}
 
+  // These lines are just to work around a spurious warning.
+  Auto(Auto&&) = default;
+  Auto& operator=(Auto&&) = default;
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and __GNUC__ < 14
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+  ~Auto() = default;
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and __GNUC__ < 14
+#pragma GCC diagnostic pop
+#endif
+
   // NOLINTNEXTLINE(google-explicit-constructor)
   template <typename U>
   operator std::optional<U>() && { return std::move(value_); }

@@ -147,7 +147,14 @@ void test_no_ghost_cells() {
   bm_inbox.erase(time_step_id_b);
   CHECK(bc_inbox.count(time_step_id_b) == 0);
   CHECK(bm_inbox.count(time_step_id_b) == 0);
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and __GNUC__ < 14
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 }
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and __GNUC__ < 14
+#pragma GCC diagnostic pop
+#endif
 
 template <size_t Dim>
 void test_with_ghost_cells() {
