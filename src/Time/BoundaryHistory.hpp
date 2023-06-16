@@ -10,6 +10,7 @@
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/CircularDeque.hpp"
@@ -151,6 +152,17 @@ class BoundaryHistory {
       return entry(id).data;
     }
     /// @}
+
+    /// Apply \p func to each entry.
+    ///
+    /// The function \p func must accept two arguments, one of type
+    /// `const TimeStepId&` and a second of either type `const Data&`
+    /// or `gsl::not_null<Data*>`.  (Note that `Data` may be a
+    /// const-qualified type.)  If entries are modified, the coupling
+    /// cache must be cleared by calling `clear_coupling_cache()` on
+    /// the parent `BoundaryHistory` object.
+    template <typename Func>
+    void for_each(Func&& func) const;
 
    protected:
     ~SideAccessCommon() = default;
@@ -346,6 +358,23 @@ class BoundaryHistory {
                   decltype(local_data_)::max_size()>>>
       couplings_;
 };
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local, bool Mutable>
+template <typename Func>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::SideAccessCommon<
+    Local, Mutable>::for_each(Func&& func) const {
+  for (auto& step : parent_data()) {
+    for (auto& substep : step.substeps) {
+      if constexpr (std::is_invocable_v<Func&, const TimeStepId&,
+                                        const Data&>) {
+        func(std::as_const(substep.id), std::as_const(substep.data));
+      } else {
+        func(std::as_const(substep.id), make_not_null(&substep.data));
+      }
+    }
+  }
+}
 
 template <typename LocalData, typename RemoteData, typename CouplingResult>
 template <bool Local>

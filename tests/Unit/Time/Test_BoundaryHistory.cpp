@@ -3,11 +3,14 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <boost/functional/hash.hpp>
+#include <cctype>
 #include <cstddef>
 #include <limits>
 #include <map>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -588,6 +591,119 @@ void test_substeps() {
   CHECK(CacheCheck::count() == 1);
   CHECK(CacheCheck::entries.at({2.0, 1.0}) == 1);
 }
+
+template <bool Local, bool Modified>
+struct ReferenceFunctor {
+  using ExpectedData =
+      tmpl::conditional_t<Local, std::string, std::vector<int>>;
+  std::unordered_set<TimeStepId> ids{};
+  std::unordered_set<ExpectedData, boost::hash<ExpectedData>> entries{};
+
+  // Templated to test that the correct types are passed.
+  template <typename Id, typename Data>
+  void operator()(Id& id, Data& data) {
+    static_assert(std::is_same_v<Id, const TimeStepId>);
+    static_assert(std::is_same_v<Data, const ExpectedData>);
+
+    CHECK(ids.insert(id).second);
+    CHECK(entries.insert(data).second);
+    if constexpr (Local) {
+      CHECK(static_cast<bool>(std::islower(data[0])) == Modified);
+    } else {
+      CHECK((data[0] < 0) == Modified);
+    }
+  }
+};
+
+template <bool Local, bool Modified, bool Const>
+struct NotNullFunctor {
+  using ExpectedData =
+      tmpl::conditional_t<Local, std::string, std::vector<int>>;
+  std::unordered_set<TimeStepId> ids{};
+  std::unordered_set<ExpectedData, boost::hash<ExpectedData>> entries{};
+
+  // Templated to test that the correct types are passed.
+  template <typename Id, typename Data>
+  void operator()(Id& id, const gsl::not_null<Data*> data) {
+    static_assert(std::is_same_v<Id, const TimeStepId>);
+    static_assert(std::is_same_v<std::remove_const_t<Data>, ExpectedData>);
+    static_assert(std::is_const_v<Data> == Const);
+
+    CHECK(ids.insert(id).second);
+    CHECK(entries.insert(*data).second);
+    if constexpr (Local) {
+      CHECK(static_cast<bool>(std::islower((*data)[0])) == Modified);
+      if constexpr (not Const) {
+        (*data)[0] =
+            Modified ? std::toupper((*data)[0]) : std::tolower((*data)[0]);
+      }
+    } else {
+      CHECK(((*data)[0] < 0) == Modified);
+      if constexpr (not Const) {
+        (*data)[0] *= -1;
+      }
+    }
+  }
+};
+
+template <bool Local, bool Modified, typename Times>
+void check_reference(const Times& times, const size_t expected_size) {
+  ReferenceFunctor<Local, Modified> func{};
+  times.for_each(func);
+  CHECK(func.ids.size() == expected_size);
+}
+
+template <bool Local, bool Modified, bool Const, typename Times>
+void check_not_null(const Times& times, const size_t expected_size) {
+  NotNullFunctor<Local, Modified, Const> func{};
+  times.for_each(func);
+  CHECK(func.ids.size() == expected_size);
+}
+
+void test_for_each() {
+  INFO("for_each");
+
+  BoundaryHistoryType history{};
+  const BoundaryHistoryType& const_history = history;
+
+  history.local().insert(make_time_id(0.), 1, "A");
+  history.local().insert(make_time_id(1.), 1, "B");
+  history.local().insert(make_time_id(2.), 1, "C");
+  history.local().insert(make_time_id(2., 1), 1, "D");
+  const size_t local_size = 4;
+
+  history.remote().insert(make_time_id(0.), 1, std::vector{1});
+  history.remote().insert(make_time_id(1.), 1, std::vector{2});
+  history.remote().insert(make_time_id(2.), 1, std::vector{3});
+  history.remote().insert(make_time_id(3.), 1, std::vector{4});
+  history.remote().insert(make_time_id(3., 1), 1, std::vector{5});
+  const size_t remote_size = 5;
+
+  // The second template parameter indicates whether the data is
+  // expected to have been modified from its original state at that
+  // point.  Modification happens with each call to
+  // `check_not_null<..., ..., false>`.  Modifying twice gives the
+  // original data.
+  check_reference<true, false>(const_history.local(), local_size);
+  check_reference<true, false>(history.local(), local_size);
+  check_not_null<true, false, true>(const_history.local(), local_size);
+  check_not_null<true, false, false>(history.local(), local_size);
+  check_reference<true, true>(const_history.local(), local_size);
+  check_reference<true, true>(history.local(), local_size);
+  check_not_null<true, true, true>(const_history.local(), local_size);
+  check_not_null<true, true, false>(history.local(), local_size);
+  check_reference<true, false>(const_history.local(), local_size);
+
+  check_reference<false, false>(const_history.remote(), remote_size);
+  check_reference<false, false>(history.remote(), remote_size);
+  check_not_null<false, false, true>(const_history.remote(), remote_size);
+  check_not_null<false, false, false>(history.remote(), remote_size);
+  check_reference<false, true>(const_history.remote(), remote_size);
+  check_reference<false, true>(history.remote(), remote_size);
+  check_not_null<false, true, true>(const_history.remote(), remote_size);
+  check_not_null<false, true, false>(history.remote(), remote_size);
+  check_reference<false, false>(const_history.remote(), remote_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
@@ -595,4 +711,5 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   test_boundary_history<false>();
   test_substeps<false>();
   test_substeps<true>();
+  test_for_each();
 }
