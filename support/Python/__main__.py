@@ -30,6 +30,7 @@ class Cli(click.MultiCommand):
             "plot-dat",
             "plot-power-monitors",
             "render-1d",
+            "schedule",
             "simplify-traces",
             "status",
             "transform-volume-data",
@@ -85,6 +86,10 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.Render1D import render_1d_command
 
             return render_1d_command
+        elif name in ["schedule", "run"]:
+            from spectre.support.Schedule import schedule_command
+
+            return schedule_command
         elif name == "simplify-traces":
             from spectre.tools.CharmSimplifyTraces import (
                 simplify_traces_command,

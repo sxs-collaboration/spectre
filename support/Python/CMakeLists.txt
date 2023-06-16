@@ -9,6 +9,7 @@ spectre_python_add_module(
   PYTHON_FILES
   DirectoryStructure.py
   Machines.py
+  Schedule.py
 )
 
 if(MACHINE)
@@ -19,7 +20,7 @@ if(MACHINE)
     )
   configure_file(
     ${CMAKE_SOURCE_DIR}/support/SubmitScripts/${MACHINE}.sh
-    ${SPECTRE_PYTHON_PREFIX}/support/Submit.sh
+    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplate.sh
     @ONLY
     )
 endif()
