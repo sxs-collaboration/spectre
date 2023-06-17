@@ -5,7 +5,9 @@ import glob
 import logging
 import os
 import shutil
+import sys
 import unittest
+import xml.etree.ElementTree as ET
 
 import h5py
 from click.testing import CliRunner
@@ -54,14 +56,20 @@ class TestGenerateXdmf(unittest.TestCase):
 
         # Also make sure that the output doesn't change. This has caught many
         # bugs.
-        with open(output_filename + ".xmf") as open_file:
-            output = open_file.read()
-        with open(os.path.join(self.data_dir, "VolTestData.xmf")) as open_file:
-            expected_output = open_file.read()
-            expected_output = expected_output.replace(
-                "VolTestData0.h5", data_files[0]
+        # - Compare canonicalized XML with stripped whitespace. Pretty
+        #   indentation was only added in Python 3.9.
+        # - Skip test in Python 3.7 because it doesn't preserve ordering of XML
+        #   attributes like <Tag Arg1="1" Arg2="2"> and <Tag Arg2="2" Arg1="1">.
+        if sys.version_info >= (3, 8):
+            self.assertEqual(
+                ET.canonicalize(
+                    from_file=output_filename + ".xmf", strip_text=True
+                ),
+                ET.canonicalize(
+                    from_file=os.path.join(self.data_dir, "VolTestData.xmf"),
+                    strip_text=True,
+                ).replace("VolTestData0.h5", data_files[0]),
             )
-        self.assertEqual(output, expected_output)
 
     def test_surface_generate_xdmf(self):
         data_files = [os.path.join(self.data_dir, "SurfaceTestData.h5")]
