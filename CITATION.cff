@@ -151,6 +151,12 @@ authors:
   family-names: Iozzo
   given-names: Dante A. B.
   orcid: https://orcid.org/0000-0002-7244-1900
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Jones
+  given-names: Ken Z.
+  orcid: https://orcid.org/0009-0003-1034-0498
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Legred
@@ -197,6 +203,12 @@ authors:
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
+  family-names: Pannone
+  given-names: Kyle
+  orcid: https://orcid.org/0009-0005-8607-2113
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
   family-names: Ramirez
   given-names: Teresita
   orcid: https://orcid.org/0000-0003-0994-115X
@@ -224,6 +236,12 @@ authors:
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
+  family-names: Tellez
+  given-names: Daniel
+  orcid: https://orcid.org/0009-0008-7784-2528
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
   family-names: Thomas
   given-names: Sierra
   orcid: https://orcid.org/0000-0003-3574-2090
@@ -243,9 +261,9 @@ authors:
   family-names: Wu
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
-cff-version: 1.1.0
-date-released: 2023-05-16
-doi: 10.5281/zenodo.7942177
+cff-version: 1.2.0
+date-released: 2023-06-19
+doi: 10.5281/zenodo.8056569
 keywords:
 - Software
 - Astrophysics
@@ -261,6 +279,39 @@ message: Please cite SpECTRE in any publications that make use of its code or da
   Cite the latest version that you use in your publication. The citation for this
   version is listed below.
 references:
+- authors:
+  - family-names: Iglberger
+    given-names: Klaus
+  - family-names: Hager
+    given-names: Georg
+  - family-names: Treibig
+    given-names: Jan
+  - family-names: Rüde
+    given-names: Ulrich
+  collection-title: 2012 International Conference on High Performance Computing \&
+    Simulation (HPCS)
+  doi: 10.1109/HPCSim.2012.6266939
+  pages: 367-373
+  title: High performance smart expression template math libraries
+  type: article
+  year: '2012'
+- authors:
+  - family-names: Iglberger
+    given-names: Klaus
+  - family-names: Hager
+    given-names: Georg
+  - family-names: Treibig
+    given-names: Jan
+  - family-names: R\"{u}de
+    given-names: Ulrich
+  doi: 10.1137/110830125
+  number: '2'
+  pages: C42-C69
+  title: 'Expression Templates Revisited: A Performance Analysis of Current Methodologies'
+  type: article
+  url: https://doi.org/10.1137/110830125
+  volume: '34'
+  year: '2012'
 - authors:
   - family-names: Kale
     given-names: Laxmikant
@@ -419,12 +470,515 @@ references:
   - family-names: Zheng
     given-names: Gengbin
   doi: 10.5281/zenodo.3370873
-  month: Aug
+  month: 8
   title: '{The Charm++ Parallel Programming System}'
   type: software
   url: https://charm.cs.illinois.edu
   year: '2019'
+- authors:
+  - family-names: Kale
+    given-names: Laxmikant
+  - family-names: Acun
+    given-names: Bilge
+  - family-names: Bak
+    given-names: Seonmyeong
+  - family-names: Becker
+    given-names: Aaron
+  - family-names: Bhandarkar
+    given-names: Milind
+  - family-names: Bhat
+    given-names: Nitin
+  - family-names: Bhatele
+    given-names: Abhinav
+  - family-names: Bohm
+    given-names: Eric
+  - family-names: Bordage
+    given-names: Cyril
+  - family-names: Brunner
+    given-names: Robert
+  - family-names: Buch
+    given-names: Ronak
+  - family-names: Chakravorty
+    given-names: Sayantan
+  - family-names: Chandrasekar
+    given-names: Kavitha
+  - family-names: Choi
+    given-names: Jaemin
+  - family-names: Denardo
+    given-names: Michael
+  - family-names: DeSouza
+    given-names: Jayant
+  - family-names: Diener
+    given-names: Matthias
+  - family-names: Dokania
+    given-names: Harshit
+  - family-names: Dooley
+    given-names: Isaac
+  - family-names: Fenton
+    given-names: Wayne
+  - family-names: Fink
+    given-names: Zane
+  - family-names: Galvez
+    given-names: Juan
+  - family-names: Ghosh
+    given-names: Pathikrit
+  - family-names: Gioachin
+    given-names: Fillipo
+  - family-names: Gupta
+    given-names: Abhishek
+  - family-names: Gupta
+    given-names: Gagan
+  - family-names: Gupta
+    given-names: Manish
+  - family-names: Gursoy
+    given-names: Attila
+  - family-names: Harsh
+    given-names: Vipul
+  - family-names: Hu
+    given-names: Fang
+  - family-names: Huang
+    given-names: Chao
+  - family-names: Jagathesan
+    given-names: Narain
+  - family-names: Jain
+    given-names: Nikhil
+  - family-names: Jetley
+    given-names: Pritish
+  - family-names: Jindal
+    given-names: Prateek
+  - family-names: Kanakagiri
+    given-names: Raghavendra
+  - family-names: Koenig
+    given-names: Greg
+  - family-names: Krishnan
+    given-names: Sanjeev
+  - family-names: Kumar
+    given-names: Sameer
+  - family-names: Kunzman
+    given-names: David
+  - family-names: Lang
+    given-names: Michael
+  - family-names: Langer
+    given-names: Akhil
+  - family-names: Lawlor
+    given-names: Orion
+  - family-names: Lee
+    given-names: Chee Wai
+  - family-names: Lifflander
+    given-names: Jonathan
+  - family-names: Mahesh
+    given-names: Karthik
+  - family-names: Mendes
+    given-names: Celso
+  - family-names: Menon
+    given-names: Harshitha
+  - family-names: Mei
+    given-names: Chao
+  - family-names: Meneses
+    given-names: Esteban
+  - family-names: Mikida
+    given-names: Eric
+  - family-names: Miller
+    given-names: Phil
+  - family-names: Mokos
+    given-names: Ryan
+  - family-names: Narayanan
+    given-names: Venkatasubrahmanian
+  - family-names: Ni
+    given-names: Xiang
+  - family-names: Nomura
+    given-names: Kevin
+  - family-names: Paranjpye
+    given-names: Sameer
+  - family-names: Ramachandran
+    given-names: Parthasarathy
+  - family-names: Ramkumar
+    given-names: Balkrishna
+  - family-names: Ramos
+    given-names: Evan
+  - family-names: Robson
+    given-names: Michael
+  - family-names: Saboo
+    given-names: Neelam
+  - family-names: Saletore
+    given-names: Vikram
+  - family-names: Sarood
+    given-names: Osman
+  - family-names: Senthil
+    given-names: Karthik
+  - family-names: Shah
+    given-names: Nimish
+  - family-names: Shu
+    given-names: Wennie
+  - family-names: Sinha
+    given-names: Amitabh B.
+  - family-names: Sun
+    given-names: Yanhua
+  - family-names: Sura
+    given-names: Zehra
+  - family-names: Szaday
+    given-names: Justin
+  - family-names: Totoni
+    given-names: Ehsan
+  - family-names: Varadarajan
+    given-names: Krishnan
+  - family-names: Venkataraman
+    given-names: Ramprasad
+  - family-names: Wang
+    given-names: Jackie
+  - family-names: Wesolowski
+    given-names: Lukasz
+  - family-names: White
+    given-names: Sam
+  - family-names: Wilmarth
+    given-names: Terry
+  - family-names: Wright
+    given-names: Jeff
+  - family-names: Yelon
+    given-names: Joshua
+  - family-names: Zheng
+    given-names: Gengbin
+  doi: 10.5281/zenodo.5597907
+  month: 10
+  publisher:
+    name: Zenodo
+  title: '{UIUC-PPL}/charm: {Charm++} version 7.0.0'
+  type: software
+  url: https://doi.org/10.5281/zenodo.5597907
+  version: v7.0.0
+  year: '2021'
+- authors:
+  - family-names: Kale
+    given-names: Laxmikant V
+  - family-names: Krishnan
+    given-names: Sanjeev
+  collection-title: Parallel programming using C++
+  pages: 175--213
+  publisher:
+    name: The MIT Press
+  title: 'Charm++: Parallel programming with message-driven objects'
+  type: article
+  year: '1996'
+- authors:
+  - family-names: Galassi
+    given-names: M.
+  - name: others
+  edition: '3'
+  isbn: '9780954612078'
+  publisher:
+    name: Network Theory Ltd.
+  title: '{GNU} Scientific Library Reference Manual'
+  type: book
+  year: '2009'
+- authors:
+  - name: '{The HDF Group}'
+  title: '{Hierarchical Data Format, version 5}'
+  type: software
+  year: 1997-2023
+- authors:
+  - family-names: '{Reinecke}'
+    given-names: M.
+  - family-names: '{Seljebotn}'
+    given-names: D. S.
+  doi: 10.1051/0004-6361/201321494
+  month: 6
+  pages: A112
+  title: '{Libsharp - spherical harmonic transforms revisited}'
+  type: article
+  volume: '554'
+  year: '2013'
+- authors:
+  - family-names: Heinecke
+    given-names: Alexander
+  - family-names: Henry
+    given-names: Greg
+  - family-names: Hutchinson
+    given-names: Maxwell
+  - family-names: Pabst
+    given-names: Hans
+  collection-title: Proceedings of the International Conference for High Performance
+    Computing, Networking, Storage and Analysis
+  isbn: '9781467388153'
+  pages: 1-11
+  publisher:
+    name: IEEE Press
+  title: '{LIBXSMM}: {Accelerating} Small Matrix Multiplications by Runtime Code Generation'
+  type: article
+  year: '2016'
+- authors:
+  - family-names: Hunter
+    given-names: J. D.
+  doi: 10.1109/MCSE.2007.55
+  number: '3'
+  pages: 90--95
+  publisher:
+    name: IEEE COMPUTER SOC
+  title: 'Matplotlib: A 2D graphics environment'
+  type: article
+  volume: '9'
+  year: '2007'
+- authors:
+  - family-names: Caswell
+    given-names: Thomas A
+  - family-names: Droettboom
+    given-names: Michael
+  - family-names: Lee
+    given-names: Antony
+  - family-names: Hunter
+    given-names: John
+  - family-names: Firing
+    given-names: Eric
+  - family-names: Andrade
+    given-names: Elliott Sales
+    name-particle: de
+  - family-names: Hoffmann
+    given-names: Tim
+  - family-names: Stansby
+    given-names: David
+  - family-names: Klymak
+    given-names: Jody
+  - family-names: Varoquaux
+    given-names: Nelle
+  - family-names: Nielsen
+    given-names: Jens Hedegaard
+  - family-names: Root
+    given-names: Benjamin
+  - family-names: May
+    given-names: Ryan
+  - family-names: Elson
+    given-names: Phil
+  - family-names: Dale
+    given-names: Darren
+  - family-names: Lee
+    given-names: Jae-Joon
+  - family-names: Seppänen
+    given-names: Jouni K.
+  - family-names: McDougall
+    given-names: Damon
+  - family-names: Straw
+    given-names: Andrew
+  - family-names: Hobson
+    given-names: Paul
+  - family-names: Gohlke
+    given-names: Christoph
+  - family-names: Yu
+    given-names: Tony S
+  - family-names: Ma
+    given-names: Eric
+  - family-names: Vincent
+    given-names: Adrien F.
+  - family-names: Silvester
+    given-names: Steven
+  - family-names: Moad
+    given-names: Charlie
+  - family-names: Kniazev
+    given-names: Nikita
+  - name: hannah
+  - family-names: Ernest
+    given-names: Elan
+  - family-names: Ivanov
+    given-names: Paul
+  doi: 10.5281/zenodo.3948793
+  month: 7
+  publisher:
+    name: Zenodo
+  title: 'matplotlib/matplotlib: {REL:} v3.3.0'
+  type: software
+  url: https://doi.org/10.5281/zenodo.3948793
+  version: v3.3.0
+  year: '2020'
+- authors:
+  - family-names: Harris
+    given-names: Charles R.
+  - family-names: Millman
+    given-names: K. Jarrod
+  - family-names: Walt
+    given-names: St{\'{e}}fan J.
+    name-particle: van der
+  - family-names: Gommers
+    given-names: Ralf
+  - family-names: Virtanen
+    given-names: Pauli
+  - family-names: Cournapeau
+    given-names: David
+  - family-names: Wieser
+    given-names: Eric
+  - family-names: Taylor
+    given-names: Julian
+  - family-names: Berg
+    given-names: Sebastian
+  - family-names: Smith
+    given-names: Nathaniel J.
+  - family-names: Kern
+    given-names: Robert
+  - family-names: Picus
+    given-names: Matti
+  - family-names: Hoyer
+    given-names: Stephan
+  - family-names: Kerkwijk
+    given-names: Marten H.
+    name-particle: van
+  - family-names: Brett
+    given-names: Matthew
+  - family-names: Haldane
+    given-names: Allan
+  - family-names: R{\'{i}}o
+    given-names: Jaime Fern{\'{a}}ndez
+    name-particle: del
+  - family-names: Wiebe
+    given-names: Mark
+  - family-names: Peterson
+    given-names: Pearu
+  - family-names: G{\'{e}}rard-Marchant
+    given-names: Pierre
+  - family-names: Sheppard
+    given-names: Kevin
+  - family-names: Reddy
+    given-names: Tyler
+  - family-names: Weckesser
+    given-names: Warren
+  - family-names: Abbasi
+    given-names: Hameer
+  - family-names: Gohlke
+    given-names: Christoph
+  - family-names: Oliphant
+    given-names: Travis E.
+  doi: 10.1038/s41586-020-2649-2
+  month: 9
+  number: '7825'
+  pages: 357--362
+  publisher:
+    name: Springer Science and Business Media {LLC}
+  title: Array programming with {NumPy}
+  type: article
+  url: https://doi.org/10.1038/s41586-020-2649-2
+  volume: '585'
+  year: '2020'
+- authors:
+  - family-names: Ayachit
+    given-names: Utkarsh
+  isbn: '1930934300'
+  publisher:
+    name: Kitware, Inc.
+  title: 'The ParaView Guide: A Parallel Visualization Application'
+  type: book
+  year: '2015'
+- authors:
+  - family-names: Ahrens
+    given-names: J.
+  - family-names: Geveci
+    given-names: Berk
+  - family-names: Law
+    given-names: C.
+  isbn: '9780123875822'
+  publisher:
+    name: Elsevier
+  title: '{ParaView}: {An} end-user tool for large-data visualization'
+  type: book
+  year: '2005'
+- authors:
+  - family-names: Jakob
+    given-names: Wenzel
+  - family-names: Rhinelander
+    given-names: Jason
+  - family-names: Moldovan
+    given-names: Dean
+  title: pybind11 -- Seamless operability between C++11 and Python
+  type: software
+  year: '2017'
+- authors:
+  - family-names: Beder
+    given-names: Jesse
+  - family-names: Woehlke
+    given-names: Matthew
+  - family-names: Breitbart
+    given-names: Jens
+  - family-names: Wolchok
+    given-names: Scott
+  - family-names: Hackimov
+    given-names: Azamat H.
+  - family-names: Snape
+    given-names: Jamie
+  - family-names: Hamlet
+    given-names: Oliver
+  - family-names: Novotny
+    given-names: Paul
+  - family-names: Tambre
+    given-names: Raul
+  - family-names: Reinhold
+    given-names: Stefan
+  - family-names: Vaucher
+    given-names: Alain
+  - family-names: Zaitsev
+    given-names: Alexander
+  - family-names: Anokhin
+    given-names: Alexander
+  - family-names: Karatarakis
+    given-names: Alexander
+  - family-names: Maloney
+    given-names: Andy
+  - family-names: Polukhin
+    given-names: Antony
+  - family-names: Brandenburg
+    given-names: Craig M.
+  - family-names: Ibanez
+    given-names: Dan
+  - family-names: Gladkikh
+    given-names: Denis
+  - family-names: Eich
+    given-names: Florian
+  - family-names: Dumont
+    given-names: Guillaume
+  - family-names: Trigg
+    given-names: Haydn
+  - family-names: King
+    given-names: Jim
+  - family-names: Frederico
+    given-names: Joel
+  - family-names: Hamilton
+    given-names: Jonathan
+  - family-names: Langley
+    given-names: Joseph
+  - family-names: Hämäläinen
+    given-names: Lassi
+  - family-names: Blair
+    given-names: Matt
+  - family-names: Duggan
+    given-names: Michael Welsh
+  - family-names: Wang
+    given-names: Olli
+  - family-names: Stotko
+    given-names: Patrick
+  - family-names: Levine
+    given-names: Peter
+  - family-names: Bena
+    given-names: Petr
+  - family-names: Cordoba
+    given-names: Rodrigo Hernandez
+  - family-names: Schmidt
+    given-names: Ryan
+  - family-names: Gottlieb
+    given-names: Simon Gene
+  - family-names: Prilmeier
+    given-names: Franz
+  - family-names: Zhang
+    given-names: Tanki
+  - family-names: Ishi
+    given-names: Tatsuyuki
+  - family-names: Lyngmo
+    given-names: Ted
+  - family-names: Mataré
+    given-names: Victor
+  - family-names: Konečný
+    given-names: Michael
+  - name: USDOE
+  doi: 10.11578/dc.20220817.13
+  month: 9
+  title: yaml-cpp
+  type: software
+  url: https://www.osti.gov/biblio/1881863
+  year: '2009'
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.05.16
+version: 2023.06.19
