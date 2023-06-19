@@ -40,8 +40,11 @@ def generate_xdmf(
         subfiles = available_subfiles(
             (h5file for h5file, _ in h5files), extension=".vol"
         )
-        rich.print(rich.columns.Columns(subfiles))
-        return
+        if len(subfiles) == 1:
+            subfile_name = subfiles[0]
+        else:
+            rich.print(rich.columns.Columns(subfiles))
+            return
 
     if not subfile_name.endswith(".vol"):
         subfile_name += ".vol"
@@ -416,9 +419,10 @@ def generate_xdmf(
     "--subfile-name",
     "-d",
     help=(
-        "Name of the volume data subfile in the H5 files. A '.vol' "
-        "extension is added if needed. If unspecified, list all '.vol' "
-        "subfiles and exit."
+        "Name of the volume data subfile in the H5 files. A '.vol' extension is"
+        " added if needed. If unspecified, and the first H5 file contains only"
+        " a single '.vol' subfile, choose that. Otherwise, list all '.vol'"
+        " subfiles and exit."
     ),
 )
 @click.option(
