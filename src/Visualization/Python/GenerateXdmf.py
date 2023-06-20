@@ -28,7 +28,7 @@ def generate_xdmf(
     To load the XDMF file in ParaView you must choose the 'Xdmf Reader', NOT
     'Xdmf3 Reader'.
     """
-    # CLI scripts should be noops when input is empy
+    # CLI scripts should be noops when input is empty
     if not h5files:
         return
 
@@ -37,11 +37,10 @@ def generate_xdmf(
     if not subfile_name:
         import rich.columns
 
-        rich.print(
-            rich.columns.Columns(
-                available_subfiles(h5files[0][0], extension=".vol")
-            )
+        subfiles = available_subfiles(
+            (h5file for h5file, _ in h5files), extension=".vol"
         )
+        rich.print(rich.columns.Columns(subfiles))
         return
 
     if not subfile_name.endswith(".vol"):
@@ -49,9 +48,12 @@ def generate_xdmf(
 
     element_data = h5files[0][0].get(subfile_name)
     if element_data is None:
+        subfiles = available_subfiles(
+            (h5file for h5file, _ in h5files), extension=".vol"
+        )
         raise ValueError(
             f"Could not open subfile name '{subfile_name}'. Available "
-            f"subfiles: {available_subfiles(h5files[0][0], extension='.vol')}"
+            f"subfiles: {subfiles}"
         )
     temporal_ids_and_values = [
         (x, element_data.get(x).attrs["observation_value"])

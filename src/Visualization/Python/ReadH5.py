@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import logging
+from pathlib import Path
 from typing import Iterable, List, Tuple, Union
 
 import h5py
@@ -10,26 +11,46 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def available_subfiles(h5file: h5py.File, extension: str) -> List[str]:
-    """List all subfiles with the given 'extension' in the 'h5file'.
+def available_subfiles(
+    h5files: Union[
+        str, Path, h5py.File, Iterable[str], Iterable[Path], Iterable[h5py.File]
+    ],
+    extension: str,
+) -> List[str]:
+    """List all subfiles with the given 'extension' in the 'h5files'.
 
     Parameters
     ----------
-    h5file: Open h5py file
+    h5files: Path(s) or open h5py file(s). Can be a single file or path, a list
+      of files or paths, or an iterable that opens and closes each file on
+      demand.
     extension: str
 
     Returns
     -------
-    List of paths in the 'h5file' that end with the 'extension'
+    List of paths in the 'h5files' that end with the 'extension'
     """
-    subfiles = []
+    # Make input files iterable. Strings and h5py files are iterable, so handle
+    # those first.
+    if isinstance(h5files, str) or isinstance(h5files, h5py.File):
+        h5files = [h5files]
+    try:
+        iter(h5files)
+    except TypeError:
+        h5files = [h5files]
+    subfiles = set()
 
     def visitor(name):
         if name.endswith(extension):
-            subfiles.append(name)
+            subfiles.add(name)
 
-    h5file.visit(visitor)
-    return subfiles
+    for h5file in h5files:
+        if isinstance(h5file, h5py.File):
+            h5file.visit(visitor)
+        else:
+            with h5py.File(h5file, "r") as open_h5_file:
+                open_h5_file.visit(visitor)
+    return sorted(subfiles)
 
 
 def to_dataframe(
