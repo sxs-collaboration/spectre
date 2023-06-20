@@ -12,6 +12,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace detail {
+void transpose_impl(double* matrix_transpose, const double* matrix,
+                    int32_t number_of_rows, int32_t number_of_columns);
+}  // namespace detail
+
+
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Function to compute transposed data.
 ///
@@ -24,14 +30,19 @@
 template <typename T>
 void raw_transpose(const gsl::not_null<T*> result, const T* const data,
                    const size_t chunk_size, const size_t number_of_chunks) {
-  // The i outside loop order is faster, but that could be architecture
-  // dependent and so may need updating in the future. Changing this made the
-  // logical derivatives in 3D with 50 variables 20% faster.
-  for (size_t i = 0; i < chunk_size; ++i) {
-    for (size_t j = 0; j < number_of_chunks; ++j) {
-      // clang-tidy: pointer arithmetic
-      result.get()[j + number_of_chunks * i] =  // NOLINT
-          data[i + chunk_size * j];             // NOLINT
+  if constexpr (std::is_same_v<double, T>) {
+    detail::transpose_impl(result, data, static_cast<int32_t>(number_of_chunks),
+                           static_cast<int32_t>(chunk_size));
+  } else {
+    // The i outside loop order is faster, but that could be architecture
+    // dependent and so may need updating in the future. Changing this made the
+    // logical derivatives in 3D with 50 variables 20% faster.
+    for (size_t i = 0; i < chunk_size; ++i) {
+      for (size_t j = 0; j < number_of_chunks; ++j) {
+        // clang-tidy: pointer arithmetic
+        result.get()[j + number_of_chunks * i] =  // NOLINT
+            data[i + chunk_size * j];             // NOLINT
+      }
     }
   }
 }

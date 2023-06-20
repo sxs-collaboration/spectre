@@ -20,6 +20,7 @@ spectre_target_sources(
   LeviCivitaIterator.cpp
   SliceIterator.cpp
   StripeIterator.cpp
+  Transpose.cpp
   )
 
 spectre_target_headers(
