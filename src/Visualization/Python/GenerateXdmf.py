@@ -168,21 +168,20 @@ def generate_xdmf(
                 # Because we can't have zero cells if rendering a 2d surface,
                 # return 1 in that case.
                 number_of_cells = 1
+                # This is used to compute the number of elements rather than
+                # the extents in case the connectivity is greater than what
+                # extents predicts
+                connectivity_length = len(h5temporal.get("connectivity"))
                 if filling_poles_this_iteration:
                     # Number_of_cells == pole_connectivity size / 3
                     # because we are using triangles to fill the poles
                     number_of_cells = (
                         h5temporal.get("pole_connectivity").size / 3
                     )
-                elif is_2d_surface_in_3d_space:
-                    # Number_of_cells == l * (2*l + 1)
-                    number_of_cells = sum((extents_x - 1) * extents_y)
+                elif is_2d_surface_in_3d_space or dimensionality == 2:
+                    number_of_cells = connectivity_length / 4
                 else:
-                    number_of_cells = sum(
-                        (extents_x - 1)
-                        * (extents_y - 1)
-                        * (extents_z - 1 if dimensionality == 3 else 1)
-                    )
+                    number_of_cells = connectivity_length / 8
 
                 topology = "Hexahedron"
                 vertices = 8

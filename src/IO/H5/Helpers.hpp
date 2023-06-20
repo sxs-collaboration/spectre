@@ -114,6 +114,12 @@ void write_connectivity(hid_t group_id, const std::vector<int>& connectivity);
 
 /*!
  * \ingroup HDF5Group
+ * \brief Delete the connectivity from the group in the H5 file
+ */
+void delete_connectivity(hid_t group_id);
+
+/*!
+ * \ingroup HDF5Group
  * \brief Get the names of all the groups and datasets in a group
  */
 std::vector<std::string> get_group_names(hid_t file_id,

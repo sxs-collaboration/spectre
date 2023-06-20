@@ -115,6 +115,12 @@ class VolumeData : public h5::Object {
       const std::optional<std::vector<char>>& serialized_functions_of_time =
           std::nullopt);
 
+  /// Overwrites the current connectivity dataset with a new one. This new
+  /// connectivity dataset builds connectivity within each block in the domain
+  /// for each observation id in a list of observation id's
+  template <size_t SpatialDim>
+  void extend_connectivity_data(const std::vector<size_t>& observation_ids);
+
   void write_tensor_component(const size_t observation_id,
                               const std::string& component_name,
                               const DataVector& contiguous_tensor_data);
