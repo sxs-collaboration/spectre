@@ -11,6 +11,7 @@ import click
 import h5py
 import numpy as np
 import pandas as pd
+import rich
 
 from spectre.Visualization.ReadH5 import available_subfiles
 
@@ -48,11 +49,6 @@ def write_dat_data(dat_path, h5_filename, out_dir, precision):
     )
 
 
-def get_all_dat_files(filename):
-    with h5py.File(filename, "r") as h5file:
-        return available_subfiles(h5file, extension=".dat")
-
-
 def extract_dat_files(
     filename,
     out_dir,
@@ -69,14 +65,16 @@ def extract_dat_files(
     group structure inside the HDF5 file.
     """
     if list:
-        print_str = "\n ".join(get_all_dat_files(filename))
-        print(f"Dat files within '{filename}':\n {print_str}")
+        import rich.columns
+
+        subfiles = available_subfiles(filename, extension=".dat")
+        rich.print(rich.columns.Columns(subfiles))
         return
 
     if subfiles:
         all_dat_files = subfiles
     else:
-        all_dat_files = get_all_dat_files(filename)
+        all_dat_files = available_subfiles(filename, extension=".dat")
 
     if out_dir:
         if not os.path.exists(out_dir):
