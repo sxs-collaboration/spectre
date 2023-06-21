@@ -9,6 +9,8 @@ spectre_python_add_module(
   PYTHON_FILES
   DirectoryStructure.py
   Machines.py
+  Resubmit.py
+  Schedule.py
 )
 
 if(MACHINE)
@@ -18,8 +20,13 @@ if(MACHINE)
     ${SPECTRE_PYTHON_PREFIX}/support/Machine.yaml
     )
   configure_file(
+    ${CMAKE_SOURCE_DIR}/support/SubmitScripts/SubmitTemplateBase.sh
+    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplateBase.sh
+    @ONLY
+    )
+  configure_file(
     ${CMAKE_SOURCE_DIR}/support/SubmitScripts/${MACHINE}.sh
-    ${SPECTRE_PYTHON_PREFIX}/support/Submit.sh
+    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplate.sh
     @ONLY
     )
 endif()

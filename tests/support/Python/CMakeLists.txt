@@ -35,3 +35,9 @@ spectre_add_python_bindings_test(
   Test_Main.py
   "Python"
   None)
+
+spectre_add_python_bindings_test(
+  "support.Python.Schedule"
+  Test_Schedule.py
+  "Python"
+  None)

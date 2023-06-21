@@ -19,6 +19,8 @@ click
 h5py >= 3.5.0
 # Humanize: For human-readable output like "2 hours ago"
 humanize
+# Jinja2: To work with placeholders in input files and submit scripts
+Jinja2
 # - We constrain the Numpy version because v1.22+ segfaults in Pypp tests, see
 #   issue: https://github.com/sxs-collaboration/spectre/issues/3844
 numpy < 1.22.0
