@@ -21,10 +21,12 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -32,6 +34,9 @@
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "IO/H5/File.hpp"
+#include "IO/H5/VolumeData.hpp"
+#include "Informer/InfoFromBuild.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -257,14 +262,14 @@ void test_1d_domains() {
           "Domain with 2 blocks:\n" +
               get_output(domain_from_corners.blocks()[0]) + "\n" +
               get_output(domain_from_corners.blocks()[1]) + "\n" +
-          "Excision spheres:\n" +
+              "Excision spheres:\n" +
               get_output(domain_from_corners.excision_spheres()) + "\n");
 
     CHECK(get_output(domain_no_corners) ==
           "Domain with 2 blocks:\n" +
               get_output(domain_from_corners.blocks()[0]) + "\n" +
               get_output(domain_from_corners.blocks()[1]) + "\n" +
-          "Excision spheres:\n" +
+              "Excision spheres:\n" +
               get_output(domain_from_corners.excision_spheres()) + "\n");
   }
 
@@ -420,6 +425,25 @@ void test_3d_rectilinear_domains() {
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }
+
+void test_versioning() {
+  // Check that we can deserialize the domain stored in this old file without
+  // error. This is a rough test that the versioning is not obviously broken.
+  domain::creators::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  h5::H5File<h5::AccessType::ReadOnly> h5file{unit_test_src_path() +
+                                              "/Domain/SerializedDomain.h5"};
+  const auto& volfile = h5file.get<h5::VolumeData>("/element_data");
+  const size_t obs_id = volfile.list_observation_ids().front();
+  const auto serialized_domain = *volfile.get_domain(obs_id);
+  deserialize<Domain<3>>(serialized_domain.data());
+  // Also check that we can deserialize the functions of time.
+  const auto serialized_fot = *volfile.get_functions_of_time(obs_id);
+  const auto functions_of_time = deserialize<std::unordered_map<
+      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>>(
+      serialized_fot.data());
+  CHECK(functions_of_time.count("Rotation") == 1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
@@ -458,6 +482,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
   test_1d_rectilinear_domains();
   test_2d_rectilinear_domains();
   test_3d_rectilinear_domains();
+  test_versioning();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
