@@ -30,7 +30,10 @@ void transpose_impl(double* matrix_transpose, const double* matrix,
 template <typename T>
 void raw_transpose(const gsl::not_null<T*> result, const T* const data,
                    const size_t chunk_size, const size_t number_of_chunks) {
-  if constexpr (std::is_same_v<double, T>) {
+   // Currently using the optimized double implementation leads to segfaults in
+   // Gh executables.  It should be tested and then re-enabled.
+   // if constexpr (std::is_same_v<double, T>) {
+   if constexpr (false) {
     detail::transpose_impl(result, data, static_cast<int32_t>(number_of_chunks),
                            static_cast<int32_t>(chunk_size));
   } else {
