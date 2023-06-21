@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
   FiniteDifference/Test_Tags.cpp
+  FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_GhostData.cpp
   Subcell/Test_SetInitialRdmpData.cpp
