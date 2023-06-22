@@ -130,11 +130,11 @@ template <>
 void transpose_block<4, 2>(double* matrix_transpose, const double* const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256d rows0_1 = _mm256_permute2f128_pd(
-      _mm256_castpd128_pd256(_mm_load_pd(matrix + 0 * columns)),
-      _mm256_castpd128_pd256(_mm_load_pd(matrix + 2 * columns)), 0b00100000);
+      _mm256_castpd128_pd256(_mm_loadu_pd(matrix + 0 * columns)),
+      _mm256_castpd128_pd256(_mm_loadu_pd(matrix + 2 * columns)), 0b00100000);
   const __m256d rows2_3 = _mm256_permute2f128_pd(
-      _mm256_castpd128_pd256(_mm_load_pd(matrix + 1 * columns)),
-      _mm256_castpd128_pd256(_mm_load_pd(matrix + 3 * columns)), 0b00100000);
+      _mm256_castpd128_pd256(_mm_loadu_pd(matrix + 1 * columns)),
+      _mm256_castpd128_pd256(_mm_loadu_pd(matrix + 3 * columns)), 0b00100000);
 
   _mm256_storeu_pd(matrix_transpose + 0 * rows,
                    _mm256_unpacklo_pd(rows0_1, rows2_3));
