@@ -17,6 +17,7 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
@@ -77,19 +78,16 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
       using vars_to_interpolate_to_target =
           tmpl::list<gr::Tags::Lapse<DataVector>,
-                     gr::Tags::Shift<DataVector, 3, Frame::Grid>,
-                     gr::Tags::SpatialMetric<DataVector, 3, Frame::Grid>,
+                     gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+                     gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
+                     gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
                      gh::ConstraintDamping::Tags::ConstraintGamma1>;
       using compute_vars_to_interpolate =
           ah::ComputeExcisionBoundaryVolumeQuantities;
       using compute_items_on_source = tmpl::list<>;
-      using compute_items_on_target = tmpl::append<tmpl::list<
-          gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
-                                                      Frame::Grid>,
-          StrahlkorperTags::OneOverOneFormMagnitudeCompute<DataVector, 3,
-                                                           Frame::Grid>,
-          StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
-          gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
+      using compute_items_on_target =
+          tmpl::list<gr::Tags::DetAndInverseSpatialMetricCompute<
+              DataVector, 3, Frame::Distorted>>;
       using compute_target_points =
           intrp::TargetPoints::Sphere<InterpolationTarget, ::Frame::Grid>;
       using post_interpolation_callback =
@@ -155,8 +153,9 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using compute_items_on_target =
-          ::ah::compute_items_on_target<3, Frame::Distorted>;
+      using compute_items_on_target = tmpl::push_back<
+          ::ah::compute_items_on_target<3, Frame::Distorted>,
+          ::ah::Tags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Distorted>;
