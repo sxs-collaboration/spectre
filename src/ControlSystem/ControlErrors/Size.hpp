@@ -179,28 +179,37 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
         excision_spheres.at("ExcisionSphere" + get_output(Horizon));
     const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
 
+    const auto& excision_quantities =
+        tuples::get<QueueTags::SizeExcisionQuantities<Frame::Distorted>>(
+            measurements);
+    const auto& horizon_quantities =
+        tuples::get<QueueTags::SizeHorizonQuantities<Frame::Distorted>>(
+            measurements);
+
     const double grid_frame_excision_sphere_radius = excision_sphere.radius();
     const Strahlkorper<Frame::Distorted>& apparent_horizon =
         tuples::get<StrahlkorperTags::Strahlkorper<Frame::Distorted>>(
-            measurements);
+            horizon_quantities);
     const Strahlkorper<Frame::Distorted>& excision_surface =
-        tuples::get<QueueTags::ExcisionSurface<Frame::Distorted>>(measurements);
+        tuples::get<QueueTags::ExcisionSurface<Frame::Distorted>>(
+            excision_quantities);
     const Strahlkorper<Frame::Distorted>& time_deriv_apparent_horizon =
         tuples::get<
             ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame::Distorted>>>(
-            measurements);
+            horizon_quantities);
     const Scalar<DataVector>& lapse =
-        tuples::get<QueueTags::LapseOnExcisionSurface>(measurements);
+        tuples::get<QueueTags::LapseOnExcisionSurface>(excision_quantities);
     const tnsr::I<DataVector, 3, Frame::Distorted>& shifty_quantity =
-        tuples::get<QueueTags::ShiftyQuantity<Frame::Distorted>>(measurements);
+        tuples::get<QueueTags::ShiftyQuantity<Frame::Distorted>>(
+            excision_quantities);
     const tnsr::ii<DataVector, 3, Frame::Distorted>&
         spatial_metric_on_excision = tuples::get<
             QueueTags::SpatialMetricOnExcisionSurface<Frame::Distorted>>(
-            measurements);
+            excision_quantities);
     const tnsr::II<DataVector, 3, Frame::Distorted>&
         inverse_spatial_metric_on_excision = tuples::get<
             QueueTags::InverseSpatialMetricOnExcisionSurface<Frame::Distorted>>(
-            measurements);
+            excision_quantities);
 
     info_.damping_time = min(tuner.current_timescale());
 

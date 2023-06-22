@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 class DataVector;
@@ -81,5 +84,44 @@ struct SpatialMetricOnExcisionSurface {
 template <typename Frame>
 struct InverseSpatialMetricOnExcisionSurface {
   using type = tnsr::II<DataVector, 3, Frame>;
+};
+
+/*!
+ * \ingroup ControlSystemGroup
+ * \brief A queue tag that holds a TaggedTuple of all quantities needed for the
+ * excision measurement of size control.
+ *
+ * \details Holds the following queue tags in a TaggedTuple in order:
+ *
+ * - `control_system::QueueTags::ExcisionSurface`
+ * - `control_system::QueueTags::LapseOnExcisionSurface`
+ * - `control_system::QueueTags::ShiftyQuantity`
+ * - `control_system::QueueTags::SpatialMetricOnExcisionSurface`
+ * - `control_system::QueueTags::InverseSpatialMetricOnExcisionSurface`
+ */
+template <typename Frame>
+struct SizeExcisionQuantities {
+  using type =
+      tuples::TaggedTuple<ExcisionSurface<Frame>, LapseOnExcisionSurface,
+                          ShiftyQuantity<Frame>,
+                          SpatialMetricOnExcisionSurface<Frame>,
+                          InverseSpatialMetricOnExcisionSurface<Frame>>;
+};
+
+/*!
+ * \ingroup ControlSystemGroup
+ * \brief A queue tag that holds a TaggedTuple of all quantities needed for the
+ * horizon measurement of size control.
+ *
+ * \details Holds the following queue tags in a TaggedTuple in order:
+ *
+ * - `StrahlkorperTags::Strahlkorper`
+ * - `::Tags::dt<StrahlkorperTags::Strahlkorper>`
+ */
+template <typename Frame>
+struct SizeHorizonQuantities {
+  using type =
+      tuples::TaggedTuple<StrahlkorperTags::Strahlkorper<Frame>,
+                          ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame>>>;
 };
 }  // namespace control_system::QueueTags
