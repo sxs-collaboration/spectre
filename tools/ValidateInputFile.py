@@ -106,7 +106,6 @@ def validate_input_file(
     found_hints = False
     path = []
     line_number = None
-    col = None
     msg = []
     for line in process.stderr.split("\n"):
         if str(input_file_path) in line:
@@ -167,6 +166,7 @@ def validate_input_file(
 def validate_input_file_command(**kwargs):
     """Check an input file for parse errors"""
     validate_input_file(**kwargs)
+    rich.print(f"Input file '{kwargs['input_file_path']}' parsed successfully.")
 
 
 if __name__ == "__main__":
