@@ -19,13 +19,15 @@ namespace {
 // usually not recommended as of 2023 because the CPUs down clock so much
 // that all non-math work also suffers.
 template <size_t RowsInBlock, size_t ColumnsInBlock>
-void transpose_block(double* matrix_transpose, const double* matrix,
-                     int32_t columns, int32_t rows);
+void transpose_block(double* __restrict__ matrix_transpose,
+                     const double* __restrict__ matrix, int32_t columns,
+                     int32_t rows);
 
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 #if defined(__AVX__)
 template <>
-void transpose_block<4, 4>(double* matrix_transpose, const double* const matrix,
+void transpose_block<4, 4>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256d row0 = _mm256_loadu_pd(matrix + 0 * columns);
   const __m256d row1 = _mm256_loadu_pd(matrix + 1 * columns);
@@ -48,7 +50,8 @@ void transpose_block<4, 4>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<3, 4>(double* matrix_transpose, const double* const matrix,
+void transpose_block<3, 4>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 = _mm256_loadu_pd(matrix + 0 * columns);
@@ -71,7 +74,8 @@ void transpose_block<3, 4>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<2, 4>(double* matrix_transpose, const double* const matrix,
+void transpose_block<2, 4>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256d row0 = _mm256_loadu_pd(matrix + 0 * columns);
   const __m256d row1 = _mm256_loadu_pd(matrix + 1 * columns);
@@ -86,7 +90,8 @@ void transpose_block<2, 4>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<1, 4>(double* matrix_transpose, const double* const matrix,
+void transpose_block<1, 4>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t /*columns*/, const int32_t rows) {
   const __m256d row0 = _mm256_loadu_pd(matrix);
 
@@ -105,7 +110,8 @@ void transpose_block<1, 4>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<4, 3>(double* matrix_transpose, const double* const matrix,
+void transpose_block<4, 3>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 = _mm256_maskload_pd(matrix + 0 * columns, mask);
@@ -127,7 +133,8 @@ void transpose_block<4, 3>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<4, 2>(double* matrix_transpose, const double* const matrix,
+void transpose_block<4, 2>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256d rows0_1 = _mm256_permute2f128_pd(
       _mm256_castpd128_pd256(_mm_loadu_pd(matrix + 0 * columns)),
@@ -143,7 +150,8 @@ void transpose_block<4, 2>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<4, 1>(double* matrix_transpose, const double* const matrix,
+void transpose_block<4, 1>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   // We load the 4 rows into SSE registers, and then combine them into a
   // single AVX register for write.
@@ -159,7 +167,8 @@ void transpose_block<4, 1>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<3, 3>(double* matrix_transpose, const double* const matrix,
+void transpose_block<3, 3>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 = _mm256_maskload_pd(matrix + 0 * columns, mask);
@@ -180,7 +189,8 @@ void transpose_block<3, 3>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<3, 2>(double* matrix_transpose, const double* const matrix,
+void transpose_block<3, 2>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 =
@@ -202,7 +212,8 @@ void transpose_block<3, 2>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<3, 1>(double* matrix_transpose, const double* const matrix,
+void transpose_block<3, 1>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   // We load the 3 rows into SSE registers, and then combine them into a
@@ -218,7 +229,8 @@ void transpose_block<3, 1>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<2, 3>(double* matrix_transpose, const double* const matrix,
+void transpose_block<2, 3>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 = _mm256_maskload_pd(matrix + 0 * columns, mask);
@@ -233,7 +245,8 @@ void transpose_block<2, 3>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<1, 3>(double* matrix_transpose, const double* const matrix,
+void transpose_block<1, 3>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m256i mask = _mm256_set_epi64x(0, -1, -1, -1);
   const __m256d row0 = _mm256_maskload_pd(matrix + 0 * columns, mask);
@@ -253,7 +266,8 @@ void transpose_block<1, 3>(double* matrix_transpose, const double* const matrix,
 
 #if defined(__SSE2__)
 template <>
-void transpose_block<2, 2>(double* matrix_transpose, const double* const matrix,
+void transpose_block<2, 2>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t rows) {
   const __m128d row0 = _mm_loadu_pd(matrix);
   const __m128d row1 = _mm_loadu_pd(matrix + columns);
@@ -266,7 +280,8 @@ void transpose_block<2, 2>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<2, 1>(double* matrix_transpose, const double* const matrix,
+void transpose_block<2, 1>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t columns, const int32_t /*rows*/) {
   const __m128d row0 = _mm_load_pd1(matrix + 0 * columns);
   const __m128d row1 = _mm_load_pd1(matrix + 1 * columns);
@@ -277,7 +292,8 @@ void transpose_block<2, 1>(double* matrix_transpose, const double* const matrix,
 }
 
 template <>
-void transpose_block<1, 2>(double* matrix_transpose, const double* const matrix,
+void transpose_block<1, 2>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t /*columns*/, const int32_t rows) {
 #if defined(__AVX__)
   const __m128d row = _mm_loadu_pd(matrix);
@@ -292,14 +308,16 @@ void transpose_block<1, 2>(double* matrix_transpose, const double* const matrix,
 // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 template <>
-void transpose_block<1, 1>(double* matrix_transpose, const double* const matrix,
+void transpose_block<1, 1>(double* __restrict__ matrix_transpose,
+                           const double* __restrict__ const matrix,
                            const int32_t /*columns*/, const int32_t /*rows*/) {
   *matrix_transpose = *matrix;
 }
 
 template <int32_t BlockSize, int32_t RowExcess, int32_t ColumnExcess>
-void transpose_impl(double* matrix_transpose,  //
-                    const double* const matrix, const int32_t in_number_of_rows,
+void transpose_impl(double* __restrict__ matrix_transpose,  //
+                    const double* __restrict__ const matrix,
+                    const int32_t in_number_of_rows,
                     const int32_t in_number_of_columns) {
   const int32_t bound_on_rows = in_number_of_rows - RowExcess;
   const int32_t bound_on_columns = in_number_of_columns - ColumnExcess;
