@@ -75,7 +75,8 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... TupleTags>
-  DataVector operator()(const Parallel::GlobalCache<Metavariables>& cache,
+  DataVector operator()(const ::TimescaleTuner& /*unused*/,
+                        const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& function_of_time_name,
                         const tuples::TaggedTuple<TupleTags...>& measurements) {

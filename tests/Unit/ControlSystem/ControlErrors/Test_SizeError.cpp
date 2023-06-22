@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 
+#include "ControlSystem/ControlErrors/Size.hpp"
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
@@ -15,17 +16,42 @@
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
+#include "ControlSystem/Tags/QueueTags.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
+#include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/Structure/ExcisionSphere.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
+#include "Framework/TestCreation.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+namespace Frame {
+struct Distorted;
+}
 
 namespace {
+struct Metavars {
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
+                 domain::Tags::Domain<3>,
+                 control_system::Tags::WriteDataToDisk>;
+  using observed_reduction_data_tags = tmpl::list<>;
+  using component_list = tmpl::list<observers::ObserverWriter<Metavars>>;
+  void pup(PUP::er& /*p*/) {}
+};
 
 template <typename InitialState, typename FinalState>
 void test_size_error_one_step(
@@ -40,6 +66,10 @@ void test_size_error_one_step(
     const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&
         function_of_time,
     const double expected_error) {
+  const std::string initial_state = pretty_type::name<InitialState>();
+  const std::string final_state = pretty_type::name<FinalState>();
+  CAPTURE(initial_state);
+  CAPTURE(final_state);
   const double initial_damping_time = 0.1;
   const double initial_target_drift_velocity = 0.0;
   const double initial_suggested_time_scale = 0.0;
@@ -125,6 +155,70 @@ void test_size_error_one_step(
   // thing for a few cases.
   CHECK(dynamic_cast<FinalState*>(info.state.get()) != nullptr);
   CHECK(error.control_error == approx(expected_error));
+
+  // Now check the control error class, but only if the initial state is Initial
+  // because the control error class is hard coded to start in the Initial state
+  if constexpr (std::is_same_v<InitialState,
+                               control_system::size::States::Initial>) {
+    using size_error =
+        control_system::ControlErrors::Size<domain::ObjectLabel::A>;
+    static_assert(
+        tt::assert_conforms_to_v<size_error,
+                                 control_system::protocols::ControlError>);
+
+    auto error_class = TestHelpers::test_creation<size_error>(
+        "MaxNumTimesForZeroCrossingPredictor: 4");
+
+    CHECK_FALSE(error_class.get_suggested_timescale().has_value());
+    CHECK_FALSE(error_class.discontinuous_change_has_occurred());
+
+    TimescaleTuner tuner{
+        std::vector<double>{0.1}, 1.0, 0.01, 1.0e-3, 1.0e-4, 1.01, 0.98};
+    std::unordered_map<std::string,
+                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+        functions_of_time{};
+    functions_of_time["Size"] = function_of_time->get_clone();
+    Domain<3> domain{
+        {},
+        {{"ExcisionSphereA", ExcisionSphere<3>{grid_excision_boundary_radius,
+                                               tnsr::I<double, 3, Frame::Grid>{
+                                                   std::array{0.0, 0.0, 0.0}},
+                                               {}}}}};
+    Parallel::MutableGlobalCache<Metavars> mutable_cache{};
+    Parallel::GlobalCache<Metavars> cache{
+        {std::move(functions_of_time), std::move(domain), false, "", "",
+         std::vector<std::string>{}},
+        &mutable_cache};
+    tuples::TaggedTuple<
+        StrahlkorperTags::Strahlkorper<Frame::Distorted>,
+        control_system::QueueTags::ExcisionSurface<Frame::Distorted>,
+        ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame::Distorted>>,
+        control_system::QueueTags::LapseOnExcisionSurface,
+        control_system::QueueTags::ShiftyQuantity<Frame::Distorted>,
+        control_system::QueueTags::SpatialMetricOnExcisionSurface<
+            Frame::Distorted>,
+        control_system::QueueTags::InverseSpatialMetricOnExcisionSurface<
+            Frame::Distorted>>
+        measurements{
+            horizon,         excision_boundary, time_deriv_horizon,    lapse,
+            shifty_quantity, spatial_metric,    inverse_spatial_metric};
+
+    const double control_error_from_class =
+        error_class(tuner, cache, time, "Size"s, measurements)[0];
+
+    // These should be identical because the control error class calls the
+    // control_error function
+    CHECK(control_error_from_class == error.control_error);
+
+    CHECK_FALSE(error_class.get_suggested_timescale().has_value());
+    CHECK(error_class.discontinuous_change_has_occurred() !=
+          std::is_same_v<InitialState, FinalState>);
+
+    error_class.reset();
+
+    CHECK_FALSE(error_class.get_suggested_timescale().has_value());
+    CHECK_FALSE(error_class.discontinuous_change_has_occurred());
+  }
 }
 
 template <typename InitialState, typename FinalState>
@@ -160,7 +254,6 @@ void test_size_error(const double grid_excision_boundary_radius,
       distorted_excision_boundary_velocity, distorted_horizon_velocity,
       target_char_speed, function_of_time, expected_error);
 }
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {

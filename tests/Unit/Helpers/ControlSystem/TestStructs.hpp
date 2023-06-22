@@ -11,6 +11,7 @@
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
+#include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/String.hpp"
@@ -42,6 +43,7 @@ struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
 
   template <typename Metavariables, typename... QueueTags>
   DataVector operator()(
+      const ::TimescaleTuner& /*tuner*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const double /*time*/, const std::string& /*function_of_time_name*/,
       const tuples::TaggedTuple<QueueTags...>& /*measurements*/) {

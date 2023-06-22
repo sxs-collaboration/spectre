@@ -111,7 +111,8 @@ void test_rotation_control_error() {
   // This is before the first expiration time
   const double check_time = 0.1;
   const DataVector control_error =
-      ControlError{}(cache, check_time, rotation_name, fake_measurement_tuple);
+      ControlError{}(::TimescaleTuner{}, cache, check_time, rotation_name,
+                     fake_measurement_tuple);
 
   // Calculated error = (grid_diff cross pos_diff) / (grid_diff dot pos_diff) by
   // hand

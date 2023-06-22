@@ -49,6 +49,7 @@ target_link_libraries(
   FunctionsOfTime
   Logging
   Serialization
+  SizeControlErrors
   INTERFACE
   Observer
   )

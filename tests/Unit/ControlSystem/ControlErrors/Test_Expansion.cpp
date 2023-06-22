@@ -111,7 +111,8 @@ void test_expansion_control_error() {
   // This is before the first expiration time
   const double check_time = 0.1;
   const DataVector control_error =
-      ControlError{}(cache, check_time, expansion_name, fake_measurement_tuple);
+      ControlError{}(::TimescaleTuner{}, cache, check_time, expansion_name,
+                     fake_measurement_tuple);
 
   const auto& expansion_f_of_t =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(

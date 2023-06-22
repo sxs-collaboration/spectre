@@ -84,7 +84,8 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... TupleTags>
-  DataVector operator()(const Parallel::GlobalCache<Metavariables>& cache,
+  DataVector operator()(const ::TimescaleTuner& tuner,
+                        const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& /*function_of_time_name*/,
                         const tuples::TaggedTuple<TupleTags...>& measurements) {
@@ -109,14 +110,14 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
     const DataVector& current_position_of_A = get<center_A>(measurements);
 
     const DataVector rotation_error =
-        rotation_control_error_(cache, time, "Rotation", measurements);
+        rotation_control_error_(tuner, cache, time, "Rotation", measurements);
     // Use A because it's on the positive x-axis, however, B would work as well.
     // Just so long as we are consistent.
     const DataVector rotation_error_cross_grid_pos_A =
         cross(rotation_error, grid_position_of_A);
 
-    const double expansion_error =
-        expansion_control_error_(cache, time, "Expansion", measurements)[0];
+    const double expansion_error = expansion_control_error_(
+        tuner, cache, time, "Expansion", measurements)[0];
 
     // From eq. 42 in 1304.3067
     const quat middle_expression = datavector_to_quaternion(
