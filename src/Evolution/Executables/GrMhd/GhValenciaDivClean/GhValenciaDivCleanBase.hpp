@@ -15,6 +15,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
@@ -315,6 +316,9 @@ struct GhValenciaDivCleanDefaults {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
+    static constexpr bool enable_time_dependent_maps = true;
+  };
 };
 
 template <typename EvolutionMetavarsDerived, bool UseDgSubcell>
@@ -353,6 +357,7 @@ struct GhValenciaDivCleanTemplateBase<
       EvolutionMetavarsDerived<InitialData, InterpolationTargetTags...>;
   using defaults = GhValenciaDivCleanDefaults<UseDgSubcell>;
   static constexpr size_t volume_dim = defaults::volume_dim;
+  using domain = typename defaults::domain;
   using domain_frame = typename defaults::domain_frame;
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;
@@ -508,8 +513,8 @@ struct GhValenciaDivCleanTemplateBase<
                 dg::Events::field_observations<volume_dim, Tags::Time,
                                                observe_fields,
                                                non_tensor_compute_tags>,
-                dg::Events::ObserveVolumeIntegrals<volume_dim, Tags::Time,
-                                                   integrand_fields,
+                dg::Events::ObserveVolumeIntegrals<volume_dim,
+                                                   Tags::Time, integrand_fields,
                                                    non_tensor_compute_tags>,
                 Events::ObserveAtExtremum<Tags::Time, observe_fields,
                                           non_tensor_compute_tags>,
@@ -697,7 +702,7 @@ struct GhValenciaDivCleanTemplateBase<
       std::conditional_t<
           use_numeric_initial_data, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
+              ::domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase, local_time_stepping>>,
