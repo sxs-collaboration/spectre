@@ -33,14 +33,10 @@ void test_simple_tags() {
 }
 
 void test_center_tags() {
-  TestHelpers::db::test_base_tag<Tags::ObjectCenter<ObjectLabel::A>>(
-      "ObjectCenter");
-  TestHelpers::db::test_base_tag<Tags::ObjectCenter<ObjectLabel::B>>(
-      "ObjectCenter");
-  TestHelpers::db::test_simple_tag<Tags::ExcisionCenter<ObjectLabel::A>>(
-      "CenterObjectA");
-  TestHelpers::db::test_simple_tag<Tags::ExcisionCenter<ObjectLabel::B>>(
-      "CenterObjectB");
+  TestHelpers::db::test_simple_tag<Tags::ObjectCenter<ObjectLabel::A>>(
+      "ObjectCenterA");
+  TestHelpers::db::test_simple_tag<Tags::ObjectCenter<ObjectLabel::B>>(
+      "ObjectCenterB");
 
   using Object = domain::creators::BinaryCompactObject::Object;
 
@@ -50,9 +46,9 @@ void test_center_tags() {
           100.0, 500.0, 1_st, 5_st);
 
   const auto grid_center_A =
-      Tags::ExcisionCenter<ObjectLabel::A>::create_from_options(domain_creator);
+      Tags::ObjectCenter<ObjectLabel::A>::create_from_options(domain_creator);
   const auto grid_center_B =
-      Tags::ExcisionCenter<ObjectLabel::B>::create_from_options(domain_creator);
+      Tags::ObjectCenter<ObjectLabel::B>::create_from_options(domain_creator);
 
   CHECK(grid_center_A == tnsr::I<double, 3, Frame::Grid>{{8.0, 0.0, 0.0}});
   CHECK(grid_center_B == tnsr::I<double, 3, Frame::Grid>{{-5.5, 0.0, 0.0}});
@@ -64,10 +60,11 @@ void test_center_tags() {
           std::array{false, false, false});
 
   CHECK_THROWS_WITH(
-      Tags::ExcisionCenter<ObjectLabel::B>::create_from_options(
+      Tags::ObjectCenter<ObjectLabel::B>::create_from_options(
           creator_no_excision),
-      Catch::Contains(" is not in the domains excision spheres but is needed "
-                      "to generate the ExcisionCenter"));
+      Catch::Contains(
+          " is not in the domain creators grid anchors but is needed "
+          "to generate the ObjectCenter"));
 }
 
 template <bool Override>

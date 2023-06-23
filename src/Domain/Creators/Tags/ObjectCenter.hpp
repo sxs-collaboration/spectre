@@ -22,25 +22,18 @@ struct Grid;
 /// \endcond
 
 namespace domain::Tags {
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// Base tag to retrieve the grid frame centers of objects in the domain
-/// corresponding to the `ObjectLabel`.
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \ingroup ComputationalDomainGroup
+ * \brief The grid frame center of the given object.
+ *
+ * \note Requires that the domain creator has a grid anchor with the name:
+ * "Center + get_output(Label)"
+ */
 template <ObjectLabel Label>
-struct ObjectCenter : db::BaseTag {};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The grid frame center of the excision sphere for the given object.
-///
-/// Even though this can easily be retrieved from the domain, we add it as its
-/// own tag so we can access it through the base tag. This way, other things
-/// (like the control system) can grab the center and be agnostic to what the
-/// object actually is.
-template <ObjectLabel Label>
-struct ExcisionCenter : ObjectCenter<Label>, db::SimpleTag {
+struct ObjectCenter : db::SimpleTag {
   using type = tnsr::I<double, 3, Frame::Grid>;
-  static std::string name() { return "CenterObject" + get_output(Label); }
+  static std::string name() { return "ObjectCenter" + get_output(Label); }
 
   using option_tags = tmpl::list<domain::OptionTags::DomainCreator<3>>;
   static constexpr bool pass_metavariables = false;

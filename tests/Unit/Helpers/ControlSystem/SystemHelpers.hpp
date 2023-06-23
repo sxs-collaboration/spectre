@@ -208,8 +208,8 @@ struct MockControlComponent {
       tmpl::list<control_system::Tags::MeasurementsPerUpdate,
                  control_system::Tags::WriteDataToDisk,
                  control_system::Tags::Verbosity,
-                 domain::Tags::ExcisionCenter<domain::ObjectLabel::A>,
-                 domain::Tags::ExcisionCenter<domain::ObjectLabel::B>>;
+                 domain::Tags::ObjectCenter<domain::ObjectLabel::A>,
+                 domain::Tags::ObjectCenter<domain::ObjectLabel::B>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
