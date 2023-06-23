@@ -34,6 +34,7 @@ class LinkedMessageQueue<Id, tmpl::list<QueueTags...>> {
 
  public:
   using IdType = Id;
+  using queue_tags_list = tmpl::list<QueueTags...>;
 
   /// Insert data into a given queue at a given ID.  All queues must
   /// receive data with the same collection of \p id_and_previous, but
