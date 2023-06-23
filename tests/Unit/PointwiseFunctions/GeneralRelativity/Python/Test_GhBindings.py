@@ -28,6 +28,16 @@ class TestBindings(unittest.TestCase):
             pi,
         )
 
+    def test_spatial_ricci_tensor(self):
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=0.0)
+        deriv_phi = tnsr.ijaa[DataVector, 3](num_points=1, fill=0.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=0.0)
+        gh.spatial_ricci_tensor(
+            phi,
+            deriv_phi,
+            inverse_spatial_metric,
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
