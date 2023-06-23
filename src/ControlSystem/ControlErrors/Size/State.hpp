@@ -12,6 +12,7 @@
 /// \cond
 namespace control_system::size {
 struct Info;
+struct CrossingTimeInfo;
 }  // namespace control_system::size
 /// \endcond
 
