@@ -12,10 +12,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"

@@ -56,6 +56,7 @@ void test_rotated_bricks_construction(
     const bool is_periodic = false) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       rotated_bricks, expect_boundary_conditions, is_periodic);
+  CHECK(rotated_bricks.grid_anchors().empty());
 
   CHECK(rotated_bricks.initial_extents() == expected_extents);
   CHECK(rotated_bricks.initial_refinement_levels() ==

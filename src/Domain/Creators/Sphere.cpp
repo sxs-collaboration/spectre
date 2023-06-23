@@ -149,6 +149,10 @@ Sphere::Sphere(
                 "which you can select different radial distributions.");
   }
 
+  // Create grid anchors
+  grid_anchors_["Center"] =
+      tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
+
   // Determine number of blocks
   num_blocks_per_shell_ =
       which_wedges_ == ShellWedges::All

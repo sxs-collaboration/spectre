@@ -14,10 +14,14 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 
 /// \cond
+namespace Frame {
+struct Grid;
+}  // namespace Frame
 template <size_t>
 class Domain;
 namespace domain::BoundaryConditions {
@@ -46,6 +50,14 @@ class DomainCreator {
   virtual ~DomainCreator() = default;
 
   virtual Domain<VolumeDim> create_domain() const = 0;
+
+  /// A set of named coordinates in the grid frame, like the center of the
+  /// domain or the positions of specific objects in a domain
+  virtual std::unordered_map<std::string,
+                             tnsr::I<double, VolumeDim, Frame::Grid>>
+  grid_anchors() const {
+    return {};
+  }
 
   /// The set of external boundary condition for every block in the domain
   virtual std::vector<DirectionMap<

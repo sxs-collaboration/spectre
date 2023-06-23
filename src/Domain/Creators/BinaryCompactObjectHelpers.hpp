@@ -49,6 +49,21 @@ constexpr bool enable_time_dependent_maps_v =
     enable_time_dependent_maps<Metavariables>::value;
 
 /*!
+ * \brief Create a set of centers of objects for the binary domains.
+ *
+ * \details Will add the following centers to the set:
+ *
+ * - Center: The origin
+ * - CenterA: Center of object A
+ * - CenterB: Center of object B
+ *
+ * \return Object required by the DomainCreator%s
+ */
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b);
+
+/*!
  * \brief This holds all options related to the time dependent maps of the
  * binary compact object domains.
  *

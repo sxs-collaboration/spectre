@@ -67,6 +67,7 @@ void test_rectangle_construction(
         {}) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       rectangle, expect_boundary_conditions);
+  CHECK(rectangle.grid_anchors().empty());
 
   CHECK(rectangle.initial_extents() == expected_extents);
   CHECK(rectangle.initial_refinement_levels() == expected_refinement_level);

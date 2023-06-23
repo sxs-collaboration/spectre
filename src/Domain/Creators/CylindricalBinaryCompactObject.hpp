@@ -12,6 +12,7 @@
 #include <variant>
 #include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -78,6 +79,9 @@ namespace domain::creators {
  * user must specify the center and radius of this surface for both
  * `ObjectA` and `ObjectB`, and the user must specify the outer boundary
  * radius.  The outer boundary is a sphere centered at the origin.
+ *
+ * This domain offers some grid anchors. See
+ * `domain::creators::bco::create_grid_anchors` for which ones are offered.
  *
  * Note that Figure 20 of \cite Buchman:2012dw illustrates additional
  * spherical shells inside the "EA" and "EB" blocks, and the caption
@@ -343,6 +347,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   Domain<3> create_domain() const override;
 
+  std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+  grid_anchors() const override {
+    return grid_anchors_;
+  }
+
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
@@ -400,6 +409,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   std::vector<std::string> block_names_{};
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_{};
+  std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+      grid_anchors_{};
   // FunctionsOfTime options
   std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
 };

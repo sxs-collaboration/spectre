@@ -89,6 +89,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             domain_creator_1d.get());
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_1d, use_boundary_condition);
+    CHECK(domain_creator_1d->grid_anchors().empty());
 
     const auto domain_creator_2d = make_domain_creator<2>(
         "AlignedLattice:\n"

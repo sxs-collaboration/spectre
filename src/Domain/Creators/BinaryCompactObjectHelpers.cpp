@@ -27,6 +27,19 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain::creators::bco {
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b) {
+  std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>> result{};
+  result["Center" + get_output(ObjectLabel::A)] =
+      tnsr::I<double, 3, Frame::Grid>{center_a};
+  result["Center" + get_output(ObjectLabel::B)] =
+      tnsr::I<double, 3, Frame::Grid>{center_b};
+  result["Center"] = tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
+
+  return result;
+}
+
 TimeDependentMapOptions::TimeDependentMapOptions(
     double initial_time, ExpansionMapOptions expansion_map_options,
     std::array<double, 3> initial_angular_velocity,

@@ -47,6 +47,7 @@ void test_disk_construction(
     const bool expect_boundary_conditions = false) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       disk, expect_boundary_conditions);
+  CHECK(disk.grid_anchors().empty());
 
   const OrientationMap<2> aligned_orientation{};
   const OrientationMap<2> quarter_turn_ccw(std::array<Direction<2>, 2>{

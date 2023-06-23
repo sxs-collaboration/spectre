@@ -100,6 +100,7 @@ void test_connectivity() {
         with_boundary_conditions ? create_boundary_condition() : nullptr};
     TestHelpers::domain::creators::test_domain_creator(
         frustal_cloak, with_boundary_conditions);
+    CHECK(frustal_cloak.grid_anchors().empty());
   }
 
   CHECK_THROWS_WITH(

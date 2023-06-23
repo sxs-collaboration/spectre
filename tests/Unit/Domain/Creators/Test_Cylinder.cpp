@@ -93,6 +93,7 @@ void test_cylinder_construction(
     const bool expect_boundary_conditions = false) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       cylinder, expect_boundary_conditions, is_periodic_in_z);
+  CHECK(cylinder.grid_anchors().empty());
 
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
