@@ -150,3 +150,50 @@ See \ref spectre_using_python "Using SpECTRE's Python"
   Python code is optional, but preferred when it makes code more readable.
   In particular, use the argument names in the tests for the Python bindings so
   they are being tested as well.
+
+## Guidelines for writing command-line interfaces (CLIs)
+
+- List all CLI endpoints in `support/Python/__main__.py`.
+- Follow the recommendations in the
+  [click](https://click.palletsprojects.com/en/8.1.x/) documentation.
+- Split your code into free functions that know nothing about the CLI and can
+  just as well be called independently from Python, and the CLI commands that
+  call the functions. Test both.
+- Take only input files that the script operates on as positional arguments
+  (like H5 data files or YAML input files) and everything else as options.
+- Choose option names and shorthands consistent with other CLI endpoints in the
+  repository. For example, H5 subfile names are specified with '--subfile-name'
+  / '-d' and output files are specified with '--output' / '-o'. Look at other
+  CLI endpoints before making choices for option names.
+- Never read or write files to or from "default" locations. Instead, take all
+  input files as arguments and write all output files to locations specified
+  explicitly by the user. This is important so users are not afraid of moving
+  and renaming files, and are not left wondering where the script wrote its
+  output. Examples:
+  - Don't try to read a file like "spectre.out" from the current directory just
+    because it might be there by convention. Instead, add an argument or option
+    like `--out-filename` so the user can specify it.
+  - Don't write a file like "plot.pdf" to the current directory without telling
+    the user. Instead, add an option like `--output` / `-o` for the user to
+    specify explicitly so they know exactly where output is written to.
+- Operate on files instead of directories when possible. For example, prefer
+  taking many H5 volume data files as arguments instead of the directory that
+  contains them. This helps with operating on H5 files in segments or other
+  subdirectory structures. Passing many files to a script is easy for the user
+  by using a glob (note: don't take the glob as a string argument, take the
+  expanded list of files directly using `click.argument(..., nargs=-1,
+  type=click.Path(...))`).
+- Never overwrite or delete files without prompting the user or asking them to
+  run with `--force`.
+- When the input to a script is empty, [gracefully degrade to a
+  noop](https://click.palletsprojects.com/en/8.1.x/arguments/#variadic-arguments).
+- When the user did not specify an option, print possible values for it and
+  return instead of raising an exception. For example, print the subfile names
+  in an H5 file if no subfile name was specified. This allows the user to make
+  selections incrementally.
+- When the user did not specify an output file, write the output to `sys.stdout`
+  if possible instead of raising an exception. This allows the user to use pipes
+  and chain commands if they want, or add a quick `-o` option to write to a
+  file.
+- Always use Python's `logging` module over plain `print` statements. This
+  allows the user to control the verbosity.
