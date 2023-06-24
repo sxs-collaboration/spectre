@@ -4,7 +4,7 @@
 #include "DataStructures/Transpose.hpp"
 #include <type_traits>
 
-#if __has_include(<emmintrin.h>)
+#if defined(__SSE2__)
 #include <emmintrin.h>
 #endif
 #if defined(__AVX__)
