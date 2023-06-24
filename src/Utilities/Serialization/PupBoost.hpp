@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <boost/container/static_vector.hpp>
 #include <boost/rational.hpp>
 #include <pup.h>
 
@@ -33,4 +34,23 @@ inline void operator|(PUP::er& p, boost::rational<T>& var) {  // NOLINT
   pup(p, var);
 }
 /// @}
+
+template <class T, size_t N>
+void pup(PUP::er& p, boost::container::static_vector<T, N>& v) {
+  auto size = v.size();
+  p | size;
+  v.resize(size);
+  if (PUP::as_bytes<T>::value) {
+    PUParray(p, v.data(), size);
+  } else {
+    for (auto& x : v) {
+      p | x;
+    }
+  }
+}
+
+template <class T, size_t N>
+void operator|(PUP::er& p, boost::container::static_vector<T, N>& v) {
+  pup(p, v);
+}
 }  // namespace PUP

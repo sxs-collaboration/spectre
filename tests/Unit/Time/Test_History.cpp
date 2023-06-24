@@ -314,6 +314,8 @@ void test_history() {
     // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40), (2, X, 50)]
     CHECK(not const_history.substeps().back().value.has_value());
     CHECK(const_history.latest_value() == expected_latest);
+    CHECK(serialize_and_deserialize(const_history).latest_value() ==
+          expected_latest);
   }
 
   {
