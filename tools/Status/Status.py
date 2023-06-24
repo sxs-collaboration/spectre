@@ -190,7 +190,8 @@ def _state_order(state):
 
 
 def _format(field: str, value: Any, state_styles: dict) -> str:
-    if pd.isnull(value):
+    # The SLURM field "NodeList" returns "None assigned" if a job is pending
+    if pd.isnull(value) or value == "None assigned":
         return "-"
     elif field == "State":
         style = {
@@ -205,6 +206,8 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
         return style.get(value, "") + str(value)
     elif field in ["Start", "End"]:
         return humanize.naturaldate(value) + " " + value.strftime("%X")
+    elif field == "Segment":
+        return str(int(value)).zfill(Segment.NUM_DIGITS)
     else:
         return str(value)
 
@@ -213,13 +216,16 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
 # is the human-readable name. These are sometimes the same
 AVAILABLE_COLUMNS = {
     "State": "State",
+    "Partition": "Queue",
     "End": "End",
     "User": "User",
     "JobID": "JobID",
     "JobName": "JobName",
+    "SegmentId": "Segment",
     "Elapsed": "Elapsed",
     "NCPUS": "Cores",
     "NNodes": "Nodes",
+    "NodeList": "NodeList",
     "WorkDir": "WorkDir",
     "Comment": "Comment",
 }
@@ -260,8 +266,11 @@ def render_status(
     columns,
     **kwargs,
 ):
+    columns_to_fetch = list(AVAILABLE_COLUMNS)
+    columns_to_fetch.remove("SegmentId")
+
     job_data = fetch_job_data(
-        AVAILABLE_COLUMNS.keys(),
+        columns_to_fetch,
         **kwargs,
     )
 
