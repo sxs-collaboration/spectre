@@ -113,6 +113,10 @@ EventsAndTriggers:
           Interval: 2
           Offset: 0
     Events:
+      - ObserveTimeStep:
+          SubfileName: TimeSteps
+          PrintTimeToTerminal: True
+          ObservePerCore: False
       - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:
