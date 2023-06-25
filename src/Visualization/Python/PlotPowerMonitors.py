@@ -18,6 +18,7 @@ from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 from spectre.Spectral import Basis
+from spectre.Visualization.ReadH5 import select_observation
 
 logger = logging.getLogger(__name__)
 
@@ -413,36 +414,25 @@ def plot_power_monitors_command(
         subfile_name = "/" + subfile_name
 
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
-    obs_ids = volfiles[0].list_observation_ids()
-    obs_values = list(map(volfiles[0].get_observation_value, obs_ids))
     dim = volfiles[0].get_dimension()
 
     # Select observation
     if step is None and time is None:
         # Plot power monitors over time
         obs_id = None
-    elif step is not None and time is not None:
-        raise click.UsageError(
-            f"Specify either '--step' (in [0, {len(obs_ids) - 1}], or -1) or "
-            f"'--time' (in [{obs_values[0]:g}, {obs_values[-1]:g}]), "
-            "or neither."
-        )
-    elif step is None:
-        # Find closest observation to specified time
-        step = np.argmin(np.abs(time - np.array(obs_values)))
-        obs_value = obs_values[step]
-        if obs_value != time:
-            logger.info(
-                f"Selected closest observation to t = {time}: "
-                f"step {step} at t = {obs_value:g}"
-            )
-        obs_id = obs_ids[step]
     else:
-        # Select the specified observation
-        obs_id = obs_ids[step]
+        obs_id, obs_value = select_observation(volfiles, step=step, time=time)
+        # Keep processing only volfiles that contain the selected observation
+        volfiles = [
+            volfile
+            for volfile in volfiles
+            if obs_id in volfile.list_observation_ids()
+        ]
 
     # Print available blocks and groups
-    any_obs_id = obs_id if obs_id is not None else obs_ids[0]
+    any_obs_id = (
+        obs_id if obs_id is not None else volfiles[0].list_observation_ids()[0]
+    )
     domain = deserialize_domain[dim](volfiles[0].get_domain(any_obs_id))
     all_block_groups = list(domain.block_groups.keys())
     all_block_names = [block.name for block in domain.blocks]
