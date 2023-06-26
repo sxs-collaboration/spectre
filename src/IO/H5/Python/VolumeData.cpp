@@ -6,7 +6,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <string>
-#include <iostream>
 
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/TensorData.hpp"
