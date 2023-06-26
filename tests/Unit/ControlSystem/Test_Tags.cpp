@@ -228,22 +228,9 @@ void test_individual_tags() {
   // We're only checking for errors here, so the fact that it doesn't error is
   // enough of a check. We test errors below.
   [[maybe_unused]] const control_error_tag::type created_control_error =
-      control_error_tag::create_from_options<MetavarsEmpty>(holder, creator);
+      control_error_tag::create_from_options(holder);
   [[maybe_unused]] const control_error_tag2::type created_control_error2 =
-      control_error_tag2::create_from_options<MetavarsEmpty>(holder2, creator);
-
-  const std::unique_ptr<DomainCreator<3>> creator_error_0 =
-      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
-                                    0);
-
-  CHECK_THROWS_WITH(
-      control_error_tag::create_from_options<MetavarsEmpty>(holder,
-                                                            creator_error_0),
-      Catch::Contains(
-          "ExcisionSphereA' or 'ExcisionSphereB' or 'ExcisionSphere"));
-  CHECK_THROWS_WITH(control_error_tag2::create_from_options<MetavarsEmpty>(
-                        holder2, creator_empty),
-                    Catch::Contains("'ExcisionSphereB'"));
+      control_error_tag2::create_from_options(holder2);
 
   using controller_tag = control_system::Tags::Controller<system>;
 
