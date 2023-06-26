@@ -105,19 +105,19 @@ Make a directory where you will run everything.
 mkdir /work/runs
 ```
 
- Copy over the input file
+Copy over the input file
 `/work/spectre/tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml`
 into your `/work/runs` directory. We will be visualizing the coordinates of a
 binary black hole domain. To run the executable, do
 
 ```
-ExportTimeDependentCoordinates3D --input-file InputTimeDependent3D.yaml
+spectre run InputTimeDependent3D.yaml
 ```
 
 \note The container already has the `/work/spectre/build/bin` directory added to
 the PATH environment variable, so no need to copy/link executables.
 
-This will run it on one core. If you'd like to use more cores, add the `++ppn N`
+This will run it on one core. If you'd like to use more cores, add the `-j N`
 option where `N` is the number of cores. After this finishes you should
 see two `H5` files in your run directory:
 
@@ -131,6 +131,8 @@ quantities like the minimum grid spacing over all the elements in our domain.
 \note Next time you run the executable, you will have to either move or delete
 the existing `H5` files as SpECTRE will error if it detects that an output file
 already exists. This is to prevent you from accidentally overwriting data.
+You can also use the `--force / -f` and `--clean-output / -C` flags to have
+`spectre run` delete the existing files before running the executable.
 
 ## Visualizing our BBH Coordinates
 
@@ -253,13 +255,12 @@ an easy way to check the options in the input file without running a whole
 simulation. In your `/work/runs` directory, if you run
 
 ```
-ExportTimeDependentCoordinates3D \
-  --input-file InputTimeDependent3D.yaml --check-options
+spectre validate InputTimeDependent3D.yaml
 ```
 
-the `--check-options` will tell the executable to parse the input file and exit
-immediately after. If you made a typo, or added an incorrect key/value, a list
-of the available keys and their associated values will be printed.
+the executable will parse and check the input file. If you made a typo, or added
+an incorrect key/value, a list of the available keys and their associated values
+will be printed.
 
 To change the number of times we output the coordinates, we'll need to go to the
 `%EventsAndTriggers:` block of the input file. This block is mainly where we
@@ -430,24 +431,26 @@ exporting the BBH coordinates, so just copy over the yaml block and change the
 
 Your final `%EventsAndTriggers:` block should look something like this:
 
-```
+```yaml
 EventsAndTriggers:
-  ? TimeCompares:
-      Comparison: GreaterThanOrEqualTo
-      Value: 6.28
-  : - Completion
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 6.28
+    Events:
+      - Completion
   ...
 ```
 
 Now you should be ready to run the executable and get some output. Here, you
 will almost definitely benefit by running this on many cores by adding the
-`++ppn N` flag to the command you use to run the executable. Since we use lots
+`-j N` flag to the command you use to run the executable. Since we use lots
 of smaller elements, we distribute these over the available resources via a
 \link domain::BlockZCurveProcDistribution space filling curve \endlink to speed
 things up.
 
 ```
-EvolveScalarAdvection2D --input-file Kuzmin2D.yaml ++ppn 4
+spectre run Kuzmin2D.yaml -j4
 ```
 
 ### Visualizing the Kuzmin Problem
