@@ -190,7 +190,10 @@ def _state_order(state):
 
 
 def _format(field: str, value: Any, state_styles: dict) -> str:
-    if field == "State":
+    # The SLURM field "NodeList" returns "None assigned" if a job is pending
+    if pd.isnull(value) or value == "None assigned":
+        return "-"
+    elif field == "State":
         style = {
             "RUNNING": "[blue]",
             "COMPLETED": "[green]",
@@ -202,12 +205,55 @@ def _format(field: str, value: Any, state_styles: dict) -> str:
         style.update(state_styles)
         return style.get(value, "") + str(value)
     elif field in ["Start", "End"]:
-        if pd.isnull(value):
-            return "-"
-        else:
-            return humanize.naturaldate(value) + " " + value.strftime("%X")
+        return humanize.naturaldate(value) + " " + value.strftime("%X")
+    elif field == "Segment":
+        return str(int(value)).zfill(Segment.NUM_DIGITS)
     else:
         return str(value)
+
+
+# Dictionary of available columns to print. Key is the SLURM name, and the value
+# is the human-readable name. These are sometimes the same
+AVAILABLE_COLUMNS = {
+    "State": "State",
+    "Partition": "Queue",
+    "End": "End",
+    "User": "User",
+    "JobID": "JobID",
+    "JobName": "JobName",
+    "SegmentId": "Segment",
+    "Elapsed": "Elapsed",
+    "NCPUS": "Cores",
+    "NNodes": "Nodes",
+    "NodeList": "NodeList",
+    "WorkDir": "WorkDir",
+    "Comment": "Comment",
+}
+
+DEFAULT_COLUMNS = [
+    "State",
+    "End",
+    "User",
+    "JobID",
+    "JobName",
+    "Elapsed",
+    "Cores",
+    "Nodes",
+]
+
+
+def input_column_callback(ctx, param, value):
+    result = value.split(",") if value else []
+    result = [x.strip() for x in result]
+
+    for input_key in result:
+        if input_key not in AVAILABLE_COLUMNS.values():
+            raise click.BadParameter(
+                f"Input column '{input_key}' not in available columns (case"
+                f" sensitive) {list(AVAILABLE_COLUMNS.values())}"
+            )
+
+    return result
 
 
 @rich.console.group()
@@ -217,21 +263,14 @@ def render_status(
     show_deleted,
     show_all_segments,
     state_styles,
+    columns,
     **kwargs,
 ):
+    columns_to_fetch = list(AVAILABLE_COLUMNS)
+    columns_to_fetch.remove("SegmentId")
+
     job_data = fetch_job_data(
-        [
-            "JobID",
-            "User",
-            "JobName",
-            "NCPUS",
-            "NNodes",
-            "Elapsed",
-            "End",
-            "State",
-            "WorkDir",
-            "Comment",
-        ],
+        columns_to_fetch,
         **kwargs,
     )
 
@@ -266,6 +305,9 @@ def render_status(
                 & (job_data["SegmentId"] != latest_segment_id)
             ]
             job_data.drop(drop_segment_jobs.index, inplace=True)
+
+    # Rename columns from SLURM name to user name
+    job_data.rename(columns=AVAILABLE_COLUMNS, inplace=True)
 
     # List most recent jobs first
     job_data.sort_values("JobID", inplace=True, ascending=False)
@@ -307,24 +349,10 @@ def render_status(
     # Add metadata so jobs can be grouped by state
     job_data["StateOrder"] = job_data["State"].apply(_state_order)
 
-    # We'll print these columns
-    standard_fields = [
-        "State",
-        "End",
-        "JobID",
-        "JobName",
-        "Elapsed",
-        "NCPUS",
-        "NNodes",
-    ]
-    if kwargs["allusers"]:
-        standard_fields.insert(2, "User")
-    # Transform some column names for better readability
-    col_names = {
-        "NCPUS": "Cores",
-        "NNodes": "Nodes",
-    }
-    standard_columns = [col_names.get(col, col) for col in standard_fields]
+    # Remove the user column unless we're specifying all users
+    if not kwargs["allusers"]:
+        if "User" in columns:
+            columns.remove("User")
 
     # Group output by executable
     first_section = True
@@ -341,8 +369,8 @@ def render_status(
             (field + f" [{unit}]") if unit else field
             for field, unit in executable_status.fields.items()
         ]
-        columns = standard_columns + extra_columns
-        table = rich.table.Table(*columns, box=None)
+        table_headers = columns + extra_columns
+        table = rich.table.Table(*table_headers, box=None)
 
         # Group by job state
         for state_index, data in exec_data.groupby("StateOrder"):
@@ -350,7 +378,7 @@ def render_status(
                 # Extract job status and format row for output
                 row_formatted = [
                     _format(field, row[field], state_styles)
-                    for field in standard_fields
+                    for field in columns
                 ]
                 try:
                     with open(row["InputFile"], "r") as open_input_file:
@@ -398,7 +426,7 @@ def render_status(
                         )
                     )
                     yield " [bold]InputFile:[/bold] " + str(row["InputFile"])
-                    table = rich.table.Table(*columns, box=None)
+                    table = rich.table.Table(*table_headers, box=None)
         if not show_paths:
             yield table
 
@@ -408,11 +436,10 @@ def render_status(
         yield ""
         yield rich.rule.Rule("[bold]Unidentified Jobs", align="left")
         yield ""
-        table = rich.table.Table(*standard_columns, box=None)
+        table = rich.table.Table(*columns, box=None)
         for i, row in unidentified_jobs.iterrows():
             row_formatted = [
-                _format(field, row[field], state_styles)
-                for field in standard_fields
+                _format(field, row[field], state_styles) for field in columns
             ]
             table.add_row(*row_formatted)
         yield table
@@ -506,8 +533,34 @@ def render_status(
         "See `spectre -h` for its path."
     ),
 )
-def status_command(refresh_rate, **kwargs):
+@click.option(
+    "--columns",
+    "-c",
+    callback=input_column_callback,
+    default=",".join(DEFAULT_COLUMNS),
+    show_default=True,
+    help=(
+        "List of columns that will be printed for all jobs (executable specific"
+        " columns will be added in addition to this list). This can also be"
+        " specified in the config file with the name 'columns'. Note"
+        " that if the '--allusers'  option is not specified, then the \"User\""
+        " column will be omitted. Specify the columns as a comma separated"
+        " list: State,JobId,Nodes . If you want to have spaces in the list,"
+        " wrap it in single quotes: 'State, JobId, Nodes'"
+    ),
+)
+@click.option(
+    "--available-columns",
+    "-e",
+    is_flag=True,
+    help="Print a list of all available columns to use.",
+)
+def status_command(refresh_rate, available_columns, **kwargs):
     """Gives an overview of simulations running on this machine."""
+
+    if available_columns:
+        rich.print(rich.columns.Columns(AVAILABLE_COLUMNS.values()))
+        return
 
     # Start printing things
     console = rich.console.Console()
