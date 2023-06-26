@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   Equations.cpp
   FluxesAndSources.cpp
-  HydroQuantities.cpp
   )
 
 spectre_target_headers(

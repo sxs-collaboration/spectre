@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   ComovingMagneticField.cpp
   LorentzFactor.cpp
+  LowerSpatialFourVelocity.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
   SoundSpeedSquared.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   HEADERS
   ComovingMagneticField.hpp
   LorentzFactor.hpp
+  LowerSpatialFourVelocity.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
   SoundSpeedSquared.hpp
@@ -39,6 +41,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
+  GeneralRelativity
   H5
   Options
   Serialization
