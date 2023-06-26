@@ -160,8 +160,14 @@ def get_executable_name(
     # Fallback: See if the executable is specified in the input file metadata
     if not input_file_path:
         return None
-    with open(input_file_path, "r") as open_input_file:
-        metadata = next(yaml.safe_load_all(open_input_file))
+    try:
+        with open(input_file_path, "r") as open_input_file:
+            metadata = next(yaml.safe_load_all(open_input_file))
+    except yaml.YAMLError:
+        logger.debug(
+            f"Failed loading YAML file '{input_file_path}'.", exc_info=True
+        )
+        metadata = None
     if metadata and "Executable" in metadata:
         return os.path.basename(metadata["Executable"])
     # Backwards compatibility for input files without metadata (can be removed
