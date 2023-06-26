@@ -6,6 +6,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <string>
+#include <iostream>
 
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -49,7 +50,16 @@ void bind_h5vol(py::module& m) {
            py::arg("observation_id"))
       .def("get_data_by_element", &h5::VolumeData::get_data_by_element,
            py::arg("start_observation_value"), py::arg("end_observation_value"),
-           py::arg("components_to_retrieve") = std::nullopt);
+           py::arg("components_to_retrieve") = std::nullopt)
+      .def("extend_connectivity_data_1D",
+           &h5::VolumeData::extend_connectivity_data<1>,
+           py::arg("observation_ids"))
+      .def("extend_connectivity_data_2D",
+           &h5::VolumeData::extend_connectivity_data<2>,
+           py::arg("observation_ids"))
+      .def("extend_connectivity_data_3D",
+           &h5::VolumeData::extend_connectivity_data<3>,
+           py::arg("observation_ids"));
   m.def("offset_and_length_for_grid", &h5::offset_and_length_for_grid,
         py::arg("grid_name"), py::arg("all_grid_names"),
         py::arg("all_extents"));
