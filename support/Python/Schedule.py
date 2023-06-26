@@ -707,7 +707,9 @@ def _parse_params(ctx, param, all_values):
     return params
 
 
-@click.command(help=schedule.__doc__.replace("**kwargs", "--params"))
+@click.command(
+    name="schedule", help=schedule.__doc__.replace("**kwargs", "--params")
+)
 @click.argument(
     "input_file_template",
     type=click.Path(
