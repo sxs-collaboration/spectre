@@ -213,7 +213,7 @@ def read_config_file(ctx, param, config_file):
     "--config-file",
     type=click.Path(file_okay=True, dir_okay=False),
     callback=read_config_file,
-    default=os.path.expanduser("~/.config/spectre.yaml"),
+    default="~/.config/spectre.yaml",
     show_default=True,
     is_eager=True,
     expose_value=False,

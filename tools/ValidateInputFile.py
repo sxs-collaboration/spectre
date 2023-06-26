@@ -143,7 +143,7 @@ def validate_input_file(
         raise error
 
 
-@click.command()
+@click.command(name="validate")
 @click.argument(
     "input_file_path",
     type=click.Path(

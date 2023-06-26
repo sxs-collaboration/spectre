@@ -214,7 +214,7 @@ def user_replacements(text, json_replacements):
     return text
 
 
-@click.command()
+@click.command(name="simplify-traces")
 @click.argument(
     "projections_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

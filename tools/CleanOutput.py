@@ -70,7 +70,7 @@ def clean_output(input_file, output_dir, force):
         raise MissingExpectedOutputError(missing_files)
 
 
-@click.command(help=clean_output.__doc__)
+@click.command(name="clean-output", help=clean_output.__doc__)
 @click.argument(
     "input_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

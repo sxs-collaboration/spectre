@@ -188,7 +188,7 @@ def interpolate_to_mesh(
         target_file.close()
 
 
-@click.command(help=interpolate_to_mesh.__doc__)
+@click.command(name="interpolate-to-mesh", help=interpolate_to_mesh.__doc__)
 @click.option(
     "--source-file-prefix",
     required=True,

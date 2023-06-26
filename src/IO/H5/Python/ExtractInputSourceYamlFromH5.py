@@ -8,7 +8,7 @@ import click
 import spectre.IO.H5 as spectre_h5
 
 
-@click.command()
+@click.command(name="extract-input")
 @click.argument(
     "h5_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

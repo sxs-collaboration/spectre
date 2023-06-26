@@ -138,7 +138,7 @@ def parse_points(ctx, param, values):
     return np.array(points)
 
 
-@click.command()
+@click.command(name="interpolate-to-coords")
 @click.argument(
     "h5_files",
     nargs=-1,
