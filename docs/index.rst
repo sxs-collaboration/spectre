@@ -32,6 +32,13 @@ Documentation
    C++ documentation <https://spectre-code.org>
 
 
+.. toctree::
+   :maxdepth: 3
+   :caption: Command-line interface (CLI)
+
+   cli
+
+
 Python modules
 --------------
 

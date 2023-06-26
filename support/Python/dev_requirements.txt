@@ -19,6 +19,7 @@ coverxygen
 nbconvert
 pybtex
 sphinx
+sphinx-click
 furo
 myst-parser
 # Code formatting. The required version is locked in the pyproject.toml config.

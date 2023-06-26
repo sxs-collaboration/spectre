@@ -20,6 +20,10 @@ configure_file(
   ${CMAKE_SOURCE_DIR}/docs/index.rst
   ${SPHINX_SOURCE}/index.rst
   )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/docs/cli.rst
+  ${SPHINX_SOURCE}/cli.rst
+  )
 
 file(
   COPY ${CMAKE_SOURCE_DIR}/docs/_templates
