@@ -18,6 +18,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -60,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
           elliptic::Tags::Background<elliptic::analytic_data::Background>,
           Parallel::Tags::MetavariablesImpl<Metavariables>>,
       db::AddComputeTags<Tags::HydroQuantitiesCompute<hydro_tags>,
-                         Tags::LowerSpatialFourVelocityCompute>>(
+                         hydro::Tags::LowerSpatialFourVelocityCompute>>(
       x, spatial_metric,
       std::unique_ptr<elliptic::analytic_data::Background>(
           std::make_unique<Solutions::TovStar>(tov_star)),

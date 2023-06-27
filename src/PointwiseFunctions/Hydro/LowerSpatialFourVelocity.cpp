@@ -1,14 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Elliptic/Systems/Xcts/HydroQuantities.hpp"
+#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
-#include "Utilities/Gsl.hpp"
 
-namespace Xcts::Tags {
-
+namespace hydro::Tags {
 void LowerSpatialFourVelocityCompute::function(
     const gsl::not_null<tnsr::i<DataVector, 3>*> result,
     const tnsr::I<DataVector, 3>& spatial_velocity,
@@ -20,4 +19,4 @@ void LowerSpatialFourVelocityCompute::function(
   }
 }
 
-}  // namespace Xcts::Tags
+}  // namespace hydro::Tags

@@ -42,6 +42,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -94,7 +95,7 @@ struct Metavariables {
                  ::Tags::NonEuclideanMagnitude<
                      Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
                      gr::Tags::SpatialMetric<DataVector, 3>>,
-                 Xcts::Tags::LowerSpatialFourVelocityCompute>>;
+                 hydro::Tags::LowerSpatialFourVelocityCompute>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  spacetime_quantities_compute, hydro_quantities_compute,
