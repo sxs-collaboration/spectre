@@ -99,7 +99,7 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_from_spec(
             "vectors, and symmetric rank-2 tensors are currently supported.");
       }
 #endif
-        auto& component = tensor[component_i];
+      auto& component = tensor[component_i];
       auto& component_pointer = buffer_pointers[var_i][component_i];
       if constexpr (std::is_same_v<DataType, double>) {
         component_pointer = &component;
