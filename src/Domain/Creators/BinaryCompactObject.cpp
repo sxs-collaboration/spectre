@@ -306,29 +306,25 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(outer_boundary_condition), context) {
   time_dependent_options_ = std::move(time_dependent_options);
 
-  const std::optional<double> inner_radius_A =
-      use_single_block_a_
-          ? std::nullopt
-          : std::optional<double>{std::get<Object>(object_A_).inner_radius};
-  const std::optional<double> inner_radius_B =
-      use_single_block_b_
-          ? std::nullopt
-          : std::optional<double>{std::get<Object>(object_B_).inner_radius};
-  const std::optional<double> outer_radius_A =
-      use_single_block_a_
-          ? std::nullopt
-          : std::optional<double>{std::get<Object>(object_A_).outer_radius};
-  const std::optional<double> outer_radius_B =
-      use_single_block_b_
-          ? std::nullopt
-          : std::optional<double>{std::get<Object>(object_B_).outer_radius};
+  std::optional<std::pair<double, double>> inner_outer_radii_A{};
+  std::optional<std::pair<double, double>> inner_outer_radii_B{};
+
+  if (not use_single_block_a_) {
+    inner_outer_radii_A =
+        std::make_pair(std::get<Object>(object_A_).inner_radius,
+                       std::get<Object>(object_A_).outer_radius);
+  }
+  if (not use_single_block_b_) {
+    inner_outer_radii_B =
+        std::make_pair(std::get<Object>(object_B_).inner_radius,
+                       std::get<Object>(object_B_).outer_radius);
+  }
 
   if (time_dependent_options_.has_value()) {
     time_dependent_options_->build_maps(
         std::array{std::array{x_coord_a_, 0.0, 0.0},
                    std::array{x_coord_b_, 0.0, 0.0}},
-        std::array{inner_radius_A, inner_radius_B},
-        std::array{outer_radius_A, outer_radius_B}, outer_radius_);
+        inner_outer_radii_A, inner_outer_radii_B, outer_radius_);
   }
 }
 

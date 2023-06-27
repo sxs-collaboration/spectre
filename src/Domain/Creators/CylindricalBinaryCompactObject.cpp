@@ -423,11 +423,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     time_dependent_options_->build_maps(
         std::array{rotate_from_z_to_x_axis(center_A_),
                    rotate_from_z_to_x_axis(center_B_)},
-        std::array{std::optional<double>{radius_A_},
-                   std::optional<double>{radius_B_}},
-        std::array{std::optional<double>{outer_radius_A_},
-                   std::optional<double>{outer_radius_B_}},
-        outer_radius_);
+        std::make_pair(radius_A_, outer_radius_A_),
+        std::make_pair(radius_B_, outer_radius_B_), outer_radius_);
   }
 }
 

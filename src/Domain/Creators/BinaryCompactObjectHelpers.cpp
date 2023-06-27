@@ -42,16 +42,18 @@ create_grid_anchors(const std::array<double, 3>& center_a,
 
 TimeDependentMapOptions::TimeDependentMapOptions(
     double initial_time, ExpansionMapOptions expansion_map_options,
-    std::array<double, 3> initial_angular_velocity,
-    std::array<double, 3> initial_size_values_A,
-    std::array<double, 3> initial_size_values_B, const size_t initial_l_max_A,
-    const size_t initial_l_max_B, const Options::Context& context)
+    RotationMapOptions rotation_options,
+    const SizeMapOptions<domain::ObjectLabel::A>& size_options_A,
+    const SizeMapOptions<domain::ObjectLabel::B>& size_options_B,
+    const ShapeMapOptions<domain::ObjectLabel::A>& shape_options_A,
+    const ShapeMapOptions<domain::ObjectLabel::B>& shape_options_B,
+    const Options::Context& context)
     : initial_time_(initial_time),
       expansion_map_options_(expansion_map_options),
-      initial_angular_velocity_(initial_angular_velocity),
-      initial_size_values_(
-          std::array{initial_size_values_A, initial_size_values_B}),
-      initial_l_max_{initial_l_max_A, initial_l_max_B} {
+      initial_angular_velocity_(rotation_options.initial_angular_velocity),
+      initial_size_values_(std::array{size_options_A.initial_values,
+                                      size_options_B.initial_values}),
+      initial_l_max_{shape_options_A.l_max, shape_options_B.l_max} {
   const auto check_l_max = [&context](const size_t l_max,
                                       const domain::ObjectLabel label) {
     if (l_max <= 1) {
@@ -61,8 +63,8 @@ TimeDependentMapOptions::TimeDependentMapOptions(
     }
   };
 
-  check_l_max(initial_l_max_A, domain::ObjectLabel::A);
-  check_l_max(initial_l_max_B, domain::ObjectLabel::B);
+  check_l_max(initial_l_max_[0], domain::ObjectLabel::A);
+  check_l_max(initial_l_max_[1], domain::ObjectLabel::B);
 }
 
 std::unordered_map<std::string,
@@ -157,26 +159,27 @@ TimeDependentMapOptions::create_functions_of_time(
 
 void TimeDependentMapOptions::build_maps(
     const std::array<std::array<double, 3>, 2>& centers,
-    const std::array<std::optional<double>, 2>& object_inner_radii,
-    const std::array<std::optional<double>, 2>& object_outer_radii,
+    const std::optional<std::pair<double, double>>& object_A_inner_outer_radii,
+    const std::optional<std::pair<double, double>>& object_B_inner_outer_radii,
     const double domain_outer_radius) {
   expansion_map_ = CubicScaleMap{domain_outer_radius, expansion_name,
                                  expansion_outer_boundary_name};
   rotation_map_ = RotationMap3D{rotation_name};
   for (size_t i = 0; i < 2; i++) {
-    if (gsl::at(object_inner_radii, i).has_value() and
-        gsl::at(object_outer_radii, i).has_value()) {
+    const auto& inner_outer_radii =
+        i == 0 ? object_A_inner_outer_radii : object_B_inner_outer_radii;
+    if (inner_outer_radii.has_value()) {
       std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                           ShapeMapTransitionFunction>
           transition_func = std::make_unique<
               domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                  SphereTransition>(gsl::at(object_inner_radii, i).value(),
-                                    gsl::at(object_outer_radii, i).value());
+                  SphereTransition>(inner_outer_radii.value().first,
+                                    inner_outer_radii.value().second);
 
       gsl::at(shape_maps_, i) =
-          ShapeMap{gsl::at(centers, i),        gsl::at(initial_l_max_, i),
-                   gsl::at(initial_l_max_, i), std::move(transition_func),
-                   gsl::at(shape_names, i),    gsl::at(size_names, i)};
+          ShapeCoordMap{gsl::at(centers, i),        gsl::at(initial_l_max_, i),
+                        gsl::at(initial_l_max_, i), std::move(transition_func),
+                        gsl::at(shape_names, i),    gsl::at(size_names, i)};
     }
   }
 }

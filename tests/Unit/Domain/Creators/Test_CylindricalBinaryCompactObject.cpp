@@ -391,8 +391,8 @@ TimeDepOptions construct_time_dependent_options() {
         initial_size_A_coefs[1][0]}},
       {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
         initial_size_B_coefs[1][0]}},
-      8_st,
-      8_st};
+      {8_st},
+      {8_st}};
 }
 
 void test_parse_errors() {
@@ -445,10 +445,12 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           TimeDepOptions{0.0,
-                         TimeDepOptions::ExpansionMapOptions{
-                             std::array{0.0, 0.0}, 0.0, 1.0},
-                         std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
-                         std::array{0.0, 0.0, 0.0}, 8, 8},
+                         {std::array{0.0, 0.0}, 0.0, 1.0},
+                         {std::array{0.0, 0.0, 0.0}},
+                         {std::array{0.0, 0.0, 0.0}},
+                         {std::array{0.0, 0.0, 0.0}},
+                         {8},
+                         {8}},
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),

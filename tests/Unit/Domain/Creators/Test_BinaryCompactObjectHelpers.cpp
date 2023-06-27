@@ -44,8 +44,8 @@ void test() {
   const size_t l_max_B = 10;
 
   TimeDependentMapOptions time_dep_options{
-      initial_time,  exp_map_options, angular_velocity, size_A_values,
-      size_B_values, l_max_A,         l_max_B};
+      initial_time,    exp_map_options, {angular_velocity}, {size_A_values},
+      {size_B_values}, {l_max_A},       {l_max_B}};
 
   std::unordered_map<std::string, double> expiration_times{
       {TimeDependentMapOptions::expansion_name, 10.0},
@@ -161,26 +161,17 @@ void test() {
 
   for (const auto& [excise_A, excise_B] :
        cartesian_product(make_array(true, false), make_array(true, false))) {
-    std::optional<double> inner_radius_A{};
-    std::optional<double> inner_radius_B{};
-    std::optional<double> outer_radius_A{};
-    std::optional<double> outer_radius_B{};
+    std::optional<std::pair<double, double>> inner_outer_radii_A{};
+    std::optional<std::pair<double, double>> inner_outer_radii_B{};
     if (excise_A) {
-      inner_radius_A = 0.8;
-      outer_radius_A = 3.2;
+      inner_outer_radii_A = std::make_pair(0.8, 3.2);
     }
     if (excise_B) {
-      inner_radius_B = 0.5;
-      outer_radius_B = 2.1;
+      inner_outer_radii_B = std::make_pair(0.5, 2.1);
     }
 
-    const std::array<std::optional<double>, 2> inner_radii{inner_radius_A,
-                                                           inner_radius_B};
-    const std::array<std::optional<double>, 2> outer_radii{outer_radius_A,
-                                                           outer_radius_B};
-
-    time_dep_options.build_maps(centers, inner_radii, outer_radii,
-                                domain_outer_radius);
+    time_dep_options.build_maps(centers, inner_outer_radii_A,
+                                inner_outer_radii_B, domain_outer_radius);
 
     const auto grid_to_distorted_map_A =
         time_dep_options.grid_to_distorted_map<domain::ObjectLabel::A>(
@@ -225,9 +216,9 @@ void test() {
 }
 
 void test_errors() {
-  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, {}, {}, {}, {}, 1, 8}),
+  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, {}, {}, {}, {}, {1}, {8}}),
                     Catch::Contains("Initial LMax for object"));
-  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, {}, {}, {}, {}, 6, 0}),
+  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, {}, {}, {}, {}, {6}, {0}}),
                     Catch::Contains("Initial LMax for object"));
 }
 
