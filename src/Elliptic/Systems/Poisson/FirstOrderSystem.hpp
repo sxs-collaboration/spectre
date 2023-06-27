@@ -29,10 +29,10 @@ namespace Poisson {
  * f(x)\f$ on a background metric \f$\gamma_{ij}\f$ as the set of coupled
  * first-order PDEs
  *
- * \f[
- * -\partial_i \gamma^{ij} v_j(x) - \Gamma^i_{ij}\gamma^{jk}v_k = f(x) \\
- * -\partial_i u(x) + v_i(x) = 0
- * \f]
+ * \f{align*}
+ * -\partial_i \gamma^{ij} v_j(x) - \Gamma^i_{ij}\gamma^{jk}v_k &= f(x) \\
+ * -\partial_i u(x) + v_i(x) &= 0
+ * \f}
  *
  * where we have chosen the field gradient as an auxiliary variable \f$v_i\f$
  * and where \f$\Gamma^i_{jk}=\frac{1}{2}\gamma^{il}\left(\partial_j\gamma_{kl}
