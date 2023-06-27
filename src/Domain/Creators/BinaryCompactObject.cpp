@@ -286,7 +286,7 @@ BinaryCompactObject::BinaryCompactObject(
 }
 
 BinaryCompactObject::BinaryCompactObject(
-    bco::TimeDependentMapOptions time_dependent_options,
+    std::optional<bco::TimeDependentMapOptions> time_dependent_options,
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
@@ -323,11 +323,13 @@ BinaryCompactObject::BinaryCompactObject(
           ? std::nullopt
           : std::optional<double>{std::get<Object>(object_B_).outer_radius};
 
-  time_dependent_options_->build_maps(
-      std::array{std::array{x_coord_a_, 0.0, 0.0},
-                 std::array{x_coord_b_, 0.0, 0.0}},
-      std::array{inner_radius_A, inner_radius_B},
-      std::array{outer_radius_A, outer_radius_B}, outer_radius_);
+  if (time_dependent_options_.has_value()) {
+    time_dependent_options_->build_maps(
+        std::array{std::array{x_coord_a_, 0.0, 0.0},
+                   std::array{x_coord_b_, 0.0, 0.0}},
+        std::array{inner_radius_A, inner_radius_B},
+        std::array{outer_radius_A, outer_radius_B}, outer_radius_);
+  }
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {

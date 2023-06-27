@@ -386,7 +386,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 }
 
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
-    bco::TimeDependentMapOptions time_dependent_options,
+    std::optional<bco::TimeDependentMapOptions> time_dependent_options,
     std::array<double, 3> center_A, std::array<double, 3> center_B,
     double radius_A, double radius_B, bool include_inner_sphere_A,
     bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
@@ -404,28 +404,31 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
           use_equiangular_map, initial_refinement, initial_grid_points,
           std::move(inner_boundary_condition),
           std::move(outer_boundary_condition), context) {
+  time_dependent_options_ = std::move(time_dependent_options);
+
   // The size map, which is applied from the grid to distorted frame, currently
   // needs to start and stop at certain radii around each excision. If the inner
   // spheres aren't included, the outer radii would have to be in the middle of
   // a block. With the inner spheres, the outer radii can be at block
   // boundaries.
-  if (not(include_inner_sphere_A and include_inner_sphere_B)) {
+  if (time_dependent_options_.has_value() and
+      not(include_inner_sphere_A and include_inner_sphere_B)) {
     PARSE_ERROR(context,
                 "To use the CylindricalBBH domain with time-dependent maps, "
                 "you must include the inner spheres for both objects. "
                 "Currently, one or both objects is missing the inner spheres.");
   }
 
-  time_dependent_options_ = std::move(time_dependent_options);
-
-  time_dependent_options_->build_maps(
-      std::array{rotate_from_z_to_x_axis(center_A_),
-                 rotate_from_z_to_x_axis(center_B_)},
-      std::array{std::optional<double>{radius_A_},
-                 std::optional<double>{radius_B_}},
-      std::array{std::optional<double>{outer_radius_A_},
-                 std::optional<double>{outer_radius_B_}},
-      outer_radius_);
+  if (time_dependent_options_.has_value()) {
+    time_dependent_options_->build_maps(
+        std::array{rotate_from_z_to_x_axis(center_A_),
+                   rotate_from_z_to_x_axis(center_B_)},
+        std::array{std::optional<double>{radius_A_},
+                   std::optional<double>{radius_B_}},
+        std::array{std::optional<double>{outer_radius_A_},
+                   std::optional<double>{outer_radius_B_}},
+        outer_radius_);
+  }
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain() const {

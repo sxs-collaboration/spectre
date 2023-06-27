@@ -21,6 +21,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -273,8 +274,9 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct TimeDependentMaps {
-    using type = bco::TimeDependentMapOptions;
-    static constexpr Options::String help = type::help;
+    using type =
+        Options::Auto<bco::TimeDependentMapOptions, Options::AutoLabel::None>;
+    static constexpr Options::String help = bco::TimeDependentMapOptions::help;
   };
 
   using time_independent_options =
@@ -322,7 +324,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       const Options::Context& context = {});
 
   CylindricalBinaryCompactObject(
-      bco::TimeDependentMapOptions time_dependent_options,
+      std::optional<bco::TimeDependentMapOptions> time_dependent_options,
       std::array<double, 3> center_A, std::array<double, 3> center_B,
       double radius_A, double radius_B, bool include_inner_sphere_A,
       bool include_inner_sphere_B, bool include_outer_sphere,

@@ -388,7 +388,8 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   // This is for optional time dependent maps
   struct TimeDependentMaps {
-    using type = bco::TimeDependentMapOptions;
+    using type =
+        Options::Auto<bco::TimeDependentMapOptions, Options::AutoLabel::None>;
     static constexpr Options::String help = bco::TimeDependentMapOptions::help;
   };
 
@@ -464,7 +465,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps == true),
   // with an additional parameter
   BinaryCompactObject(
-      bco::TimeDependentMapOptions time_dependent_options,
+      std::optional<bco::TimeDependentMapOptions> time_dependent_options,
       typename ObjectA::type object_A, typename ObjectB::type object_B,
       double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
