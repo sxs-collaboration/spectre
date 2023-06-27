@@ -293,7 +293,7 @@ class TestVolumeData(unittest.TestCase):
 
     def test_extend_connectivity_data_3D(self):
         obs_ids = self.vol_file.list_observation_ids()
-        self.vol_file.extend_connectivity_data_3D(obs_ids)
+        self.vol_file.extend_connectivity_data_3d(obs_ids)
 
 
 if __name__ == "__main__":
