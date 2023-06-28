@@ -30,6 +30,7 @@ target_link_libraries(
   GeneralizedHarmonic
   GrSolutionsTestHelpers
   Hydro
+  LinearOperators
   Options
   Spectral
   Utilities

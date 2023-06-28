@@ -18,7 +18,6 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -140,19 +139,12 @@ void CommonVariables<DataType, Cache>::operator()(
   ASSERT(mesh.has_value() and inv_jacobian.has_value(),
          "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
-    // Copy into a Variables to take partial derivatives because at this time
-    // the `partial_derivatives` function only works with Variables. This won't
-    // be used for anything performance-critical, but adding a
-    // `partial_derivatives` overload that takes a Tensor is an obvious
-    // optimization here.
-    using tag =
-        Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>;
-    Variables<tmpl::list<tag>> vars{mesh->get().number_of_grid_points()};
-    get<tag>(vars) = cache->get_var(*this, tag{});
-    const auto derivs = partial_derivatives<tmpl::list<tag>>(
-        vars, mesh->get(), inv_jacobian->get());
-    *deriv_conformal_christoffel_second_kind =
-        get<::Tags::deriv<tag, tmpl::size_t<Dim>, Frame::Inertial>>(derivs);
+    const auto& conformal_christoffel_second_kind = cache->get_var(
+        *this,
+        Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
+    partial_derivative(deriv_conformal_christoffel_second_kind,
+                       conformal_christoffel_second_kind, mesh->get(),
+                       inv_jacobian->get());
   } else {
     (void)deriv_conformal_christoffel_second_kind;
     (void)cache;
@@ -208,18 +200,11 @@ void CommonVariables<DataType, Cache>::operator()(
   ASSERT(mesh.has_value() and inv_jacobian.has_value(),
          "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
-    // Copy into a Variables to take partial derivatives because at this time
-    // the `partial_derivatives` function only works with Variables. This won't
-    // be used for anything performance-critical, but adding a
-    // `partial_derivatives` overload that takes a Tensor is an obvious
-    // optimization here.
-    using tag = gr::Tags::TraceExtrinsicCurvature<DataType>;
-    Variables<tmpl::list<tag>> vars{mesh->get().number_of_grid_points()};
-    get<tag>(vars) = cache->get_var(*this, tag{});
-    const auto derivs = partial_derivatives<tmpl::list<tag>>(
-        vars, mesh->get(), inv_jacobian->get());
-    *deriv_extrinsic_curvature_trace =
-        get<::Tags::deriv<tag, tmpl::size_t<Dim>, Frame::Inertial>>(derivs);
+    const auto& extrinsic_curvature_trace =
+        cache->get_var(*this, gr::Tags::TraceExtrinsicCurvature<DataType>{});
+    partial_derivative(deriv_extrinsic_curvature_trace,
+                       extrinsic_curvature_trace, mesh->get(),
+                       inv_jacobian->get());
   } else {
     (void)deriv_extrinsic_curvature_trace;
     (void)cache;

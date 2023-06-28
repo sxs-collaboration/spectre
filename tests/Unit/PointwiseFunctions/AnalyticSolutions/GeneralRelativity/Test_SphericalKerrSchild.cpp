@@ -26,7 +26,6 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -283,13 +282,8 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
       gr::Solutions::SphericalKerrSchild::internal_tags::H<DataVector>;
   sks_computer(make_not_null(&H), make_not_null(&sks_cache), H_tag{});
 
-  Variables<tmpl::list<H_tag>> H_var(num_points_3d);
-  get<H_tag>(H_var) = H;
-  const auto expected_deriv_H_var = partial_derivatives<tmpl::list<H_tag>>(
-      H_var, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& expected_deriv_H =
-      get<Tags::deriv<H_tag, tmpl::size_t<SpatialDim>, FrameType>>(
-          expected_deriv_H_var);
+  const auto expected_deriv_H =
+      partial_derivative(H, mesh, coord_map.inv_jacobian(x_logical));
 
   tnsr::i<DataVector, SpatialDim, FrameType>
       expected_deriv_det_spatial_metric{};

@@ -24,7 +24,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -113,20 +112,8 @@ void test_divergence_spatial_z4_constraint_vanishes(
 
   const auto christoffel_second_kind =
       gr::christoffel_second_kind(d_spatial_metric, inverse_spatial_metric);
-
-  using christoffel_second_kind_tag =
-      gr::Tags::SpatialChristoffelSecondKind<DataVector, SpatialDim>;
-  Variables<tmpl::list<christoffel_second_kind_tag>>
-      christoffel_second_kind_var(num_points_3d);
-  get<christoffel_second_kind_tag>(christoffel_second_kind_var) =
-      christoffel_second_kind;
-  const auto d_christoffel_second_kind_var =
-      partial_derivatives<tmpl::list<christoffel_second_kind_tag>>(
-          christoffel_second_kind_var, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& d_christoffel_second_kind =
-      get<Tags::deriv<christoffel_second_kind_tag, tmpl::size_t<SpatialDim>,
-                      Frame::Inertial>>(d_christoffel_second_kind_var);
-
+  const auto d_christoffel_second_kind = partial_derivative(
+      christoffel_second_kind, mesh, coord_map.inv_jacobian(x_logical));
   const auto spatial_ricci_tensor =
       gr::ricci_tensor(christoffel_second_kind, d_christoffel_second_kind);
 
