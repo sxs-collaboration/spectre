@@ -72,6 +72,13 @@ you do not need to install any dependencies, so you can skip steps 5 and 6. You
 can optionally compile using LLVM/Clang by sourcing `wheeler_clang.sh` instead
 of `wheeler_gcc.sh`
 
+If you are running jobs on a Wheeler interactive compute
+node, make sure that when you allocate the interactive node using
+`srun`, use the `-c <CPUS_PER_TASK>` option to `srun`, and not the `-n
+<NUMBER_OF_TASKS>` option.  If you use the `-n <NUMBER_OF_TASKS>`
+option and pass the number of cores for NUMBER_OF_TASKS, then you will
+get multiple MPI ranks on your node and the run will hang.
+
 ## CaltechHPC at Caltech
 
 Follow the general instructions, using `caltech_hpc` for `SYSTEM_TO_RUN_ON`.
