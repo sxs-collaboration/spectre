@@ -28,7 +28,13 @@ namespace control_system::protocols {
 ///   `std::optional<std::string>`.  This gives a name associated to each
 ///   component of the FunctionOfTime that is being controlled. E.g. a
 ///   FunctionOfTime controlling translation will have three components with
-///   names "X", "Y", and "Z". This is useful when writing data to disk.
+///   names "X", "Y", and "Z". This is useful when writing data to disk. The
+///   reason this is a `std::optional` rather than just a `std::string` is
+///   because of shape control. Since the vector of coefficients of the shape
+///   map is stored in ylm::Spherepack order, not all components of this vector
+///   correspond to an actual l,m pair (see ylm::Spherepack for why this is).
+///   Thus, this is a `std::optional` to signify if a component of the
+///   FunctionOfTime isn't actually used and shouldn't be written to disk.
 ///
 /// - a type alias `measurement` to a struct implementing the
 ///   Measurement protocol.

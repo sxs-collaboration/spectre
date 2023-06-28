@@ -189,19 +189,14 @@ void test_size_error_one_step(
         {std::move(functions_of_time), std::move(domain), false, "", "",
          std::vector<std::string>{}},
         &mutable_cache};
-    tuples::TaggedTuple<
-        StrahlkorperTags::Strahlkorper<Frame::Distorted>,
-        control_system::QueueTags::ExcisionSurface<Frame::Distorted>,
-        ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame::Distorted>>,
-        control_system::QueueTags::LapseOnExcisionSurface,
-        control_system::QueueTags::ShiftyQuantity<Frame::Distorted>,
-        control_system::QueueTags::SpatialMetricOnExcisionSurface<
-            Frame::Distorted>,
-        control_system::QueueTags::InverseSpatialMetricOnExcisionSurface<
-            Frame::Distorted>>
-        measurements{
-            horizon,         excision_boundary, time_deriv_horizon,    lapse,
-            shifty_quantity, spatial_metric,    inverse_spatial_metric};
+    using ExcisionQuantities =
+        control_system::QueueTags::SizeExcisionQuantities<Frame::Distorted>;
+    using HorizonQuantities =
+        control_system::QueueTags::SizeHorizonQuantities<Frame::Distorted>;
+    tuples::TaggedTuple<ExcisionQuantities, HorizonQuantities> measurements{
+        ExcisionQuantities::type{excision_boundary, lapse, shifty_quantity,
+                                 spatial_metric, inverse_spatial_metric},
+        HorizonQuantities::type{horizon, time_deriv_horizon}};
 
     const double control_error_from_class =
         error_class(tuner, cache, time, "Size"s, measurements)[0];

@@ -27,6 +27,7 @@ spectre_target_headers(
   DataVectorHelpers.hpp
   Event.hpp
   ExpirationTimes.hpp
+  IsSize.hpp
   Metafunctions.hpp
   NamespaceDocs.hpp
   RunCallbacks.hpp
