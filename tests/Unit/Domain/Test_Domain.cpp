@@ -21,6 +21,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -427,8 +428,7 @@ void test_3d_rectilinear_domains() {
 }
 
 void test_versioning() {
-  // Check that we can deserialize the domain stored in this old file without
-  // error. This is a rough test that the versioning is not obviously broken.
+  // Check that we can deserialize the domain stored in this old file
   domain::creators::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
   h5::H5File<h5::AccessType::ReadOnly> h5file{unit_test_src_path() +
@@ -436,7 +436,24 @@ void test_versioning() {
   const auto& volfile = h5file.get<h5::VolumeData>("/element_data");
   const size_t obs_id = volfile.list_observation_ids().front();
   const auto serialized_domain = *volfile.get_domain(obs_id);
-  deserialize<Domain<3>>(serialized_domain.data());
+  const auto domain = deserialize<Domain<3>>(serialized_domain.data());
+  const auto expected_domain_creator = domain::creators::BinaryCompactObject{
+      domain::creators::bco::TimeDependentMapOptions{
+          0.,
+          {{{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
+          {{0.0, 0.0, 1.5264577062000000e-02}},
+          {{0., 0., 0.}},
+          {{0., 0., 0.}},
+          8,
+          8},
+      domain::creators::BinaryCompactObject::Object{0.45825, 6., 7.683, true,
+                                                    true},
+      domain::creators::BinaryCompactObject::Object{0.45825, 6., -7.683, true,
+                                                    true},
+      100., 300.,
+      // Initial refinement and num points don't matter
+      1_st, 3_st, true, false, CoordinateMaps::Distribution::Linear, 90.};
+  CHECK(domain == expected_domain_creator.create_domain());
   // Also check that we can deserialize the functions of time.
   const auto serialized_fot = *volfile.get_functions_of_time(obs_id);
   const auto functions_of_time = deserialize<std::unordered_map<
