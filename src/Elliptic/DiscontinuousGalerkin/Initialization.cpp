@@ -24,7 +24,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -91,16 +90,8 @@ void deriv_unnormalized_face_normals_impl(
          "Slicing the Hessian to the boundary currently supports only "
          "Gauss-Lobatto grids. Add support to "
          "'elliptic::dg::InitializeFacesAndMortars'.");
-  using inv_jac_tag = domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                    Frame::Inertial>;
-  Variables<tmpl::list<inv_jac_tag>> vars_to_differentiate{
-      mesh.number_of_grid_points()};
-  get<inv_jac_tag>(vars_to_differentiate) = inv_jacobian;
-  const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(
-      vars_to_differentiate, mesh, inv_jacobian);
-  const auto& deriv_inv_jac =
-      get<::Tags::deriv<inv_jac_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
-          deriv_vars);
+  const auto deriv_inv_jac =
+      partial_derivative(inv_jacobian, mesh, inv_jacobian);
   for (const auto& direction : element.external_boundaries()) {
     const auto deriv_inv_jac_on_face =
         data_on_slice(deriv_inv_jac, mesh.extents(), direction.dimension(),

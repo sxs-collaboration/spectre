@@ -33,7 +33,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -434,15 +433,8 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   const auto logical_coords = logical_coordinates(mesh);
   const tnsr::I<DataVector, 3> inertial_coords = (*coord_map)(logical_coords);
   const auto inv_jacobian = coord_map->inv_jacobian(logical_coords);
-  using inv_jac_tag =
-      domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>;
-  Variables<tmpl::list<inv_jac_tag>> vars_to_derive{num_points};
-  get<inv_jac_tag>(vars_to_derive) = inv_jacobian;
-  const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(
-      vars_to_derive, mesh, inv_jacobian);
-  const auto& deriv_inv_jac =
-      get<::Tags::deriv<inv_jac_tag, tmpl::size_t<3>, Frame::Inertial>>(
-          deriv_vars);
+  const auto deriv_inv_jac =
+      partial_derivative(inv_jacobian, mesh, inv_jacobian);
   // Coords on the face
   const auto direction = Direction<3>::lower_zeta();
   const size_t slice_index = index_to_slice_at(mesh.extents(), direction);

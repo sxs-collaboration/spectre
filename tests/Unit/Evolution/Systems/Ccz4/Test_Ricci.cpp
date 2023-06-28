@@ -25,7 +25,6 @@
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -58,9 +57,6 @@ void test_compute_spatial_ricci_tensor(
               Affine{-1., 1., lower_bound[1], upper_bound[1]},
               Affine{-1., 1., lower_bound[2], upper_bound[2]},
           });
-  const size_t num_points_3d = grid_size_each_dimension *
-                               grid_size_each_dimension *
-                               grid_size_each_dimension;
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
   const auto x = coord_map(x_logical);
@@ -131,16 +127,8 @@ void test_compute_spatial_ricci_tensor(
   const auto contracted_field_d_up =
       ::tenex::evaluate<ti::L>(field_d_up(ti::m, ti::M, ti::L));
 
-  using field_d_tag =
-      Ccz4::Tags::FieldD<DataVector, SpatialDim, Frame::Inertial>;
-  Variables<tmpl::list<field_d_tag>> field_d_var(num_points_3d);
-  get<field_d_tag>(field_d_var) = field_d;
-  const auto d_field_d_var = partial_derivatives<tmpl::list<field_d_tag>>(
-      field_d_var, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& d_field_d =
-      get<Tags::deriv<field_d_tag, tmpl::size_t<SpatialDim>, Frame::Inertial>>(
-          d_field_d_var);
-
+  const auto d_field_d =
+      partial_derivative(field_d, mesh, coord_map.inv_jacobian(x_logical));
   const auto d_conformal_christoffel_second_kind =
       Ccz4::deriv_conformal_christoffel_second_kind(
           inverse_conformal_spatial_metric, field_d, d_field_d, field_d_up);
@@ -151,16 +139,8 @@ void test_compute_spatial_ricci_tensor(
         -d_det_spatial_metric.get(i) / (6. * get(det_spatial_metric));
   }
 
-  using field_p_tag =
-      Ccz4::Tags::FieldP<DataVector, SpatialDim, Frame::Inertial>;
-  Variables<tmpl::list<field_p_tag>> field_p_var(num_points_3d);
-  get<field_p_tag>(field_p_var) = field_p;
-  const auto d_field_p_var = partial_derivatives<tmpl::list<field_p_tag>>(
-      field_p_var, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& d_field_p =
-      get<Tags::deriv<field_p_tag, tmpl::size_t<SpatialDim>, Frame::Inertial>>(
-          d_field_p_var);
-
+  const auto d_field_p =
+      partial_derivative(field_p, mesh, coord_map.inv_jacobian(x_logical));
   const auto conformal_christoffel_second_kind =
       Ccz4::conformal_christoffel_second_kind(inverse_conformal_spatial_metric,
                                               field_d);
@@ -171,20 +151,8 @@ void test_compute_spatial_ricci_tensor(
 
   const auto contracted_christoffel_second_kind =
       tenex::evaluate<ti::l>(christoffel_second_kind(ti::M, ti::l, ti::m));
-
-  using christoffel_second_kind_tag =
-      gr::Tags::SpatialChristoffelSecondKind<DataVector, SpatialDim>;
-  Variables<tmpl::list<christoffel_second_kind_tag>>
-      christoffel_second_kind_var(num_points_3d);
-  get<christoffel_second_kind_tag>(christoffel_second_kind_var) =
-      christoffel_second_kind;
-  const auto d_christoffel_second_kind_var =
-      partial_derivatives<tmpl::list<christoffel_second_kind_tag>>(
-          christoffel_second_kind_var, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& d_christoffel_second_kind =
-      get<Tags::deriv<christoffel_second_kind_tag, tmpl::size_t<SpatialDim>,
-                      Frame::Inertial>>(d_christoffel_second_kind_var);
-
+  const auto d_christoffel_second_kind = partial_derivative(
+      christoffel_second_kind, mesh, coord_map.inv_jacobian(x_logical));
   const auto contracted_d_conformal_christoffel_difference =
       ::tenex::evaluate<ti::i, ti::j>(
           d_conformal_christoffel_second_kind(ti::m, ti::M, ti::i, ti::j) -

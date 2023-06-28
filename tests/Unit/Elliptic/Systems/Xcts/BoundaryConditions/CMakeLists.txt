@@ -24,6 +24,7 @@ target_link_libraries(
   DomainStructure
   Elliptic
   GeneralRelativitySolutions
+  LinearOperators
   Utilities
   XctsBoundaryConditions
   XctsSolutions

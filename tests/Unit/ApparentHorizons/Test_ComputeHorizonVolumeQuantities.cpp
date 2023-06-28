@@ -321,28 +321,10 @@ void test_compute_horizon_volume_quantities() {
                     SrcTags, Tags::deriv<gh::Tags::Phi<DataVector, 3>,
                                          tmpl::size_t<3>, Frame::Inertial>>) {
     // Need to compute numerical deriv of Phi.
-    // The partial_derivatives function allows differentiating only a
-    // subset of a Variables, but in that case, the resulting Variables
-    // cannot point into the original Variables, and also the subset must
-    // be the tags that occur at the beginning of the Variables.  Because
-    // this is only a test, we just create new Variables and copy.
-
-    // vars to be differentiated
-    using phi_tag_list = tmpl::list<::gh::Tags::Phi<DataVector, 3>>;
-    Variables<phi_tag_list> vars_before_differentiation(
-        mesh.number_of_grid_points());
-    get<::gh::Tags::Phi<DataVector, 3>>(vars_before_differentiation) =
-        get<::gh::Tags::Phi<DataVector, 3>>(src_vars);
-
-    // differentiate
-    const auto vars_after_differentiation = partial_derivatives<phi_tag_list>(
-        vars_before_differentiation, mesh, inv_jacobian_logical_to_inertial);
-
-    // copy to src_vars.
     get<Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                     Frame::Inertial>>(src_vars) =
-        get<Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(vars_after_differentiation);
+        partial_derivative(get<::gh::Tags::Phi<DataVector, 3>>(src_vars), mesh,
+                           inv_jacobian_logical_to_inertial);
   }
 
   // Compute dest_vars
@@ -413,22 +395,13 @@ void test_compute_horizon_volume_quantities() {
     // Compute derivative of christoffel_2nd_kind, which is different
     // from how Ricci is computed in ComputeHorizonVolumeQuantities, but
     // which should give the same result to numerical truncation error.
-    using christoffel_tags = tmpl::list<
-        gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>;
-    Variables<christoffel_tags> vars_before_deriv(mesh.number_of_grid_points());
-    get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>(
-        vars_before_deriv) =
+    const auto& spatial_christoffel_second_kind =
         get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>(
             dest_vars);
-
-    const auto vars_after_deriv = partial_derivatives<christoffel_tags>(
-        vars_before_deriv, mesh, inv_jacobian_logical_to_target);
+    const auto deriv_spatial_christoffel_second_kind = partial_derivative(
+        spatial_christoffel_second_kind, mesh, inv_jacobian_logical_to_target);
     const auto expected_ricci = gr::ricci_tensor(
-        get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>(
-            dest_vars),
-        get<::Tags::deriv<
-            gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>,
-            tmpl::size_t<3>, TargetFrame>>(vars_after_deriv));
+        spatial_christoffel_second_kind, deriv_spatial_christoffel_second_kind);
     const auto& ricci =
         get<gr::Tags::SpatialRicci<DataVector, 3, TargetFrame>>(dest_vars);
     // Use a more forgiving local_approx because this test should agree
