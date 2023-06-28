@@ -361,14 +361,13 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
     using vars_type =
         decltype(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
     vars_type du{};
-    partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
-                                      inverse_jacobian);
+    partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
     helper(du);
 
     vars_type du_with_logical{};
-    partial_derivatives<GradientTags>(
-        make_not_null(&du_with_logical),
-        logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
+    partial_derivatives(make_not_null(&du_with_logical),
+                        logical_partial_derivatives<GradientTags>(u, mesh),
+                        inverse_jacobian);
     helper(du_with_logical);
 
     // We've checked that du is correct, now test that taking derivatives of
@@ -415,14 +414,13 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
       using vars_type = decltype(
           partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
       vars_type du{};
-      partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
-                                        inverse_jacobian);
+      partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
       helper(du);
 
       vars_type du_with_logical{};
-      partial_derivatives<GradientTags>(
-          make_not_null(&du_with_logical),
-          logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
+      partial_derivatives(make_not_null(&du_with_logical),
+                          logical_partial_derivatives<GradientTags>(u, mesh),
+                          inverse_jacobian);
       helper(du_with_logical);
 
       // We've checked that du is correct, now test that taking derivatives of
@@ -474,15 +472,13 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
         using vars_type = decltype(
             partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
         vars_type du{};
-        partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
-                                          inverse_jacobian);
+        partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
         helper(du);
 
         vars_type du_with_logical{};
-        partial_derivatives<GradientTags>(
-            make_not_null(&du_with_logical),
-            logical_partial_derivatives<GradientTags>(u, mesh),
-            inverse_jacobian);
+        partial_derivatives(make_not_null(&du_with_logical),
+                            logical_partial_derivatives<GradientTags>(u, mesh),
+                            inverse_jacobian);
         helper(du_with_logical);
 
         // We've checked that du is correct, now test that taking derivatives of

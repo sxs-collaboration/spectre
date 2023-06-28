@@ -192,9 +192,11 @@ void test(const gsl::not_null<std::mt19937*> generator,
   Variables<db::wrap_tags_in<Tags::deriv, derivative_tags, tmpl::size_t<Dim>,
                              Frame::Inertial>>
       expected_partial_derivatives{mesh.number_of_grid_points()};
-  ::partial_derivatives_detail::partial_derivatives_impl<derivative_tags>(
+  ::partial_derivatives_detail::partial_derivatives_impl(
       make_not_null(&expected_partial_derivatives),
-      expected_logical_derivs_ptrs, inverse_jacobian);
+      expected_logical_derivs_ptrs,
+      Variables<derivative_tags>::number_of_independent_components,
+      inverse_jacobian);
 
   using d_var1_tag = Tags::deriv<Tags::TempScalar<0, DataVector>,
                                  tmpl::size_t<Dim>, Frame::Inertial>;

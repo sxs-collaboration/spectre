@@ -112,15 +112,13 @@ void volume_terms(
       "are defined, and that at least one of them is a non-empty list of "
       "tags.");
 
-  using partial_derivative_tags = tmpl::list<PartialDerivTags...>;
   using flux_variables =
       tmpl::list<FluxVariablesTags...>;
 
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
-    partial_derivatives<partial_derivative_tags>(
-        partial_derivs, evolved_vars, mesh,
-        logical_to_inertial_inverse_jacobian);
+    partial_derivatives(partial_derivs, evolved_vars, mesh,
+                        logical_to_inertial_inverse_jacobian);
   }
 
   // For now just zero dt_vars. If this is a performance bottle neck we
