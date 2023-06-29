@@ -54,7 +54,10 @@ def find_phase_change(phase_change_name: str, input_file: dict) -> dict:
     Returns: The phase change as a dictionary, or None if the phase change
       wasn't found.
     """
-    if not "PhaseChangeAndTriggers" in input_file:
+    if (
+        "PhaseChangeAndTriggers" not in input_file
+        or not input_file["PhaseChangeAndTriggers"]
+    ):
         return None
     for trigger_and_phase_changes in input_file["PhaseChangeAndTriggers"]:
         for phase_change in trigger_and_phase_changes["PhaseChanges"]:
