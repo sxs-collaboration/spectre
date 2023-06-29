@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -420,17 +421,37 @@ def schedule(
             template_env.from_string(str(segments_dir)).render(context).strip()
         )
         all_segments = list_segments(segments_dir)
+
+        # If we are forcing, we don't care about existing segment directories.
+        # We should delete them
+        if all_segments and force:
+            cwd = Path(os.getcwd())
+            # If the cwd *is* the SEGMENTS directory, we can't delete the
+            # directory we are in so just delete all the segments. Otherwise
+            # just delete the SEGMENTS directory
+            if cwd.absolute() == segments_dir.absolute():
+                logger.debug(f"Deleting segments {all_segments}")
+                for segment in all_segments:
+                    shutil.rmtree(segment.path)
+            else:
+                logger.debug(
+                    f"Deleting segment directory {segments_dir.resolve()}"
+                )
+                shutil.rmtree(segments_dir.resolve())
+            all_segments = None
+
         if all_segments:
             run_dir = all_segments[-1].next.path
         else:
             run_dir = Segment.first(segments_dir).path
+
     if segments_dir and all_segments:
         # Make sure we're continuing the last checkpoint of the last segment.
         # This requirement can be relaxed in the future if needed.
         assert from_checkpoint, (
             f"Found existing segments in directory '{segments_dir}'. Use"
             " '--from-last-checkpoint' to continue from the last"
-            " checkpoint in this directory."
+            " checkpoint in this directory or '--force' to overwrite it."
         )
         last_segment = all_segments[-1]
         assert (
