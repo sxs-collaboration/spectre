@@ -74,6 +74,53 @@ auto normal_dot_flux(
 }
 /// @}
 
+/// @{
+/*!
+ * \brief Multiplies a surface normal covector with a tensor or variables
+ *
+ * \details
+ * Returns the outer product $n_j v_{k\ldots}$, where $n_j$ is the `normal` and
+ * $v_{k\ldots}$ is the `rhs`.
+ *
+ * Note that this quantity is a "normal dot flux" where the flux involves
+ * a Kronecker delta. For example:
+ *
+ * \f{equation}
+ * n_j v_{k\ldots} = n_i \delta^i_j v_{k\ldots} = n_i F^i_{jk\ldots}
+ * \f}
+ *
+ * This makes this quantity useful for optimizations of DG formulations for
+ * "sparse" (i.e., Kronecker delta) fluxes.
+ */
+template <size_t VolumeDim, typename Fr, typename Symm, typename Indices>
+void normal_times_flux(
+    const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, Symm, Indices>, VolumeDim, UpLo::Lo, Fr>*>
+        normal_times_flux,
+    const tnsr::i<DataVector, VolumeDim, Fr>& normal,
+    const Tensor<DataVector, Symm, Indices>& rhs) {
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    for (auto it = rhs.begin(); it != rhs.end(); ++it) {
+      const auto result_indices = rhs.get_tensor_index(it);
+      normal_times_flux->get(prepend(result_indices, d)) = normal.get(d) * *it;
+    }
+  }
+}
+
+template <typename... ReturnTags, typename... FluxTags, size_t VolumeDim,
+          typename Fr>
+void normal_times_flux(
+    const gsl::not_null<Variables<tmpl::list<ReturnTags...>>*> result,
+    const tnsr::i<DataVector, VolumeDim, Fr>& normal,
+    const Variables<tmpl::list<FluxTags...>>& fluxes) {
+  if (result->number_of_grid_points() != fluxes.number_of_grid_points()) {
+    result->initialize(fluxes.number_of_grid_points());
+  }
+  EXPAND_PACK_LEFT_TO_RIGHT(normal_times_flux(
+      make_not_null(&get<ReturnTags>(*result)), normal, get<FluxTags>(fluxes)));
+}
+/// @}
+
 namespace Tags {
 
 /// \ingroup ConservativeGroup

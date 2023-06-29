@@ -46,17 +46,26 @@ void test_with_random_values(
     Tensor<DataVector, Symm,
            index_list<SpatialIndex<Dim, UpLo::Up, Fr>, RemainingIndices...>>
     /*meta*/) {
+  using NDotFluxTensor = Tensor<DataVector, tmpl::pop_front<Symm>,
+                                index_list<RemainingIndices...>>;
+  using FluxTensor =
+      Tensor<DataVector, Symm,
+             index_list<SpatialIndex<Dim, UpLo::Up, Fr>, RemainingIndices...>>;
   pypp::check_with_random_values<1>(
       // This static_cast helps GCC figure out the type of the function
-      static_cast<void (*)(
-          const gsl::not_null<Tensor<DataVector, tmpl::pop_front<Symm>,
-                                     index_list<RemainingIndices...>>*>,
+      static_cast<void (*)(const gsl::not_null<NDotFluxTensor*>,
           const tnsr::i<DataVector, Dim, Fr>&,
-          const Tensor<DataVector, Symm,
-                       index_list<SpatialIndex<Dim, UpLo::Up, Fr>,
-                                  RemainingIndices...>>&)>(
+                           const FluxTensor&)>(
           &normal_dot_flux<Dim, Fr, Symm, RemainingIndices...>),
       "NormalDotFlux", {"normal_dot_flux"}, {{{-1.0, 1.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<void (*)(
+          const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+              NDotFluxTensor, Dim, UpLo::Lo, Fr>*>,
+          const tnsr::i<DataVector, Dim, Fr>&, const NDotFluxTensor&)>(
+          &normal_times_flux<Dim, Fr, tmpl::pop_front<Symm>,
+                             index_list<RemainingIndices...>>),
+      "NormalDotFlux", {"normal_times_flux"}, {{{-1.0, 1.0}}}, used_for_size);
 }
 
 struct Var1 : db::SimpleTag {
