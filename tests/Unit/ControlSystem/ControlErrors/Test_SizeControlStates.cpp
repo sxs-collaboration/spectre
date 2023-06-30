@@ -90,8 +90,13 @@ void do_test(const TestParams& test_params,
         info.discontinuous_change_has_occurred);
 
   auto state = info.state->get_clone();
-  state->update(make_not_null(&info), update_args,
-                test_params.crossing_time_info);
+  const std::string update_message = state->update(
+      make_not_null(&info), update_args, test_params.crossing_time_info);
+
+  // These messages are hardcoded in the states
+  CHECK(update_message.find("Current state " + initial_state) !=
+        std::string::npos);
+  CHECK(update_message.find_last_of(final_state) != std::string::npos);
 
   CHECK(dynamic_cast<FinalState*>(info.state.get()) != nullptr);
   CHECK(info.damping_time == test_params.damping_time);

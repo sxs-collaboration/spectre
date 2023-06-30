@@ -45,6 +45,7 @@ struct ErrorDiagnostics {
   double suggested_timescale;
   double damping_timescale;
   ControlErrorArgs control_error_args;
+  std::string update_message;
   bool discontinuous_change_has_occurred;
 };
 

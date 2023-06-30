@@ -4,8 +4,11 @@
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
 
 #include <memory>
+#include <sstream>
+#include <string>
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace control_system::size::States {
 
@@ -13,9 +16,9 @@ std::unique_ptr<State> DeltaR::get_clone() const {
   return std::make_unique<DeltaR>(*this);
 }
 
-void DeltaR::update(const gsl::not_null<Info*> info,
-                    const StateUpdateArgs& update_args,
-                    const CrossingTimeInfo& crossing_time_info) const {
+std::string DeltaR::update(const gsl::not_null<Info*> info,
+                           const StateUpdateArgs& update_args,
+                           const CrossingTimeInfo& crossing_time_info) const {
   // If update_args.control_error_delta_r is larger than
   // delta_r_control_error_threshold (and neither char speed nor
   // delta radius is in danger), then the timescale is decreased to
@@ -44,7 +47,10 @@ void DeltaR::update(const gsl::not_null<Info*> info,
           std::numeric_limits<double>::infinity()) < info->damping_time and
       not delta_radius_is_in_danger;
 
+  std::stringstream ss{};
+
   if (char_speed_is_in_danger) {
+    ss << "Current state DeltaR. Char speed in danger.";
     if (crossing_time_info.t_comoving_char_speed.has_value() or
         update_args.min_comoving_char_speed < 0.0) {
       // Comoving char speed is negative or threatening to cross zero, so
@@ -60,14 +66,21 @@ void DeltaR::update(const gsl::not_null<Info*> info,
       info->state = std::make_unique<States::AhSpeed>();
       info->target_char_speed =
           update_args.min_char_speed * non_oscillation_factor;
+      ss << " Switching to AhSpeed.\n";
+      ss << " Target char speed = " << info->target_char_speed << "\n";
+    } else {
+      ss << " Staying in DeltaR.\n";
     }
     // If the comoving char speed is positive and is not about to
     // cross zero, staying in DeltaR mode will rescue the speed
     // automatically (since it drives char speed to comoving char
     // speed).  But we should decrease the timescale in any case.
     info->suggested_time_scale = crossing_time_info.t_char_speed;
+    ss << " Suggested timescale = " << info->suggested_time_scale;
   } else if (delta_radius_is_in_danger) {
     info->suggested_time_scale = crossing_time_info.t_delta_radius;
+    ss << "Current state DeltaR. Delta radius in danger. Staying in DeltaR.\n";
+    ss << " Suggested timescale = " << info->suggested_time_scale;
   } else if (update_args.min_comoving_char_speed > 0.0 and
              std::abs(update_args.control_error_delta_r) >
                  delta_r_control_error_threshold) {
@@ -77,9 +90,19 @@ void DeltaR::update(const gsl::not_null<Info*> info,
     constexpr double delta_r_state_decrease_factor = 0.99;
     info->suggested_time_scale =
         info->damping_time * delta_r_state_decrease_factor;
+    ss << "Current state DeltaR. Min comoving char speed "
+       << update_args.min_comoving_char_speed
+       << " > 0 and abs(control_error_delta_r) "
+       << std::abs(update_args.control_error_delta_r) << " > threshold "
+       << delta_r_control_error_threshold << ". Staying in DeltaR.\n";
+    ss << " Suggested timescale = " << info->suggested_time_scale;
+  } else {
+    ss << "Current state DeltaR. No change necessary. Staying in DeltaR.";
   }
   // Here is where possible transitions to states DeltaRDriftInward and
   // state DeltaRDriftOutward will go.
+
+  return ss.str();
 }
 
 double DeltaR::control_error(const Info& /*info*/,

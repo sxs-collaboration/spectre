@@ -21,12 +21,14 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -266,6 +268,12 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               error_diagnostics.delta_r_crossing_time,
               error_diagnostics.suggested_timescale,
               error_diagnostics.damping_timescale));
+    }
+
+    if (Parallel::get<control_system::Tags::Verbosity>(cache) >=
+        ::Verbosity::Verbose) {
+      Parallel::printf("%s: %s\n", function_of_time_name,
+                       error_diagnostics.update_message);
     }
 
     return DataVector{1, error_diagnostics.control_error};

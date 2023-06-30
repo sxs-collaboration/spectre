@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <pup.h>
+#include <string>
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -142,10 +143,14 @@ class State : public PUP::able {
    * \note Notice that `info` includes a state, which might be different than
    * the current state upon return. It is the caller's responsibility to check
    * if the current state has changed.
+   *
+   * \return The return string is used as a helpful diagnostic that may be
+   * printed to determine what logic decisions the state is making (depends on
+   * the `control_system::Tags::Verbosity` flag).
    */
-  virtual void update(const gsl::not_null<Info*> info,
-                      const StateUpdateArgs& update_args,
-                      const CrossingTimeInfo& crossing_time_info) const = 0;
+  virtual std::string update(
+      const gsl::not_null<Info*> info, const StateUpdateArgs& update_args,
+      const CrossingTimeInfo& crossing_time_info) const = 0;
   /// Returns the control signal, but does not modify the state or any
   /// parameters.
   virtual double control_error(
