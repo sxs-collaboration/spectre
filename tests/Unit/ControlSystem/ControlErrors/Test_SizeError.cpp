@@ -161,7 +161,7 @@ void test_size_error_one_step(
   if constexpr (std::is_same_v<InitialState,
                                control_system::size::States::Initial>) {
     using size_error =
-        control_system::ControlErrors::Size<domain::ObjectLabel::A>;
+        control_system::ControlErrors::Size<2, domain::ObjectLabel::A>;
     static_assert(
         tt::assert_conforms_to_v<size_error,
                                  control_system::protocols::ControlError>);

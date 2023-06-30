@@ -99,7 +99,7 @@ namespace control_system::ControlErrors {
  *   of the State%s
  * - DampingTime
  */
-template <::domain::ObjectLabel Horizon>
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 struct Size : tt::ConformsTo<protocols::ControlError> {
   static constexpr size_t expected_number_of_excisions = 1;
 
