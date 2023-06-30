@@ -10,6 +10,8 @@
 
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
+#include "ControlSystem/ControlErrors/Size/State.hpp"
+#include "ControlSystem/ControlErrors/Size/StateHistory.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
@@ -60,8 +62,12 @@ namespace control_system::ControlErrors {
  *
  * This class holds a `control_system::size::Info` and three different
  * `intrp::ZeroCrossingPredictor`s internally which are needed to calculate the
- * `control_system::size::control_error`. It also conforms to the
- * `control_system::protocols::ControlError` protocol.
+ * `control_system::size::control_error`. Additionally, this class stores a
+ * history of control errors for all `control_system::size::State`s using a
+ * `control_system::size::StateHistory`. This is useful for when a discontinuous
+ * change happens (switching `control_system::size::State`s) and we need to
+ * repopulate the `Averager` with a history of the control error. It also
+ * conforms to the `control_system::protocols::ControlError` protocol.
  *
  * In addition to calculating the control error, if the
  * `control_system::Tags::WriteDataToDisk` tag inside the
@@ -148,6 +154,15 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
    */
   void reset();
 
+  /*!
+   * \brief Get a history of the control errors for the past few measurements.
+   *
+   * \return std::deque<std::pair<double, double>> This returns up to
+   * `DerivOrder` entries, not including the most recent time. \see
+   * `control_system::size::StateHistory::state_history`
+   */
+  std::deque<std::pair<double, double>> control_error_history() const;
+
   void pup(PUP::er& p);
 
   /*!
@@ -222,6 +237,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
         spatial_metric_on_excision, inverse_spatial_metric_on_excision,
         functions_of_time.at(function_of_time_name));
 
+    state_history_.store(time, info_, error_diagnostics.control_error_args);
+
     if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
       auto& observer_writer_proxy = Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache);
@@ -233,13 +250,14 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               time, error_diagnostics.control_error,
               static_cast<double>(error_diagnostics.state_number),
               error_diagnostics.discontinuous_change_has_occurred ? 1.0 : 0.0,
-              error_diagnostics.lambda_00, error_diagnostics.dt_lambda_00,
+              error_diagnostics.lambda_00,
+              error_diagnostics.control_error_args.time_deriv_of_lambda_00,
               error_diagnostics.horizon_00, error_diagnostics.dt_horizon_00,
               error_diagnostics.min_delta_r,
               error_diagnostics.min_relative_delta_r,
-              error_diagnostics.control_error_delta_r,
+              error_diagnostics.control_error_args.control_error_delta_r,
               error_diagnostics.target_char_speed,
-              error_diagnostics.min_char_speed,
+              error_diagnostics.control_error_args.min_char_speed,
               error_diagnostics.min_comoving_char_speed,
               error_diagnostics.char_speed_crossing_time,
               error_diagnostics.comoving_char_speed_crossing_time,
@@ -256,6 +274,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   intrp::ZeroCrossingPredictor char_speed_predictor_{};
   intrp::ZeroCrossingPredictor comoving_char_speed_predictor_{};
   intrp::ZeroCrossingPredictor delta_radius_predictor_{};
+  size::StateHistory state_history_{};
   std::vector<std::string> legend_{};
   std::string subfile_name_{};
 };

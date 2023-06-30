@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -32,13 +33,10 @@ struct ErrorDiagnostics {
   double control_error;
   size_t state_number;
   double lambda_00;
-  double dt_lambda_00;
   double horizon_00;
   double dt_horizon_00;
   double min_delta_r;
   double min_relative_delta_r;
-  double control_error_delta_r;
-  double min_char_speed;
   double min_comoving_char_speed;
   double char_speed_crossing_time;
   double comoving_char_speed_crossing_time;
@@ -46,6 +44,7 @@ struct ErrorDiagnostics {
   double target_char_speed;
   double suggested_timescale;
   double damping_timescale;
+  ControlErrorArgs control_error_args;
   bool discontinuous_change_has_occurred;
 };
 

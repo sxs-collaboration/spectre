@@ -25,6 +25,7 @@ Size<DerivOrder, Horizon>::Size(const int max_times) {
   comoving_char_speed_predictor_ =
       intrp::ZeroCrossingPredictor{3, max_times_size_t};
   delta_radius_predictor_ = intrp::ZeroCrossingPredictor{3, max_times_size_t};
+  state_history_ = size::StateHistory{DerivOrder + 1};
   legend_ = std::vector<std::string>{"Time",
                                      "ControlError",
                                      "StateNumber",
@@ -64,11 +65,23 @@ void Size<DerivOrder, Horizon>::reset() {
 }
 
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+std::deque<std::pair<double, double>>
+Size<DerivOrder, Horizon>::control_error_history() const {
+  std::deque<std::pair<double, double>> history =
+      state_history_.state_history(info_.state->number());
+  // pop back so we don't include the current time, otherwise the averager
+  // will error
+  history.pop_back();
+  return history;
+}
+
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 void Size<DerivOrder, Horizon>::pup(PUP::er& p) {
   p | info_;
   p | char_speed_predictor_;
   p | comoving_char_speed_predictor_;
   p | delta_radius_predictor_;
+  p | state_history_;
   p | legend_;
   p | subfile_name_;
 }

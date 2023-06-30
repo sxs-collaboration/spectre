@@ -200,6 +200,7 @@ void test_size_error_one_step(
 
     const double control_error_from_class =
         error_class(tuner, cache, time, "Size"s, measurements)[0];
+    const auto control_error_history = error_class.control_error_history();
 
     // These should be identical because the control error class calls the
     // control_error function
@@ -208,11 +209,14 @@ void test_size_error_one_step(
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK(error_class.discontinuous_change_has_occurred() !=
           std::is_same_v<InitialState, FinalState>);
+    // The current time is popped back so we only get times in the past
+    CHECK(control_error_history.empty());
 
     error_class.reset();
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
+    CHECK(control_error_history.empty());
   }
 }
 
