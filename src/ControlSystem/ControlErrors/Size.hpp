@@ -90,13 +90,15 @@ namespace control_system::ControlErrors {
  * - MinCharSpeed
  * - MinComovingCharSpeed: Eq. 98 in \cite Hemberger2012jz
  * - CharSpeedCrossingTime: %Time at which the min char speed is predicted to
- *   cross zero and become negative.
+ *   cross zero and become negative (or 0.0 if that time is in the past).
  * - ComovingCharSpeedCrossingTime: %Time at which the min comoving char speed
- *   is predicted to cross zero and become negative.
+ *   is predicted to cross zero and become negative (or 0.0 if that time is in
+ *   the past).
  * - DeltaRCrossingTime: %Time at which the distance between the excision and
- *   horizon surfaces is predicted to be zero.
+ *   horizon surfaces is predicted to be zero (or 0.0 if that time is in the
+ *   past).
  * - SuggestedTimescale: A timescale for the `TimescaleTuner` suggested by one
- *   of the State%s
+ *   of the State%s (or 0.0 if no timescale was suggested)
  * - DampingTime
  */
 template <::domain::ObjectLabel Horizon>

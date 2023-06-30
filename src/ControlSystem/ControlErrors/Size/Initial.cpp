@@ -21,10 +21,12 @@ void Initial::update(const gsl::not_null<Info*> info,
   // can be different for different States.
   const bool char_speed_is_in_danger =
       crossing_time_info.char_speed_will_hit_zero_first and
-      crossing_time_info.t_char_speed < info->damping_time;
+      crossing_time_info.t_char_speed.value_or(
+          std::numeric_limits<double>::infinity()) < info->damping_time;
   const bool delta_radius_is_in_danger =
       crossing_time_info.horizon_will_hit_excision_boundary_first and
-      crossing_time_info.t_delta_radius < info->damping_time and
+      crossing_time_info.t_delta_radius.value_or(
+          std::numeric_limits<double>::infinity()) < info->damping_time and
       not char_speed_is_in_danger;
 
   // This factor is present in SpEC, but it probably isn't necessary

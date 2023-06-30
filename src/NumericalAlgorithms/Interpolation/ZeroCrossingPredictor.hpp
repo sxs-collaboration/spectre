@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <deque>
+#include <optional>
 
 #include "DataStructures/DataVector.hpp"
 
@@ -44,8 +45,11 @@ class ZeroCrossingPredictor {
   DataVector zero_crossing_time(double current_time) const;
 
   /// The minimum positive value over the DataVector returned
-  /// by zero_crossing_time.  Returns zero if is_valid() is false.
-  double min_positive_zero_crossing_time(double current_time) const;
+  /// by zero_crossing_time. If there is no minimum positive value (all are
+  /// negative), returns `std::nullopt`. Also returns `std::nullopt` if
+  /// is_valid() is false.
+  std::optional<double> min_positive_zero_crossing_time(
+      double current_time) const;
 
   /// Returns whether we have enough data to call zero_crossing_time.
   bool is_valid() const;

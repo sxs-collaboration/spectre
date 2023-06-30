@@ -49,8 +49,9 @@ void test_zero_crossing_predictor() {
   intrp::ZeroCrossingPredictor predictor(min_size, x_values.size());
 
   // Check trivial case that min_positive_zero_crossing_time returns
-  // zero for an invalid predictor.
-  CHECK(predictor.min_positive_zero_crossing_time(x_values.back()) == 0.0);
+  // nullopt for an invalid predictor.
+  CHECK_FALSE(
+      predictor.min_positive_zero_crossing_time(x_values.back()).has_value());
 
   // Fill points in predictor.
   for (size_t i = 0; i < x_values.size(); i++) {
@@ -87,8 +88,15 @@ void test_zero_crossing_predictor() {
   const double expected_zero_crossing =
       std::min(adjusted_value1, adjusted_value2);
 
-  CHECK(predictor.min_positive_zero_crossing_time(x_values.back()) ==
-        custom_approx(expected_zero_crossing));
+  if (expected_zero_crossing == std::numeric_limits<double>::infinity()) {
+    CHECK_FALSE(
+        predictor.min_positive_zero_crossing_time(x_values.back()).has_value());
+  } else {
+    CHECK(
+        predictor.min_positive_zero_crossing_time(x_values.back()).has_value());
+    CHECK(predictor.min_positive_zero_crossing_time(x_values.back()).value() ==
+          custom_approx(expected_zero_crossing));
+  }
 
   // Re-add the first point.  Adding the first point should cause the
   // (original) first point to be popped off the deque [and thus test
@@ -96,13 +104,19 @@ void test_zero_crossing_predictor() {
   // previous result.
   DataVector first_point = y_values.front();
   predictor.add(x_values.front(), std::move(first_point));
-  CHECK(predictor.min_positive_zero_crossing_time(0.0) ==
-        custom_approx(expected_zero_crossing));
+  if (expected_zero_crossing == std::numeric_limits<double>::infinity()) {
+    CHECK_FALSE(predictor.min_positive_zero_crossing_time(0.0).has_value());
+  } else {
+    CHECK(predictor.min_positive_zero_crossing_time(0.0).has_value());
+    CHECK(predictor.min_positive_zero_crossing_time(0.0).value() ==
+          custom_approx(expected_zero_crossing));
+  }
 
   // Clear the predictor, and check that min_positive_zero_crossing_time
-  // returns zero again for the cleared (and now invalid) predictor.
+  // returns nullopt again for the cleared (and now invalid) predictor.
   predictor.clear();
-  CHECK(predictor.min_positive_zero_crossing_time(x_values.back()) == 0.0);
+  CHECK_FALSE(
+      predictor.min_positive_zero_crossing_time(x_values.back()).has_value());
 }
 }  // namespace
 

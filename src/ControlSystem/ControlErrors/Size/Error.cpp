@@ -205,11 +205,11 @@ ErrorDiagnostics control_error(
   predictor_delta_radius->add(time, get(radial_distance));
 
   // Compute crossing times for state-change logic.
-  const double char_speed_crossing_time =
+  const std::optional<double> char_speed_crossing_time =
       predictor_char_speed->min_positive_zero_crossing_time(time);
-  const double comoving_char_speed_crossing_time =
+  const std::optional<double> comoving_char_speed_crossing_time =
       predictor_comoving_char_speed->min_positive_zero_crossing_time(time);
-  const double delta_radius_crossing_time =
+  const std::optional<double> delta_radius_crossing_time =
       predictor_delta_radius->min_positive_zero_crossing_time(time);
 
   // Update the info, possibly changing the state inside of info.
@@ -238,9 +238,9 @@ ErrorDiagnostics control_error(
       control_error_delta_r,
       min_char_speed,
       min_comoving_char_speed,
-      char_speed_crossing_time,
-      comoving_char_speed_crossing_time,
-      delta_radius_crossing_time,
+      char_speed_crossing_time.value_or(0.0),
+      comoving_char_speed_crossing_time.value_or(0.0),
+      delta_radius_crossing_time.value_or(0.0),
       info->target_char_speed,
       info->suggested_time_scale.value_or(0.0),
       info->damping_time,

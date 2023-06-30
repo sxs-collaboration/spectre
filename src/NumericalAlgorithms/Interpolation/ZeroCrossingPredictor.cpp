@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 
@@ -50,18 +51,25 @@ DataVector ZeroCrossingPredictor::zero_crossing_time(
   return predicted_zero_crossing_value(relative_times, data_);
 }
 
-double ZeroCrossingPredictor::min_positive_zero_crossing_time(
+std::optional<double> ZeroCrossingPredictor::min_positive_zero_crossing_time(
     double current_time) const {
   if (not is_valid()) {
-    return 0.0;
+    return std::nullopt;
   }
   auto crossing_time = zero_crossing_time(current_time);
   // Replace all negative crossing times with infinity.
   std::for_each(crossing_time.begin(), crossing_time.end(), [](double& a) {
-    a = a < 0.0 ? std::numeric_limits<double>::infinity() : a;
+    // Exactly 0.0 is sentinel from zero_crossing_time that error bars were too
+    // large
+    a = a <= 0.0 ? std::numeric_limits<double>::infinity() : a;
   });
 
-  return *std::min_element(crossing_time.begin(), crossing_time.end());
+  const double min_value =
+      *std::min_element(crossing_time.begin(), crossing_time.end());
+
+  return min_value == std::numeric_limits<double>::infinity()
+             ? std::nullopt
+             : std::optional{min_value};
 }
 
 bool ZeroCrossingPredictor::is_valid() const {
