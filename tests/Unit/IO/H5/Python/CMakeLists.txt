@@ -8,6 +8,12 @@ spectre_add_python_bindings_test(
   PyH5)
 
 spectre_add_python_bindings_test(
+  "Unit.IO.H5.Python.ExtendConnectivity"
+  Test_ExtendConnectivity.py
+  "unit;IO;H5;python"
+  PyH5)
+
+spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.ExtractDatFromH5"
   Test_ExtractDatFromH5.py
   "unit;IO;H5;python"
@@ -25,3 +31,5 @@ spectre_add_python_bindings_test(
   Test_IterElements.py
   "unit;IO;H5;python"
   PyH5)
+
+

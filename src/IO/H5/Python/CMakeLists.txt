@@ -15,6 +15,7 @@ spectre_python_add_module(
   PYTHON_FILES
   __init__.py
   DeleteSubfiles.py
+  ExtendConnectivityData.py
   ExtractDatFromH5.py
   ExtractInputSourceYamlFromH5.py
   IterElements.py
