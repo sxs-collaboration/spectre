@@ -7,8 +7,10 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/CalculateMeasurementTimescales.hpp"
+#include "ControlSystem/ControlErrors/Size/Update.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
+#include "ControlSystem/IsSize.hpp"
 #include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
@@ -24,11 +26,15 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+/// \cond
 namespace domain::Tags {
 struct FunctionsOfTime;
 }  // namespace domain::Tags
+/// \endcond
 
 namespace control_system {
 /*!
@@ -61,7 +67,10 @@ namespace control_system {
  * 3. Calculate the control error and update the averager (store the current
  *    measurement). If the averager doesn't have enough information to determine
  *    the derivatives of the control error, exit now (this usually only happens
- *    for the first couple measurements of a simulation).
+ *    for the first couple measurements of a simulation). If this is \link
+ *    control_system::Systems::Size size \endlink control, an extra step happens
+ *    after we calculate the control error, but before we update the averager.
+ *    See `control_system::size::update_averager` for this step.
  * 4. If the `control_system::Tags::WriteDataToDisk` tag is set to `true`, write
  *    the time, function of time values, and the control error and its
  *    derivative to disk.
@@ -69,8 +78,11 @@ namespace control_system {
  *    measurement is equal to the number of measurements per update. If it's not
  *    time to update, exit now. Once we determine that it is time to update, set
  *    the current measurement back to 0.
- * 6. Update the damping timescales in the TimescaleTuner and compute the
- *    control signal using the control error and its derivatives.
+ * 6. Compute the control signal using the control error and its derivatives and
+ *    update the damping timescales in the TimescaleTuner. If this is \link
+ *    control_system::Systems::Size size \endlink control, there is an extra
+ *    step after we update the damping timescale. See
+ *    `control_system::size::update_tuner` for this step.
  * 7. Calculate the new measurement timescale based off the updated damping
  *    timescales and the number of measurements per update.
  * 8. Determine the new expiration times for the
@@ -131,6 +143,15 @@ struct UpdateControlSystem {
           function_of_time_name, time, current_measurement, Q);
     }
 
+    if constexpr (size::is_size_v<ControlSystem>) {
+      // This function must be called after we update the control error because
+      // it uses the new state in its logic (to repopulate the averager).
+      size::update_averager(make_not_null(&averager),
+                            make_not_null(&control_error), cache, time,
+                            tuner.current_timescale(), function_of_time_name,
+                            current_measurement);
+    }
+
     // Update the averager. We do this for every measurement because we still
     // want the averager to be up-to-date even if we aren't updating at this
     // time
@@ -142,8 +163,9 @@ struct UpdateControlSystem {
     if (not opt_avg_values.has_value()) {
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf(
-            "%s, time = %.16f: Averager does not have enough data.\n",
-            function_of_time_name, time);
+            "%s, time = %.16f: current measurement = %d, Averager does not "
+            "have enough data.\n",
+            function_of_time_name, time, current_measurement);
       }
       return;
     }
@@ -185,13 +207,18 @@ struct UpdateControlSystem {
     const double time_offset_0th =
         averager.using_average_0th_deriv_of_q() ? time_offset : 0.0;
 
-    tuner.update_timescale(q_and_dtq);
-
     // Calculate the control signal which will be used to update the highest
     // derivative of the FunctionOfTime
     const DataVector control_signal =
         controller(time, current_timescale, opt_avg_values.value(),
                    time_offset_0th, time_offset);
+
+    tuner.update_timescale(q_and_dtq);
+
+    if constexpr (size::is_size_v<ControlSystem>) {
+      size::update_tuner(make_not_null(&tuner), make_not_null(&control_error),
+                         cache, time, function_of_time_name);
+    }
 
     // Begin step 7
     // Calculate new measurement timescales with updated damping timescales

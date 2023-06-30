@@ -179,7 +179,7 @@ void test_translation_control_system() {
 
   // The control system gets more accurate the longer you run for. This is
   // the accuracy we can achieve in this amount of time.
-  Approx custom_approx = Approx::custom().epsilon(5.0e-9).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(1.0e-8).scale(1.0);
   const DataVector expected_translation_2nd_deriv{3, 0.0};
   CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[2],
                                expected_translation_2nd_deriv, custom_approx);

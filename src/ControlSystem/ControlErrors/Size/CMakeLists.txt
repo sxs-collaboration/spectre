@@ -25,4 +25,5 @@ spectre_target_headers(
   Error.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
+  Update.hpp
   )
