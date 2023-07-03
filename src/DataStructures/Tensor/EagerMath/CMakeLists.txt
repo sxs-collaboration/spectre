@@ -18,6 +18,7 @@ spectre_target_headers(
   Magnitude.hpp
   Norms.hpp
   OrthonormalOneform.hpp
+  OuterProduct.hpp
   )
 
 add_subdirectory(Python)

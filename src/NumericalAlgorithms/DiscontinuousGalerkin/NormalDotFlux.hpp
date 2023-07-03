@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/EagerMath/OuterProduct.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -99,12 +99,7 @@ void normal_times_flux(
         normal_times_flux,
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
     const Tensor<DataVector, Symm, Indices>& rhs) {
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    for (auto it = rhs.begin(); it != rhs.end(); ++it) {
-      const auto result_indices = rhs.get_tensor_index(it);
-      normal_times_flux->get(prepend(result_indices, d)) = normal.get(d) * *it;
-    }
-  }
+  outer_product(normal_times_flux, normal, rhs);
 }
 
 template <typename... ReturnTags, typename... FluxTags, size_t VolumeDim,
