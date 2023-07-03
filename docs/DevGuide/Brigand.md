@@ -509,7 +509,7 @@ parameters.
 \snippet Test_TMPLDocumentation.cpp metafunctions:primes:asserts
 
 \par
-This is roughly equivalent to the following C++ code with loops converted fo
+This is roughly equivalent to the following C++ code with loops converted to
 fold expressions over ranges.
 \snippet Test_TMPLDocumentation.cpp metafunctions:primes_cpp
 
