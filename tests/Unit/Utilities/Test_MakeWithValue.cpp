@@ -7,6 +7,7 @@
 #include <complex>
 #include <cstddef>
 
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -69,7 +70,20 @@ void test_make_tagged_tuple() {
         tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2, Tags::Double>(
             Makeable{n_pts, 3.8}, Makeable{n_pts, 3.8}, 3.8),
         Makeable{n_pts, 0.0}, 3.8);
+    check_make_with_value(Makeable{n_pts, 3.8},
+                          tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
+                              Makeable{n_pts, 0.0}, Makeable{n_pts, 1.0}),
+                          3.8);
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(
+          tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
+              Makeable{1, 0.0}, Makeable{2, 0.0}),
+          0.0),
+      Catch::Contains("Inconsistent number of points in tuple entries"));
+#endif  // SPECTRE_DEBUG
 }
 
 }  // namespace
@@ -88,6 +102,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
 
   check_make_with_value(make_array<4>(8.3), 1.3, 8.3);
   check_make_with_value(make_array<3>(Makeable{5, 8.3}), Makeable{5, 4.5}, 8.3);
+  check_make_with_value(1.3, make_array<4>(8.3), 1.3);
+  check_make_with_value(make_array<3>(Makeable{5, 8.3}),
+                        make_array<4>(Makeable{5, 4.5}), 8.3);
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(make_array(Makeable{1, 0.0}, Makeable{2, 0.0}),
+                                0.0),
+      Catch::Contains("Inconsistent number of points in array entries"));
+#endif  // SPECTRE_DEBUG
 
   test_make_tagged_tuple();
 }
