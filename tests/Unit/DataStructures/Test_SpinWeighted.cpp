@@ -13,6 +13,8 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
@@ -219,6 +221,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
   destructive_resize_check.destructive_resize(6);
   CHECK(destructive_resize_check != destructive_resize_copy);
   CHECK(destructive_resize_check.size() == destructive_resize_copy.size() + 1);
+
+  CHECK(make_with_value<SpinWeighted<double, 2>>(2_st, 1.1) ==
+        SpinWeighted<double, 2>(1.1));
+  CHECK(make_with_value<SpinWeighted<DataVector, 2>>(2_st, 1.1) ==
+        SpinWeighted<DataVector, 2>(DataVector{1.1, 1.1}));
+  CHECK(make_with_value<SpinWeighted<DataVector, 2>>(
+            SpinWeighted<DataVector, 2>(DataVector{1.2, 2.1}), 1.1) ==
+        SpinWeighted<DataVector, 2>(DataVector{1.1, 1.1}));
 }
 
 // A macro which will static_assert fail when LHSTYPE OP RHSTYPE succeeds during

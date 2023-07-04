@@ -469,6 +469,12 @@ void vector_test_construct_and_assign(
       const VectorType reference(dest.data(), dest.size());
       CHECK(not contains_allocations(reference));
     }
+
+    CHECK(make_with_value<VectorType>(size, generated_value1) ==
+          VectorType(size, generated_value1));
+    CHECK(make_with_value<VectorType>(VectorType(size, ValueType{}),
+                                      generated_value1) ==
+          VectorType(size, generated_value1));
   }
 }
 

@@ -32,6 +32,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeString.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -1316,6 +1317,20 @@ void test_contains_allocations() {
   }
 }
 
+template <typename VectorType>
+void test_make_with_value() {
+  INFO(pretty_type::short_name<VectorType>());
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> sdist{1, 5};
+  const size_t num_points = sdist(gen);
+  CHECK(make_with_value<Vars>(DataVector(num_points, 4.5), -2.3) ==
+        Vars(num_points, -2.3));
+  CHECK(make_with_value<DataVector>(Vars(num_points, 4.5), -2.3) ==
+        DataVector(num_points, -2.3));
+}
+
 void test_asserts() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -1471,6 +1486,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_contains_allocations<ComplexModalVector>();
     test_contains_allocations<DataVector>();
     test_contains_allocations<ModalVector>();
+  }
+
+  {
+    INFO("Test make_with_value");
+    test_make_with_value<ComplexDataVector>();
+    test_make_with_value<ComplexModalVector>();
+    test_make_with_value<DataVector>();
+    test_make_with_value<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
