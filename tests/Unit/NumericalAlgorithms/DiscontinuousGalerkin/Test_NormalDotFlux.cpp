@@ -9,13 +9,10 @@
 #include <numeric>
 #include <string>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -174,60 +171,10 @@ void test_with_variables() {
   CHECK_ITERABLE_APPROX((get<Tags::NormalDotFlux<Var2<Dim, Fr>>>(result)),
                         expected2);
 }
-
-template <size_t Dim, typename Frame>
-void check_compute_item() {
-  constexpr size_t num_points = 5;
-  tnsr::i<DataVector, Dim, Frame> normal(num_points);
-  typename flux_tag<Dim, Frame>::type fluxes(num_points);
-  Var1::type expected1(num_points);
-  typename Var2<Dim, Frame>::type expected2(num_points);
-  for (size_t i = 0; i < num_points; ++i) {
-    copy_into(make_not_null(&normal), generate_normal<Dim, Frame>(i), {}, i);
-    copy_into(make_not_null(&get<flux1<Dim, Frame>>(fluxes)),
-              generate_flux<Dim, Frame>(i), {}, i);
-    copy_into(make_not_null(&expected1), generate_f_dot_n<Dim>(i, i), {}, i);
-    for (size_t j = 0; j < Dim; ++j) {
-      copy_into(make_not_null(&get<flux2<Dim, Frame>>(fluxes)),
-                generate_flux<Dim, Frame>(i + 10 * j), {{j}}, i);
-      copy_into(make_not_null(&expected2), generate_f_dot_n<Dim>(i, i + 10 * j),
-                {{j}}, i);
-    }
-  }
-
-  using magnitude_normal_tag = Tags::EuclideanMagnitude<
-      domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
-  using normalized_normal_tag =
-      Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
-  using compute_n_dot_f =
-      Tags::NormalDotFluxCompute<variables_tag<Dim, Frame>, Dim, Frame>;
-  const auto box = db::create<
-      db::AddSimpleTags<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>,
-                        flux_tag<Dim, Frame>>,
-      db::AddComputeTags<magnitude_normal_tag, normalized_normal_tag,
-                         compute_n_dot_f>>(normal, fluxes);
-  TestHelpers::db::test_compute_tag<compute_n_dot_f>(
-      "Variables(NormalDotFlux(Var1),NormalDotFlux(Var2))");
-
-  static_assert(
-      std::is_same_v<typename compute_n_dot_f::argument_tags,
-                     tmpl::list<flux_tag<Dim, Frame>,
-                                typename normalized_normal_tag::base>>,
-      "Wrong argument tags");
-  const auto& result = get<typename compute_n_dot_f::base>(box);
-
-  static_assert(
-      std::is_base_of_v<
-          db::add_tag_prefix<Tags::NormalDotFlux, variables_tag<Dim, Frame>>,
-          compute_n_dot_f>,
-      "Wrong inheritance");
-  CHECK_ITERABLE_APPROX(get<Tags::NormalDotFlux<Var1>>(result), expected1);
-  CHECK_ITERABLE_APPROX((get<Tags::NormalDotFlux<Var2<Dim, Frame>>>(result)),
-                        expected2);
-}
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.NormalDotFlux",
+                  "[Unit][Evolution]") {
   {
     INFO("Explicit values");
     const size_t npts = 5;
@@ -394,14 +341,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
     test_with_variables<1>();
     test_with_variables<2>();
     test_with_variables<3>();
-  }
-  {
-    INFO("Compute item");
-    check_compute_item<1, Frame::Inertial>();
-    check_compute_item<1, Frame::Grid>();
-    check_compute_item<2, Frame::Inertial>();
-    check_compute_item<2, Frame::Grid>();
-    check_compute_item<3, Frame::Inertial>();
-    check_compute_item<3, Frame::Grid>();
   }
 }

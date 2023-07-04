@@ -4,22 +4,15 @@
 #pragma once
 
 #include <cstddef>
-#include <string>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/OuterProduct.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "Domain/FaceNormal.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-// IWYU pragma: no_forward_declare Variables
-// IWYU pragma: no_forward_declare Tags::Flux
-/// \endcond
 
 /// @{
 /*!
@@ -67,8 +60,7 @@ auto normal_dot_flux(
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
     const Variables<db::wrap_tags_in<::Tags::Flux, TagsList,
                                      tmpl::size_t<VolumeDim>, Fr>>& fluxes) {
-  auto result = make_with_value<
-      Variables<db::wrap_tags_in<::Tags::NormalDotFlux, TagsList>>>(fluxes, 0.);
+  Variables<db::wrap_tags_in<::Tags::NormalDotFlux, TagsList>> result{};
   normal_dot_flux(make_not_null(&result), normal, fluxes);
   return result;
 }
@@ -115,30 +107,3 @@ void normal_times_flux(
       make_not_null(&get<ReturnTags>(*result)), normal, get<FluxTags>(fluxes)));
 }
 /// @}
-
-namespace Tags {
-
-/// \ingroup ConservativeGroup
-/// \ingroup DataBoxTagsGroup
-/// \brief Prefix computing a boundary unit normal vector dotted into
-/// the flux from a flux on the boundary.
-template <typename Tag, size_t VolumeDim, typename Fr>
-struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
-                              db::ComputeTag {
-  using base = db::add_tag_prefix<NormalDotFlux, Tag>;
-  using return_type = typename base::type;
-
- private:
-  using flux_tag = db::add_tag_prefix<Flux, Tag, tmpl::size_t<VolumeDim>, Fr>;
-  using normal_tag =
-      Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
-
- public:
-  static void function(const gsl::not_null<return_type*> result,
-                       const typename flux_tag::type& flux,
-                       const tnsr::i<DataVector, VolumeDim, Fr>& normal) {
-    *result = normal_dot_flux<typename Tag::tags_list>(normal, flux);
-  }
-  using argument_tags = tmpl::list<flux_tag, normal_tag>;
-};
-}  // namespace Tags
