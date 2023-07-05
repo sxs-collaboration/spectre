@@ -650,7 +650,7 @@ def parse_kernels(kernels, exec_files, map_input_names):
             yield Kernel(globals()[kernel], map_input_names)
 
 
-@click.command()
+@click.command(name="transform-volume-data")
 @click.argument(
     "h5files",
     nargs=-1,

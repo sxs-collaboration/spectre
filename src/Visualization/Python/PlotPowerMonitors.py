@@ -259,7 +259,7 @@ def parse_step(ctx, param, value):
     return int(value)
 
 
-@click.command()
+@click.command(name="plot-power-monitors")
 @click.argument(
     "h5_files",
     nargs=-1,

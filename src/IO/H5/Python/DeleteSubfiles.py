@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 HDF5_REPACK_EXECUTABLE = "@HDF5_REPACK_EXECUTABLE@"
 
 
-@click.command()
+@click.command(name="delete-subfiles")
 @click.argument(
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

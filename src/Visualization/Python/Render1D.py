@@ -186,7 +186,7 @@ def plot_element(
     return legend_items
 
 
-@click.command()
+@click.command(name="render-1d")
 @click.argument(
     "h5_files",
     nargs=-1,

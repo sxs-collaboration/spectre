@@ -71,7 +71,7 @@ def resubmit(
     schedule(**context)
 
 
-@click.command(help=resubmit.__doc__)
+@click.command(name="resubmit", help=resubmit.__doc__)
 @click.argument(
     "segments_dirs",
     type=click.Path(

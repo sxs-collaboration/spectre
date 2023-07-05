@@ -395,7 +395,7 @@ def generate_xdmf(
         sys.stdout.write(xdmf_output)
 
 
-@click.command(help=generate_xdmf.__doc__)
+@click.command(name="generate-xdmf", help=generate_xdmf.__doc__)
 @click.argument(
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

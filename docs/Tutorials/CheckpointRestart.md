@@ -35,7 +35,11 @@ To restart an executable from a checkpoint file, run a command like this:
 ```
 ./MySpectreExecutable +restart Checkpoints/Checkpoint_0123
 ```
-where the `0123` should be the number of the checkpoint to restart from.
+where the `0123` should be the number of the checkpoint to restart from. You can
+also use the \ref tutorial_cli "command-line interface (CLI)" for restarting:
+```
+./spectre run INPUT_FILE --from-last-checkpoint Checkpoints/
+```
 
 There are a number of caveats in the current implementation of checkpointing
 and restarting:

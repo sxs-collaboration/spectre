@@ -119,7 +119,7 @@ def extract_dat_files(
         print(f"Successfully extracted all Dat files into '{out_dir}'")
 
 
-@click.command(help=extract_dat_files.__doc__)
+@click.command(name="extract-dat", help=extract_dat_files.__doc__)
 @click.argument(
     "filename",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

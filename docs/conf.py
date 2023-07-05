@@ -36,6 +36,7 @@ extensions = [
     # Support markdown files
     "myst_parser",
     # "breathe",
+    "sphinx_click",
 ]
 
 # Autodoc configuration
