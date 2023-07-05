@@ -37,6 +37,7 @@ set(LIBRARY_SOURCES
   Test_Flattener.cpp
   Test_Fluxes.cpp
   Test_PrimitiveFromConservative.cpp
+  Test_QuadrupoleFormula.cpp
   Test_SetVariablesNeededFixingToFalse.cpp
   Test_Sources.cpp
   Test_Tags.cpp

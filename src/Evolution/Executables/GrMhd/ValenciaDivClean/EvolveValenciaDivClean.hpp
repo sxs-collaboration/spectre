@@ -68,6 +68,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/QuadrupoleFormula.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/SetVariablesNeededFixingToFalse.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/GrTagsForHydro.hpp"
@@ -161,6 +162,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
+#include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -289,7 +291,13 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
               volume_dim, Frame::Inertial>,
           ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
-                                                     Frame::Inertial>>>;
+                                                     Frame::Inertial>>,
+      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
+             DataVector, volume_dim,
+             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
+             DataVector, volume_dim,
+             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>>;
   using non_tensor_compute_tags = tmpl::list<
       tmpl::conditional_t<
           use_dg_subcell,

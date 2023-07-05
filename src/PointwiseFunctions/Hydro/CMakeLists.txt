@@ -13,6 +13,7 @@ spectre_target_sources(
   LowerSpatialFourVelocity.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
+  QuadrupoleFormula.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   StressEnergy.cpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   LowerSpatialFourVelocity.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
+  QuadrupoleFormula.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
   StressEnergy.hpp

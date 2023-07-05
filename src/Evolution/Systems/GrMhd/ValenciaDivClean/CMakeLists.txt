@@ -39,6 +39,7 @@ spectre_target_headers(
   PalenzuelaEtAl.hpp
   PrimitiveFromConservative.hpp
   PrimitiveRecoveryData.hpp
+  QuadrupoleFormula.hpp
   SetVariablesNeededFixingToFalse.hpp
   Sources.hpp
   System.hpp
@@ -59,7 +60,9 @@ target_link_libraries(
   Evolution
   FiniteDifference
   GeneralRelativity
+  H5
   Hydro
+  HydroHelpers
   Limiters
   Options
   Utilities
