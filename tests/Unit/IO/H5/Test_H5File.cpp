@@ -246,6 +246,7 @@ void test_error_messages() {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   test_access_type();
   test_core_functionality();
