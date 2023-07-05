@@ -15,7 +15,9 @@
 
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace PUP {
 /// @{
@@ -60,6 +62,19 @@ struct MakeWithSize<blaze::StaticVector<T, N, TF, AF, PF, Tag>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <typename T, size_t N, bool TF, blaze::AlignmentFlag AF,
+          blaze::PaddingFlag PF, typename Tag>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    blaze::StaticVector<T, N, TF, AF, PF, Tag>> {
+  static constexpr bool is_trivial = false;
+  static SPECTRE_ALWAYS_INLINE void apply(
+      const gsl::not_null<blaze::StaticVector<T, N, TF, AF, PF, Tag>*>
+      /*result*/,
+      const size_t size) {
+    ERROR("Tried to resize a StaticVector to " << size);
+  }
+};
 
 template <typename T, size_t N, bool TF, blaze::AlignmentFlag AF,
           blaze::PaddingFlag PF, typename Tag>

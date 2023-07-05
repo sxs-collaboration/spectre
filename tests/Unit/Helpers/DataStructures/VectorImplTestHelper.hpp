@@ -25,6 +25,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -475,6 +476,16 @@ void vector_test_construct_and_assign(
     CHECK(make_with_value<VectorType>(VectorType(size, ValueType{}),
                                       generated_value1) ==
           VectorType(size, generated_value1));
+
+    {
+      VectorType resize_from_size_t{};
+      set_number_of_grid_points(make_not_null(&resize_from_size_t), size);
+      CHECK(resize_from_size_t.size() == size);
+      VectorType resize_from_vector{};
+      set_number_of_grid_points(make_not_null(&resize_from_vector),
+                                VectorType(size, ValueType{}));
+      CHECK(resize_from_vector.size() == size);
+    }
   }
 }
 

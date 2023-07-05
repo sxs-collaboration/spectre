@@ -34,6 +34,7 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
@@ -1331,6 +1332,23 @@ void test_make_with_value() {
         DataVector(num_points, -2.3));
 }
 
+template <typename VectorType>
+void test_set_number_of_grid_points() {
+  INFO(pretty_type::short_name<VectorType>());
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> sdist{1, 5};
+  const size_t num_points = sdist(gen);
+
+  Vars resized{};
+  set_number_of_grid_points(make_not_null(&resized), num_points);
+  CHECK(resized.number_of_grid_points() == num_points);
+  DataVector resized_vector{};
+  set_number_of_grid_points(make_not_null(&resized_vector), Vars(num_points));
+  CHECK(resized_vector.size() == num_points);
+}
+
 void test_asserts() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -1494,6 +1512,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_make_with_value<ComplexModalVector>();
     test_make_with_value<DataVector>();
     test_make_with_value<ModalVector>();
+  }
+
+  {
+    INFO("Test set_number_of_grid_points");
+    test_set_number_of_grid_points<ComplexDataVector>();
+    test_set_number_of_grid_points<ComplexModalVector>();
+    test_set_number_of_grid_points<DataVector>();
+    test_set_number_of_grid_points<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");

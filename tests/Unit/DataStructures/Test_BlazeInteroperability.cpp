@@ -13,7 +13,9 @@
 #include "DataStructures/StaticVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",
                   "[DataStructures][Unit]") {
@@ -26,6 +28,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",
     CHECK(TestHelpers::test_creation<blaze::StaticVector<double, 4>>(
               "[0., 1., 0., 2.]") ==
           blaze::StaticVector<double, 4>{0., 1., 0., 2.});
+
+    blaze::StaticVector<double, 4> v{0., 1., 0., 2.};
+    set_number_of_grid_points(make_not_null(&v), 4_st);
+    CHECK(v == blaze::StaticVector<double, 4>{0., 1., 0., 2.});
+#ifdef SPECTRE_DEBUG
+    CHECK_THROWS_WITH(set_number_of_grid_points(make_not_null(&v), 3_st),
+                      Catch::Contains("Tried to resize a StaticVector to 3"));
+#endif  // SPECTRE_DEBUG
   }
   {
     INFO("DynamicVector");
@@ -36,6 +46,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",
     CHECK(TestHelpers::test_creation<blaze::DynamicVector<double>>(
               "[0., 1., 0., 2.]") ==
           blaze::DynamicVector<double>{0., 1., 0., 2.});
+
+    blaze::DynamicVector<double> v{0., 1., 0., 2.};
+    set_number_of_grid_points(make_not_null(&v), 4_st);
+    CHECK(v == blaze::DynamicVector<double>{0., 1., 0., 2.});
+    set_number_of_grid_points(make_not_null(&v), 3_st);
+    CHECK(v.size() == 3);
   }
   {
     INFO("CompressedVector");
