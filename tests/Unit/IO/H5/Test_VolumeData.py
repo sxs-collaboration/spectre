@@ -62,7 +62,7 @@ class TestVolumeData(unittest.TestCase):
         self.tensor_component_data = np.random.rand(4, 8)
         observation_ids = [0, 1]
         observation_values = {0: 7.0, 1: 1.3}
-        grid_names = ["grid_1", "grid_2"]
+        grid_names = ["[B0(L0I0,L0I0,L1I0)]", "[B0(L0I0,L0I0,L1I1)]"]
         basis = Basis.Legendre
         quad = Quadrature.Gauss
 
@@ -147,7 +147,7 @@ class TestVolumeData(unittest.TestCase):
         obs_id = self.vol_file.list_observation_ids()[0]
         # Test grid names
         grid_names = self.vol_file.get_grid_names(observation_id=obs_id)
-        expected_grid_names = ["grid_1", "grid_2"]
+        expected_grid_names = ["[B0(L0I0,L0I0,L1I0)]", "[B0(L0I0,L0I0,L1I1)]"]
         self.assertEqual(grid_names, expected_grid_names)
         # Test extents
         extents = self.vol_file.get_extents(observation_id=obs_id)
@@ -198,7 +198,9 @@ class TestVolumeData(unittest.TestCase):
         # Check both grids at first observation time
         self.assertEqual(volume_data[0][0], 1)
         self.assertEqual(volume_data[0][1], 1.3)
-        self.assertEqual(volume_data[0][2][0].element_name, "grid_1")
+        self.assertEqual(
+            volume_data[0][2][0].element_name, "[B0(L0I0,L0I0,L1I0)]"
+        )
         self.assertEqual(
             volume_data[0][2][0].basis, self.element_vol_data_grid_1[1].basis
         )
@@ -215,7 +217,9 @@ class TestVolumeData(unittest.TestCase):
             self.element_vol_data_grid_1[1].tensor_components,
         )
 
-        self.assertEqual(volume_data[0][2][1].element_name, "grid_2")
+        self.assertEqual(
+            volume_data[0][2][1].element_name, "[B0(L0I0,L0I0,L1I1)]"
+        )
         self.assertEqual(
             volume_data[0][2][1].basis, self.element_vol_data_grid_2[1].basis
         )
@@ -235,7 +239,9 @@ class TestVolumeData(unittest.TestCase):
         # Check both grids at second observation time
         self.assertEqual(volume_data[1][0], 0)
         self.assertEqual(volume_data[1][1], 7.0)
-        self.assertEqual(volume_data[1][2][0].element_name, "grid_1")
+        self.assertEqual(
+            volume_data[1][2][0].element_name, "[B0(L0I0,L0I0,L1I0)]"
+        )
         self.assertEqual(
             volume_data[1][2][0].basis, self.element_vol_data_grid_1[1].basis
         )
@@ -252,7 +258,9 @@ class TestVolumeData(unittest.TestCase):
             self.element_vol_data_grid_1[0].tensor_components,
         )
 
-        self.assertEqual(volume_data[1][2][1].element_name, "grid_2")
+        self.assertEqual(
+            volume_data[1][2][1].element_name, "[B0(L0I0,L0I0,L1I1)]"
+        )
         self.assertEqual(
             volume_data[1][2][1].basis, self.element_vol_data_grid_2[1].basis
         )
@@ -276,12 +284,25 @@ class TestVolumeData(unittest.TestCase):
         all_extents = self.vol_file.get_extents(observation_id=obs_id)
         self.assertEqual(
             spectre_h5.offset_and_length_for_grid(
-                grid_name="grid_1",
+                grid_name="[B0(L0I0,L0I0,L1I0)]",
                 all_grid_names=all_grid_names,
                 all_extents=all_extents,
             ),
             (0, 8),
         )
+
+    # Tests that ExtendConnectivity generates the connectivity dataset
+    # length correctly
+    def test_extend_connectivity_data_3D(self):
+        obs_ids = self.vol_file.list_observation_ids()
+        # Applies the ExtendConnectivity functionality to the volume file
+        self.vol_file.extend_connectivity_data_3d(obs_ids)
+        # Extracts the connectivity data from the volume file
+        h5_connectivity = self.vol_file.get_tensor_component(
+            obs_ids[0], "connectivity"
+        ).data
+        expected_connectivity_length = 24
+        self.assertEqual(expected_connectivity_length, len(h5_connectivity))
 
 
 if __name__ == "__main__":
