@@ -7,9 +7,10 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
-#include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InterfaceNullNormal.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
@@ -81,6 +82,13 @@ void bind_impl(py::module& m) {  // NOLINT
       py::arg("lapse"), py::arg("shift"), py::arg("deriv_shift"),
       py::arg("spatial_metric"), py::arg("dt_spatial_metric"),
       py::arg("deriv_spatial_metric"));
+
+  m.def("interface_null_normal",
+        static_cast<tnsr::a<DataVector, Dim> (*)(
+            const tnsr::a<DataVector, Dim>&, const tnsr::i<DataVector, Dim>&,
+            const double)>(&::gr::interface_null_normal),
+        py::arg("spacetime_normal_one_form"),
+        py::arg("interface_unit_normal_one_form"), py::arg("sign"));
 
   m.def("inverse_spacetime_metric",
         static_cast<tnsr::AA<DataVector, Dim> (*)(
