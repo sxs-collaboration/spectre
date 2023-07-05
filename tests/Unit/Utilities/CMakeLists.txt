@@ -37,6 +37,7 @@ set(LIBRARY_SOURCES
   Test_Rational.cpp
   Test_Registration.cpp
   Test_Requires.cpp
+  Test_SetNumberOfGridPoints.cpp
   Test_StaticCache.cpp
   Test_StdArrayHelpers.cpp
   Test_StdHelpers.cpp

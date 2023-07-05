@@ -83,7 +83,7 @@ struct MakeWithValueImpl {
 /// \tparam ValueType The type of `value`. For most containers, this will be
 /// `double`.
 ///
-/// \see MakeWithValueImpls
+/// \see MakeWithValueImpls, set_number_of_grid_points
 template <typename R, typename T, typename ValueType>
 SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
     const T& input, const ValueType& value) {
