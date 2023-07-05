@@ -292,26 +292,35 @@ jobs:
         working-directory: /work/build
         run: |
           make py-docs
-      # Upload as an artifact to make available to PRs
+      # Upload as an artifact to make available to deployment and to PRs
       - name: Prepare for upload
         working-directory: /work/build
         run: |
-          zip -qr docs-html.zip docs/html
+          tar -cf docs-html.tar --directory docs/html .
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
           name: docs-html
-          path: /work/build/docs-html.zip
-      # Deploy to gh-pages on pushes to develop
-      - name: Deploy to gh-pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        uses: peaceiris/actions-gh-pages@v3
+          path: /work/build/docs-html.tar
+
+  # Deploy to gh-pages on pushes to develop
+  # See docs: https://github.com/actions/deploy-pages
+  docs-deploy:
+    name: Deploy documentation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs: doc_check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v2
+        id: deploy
         with:
-          publish_dir: /work/build/docs/html
-          cname: spectre-code.org
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force_orphan: true
+          artifact_name: docs-html
 
   # Build all test executables and run unit tests on a variety of compiler
   # configurations.
