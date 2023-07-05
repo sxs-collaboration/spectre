@@ -514,6 +514,7 @@ void test_extend_connectivity_data() {
 }
 }  // namespace
 
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test<DataVector>();
   test<std::vector<float>>();

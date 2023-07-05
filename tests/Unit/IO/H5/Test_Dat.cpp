@@ -408,6 +408,7 @@ void test_dat_read() {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
   test_errors();
   test_core_functionality();
