@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -17,6 +18,11 @@ namespace GeneralizedHarmonic::py_bindings {
 namespace {
 template <size_t Dim>
 void bind_impl(py::module& m) {  // NOLINT
+  m.def("deriv_spatial_metric",
+        static_cast<tnsr::ijj<DataVector, Dim> (*)(
+            const tnsr::iaa<DataVector, Dim>&)>(&::gh::deriv_spatial_metric),
+        py::arg("phi"));
+
   m.def(
       "spatial_ricci_tensor",
       static_cast<tnsr::ii<DataVector, Dim> (*)(
