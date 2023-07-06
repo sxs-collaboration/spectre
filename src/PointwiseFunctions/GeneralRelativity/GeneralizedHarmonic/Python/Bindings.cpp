@@ -8,6 +8,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -30,6 +33,39 @@ void bind_impl(py::module& m) {  // NOLINT
         static_cast<tnsr::ijj<DataVector, Dim> (*)(
             const tnsr::iaa<DataVector, Dim>&)>(&::gh::deriv_spatial_metric),
         py::arg("phi"));
+
+  m.def("gauge_source",
+        static_cast<tnsr::a<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const Scalar<DataVector>&,
+            const tnsr::i<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::I<DataVector, Dim>&, const tnsr::iJ<DataVector, Dim>&,
+            const tnsr::ii<DataVector, Dim>&, const Scalar<DataVector>&,
+            const tnsr::i<DataVector, Dim>&)>(&::gh::gauge_source),
+        py::arg("lapse"), py::arg("dt_lapse"), py::arg("deriv_lapse"),
+        py::arg("shift"), py::arg("dt_shift"), py::arg("deriv_shift"),
+        py::arg("spatial_metric"), py::arg("trace_extrinsic_curvature"),
+        py::arg("trace_christoffel_last_indices"));
+
+  m.def(
+      "phi",
+      static_cast<tnsr::iaa<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::i<DataVector, Dim>&,
+          const tnsr::I<DataVector, Dim>&, const tnsr::iJ<DataVector, Dim>&,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::ijj<DataVector, Dim>&)>(
+          &::gh::phi),
+      py::arg("lapse"), py::arg("deriv_lapse"), py::arg("shift"),
+      py::arg("deriv_shift"), py::arg("spatial_metric"),
+      py::arg("deriv_spatial_metric"));
+
+  m.def("pi",
+        static_cast<tnsr::aa<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const Scalar<DataVector>&,
+            const tnsr::I<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::ii<DataVector, Dim>&, const tnsr::ii<DataVector, Dim>&,
+            const tnsr::iaa<DataVector, Dim>&)>(&::gh::pi),
+        py::arg("lapse"), py::arg("dt_lapse"), py::arg("shift"),
+        py::arg("dt_shift"), py::arg("spatial_metric"),
+        py::arg("dt_spatial_metric"), py::arg("phi"));
 
   m.def(
       "spatial_ricci_tensor",
