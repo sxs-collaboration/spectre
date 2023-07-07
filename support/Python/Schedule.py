@@ -37,7 +37,11 @@ def _resolve_executable(executable: Union[str, Path]) -> Path:
     logger.debug(f"Resolving executable: {executable}")
     which_exec = shutil.which(executable)
     if not which_exec:
-        raise ValueError(f"Executable not found in PATH: {executable}")
+        raise ValueError(
+            f"Executable not found: {executable}. Make sure it is compiled. To"
+            " look for executables in a specific build directory make sure it"
+            " is in the 'PATH' or use the 'spectre --build-dir / -b' option."
+        )
     logger.debug(f"Found executable in PATH: {which_exec}")
     return Path(which_exec).resolve()
 
