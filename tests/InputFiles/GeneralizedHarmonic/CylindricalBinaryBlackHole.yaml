@@ -97,7 +97,7 @@ EvolutionSystem:
           Width: 3.5                 # 7.0 * m_B
           Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
         Gaussian3:
-          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Amplitude: 0.075            # 0.075 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma1:
@@ -118,7 +118,7 @@ EvolutionSystem:
           Width: 3.5                 # 7.0 * m_B
           Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
         Gaussian3:
-          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Amplitude: 0.075            # 0.075 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
 
