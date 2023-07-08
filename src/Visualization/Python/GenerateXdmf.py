@@ -128,10 +128,10 @@ def _xmf_vector(
         AttributeType="Vector",
         Center="Node",
     )
-    xmf_data_item = ET.SubElement(
+    xmf_function = ET.SubElement(
         xmf_attribute,
         "DataItem",
-        Dimensions=f" {num_points} 3",
+        Dimensions=f"{num_points} 3",
         ItemType="Function",
         # In 2d we still need a 3d dataset to have a vector because ParaView
         # only supports 3d vectors. We deal with this by making the z-component
@@ -141,7 +141,7 @@ def _xmf_vector(
     for xyz in "xyz"[:dim]:
         component_name = name + "_" + xyz
         xmf_data_item = ET.SubElement(
-            xmf_attribute,
+            xmf_function,
             "DataItem",
             Dimensions=str(num_points),
             NumberType=_xmf_dtype(observation[component_name].dtype),
