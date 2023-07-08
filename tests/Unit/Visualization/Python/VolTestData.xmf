@@ -1,39 +1,34 @@
 <?xml version="1.0" ?>
 <!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">
 <Xdmf Version="2.0">
-<Domain>
-<Grid Name="Evolution" GridType="Collection" CollectionType="Temporal">
-  <Grid Name="Grids" GridType="Collection">
-    <Time Value="4.00000000000000e-02"/>
-    <Grid Name="VolTestData0.h5" GridType="Uniform">
-      <Topology TopologyType="Hexahedron" NumberOfElements="54">
-        <DataItem Dimensions="54 8" NumberType="Int" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/connectivity
-        </DataItem>
-      </Topology>
-      <Geometry GeometryType="X_Y_Z">
-        <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_x
-        </DataItem>
-        <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_y
-        </DataItem>
-        <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_z
-        </DataItem>
-      </Geometry>
-      <Attribute Name="Error(Psi)" AttributeType="Scalar" Center="Node">
-        <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Error(Psi)
-        </DataItem>
-      </Attribute>
-      <Attribute Name="Psi" AttributeType="Scalar" Center="Node">
-        <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">
-          VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Psi
-        </DataItem>
-      </Attribute>
+  <Domain>
+    <Grid Name="Evolution" GridType="Collection" CollectionType="Temporal">
+      <Grid Name="Grids" GridType="Collection">
+        <Time Value="4.00000000000000e-02" />
+        <Grid Name="VolTestData0.h5" GridType="Uniform">
+          <Topology TopologyType="Hexahedron" NumberOfElements="54">
+            <DataItem Dimensions="54 8" NumberType="Int" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="Error(Psi)" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Error(Psi)</DataItem>
+          </Attribute>
+          <Attribute Name="Phi" AttributeType="Vector" Center="Node">
+            <DataItem Dimensions="128 3" ItemType="Function" Function="JOIN($0,$1,$2)">
+              <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Phi_x</DataItem>
+              <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Phi_y</DataItem>
+              <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Phi_z</DataItem>
+            </DataItem>
+          </Attribute>
+          <Attribute Name="Psi" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="128" NumberType="Double" Precision="8" Format="HDF5">VolTestData0.h5:/element_data.vol/ObservationId1090594013349131584/Psi</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
     </Grid>
-  </Grid>
-</Grid>
-</Domain>
+  </Domain>
 </Xdmf>
