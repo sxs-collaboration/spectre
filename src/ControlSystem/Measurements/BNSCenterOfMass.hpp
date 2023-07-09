@@ -38,7 +38,7 @@ struct Mesh;
 template <size_t Dim, typename Frame>
 struct Coordinates;
 }  // namespace domain::Tags
-namespace grmhd::ValenciaDivClean {
+namespace grmhd::ValenciaDivClean::Tags {
 struct TildeD;
 }
 /// \endcond
@@ -51,42 +51,48 @@ struct PostReductionSendBNSStarCentersToControlSystem;
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
-/// DataBox tag for location of neutron star center
-/// (or more accurately, center of mass of the matter
-/// in the x>0 (label A) or x<0 (label B) region, in grid (distorted)
-/// coordinates.
+/// DataBox tag for location of neutron star center (or more accurately, center
+/// of mass of the matter in the x>0 (label A) or x<0 (label B) region, in grid
+/// coordinates).
 template <::domain::ObjectLabel Center>
 struct NeutronStarCenter : db::SimpleTag {
   using type = std::array<double, 3>;
 };
 }  // namespace Tags
 
-/// Factored Center of Mass calculation (for easier testing)
-/// This function computes the integral of tildeD (assumed to be the
-/// conservative baryon density in the inertial frame), as well as
-/// its first moment in the grid frame. The integrals are limited to
-/// \f$x>0\f$ (label A) or \f$x<0\f$ (label B).
-/// inv_det_jacobian is the inverse determinant of the jacobian of the
-///                  map between logical and inertial coordinates
-/// x_distorted contains the coordinates in the distorted frame
-///
-/// \note The `x` position is in the Distorted frame to fit in with the control
-/// system which works in the distorted frame. For BNS simulations, the
-/// Distorted frame should be identical to the Grid frame (i.e. the identity
-/// map), but it still needs to be there to interface with the control system.
+/*!
+ * \brief  Factored Center of Mass calculation (for easier testing)
+ *
+ * \details This function computes the integral of tildeD (assumed to be the
+ * conservative baryon density in the inertial frame), as well as its first
+ * moment in the grid frame. The integrals are limited to \f$x>0\f$ (label A) or
+ * \f$x<0\f$ (label B).
+ *
+ * \param mass_a Integral of tildeD (x > 0)
+ * \param mass_b Integral of tildeD (x < 0)
+ * \param first_moment_A First moment of integral of tildeD (x > 0)
+ * \param first_moment_B First moment of integral of tildeD (x < 0)
+ * \param mesh The mesh
+ * \param inv_det_jacobian The inverse determinant of the jacobian of the map
+ * between logical and inertial coordinates \param tilde_d TildeD on the mesh
+ * \param x_grid The coordinates in the grid frame
+ */
 void center_of_mass_integral_on_element(
     const gsl::not_null<double*> mass_a, const gsl::not_null<double*> mass_b,
     const gsl::not_null<std::array<double, 3>*> first_moment_A,
     const gsl::not_null<std::array<double, 3>*> first_moment_B,
     const Mesh<3>& mesh, const Scalar<DataVector>& inv_det_jacobian,
     const Scalar<DataVector>& tilde_d,
-    const tnsr::I<DataVector, 3, Frame::Distorted>& x_distorted);
+    const tnsr::I<DataVector, 3, Frame::Grid>& x_grid);
 
-/// Measurement providing the location of the center of mass of the
-/// matter in the \f$x>0\f$ and \f$x<0\f$ regions (assumed to correspond to the
-/// center of mass of the two neutron stars in a BNS merger).
-/// We use Events::Tags::ObserverXXX for tags that might need to be retrieved
-/// from either the Subcell or DG grid.
+/*!
+ * \brief Measurement providing the location of the center of mass of the matter
+ * in the \f$x>0\f$ and \f$x<0\f$ regions (assumed to correspond to the center
+ * of mass of the two neutron stars in a BNS merger).
+ *
+ * \details We use Events::Tags::ObserverXXX for tags that might need to be
+ * retrieved from either the Subcell or DG grid.
+ */
 struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
   struct FindTwoCenters : tt::ConformsTo<protocols::Submeasurement> {
     static std::string name() { return "BothNSCenters::FindTwoCenters"; }
@@ -99,8 +105,8 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
         tmpl::list<Events::Tags::ObserverMesh<3>,
                    Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                         Frame::Inertial>,
-                   grmhd::ValenciaDivClean::TildeD,
-                   Events::Tags::ObserverCoordinates<3, Frame::Distorted>>;
+                   grmhd::ValenciaDivClean::Tags::TildeD,
+                   Events::Tags::ObserverCoordinates<3, Frame::Grid>>;
 
     /// Calculate integrals needed for CoM computation on each element,
     /// then reduce the data.
@@ -109,10 +115,10 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
     static void apply(const Mesh<3>& mesh,
                       const Scalar<DataVector>& inv_det_jacobian,
                       const Scalar<DataVector>& tilde_d,
-                      const tnsr::I<DataVector, 3, Frame::Distorted> x_grid,
+                      const tnsr::I<DataVector, 3, Frame::Grid> x_grid,
                       const LinkedMessageId<double>& measurement_id,
                       Parallel::GlobalCache<Metavariables>& cache,
-                      const ElementId<3>& /*array_index*/,
+                      const ElementId<3>& array_index,
                       const ParallelComponent* const /*meta*/,
                       ControlSystems /*meta*/) {
       // Initialize integrals and perform local calculations
@@ -125,8 +131,8 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
                                          inv_det_jacobian, tilde_d, x_grid);
 
       // Reduction
-      auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
+      auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(
+          cache)[array_index];
       // We need a place to run RunCallback on... this does not need to be
       // the control system using the CoM data.
       auto& reduction_target_proxy = Parallel::get_parallel_component<
@@ -150,12 +156,15 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
   using submeasurements = tmpl::list<FindTwoCenters>;
 };
 
-/// Action called after reduction of the center of mass data.
-/// mass_a, mass_b, first_moment_a, first_moment_b will contain the reduced data
-/// for the integral of the density (and its first moment) in the x>=0 (A label)
-/// and x<0 (B label) regions.
-/// This action calculates the center of mass in each region, and sends the
-/// result to the control system.
+/*!
+ * \brief Simple action called after reduction of the center of mass data.
+ *
+ * \details `mass_a`, `mass_b`, `first_moment_a`, and `first_moment_b` will
+ * contain the reduced data for the integral of the density (and its first
+ * moment) in the x>=0 (A label) and x<0 (B label) regions. This action
+ * calculates the center of mass in each region, and sends the result to the
+ * control system.
+ */
 template <typename ControlSystems>
 struct PostReductionSendBNSStarCentersToControlSystem {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
