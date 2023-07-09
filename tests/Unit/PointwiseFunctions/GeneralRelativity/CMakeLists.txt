@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_WeylElectric.cpp
   Test_WeylMagnetic.cpp
   Test_WeylPropagating.cpp
+  Test_WeylTypeD1.cpp
   )
 
 add_test_library(
