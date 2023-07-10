@@ -10,6 +10,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Section.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
@@ -280,10 +281,17 @@ void contribute_to_reduction(ReductionData<Ts...> reduction_data,
           std::hash<Parallel::charmxx::ReducerFunctions>{}(
               &ReductionData<Ts...>::combine));
   if constexpr (std::is_same_v<SectionType, NoSection>) {
-    Parallel::local(sender_component)
-        ->contribute(static_cast<int>(reduction_data.size()),
-                     reduction_data.packed().get(), charm_reducer_function,
-                     callback);
+    if constexpr (is_array_element_proxy<SenderProxy>::value) {
+      Parallel::local(sender_component)
+          ->contribute(static_cast<int>(reduction_data.size()),
+                       reduction_data.packed().get(), charm_reducer_function,
+                       callback);
+    } else {
+      Parallel::local_branch(sender_component)
+          ->contribute(static_cast<int>(reduction_data.size()),
+                       reduction_data.packed().get(), charm_reducer_function,
+                       callback);
+    }
   } else {
     static_assert(
         tt::is_a_v<Section, SectionType>,
