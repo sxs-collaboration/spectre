@@ -44,8 +44,7 @@
  * elliptic equations
  *
  * The following is a brief overview of the elliptic DG schemes that are
- * implemented here. A publication that describes the schemes in detail is in
- * preparation and will be referenced here.
+ * implemented here. The scheme is described in detail in \cite Fischer2021voj.
  *
  * The DG schemes apply to any elliptic PDE that can be formulated in
  * first-order flux-form, as detailed by

@@ -40,13 +40,14 @@ namespace Elasticity::BoundaryConditions {
  * the coordinate distance from the origin in the plane perpendicular to
  * \f$n_i\f$ and \f$r_0\f$ is the "beam width" parameter. The pressure profile
  * and the angle of incidence can be generalized in future work. Note that we
- * follow the convention of \cite Lovelace2007tn and \cite Lovelace2017xyf in
- * defining the beam width, and other publications may include a a factor of
- * \f$\sqrt{2}\f$ in its definition.
+ * follow the convention of \cite Lovelace2007tn, \cite Lovelace2017xyf, and
+ * \cite Vu2023thn in defining the beam width, and other publications may
+ * include a factor of \f$\sqrt{2}\f$ in its definition.
  *
  * This boundary condition is used to simulate thermal noise induced in a mirror
- * by the laser, as detailed for instance in \cite Lovelace2007tn and
- * \cite Lovelace2017xyf. See also `Elasticity::Solutions::HalfSpaceMirror` for
+ * by the laser, as detailed for instance in \cite Lovelace2007tn,
+ * \cite Lovelace2017xyf, and \cite Vu2023thn.
+ * See also `Elasticity::Solutions::HalfSpaceMirror` for
  * an analytic solution that involves this boundary condition.
  */
 class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
