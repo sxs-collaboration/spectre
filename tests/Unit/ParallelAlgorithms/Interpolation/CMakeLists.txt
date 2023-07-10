@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AddTemporalIdsToInterpolationTarget.cpp
   Test_AngularOrdering.cpp
   Test_CleanUpInterpolator.cpp
+  Test_ComputeDestVars.cpp
   Test_ElementReceiveInterpPoints.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
