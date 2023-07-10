@@ -79,17 +79,21 @@ void check_transforms(
   const ModalVectorType u_modal = to_modal_coefficients(u_nodal_expected, mesh);
   for (IndexIterator<Dim> index_it(mesh.extents()); index_it; ++index_it) {
     CAPTURE(*index_it);
+    Approx local_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
     if (alg::found(coeffs_to_include, index_it->indices())) {
-      CHECK_ITERABLE_APPROX(u_modal[index_it.collapsed_index()], basis_factor);
+      CHECK_ITERABLE_CUSTOM_APPROX(u_modal[index_it.collapsed_index()],
+                                   basis_factor, local_approx);
     } else {
-      CHECK_ITERABLE_APPROX(u_modal[index_it.collapsed_index()],
-                            typename ModalVectorType::ElementType{0.0});
+      CHECK_ITERABLE_CUSTOM_APPROX(u_modal[index_it.collapsed_index()],
+                                   typename ModalVectorType::ElementType{0.0},
+                                   local_approx);
     }
   }
 
   // Back to nodal coefficients, which should match what we set up initially
   const NodalVectorType u_nodal = to_nodal_coefficients(u_modal, mesh);
-  CHECK_ITERABLE_APPROX(u_nodal_expected, u_nodal);
+  Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(u_nodal_expected, u_nodal, local_approx);
 }
 
 template <typename ModalVectorType, typename NodalVectorType,

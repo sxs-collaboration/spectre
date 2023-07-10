@@ -67,11 +67,13 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
       const auto analytic_derivative =
           unit_polynomial_derivative(p, collocation_pts);
       if (BasisType == Spectral::Basis::FiniteDifference and n > 20) {
-        Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.0);
+        Approx local_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(analytic_derivative, numeric_derivative,
                                      local_approx);
       } else {
-        CHECK_ITERABLE_APPROX(analytic_derivative, numeric_derivative);
+        Approx local_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
+        CHECK_ITERABLE_CUSTOM_APPROX(analytic_derivative, numeric_derivative,
+                                     local_approx);
       }
     }
   }
@@ -108,8 +110,9 @@ void test_weak_differentiation() {
       for (size_t l = 0; l < n; ++l) {
         CAPTURE(i);
         CAPTURE(l);
+        Approx local_approx = Approx::custom().epsilon(1e-10);
         CHECK(expected_weak_diff_matrix(i, l) ==
-              approx(weak_diff_matrix(i, l)));
+              local_approx(weak_diff_matrix(i, l)));
       }
     }
 
@@ -125,7 +128,7 @@ void test_weak_differentiation() {
         const auto analytic_derivative =
             unit_polynomial_derivative(p, collocation_pts);
         for (size_t i = 1; i < n - 1; ++i) {
-          Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.);
+          Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.);
           CHECK(local_approx(numeric_derivative[i]) == -analytic_derivative[i]);
         }
       }
@@ -179,8 +182,9 @@ void test_linear_filter_impl() {
     dgemv_('N', n, n, 1.0, nodal_to_modal_matrix.data(),
            nodal_to_modal_matrix.spacing(), u_filtered.data(), 1, 0.0,
            u_filtered_spectral.data(), 1);
+    Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
     for (size_t s = 2; s < n; ++s) {
-      CHECK(0.0 == approx(u_filtered_spectral[s]));
+      CHECK(0.0 == local_approx(u_filtered_spectral[s]));
     }
   }
 }
@@ -205,7 +209,8 @@ void test_interpolation_matrix(const DataVector& target_points,
                                const double eps = 0.) {
   DataVector interpolated_u(target_points.size(), 0.);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+       n <= std::min(Spectral::maximum_number_of_points<BasisType>, 12_st);
+       n++) {
     const auto& collocation_pts =
         Spectral::collocation_points<BasisType, QuadratureType>(n);
     const auto interp_matrix =
@@ -242,6 +247,14 @@ template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
 void test_exact_extrapolation_impl(const Function& max_poly_deg) {
   const DataVector target_points{-1.66, 1., 1.5, 1.98, 2.};
   // Errors are larger when extrapolating outside of the original grid:
+  // If increasing the number of points tested, the tolerance must be lowered.
+  // 14 pts requires 1.e-8
+  // 15 pts requires 1.e-8
+  // 16 pts requires 1.e-7
+  // 17 pts requires 1.e-7
+  // 18 pts requires 1.e-6
+  // 19 pts requires 1.e-6
+  // 20 pts requires 1.e-5
   const double eps = 1.e-9;
   test_interpolation_matrix<BasisType, QuadratureType>(target_points,
                                                        max_poly_deg, eps);

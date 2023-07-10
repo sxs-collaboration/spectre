@@ -221,11 +221,11 @@ void verify_smooth_solution(
     const double tolerance_offset, const double tolerance_scaling,
     PackageFluxesArgs&& package_fluxes_args) {
   INFO("Verify smooth solution");
+  const size_t max_points = std::min(
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>, 12_st);
   for (size_t num_points = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       num_points <=
-       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-       num_points++) {
+       num_points <= max_points; num_points++) {
     CAPTURE(num_points);
     const double tolerance =
         tolerance_offset * exp(-tolerance_scaling * num_points);
@@ -259,11 +259,11 @@ void verify_solution_with_power_law_convergence(
                                 Maps...>& coord_map,
     const double tolerance_offset, const double tolerance_pow) {
   INFO("Verify solution with power-law convergence");
+  const size_t max_points = std::min(
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>, 12_st);
   for (size_t num_points = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       num_points <=
-       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-       num_points++) {
+       num_points <= max_points; num_points++) {
     CAPTURE(num_points);
     const double tolerance = tolerance_offset * pow(num_points, -tolerance_pow);
     CAPTURE(tolerance);

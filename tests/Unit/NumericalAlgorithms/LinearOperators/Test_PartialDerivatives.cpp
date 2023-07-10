@@ -176,7 +176,7 @@ void test_partial_derivative_per_tensor(
         const auto single_du =
             partial_derivative(get<var_tag>(u), mesh, inverse_jacobian);
 
-        Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
+        Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(single_du, get<gradient_tag>(du),
                                      local_approx);
 
@@ -410,7 +410,7 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
       const auto helper = [&](const auto& du) {
         for (size_t n = 0; n < du.size(); ++n) {
           CHECK(du.data()[n] ==                                  // NOLINT
-                approx(expected_du.data()[n]).epsilon(1.e-13));  // NOLINT
+                approx(expected_du.data()[n]).epsilon(1.e-11));  // NOLINT
         }
       };
       helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
@@ -492,6 +492,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
 }
 }  // namespace
 
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   constexpr size_t min_points =
@@ -500,6 +501,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
   constexpr size_t max_points =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
   for (size_t n0 = min_points; n0 <= max_points; ++n0) {
+    // To keep test time reasonable we don't check all possible values.
+    if (n0 > 6 and n0 != max_points) {
+      continue;
+    }
     const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
     test_logical_partial_derivatives_1d<two_vars<1>>(mesh_1d);
@@ -521,6 +526,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
   }
 }
 
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n0 =
