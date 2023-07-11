@@ -620,7 +620,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gh::Tags::PhiFirstIndexUp<Dim>, gh::Tags::PhiThirdIndexUp<Dim>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
-      gr::Tags::SpatialMetric<DataVector, Dim>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -664,7 +663,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
@@ -771,7 +769,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
@@ -834,7 +831,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),

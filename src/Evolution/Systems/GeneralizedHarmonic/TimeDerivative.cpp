@@ -56,7 +56,6 @@ void TimeDerivative<Dim>::apply(
         christoffel_first_kind_3_up,
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> shift,
-    const gsl::not_null<tnsr::ii<DataVector, Dim>*> spatial_metric,
     const gsl::not_null<tnsr::II<DataVector, Dim>*> inverse_spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> det_spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
@@ -81,13 +80,20 @@ void TimeDerivative<Dim>::apply(
                           Frame::Inertial>& inverse_jacobian,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity) {
+  const size_t number_of_points = get<0, 0>(*dt_spacetime_metric).size();
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
 
-  gr::spatial_metric(spatial_metric, spacetime_metric);
+  const tnsr::ii<DataVector, Dim> spatial_metric{};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = i; j < Dim; ++j) {
+      make_const_view(make_not_null(&spatial_metric.get(i, j)),
+                      spacetime_metric.get(i + 1, j + 1), 0, number_of_points);
+    }
+  }
   determinant_and_inverse(det_spatial_metric, inverse_spatial_metric,
-                          *spatial_metric);
+                          spatial_metric);
   gr::shift(shift, spacetime_metric, *inverse_spatial_metric);
   gr::lapse(lapse, *shift, spacetime_metric);
   gr::inverse_spacetime_metric(inverse_spacetime_metric, *lapse, *shift,

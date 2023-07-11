@@ -232,7 +232,6 @@ void verify_time_independent_einstein_solution(
       gh::Tags::PhiFirstIndexUp<3>, gh::Tags::PhiThirdIndexUp<3>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-      gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -275,7 +274,6 @@ void verify_time_independent_einstein_solution(
           &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>>(buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, 3>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),

@@ -115,16 +115,6 @@ struct TimeDerivativeTermsImpl<
       }
     }
 
-    for (size_t i = 0; i < 3; ++i) {
-      for (size_t j = 0; j < 3; ++j) {
-        for (size_t k = j; k < 3; ++k) {
-          // NOTE: it would be nice if we could just make this a reference...
-          get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
-                            tmpl::size_t<3>, Frame::Inertial>>(*temps_ptr)
-              .get(i, j, k) = phi.get(i, j + 1, k + 1);
-        }
-      }
-    }
     const auto& pi =
         get<Tags::detail::TemporaryReference<gh::Tags::Pi<DataVector, 3>>>(
             arguments);
@@ -204,6 +194,9 @@ struct TimeDerivativeTerms : evolution::PassVariables {
 
   using dt_tags = tmpl::append<gh_dt_tags, valencia_dt_tags>;
 
+  using d_spatial_metric = ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                                         tmpl::size_t<3>, Frame::Inertial>;
+
   using valencia_flux_tags = tmpl::transform<
       typename grmhd::ValenciaDivClean::System::flux_variables,
       tmpl::bind<::Tags::Flux, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
@@ -222,8 +215,6 @@ struct TimeDerivativeTerms : evolution::PassVariables {
                                Frame::Inertial>,
                  ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
                                Frame::Inertial>,
-                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
-                               tmpl::size_t<3>, Frame::Inertial>,
                  gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
   using valencia_arg_tags = tmpl::list_difference<
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags,
@@ -244,11 +235,19 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       hydro::Tags::Pressure<DataVector>,
       gr::Tags::SpacetimeMetric<DataVector, 3>,
       gr::Tags::Shift<DataVector, 3_st>, gr::Tags::Lapse<DataVector>>;
+  using extra_temp_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>;
 
-  using temporary_tags = tmpl::remove_duplicates<
-      tmpl::append<gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,
-                   trace_reversed_stress_result_tags>>;
-  using argument_tags = tmpl::append<gh_arg_tags, valencia_arg_tags>;
+  using temporary_tags = tmpl::remove<
+      tmpl::remove_duplicates<tmpl::append<
+          gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,
+          trace_reversed_stress_result_tags, extra_temp_tags>>,
+      gr::Tags::SpatialMetric<DataVector, 3>>;
+  using argument_tags =
+      tmpl::remove<tmpl::remove<tmpl::append<gh_arg_tags,
+
+                                             valencia_arg_tags>,
+                                gr::Tags::SpatialMetric<DataVector, 3>>,
+                   d_spatial_metric>;
 
   template <typename... Args>
   static void apply(
@@ -261,9 +260,42 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       const tnsr::iaa<DataVector, 3>& d_spacetime_metric,
       const tnsr::iaa<DataVector, 3>& d_pi,
       const tnsr::ijaa<DataVector, 3>& d_phi, const Args&... args) {
-    const tuples::tagged_tuple_from_typelist<
-        db::wrap_tags_in<Tags::detail::TemporaryReference, argument_tags>>
-        arguments{args...};
+    using args_list = tmpl::push_back<
+        db::wrap_tags_in<Tags::detail::TemporaryReference, argument_tags>,
+        gr::Tags::SpatialMetric<DataVector, 3>, d_spatial_metric>;
+    tuples::tagged_tuple_from_typelist<args_list> arguments{
+        args..., typename gr::Tags::SpatialMetric<DataVector, 3>::type{},
+        typename d_spatial_metric::type{}};
+    const size_t number_of_points = get<Tags::detail::TemporaryReference<
+        gr::Tags::SpacetimeMetric<DataVector, 3>>>(arguments)[0]
+                                        .size();
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = i; j < 3; ++j) {
+        make_const_view(
+            make_not_null(
+                &std::as_const(
+                     get<gr::Tags::SpatialMetric<DataVector, 3>>(arguments))
+                     .get(i, j)),
+            get<Tags::detail::TemporaryReference<
+                gr::Tags::SpacetimeMetric<DataVector, 3>>>(arguments)
+                .get(i + 1, j + 1),
+            0, number_of_points);
+      }
+    }
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        for (size_t k = j; k < 3; ++k) {
+          make_const_view(
+              make_not_null(&std::as_const(get<d_spatial_metric>(arguments))
+                                 .get(i, j, k)),
+              get<Tags::detail::TemporaryReference<
+                  gh::Tags::Phi<DataVector, 3>>>(arguments)
+                  .get(i, j + 1, k + 1),
+              0, number_of_points);
+        }
+      }
+    }
+
     detail::TimeDerivativeTermsImpl<
         gh_dt_tags, valencia_dt_tags, valencia_flux_tags, gh_temp_tags,
         valencia_temp_tags, gh_gradient_tags, gh_arg_tags, valencia_arg_tags,
