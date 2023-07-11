@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Abort.cpp
   ParallelInfo.cpp
+  Prefetch.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   Abort.hpp
   Exit.hpp
   ParallelInfo.hpp
+  Prefetch.hpp
   )
 
 target_link_libraries(
