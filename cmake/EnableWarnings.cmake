@@ -26,6 +26,7 @@ if(${ENABLE_WARNINGS})
 -Wmissing-include-dirs;\
 -Wmissing-noreturn;\
 -Wnewline-eof;\
+-Wno-dangling-reference;\
 -Wno-documentation-unknown-command;\
 -Wno-mismatched-tags;\
 -Wno-non-template-friend;\
