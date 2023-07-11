@@ -39,6 +39,7 @@
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/ForceFree/ElectricCurrentDensity.hpp"
+#include "Evolution/Systems/ForceFree/ElectromagneticVariables.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -127,7 +128,11 @@ struct EvolutionMetavars {
   using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list, error_tags>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+      ForceFree::Tags::ElectricFieldCompute,
+      ForceFree::Tags::MagneticFieldCompute,
+      ForceFree::Tags::ChargeDensityCompute,
+      ForceFree::Tags::ElectricCurrentDensityCompute>;
 
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

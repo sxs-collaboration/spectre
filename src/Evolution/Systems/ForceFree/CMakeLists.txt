@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   ElectricCurrentDensity.cpp
+  ElectromagneticVariables.cpp
   Fluxes.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   HEADERS
   Characteristics.hpp
   ElectricCurrentDensity.hpp
+  ElectromagneticVariables.hpp
   Fluxes.hpp
   Sources.hpp
   System.hpp

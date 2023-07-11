@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_TciOnFdGrid.cpp
   Test_Characteristics.cpp
   Test_ElectricCurrentDensity.cpp
+  Test_ElectromagneticVariables.cpp
   Test_Fluxes.cpp
   Test_Sources.cpp
   Test_Tags.cpp
