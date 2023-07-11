@@ -11,6 +11,8 @@ SPECTRE_TEST_CASE("Unit.Domain.ObjectLabel", "[Domain][Unit]") {
   CHECK(get_output(domain::ObjectLabel::A) == "A");
   CHECK(name(domain::ObjectLabel::B) == "B");
   CHECK(get_output(domain::ObjectLabel::B) == "B");
+  CHECK(name(domain::ObjectLabel::C) == "C");
+  CHECK(get_output(domain::ObjectLabel::C) == "C");
   CHECK(name(domain::ObjectLabel::None) == "");
   CHECK(get_output(domain::ObjectLabel::None) == "");
 }
