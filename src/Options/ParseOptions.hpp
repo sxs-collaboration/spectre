@@ -92,7 +92,14 @@ T Option::parse_as() const {
     // yaml-cpp's `as` method won't parse empty nodes, so we need to
     // inline a bit of its logic.
     Options_detail::wrap_create_types<T, Metavariables> result{};
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     if (YAML::convert<decltype(result)>::decode(node(), result)) {
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 13
+#pragma GCC diagnostic pop
+#endif
       return Options_detail::unwrap_create_types(std::move(result));
     }
     // clang-tidy: thrown exception is not nothrow copy constructible
