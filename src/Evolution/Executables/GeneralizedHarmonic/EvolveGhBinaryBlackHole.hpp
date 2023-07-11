@@ -63,6 +63,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Tags/Filter.hpp"
+#include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
@@ -439,8 +440,10 @@ struct EvolutionMetavars {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<
+            Trigger,
+            tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
+                         tmpl::list<Triggers::SeparationLessThan>>>>;
   };
 
   // A tmpl::list of tags to be added to the GlobalCache by the

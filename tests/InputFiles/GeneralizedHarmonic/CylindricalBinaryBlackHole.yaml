@@ -205,6 +205,11 @@ EventsAndTriggers:
       - MonitorMemory:
           ComponentsToMonitor: All
   - Trigger:
+      SeparationLessThan:
+        Value: 2.0
+    Events:
+      - ObservationAhC
+  - Trigger:
       TimeCompares:
         Comparison: GreaterThan
         Value: 0.02
