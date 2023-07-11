@@ -292,8 +292,6 @@ void verify_time_independent_einstein_solution(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, *gauge_condition, mesh, time, x, inverse_jacobian,
       std::nullopt);

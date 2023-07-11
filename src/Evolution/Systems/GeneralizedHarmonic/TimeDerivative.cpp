@@ -65,7 +65,6 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
     const gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
     const gsl::not_null<tnsr::a<DataVector, Dim>*> normal_spacetime_one_form,
-    const gsl::not_null<tnsr::abb<DataVector, Dim>*> da_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_pi,
     const tnsr::ijaa<DataVector, Dim>& d_phi,
@@ -98,9 +97,33 @@ void TimeDerivative<Dim>::apply(
   gr::lapse(lapse, *shift, spacetime_metric);
   gr::inverse_spacetime_metric(inverse_spacetime_metric, *lapse, *shift,
                                *inverse_spatial_metric);
-  gh::spacetime_derivative_of_spacetime_metric(da_spacetime_metric, *lapse,
-                                               *shift, pi, phi);
-  gr::christoffel_first_kind(christoffel_first_kind, *da_spacetime_metric);
+  // Compute the part of the dt_spacetime_metric equation that doesn't involve
+  // constraints so we can use it for da_spacetime_metric to compute Christoffel
+  // symbols.
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_spacetime_metric->get(mu, nu) = -get(*lapse) * pi.get(mu, nu);
+      for (size_t m = 0; m < Dim; ++m) {
+        dt_spacetime_metric->get(mu, nu) += shift->get(m) * phi.get(m, mu, nu);
+      }
+    }
+  }
+
+  const std::optional da_spacetime_metric{tnsr::abb<DataVector, Dim>{}};
+  for (size_t a = 0; a < Dim + 1; ++a) {
+    for (size_t b = a; b < Dim + 1; ++b) {
+      make_const_view(make_not_null(&da_spacetime_metric.value().get(0, a, b)),
+                      dt_spacetime_metric->get(a, b), 0, number_of_points);
+      for (size_t i = 0; i < Dim; ++i) {
+        make_const_view(
+            make_not_null(&da_spacetime_metric.value().get(i + 1, a, b)),
+            phi.get(i, a, b), 0, number_of_points);
+      }
+    }
+  }
+
+  gr::christoffel_first_kind(christoffel_first_kind,
+                             da_spacetime_metric.value());
   raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
                              *inverse_spacetime_metric);
   trace_last_indices(trace_christoffel, *christoffel_first_kind,
@@ -234,12 +257,13 @@ void TimeDerivative<Dim>::apply(
   // Compute gauge condition.
   get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
 
-  gauges::dispatch<Dim>(
-      gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
-      *normal_spacetime_one_form, *normal_spacetime_vector,
-      *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
-      *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, pi, phi,
-      mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+  gauges::dispatch<Dim>(gauge_function, spacetime_deriv_gauge_function, *lapse,
+                        *shift, *normal_spacetime_one_form,
+                        *normal_spacetime_vector, *sqrt_det_spatial_metric,
+                        *inverse_spatial_metric, da_spacetime_metric.value(),
+                        *half_pi_two_normals, *half_phi_two_normals,
+                        spacetime_metric, pi, phi, mesh, time, inertial_coords,
+                        inverse_jacobian, gauge_condition);
 
   // Compute source function last so that we don't need to recompute any of the
   // other temporary tags.
@@ -255,20 +279,22 @@ void TimeDerivative<Dim>::apply(
         normal_spacetime_vector->get(mu) * gauge_constraint->get(mu);
   }
 
+  // Invalidate da_spacetime_metric since we will be modifying some of the
+  // data it points to.
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  const_cast<std::optional<tnsr::abb<DataVector, Dim>>&>(da_spacetime_metric) =
+      std::nullopt;
+
   // Here are the actual equations
 
   // Equation for dt_spacetime_metric
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      dt_spacetime_metric->get(mu, nu) = -get(*lapse) * pi.get(mu, nu);
       dt_spacetime_metric->get(mu, nu) +=
           gamma1p1 * shift_dot_three_index_constraint->get(mu, nu);
       if (mesh_velocity.has_value()) {
         dt_spacetime_metric->get(mu, nu) +=
             get(gamma1) * mesh_velocity_dot_three_index_constraint->get(mu, nu);
-      }
-      for (size_t m = 0; m < Dim; ++m) {
-        dt_spacetime_metric->get(mu, nu) += shift->get(m) * phi.get(m, mu, nu);
       }
     }
   }
