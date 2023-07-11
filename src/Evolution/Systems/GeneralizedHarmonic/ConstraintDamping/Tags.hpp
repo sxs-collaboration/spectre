@@ -105,7 +105,7 @@ struct DampingFunctionGamma1 : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& damping_function) {
-    return std::move(damping_function->get_clone());
+    return damping_function->get_clone();
   }
 };
 
@@ -124,7 +124,7 @@ struct DampingFunctionGamma2 : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& damping_function) {
-    return std::move(damping_function->get_clone());
+    return damping_function->get_clone();
   }
 };
 }  // namespace Tags

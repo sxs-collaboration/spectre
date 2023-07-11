@@ -85,12 +85,11 @@ class Index {
     ASSERT(d < Dim,
            "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
-    for (size_t i = 0; i < Dim; ++i) {
-      if (i < d) {
-        gsl::at(t, i) = gsl::at(indices_, i);
-      } else if (i > d) {
-        gsl::at(t, i - 1) = gsl::at(indices_, i);
-      }
+    for (size_t i = 0; i < d; ++i) {
+      gsl::at(t, i) = gsl::at(indices_, i);
+    }
+    for (size_t i = d + 1; i < Dim; ++i) {
+      gsl::at(t, i - 1) = gsl::at(indices_, i);
     }
     return Index<Dim - 1>(t);
   }

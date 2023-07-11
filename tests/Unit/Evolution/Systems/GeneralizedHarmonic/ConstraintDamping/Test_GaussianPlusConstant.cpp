@@ -54,9 +54,9 @@ void test_gaussian_plus_constant_random(const DataType& used_for_size) {
           constant, amplitude, width, center);
 
   TestHelpers::gh::ConstraintDamping::check(
-      std::move(gauss_plus_const_unique_ptr->get_clone()),
-      "gaussian_plus_constant", used_for_size, {{{-1.0, 1.0}}},
-      {"IgnoredFunctionOfTime"}, constant, amplitude, width, center);
+      gauss_plus_const_unique_ptr->get_clone(), "gaussian_plus_constant",
+      used_for_size, {{{-1.0, 1.0}}}, {"IgnoredFunctionOfTime"}, constant,
+      amplitude, width, center);
 }
 }  // namespace
 

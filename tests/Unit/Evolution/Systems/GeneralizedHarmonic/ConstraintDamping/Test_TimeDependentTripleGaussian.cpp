@@ -70,10 +70,10 @@ void test_triple_gaussian_random(const DataType& used_for_size) {
               center_2, amplitude_3, width_3, center_3);
 
   TestHelpers::gh::ConstraintDamping::check(
-      std::move(triple_gauss_unique_ptr->get_clone()),
-      "time_dependent_triple_gaussian", used_for_size, {{{-1.0, 1.0}}},
-      {function_of_time_for_scaling}, constant, amplitude_1, width_1, center_1,
-      amplitude_2, width_2, center_2, amplitude_3, width_3, center_3);
+      triple_gauss_unique_ptr->get_clone(), "time_dependent_triple_gaussian",
+      used_for_size, {{{-1.0, 1.0}}}, {function_of_time_for_scaling}, constant,
+      amplitude_1, width_1, center_1, amplitude_2, width_2, center_2,
+      amplitude_3, width_3, center_3);
 }
 }  // namespace
 

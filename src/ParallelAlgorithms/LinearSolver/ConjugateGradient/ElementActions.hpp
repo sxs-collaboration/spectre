@@ -259,15 +259,7 @@ struct UpdateOperand {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    // Silence a warning with GCC 7 (occurs in Release mode)
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 7
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
     auto received_data = std::move(inbox.extract(iteration_id).mapped());
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 7
-#pragma GCC diagnostic pop
-#endif
     const double res_ratio = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
 

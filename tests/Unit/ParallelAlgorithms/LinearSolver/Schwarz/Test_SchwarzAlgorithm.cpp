@@ -72,9 +72,16 @@ blaze::DynamicVector<double> extend_subdomain_data(
     const size_t num_points_per_element, const size_t overlap_extent) {
   blaze::DynamicVector<double> extended_subdomain_data(
       num_elements * num_points_per_element, 0.);
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
   blaze::subvector(
       extended_subdomain_data, element_index * num_points_per_element,
       num_points_per_element) = get(get<Tag>(subdomain_data.element_data));
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ == 12
+#pragma GCC diagnostic pop
+#endif
   for (const auto& [overlap_id, overlap_data] : subdomain_data.overlap_data) {
     const auto& direction = overlap_id.first;
     const auto direction_from_neighbor = direction.opposite();
