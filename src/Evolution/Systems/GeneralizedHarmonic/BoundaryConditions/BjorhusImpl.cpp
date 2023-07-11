@@ -67,7 +67,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
   }
   std::fill(bc_dt_v_zero->begin(), bc_dt_v_zero->end(), 0.);
 
-  if (LIKELY(VolumeDim == 3)) {
+  if (VolumeDim == 3) {
     for (size_t a = 0; a <= VolumeDim; ++a) {
       for (size_t b = a; b <= VolumeDim; ++b) {
         // Lets say this term is T2_{iab} := - n_l \beta^l n^j C_{jiab}.
@@ -90,7 +90,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
         }
       }
     }
-  } else if (LIKELY(VolumeDim == 2)) {
+  } else if (VolumeDim == 2) {
     for (size_t a = 0; a <= VolumeDim; ++a) {
       for (size_t b = a; b <= VolumeDim; ++b) {
         // Lets say this term is T2_{kab} := - n_l \beta^l n^j C_{jkab}.
