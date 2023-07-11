@@ -42,8 +42,8 @@ void test_constant_random(const DataType& used_for_size) {
               value);
 
   TestHelpers::gh::ConstraintDamping::check(
-      std::move(val_unique_ptr->get_clone()), "constant", used_for_size,
-      {{{-1.0, 1.0}}}, {"IgnoredFunctionOfTime"}, value);
+      val_unique_ptr->get_clone(), "constant", used_for_size, {{{-1.0, 1.0}}},
+      {"IgnoredFunctionOfTime"}, value);
 }
 }  // namespace
 
