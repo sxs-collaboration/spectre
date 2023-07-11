@@ -22,6 +22,7 @@ class Cli(click.MultiCommand):
         return [
             "clean-output",
             "delete-subfiles",
+            "extend-connectivity",
             "extract-dat",
             "extract-input",
             "generate-xdmf",
@@ -47,6 +48,12 @@ class Cli(click.MultiCommand):
             from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
 
             return delete_subfiles_command
+        elif name == "extend-connectivity":
+            from spectre.IO.H5.ExtendConnectivityData import (
+                extend_connectivity_data_command,
+            )
+
+            return extend_connectivity_data_command
         elif name == "extract-dat":
             from spectre.IO.H5.ExtractDatFromH5 import extract_dat_command
 
