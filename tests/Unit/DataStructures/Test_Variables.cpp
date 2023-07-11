@@ -332,14 +332,14 @@ void test_variables_move() {
               non_owning_move_to)[0][0] == non_owning_data_from.data());
 
     // Intentionally testing self-move
-#ifdef __clang__
+#if defined(__clang__) or __GNUC__ >= 13
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
-#endif  // defined(__clang__)
+#endif
     non_owning_move_to = std::move(non_owning_move_to);
-#ifdef __clang__
+#if defined(__clang__) or __GNUC__ >= 13
 #pragma GCC diagnostic pop
-#endif  // defined(__clang__)
+#endif
     // clang-tidy: false positive 'move_to' used after it was moved
     CHECK(non_owning_move_to ==  // NOLINT
           Vars{number_of_grid_points2, initial_fill_values[1]});
@@ -371,14 +371,14 @@ void test_variables_move() {
         move_to.data());
 
   // Intentionally testing self-move
-#ifdef __clang__
+#if defined(__clang__) or __GNUC__ >= 13
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
-#endif  // defined(__clang__)
+#endif
   move_to = std::move(move_to);
-#ifdef __clang__
+#if defined(__clang__) or __GNUC__ >= 13
 #pragma GCC diagnostic pop
-#endif  // defined(__clang__)
+#endif
   // clang-tidy: false positive 'move_to' used after it was moved
   CHECK(move_to ==  // NOLINT
         Vars{number_of_grid_points2, initial_fill_values[1]});
