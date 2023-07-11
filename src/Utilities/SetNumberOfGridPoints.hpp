@@ -7,6 +7,7 @@
 #include <complex>
 #include <cstddef>
 #include <type_traits>
+#include <vector>
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -75,6 +76,17 @@ struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<std::array<T, N>> {
   static constexpr bool is_trivial =
       N == 0 or SetNumberOfGridPointsImpl<T>::is_trivial;
   static void apply(const gsl::not_null<std::array<T, N>*> result,
+                    const size_t size) {
+    for (auto& entry : *result) {
+      set_number_of_grid_points(make_not_null(&entry), size);
+    }
+  }
+};
+
+template <typename T>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<std::vector<T>> {
+  static constexpr bool is_trivial = SetNumberOfGridPointsImpl<T>::is_trivial;
+  static void apply(const gsl::not_null<std::vector<T>*> result,
                     const size_t size) {
     for (auto& entry : *result) {
       set_number_of_grid_points(make_not_null(&entry), size);

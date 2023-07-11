@@ -6,6 +6,7 @@
 #include <array>
 #include <complex>
 #include <cstddef>
+#include <vector>
 
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -111,6 +112,22 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
       make_with_value<Makeable>(make_array(Makeable{1, 0.0}, Makeable{2, 0.0}),
                                 0.0),
       Catch::Contains("Inconsistent number of points in array entries"));
+#endif  // SPECTRE_DEBUG
+
+  // std::vector is only usable as input because the number of entries
+  // in a result vector cannot be inferred.
+  check_make_with_value(1.3, std::vector{8.3, 4.5}, 1.3);
+  check_make_with_value(Makeable{5, 8.3},
+                        std::vector{Makeable{5, 4.5}, Makeable{5, 1.2}}, 8.3);
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(std::vector{Makeable{1, 0.0}, Makeable{2, 0.0}},
+                                0.0),
+      Catch::Contains("Inconsistent number of points in vector entries"));
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(std::vector<Makeable>{}, 0.0),
+      Catch::Contains("Cannot get number of points from empty std::vector"));
 #endif  // SPECTRE_DEBUG
 
   test_make_tagged_tuple();

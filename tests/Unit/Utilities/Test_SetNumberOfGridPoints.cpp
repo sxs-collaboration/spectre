@@ -6,6 +6,7 @@
 #include <array>
 #include <complex>
 #include <cstddef>
+#include <vector>
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -152,6 +153,37 @@ SPECTRE_TEST_CASE("Unit.Utilities.SetNumberOfGridPoints", "[Utilities][Unit]") {
   {
     std::array<Resizable, 0> x{};
     set_number_of_grid_points(make_not_null(&x), 1_st);
+  }
+
+  {
+    std::vector<Resizable> x{{2, false}, {2, false}, {2, false}};
+    set_number_of_grid_points(make_not_null(&x), pattern3);
+    CHECK(x[0].size == 3);
+    CHECK(x[1].size == 3);
+    CHECK(x[2].size == 3);
+    CHECK(x[0].resized);
+    CHECK(x[1].resized);
+    CHECK(x[2].resized);
+  }
+  {
+    std::vector<Resizable> x{{3, false}, {3, false}, {3, false}};
+    set_number_of_grid_points(make_not_null(&x), pattern3);
+    CHECK(x[0].size == 3);
+    CHECK(x[1].size == 3);
+    CHECK(x[2].size == 3);
+    CHECK(not x[0].resized);
+    CHECK(not x[1].resized);
+    CHECK(not x[2].resized);
+  }
+  {
+    std::vector<double> x{1.0, 2.0, 3.0};
+    set_number_of_grid_points(make_not_null(&x), NoSize{});
+    CHECK(x == std::vector{1.0, 2.0, 3.0});
+  }
+  {
+    std::vector<double> x{1.0, 2.0, 3.0};
+    set_number_of_grid_points(make_not_null(&x), 1_st);
+    CHECK(x == std::vector{1.0, 2.0, 3.0});
   }
 
   {

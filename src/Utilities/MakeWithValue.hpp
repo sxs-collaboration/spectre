@@ -9,6 +9,7 @@
 #include <array>
 #include <complex>
 #include <type_traits>
+#include <vector>
 
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -140,6 +141,24 @@ struct NumberOfPoints<std::array<T, Size>> {
         alg::all_of(input,
                     [&](const T& t) { return number_of_points(t) == points; }),
         "Inconsistent number of points in array entries.");
+    return points;
+  }
+};
+
+template <typename T>
+struct NumberOfPoints<std::vector<T>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(const std::vector<T>& input) {
+    // size_t is interpreted as the number of points in other
+    // contexts, but that doesn't make sense here.
+    static_assert(not std::is_same_v<T, size_t>,
+                  "Cannot get number_of_points from non-vector.");
+    ASSERT(not input.empty(),
+           "Cannot get number of points from empty std::vector.");
+    const size_t points = number_of_points(input[0]);
+    ASSERT(
+        alg::all_of(input,
+                    [&](const T& t) { return number_of_points(t) == points; }),
+        "Inconsistent number of points in vector entries.");
     return points;
   }
 };
