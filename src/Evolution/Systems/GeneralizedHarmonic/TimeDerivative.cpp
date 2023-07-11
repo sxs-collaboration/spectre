@@ -300,17 +300,42 @@ void TimeDerivative<Dim>::apply(
   }
 
   // Equation for dt_pi
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+
+  // We first compute the n_a contributions but only for a=0 since n_i=0
+  // identically. We also use dt_Pi_{00} as temporary storage to avoid any extra
+  // allocations and multiply normal_dot_gauge_constraint=(n^a C_a) by gamma0
+  // since it always shows up multiplied by gamma0 in the equations. This
+  // reduces the number of multiplications that are needed for the RHS
+  // evaluation.
+  //
+  // WARNING: normal_dot_gauge_constraint is rescaled by gamma0!
+  get(*normal_dot_gauge_constraint) *= get(gamma0);
+
+  // Use dt_pi_{00} as temporary storage.
+  get<0, 0>(*dt_pi) = -get(gamma0) * get(*lapse);
+  for (size_t i = 1; i < Dim + 1; ++i) {
+    dt_pi->get(0, i) =
+        get<0, 0>(*dt_pi) * gauge_constraint->get(i) -
+        get(*normal_dot_gauge_constraint) * spacetime_metric.get(0, i);
+  }
+  get<0, 0>(*dt_pi) =
+      2.0 * get<0, 0>(*dt_pi) * get<0>(*gauge_constraint) -
+      get(*normal_dot_gauge_constraint) * get<0, 0>(spacetime_metric);
+
+  // Set space-space components
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       dt_pi->get(mu, nu) =
-          -spacetime_deriv_gauge_function->get(mu, nu) -
-          spacetime_deriv_gauge_function->get(nu, mu) -
-          get(*half_pi_two_normals) * pi.get(mu, nu) +
-          get(gamma0) *
-              (normal_spacetime_one_form->get(mu) * gauge_constraint->get(nu) +
-               normal_spacetime_one_form->get(nu) * gauge_constraint->get(mu)) -
-          get(gamma0) * spacetime_metric.get(mu, nu) *
-              get(*normal_dot_gauge_constraint);
+          -get(*normal_dot_gauge_constraint) * spacetime_metric.get(mu, nu);
+    }
+  }
+
+  // Add additional pieces to dt_pi that aren't just n_a*(stuff)
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_pi->get(mu, nu) -= spacetime_deriv_gauge_function->get(mu, nu) +
+                            spacetime_deriv_gauge_function->get(nu, mu) +
+                            get(*half_pi_two_normals) * pi.get(mu, nu);
 
       for (size_t delta = 0; delta < Dim + 1; ++delta) {
         dt_pi->get(mu, nu) += 2 * christoffel_second_kind->get(delta, mu, nu) *
