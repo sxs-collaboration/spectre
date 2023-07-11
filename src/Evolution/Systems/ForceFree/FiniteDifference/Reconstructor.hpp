@@ -38,5 +38,7 @@ class Reconstructor : public PUP::able {
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
   virtual size_t ghost_zone_size() const = 0;
+
+  virtual bool supports_adaptive_order() const { return false; }
 };
 }  // namespace ForceFree::fd
