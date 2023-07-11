@@ -14,6 +14,7 @@ spectre_target_sources(
   Error.cpp
   Initial.cpp
   RegisterDerivedWithCharm.cpp
+  StateHistory.cpp
   )
 
 spectre_target_headers(
@@ -22,6 +23,7 @@ spectre_target_headers(
   HEADERS
   Info.hpp
   State.hpp
+  StateHistory.hpp
   AhSpeed.hpp
   DeltaR.hpp
   Error.hpp

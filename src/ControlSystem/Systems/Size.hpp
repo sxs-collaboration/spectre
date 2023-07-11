@@ -74,7 +74,7 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
-  using control_error = ControlErrors::Size<Horizon>;
+  using control_error = ControlErrors::Size<deriv_order, Horizon>;
   static_assert(tt::conforms_to_v<control_error,
                                   control_system::protocols::ControlError>);
 
