@@ -266,10 +266,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (tnsr::a, tnsr::A, tnsr::i, tnsr::I, tnsr::ab, tnsr::Ab,
                          tnsr::aB, tnsr::AB, tnsr::ij, tnsr::iJ, tnsr::Ij,
                          tnsr::IJ, tnsr::iA, tnsr::ia, tnsr::aa, tnsr::AA,
-                         tnsr::ii, tnsr::II, tnsr::ijj, tnsr::Ijj))
+                         tnsr::ii, tnsr::II, tnsr::ijj, tnsr::Ijj, tnsr::iaa))
 
 #undef INSTANTIATION
-#undef GET_TENSOR
 
 #define INSTANTIATION(r, data)                                               \
   template void logical_partial_derivative(                                  \
@@ -293,6 +292,25 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
+
+#define INSTANTIATE_JACOBIANS(r, data)                                        \
+  template TensorMetafunctions::prepend_spatial_index<                        \
+      GET_TENSOR(data) < DataVector, GET_DIM(data), Frame::ElementLogical,    \
+      GET_FRAME(data)>,                                                       \
+      GET_DIM(data), UpLo::Lo,                                                \
+      GET_FRAME(data) >                                                       \
+          partial_derivative(                                                 \
+              const GET_TENSOR(data) < DataVector, GET_DIM(data),             \
+              Frame::ElementLogical, GET_FRAME(data) > &u,                    \
+              const Mesh<GET_DIM(data)>& mesh,                                \
+              const InverseJacobian<DataVector, GET_DIM(data),                \
+                                    Frame::ElementLogical, GET_FRAME(data)>&  \
+                  inverse_jacobian);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_JACOBIANS, (1, 2, 3), (Frame::Inertial),
+                        (InverseJacobian))
+
+#undef INSTANTIATE_JACOBIANS
 
 #define INSTANTIATE_SCALAR(r, data)                                           \
   template void partial_derivative<Symmetry<>, index_list<>>(                 \
@@ -319,3 +337,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR, (1, 2, 3),
 #undef INSTANTIATE_SCALAR
 #undef GET_FRAME
 #undef GET_DIM
+#undef GET_TENSOR

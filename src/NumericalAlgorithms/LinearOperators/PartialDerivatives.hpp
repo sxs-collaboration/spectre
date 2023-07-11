@@ -155,30 +155,31 @@ auto logical_partial_derivative(
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
 ///
-/// \requires `DerivativeTags` to be the head of `VariableTags`
+/// Either compute partial derivatives of _all_ variables in `VariableTags`, or
+/// of a subset of the `VariablesTags`. The subset of tags (`DerivativeTags`)
+/// must be the head of `VariablesTags`.
 ///
-/// Returns a `Variables` with a spatial tensor index appended to the front
-/// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.
+/// The return-by-reference overload infers all template parameters from the
+/// arguments. The tensor types in the output buffer must have a spatial index
+/// appended to the front.
 ///
-/// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
-/// are computed.
-template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
+/// The return-by-value overload requires that the `DerivativeTags` are
+/// specified explicitly as the first template parameter. It returns a
+/// `Variables` with the `DerivativeTags` wrapped in `Tags::deriv`.
+template <typename ResultTags, typename DerivativeTags, size_t Dim,
+          typename DerivativeFrame>
 void partial_derivatives(
-    gsl::not_null<Variables<db::wrap_tags_in<
-        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
-        du,
+    gsl::not_null<Variables<ResultTags>*> du,
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 
-template <typename DerivativeTags, typename VariableTags, size_t Dim,
+template <typename ResultTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 void partial_derivatives(
-    gsl::not_null<Variables<db::wrap_tags_in<
-        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
-        du,
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    gsl::not_null<Variables<ResultTags>*> du, const Variables<VariableTags>& u,
+    const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 
@@ -282,8 +283,9 @@ struct DerivCompute
       const Mesh<Dim>&,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             deriv_frame>&) =
-      partial_derivatives<DerivTags, typename VariablesTag::type::tags_list,
-                          Dim, deriv_frame>;
+      partial_derivatives<typename return_type::tags_list,
+                          typename VariablesTag::type::tags_list, Dim,
+                          deriv_frame>;
   using argument_tags =
       tmpl::list<VariablesTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
 };

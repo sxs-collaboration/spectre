@@ -10,7 +10,6 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -62,21 +61,8 @@ void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
             const tnsr::I<DataVector, Dim>& displacement, const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                                   Frame::Inertial>& inv_jacobian) {
-  // Copy the displacement into a Variables to take partial derivatives because
-  // at this time the `partial_derivatives` function only works with Variables.
-  // This function is only used for observing the strain and derived quantities
-  // (such as the potential energy) so performance isn't critical, but adding a
-  // `partial_derivatives` overload that takes a Tensor is an obvious
-  // optimization here.
-  Variables<tmpl::list<Tags::Displacement<Dim>>> vars{
-      mesh.number_of_grid_points()};
-  get<Tags::Displacement<Dim>>(vars) = displacement;
-  const auto displacement_gradient =
-      get<::Tags::deriv<Tags::Displacement<Dim>, tmpl::size_t<Dim>,
-                        Frame::Inertial>>(
-          partial_derivatives<tmpl::list<Tags::Displacement<Dim>>>(
-              vars, mesh, inv_jacobian));
-  Elasticity::strain(strain, displacement_gradient);
+  Elasticity::strain(strain,
+                     partial_derivative(displacement, mesh, inv_jacobian));
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

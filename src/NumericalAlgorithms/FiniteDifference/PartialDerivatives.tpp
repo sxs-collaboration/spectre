@@ -83,8 +83,10 @@ void partial_derivatives(
     gsl::at(logical_partial_derivs_ptrs, i) =
         gsl::at(logical_partial_derivs, i).data();
   }
-  ::partial_derivatives_detail::partial_derivatives_impl<DerivativeTags>(
-      partial_derivatives, logical_partial_derivs_ptrs, inverse_jacobian);
+  ::partial_derivatives_detail::partial_derivatives_impl(
+      partial_derivatives, logical_partial_derivs_ptrs,
+      Variables<DerivativeTags>::number_of_independent_components,
+      inverse_jacobian);
 }
 
 }  // namespace fd
