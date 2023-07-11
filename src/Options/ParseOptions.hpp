@@ -82,10 +82,6 @@ inline void Option::set_node(YAML::Node node) {
   context_.column = node_->Mark().column;
 }
 
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 template <typename T, typename Metavariables>
 T Option::parse_as() const {
   try {
@@ -150,9 +146,6 @@ T Option::parse_as() const {
     ERROR("Unexpected exception: " << e.what());
   }
 }
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 
 namespace Options_detail {
 template <typename T, typename Metavariables, typename Subgroup>
