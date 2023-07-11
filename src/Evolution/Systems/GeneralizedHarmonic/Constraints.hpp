@@ -15,7 +15,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -764,8 +764,7 @@ struct ConstraintEnergyCompute
       const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
       const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
       const Scalar<DataVector>& spatial_metric_determinant) {
-    destructive_resize_components(energy,
-                                  get(spatial_metric_determinant).size());
+    set_number_of_grid_points(energy, spatial_metric_determinant);
     constraint_energy<DataVector, SpatialDim, Frame>(
         energy, gauge_constraint, f_constraint, two_index_constraint,
         three_index_constraint, four_index_constraint, inverse_spatial_metric,

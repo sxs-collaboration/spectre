@@ -7,17 +7,17 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
 void spacetime_normal_one_form(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
     const Scalar<DataType>& lapse) {
-  destructive_resize_components(normal_one_form, get_size(get(lapse)));
+  set_number_of_grid_points(normal_one_form, lapse);
   for (auto& component : *normal_one_form) {
     component = 0.0;
   }

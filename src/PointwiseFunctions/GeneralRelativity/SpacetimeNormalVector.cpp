@@ -30,7 +30,6 @@ void spacetime_normal_vector(
         spacetime_normal_vector,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) {
-  destructive_resize_components(spacetime_normal_vector, get_size(get(lapse)));
   get<0>(*spacetime_normal_vector) = 1. / get(lapse);
   for (size_t i = 0; i < SpatialDim; i++) {
     spacetime_normal_vector->get(i + 1) =

@@ -27,9 +27,9 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -91,8 +91,6 @@ void damped_harmonic_impl(
     const double rollon_start_time, const double rollon_width,
     const double sigma_r) {
   const size_t num_points = get(lapse).size();
-  destructive_resize_components(gauge_h, num_points);
-  destructive_resize_components(d4_gauge_h, num_points);
 
   if constexpr (UseRollon) {
     ASSERT(gauge_h_init != nullptr,

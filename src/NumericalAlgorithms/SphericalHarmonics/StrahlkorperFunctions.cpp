@@ -8,9 +8,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace StrahlkorperFunctions {
 template <typename Fr>
@@ -45,7 +45,6 @@ void theta_phi(
   // If ylm_spherepack ever gets a not-null version of theta_phi_points,
   // then that can be used here to avoid an allocation.
   auto temp = strahlkorper.ylm_spherepack().theta_phi_points();
-  destructive_resize_components(theta_phi, temp[0].size());
   get<0>(*theta_phi) = temp[0];
   get<1>(*theta_phi) = temp[1];
 }
@@ -63,7 +62,6 @@ void rhat(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> r_hat,
           const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
-  destructive_resize_components(r_hat, theta.size());
 
   // Use one component of rhat for temporary storage, to avoid allocations.
   get<1>(*r_hat) = sin(theta);
@@ -88,7 +86,7 @@ void jacobian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
-  destructive_resize_components(jac, theta.size());
+  set_number_of_grid_points(jac, theta);
 
   // Use 1,0 component of jac for temporary storage, to avoid allocations.
   get<1, 0>(*jac) = cos(theta);
@@ -117,7 +115,7 @@ void inv_jacobian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
-  destructive_resize_components(inv_jac, theta.size());
+  set_number_of_grid_points(inv_jac, theta);
 
   // Use 0,1 component of inv_jac for temporary storage, to avoid allocations.
   get<0, 1>(*inv_jac) = cos(theta);
@@ -146,7 +144,7 @@ void inv_hessian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
-  destructive_resize_components(inv_hess, theta.size());
+  set_number_of_grid_points(inv_hess, theta);
 
   // Use some components of inv_hess for temporary storage, to avoid
   // allocations.
@@ -246,7 +244,6 @@ void cartesian_coords(const gsl::not_null<tnsr::I<DataVector, 3, Fr>*> coords,
                       const Strahlkorper<Fr>& strahlkorper,
                       const Scalar<DataVector>& radius,
                       const tnsr::i<DataVector, 3, Fr>& r_hat) {
-  destructive_resize_components(coords, get(radius).size());
   for (size_t d = 0; d < 3; ++d) {
     coords->get(d) = gsl::at(strahlkorper.expansion_center(), d) +
                      r_hat.get(d) * get(radius);
@@ -270,8 +267,6 @@ void cartesian_derivs_of_scalar(
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
     const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac) {
-  destructive_resize_components(dx_scalar, get(scalar).size());
-
   // If ylm_spherepack().gradient() ever gets a not_null function,
   // that function can be used here.
   const auto gradient = strahlkorper.ylm_spherepack().gradient(get(scalar));
@@ -309,7 +304,7 @@ void cartesian_second_derivs_of_scalar(
     const Scalar<DataVector>& radius_of_strahlkorper,
     const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac,
     const StrahlkorperTags::aliases::InvHessian<Fr>& inv_hess) {
-  destructive_resize_components(d2x_scalar, get(scalar).size());
+  set_number_of_grid_points(d2x_scalar, scalar);
   for (auto& component : *d2x_scalar) {
     component = 0.0;
   }
@@ -387,7 +382,6 @@ void tangents(
     const ::Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Fr>& r_hat,
     const StrahlkorperTags::aliases::Jacobian<Fr>& jac) {
-  destructive_resize_components(result, get(radius).size());
   const auto dr = strahlkorper.ylm_spherepack().gradient(get(radius));
   for (size_t i = 0; i < 2; ++i) {
     for (size_t j = 0; j < 3; ++j) {
@@ -410,7 +404,6 @@ template <typename Fr>
 void normal_one_form(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> one_form,
                      const tnsr::i<DataVector, 3, Fr>& dx_radius,
                      const tnsr::i<DataVector, 3, Fr>& r_hat) {
-  destructive_resize_components(one_form, r_hat.begin()->size());
   for (size_t d = 0; d < 3; ++d) {
     one_form->get(d) = r_hat.get(d) - dx_radius.get(d);
   }

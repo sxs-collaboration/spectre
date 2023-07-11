@@ -11,12 +11,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral::Swsh {
@@ -79,10 +79,10 @@ void create_angular_and_cartesian_coordinates(
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_coordinates,
     const size_t l_max) {
-  destructive_resize_components(cartesian_coordinates,
-                                number_of_swsh_collocation_points(l_max));
-  destructive_resize_components(angular_coordinates,
-                                number_of_swsh_collocation_points(l_max));
+  set_number_of_grid_points(cartesian_coordinates,
+                            number_of_swsh_collocation_points(l_max));
+  set_number_of_grid_points(angular_coordinates,
+                            number_of_swsh_collocation_points(l_max));
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {

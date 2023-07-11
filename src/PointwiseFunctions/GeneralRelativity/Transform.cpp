@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -284,7 +283,6 @@ void first_index_to_different_frame(
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
     const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian) {
-  destructive_resize_components(dest, src.begin()->size());
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {  // symmetry
       for (size_t k = 0; k < VolumeDim; ++k) {

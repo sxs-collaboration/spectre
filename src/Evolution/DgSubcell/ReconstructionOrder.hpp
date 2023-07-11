@@ -16,8 +16,8 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace evolution::dg::subcell {
 /// Copies the `reconstruction_order` into the DataBox tag
@@ -36,7 +36,7 @@ void store_reconstruction_order_in_databox(
             (*recons_order_ptr) = typename std::decay_t<
                 decltype(*recons_order_ptr)>::value_type{};
           }
-          destructive_resize_components(
+          set_number_of_grid_points(
               make_not_null(&(recons_order_ptr->value())),
               subcell_mesh.number_of_grid_points());
           for (size_t d = Dim - 1; d < Dim; --d) {

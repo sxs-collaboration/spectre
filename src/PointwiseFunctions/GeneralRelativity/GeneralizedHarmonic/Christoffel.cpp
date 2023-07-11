@@ -9,6 +9,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
@@ -16,7 +17,6 @@ void christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*> christoffel,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) {
-  destructive_resize_components(christoffel, get_size(*phi.begin()));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       for (size_t m = 0; m < SpatialDim; ++m) {
@@ -69,8 +69,7 @@ void trace_christoffel(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
-  destructive_resize_components(trace,
-                                get_size(get<0>(spacetime_normal_one_form)));
+  set_number_of_grid_points(trace, spacetime_normal_one_form);
   get<0>(*trace) = 0.0;
   // Compute common terms between components.
   for (size_t b = 0; b < SpatialDim + 1; ++b) {

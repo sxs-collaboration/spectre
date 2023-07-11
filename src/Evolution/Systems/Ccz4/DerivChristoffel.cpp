@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -19,9 +18,6 @@ void deriv_conformal_christoffel_second_kind(
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) {
-  destructive_resize_components(
-      result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
-
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = i; j < Dim; ++j) {
       for (size_t k = 0; k < Dim; ++k) {
@@ -71,9 +67,6 @@ void deriv_contracted_conformal_christoffel_second_kind(
     const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind,
     const tnsr::iJkk<DataType, Dim, Frame>&
         d_conformal_christoffel_second_kind) {
-  destructive_resize_components(
-      result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::k, ti::I>(
       result,
       -2.0 * field_d_up(ti::k, ti::J, ti::L) *

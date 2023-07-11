@@ -11,9 +11,9 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -41,7 +41,7 @@ void divergence(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
-  destructive_resize_components(div_input, mesh.number_of_grid_points());
+  set_number_of_grid_points(div_input, mesh.number_of_grid_points());
 
   // We have to copy into a Variables because we don't currently have partial
   // derivative functions for anything other than Variables.

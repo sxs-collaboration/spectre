@@ -15,10 +15,10 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_coords_in_different_frame(
@@ -31,8 +31,8 @@ void strahlkorper_coords_in_different_frame(
     const double time) {
   static_assert(std::is_same_v<DestFrame, ::Frame::Inertial>,
                 "Destination frame must currently be Inertial frame");
-  destructive_resize_components(
-      dest_cartesian_coords, src_strahlkorper.ylm_spherepack().physical_size());
+  set_number_of_grid_points(dest_cartesian_coords,
+                            src_strahlkorper.ylm_spherepack().physical_size());
 
   // Temporary storage; reduce the number of allocations.
   Variables<tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<SrcFrame>>,

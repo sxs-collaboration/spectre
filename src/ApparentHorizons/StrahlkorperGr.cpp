@@ -22,12 +22,12 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 // IWYU pragma: no_include <complex>
@@ -393,7 +393,6 @@ void grad_unit_normal_one_form(
     const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) {
-  destructive_resize_components(result, radius.size());
   const DataVector one_over_radius = 1.0 / get(radius);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {  // symmetry
@@ -464,7 +463,7 @@ void expansion(const gsl::not_null<Scalar<DataVector>*> result,
   // (g^ij - S^i S^j) (GsBar_ij - K_ij)
   // and the ingoing expansion is
   // (g^ij - S^i S^j) (-GsBar_ij - K_ij)
-  destructive_resize_components(result, grad_normal.begin()->size());
+  set_number_of_grid_points(result, grad_normal);
   get(*result) = 0.0;
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
@@ -671,7 +670,7 @@ void spin_function(const gsl::not_null<Scalar<DataVector>*> result,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
                    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) {
-  destructive_resize_components(result, get(area_element).size());
+  set_number_of_grid_points(result, area_element);
   for (auto& component : *result) {
     component = 0.0;
   }

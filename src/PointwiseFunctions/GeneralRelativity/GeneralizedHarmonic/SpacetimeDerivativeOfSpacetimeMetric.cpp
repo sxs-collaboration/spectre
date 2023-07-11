@@ -7,7 +7,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -22,7 +21,6 @@ void spacetime_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
-  destructive_resize_components(da_spacetime_metric, get_size(get(lapse)));
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = a; b < SpatialDim + 1; ++b) {
       da_spacetime_metric->get(0, a, b) = -pi.get(a, b) * get(lapse);

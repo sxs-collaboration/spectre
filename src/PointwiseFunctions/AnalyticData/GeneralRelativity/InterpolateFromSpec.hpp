@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -68,7 +69,7 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_from_spec(
                         &var_i](const auto tag_v) {
     using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
     auto& tensor = get<tag>(interpolation_buffer);
-    destructive_resize_components(make_not_null(&tensor), num_points);
+    set_number_of_grid_points(make_not_null(&tensor), num_points);
     const size_t num_components = tensor.size();
     buffer_pointers[var_i].resize(num_components);
     // The SpEC exporter supports tensors up to symmetric rank 2, which are

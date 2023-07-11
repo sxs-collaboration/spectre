@@ -11,6 +11,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarWave {
@@ -18,8 +19,7 @@ template <size_t Dim>
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
-  destructive_resize_components(char_speeds,
-                                get<0>(unit_normal_one_form).size());
+  set_number_of_grid_points(char_speeds, unit_normal_one_form);
   (*char_speeds)[0] = 0.;   // v(VPsi)
   (*char_speeds)[1] = 0.;   // v(VZero)
   (*char_speeds)[2] = 1.;   // v(VPlus)

@@ -22,7 +22,6 @@ void time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) {
-  destructive_resize_components(dt_spacetime_metric, get_size(get(dt_lapse)));
   get<0, 0>(*dt_spacetime_metric) = -2.0 * get(lapse) * get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {

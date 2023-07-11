@@ -11,12 +11,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
 
@@ -84,10 +84,7 @@ void Side::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
   const ReturnType& ybar = source_coords[1];
   const ReturnType& zbar = source_coords[2];
 
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(jacobian_out, source_coords);
 
   // Use (1,1) (2,2), and (1,2) parts of Jacobian as temp storage to
   // reduce allocations.
@@ -132,10 +129,7 @@ void Side::inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
   const ReturnType& ybar = source_coords[1];
   const ReturnType& zbar = source_coords[2];
 
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        inv_jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(inv_jacobian_out, source_coords);
 
   // Use parts of inverse Jacobian as temp storage to reduce allocations.
   const double theta_factor = 0.5 * (theta_min_ - theta_max_);
@@ -202,10 +196,7 @@ void Side::deriv_sigma(
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        deriv_sigma_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(deriv_sigma_out, source_coords);
 
   // Use as temp storage to reduce allocations.
   // Note that denominator is guaranteed to be nonzero.

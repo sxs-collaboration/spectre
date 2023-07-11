@@ -13,6 +13,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -53,8 +54,7 @@ void weyl_propagating(
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of weyl propagating modes accepts only +1/-1 to indicate "
          "which of U8+/- is needed.");
-  destructive_resize_components(weyl_prop_u8,
-                                get_size(get<0>(unit_interface_normal_vector)));
+  set_number_of_grid_points(weyl_prop_u8, unit_interface_normal_vector);
 
   TempBuffer<tmpl::list<::Tags::Tempii<0, SpatialDim, Frame, DataType>>>
       unprojected_weyl_prop_u8_vars(

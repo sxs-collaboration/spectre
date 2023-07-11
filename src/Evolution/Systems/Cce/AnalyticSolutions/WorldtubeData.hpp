@@ -16,9 +16,9 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -139,7 +139,7 @@ struct WorldtubeData : public PUP::able {
       return item_cache.data;
     }
     auto& item = item_cache.data;
-    destructive_resize_components(
+    set_number_of_grid_points(
         make_not_null(&item),
         Spectral::Swsh::number_of_swsh_collocation_points(output_l_max));
     variables_impl(make_not_null(&item), output_l_max, time,

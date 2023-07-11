@@ -10,10 +10,10 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace {
 // Functions to compute generalized-harmonic 2-index constraint, where
@@ -1032,7 +1032,7 @@ void two_index_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
-  destructive_resize_components(constraint, get_size(get(gamma2)));
+  set_number_of_grid_points(constraint, gamma2);
   for (auto& component : *constraint) {
     component = 0.0;
   }
@@ -1084,10 +1084,7 @@ void four_index_constraint(
   static_assert(
       SpatialDim == 3,
       "four_index_constraint() currently only supports 3 spatial dimensions");
-  if (get_size(get<0, 0, 0>(*constraint)) != get_size(get<0, 0, 0, 0>(d_phi))) {
-    *constraint =
-        tnsr::iaa<DataType, SpatialDim, Frame>{get<0, 0, 0, 0>(d_phi)};
-  }
+  set_number_of_grid_points(constraint, d_phi);
   std::fill(constraint->begin(), constraint->end(), 0.0);
 
   for (LeviCivitaIterator<SpatialDim> it; it; ++it) {
@@ -1192,9 +1189,7 @@ void f_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
-  if (get_size(get<0>(*constraint)) != get_size(get<0, 0>(pi))) {
-    *constraint = tnsr::a<DataType, SpatialDim, Frame>{get<0, 0>(pi)};
-  }
+  set_number_of_grid_points(constraint, pi);
   std::fill(constraint->begin(), constraint->end(), 0.0);
 
   f_constraint_add_term_1_of_25(constraint, spacetime_normal_one_form,
@@ -1300,10 +1295,6 @@ void constraint_energy(
     double gauge_constraint_multiplier, double two_index_constraint_multiplier,
     double three_index_constraint_multiplier,
     double four_index_constraint_multiplier) {
-  if (get_size(get(*energy)) != get_size(get<0>(f_constraint))) {
-    *energy = Scalar<DataType>{get_size(get<0>(f_constraint))};
-  }
-
   get(*energy) = gauge_constraint_multiplier * square(gauge_constraint.get(0)) +
                  two_index_constraint_multiplier * square(f_constraint.get(0));
   for (size_t a = 1; a < SpatialDim + 1; ++a) {

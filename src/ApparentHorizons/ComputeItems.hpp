@@ -23,8 +23,8 @@ class DataVector;
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ah {
@@ -45,7 +45,6 @@ struct InverseSpatialMetricCompute
   static void function(
       const gsl::not_null<tnsr::II<DataVector, Dim, Frame>*> result,
       const tnsr::aa<DataVector, Dim, Frame>& psi) {
-    destructive_resize_components(result, psi.begin()->size());
     *result = determinant_and_inverse(gr::spatial_metric(psi)).second;
   };
   using argument_tags =
@@ -64,7 +63,7 @@ struct ExtrinsicCurvatureCompute
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
       const tnsr::II<DataVector, Dim, Frame>& inv_g) {
     const auto shift = gr::shift(psi, inv_g);
-    destructive_resize_components(result, psi.begin()->size());
+    set_number_of_grid_points(result, psi);
     gh::extrinsic_curvature(
         result, gr::spacetime_normal_vector(gr::lapse(shift, psi), shift), pi,
         phi);
@@ -85,7 +84,7 @@ struct SpatialChristoffelSecondKindCompute
       const gsl::not_null<tnsr::Ijj<DataVector, Dim, Frame>*> result,
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
       const tnsr::II<DataVector, Dim, Frame>& inv_g) {
-    destructive_resize_components(result, phi.begin()->size());
+    set_number_of_grid_points(result, phi);
     raise_or_lower_first_index(
         result, gr::christoffel_first_kind(gh::deriv_spatial_metric(phi)),
         inv_g);

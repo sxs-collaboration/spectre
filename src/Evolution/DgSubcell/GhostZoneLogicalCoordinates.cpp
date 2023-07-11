@@ -12,10 +12,10 @@
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace evolution::dg::subcell::fd {
 
@@ -35,7 +35,7 @@ void ghost_zone_logical_coordinates(
              << ghost_zone_size << ") is larger than the volume extent ("
              << subcell_extent_to_direction << ") to the direction");
 
-  destructive_resize_components(
+  set_number_of_grid_points(
       ghost_logical_coords,
       ghost_zone_size *
           subcell_mesh.extents().slice_away(dim_direction).product());

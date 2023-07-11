@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -18,9 +17,6 @@ void spatial_z4_constraint(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::I<DataType, Dim, Frame>&
         gamma_hat_minus_contracted_conformal_christoffel) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0>(conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::i>(
       result, 0.5 * (conformal_spatial_metric(ti::i, ti::j) *
                      gamma_hat_minus_contracted_conformal_christoffel(ti::J)));
@@ -43,9 +39,6 @@ void upper_spatial_z4_constraint(
     const Scalar<DataType>& half_conformal_factor_squared,
     const tnsr::I<DataType, Dim, Frame>&
         gamma_hat_minus_contracted_conformal_christoffel) {
-  destructive_resize_components(result,
-                                get_size(get(half_conformal_factor_squared)));
-
   ::tenex::evaluate<ti::I>(
       result, half_conformal_factor_squared() *
                   gamma_hat_minus_contracted_conformal_christoffel(ti::I));

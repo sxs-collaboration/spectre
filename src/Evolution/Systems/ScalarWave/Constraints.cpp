@@ -29,7 +29,6 @@ void one_index_constraint(
         constraint,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) {
-  destructive_resize_components(constraint, get_size(get<0>(phi)));
   // Declare iterators for d_psi and phi outside the for loop,
   // because they are const but constraint is not
   auto d_psi_it = d_psi.cbegin(), phi_it = phi.cbegin();
@@ -55,7 +54,6 @@ void two_index_constraint(
     const gsl::not_null<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>*>
         constraint,
     const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) {
-  destructive_resize_components(constraint, get_size(get<0, 0>(d_phi)));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       constraint->get(i, j) = d_phi.get(i, j) - d_phi.get(j, i);

@@ -5,7 +5,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -15,7 +14,6 @@ template <typename DataType, size_t Dim, typename Fr>
 void mach_number(const gsl::not_null<Scalar<DataType>*> result,
                  const tnsr::I<DataType, Dim, Fr>& velocity,
                  const Scalar<DataType>& sound_speed) {
-  destructive_resize_components(result, get_size(get(sound_speed)));
   get(*result) = get(magnitude(velocity)) / get(sound_speed);
 }
 

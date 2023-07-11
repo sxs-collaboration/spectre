@@ -24,7 +24,6 @@ void characteristic_speeds(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  destructive_resize_components(char_speeds, get(gamma_1).size());
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
   get<0>(*char_speeds) = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
   get<1>(*char_speeds) = -shift_dot_normal;                        // v(VZero)
@@ -125,12 +124,6 @@ void characteristic_fields(
         unit_normal_one_form,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_vector) {
-  const size_t size = get(gamma_2).size();
-  destructive_resize_components(v_psi, size);
-  destructive_resize_components(v_zero, size);
-  destructive_resize_components(v_plus, size);
-  destructive_resize_components(v_minus, size);
-
   dot_product(v_minus, unit_normal_vector, phi);
   // Eq.(34) of Holst+ (2004) for VZero
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -153,10 +146,6 @@ void evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         unit_normal_one_form) {
-  const size_t size = get(gamma_2).size();
-  destructive_resize_components(psi, size);
-  destructive_resize_components(pi, size);
-  destructive_resize_components(phi, size);
   // Eq.(36) of Holst+ (2005) for Psi
   *psi = v_psi;
   // Eq.(37) - (38) of Holst+ (2004) for Pi and Phi

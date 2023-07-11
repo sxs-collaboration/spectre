@@ -11,10 +11,10 @@
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace Elasticity {
 
@@ -25,8 +25,7 @@ void potential_energy_density(
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation) {
-  destructive_resize_components(potential_energy_density,
-                                coordinates.begin()->size());
+  set_number_of_grid_points(potential_energy_density, coordinates);
   tnsr::II<DataVector, Dim> stress{coordinates.begin()->size()};
   constitutive_relation.stress(make_not_null(&stress), strain, coordinates);
   get(*potential_energy_density) = 0.;

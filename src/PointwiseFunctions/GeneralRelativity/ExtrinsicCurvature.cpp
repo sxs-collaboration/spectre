@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -23,7 +22,6 @@ void extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
-  destructive_resize_components(ex_curvature, get_size(get(lapse)));
   const DataType half_over_lapse = 0.5 / get(lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {  // Symmetry

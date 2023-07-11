@@ -8,7 +8,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace domain {
 
@@ -18,7 +20,7 @@ void flat_logical_metric(
         result,
     const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
         jacobian) {
-  destructive_resize_components(result, jacobian.begin()->size());
+  set_number_of_grid_points(result, jacobian);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       result->get(i, j) = 0.;
@@ -44,10 +46,21 @@ void FlatLogicalMetricCompute<Dim>::function(
   const auto jacobian = determinant_and_inverse(inv_jacobian).second;
   flat_logical_metric(result, jacobian);
 }
-
-template class FlatLogicalMetricCompute<1>;
-template class FlatLogicalMetricCompute<2>;
-template class FlatLogicalMetricCompute<3>;
-
 }  // namespace Tags
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(_, data)                                     \
+  template void flat_logical_metric(                               \
+      const gsl::not_null<                                         \
+          tnsr::ii<DataVector, DIM(data), Frame::ElementLogical>*> \
+          result,                                                  \
+      const Jacobian<DataVector, DIM(data), Frame::ElementLogical, \
+                     Frame::Inertial>& jacobian);                  \
+  template class Tags::FlatLogicalMetricCompute<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+#undef DIM
 }  // namespace domain

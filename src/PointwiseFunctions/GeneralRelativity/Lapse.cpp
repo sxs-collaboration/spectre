@@ -26,7 +26,6 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 void lapse(const gsl::not_null<Scalar<DataType>*> lapse,
            const tnsr::I<DataType, SpatialDim, Frame>& shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
-  destructive_resize_components(lapse, get_size(get<0, 0>(spacetime_metric)));
   get(*lapse) = -get<0, 0>(spacetime_metric);
   for (size_t i = 0; i < SpatialDim; ++i) {
     get(*lapse) += shift.get(i) * spacetime_metric.get(i + 1, 0);

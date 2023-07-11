@@ -5,7 +5,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -19,7 +18,6 @@ void comoving_magnetic_field_one_form(
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& lorentz_factor, const tnsr::I<DataType, 3>& shift,
     const Scalar<DataType>& lapse) {
-  destructive_resize_components(result, get_size(get(lapse)));
   get<0>(*result) = -get(lapse) * get(lorentz_factor) *
                     get(magnetic_field_dot_spatial_velocity);
   for (size_t i = 0; i < 3; ++i) {

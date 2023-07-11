@@ -8,7 +8,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -22,7 +21,6 @@ void sound_speed_squared(
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
-  destructive_resize_components(result, get_size(get(rest_mass_density)));
   if constexpr (ThermodynamicDim == 1) {
     get(*result) =
         get(equation_of_state.chi_from_density(rest_mass_density)) +

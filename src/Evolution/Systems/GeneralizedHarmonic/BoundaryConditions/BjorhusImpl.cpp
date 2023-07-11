@@ -32,11 +32,6 @@ void constraint_preserving_bjorhus_corrections_dt_v_psi(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>&
         three_index_constraint,
     const std::array<DataType, 4>& char_speeds) {
-  if (UNLIKELY(get_size(get<0, 0>(*bc_dt_v_psi)) !=
-               get_size(get<0>(unit_interface_normal_vector)))) {
-    *bc_dt_v_psi = tnsr::aa<DataType, VolumeDim, Frame::Inertial>{
-        get_size(get<0>(unit_interface_normal_vector))};
-  }
   for (size_t a = 0; a <= VolumeDim; ++a) {
     for (size_t b = a; b <= VolumeDim; ++b) {
       bc_dt_v_psi->get(a, b) = char_speeds[0] *
@@ -60,11 +55,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>&
         four_index_constraint,
     const std::array<DataType, 4>& char_speeds) {
-  if (UNLIKELY(get_size(get<0, 0, 0>(*bc_dt_v_zero)) !=
-               get_size(get<0>(unit_interface_normal_vector)))) {
-    *bc_dt_v_zero = tnsr::iaa<DataType, VolumeDim, Frame::Inertial>{
-        get_size(get<0>(unit_interface_normal_vector))};
-  }
+  set_number_of_grid_points(bc_dt_v_zero, unit_interface_normal_vector);
   std::fill(bc_dt_v_zero->begin(), bc_dt_v_zero->end(), 0.);
 
   if (VolumeDim == 3) {
@@ -524,7 +515,6 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
     const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
         constraint_char_zero_minus,
     const std::array<DataType, 4>& char_speeds) {
-  destructive_resize_components(bc_dt_v_minus, get_size(get(gamma2)));
   for (size_t a = 0; a <= VolumeDim; ++a) {
     for (size_t b = a; b <= VolumeDim; ++b) {
       bc_dt_v_minus->get(a, b) = -char_projected_rhs_dt_v_minus.get(a, b);
@@ -580,7 +570,6 @@ void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
     const tnsr::ijaa<DataType, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& d_pi,
     const std::array<DataType, 4>& char_speeds) {
-  destructive_resize_components(bc_dt_v_minus, get_size(get(gamma2)));
   for (size_t a = 0; a <= VolumeDim; ++a) {
     for (size_t b = a; b <= VolumeDim; ++b) {
       bc_dt_v_minus->get(a, b) = -char_projected_rhs_dt_v_minus.get(a, b);

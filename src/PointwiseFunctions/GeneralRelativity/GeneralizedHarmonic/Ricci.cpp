@@ -11,6 +11,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -21,7 +22,7 @@ void spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric) {
-  destructive_resize_components(ricci, get_size(get<0, 0, 0>(phi)));
+  set_number_of_grid_points(ricci, phi);
 
   TempBuffer<tmpl::list<::Tags::TempIjj<0, VolumeDim, Frame, DataType>,
                         ::Tags::TempijK<0, VolumeDim, Frame, DataType>,

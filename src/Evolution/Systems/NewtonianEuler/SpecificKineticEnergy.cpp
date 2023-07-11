@@ -5,7 +5,6 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -14,7 +13,6 @@ namespace NewtonianEuler {
 template <typename DataType, size_t Dim, typename Fr>
 void specific_kinetic_energy(const gsl::not_null<Scalar<DataType>*> result,
                              const tnsr::I<DataType, Dim, Fr>& velocity) {
-  destructive_resize_components(result, get_size(get<0>(velocity)));
   get(*result) = 0.5 * get(dot_product(velocity, velocity));
 }
 

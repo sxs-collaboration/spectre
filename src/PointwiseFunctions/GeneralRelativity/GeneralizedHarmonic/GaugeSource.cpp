@@ -7,9 +7,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -26,7 +26,7 @@ void gauge_source(
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
         trace_christoffel_last_indices) {
-  destructive_resize_components(gauge_source_h, get_size(get(lapse)));
+  set_number_of_grid_points(gauge_source_h, lapse);
   for (auto& component : *gauge_source_h) {
     component = 0.0;
   }

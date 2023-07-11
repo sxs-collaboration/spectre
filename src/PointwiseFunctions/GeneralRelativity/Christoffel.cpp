@@ -44,7 +44,6 @@ void christoffel_second_kind(
         christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) {
-  destructive_resize_components(christoffel, get_size(*d_metric.begin()));
   constexpr auto dimensionality =
       Index == IndexType::Spatial ? SpatialDim : SpatialDim + 1;
   for (size_t d = 0; d < dimensionality; ++d) {

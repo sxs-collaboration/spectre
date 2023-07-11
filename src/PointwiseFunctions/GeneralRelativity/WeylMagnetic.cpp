@@ -8,7 +8,6 @@
 #include "DataStructures/LeviCivitaIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VectorImpl.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -35,8 +34,6 @@ void weyl_magnetic(
     const tnsr::ijj<DataType, 3, Frame>& grad_extrinsic_curvature,
     const tnsr::ii<DataType, 3, Frame>& spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric) {
-  destructive_resize_components(weyl_magnetic_part,
-                                get_size(get<0, 0>(spatial_metric)));
   auto grad_extrinsic_curvature_cross_spatial_metric =
       make_with_value<tnsr::ij<DataType, 3, Frame>>(get<0, 0>(spatial_metric),
                                                     0.0);
@@ -66,11 +63,6 @@ void weyl_magnetic_scalar(
     const gsl::not_null<Scalar<DataType>*> weyl_magnetic_scalar_result,
     const tnsr::ii<DataType, 3, Frame>& weyl_magnetic,
     const tnsr::II<DataType, 3, Frame>& inverse_spatial_metric) {
-  destructive_resize_components(weyl_magnetic_scalar_result,
-                                get_size(get<0, 0>(inverse_spatial_metric)));
-  *weyl_magnetic_scalar_result =
-      make_with_value<Scalar<DataType>>(get<0, 0>(inverse_spatial_metric), 0.0);
-
   auto weyl_magnetic_up_down = make_with_value<tnsr::Ij<DataType, 3, Frame>>(
       get<0, 0>(inverse_spatial_metric), 0.0);
   for (size_t i = 0; i < 3; ++i) {

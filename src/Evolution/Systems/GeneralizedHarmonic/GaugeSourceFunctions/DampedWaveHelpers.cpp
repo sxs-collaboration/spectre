@@ -18,6 +18,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace gh::gauges::DampedHarmonicGauge_detail {
@@ -25,7 +26,6 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
                              const double sigma_r) {
-  destructive_resize_components(weight, get_size(get<0>(coords)));
   const auto r_squared = dot_product(coords, coords);
   get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
 }
@@ -35,7 +35,7 @@ void spacetime_deriv_of_spatial_weight_function(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
     const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r,
     const Scalar<DataType>& weight_function) {
-  destructive_resize_components(d4_weight, get_size(get<0>(coords)));
+  set_number_of_grid_points(d4_weight, coords);
   // use 0th component to avoid allocations
   get<0>(*d4_weight) = get(weight_function) * (-2. / pow<2>(sigma_r));
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -50,7 +50,6 @@ void log_factor_metric_lapse(const gsl::not_null<Scalar<DataType>*> logfac,
                              const Scalar<DataType>& lapse,
                              const Scalar<DataType>& sqrt_det_spatial_metric,
                              const double exponent) {
-  destructive_resize_components(logfac, get_size(get(lapse)));
   // branching below is to avoid using pow for performance reasons
   if (exponent == 0.) {
     get(*logfac) = -log(get(lapse));
@@ -83,7 +82,6 @@ void spacetime_deriv_of_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double exponent) {
-  destructive_resize_components(d4_logfac, get_size(get(lapse)));
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
   TempBuffer<tmpl::list<::Tags::Tempa<0, SpatialDim, Frame, DataType>,
@@ -156,7 +154,7 @@ void spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
     const int exponent) {
-  destructive_resize_components(d4_powlogfac, get_size(get(lapse)));
+  set_number_of_grid_points(d4_powlogfac, lapse);
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
   TempBuffer<tmpl::list<::Tags::Tempa<0, SpatialDim, Frame, DataType>,

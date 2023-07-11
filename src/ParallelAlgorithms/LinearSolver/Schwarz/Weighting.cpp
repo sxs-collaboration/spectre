@@ -14,11 +14,11 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Hypercube.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace LinearSolver::Schwarz {
 
@@ -51,7 +51,7 @@ void element_weight(
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) {
-  destructive_resize_components(weight, logical_coords.begin()->size());
+  set_number_of_grid_points(weight, logical_coords);
   get(*weight) = 1.;
   for (size_t d = 0; d < Dim; ++d) {
     ASSERT(gsl::at(overlap_widths, d) > 0,
@@ -108,7 +108,7 @@ void intruding_weight(
         num_intruding_overlaps;
   } else {
     const size_t num_points = logical_coords.begin()->size();
-    destructive_resize_components(weight, num_points);
+    set_number_of_grid_points(weight, num_points);
     get(*weight) = 1.;
     const auto has_overlap = [&external_boundaries](const size_t dimension,
                                                     const Side side) {
