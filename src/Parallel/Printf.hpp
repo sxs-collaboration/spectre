@@ -43,11 +43,11 @@ template <typename T,
           Requires<std::is_class<std::decay_t<T>>::value or
                    std::is_enum<std::decay_t<T>>::value> = nullptr>
 inline std::string stream_object_to_string(T&& t) {
+  using ::operator<<;
   static_assert(tt::is_streamable<std::stringstream, T>::value,
                 "Cannot stream type and therefore it cannot be printed. Please "
                 "define a stream operator for the type.");
   std::stringstream ss;
-  using ::operator<<;
   ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
      << std::scientific << t;
   return ss.str();
