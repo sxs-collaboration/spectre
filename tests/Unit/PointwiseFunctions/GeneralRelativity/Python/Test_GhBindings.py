@@ -12,6 +12,12 @@ from spectre.DataStructures.Tensor import Scalar, tnsr
 
 
 class TestBindings(unittest.TestCase):
+    def test_deriv_spatial_metric(self):
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.deriv_spatial_metric(
+            phi,
+        )
+
     def test_time_deriv_of_shift(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
