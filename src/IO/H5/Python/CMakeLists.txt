@@ -8,6 +8,7 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
+  CombineH5.cpp
   Dat.cpp
   File.cpp
   TensorData.cpp
@@ -26,6 +27,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CombineH5.hpp
   Dat.hpp
   File.hpp
   TensorData.hpp
