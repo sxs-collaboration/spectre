@@ -62,22 +62,23 @@ struct Info {
 /// Holds information about crossing times, as computed by
 /// ZeroCrossingPredictors.
 struct CrossingTimeInfo {
-  CrossingTimeInfo(const double char_speed_crossing_time,
-                   const double comoving_char_speed_crossing_time,
-                   const double delta_radius_crossing_time);
+  CrossingTimeInfo(
+      const std::optional<double>& char_speed_crossing_time,
+      const std::optional<double>& comoving_char_speed_crossing_time,
+      const std::optional<double>& delta_radius_crossing_time);
   /// t_char_speed is the time (relative to the current time) when the
-  /// minimum characteristic speed is predicted to cross zero (or zero if
+  /// minimum characteristic speed is predicted to cross zero (or nullopt if
   /// the minimum characteristic speed is increasing).
-  double t_char_speed;
+  std::optional<double> t_char_speed;
   /// t_comoving_char_speed is the time (relative to the current time) when the
   /// minimum comoving characteristic speed is predicted to cross zero
-  /// (or zero if the minimum comoving characteristic speed is increasing).
-  double t_comoving_char_speed;
+  /// (or nullopt if the minimum comoving characteristic speed is increasing).
+  std::optional<double> t_comoving_char_speed;
   /// t_delta_radius is the time (relative to the current time) when the
   /// minimum distance between the horizon and the excision boundary is
-  /// predicted to cross zero (or zero if the minimum distance is
+  /// predicted to cross zero (or nullopt if the minimum distance is
   /// increasing).
-  double t_delta_radius;
+  std::optional<double> t_delta_radius;
   /// Extra variables to simplify the logic; these indicate whether
   /// the characteristic speed or the excision boundary (or neither) are
   /// expected to cross zero soon.

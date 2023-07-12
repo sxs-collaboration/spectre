@@ -35,15 +35,17 @@ void DeltaR::update(const gsl::not_null<Info*> info,
   constexpr double time_tolerance_for_delta_r_in_danger = 0.99;
   const bool delta_radius_is_in_danger =
       crossing_time_info.horizon_will_hit_excision_boundary_first and
-      crossing_time_info.t_delta_radius <
+      crossing_time_info.t_delta_radius.value_or(
+          std::numeric_limits<double>::infinity()) <
           info->damping_time * time_tolerance_for_delta_r_in_danger;
   const bool char_speed_is_in_danger =
       crossing_time_info.char_speed_will_hit_zero_first and
-      crossing_time_info.t_char_speed < info->damping_time and
+      crossing_time_info.t_char_speed.value_or(
+          std::numeric_limits<double>::infinity()) < info->damping_time and
       not delta_radius_is_in_danger;
 
   if (char_speed_is_in_danger) {
-    if (crossing_time_info.t_comoving_char_speed > 0.0 or
+    if (crossing_time_info.t_comoving_char_speed.has_value() or
         update_args.min_comoving_char_speed < 0.0) {
       // Comoving char speed is negative or threatening to cross zero, so
       // staying in DeltaR mode will not work.  So switch to AhSpeed mode.

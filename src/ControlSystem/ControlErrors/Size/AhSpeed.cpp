@@ -29,7 +29,8 @@ void AhSpeed::update(const gsl::not_null<Info*> info,
   constexpr double time_tolerance_for_delta_r_in_danger = 20.0;
   const bool delta_radius_is_in_danger =
       crossing_time_info.horizon_will_hit_excision_boundary_first and
-      crossing_time_info.t_delta_radius <
+      crossing_time_info.t_delta_radius.value_or(
+          std::numeric_limits<double>::infinity()) <
           info->damping_time * time_tolerance_for_delta_r_in_danger;
 
   const bool char_speed_is_in_danger = [&crossing_time_info, &info,
@@ -48,19 +49,20 @@ void AhSpeed::update(const gsl::not_null<Info*> info,
     constexpr double time_tolerance_for_char_speed_in_danger = 0.99;
     return (not delta_radius_is_in_danger) and
            (crossing_time_info.char_speed_will_hit_zero_first and
-            crossing_time_info.t_char_speed <
+            crossing_time_info.t_char_speed.value_or(
+                std::numeric_limits<double>::infinity()) <
                 info->damping_time * time_tolerance_for_char_speed_in_danger and
             min_char_speed < info->target_char_speed *
                                  speed_tolerance_for_char_speed_in_danger);
   }();
 
-  const bool comoving_decreasing_slower_than_char_speeds =
-      not(crossing_time_info.t_char_speed > 0.0 and
-          crossing_time_info.t_comoving_char_speed > 0.0 and
-          update_args.min_comoving_char_speed > 0.0 and
-          update_args.min_comoving_char_speed /
-                  crossing_time_info.t_comoving_char_speed >
-              update_args.min_char_speed / crossing_time_info.t_char_speed);
+  const bool comoving_decreasing_slower_than_char_speeds = not(
+      crossing_time_info.t_char_speed.has_value() and
+      crossing_time_info.t_comoving_char_speed.has_value() and
+      update_args.min_comoving_char_speed > 0.0 and
+      update_args.min_comoving_char_speed /
+              crossing_time_info.t_comoving_char_speed.value() >
+          update_args.min_char_speed / crossing_time_info.t_char_speed.value());
   // The value of 5.0 was chosen by trial and error in SpEC
   constexpr double comoving_char_speed_to_damping_time_limit = 5.0;
   if (char_speed_is_in_danger) {
@@ -84,14 +86,15 @@ void AhSpeed::update(const gsl::not_null<Info*> info,
     constexpr double target_speed_decrease_factor = 0.125;
     constexpr double time_tolerance_for_delta_r =
         0.25 * time_tolerance_for_delta_r_in_danger;
-    if ((crossing_time_info.t_char_speed > 0.0 and
-         crossing_time_info.t_delta_radius >
+    if ((crossing_time_info.t_char_speed.has_value() and
+         crossing_time_info.t_delta_radius.value_or(-1.0) >
              info->damping_time * time_tolerance_for_delta_r) or
         update_args.min_comoving_char_speed < 0.0) {
       info->discontinuous_change_has_occurred = true;
       info->target_char_speed = min_char_speed * target_speed_decrease_factor;
-      info->suggested_time_scale =
-          std::min(info->damping_time, crossing_time_info.t_delta_radius);
+      info->suggested_time_scale = std::min(
+          info->damping_time, crossing_time_info.t_delta_radius.value_or(
+                                  std::numeric_limits<double>::infinity()));
     } else {
       info->discontinuous_change_has_occurred = true;
       info->state = std::make_unique<States::DeltaR>();
@@ -100,8 +103,8 @@ void AhSpeed::update(const gsl::not_null<Info*> info,
     }
   } else if (update_args.min_comoving_char_speed > 0.0 and
              update_args.min_char_speed > 0.0 and
-             (crossing_time_info.t_comoving_char_speed == 0.0 or
-              (crossing_time_info.t_comoving_char_speed >
+             (not crossing_time_info.t_comoving_char_speed.has_value() or
+              (crossing_time_info.t_comoving_char_speed.value() >
                    comoving_char_speed_to_damping_time_limit *
                        info->damping_time and
                comoving_decreasing_slower_than_char_speeds)) and

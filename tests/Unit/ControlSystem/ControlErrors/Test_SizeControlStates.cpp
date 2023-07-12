@@ -29,7 +29,8 @@ struct TestParams {
   double min_char_speed{0.01};
   double min_comoving_char_speed{-0.02};
   double control_err_delta_r{0.03};
-  control_system::size::CrossingTimeInfo crossing_time_info{0.0, 0.0, 0.0};
+  control_system::size::CrossingTimeInfo crossing_time_info{
+      std::nullopt, std::nullopt, std::nullopt};
 };
 
 template <typename InitialState, typename FinalState>
@@ -37,6 +38,25 @@ void do_test(const TestParams& test_params,
              const bool expected_discontinuous_change_has_occurred,
              const std::optional<double> expected_suggested_time_scale,
              const double expected_target_char_speed) {
+  const std::string initial_state = InitialState{}.name();
+  const std::string final_state = FinalState{}.name();
+  CAPTURE(initial_state);
+  CAPTURE(final_state);
+  CAPTURE(expected_discontinuous_change_has_occurred);
+  CAPTURE(expected_suggested_time_scale);
+  CAPTURE(expected_target_char_speed);
+  CAPTURE(test_params.original_target_char_speed);
+  CAPTURE(test_params.damping_time);
+  CAPTURE(test_params.min_char_speed);
+  CAPTURE(test_params.min_comoving_char_speed);
+  CAPTURE(test_params.control_err_delta_r);
+  CAPTURE(test_params.crossing_time_info.char_speed_will_hit_zero_first);
+  CAPTURE(
+      test_params.crossing_time_info.horizon_will_hit_excision_boundary_first);
+  CAPTURE(test_params.crossing_time_info.t_char_speed);
+  CAPTURE(test_params.crossing_time_info.t_comoving_char_speed);
+  CAPTURE(test_params.crossing_time_info.t_delta_radius);
+
   // Set reasonable values for quantities that won't change in the various
   // logic tests.
   const double target_drift_velocity = 0.001;
@@ -115,14 +135,14 @@ void test_size_control_update() {
 
   // Make deltar cross zero after damping time.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.0, 0.0, 1.1 * test_params.damping_time);
+      std::nullopt, std::nullopt, 1.1 * test_params.damping_time);
   do_test<control_system::size::States::Initial,
           control_system::size::States::DeltaR>(
       test_params, true, std::nullopt, test_params.original_target_char_speed);
 
   // Make deltar cross zero before damping time.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.0, 0.0, 0.9 * test_params.damping_time);
+      std::nullopt, std::nullopt, 0.9 * test_params.damping_time);
   do_test<control_system::size::States::Initial,
           control_system::size::States::DeltaR>(
       test_params, true, 0.9 * test_params.damping_time,
@@ -130,7 +150,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, faster than char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.91 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.91 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::Initial,
           control_system::size::States::DeltaR>(
       test_params, true, 0.9 * test_params.damping_time,
@@ -138,7 +159,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, same as char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.9 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.9 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::Initial,
           control_system::size::States::DeltaR>(
       test_params, true, 0.9 * test_params.damping_time,
@@ -146,7 +168,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, slower than char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.89 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.89 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::Initial,
           control_system::size::States::AhSpeed>(
       test_params, true, 0.89 * test_params.damping_time,
@@ -154,8 +177,8 @@ void test_size_control_update() {
 
   // Now do DeltaR tests
   test_params.min_comoving_char_speed = -0.02;
-  test_params.crossing_time_info =
-      control_system::size::CrossingTimeInfo(0.0, 0.0, 0.0);
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
 
   // Should do nothing
   do_test<control_system::size::States::DeltaR,
@@ -178,14 +201,14 @@ void test_size_control_update() {
   // Make deltar cross zero *slightly* before damping time; should do
   // nothing (depends on tolerance in control_system::size::StateDeltaR).
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.0, 0.0, 0.999 * test_params.damping_time);
+      std::nullopt, std::nullopt, 0.999 * test_params.damping_time);
   do_test<control_system::size::States::DeltaR,
           control_system::size::States::DeltaR>(
       test_params, false, std::nullopt, test_params.original_target_char_speed);
 
   // Make deltar cross zero before damping time.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.0, 0.0, 0.9 * test_params.damping_time);
+      std::nullopt, std::nullopt, 0.9 * test_params.damping_time);
   do_test<control_system::size::States::DeltaR,
           control_system::size::States::DeltaR>(
       test_params, false, 0.9 * test_params.damping_time,
@@ -193,7 +216,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, faster than char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.91 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.91 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::DeltaR,
           control_system::size::States::DeltaR>(
       test_params, false, 0.9 * test_params.damping_time,
@@ -201,7 +225,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, same as char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.9 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.9 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::DeltaR,
           control_system::size::States::DeltaR>(
       test_params, false, 0.9 * test_params.damping_time,
@@ -209,7 +234,8 @@ void test_size_control_update() {
 
   // Make deltar cross zero before damping time, slower than char speed.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.89 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.89 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::DeltaR,
           control_system::size::States::DeltaR>(
       test_params, false, 0.89 * test_params.damping_time,
@@ -236,8 +262,8 @@ void test_size_control_update() {
   // Now do AhSpeed tests
   test_params.min_comoving_char_speed = -0.02;
   test_params.control_err_delta_r = 0.03;
-  test_params.crossing_time_info =
-      control_system::size::CrossingTimeInfo(0.0, 0.0, 0.0);
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
 
   // Should do nothing.
   do_test<control_system::size::States::AhSpeed,
@@ -267,15 +293,15 @@ void test_size_control_update() {
   // Now it should do nothing because comoving crossing time is very small.
   test_params.min_char_speed = 0.01;
   test_params.min_comoving_char_speed = 0.02;
-  test_params.crossing_time_info =
-      control_system::size::CrossingTimeInfo(0.0, 1.e-10, 0.0);
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, 1.e-10, std::nullopt);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::AhSpeed>(
       test_params, false, std::nullopt, test_params.original_target_char_speed);
 
   // Now it should go to DeltaR because comoving crossing time is large.
   test_params.crossing_time_info =
-      control_system::size::CrossingTimeInfo(0.0, 100.0, 0.0);
+      control_system::size::CrossingTimeInfo(std::nullopt, 100.0, std::nullopt);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::DeltaR>(
       test_params, true, std::nullopt, test_params.original_target_char_speed);
@@ -283,7 +309,7 @@ void test_size_control_update() {
   // Now it should do nothing because comoving is decreasing faster than
   // charspeeds.
   test_params.crossing_time_info =
-      control_system::size::CrossingTimeInfo(1000.0, 100.0, 0.0);
+      control_system::size::CrossingTimeInfo(1000.0, 100.0, std::nullopt);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::AhSpeed>(
       test_params, false, std::nullopt, test_params.original_target_char_speed);
@@ -291,7 +317,7 @@ void test_size_control_update() {
   // Now it should think delta_r is in danger,
   // and it should go to DeltaR state.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.0, 0.0, 19.0 * test_params.damping_time);
+      std::nullopt, std::nullopt, 19.0 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::DeltaR>(
       test_params, true, 19.0 * test_params.damping_time,
@@ -309,7 +335,7 @@ void test_size_control_update() {
   // AhSpeed state if char_speed has a positive crossing time.
   test_params.min_comoving_char_speed = 0.02;
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      1.e10, 0.0, 19.0 * test_params.damping_time);
+      1.e10, std::nullopt, 19.0 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::AhSpeed>(
       test_params, true, test_params.damping_time,
@@ -317,7 +343,7 @@ void test_size_control_update() {
 
   // .. but not if the delta_r crossing time is small enough.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      1.e10, 0.0, 4.99 * test_params.damping_time);
+      1.e10, std::nullopt, 4.99 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::DeltaR>(
       test_params, true, 4.99 * test_params.damping_time,
@@ -327,7 +353,8 @@ void test_size_control_update() {
   // greater than the char speed, it changes the timescale and
   // nothing else.
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.89 * test_params.damping_time, 0.0, 0.9 * test_params.damping_time);
+      0.89 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::AhSpeed>(
       test_params, false, 0.89 * test_params.damping_time,
@@ -344,7 +371,8 @@ void test_size_control_update() {
   // Same situation as previous, but char speed is *barely* in danger.
   test_params.min_char_speed = test_params.original_target_char_speed * 1.09999;
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.98999 * test_params.damping_time, 0.0, 0.99 * test_params.damping_time);
+      0.98999 * test_params.damping_time, std::nullopt,
+      0.99 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::AhSpeed>(
       test_params, false, 0.98999 * test_params.damping_time,
@@ -360,7 +388,7 @@ void test_size_control_update() {
   // Again char speed is *barely not* in danger, but for a different reason.
   test_params.min_char_speed = test_params.original_target_char_speed * 1.09999;
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
-      0.99001 * test_params.damping_time, 0.0,
+      0.99001 * test_params.damping_time, std::nullopt,
       0.992 * test_params.damping_time);
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::DeltaR>(
