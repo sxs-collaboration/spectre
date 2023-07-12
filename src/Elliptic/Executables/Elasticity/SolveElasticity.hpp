@@ -43,7 +43,6 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -202,12 +201,6 @@ struct Metavariables {
                        Events::Completion,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
-                       dg::Events::ObserveVolumeIntegrals<
-                           volume_dim,
-                           tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
-                               volume_dim>>,
-                           tmpl::list<>,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;

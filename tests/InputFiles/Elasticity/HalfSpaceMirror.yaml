@@ -114,8 +114,12 @@ EventsAndTriggers:
             - Name: Error(Displacement)
               NormType: L2Norm
               Components: Sum
-      - ObserveVolumeIntegrals:
+      - ObserveNorms:
           SubfileName: VolumeIntegrals
+          TensorsToObserve:
+            - Name: PotentialEnergyDensity
+              NormType: VolumeIntegral
+              Components: Individual
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:

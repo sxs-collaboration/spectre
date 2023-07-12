@@ -111,5 +111,9 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
-      - ObserveVolumeIntegrals:
+      - ObserveNorms:
           SubfileName: VolumeIntegrals
+          TensorsToObserve:
+            - Name: AdmMassIntegrand
+              NormType: VolumeIntegral
+              Components: Individual

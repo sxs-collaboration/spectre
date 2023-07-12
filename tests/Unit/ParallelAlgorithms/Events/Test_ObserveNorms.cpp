@@ -92,6 +92,7 @@ struct MockContributeReductionData {
     std::vector<double> min_values;
     std::vector<double> l2_norm_values;
     std::vector<double> l2_integral_norm_values;
+    std::vector<double> volume_integral_values;
   };
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static Results results;
@@ -117,6 +118,7 @@ struct MockContributeReductionData {
     results.min_values = std::get<4>(reduction_data.data());
     results.l2_norm_values = std::get<5>(reduction_data.data());
     results.l2_integral_norm_values = std::get<6>(reduction_data.data());
+    results.volume_integral_values = std::get<7>(reduction_data.data());
   }
 };
 
@@ -286,6 +288,17 @@ void test(const std::unique_ptr<ObserveEvent> observe,
             approx(results.l2_norm_values[i]));
     }
   }
+
+  // Check volume integral norms
+  CHECK(results.reduction_names[19] == "VolumeIntegral(Var1)");
+  CHECK(results.reduction_names[20] == "VolumeIntegral(Var1_x)");
+  CHECK(results.reduction_names[21] == "VolumeIntegral(Var1_y)");
+  CHECK(results.reduction_names[22] == "VolumeIntegral(Var1_z)");
+  CHECK(results.volume_integral_values[0] == approx(204.0));
+  CHECK(results.volume_integral_values[1] == approx(41.0));
+  CHECK(results.volume_integral_values[2] == approx(68.0));
+  CHECK(results.volume_integral_values[3] == approx(95.0));
+
 }
 }  // namespace
 
@@ -300,8 +313,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                   {"Var0TimesThree", "Max", "Individual"},
                                   {"Var1", "L2Norm", "Sum"},
                                   {"Var1", "L2IntegralNorm", "Sum"},
+                                  {"Var1", "VolumeIntegral", "Sum"},
                                   {"Var1", "L2Norm", "Individual"},
                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                  {"Var1", "VolumeIntegral", "Individual"},
                                   {"Var1", "Min", "Sum"}}}),
                          Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto, "Section0");
@@ -337,10 +352,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
       NormType: L2IntegralNorm
       Components: Sum
     - Name: Var1
+      NormType: VolumeIntegral
+      Components: Sum
+    - Name: Var1
       NormType: L2Norm
       Components: Individual
     - Name: Var1
       NormType: L2IntegralNorm
+      Components: Individual
+    - Name: Var1
+      NormType: VolumeIntegral
       Components: Individual
     - Name: Var1
       NormType: Min
@@ -360,8 +381,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                   {"Var0TimesThree", "Max", "Individual"},
                   {"Var1", "L2Norm", "Sum"},
                   {"Var1", "L2IntegralNorm", "Sum"},
+                  {"Var1", "VolumeIntegral", "Sum"},
                   {"Var1", "L2Norm", "Individual"},
                   {"Var1", "L2IntegralNorm", "Individual"},
+                  {"Var1", "VolumeIntegral", "Individual"},
                   {"Var1", "Min", "Sum"}}}),
              Spectral::Basis::FiniteDifference,
              Spectral::Quadrature::CellCentered, std::nullopt);
