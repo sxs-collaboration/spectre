@@ -155,10 +155,9 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
   gh::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
-      spacetime_normal_one_form, spacetime_normal_vector,
-      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-      half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
-      mesh, db::get<::Tags::Time>(box),
+      spacetime_normal_vector, sqrt_det_spatial_metric, inverse_spatial_metric,
+      d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
+      spacetime_metric, pi, phi, mesh, db::get<::Tags::Time>(box),
       db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                           Frame::Inertial>>(
           box)(db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(box)(

@@ -26,7 +26,6 @@
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
-#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -77,7 +76,6 @@ void SetPiFromGauge<Dim>::apply(
                  gr::Tags::InverseSpatialMetric<DataVector, Dim>,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
                  gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
-                 gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
                  gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
                  ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                                Frame::Inertial>,
@@ -97,11 +95,10 @@ void SetPiFromGauge<Dim>::apply(
       buffer(get<0, 0>(spacetime_metric).size());
 
   auto& [spatial_metric, sqrt_det_spatial_metric, inverse_spatial_metric, lapse,
-         shift, inverse_spacetime_metric, spacetime_unit_normal_one_form,
-         spacetime_unit_normal_vector, d_lapse, d_shift, d_spatial_metric,
-         ex_curvature, trace_ex_curvature, spatial_christoffel_first,
-         trace_spatial_christoffel_first, gauge_h, d4_gauge_h, dt_lapse,
-         dt_shift, dt_spatial_metric] = buffer;
+         shift, inverse_spacetime_metric, spacetime_unit_normal_vector, d_lapse,
+         d_shift, d_spatial_metric, ex_curvature, trace_ex_curvature,
+         spatial_christoffel_first, trace_spatial_christoffel_first, gauge_h,
+         d4_gauge_h, dt_lapse, dt_shift, dt_spatial_metric] = buffer;
 
   gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
   determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
@@ -112,8 +109,6 @@ void SetPiFromGauge<Dim>::apply(
   gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
   gr::inverse_spacetime_metric(make_not_null(&inverse_spacetime_metric), lapse,
                                shift, inverse_spatial_metric);
-  gr::spacetime_normal_one_form<DataVector, Dim, Frame::Inertial>(
-      make_not_null(&spacetime_unit_normal_one_form), lapse);
   gr::spacetime_normal_vector(make_not_null(&spacetime_unit_normal_vector),
                               lapse, shift);
 
@@ -167,10 +162,10 @@ void SetPiFromGauge<Dim>::apply(
   // Note: we pass in pi to compute d4_gauge_h, but we don't use d4_gauge_h. We
   // actually reset pi from gauge_h below.
   dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
-           spacetime_unit_normal_one_form, spacetime_unit_normal_vector,
-           sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-           half_pi_two_normals, half_phi_two_normals, spacetime_metric, *pi,
-           phi, mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+           spacetime_unit_normal_vector, sqrt_det_spatial_metric,
+           inverse_spatial_metric, d4_spacetime_metric, half_pi_two_normals,
+           half_phi_two_normals, spacetime_metric, *pi, phi, mesh, time,
+           inertial_coords, inverse_jacobian, gauge_condition);
 
   // Compute lapse and shift time derivatives
   get(dt_lapse) =

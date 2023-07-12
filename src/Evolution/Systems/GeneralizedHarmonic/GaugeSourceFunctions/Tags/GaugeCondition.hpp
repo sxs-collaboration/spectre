@@ -63,7 +63,6 @@ struct GaugeAndDerivativeCompute
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
       gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim>,
@@ -78,8 +77,6 @@ struct GaugeAndDerivativeCompute
       gsl::not_null<return_type*> gauge_and_deriv,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-      const tnsr::a<DataVector, Dim, Frame::Inertial>&
-          spacetime_unit_normal_one_form,
       const tnsr::A<DataVector, Dim, Frame::Inertial>& spacetime_unit_normal,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,

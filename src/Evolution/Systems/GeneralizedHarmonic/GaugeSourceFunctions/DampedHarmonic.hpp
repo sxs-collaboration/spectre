@@ -167,8 +167,6 @@ void damped_harmonic_rollon(
     const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
     const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
@@ -191,8 +189,6 @@ void damped_harmonic(
     gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
     const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
@@ -266,8 +262,6 @@ class DampedHarmonic final : public GaugeCondition {
           d4_gauge_h,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
-      const tnsr::a<DataVector, SpatialDim, Frame::Inertial>&
-          spacetime_unit_normal_one_form,
       const tnsr::A<DataVector, SpatialDim, Frame::Inertial>&
           spacetime_unit_normal,
       const Scalar<DataVector>& sqrt_det_spatial_metric,

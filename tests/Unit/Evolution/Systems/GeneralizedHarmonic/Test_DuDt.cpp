@@ -583,11 +583,11 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   tnsr::ab<DataVector, Dim> d4_gauge_h{mesh.number_of_grid_points()};
 
   gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h),
-                       lapse, shift, normal_one_form, normal_vector,
-                       sqrt_det_spatial_metric, inverse_spatial_metric,
-                       da_spacetime_metric, half_pi_two_normals,
-                       half_phi_two_normals, spacetime_metric, pi, phi, mesh,
-                       time, inertial_coords, inv_jac, gauge_condition);
+                       lapse, shift, normal_vector, sqrt_det_spatial_metric,
+                       inverse_spatial_metric, da_spacetime_metric,
+                       half_pi_two_normals, half_phi_two_normals,
+                       spacetime_metric, pi, phi, mesh, time, inertial_coords,
+                       inv_jac, gauge_condition);
 
   const auto [expected_dt_spacetime_metric, expected_dt_pi, expected_dt_phi] =
       gh_rhs_reference_impl(
