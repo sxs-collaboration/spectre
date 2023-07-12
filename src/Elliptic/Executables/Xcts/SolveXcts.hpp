@@ -96,10 +96,11 @@ struct Metavariables {
                      Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
                      gr::Tags::SpatialMetric<DataVector, 3>>,
                  hydro::Tags::LowerSpatialFourVelocityCompute>>;
-  using observer_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 spacetime_quantities_compute, hydro_quantities_compute,
-                 error_compute>;
+  using observer_compute_tags = tmpl::list<
+      ::Events::Tags::ObserverMeshCompute<volume_dim>,
+      ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
+                                                    Frame::Inertial>,
+      spacetime_quantities_compute, hydro_quantities_compute, error_compute>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =

@@ -190,6 +190,12 @@ struct EvolutionMetavars {
                               tmpl::list<>>>,
       tmpl::conditional_t<
           use_dg_subcell,
+          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+              volume_dim, Frame::ElementLogical>,
+          ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
+                                                     Frame::ElementLogical>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,
                                                                    Frame::Grid>,
           domain::Tags::Coordinates<volume_dim, Frame::Grid>>,
@@ -198,12 +204,23 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
               volume_dim, Frame::Inertial>,
           domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
-  using non_tensor_compute_tags = tmpl::list<
+  using non_tensor_compute_tags = tmpl::append<
       tmpl::conditional_t<
           use_dg_subcell,
-          evolution::dg::subcell::Tags::ObserverMeshCompute<volume_dim>,
-          ::Events::Tags::ObserverMeshCompute<volume_dim>>,
-      analytic_compute, error_compute>;
+          tmpl::list<
+              evolution::dg::subcell::Tags::ObserverMeshCompute<volume_dim>,
+              evolution::dg::subcell::Tags::ObserverInverseJacobianCompute<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              evolution::dg::subcell::Tags::ObserverJacobianAndDetInvJacobian<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+          tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                     ::Events::Tags::ObserverInverseJacobianCompute<
+                         volume_dim, Frame::ElementLogical, Frame::Inertial>,
+                     ::Events::Tags::ObserverJacobianCompute<
+                         volume_dim, Frame::ElementLogical, Frame::Inertial>,
+                     ::Events::Tags::ObserverDetInvJacobianCompute<
+                         Frame::ElementLogical, Frame::Inertial>>>,
+      tmpl::list<analytic_compute, error_compute>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

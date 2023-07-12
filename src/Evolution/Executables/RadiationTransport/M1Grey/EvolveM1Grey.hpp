@@ -145,6 +145,8 @@ struct EvolutionMetavars {
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 ::Events::Tags::ObserverDetInvJacobianCompute<
+                     Frame::ElementLogical, Frame::Inertial>,
                  analytic_compute, error_compute>;
 
   struct factory_creation
