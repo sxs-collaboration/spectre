@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Structure/ExcisionSphere.hpp"
+#include "Domain/ExcisionSphere.hpp"
 
 #include <cstddef>
 #include <optional>

@@ -15,9 +15,9 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -143,7 +143,7 @@ void test_abutting_direction_shell() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.ExcisionSphere", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.ExcisionSphere", "[Domain][Unit]") {
   check_excision_sphere_1d();
   check_excision_sphere_2d();
   check_excision_sphere_3d();
