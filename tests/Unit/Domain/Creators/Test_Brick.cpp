@@ -66,6 +66,7 @@ void test_brick_construction(
         {}) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       brick, expect_boundary_conditions);
+  CHECK(brick.grid_anchors().empty());
 
   CHECK(brick.initial_extents() == expected_extents);
   CHECK(brick.initial_refinement_levels() == expected_refinement_level);

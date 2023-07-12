@@ -150,6 +150,15 @@ void test() {
       std::array{5.0, 0.01, 0.02}, std::array{-5.0, -0.01, -0.02}};
   const double domain_outer_radius = 20.0;
 
+  const auto anchors = create_grid_anchors(centers[0], centers[1]);
+  CHECK(anchors.count("Center") == 1);
+  CHECK(anchors.count("CenterA") == 1);
+  CHECK(anchors.count("CenterB") == 1);
+  CHECK(anchors.at("Center") ==
+        tnsr::I<double, 3, Frame::Grid>(std::array{0.0, 0.0, 0.0}));
+  CHECK(anchors.at("CenterA") == tnsr::I<double, 3, Frame::Grid>(centers[0]));
+  CHECK(anchors.at("CenterB") == tnsr::I<double, 3, Frame::Grid>(centers[1]));
+
   for (const auto& [excise_A, excise_B] :
        cartesian_product(make_array(true, false), make_array(true, false))) {
     std::optional<double> inner_radius_A{};

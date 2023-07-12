@@ -49,6 +49,7 @@ void test_rotated_rectangles_construction(
     const bool is_periodic = false) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       rotated_rectangles, expect_boundary_conditions, is_periodic);
+  CHECK(rotated_rectangles.grid_anchors().empty());
 
   CHECK(rotated_rectangles.initial_extents() == expected_extents);
   CHECK(rotated_rectangles.initial_refinement_levels() ==

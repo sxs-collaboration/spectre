@@ -41,6 +41,7 @@ void test_interval_construction(const creators::Interval& domain_creator,
       domain_creator, expect_boundary_conditions, is_periodic, times);
   TestHelpers::domain::BoundaryConditions::test_boundary_conditions(
       domain_creator.external_boundary_conditions());
+  CHECK(domain_creator.grid_anchors().empty());
 
   // Interval-specific tests
   CHECK(domain.block_groups().empty());

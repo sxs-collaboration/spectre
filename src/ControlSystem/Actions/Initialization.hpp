@@ -27,7 +27,7 @@ struct get_center_tags;
 
 template <domain::ObjectLabel... Object>
 struct get_center_tags<domain::object_list<Object...>> {
-  using type = tmpl::list<domain::Tags::ExcisionCenter<Object>...>;
+  using type = tmpl::list<domain::Tags::ObjectCenter<Object>...>;
 };
 
 template <>
@@ -47,8 +47,8 @@ struct get_center_tags<domain::object_list<>> {
  *   - `control_system::Tags::WriteDataToDisk`
  *   - `control_system::Tags::ObserveCenters`
  *   - `control_system::Tags::Verbosity`
- *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::A>`
- *   - `domain::Tags::ExcisionCenter<domain::ObjectLabel::B>`
+ *   - `domain::Tags::ObjectCenter<domain::ObjectLabel::A>`
+ *   - `domain::Tags::ObjectCenter<domain::ObjectLabel::B>`
  *
  * DataBox:
  * - Uses: Nothing

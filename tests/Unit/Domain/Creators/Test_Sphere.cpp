@@ -244,6 +244,11 @@ void test_sphere_construction(
   // check consistency of domain
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       sphere, expect_boundary_conditions, false, times);
+  const auto& grid_anchors = sphere.grid_anchors();
+  CHECK(grid_anchors.size() == 1);
+  CHECK(grid_anchors.count("Center") == 1);
+  CHECK(grid_anchors.at("Center") ==
+        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}});
 
   const auto& blocks = domain.blocks();
   const auto block_names = sphere.block_names();

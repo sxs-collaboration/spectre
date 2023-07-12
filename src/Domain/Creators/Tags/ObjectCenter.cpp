@@ -17,24 +17,24 @@
 
 namespace domain::Tags {
 template <ObjectLabel Label>
-tnsr::I<double, 3, Frame::Grid> ExcisionCenter<Label>::create_from_options(
+tnsr::I<double, 3, Frame::Grid> ObjectCenter<Label>::create_from_options(
     const std::unique_ptr<::DomainCreator<3>>& domain_creator) {
-  const auto domain = domain_creator->create_domain();
-  const std::string name = "ExcisionSphere"s + get_output(Label);
-  if (domain.excision_spheres().count(name) != 1) {
-    ERROR(name << " is not in the domains excision spheres but is needed to "
-                  "generate the ExcisionCenter<"
-               << Label << ">.");
+  const auto grid_anchors = domain_creator->grid_anchors();
+  const std::string name = "Center"s + get_output(Label);
+  if (grid_anchors.count(name) != 1) {
+    ERROR(
+        "'" << name
+            << "' is not in the domain creators grid anchors but is needed to "
+               "generate the ObjectCenter<"
+            << Label << ">.");
   }
 
-  return domain.excision_spheres().at(name).center();
+  return grid_anchors.at(name);
 }
 
 #define OBJECT(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                  \
-  template struct ObjectCenter<OBJECT(data)>; \
-  template struct ExcisionCenter<OBJECT(data)>;
+#define INSTANTIATE(_, data) template struct ObjectCenter<OBJECT(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (ObjectLabel::A, ObjectLabel::B, ObjectLabel::None))

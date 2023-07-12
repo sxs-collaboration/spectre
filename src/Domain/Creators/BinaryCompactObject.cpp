@@ -202,6 +202,10 @@ BinaryCompactObject::BinaryCompactObject(
         "Cannot have periodic boundary conditions with a binary domain");
   }
 
+  // Create grid anchors
+  grid_anchors_ = bco::create_grid_anchors(std::array{x_coord_a_, 0.0, 0.0},
+                                           std::array{x_coord_b_, 0.0, 0.0});
+
   // Create block names and groups
   static std::array<std::string, 6> wedge_directions{
       "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
