@@ -141,6 +141,16 @@ void test_abutting_direction_shell() {
   }
 }
 
+void test_error() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ExcisionSphere<3>(-2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}},
+                        {}),
+      Catch::Contains(
+          "The ExcisionSphere must have a radius greater than zero."));
+#endif
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.ExcisionSphere", "[Domain][Unit]") {
@@ -148,16 +158,5 @@ SPECTRE_TEST_CASE("Unit.Domain.ExcisionSphere", "[Domain][Unit]") {
   check_excision_sphere_2d();
   check_excision_sphere_3d();
   test_abutting_direction_shell();
-}
-
-// [[OutputRegex, The ExcisionSphere must have a radius greater than zero.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ExcisionSphereAssert",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_excision_sphere = ExcisionSphere<3>(
-      -2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}}, {});
-  static_cast<void>(failed_excision_sphere);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  test_error();
 }
