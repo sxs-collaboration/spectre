@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 /// \cond
 namespace Options {
@@ -65,6 +66,17 @@ struct MakeWithSize<blaze::DynamicVector<T, TF, Tag>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <typename T, bool TF, typename Tag>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    blaze::DynamicVector<T, TF, Tag>> {
+  static constexpr bool is_trivial = false;
+  static SPECTRE_ALWAYS_INLINE void apply(
+      const gsl::not_null<blaze::DynamicVector<T, TF, Tag>*> result,
+      const size_t size) {
+    result->resize(size);
+  }
+};
 
 namespace DynamicVector_detail {
 template <typename T>

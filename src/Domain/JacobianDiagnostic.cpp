@@ -25,7 +25,6 @@ void jacobian_diagnostic(
         tnsr::I<DataVector, Dim, Fr>, Dim, UpLo::Lo,
         typename Frame::ElementLogical>& numeric_jacobian_transpose) {
   const size_t number_of_points = analytic_jacobian.begin()->size();
-  destructive_resize_components(jacobian_diag, number_of_points);
 
   // i_hat = logical frame index
   // i = mapped frame index

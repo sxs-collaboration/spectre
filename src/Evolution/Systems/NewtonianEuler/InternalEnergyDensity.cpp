@@ -4,7 +4,6 @@
 #include "Evolution/Systems/NewtonianEuler/InternalEnergyDensity.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -13,7 +12,6 @@ template <typename DataType>
 void internal_energy_density(const gsl::not_null<Scalar<DataType>*> result,
                              const Scalar<DataType>& mass_density,
                              const Scalar<DataType>& specific_internal_energy) {
-  destructive_resize_components(result, get_size(get(mass_density)));
   get(*result) = get(mass_density) * get(specific_internal_energy);
 }
 

@@ -12,13 +12,12 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
 namespace determinant_and_inverse_detail {
 // Helps to shorten some repeated code:
@@ -378,10 +377,8 @@ void determinant_and_inverse(
                 "Tensor is not allowed since it's not clear what that means.");
   static_assert(not std::is_integral<T>::value, "Can't invert a Tensor<int>.");
 
-  if constexpr (not tt::is_complex_or_fundamental_v<T>) {
-    destructive_resize_components(det, get<0, 0>(tensor).size());
-    destructive_resize_components(inv, get<0, 0>(tensor).size());
-  }
+  set_number_of_grid_points(det, tensor);
+  set_number_of_grid_points(inv, tensor);
   determinant_and_inverse_detail::DetAndInverseImpl<Symm, Index0,
                                                     Index1>::apply(det, inv,
                                                                    tensor);

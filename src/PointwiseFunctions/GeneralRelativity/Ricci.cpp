@@ -5,10 +5,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "IndexManipulation.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
@@ -17,8 +17,7 @@ void ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0, 0>(christoffel_2nd_kind)));
+  set_number_of_grid_points(result, christoffel_2nd_kind);
   for (auto& component : *result) {
     component = 0.0;
   }

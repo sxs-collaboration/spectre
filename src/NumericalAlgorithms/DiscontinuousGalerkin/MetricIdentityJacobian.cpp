@@ -17,11 +17,11 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace {
 template <size_t Dim>
@@ -34,8 +34,8 @@ void metric_identity_det_jac_times_inv_jac_impl(
     const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
         jacobian) {
   static_assert(Dim == 1 or Dim == 2, "Generic impl handles only 1d and 2d.");
-  destructive_resize_components(det_jac_times_inverse_jacobian,
-                                mesh.number_of_grid_points());
+  set_number_of_grid_points(det_jac_times_inverse_jacobian,
+                            mesh.number_of_grid_points());
   if constexpr (Dim == 1) {
     (void)jacobian;
     get<0, 0>(*det_jac_times_inverse_jacobian) = 1.0;
@@ -83,8 +83,8 @@ void metric_identity_det_jac_times_inv_jac_impl(
   //
   // The 3d implementation is what should be generalized to higher dimensions if
   // the need arises.
-  destructive_resize_components(det_jac_times_inverse_jacobian,
-                                mesh.number_of_grid_points());
+  set_number_of_grid_points(det_jac_times_inverse_jacobian,
+                            mesh.number_of_grid_points());
   const Mesh<1>& mesh0 = mesh.slice_through(0);
   const Mesh<1>& mesh1 = mesh.slice_through(1);
   const Mesh<1>& mesh2 = mesh.slice_through(2);
@@ -262,10 +262,10 @@ void metric_identity_jacobian_quantities(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
   static_assert(Dim == 1 or Dim == 2 or Dim == 3,
                 "Only implemented for 1, 2, and 3d.");
-  destructive_resize_components(det_jac_times_inverse_jacobian,
-                                mesh.number_of_grid_points());
-  destructive_resize_components(inverse_jacobian, mesh.number_of_grid_points());
-  destructive_resize_components(det_jacobian, mesh.number_of_grid_points());
+  set_number_of_grid_points(det_jac_times_inverse_jacobian,
+                            mesh.number_of_grid_points());
+  set_number_of_grid_points(inverse_jacobian, mesh.number_of_grid_points());
+  set_number_of_grid_points(det_jacobian, mesh.number_of_grid_points());
   ASSERT(
       alg::all_of(*jacobian,
                   [&mesh](const DataVector& jac_component) {

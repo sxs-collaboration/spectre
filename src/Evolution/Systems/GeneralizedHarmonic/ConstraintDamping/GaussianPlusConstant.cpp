@@ -15,9 +15,9 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace domain::FunctionsOfTime {
 class FunctionOfTime;
@@ -67,7 +67,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/) const {
-  destructive_resize_components(value_at_x, get<0>(x).size());
+  set_number_of_grid_points(value_at_x, x);
   apply_call_operator(value_at_x, x);
 }
 

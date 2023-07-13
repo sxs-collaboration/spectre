@@ -7,9 +7,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gh {
 template <size_t Dim>
@@ -19,12 +19,9 @@ void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> pi_normal_dot_flux,
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi_normal_dot_flux,
     const tnsr::aa<DataVector, Dim>& spacetime_metric) {
-  destructive_resize_components(pi_normal_dot_flux,
-                                get<0, 0>(spacetime_metric).size());
-  destructive_resize_components(phi_normal_dot_flux,
-                                get<0, 0>(spacetime_metric).size());
-  destructive_resize_components(spacetime_metric_normal_dot_flux,
-                                get<0, 0>(spacetime_metric).size());
+  set_number_of_grid_points(pi_normal_dot_flux, spacetime_metric);
+  set_number_of_grid_points(phi_normal_dot_flux, spacetime_metric);
+  set_number_of_grid_points(spacetime_metric_normal_dot_flux, spacetime_metric);
   for (size_t storage_index = 0; storage_index < pi_normal_dot_flux->size();
        ++storage_index) {
     (*pi_normal_dot_flux)[storage_index] = 0.0;

@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -28,9 +27,6 @@ void spatial_ricci_tensor(
     const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::ij<DataType, Dim, Frame>& d_field_p) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0>(conformal_spatial_metric)));
-
   tenex::evaluate<ti::i, ti::j>(
       result,
       contracted_d_conformal_christoffel_difference(ti::i, ti::j) +

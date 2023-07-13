@@ -19,8 +19,8 @@ void half_pi_and_phi_two_normals(
     const tnsr::A<DataVector, Dim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi) {
-  destructive_resize_components(half_pi_two_normals, get<0, 0>(pi).size());
-  destructive_resize_components(half_phi_two_normals, get<0, 0>(pi).size());
+  set_number_of_grid_points(half_pi_two_normals, pi);
+  set_number_of_grid_points(half_phi_two_normals, pi);
   get(*half_pi_two_normals) = 0.0;
   for (size_t i = 0; i < Dim; ++i) {
     half_phi_two_normals->get(i) = 0.0;

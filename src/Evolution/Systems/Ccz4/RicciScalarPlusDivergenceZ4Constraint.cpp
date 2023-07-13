@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -19,9 +18,6 @@ void ricci_scalar_plus_divergence_z4_constraint(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ii<DataType, Dim, Frame>& spatial_ricci_tensor,
     const tnsr::ij<DataType, Dim, Frame>& grad_spatial_z4_constraint) {
-  destructive_resize_components(result,
-                                get_size(get(conformal_factor_squared)));
-
   ::tenex::evaluate(result, conformal_factor_squared() *
                                 inverse_conformal_spatial_metric(ti::I, ti::J) *
                                 (spatial_ricci_tensor(ti::i, ti::j) +

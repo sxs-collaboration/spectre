@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -17,9 +16,6 @@ void conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d) {
-  destructive_resize_components(
-      result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::K, ti::i, ti::j>(
       result, inverse_conformal_spatial_metric(ti::K, ti::L) *
                   (field_d(ti::i, ti::j, ti::l) + field_d(ti::j, ti::i, ti::l) -
@@ -43,9 +39,6 @@ void christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0>(conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::K, ti::i, ti::j>(
       result,
       conformal_christoffel_second_kind(ti::K, ti::i, ti::j) -
@@ -73,9 +66,6 @@ void contracted_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
-  destructive_resize_components(
-      result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::I>(
       result, inverse_conformal_spatial_metric(ti::J, ti::L) *
                   conformal_christoffel_second_kind(ti::I, ti::j, ti::l));

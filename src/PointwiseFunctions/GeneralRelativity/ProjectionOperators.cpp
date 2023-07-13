@@ -26,9 +26,6 @@ void transverse_projection_operator(
         projection_tensor,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(normal_vector)));
-
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {
       projection_tensor->get(i, j) =
@@ -55,9 +52,6 @@ void transverse_projection_operator(
         projection_tensor,
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(normal_one_form)));
-
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {
       projection_tensor->get(i, j) =
@@ -84,9 +78,6 @@ void transverse_projection_operator(
         projection_tensor,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(normal_vector)));
-
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = 0; j < VolumeDim; ++j) {
       projection_tensor->get(i, j) =
@@ -116,9 +107,6 @@ void transverse_projection_operator(
     const tnsr::AA<DataType, VolumeDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(spacetime_normal_vector)));
-
   for (size_t a = 0, b = 0; b < VolumeDim + 1; ++b) {
     projection_tensor->get(a, b) =
         inverse_spacetime_metric.get(a, b) +
@@ -155,9 +143,6 @@ void transverse_projection_operator(
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(spacetime_normal_one_form)));
-
   for (size_t a = 0, b = 0; b < VolumeDim + 1; ++b) {
     projection_tensor->get(a, b) =
         spacetime_metric.get(a, b) +
@@ -197,9 +182,6 @@ void transverse_projection_operator(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  destructive_resize_components(projection_tensor,
-                                get_size(get<0>(spacetime_normal_vector)));
-
   for (size_t a = 0, b = 0; b < VolumeDim + 1; ++b) {
     projection_tensor->get(a, b) =
         spacetime_normal_vector.get(a) * spacetime_normal_one_form.get(b);

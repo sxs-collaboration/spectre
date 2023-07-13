@@ -6,34 +6,53 @@
 #include <array>
 #include <complex>
 #include <cstddef>
+#include <functional>
+#include <vector>
 
-#include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Variables
-// IWYU pragma: no_forward_declare Tensor
+namespace {
+struct Makeable {
+  size_t size = 0;
+  double value = 0.0;
+};
+
+bool operator==(const Makeable& a, const Makeable& b) {
+  return a.size == b.size and a.value == b.value;
+}
+}  // namespace
+
+namespace MakeWithValueImpls {
+template <>
+struct MakeWithSize<Makeable> {
+  static Makeable apply(const size_t size, const double value) {
+    return Makeable{size, value};
+  }
+};
+
+template <>
+struct NumberOfPoints<Makeable> {
+  static size_t apply(const Makeable& input) { return input.size; }
+};
+}  // namespace MakeWithValueImpls
 
 namespace {
-template <size_t Dim>
-struct Var1 : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
+namespace Tags {
+struct Makeable {
+  using type = ::Makeable;
 };
 
-struct Var2 : db::SimpleTag {
-  using type = Scalar<DataVector>;
+struct Makeable2 {
+  using type = ::Makeable;
 };
 
-template <size_t Dim>
-using two_vars = tmpl::list<Var1<Dim>, Var2>;
-
-template <size_t Dim>
-using one_var = tmpl::list<Var1<Dim>>;
+struct Double {
+  using type = double;
+};
+}  // namespace Tags
 
 template <typename R, typename T, typename ValueType>
 void check_make_with_value(const R& expected, const T& input,
@@ -43,99 +62,83 @@ void check_make_with_value(const R& expected, const T& input,
 }
 
 void test_make_tagged_tuple() {
+  check_make_with_value(tuples::TaggedTuple<Tags::Double>(-5.7), 0.0, -5.7);
   for (size_t n_pts = 1; n_pts < 4; ++n_pts) {
     check_make_with_value(
-        tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
-        DataVector(n_pts, 0.0), -5.7);
+        tuples::TaggedTuple<Tags::Makeable>(Makeable{n_pts, -5.7}),
+        Makeable{n_pts, 0.0}, -5.7);
+
     check_make_with_value(
-        tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
-        tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0), -5.7);
-
-    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
-                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
-                              Scalar<DataVector>(n_pts, 3.8)),
-                          DataVector(n_pts, 0.0), 3.8);
-
-    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
-                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
-                              Scalar<DataVector>(n_pts, 3.8)),
-                          tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0),
+        tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2, Tags::Double>(
+            Makeable{n_pts, 3.8}, Makeable{n_pts, 3.8}, 3.8),
+        Makeable{n_pts, 0.0}, 3.8);
+    check_make_with_value(Makeable{n_pts, 3.8},
+                          tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
+                              Makeable{n_pts, 0.0}, Makeable{n_pts, 1.0}),
                           3.8);
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(
+          tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
+              Makeable{1, 0.0}, Makeable{2, 0.0}),
+          0.0),
+      Catch::Contains("Inconsistent number of points in tuple entries"));
+#endif  // SPECTRE_DEBUG
 }
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                   "[DataStructures][Unit]") {
+  check_make_with_value(Makeable{2, 1.2}, 2_st, 1.2);
+  check_make_with_value(Makeable{2, 1.2}, Makeable{2, 3.4}, 1.2);
+
   check_make_with_value(8.3, 1.3, 8.3);
   check_make_with_value(std::complex<double>(8.3, 2.5), 1.3,
                         std::complex<double>(8.3, 2.5));
-  check_make_with_value(8.3, tnsr::i<double, 3>{{{1.3, 8.3, 3.4}}}, 8.3);
-  check_make_with_value(std::complex<double>(8.3, 2.5),
-                        tnsr::i<double, 3>{{{1.3, 8.3, 3.4}}},
+  check_make_with_value(8.3, Makeable{8, 2.3}, 8.3);
+  check_make_with_value(std::complex<double>(8.3, 2.5), Makeable{8, 2.3},
                         std::complex<double>(8.3, 2.5));
-  check_make_with_value(8.3, DataVector{8, 2.3}, 8.3);
-  check_make_with_value(std::complex<double>(8.3, 2.5), DataVector{8, 2.3},
-                        std::complex<double>(8.3, 2.5));
-  check_make_with_value(
-      8.3,
-      tnsr::i<DataVector, 3>{
-          {{DataVector{8, 2.3}, DataVector{8, 9.8}, DataVector{8, -1.2}}}},
-      8.3);
-  check_make_with_value(
-      std::complex<double>(8.3, 2.5),
-      tnsr::i<DataVector, 3>{
-          {{DataVector{8, 2.3}, DataVector{8, 9.8}, DataVector{8, -1.2}}}},
-      std::complex<double>(8.3, 2.5));
 
-  check_make_with_value(Scalar<double>(8.3), 1.3, 8.3);
-  check_make_with_value(tnsr::I<double, 3, Frame::Grid>(8.3), 1.3, 8.3);
-  check_make_with_value(8.3, tnsr::I<double, 3, Frame::Grid>(1.3), 8.3);
-  check_make_with_value(std::complex<double>(8.3, 2.5),
-                        tnsr::I<double, 3, Frame::Grid>(1.3),
-                        std::complex<double>(8.3, 2.5));
-  check_make_with_value(tnsr::Ij<double, 3, Frame::Grid>(8.3),
-                        tnsr::aB<double, 1, Frame::Inertial>(1.3), 8.3);
   check_make_with_value(make_array<4>(8.3), 1.3, 8.3);
+  check_make_with_value(make_array<3>(Makeable{5, 8.3}), Makeable{5, 4.5}, 8.3);
+  check_make_with_value(1.3, make_array<4>(8.3), 1.3);
+  check_make_with_value(make_array<3>(Makeable{5, 8.3}),
+                        make_array<4>(Makeable{5, 4.5}), 8.3);
 
-  for (size_t n_pts = 1; n_pts < 4; ++n_pts) {
-    // create DataVector from DataVector
-    check_make_with_value(make_array<3>(DataVector(n_pts, 8.3)),
-                          DataVector(n_pts, 4.5), 8.3);
-    check_make_with_value(DataVector(n_pts, -2.3), DataVector(n_pts, 4.5),
-                          -2.3);
-    check_make_with_value(Scalar<DataVector>(n_pts, -2.3),
-                          DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
-                          DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(DataVector(n_pts, -2.3),
-                          Scalar<DataVector>(n_pts, 4.5), -2.3);
-    check_make_with_value(DataVector(n_pts, -2.3),
-                          tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 4.5),
-                          -2.3);
-    check_make_with_value(
-        tnsr::ijj<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
-        tnsr::ab<DataVector, 3, Frame::Grid>(n_pts, 4.5), -2.3);
-    check_make_with_value(
-        tnsr::ijj<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
-        Scalar<DataVector>(n_pts, 4.5), -2.3);
-    check_make_with_value(Scalar<DataVector>(n_pts, -2.3),
-                          tnsr::abc<DataVector, 3, Frame::Inertial>(n_pts, 4.5),
-                          -2.3);
-    check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
-                          DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),
-                          DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
-                          tnsr::ab<DataVector, 3, Frame::Grid>(n_pts, 4.5),
-                          -2.3);
-    check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),
-                          Scalar<DataVector>(n_pts, 4.5), -2.3);
-    check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),
-                          Variables<two_vars<3>>(n_pts, 4.5), -2.3);
-    check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
-                          Variables<one_var<3>>(n_pts, 4.5), -2.3);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(make_array(Makeable{1, 0.0}, Makeable{2, 0.0}),
+                                0.0),
+      Catch::Contains("Inconsistent number of points in array entries"));
+#endif  // SPECTRE_DEBUG
+
+  // std::vector is only usable as input because the number of entries
+  // in a result vector cannot be inferred.
+  check_make_with_value(1.3, std::vector{8.3, 4.5}, 1.3);
+  check_make_with_value(Makeable{5, 8.3},
+                        std::vector{Makeable{5, 4.5}, Makeable{5, 1.2}}, 8.3);
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(std::vector{Makeable{1, 0.0}, Makeable{2, 0.0}},
+                                0.0),
+      Catch::Contains("Inconsistent number of points in vector entries"));
+  CHECK_THROWS_WITH(
+      make_with_value<Makeable>(std::vector<Makeable>{}, 0.0),
+      Catch::Contains("Cannot get number of points from empty std::vector"));
+#endif  // SPECTRE_DEBUG
+
+  // std::reference_wrapper is only usable as input.
+  {
+    Makeable used_for_size{3, 1.1};
+    check_make_with_value(1.3, std::ref(used_for_size), 1.3);
+    check_make_with_value(Makeable{3, 8.3}, std::ref(used_for_size), 8.3);
+    check_make_with_value(1.3, std::cref(used_for_size), 1.3);
+    check_make_with_value(Makeable{3, 8.3}, std::cref(used_for_size), 8.3);
   }
+
   test_make_tagged_tuple();
 }

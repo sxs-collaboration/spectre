@@ -28,7 +28,6 @@ void shift(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
-  destructive_resize_components(shift, get_size(get<0, 0>(spacetime_metric)));
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift->get(i) =
         inverse_spatial_metric.get(i, 0) * get<1, 0>(spacetime_metric);

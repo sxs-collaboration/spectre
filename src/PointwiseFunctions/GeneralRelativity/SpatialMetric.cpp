@@ -26,8 +26,6 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
-  destructive_resize_components(spatial_metric,
-                                get_size(get<0, 0>(spacetime_metric)));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric->get(i, j) = spacetime_metric.get(i + 1, j + 1);

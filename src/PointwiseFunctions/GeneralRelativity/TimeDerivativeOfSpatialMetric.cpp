@@ -23,7 +23,6 @@ void time_derivative_of_spatial_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature) {
-  destructive_resize_components(dt_spatial_metric, get_size(get(lapse)));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       dt_spatial_metric->get(i, j) =

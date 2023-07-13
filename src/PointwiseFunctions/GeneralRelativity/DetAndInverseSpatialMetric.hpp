@@ -15,7 +15,6 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -66,7 +65,6 @@ struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
 
   static void function(const gsl::not_null<Scalar<DataType>*> result,
                        const Scalar<DataType>& det_spatial_metric) {
-    destructive_resize_components(result, get_size(get(det_spatial_metric)));
     get(*result) = sqrt(get(det_spatial_metric));
   }
 

@@ -40,6 +40,7 @@
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -1073,6 +1074,16 @@ struct NumberOfPoints<Variables<TagList>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <typename TagList>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    Variables<TagList>> {
+  static constexpr bool is_trivial = false;
+  static SPECTRE_ALWAYS_INLINE void apply(
+      const gsl::not_null<Variables<TagList>*> result, const size_t size) {
+    result->initialize(size);
+  }
+};
 
 namespace EqualWithinRoundoffImpls {
 // It would be nice to use `blaze::equal` in these implementations, but it

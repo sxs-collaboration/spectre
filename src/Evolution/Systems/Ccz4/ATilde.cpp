@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -19,11 +18,6 @@ void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
              const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
              const tnsr::ii<DataType, Dim, Frame>& extrinsic_curvature,
              const Scalar<DataType>& trace_extrinsic_curvature) {
-  destructive_resize_components(result,
-                                get_size(get(conformal_factor_squared)));
-  destructive_resize_components(buffer,
-                                get_size(get(conformal_factor_squared)));
-
   ::tenex::evaluate(buffer, trace_extrinsic_curvature() / 3.0);
   ::tenex::evaluate<ti::i, ti::j>(
       result, conformal_factor_squared() *

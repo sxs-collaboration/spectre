@@ -9,9 +9,9 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <typename DataType, size_t Dim, typename Frame>
@@ -19,8 +19,7 @@ void deriv_inverse_spatial_metric(
     const gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0>(inverse_spatial_metric)));
+  set_number_of_grid_points(result, inverse_spatial_metric);
   for (auto& component : *result) {
     component = 0.0;
   }

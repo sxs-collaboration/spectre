@@ -8,8 +8,12 @@
 
 #include <array>
 #include <complex>
+#include <functional>
 #include <type_traits>
+#include <vector>
 
+#include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -81,7 +85,7 @@ struct MakeWithValueImpl {
 /// \tparam ValueType The type of `value`. For most containers, this will be
 /// `double`.
 ///
-/// \see MakeWithValueImpls
+/// \see MakeWithValueImpls, set_number_of_grid_points
 template <typename R, typename T, typename ValueType>
 SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
     const T& input, const ValueType& value) {
@@ -125,6 +129,49 @@ struct MakeWithValueImpl<std::array<T, Size>, InputType> {
   }
 };
 
+template <size_t Size, typename T>
+struct NumberOfPoints<std::array<T, Size>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(const std::array<T, Size>& input) {
+    static_assert(Size > 0);
+    // size_t is interpreted as the number of points in other
+    // contexts, but that doesn't make sense here.
+    static_assert(not std::is_same_v<T, size_t>,
+                  "Cannot get size from non-vector.");
+    const size_t points = number_of_points(input[0]);
+    ASSERT(
+        alg::all_of(input,
+                    [&](const T& t) { return number_of_points(t) == points; }),
+        "Inconsistent number of points in array entries.");
+    return points;
+  }
+};
+
+template <typename T>
+struct NumberOfPoints<std::vector<T>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(const std::vector<T>& input) {
+    // size_t is interpreted as the number of points in other
+    // contexts, but that doesn't make sense here.
+    static_assert(not std::is_same_v<T, size_t>,
+                  "Cannot get number_of_points from non-vector.");
+    ASSERT(not input.empty(),
+           "Cannot get number of points from empty std::vector.");
+    const size_t points = number_of_points(input[0]);
+    ASSERT(
+        alg::all_of(input,
+                    [&](const T& t) { return number_of_points(t) == points; }),
+        "Inconsistent number of points in vector entries.");
+    return points;
+  }
+};
+
+template <typename T>
+struct NumberOfPoints<std::reference_wrapper<T>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(
+      const std::reference_wrapper<T>& input) {
+    return number_of_points(input.get());
+  }
+};
+
 /// \brief Makes a `TaggedTuple`; each element of the `TaggedTuple`
 /// must be `make_with_value`-creatable from a `T`.
 template <typename... Tags, typename T>
@@ -137,4 +184,14 @@ struct MakeWithValueImpl<tuples::TaggedTuple<Tags...>, T> {
   }
 };
 
+template <typename Tag, typename... Tags>
+struct NumberOfPoints<tuples::TaggedTuple<Tag, Tags...>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(
+      const tuples::TaggedTuple<Tag, Tags...>& input) {
+    const size_t points = number_of_points(tuples::get<Tag>(input));
+    ASSERT((... and (number_of_points(tuples::get<Tags>(input)) == points)),
+           "Inconsistent number of points in tuple entries.");
+    return points;
+  }
+};
 }  // namespace MakeWithValueImpls

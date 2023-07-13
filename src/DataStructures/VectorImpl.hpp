@@ -30,6 +30,7 @@
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
@@ -639,22 +640,30 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
  */
-#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                  \
-  namespace MakeWithValueImpls {                                          \
-  template <>                                                             \
-  struct NumberOfPoints<VECTOR_TYPE> {                                    \
-    static SPECTRE_ALWAYS_INLINE size_t apply(const VECTOR_TYPE& input) { \
-      return input.size();                                                \
-    }                                                                     \
-  };                                                                      \
-  template <>                                                             \
-  struct MakeWithSize<VECTOR_TYPE> {                                      \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                              \
-    apply(const size_t size, const VECTOR_TYPE::value_type value) {       \
-      return VECTOR_TYPE(size, value);                                    \
-    }                                                                     \
-  };                                                                      \
-  }  // namespace MakeWithValueImpls
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                      \
+  namespace MakeWithValueImpls {                                              \
+  template <>                                                                 \
+  struct NumberOfPoints<VECTOR_TYPE> {                                        \
+    static SPECTRE_ALWAYS_INLINE size_t apply(const VECTOR_TYPE& input) {     \
+      return input.size();                                                    \
+    }                                                                         \
+  };                                                                          \
+  template <>                                                                 \
+  struct MakeWithSize<VECTOR_TYPE> {                                          \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
+    apply(const size_t size, const VECTOR_TYPE::value_type value) {           \
+      return VECTOR_TYPE(size, value);                                        \
+    }                                                                         \
+  };                                                                          \
+  } /* namespace MakeWithValueImpls */                                        \
+  template <>                                                                 \
+  struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<VECTOR_TYPE> { \
+    static constexpr bool is_trivial = false;                                 \
+    static SPECTRE_ALWAYS_INLINE void apply(                                  \
+        const gsl::not_null<VECTOR_TYPE*> result, const size_t size) {        \
+      result->destructive_resize(size);                                       \
+    }                                                                         \
+  };
 
 /// @{
 /*!

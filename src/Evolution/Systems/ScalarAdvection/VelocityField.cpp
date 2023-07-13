@@ -10,6 +10,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace ScalarAdvection::Tags {
 
@@ -17,8 +18,7 @@ template <size_t Dim>
 void VelocityFieldCompute<Dim>::function(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity_field,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
-  destructive_resize_components(velocity_field,
-                                get_size(get<0>(inertial_coords)));
+  set_number_of_grid_points(velocity_field, inertial_coords);
   if constexpr (Dim == 1) {
     // 1D : advection to +x direction with velocity 1.0
     get<0>(*velocity_field) = 1.0;

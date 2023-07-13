@@ -44,9 +44,6 @@ void covariant_deriv_of_extrinsic_curvature(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
-  destructive_resize_components(d_extrinsic_curvature,
-                                get_size(get<0>(spacetime_unit_normal_vector)));
-
   // Ordinary derivative first
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {

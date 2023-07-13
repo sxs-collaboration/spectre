@@ -42,6 +42,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -615,3 +616,15 @@ struct MakeWithValueImpl<Tensor<std::complex<double>, Structure...>, T> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <typename T, typename... Structure>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    Tensor<T, Structure...>> {
+  static constexpr bool is_trivial = SetNumberOfGridPointsImpl<T>::is_trivial;
+  static SPECTRE_ALWAYS_INLINE void apply(
+      const gsl::not_null<Tensor<T, Structure...>*> result, const size_t size) {
+    for (auto& component : *result) {
+      set_number_of_grid_points(make_not_null(&component), size);
+    }
+  }
+};

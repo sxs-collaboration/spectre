@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -23,9 +22,6 @@ void grad_spatial_z4_constraint(
         gamma_hat_minus_contracted_conformal_christoffel,
     const tnsr::iJ<DataType, Dim, Frame>&
         d_gamma_hat_minus_contracted_conformal_christoffel) {
-  destructive_resize_components(result,
-                                get_size(get<0, 0>(conformal_spatial_metric)));
-
   ::tenex::evaluate<ti::i, ti::j>(
       result,
       field_d(ti::i, ti::j, ti::l) *

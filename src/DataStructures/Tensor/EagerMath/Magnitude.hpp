@@ -10,8 +10,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// @{
@@ -32,7 +32,7 @@ Scalar<DataType> magnitude(
 template <typename DataType, typename Index>
 void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
                const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) {
-  destructive_resize_components(magnitude, get_size(get<0>(vector)));
+  set_number_of_grid_points(magnitude, vector);
   dot_product(magnitude, vector, vector);
   get(*magnitude) = sqrt(get(*magnitude));
 }
@@ -130,7 +130,6 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
   static void function(const gsl::not_null<return_type*> normalized_vector,
                        const typename Tag::type& vector_in,
                        const typename Magnitude<Tag>::type& magnitude) {
-    destructive_resize_components(normalized_vector, get_size(get(magnitude)));
     *normalized_vector = vector_in;
     for (size_t d = 0; d < normalized_vector->index_dim(0); ++d) {
       normalized_vector->get(d) /= get(magnitude);

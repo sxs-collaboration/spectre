@@ -39,8 +39,7 @@ void derivatives_of_spacetime_metric(
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
     const tnsr::ii<DataType, Dim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) {
-  destructive_resize_components(spacetime_deriv_spacetime_metric,
-                                get_size(get(lapse)));
+  set_number_of_grid_points(spacetime_deriv_spacetime_metric, lapse);
   for (size_t a = 0; a < Dim + 1; ++a) {
     for (size_t i = 0; i < Dim; ++i) {
       spacetime_deriv_spacetime_metric->get(a, 0, i + 1) = 0.0;

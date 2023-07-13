@@ -10,21 +10,19 @@
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 template <size_t VolumeDim, typename TargetFrame>
 void unnormalized_face_normal(
     const gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
-    const Mesh<VolumeDim - 1>& interface_mesh,
+    const Mesh<VolumeDim - 1>& /*interface_mesh*/,
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inv_jacobian_on_interface,
     const Direction<VolumeDim>& direction) {
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
 
-  destructive_resize_components(result, interface_mesh.number_of_grid_points());
   for (size_t d = 0; d < VolumeDim; ++d) {
     result->get(d) = sign * inv_jacobian_on_interface.get(sliced_away_dim, d);
   }

@@ -4,7 +4,6 @@
 #include "Evolution/Systems/NewtonianEuler/RamPressure.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -13,7 +12,6 @@ template <typename DataType, size_t Dim, typename Fr>
 void ram_pressure(const gsl::not_null<tnsr::II<DataType, Dim, Fr>*> result,
                   const Scalar<DataType>& mass_density,
                   const tnsr::I<DataType, Dim, Fr>& velocity) {
-  destructive_resize_components(result, get_size(get(mass_density)));
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = i; j < Dim; ++j) {
       result->get(i, j) = get(mass_density) * velocity.get(i) * velocity.get(j);

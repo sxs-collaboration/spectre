@@ -18,8 +18,8 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace CurvedScalarWave::Worldtube::Tags {
 
@@ -42,8 +42,7 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
     const size_t grid_size =
         mesh.slice_away(direction->dimension()).number_of_grid_points();
     if (result->has_value()) {
-      destructive_resize_components(make_not_null(&(result->value())),
-                                    grid_size);
+      set_number_of_grid_points(make_not_null(&(result->value())), grid_size);
     } else {
       result->emplace(grid_size);
     }
@@ -84,8 +83,7 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
     const size_t grid_size =
         mesh.slice_away(direction->dimension()).number_of_grid_points();
     if (result->has_value()) {
-      destructive_resize_components(make_not_null(&(result->value())),
-                                    grid_size);
+      set_number_of_grid_points(make_not_null(&(result->value())), grid_size);
     } else {
       result->emplace(grid_size);
     }

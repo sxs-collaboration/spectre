@@ -10,11 +10,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
 
@@ -55,12 +55,7 @@ void FlatEndcap::jacobian(
         tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
         jacobian_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(jacobian_out, source_coords);
   // Most of the jacobian components are zero.
   for (auto& jac_component : *jacobian_out) {
     jac_component = 0.0;
@@ -78,12 +73,7 @@ void FlatEndcap::inv_jacobian(
         tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
         inv_jacobian_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        inv_jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(inv_jacobian_out, source_coords);
   // Most of the inverse jacobian components are zero.
   for (auto& jac_component : *inv_jacobian_out) {
     jac_component = 0.0;
@@ -124,11 +114,7 @@ void FlatEndcap::deriv_sigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        deriv_sigma_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(deriv_sigma_out, source_coords);
   (*deriv_sigma_out)[0] = 0.0;
   (*deriv_sigma_out)[1] = 0.0;
   (*deriv_sigma_out)[2] = 0.5;
@@ -139,11 +125,7 @@ void FlatEndcap::dxbar_dsigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        dxbar_dsigma_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(dxbar_dsigma_out, source_coords);
   (*dxbar_dsigma_out)[0] = 0.0;
   (*dxbar_dsigma_out)[1] = 0.0;
   (*dxbar_dsigma_out)[2] = 2.0;
@@ -167,13 +149,7 @@ void FlatEndcap::deriv_lambda_tilde(
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        deriv_lambda_tilde_out,
-        static_cast<ReturnType>(target_coords[0]).size());
-  }
+  set_number_of_grid_points(deriv_lambda_tilde_out, target_coords);
 
   (*deriv_lambda_tilde_out)[0] = 0.0;
   (*deriv_lambda_tilde_out)[1] = 0.0;

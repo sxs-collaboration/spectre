@@ -5,7 +5,6 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -16,7 +15,6 @@ void relativistic_specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& pressure) {
-  destructive_resize_components(result, get_size(get(rest_mass_density)));
   get(*result) = 1.0 + get(specific_internal_energy) +
                  get(pressure) / get(rest_mass_density);
 }

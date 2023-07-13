@@ -14,9 +14,9 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -39,14 +39,14 @@ void cartesian_spatial_metric_and_derivatives_from_unnormalized_spec_modes(
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const tnsr::I<DataVector, 3>& unit_cartesian_coords, const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_spatial_metric, size);
-  destructive_resize_components(d_cartesian_spatial_metric, size);
-  destructive_resize_components(dt_cartesian_spatial_metric, size);
+  set_number_of_grid_points(cartesian_spatial_metric, size);
+  set_number_of_grid_points(d_cartesian_spatial_metric, size);
+  set_number_of_grid_points(dt_cartesian_spatial_metric, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
-  destructive_resize_components(radial_correction_factor, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
+  set_number_of_grid_points(radial_correction_factor, size);
 
   // Allocation
   SphericaliCartesianjj spherical_d_cartesian_spatial_metric{size};
@@ -148,13 +148,13 @@ void cartesian_shift_and_derivatives_from_unnormalized_spec_modes(
     const Scalar<DataVector>& radial_derivative_correction_factor,
     const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_shift, size);
-  destructive_resize_components(d_cartesian_shift, size);
-  destructive_resize_components(dt_cartesian_shift, size);
+  set_number_of_grid_points(cartesian_shift, size);
+  set_number_of_grid_points(d_cartesian_shift, size);
+  set_number_of_grid_points(dt_cartesian_shift, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
 
   // Allocation
   SphericaliCartesianJ spherical_d_cartesian_shift{size};
@@ -223,13 +223,13 @@ void cartesian_lapse_and_derivatives_from_unnormalized_spec_modes(
     const Scalar<DataVector>& radial_derivative_correction_factor,
     const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_lapse, size);
-  destructive_resize_components(d_cartesian_lapse, size);
-  destructive_resize_components(dt_cartesian_lapse, size);
+  set_number_of_grid_points(cartesian_lapse, size);
+  set_number_of_grid_points(d_cartesian_lapse, size);
+  set_number_of_grid_points(dt_cartesian_lapse, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
 
   // Allocation
   tnsr::i<DataVector, 3> spherical_d_cartesian_lapse{size};

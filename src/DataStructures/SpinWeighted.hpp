@@ -6,6 +6,7 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// @{
@@ -575,3 +576,15 @@ struct MakeWithSize<SpinWeighted<SpinWeightedType, Spin>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <int Spin, typename SpinWeightedType>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    SpinWeighted<SpinWeightedType, Spin>> {
+  static constexpr bool is_trivial =
+      SetNumberOfGridPointsImpl<SpinWeightedType>::is_trivial;
+  static SPECTRE_ALWAYS_INLINE void apply(
+      const gsl::not_null<SpinWeighted<SpinWeightedType, Spin>*> result,
+      const size_t size) {
+    set_number_of_grid_points(make_not_null(&result->data()), size);
+  }
+};

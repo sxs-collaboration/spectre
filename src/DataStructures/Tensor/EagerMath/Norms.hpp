@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
@@ -59,7 +58,6 @@ Scalar<DataType> pointwise_l2_norm(
 template <typename DataType, typename Symm, typename IndexList>
 void pointwise_l2_norm(const gsl::not_null<Scalar<DataType>*> norm,
                        const Tensor<DataType, Symm, IndexList>& tensor) {
-  destructive_resize_components(norm, get_size(tensor[0].size()));
   get(*norm) = sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)));
 }
 /// @}

@@ -16,10 +16,10 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace {
@@ -56,8 +56,8 @@ void logical_partial_derivative(
          "The buffer in logical_partial_derivative must be at least of size "
              << num_grid_points << " but is of size " << buffer->size());
 
-  destructive_resize_components(logical_derivative_of_u,
-                                mesh.number_of_grid_points());
+  set_number_of_grid_points(logical_derivative_of_u,
+                            mesh.number_of_grid_points());
   const Matrix empty_matrix{};
   std::array<std::reference_wrapper<const Matrix>, Dim> diff_matrices{
       make_array<Dim, std::reference_wrapper<const Matrix>>(empty_matrix)};
@@ -134,11 +134,9 @@ void partial_derivative(
     const TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>& logical_partial_derivative_of_u,
-    const Mesh<Dim>& mesh,
+    const Mesh<Dim>& /*mesh*/,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
-  destructive_resize_components(du, mesh.number_of_grid_points());
-
   for (size_t storage_index = 0;
        storage_index < Tensor<DataVector, SymmList, IndexList>::size();
        ++storage_index) {

@@ -28,6 +28,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -207,7 +208,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     } else {
       const double constant_electron_fraction =
           std::get<double>(electron_fraction_selection);
-      destructive_resize_components(electron_fraction, num_points);
+      set_number_of_grid_points(electron_fraction, num_points);
       get(*electron_fraction) = constant_electron_fraction;
     }
     // Velocity and Lorentz factor from u_i dataset
@@ -224,9 +225,9 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       spatial_velocity->get(d) /= get(*lorentz_factor);
     }
     // Specific internal energy, pressure, and enthalpy from EOS
-    destructive_resize_components(specific_internal_energy, num_points);
-    destructive_resize_components(pressure, num_points);
-    destructive_resize_components(specific_enthalpy, num_points);
+    set_number_of_grid_points(specific_internal_energy, num_points);
+    set_number_of_grid_points(pressure, num_points);
+    set_number_of_grid_points(specific_enthalpy, num_points);
     for (size_t i = 0; i < num_points; ++i) {
       double& local_rest_mass_density = get(*rest_mass_density)[i];
       // Apply the EOS and specific enthalpy only where the density is above the
@@ -270,12 +271,12 @@ class NumericInitialData : public evolution::initial_data::InitialData {
             "in the input file. Generate a dataset for the nonzero "
             "uniform magnetic field if you need to.");
       }
-      destructive_resize_components(magnetic_field, num_points);
+      set_number_of_grid_points(magnetic_field, num_points);
       std::fill(magnetic_field->begin(), magnetic_field->end(),
                 constant_magnetic_field);
     }
     // Divergence cleaning field
-    destructive_resize_components(div_cleaning_field, num_points);
+    set_number_of_grid_points(div_cleaning_field, num_points);
     get(*div_cleaning_field) = 0.;
   }
 

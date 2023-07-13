@@ -7,9 +7,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -20,8 +20,7 @@ void extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
-  destructive_resize_components(ex_curv,
-                                get_size(get<0>(spacetime_normal_vector)));
+  set_number_of_grid_points(ex_curv, spacetime_normal_vector);
   for (auto& component : *ex_curv) {
     component = 0.0;
   }

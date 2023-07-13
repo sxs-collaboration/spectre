@@ -10,7 +10,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -28,8 +27,6 @@ void euclidean_area_element(
          "of grid points but have "
              << inverse_jacobian_face.get(0, 0).size() << " and "
              << get(inverse_jacobian_determinant_face).size());
-  destructive_resize_components(result,
-                                get(inverse_jacobian_determinant_face).size());
   get(*result) = square(inverse_jacobian_face.get(direction.dimension(), 0));
   for (size_t d = 1; d < VolumeDim; ++d) {
     get(*result) += square(inverse_jacobian_face.get(direction.dimension(), d));

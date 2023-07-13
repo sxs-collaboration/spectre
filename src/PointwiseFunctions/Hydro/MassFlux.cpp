@@ -5,7 +5,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -20,7 +19,6 @@ void mass_flux(const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
                const Scalar<DataType>& lapse,
                const tnsr::I<DataType, Dim, Frame>& shift,
                const Scalar<DataType>& sqrt_det_spatial_metric) {
-  destructive_resize_components(result, get_size(get(rest_mass_density)));
   for (size_t i = 0; i < Dim; ++i) {
     result->get(i) = get(rest_mass_density) * get(lorentz_factor) *
                      get(sqrt_det_spatial_metric) *

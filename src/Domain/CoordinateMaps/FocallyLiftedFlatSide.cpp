@@ -13,13 +13,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
@@ -71,10 +71,7 @@ void FlatSide::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
 
-  if constexpr (not std::is_same_v<ReturnType, double>) {
-    destructive_resize_components(
-        jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(jacobian_out, source_coords);
 
   // Use part of Jacobian as temp storage to reduce allocations.
   get<1, 1>(*jacobian_out) = 1.0 / cube(sqrt(square(xbar) + square(ybar)));
@@ -112,10 +109,7 @@ void FlatSide::inv_jacobian(
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
 
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        inv_jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(inv_jacobian_out, source_coords);
 
   // Use part of inverse Jacobian for temp storage to avoid allocations.
   const double tmp =
@@ -182,11 +176,7 @@ void FlatSide::deriv_sigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        deriv_sigma_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(deriv_sigma_out, source_coords);
   (*deriv_sigma_out)[0] = 0.0;
   (*deriv_sigma_out)[1] = 0.0;
   (*deriv_sigma_out)[2] = 0.5;
@@ -197,11 +187,7 @@ void FlatSide::dxbar_dsigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        dxbar_dsigma_out, static_cast<ReturnType>(source_coords[0]).size());
-  }
+  set_number_of_grid_points(dxbar_dsigma_out, source_coords);
   (*dxbar_dsigma_out)[0] = 0.0;
   (*dxbar_dsigma_out)[1] = 0.0;
   (*dxbar_dsigma_out)[2] = 2.0;
@@ -225,12 +211,7 @@ void FlatSide::deriv_lambda_tilde(
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  if constexpr (not std::is_same<ReturnType, double>::value) {
-    destructive_resize_components(
-        deriv_lambda_tilde_out,
-        static_cast<ReturnType>(target_coords[0]).size());
-  }
+  set_number_of_grid_points(deriv_lambda_tilde_out, target_coords);
   (*deriv_lambda_tilde_out)[0] = 0.0;
   (*deriv_lambda_tilde_out)[1] = 0.0;
   (*deriv_lambda_tilde_out)[2] =

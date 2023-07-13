@@ -15,8 +15,8 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace Cce {
 
@@ -26,10 +26,10 @@ void trigonometric_functions_on_swsh_collocation(
     const gsl::not_null<Scalar<DataVector>*> sin_phi,
     const gsl::not_null<Scalar<DataVector>*> sin_theta, const size_t l_max) {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  destructive_resize_components(cos_phi, size);
-  destructive_resize_components(cos_theta, size);
-  destructive_resize_components(sin_phi, size);
-  destructive_resize_components(sin_theta, size);
+  set_number_of_grid_points(cos_phi, size);
+  set_number_of_grid_points(cos_theta, size);
+  set_number_of_grid_points(sin_phi, size);
+  set_number_of_grid_points(sin_theta, size);
 
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
@@ -50,9 +50,9 @@ void cartesian_to_spherical_coordinates_and_jacobians(
     const Scalar<DataVector>& sin_phi, const Scalar<DataVector>& sin_theta,
     const double extraction_radius) {
   const size_t size = get(cos_phi).size();
-  destructive_resize_components(unit_cartesian_coords, size);
-  destructive_resize_components(cartesian_to_spherical_jacobian, size);
-  destructive_resize_components(inverse_cartesian_to_spherical_jacobian, size);
+  set_number_of_grid_points(unit_cartesian_coords, size);
+  set_number_of_grid_points(cartesian_to_spherical_jacobian, size);
+  set_number_of_grid_points(inverse_cartesian_to_spherical_jacobian, size);
 
   // note: factor of r scaled out
   get<0>(*unit_cartesian_coords) = get(sin_theta) * get(cos_phi);
@@ -115,13 +115,13 @@ void cartesian_spatial_metric_and_derivatives_from_modes(
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_spatial_metric, size);
-  destructive_resize_components(d_cartesian_spatial_metric, size);
-  destructive_resize_components(dt_cartesian_spatial_metric, size);
+  set_number_of_grid_points(cartesian_spatial_metric, size);
+  set_number_of_grid_points(d_cartesian_spatial_metric, size);
+  set_number_of_grid_points(dt_cartesian_spatial_metric, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
 
   // Allocation
   SphericaliCartesianjj spherical_d_cartesian_spatial_metric{size};
@@ -206,13 +206,13 @@ void cartesian_shift_and_derivatives_from_modes(
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_shift, size);
-  destructive_resize_components(d_cartesian_shift, size);
-  destructive_resize_components(dt_cartesian_shift, size);
+  set_number_of_grid_points(cartesian_shift, size);
+  set_number_of_grid_points(d_cartesian_shift, size);
+  set_number_of_grid_points(dt_cartesian_shift, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
 
   // Allocation
   SphericaliCartesianJ spherical_d_cartesian_shift{size};
@@ -279,13 +279,13 @@ void cartesian_lapse_and_derivatives_from_modes(
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
-  destructive_resize_components(cartesian_lapse, size);
-  destructive_resize_components(d_cartesian_lapse, size);
-  destructive_resize_components(dt_cartesian_lapse, size);
+  set_number_of_grid_points(cartesian_lapse, size);
+  set_number_of_grid_points(d_cartesian_lapse, size);
+  set_number_of_grid_points(dt_cartesian_lapse, size);
 
-  destructive_resize_components(interpolation_buffer, size);
-  destructive_resize_components(interpolation_modal_buffer, size);
-  destructive_resize_components(eth_buffer, size);
+  set_number_of_grid_points(interpolation_buffer, size);
+  set_number_of_grid_points(interpolation_modal_buffer, size);
+  set_number_of_grid_points(eth_buffer, size);
 
   // Allocation
   tnsr::i<DataVector, 3> spherical_d_cartesian_lapse{size};
@@ -338,8 +338,8 @@ void null_metric_and_derivative(
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::aa<DataVector, 3>& spacetime_metric) {
   const size_t size = get<0, 0>(spacetime_metric).size();
-  destructive_resize_components(null_metric, size);
-  destructive_resize_components(du_null_metric, size);
+  set_number_of_grid_points(null_metric, size);
+  set_number_of_grid_points(du_null_metric, size);
 
   get<0, 0>(*null_metric) = get<0, 0>(spacetime_metric);
   get<0, 0>(*du_null_metric) = get<0, 0>(dt_spacetime_metric);
@@ -427,8 +427,6 @@ void worldtube_normal_and_derivatives(
     const Scalar<DataVector>& sin_phi, const Scalar<DataVector>& sin_theta,
     const tnsr::II<DataVector, 3>& inverse_spatial_metric) {
   const size_t size = get<0, 0>(spacetime_metric).size();
-  destructive_resize_components(worldtube_normal, size);
-  destructive_resize_components(dt_worldtube_normal, size);
 
   // Allocation
   Variables<tmpl::list<::Tags::Tempi<0, 3>, ::Tags::TempScalar<1>>>
@@ -486,8 +484,6 @@ void null_vector_l_and_derivatives(
     const tnsr::I<DataVector, 3>& shift,
     const tnsr::I<DataVector, 3>& worldtube_normal) {
   const size_t size = get(lapse).size();
-  destructive_resize_components(du_null_l, size);
-  destructive_resize_components(null_l, size);
 
   // Allocation
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -577,8 +573,8 @@ void dlambda_null_metric_and_inverse(
     const tnsr::aa<DataVector, 3>& spacetime_metric) {
   // first, the (down-index) null metric
   const size_t size = get<0, 0>(spacetime_metric).size();
-  destructive_resize_components(dlambda_null_metric, size);
-  destructive_resize_components(dlambda_inverse_null_metric, size);
+  set_number_of_grid_points(dlambda_null_metric, size);
+  set_number_of_grid_points(dlambda_inverse_null_metric, size);
 
   get<0, 0>(*dlambda_null_metric) =
       get<0>(null_l) * get<0, 0>(dt_spacetime_metric) +
@@ -723,8 +719,6 @@ void dlambda_null_metric_and_inverse(
 void bondi_r(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_r,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric) {
-  destructive_resize_components(bondi_r, get<0, 0>(null_metric).size());
-
   // the inclusion of the std::complex<double> informs the expression
   // templates to turn the result into a ComplexDataVector
   get(*bondi_r).data() = std::complex<double>(1.0, 0) *
@@ -740,9 +734,6 @@ void d_bondi_r(
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
     const size_t l_max) {
-  destructive_resize_components(d_bondi_r,
-                                get<0, 0>(inverse_null_metric).size());
-
   // compute the time derivative part
   get<0>(*d_bondi_r) =
       0.25 * real(get(bondi_r).data()) *
@@ -779,7 +770,6 @@ void dyads(
 void beta_worldtube_data(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> beta,
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r) {
-  destructive_resize_components(beta, get<0>(d_bondi_r).size());
   get(*beta).data() = std::complex<double>(-0.5, 0.0) * log(get<1>(d_bondi_r));
 }
 
@@ -788,7 +778,6 @@ void bondi_u_worldtube_data(
     const tnsr::i<ComplexDataVector, 2, Frame::RadialNull>& dyad,
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric) {
-  destructive_resize_components(bondi_u, get<0>(d_bondi_r).size());
   get(*bondi_u).data() = -get<0>(dyad) * get<1, 2>(inverse_null_metric) -
                          get<1>(dyad) * get<1, 3>(inverse_null_metric);
 
@@ -806,8 +795,6 @@ void bondi_w_worldtube_data(
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) {
-  destructive_resize_components(bondi_w, get(bondi_r).data().size());
-
   get(*bondi_w).data() =
       std::complex<double>(1.0, 0.0) *
       (-1.0 + get<1>(d_bondi_r) * get<1, 1>(inverse_null_metric) -
@@ -833,8 +820,6 @@ void bondi_j_worldtube_data(
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) {
-  destructive_resize_components(bondi_j, get(bondi_r).data().size());
-
   get(*bondi_j).data() =
       0.5 *
       (square(get<0>(dyad)) * get<2, 2>(null_metric) +
@@ -852,8 +837,6 @@ void dr_bondi_j(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) {
-  destructive_resize_components(dr_bondi_j, get(bondi_r).data().size());
-  destructive_resize_components(denominator_buffer, get(bondi_r).data().size());
   get(*dr_bondi_j) = -2.0 * get(bondi_j) / get(bondi_r);
   get(*denominator_buffer).data() =
       1.0 / (square(get(bondi_r).data()) * get<1>(d_bondi_r));
@@ -872,7 +855,6 @@ void d2lambda_bondi_r(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dr_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) {
-  destructive_resize_components(d2lambda_bondi_r, get(bondi_j).data().size());
   get(*d2lambda_bondi_r) =
       real(-0.25 * get(bondi_r).data() *
            (get(dr_bondi_j).data() * conj(get(dr_bondi_j).data()) -
@@ -896,7 +878,6 @@ void bondi_q_worldtube_data(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u) {
-  destructive_resize_components(bondi_q, get(bondi_j).data().size());
   // Allocation
   Scalar<SpinWeighted<ComplexDataVector, 1>> dlambda_bondi_u{
       get(bondi_j).data().size()};
@@ -936,8 +917,6 @@ void bondi_h_worldtube_data(
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) {
-  destructive_resize_components(bondi_h, get(bondi_j).data().size());
-
   get(*bondi_h).data() =
       -2.0 * get<0>(d_bondi_r) / get(bondi_r).data() * get(bondi_j).data();
   for (size_t A = 0; A < 2; ++A) {
@@ -952,13 +931,11 @@ void bondi_h_worldtube_data(
 void du_j_worldtube_data(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> du_bondi_j,
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
-    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& /*bondi_j*/,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& dlambda_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) {
-  destructive_resize_components(du_bondi_j, get(bondi_j).data().size());
-
   for (size_t A = 0; A < 2; ++A) {
     for (size_t B = 0; B < 2; ++B) {
       if (UNLIKELY(A == 0 and B == 0)) {

@@ -8,9 +8,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace Ccz4 {
 template <typename DataType, size_t Dim, typename Frame>
@@ -20,8 +20,6 @@ void grad_grad_lapse(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& field_a,
     const tnsr::ij<DataType, Dim, Frame>& d_field_a) {
-  destructive_resize_components(result, get_size(get(lapse)));
-
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
       result->get(i, j) = field_a.get(i) * field_a.get(j) +
@@ -53,8 +51,7 @@ void divergence_lapse(
     const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) {
-  destructive_resize_components(result,
-                                get_size(get(conformal_factor_squared)));
+  set_number_of_grid_points(result, conformal_factor_squared);
 
   get(*result) = 0.0;
   for (size_t i = 0; i < Dim; ++i) {

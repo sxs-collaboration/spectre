@@ -23,6 +23,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -1409,6 +1410,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
     const double expected_value = 7.0;
     CHECK(get<0>(tensor_double) == expected_value);
     CHECK(get<1>(tensor_double) == expected_value);
+    tnsr::I<double, 2> resized{};
+    set_number_of_grid_points(make_not_null(&resized), used_for_size);
+    // Nothing to check.  Just verify compilation.
   };
   check_double(1.2);
   check_double(std::complex<double>{1.2, 1.3});
@@ -1430,6 +1434,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
     for (size_t i = 0; i < 3; ++i) {
       CHECK(complex_tensor_made_with_complex_values.get(i) == expected_value);
     }
+    tnsr::i<std::complex<double>, 3> resized{};
+    set_number_of_grid_points(make_not_null(&resized), used_for_size);
+    // Nothing to check.  Just verify compilation.
   };
   check_real_complex_double(1.2);
   check_real_complex_double(std::complex<double>{1.2, 1.3});
@@ -1478,6 +1485,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
         CHECK(tensor.get(i)[j] == expected_value);
       }
     }
+    tnsr::i<DataVector, 2> resized{};
+    set_number_of_grid_points(make_not_null(&resized), used_for_size);
+    for (size_t i = 0; i < 2; ++i) {
+      CHECK(resized.get(i).size() == 5);
+    }
   };
   check_data_vector(5_st);
   check_data_vector(DataVector{5});
@@ -1498,6 +1510,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
       for (size_t j = 0; j < 5; ++j) {
         CHECK(complex_tensor.get(i)[j] == expected_value);
       }
+    }
+    tnsr::i<ComplexDataVector, 3> resized{};
+    set_number_of_grid_points(make_not_null(&resized), used_for_size);
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(resized.get(i).size() == 5);
     }
   };
   check_complex_data_vector(5_st);
@@ -1520,6 +1537,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
         CHECK(tensor.get(i)[j] == expected_value);
       }
     }
+    tnsr::i<ModalVector, 2> resized{};
+    set_number_of_grid_points(make_not_null(&resized), structure);
+    for (size_t i = 0; i < 2; ++i) {
+      CHECK(resized.get(i).size() == 5);
+    }
   };
   check_modal_vector(5_st);
   check_modal_vector(DataVector{5});
@@ -1540,6 +1562,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
       for (size_t j = 0; j < 5; ++j) {
         CHECK(complex_tensor.get(i)[j] == expected_value);
       }
+    }
+    tnsr::i<ComplexModalVector, 3> resized{};
+    set_number_of_grid_points(make_not_null(&resized), structure);
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(resized.get(i).size() == 5);
     }
   };
   check_complex_modal_vector(5_st);
@@ -1562,6 +1589,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
         for (size_t j = 0; j < 5; ++j) {
           CHECK(get(spin_weighted_complex).data()[j] == expected_value);
         }
+        Scalar<SpinWeighted<ComplexDataVector, 2>> resized{};
+        set_number_of_grid_points(make_not_null(&resized), used_for_size);
+        CHECK(get(resized).data().size() == 5);
       };
   check_spin_weighted_complex_data_vector(5_st);
   check_spin_weighted_complex_data_vector(DataVector{5});
@@ -1587,6 +1617,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
         for (size_t j = 0; j < 5; ++j) {
           CHECK(get(spin_weighted_complex).data()[j] == expected_value);
         }
+        Scalar<SpinWeighted<ComplexModalVector, 2>> resized{};
+        set_number_of_grid_points(make_not_null(&resized), structure);
+        CHECK(get(resized).data().size() == 5);
       };
   check_spin_weighted_complex_modal_vector(5_st);
   check_spin_weighted_complex_modal_vector(DataVector{5});

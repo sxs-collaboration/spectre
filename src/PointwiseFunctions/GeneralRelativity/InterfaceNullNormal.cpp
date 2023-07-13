@@ -36,8 +36,6 @@ void interface_null_normal(
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
-  destructive_resize_components(null_one_form,
-                                get_size(get<0>(spacetime_normal_one_form)));
 
   const double one_by_sqrt_2 = 1. / sqrt(2.);
   get<0>(*null_one_form) = one_by_sqrt_2 * get<0>(spacetime_normal_one_form);
@@ -72,8 +70,6 @@ void interface_null_normal(
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
-  destructive_resize_components(null_vector,
-                                get_size(get<0>(spacetime_normal_vector)));
 
   const double one_by_sqrt_2 = 1. / sqrt(2.);
   get<0>(*null_vector) = one_by_sqrt_2 * get<0>(spacetime_normal_vector);

@@ -15,6 +15,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -54,15 +55,7 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
              const gsl::not_null<typename history_tag::type*> history,
              const ::TimeDelta& time_step, const auto& time_stepper) {
             using std::swap;
-            // We need to make sure *previous_error has the correct
-            // size.  We don't care about the value, but it could be
-            // several types so we can't just call ->initialize() or
-            // something.
-            //
-            // We are not required to preserve the old value, because
-            // the errors will only be used after a successful error
-            // update.
-            *previous_error = *vars;
+            set_number_of_grid_points(previous_error, *vars);
             swap(*error, *previous_error);
             *stepper_error_updated = time_stepper.update_u(
                 vars, make_not_null(&*error), history, time_step);

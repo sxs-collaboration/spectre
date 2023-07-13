@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Schwarz::Tags {
@@ -42,8 +43,8 @@ struct SummedIntrudingOverlapWeightsCompute
           all_intruding_weights,
       const Mesh<Dim>& mesh,
       const std::array<size_t, Dim>& all_intruding_extents) {
-    destructive_resize_components(summed_intruding_overlap_weights,
-                                  mesh.number_of_grid_points());
+    set_number_of_grid_points(summed_intruding_overlap_weights,
+                              mesh.number_of_grid_points());
     get(*summed_intruding_overlap_weights) = 0.;
     for (const auto& [direction, intruding_weight] : all_intruding_weights) {
       // Extend intruding weight to full extents

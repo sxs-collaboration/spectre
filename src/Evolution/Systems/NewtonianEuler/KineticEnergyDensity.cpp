@@ -5,7 +5,6 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -14,7 +13,6 @@ template <typename DataType, size_t Dim, typename Fr>
 void kinetic_energy_density(const gsl::not_null<Scalar<DataType>*> result,
                             const Scalar<DataType>& mass_density,
                             const tnsr::I<DataType, Dim, Fr>& velocity) {
-  destructive_resize_components(result, get_size(get(mass_density)));
   get(*result) = 0.5 * get(mass_density) * get(dot_product(velocity, velocity));
 }
 

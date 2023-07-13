@@ -6,10 +6,10 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace evolution::dg::subcell::Tags {
 template <size_t Dim>
@@ -23,14 +23,14 @@ void MethodOrderCompute<Dim>::function(
     *method_order = typename return_type::value_type{};
   }
   if (active_grid == subcell::ActiveGrid::Dg) {
-    destructive_resize_components(make_not_null(&method_order->value()),
-                                  dg_mesh.number_of_grid_points());
+    set_number_of_grid_points(make_not_null(&method_order->value()),
+                              dg_mesh.number_of_grid_points());
     for (size_t i = 0; i < Dim; ++i) {
       method_order->value()[i] = dg_mesh.extents(i);
     }
   } else {
-    destructive_resize_components(make_not_null(&method_order->value()),
-                                  subcell_mesh.number_of_grid_points());
+    set_number_of_grid_points(make_not_null(&method_order->value()),
+                              subcell_mesh.number_of_grid_points());
     if (reconstruction_order.has_value()) {
       *method_order = reconstruction_order;
     } else {
