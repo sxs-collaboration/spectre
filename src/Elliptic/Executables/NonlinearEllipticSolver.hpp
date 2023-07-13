@@ -85,6 +85,8 @@ struct MultigridGroup {
  * \brief A complete nonlinear elliptic solver stack. Use to compose an
  * executable.
  *
+ * The elliptic solver stack is described in detail in \cite Vu2021coj.
+ *
  * Uses `Metavariables::volume_dim` and `Metavariables::system`. Also uses
  * `Metavariables` to instantiate parallel components.
  */

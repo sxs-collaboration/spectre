@@ -73,7 +73,8 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
  * \f}
  *
  * in terms of fluxes \f$F_\alpha^i\f$, sources \f$S_\alpha\f$ and fixed-sources
- * \f$f_\alpha(x)\f$. It resembles closely formulations of hyperbolic
+ * \f$f_\alpha(x)\f$ \cite Fischer2021voj.
+ * It resembles closely formulations of hyperbolic
  * conservation laws but allows the fluxes \f$F_\alpha^i\f$ to be higher-rank
  * tensor fields. The fluxes and sources are functionals of the "primal" system
  * variables \f$u_A(x)\f$ and their corresponding "auxiliary" variables
