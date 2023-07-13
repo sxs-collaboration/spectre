@@ -170,9 +170,7 @@ Sphere::Sphere(
       const std::string wedge_name =
           shell_prefix + gsl::at(wedge_directions, direction);
       block_names_.emplace_back(wedge_name);
-      if (num_shells_ > 1) {
-        block_groups_[shell_prefix].insert(wedge_name);
-      }
+      block_groups_[shell_prefix].insert(wedge_name);
       block_groups_["Wedges"].insert(wedge_name);
     }
   }
