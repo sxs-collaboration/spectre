@@ -9,6 +9,7 @@ add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(EventsAndDenseTriggers)
 add_subdirectory(Initialization)
 add_subdirectory(Systems)
+add_subdirectory(Triggers)
 add_subdirectory(VariableFixing)
 
 set(LIBRARY "Test_Evolution")
