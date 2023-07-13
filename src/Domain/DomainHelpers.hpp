@@ -181,23 +181,31 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// objects. The Frustums partition the volume defined by two bounding
 /// surfaces: The inner surface is the surface of the two joined inner cubes
 /// enveloping the two compact objects, while the outer is the surface of the
-/// outer cube. The cubes enveloping the two Shells each have a side length of
-/// `length_inner_cube`. The outer cube has a side length of
-/// `length_outer_cube`. `origin_preimage` is a parameter
-/// that moves the center of the two joined inner cubes away from the origin
-/// and to `-origin_preimage`. `projective_scale_factor` acts to change the
-/// gridpoint distribution in the radial direction. \see Frustum for details.
-/// The value for `sphericity` determines whether the outer surface is a cube
+/// outer cube.
+/// \param length_inner_cube The side length of the cubes enveloping the two
+/// shells.
+/// \param length_outer_cube The side length of the outer cube.
+/// \param use_equiangular_map Whether to apply a tangent map in the angular
+/// directions.
+/// \param origin_preimage The center of the two joined inner cubes is moved
+/// away from the origin and to this point, origin_preimage.
+/// \param radial_distribution The gridpoint distribution in the radial
+/// direction, possibly dependent on the value passed to `distribution_value`.
+/// \param distribution_value Used by `radial_distribution`. \see Frustum for
+/// details.
+/// \param sphericity Determines whether the outer surface is a cube
 /// (value of 0), a sphere (value of 1) or somewhere in between.
-/// The value for `opening_angle` determines the gridpoint distribution used
+/// \param opening_angle determines the gridpoint distribution used
 /// in the Frustums such that they conform to the outer sphere of Wedges with
 /// the same value for `opening_angle`.
 std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
-    double projective_scale_factor = 1.0, double sphericity = 0.0,
-    double opening_angle = M_PI_2);
+    domain::CoordinateMaps::Distribution radial_distribution =
+        domain::CoordinateMaps::Distribution::Linear,
+    std::optional<double> distribution_value = std::nullopt,
+    double sphericity = 0.0, double opening_angle = M_PI_2);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.

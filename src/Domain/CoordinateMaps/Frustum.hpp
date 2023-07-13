@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -271,11 +272,10 @@ class Frustum {
    * \param orientation_of_frustum The orientation of the frustum in 3D space.
    * \param with_equiangular_map Determines whether to apply a tangent function
    * mapping to the logical coordinates (true) or not (false).
-   * \param projective_scale_factor The scale factor of the projective map
-   * applied to the zeta logical coordinate.
-   * \param auto_projective_scale_factor Determines whether to automatically
-   * calculate the projective scale factor based on the frustum geometry (true)
-   * or use the provided scale factor (false).
+   * \param zeta_distribution Whether to apply a linear, logarithmic, or
+   * projective mapping to the logical zeta coordinate.
+   * \param distribution_value In the case of a projective map, the projective
+   * scale factor, otherwise unused.
    * \param sphericity Value between 0 and 1 which determines whether the
    * surface of the upper base of the Frustum is flat (value of 0), spherical
    * (value of 1), or somewhere in between.
@@ -289,9 +289,10 @@ class Frustum {
           double lower_bound, double upper_bound,
           OrientationMap<3> orientation_of_frustum,
           bool with_equiangular_map = false,
-          double projective_scale_factor = 1.0,
-          bool auto_projective_scale_factor = false, double sphericity = 0.0,
-          double transition_phi = 0.0, double opening_angle = M_PI_2);
+          Distribution zeta_distribution = Distribution::Linear,
+          std::optional<double> distribution_value = std::nullopt,
+          double sphericity = 0.0, double transition_phi = 0.0,
+          double opening_angle = M_PI_2);
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -333,7 +334,7 @@ class Frustum {
   OrientationMap<3> orientation_of_frustum_{};
   bool with_equiangular_map_{false};
   bool is_identity_{false};
-  bool with_projective_map_{false};
+  Distribution zeta_distribution_ = Distribution::Linear;
   double sigma_x_{std::numeric_limits<double>::signaling_NaN()};
   double delta_x_zeta_{std::numeric_limits<double>::signaling_NaN()};
   double delta_x_xi_{std::numeric_limits<double>::signaling_NaN()};
@@ -352,6 +353,7 @@ class Frustum {
   double half_opening_angle_{std::numeric_limits<double>::signaling_NaN()};
   double one_over_tan_half_opening_angle_{
       std::numeric_limits<double>::signaling_NaN()};
+  double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs);

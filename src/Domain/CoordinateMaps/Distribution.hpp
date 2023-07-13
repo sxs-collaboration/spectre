@@ -22,7 +22,13 @@ namespace domain::CoordinateMaps {
  *
  * \see domain::CoordinateMaps::Wedge
  */
-enum class Distribution { Linear, Equiangular, Logarithmic, Inverse };
+enum class Distribution {
+  Linear,
+  Equiangular,
+  Logarithmic,
+  Inverse,
+  Projective
+};
 
 std::ostream& operator<<(std::ostream& os, Distribution distribution);
 

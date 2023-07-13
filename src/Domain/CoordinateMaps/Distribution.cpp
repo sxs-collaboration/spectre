@@ -22,6 +22,8 @@ std::ostream& operator<<(std::ostream& os, const Distribution distribution) {
       return os << "Logarithmic";
     case Distribution::Inverse:
       return os << "Inverse";
+    case Distribution::Projective:
+      return os << "Projective";
     default:
       ERROR("Unknown domain::CoordinateMaps::Distribution type");
   }
@@ -42,7 +44,10 @@ Options::create_from_yaml<domain::CoordinateMaps::Distribution>::create<void>(
     return domain::CoordinateMaps::Distribution::Logarithmic;
   } else if (distribution == "Inverse") {
     return domain::CoordinateMaps::Distribution::Inverse;
+  } else if (distribution == "Projective") {
+    return domain::CoordinateMaps::Distribution::Projective;
   }
   PARSE_ERROR(options.context(),
-              "Distribution must be 'Linear', 'Logarithmic' or 'Inverse'");
-}
+              "Distribution must be 'Linear', 'Equiangular', 'Logarithmic', "
+              "'Inverse', or 'Projective'.");
+  }

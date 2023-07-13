@@ -16,6 +16,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Distribution", "[Domain][Unit]") {
   CHECK(get_output(Distribution::Equiangular) == "Equiangular");
   CHECK(get_output(Distribution::Logarithmic) == "Logarithmic");
   CHECK(get_output(Distribution::Inverse) == "Inverse");
+  CHECK(get_output(Distribution::Projective) == "Projective");
   CHECK(TestHelpers::test_creation<Distribution>("Linear") ==
         Distribution::Linear);
   CHECK(TestHelpers::test_creation<Distribution>("Equiangular") ==
@@ -24,6 +25,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Distribution", "[Domain][Unit]") {
         Distribution::Logarithmic);
   CHECK(TestHelpers::test_creation<Distribution>("Inverse") ==
         Distribution::Inverse);
+  CHECK(TestHelpers::test_creation<Distribution>("Projective") ==
+        Distribution::Projective);
 }
 
 }  // namespace domain::CoordinateMaps

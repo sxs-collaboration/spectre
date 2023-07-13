@@ -20,7 +20,7 @@ SourceDomainCreator:
       UseLogarithmicMap: True
     Envelope:
       Radius: 60.
-      UseProjectiveMap: True
+      RadialDistribution: Projective
     OuterShell:
       Radius: 350.
       RadialDistribution: Inverse
@@ -45,7 +45,7 @@ TargetDomainCreator:
       UseLogarithmicMap: true
     Envelope:
       Radius: 100.
-      UseProjectiveMap: true
+      RadialDistribution: Projective
     OuterShell:
       Radius: 300.
       RadialDistribution: Linear
