@@ -84,7 +84,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                  gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpacetimeNormalVector<DataVector, 3>,
-                 gr::Tags::SpacetimeNormalOneForm<DataVector, 3>,
                  gh::Tags::ThreeIndexConstraint<DataVector, 3>,
                  gh::Tags::GaugeH<DataVector, 3>,
                  gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>;
@@ -150,8 +149,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
                      Frame::Inertial>& /*inverse_spacetime_metric*/,
       const tnsr::A<DataVector, 3, Frame::Inertial>&
       /*spacetime_unit_normal_vector*/,
-      const tnsr::a<DataVector, 3, Frame::Inertial>&
-      /*spacetime_unit_normal_one_form*/,
       const tnsr::iaa<DataVector, 3,
                       Frame::Inertial>& /*three_index_constraint*/,
       const tnsr::a<DataVector, 3, Frame::Inertial>& /*gauge_source*/,
@@ -221,8 +218,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
       const tnsr::AA<DataVector, 3, Frame::Inertial>& inverse_spacetime_metric,
       const tnsr::A<DataVector, 3, Frame::Inertial>&
           spacetime_unit_normal_vector,
-      const tnsr::a<DataVector, 3, Frame::Inertial>&
-          spacetime_unit_normal_one_form,
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& three_index_constraint,
       const tnsr::a<DataVector, 3, Frame::Inertial>& gauge_source,
       const tnsr::ab<DataVector, 3, Frame::Inertial>&

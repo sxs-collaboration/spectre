@@ -78,6 +78,7 @@ template <typename ConversionClassList, typename... Args>
 static std::optional<std::string> call_for_error_message(
     const std::string& module_name, const std::string& function_name,
     const Args&... t) {
+  CAPTURE(function_name);
   static_assert(sizeof...(Args) > 0,
                 "Call to python which returns a Tensor of DataVectors must "
                 "pass at least one argument");

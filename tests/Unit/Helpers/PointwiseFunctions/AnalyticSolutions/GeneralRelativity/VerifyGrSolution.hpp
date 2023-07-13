@@ -181,8 +181,6 @@ void verify_time_independent_einstein_solution(
       christoffel_first_kind, upper_spacetime_metric);
   const auto trace_christoffel_first_kind =
       trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
-  const auto normal_one_form =
-      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Test ADM evolution equation gives zero
@@ -240,7 +238,6 @@ void verify_time_independent_einstein_solution(
       gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>,
       gr::Tags::SpacetimeNormalVector<DataVector, 3>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, 3>,
       gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>>
       buffer(mesh.number_of_grid_points());
 
@@ -290,15 +287,15 @@ void verify_time_independent_einstein_solution(
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, *gauge_condition, mesh, time, x, inverse_jacobian,
       std::nullopt);
 
+  const auto normal_one_form =
+      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(
+          get<gr::Tags::Lapse<DataVector>>(buffer));
   const auto gauge_constraint = gh::gauge_constraint(
-      get<gh::Tags::GaugeH<DataVector, 3>>(buffer),
-      get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(buffer),
+      get<gh::Tags::GaugeH<DataVector, 3>>(buffer), normal_one_form,
       get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer),
       get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(buffer),
       get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(buffer), pi, phi);

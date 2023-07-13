@@ -119,8 +119,7 @@ struct TimeDerivative {
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>;
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>>;
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>,
@@ -169,7 +168,6 @@ struct TimeDerivative {
       gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
       gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
       gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
-      gsl::not_null<tnsr::a<DataVector, Dim>*> normal_spacetime_one_form,
       const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim>& d_pi,
       const tnsr::ijaa<DataVector, Dim>& d_phi,

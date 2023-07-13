@@ -19,7 +19,6 @@
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
-#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -64,7 +63,6 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
     const gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
     const gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
-    const gsl::not_null<tnsr::a<DataVector, Dim>*> normal_spacetime_one_form,
     const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_pi,
     const tnsr::ijaa<DataVector, Dim>& d_phi,
@@ -129,7 +127,6 @@ void TimeDerivative<Dim>::apply(
   trace_last_indices(trace_christoffel, *christoffel_first_kind,
                      *inverse_spacetime_metric);
   gr::spacetime_normal_vector(normal_spacetime_vector, *lapse, *shift);
-  gr::spacetime_normal_one_form(normal_spacetime_one_form, *lapse);
 
   get(*gamma1gamma2) = get(gamma1) * get(gamma2);
   const DataVector& gamma12 = get(*gamma1gamma2);

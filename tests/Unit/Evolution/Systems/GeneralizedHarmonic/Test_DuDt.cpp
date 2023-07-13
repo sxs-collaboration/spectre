@@ -627,8 +627,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>>
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
 
   gh::TimeDerivative<Dim>::apply(
@@ -679,8 +678,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -782,8 +779,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -841,8 +836,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       std::optional{mesh_velocity});

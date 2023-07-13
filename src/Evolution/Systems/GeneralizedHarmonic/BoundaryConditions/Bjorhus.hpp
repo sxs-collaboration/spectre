@@ -156,7 +156,6 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
                  gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
                  gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
-                 gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
                  Tags::ThreeIndexConstraint<DataVector, Dim>,
                  Tags::GaugeH<DataVector, Dim>,
                  Tags::SpacetimeDerivGaugeH<DataVector, Dim>>;
@@ -198,8 +197,6 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
           inverse_spacetime_metric,
       const tnsr::A<DataVector, Dim, Frame::Inertial>&
           spacetime_unit_normal_vector,
-      const tnsr::a<DataVector, Dim, Frame::Inertial>&
-          spacetime_unit_normal_one_form,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
       const tnsr::a<DataVector, Dim, Frame::Inertial>& gauge_source,
       const tnsr::ab<DataVector, Dim, Frame::Inertial>&

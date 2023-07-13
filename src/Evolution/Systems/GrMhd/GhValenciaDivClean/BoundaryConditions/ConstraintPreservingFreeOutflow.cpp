@@ -83,8 +83,6 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
                    Frame::Inertial>& /*inverse_spacetime_metric*/,
     const tnsr::A<DataVector, 3, Frame::Inertial>&
     /*spacetime_unit_normal_vector*/,
-    const tnsr::a<DataVector, 3, Frame::Inertial>&
-    /*spacetime_unit_normal_one_form*/,
     const tnsr::iaa<DataVector, 3, Frame::Inertial>& /*three_index_constraint*/,
     const tnsr::a<DataVector, 3, Frame::Inertial>& /*gauge_source*/,
     const tnsr::ab<DataVector, 3, Frame::Inertial>&
@@ -164,8 +162,6 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
     const tnsr::II<DataVector, 3>& /*interior_inv_spatial_metric*/,
     const tnsr::AA<DataVector, 3, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, 3, Frame::Inertial>& spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, 3, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, 3, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, 3, Frame::Inertial>& gauge_source,
     const tnsr::ab<DataVector, 3, Frame::Inertial>&
@@ -190,10 +186,9 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
       dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
       face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
       phi, coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
-      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
-      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
-      logical_dt_spacetime_metric, logical_dt_pi, logical_dt_phi,
-      d_spacetime_metric, d_pi, d_phi);
+      spacetime_unit_normal_vector, three_index_constraint, gauge_source,
+      spacetime_deriv_gauge_source, logical_dt_spacetime_metric, logical_dt_pi,
+      logical_dt_phi, d_spacetime_metric, d_pi, d_phi);
 }
 
 // NOLINTNEXTLINE
