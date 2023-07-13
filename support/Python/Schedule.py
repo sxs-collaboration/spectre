@@ -42,7 +42,6 @@ def _resolve_executable(executable: Union[str, Path]) -> Path:
             " look for executables in a specific build directory make sure it"
             " is in the 'PATH' or use the 'spectre --build-dir / -b' option."
         )
-    logger.debug(f"Found executable in PATH: {which_exec}")
     return Path(which_exec).resolve()
 
 
@@ -366,6 +365,7 @@ def schedule(
                 "as 'Executable:'."
             ) from err
     executable = _resolve_executable(executable)
+    logger.info(f"Running with executable: {executable}")
     # Only set executable name because the path may change if we copy it later
     context.update(executable_name=executable.name)
 
