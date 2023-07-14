@@ -151,6 +151,10 @@ Authors:
         Orcid: 0000-0001-9891-8677
         Affiliations: [*caltech]
         GitHub: moxcodes
+      - Name: Nelli, Kyle C.
+        Orcid: 0000-0003-2426-8768
+        Affiliations: [*caltech]
+        GitHub: knelli2
 
   Developers:
     Description: |
@@ -199,10 +203,6 @@ Authors:
         Orcid: 0000-0001-5139-9013
         Affiliations: [*fullerton]
         GitHub: macedo22
-      - Name: Nelli, Kyle C.
-        Orcid: 0000-0003-2426-8768
-        Affiliations: [*caltech]
-        GitHub: knelli2
       - Name: O'Shea, Eamonn
         Affiliations: [*cornell]
         GitHub: osheamonn
