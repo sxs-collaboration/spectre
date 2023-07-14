@@ -245,20 +245,15 @@ std::string create_option_string(
           ? (add_time_dependence
                  ? "  TimeDependentMaps:\n"
                    "    InitialTime: 1.0\n"
-                   "    ExpansionMap:\n"
-                   "      InitialValues: [1.0, -0.1]\n"
-                   "      AsymptoticVelocityOuterBoundary: -0.1\n"
-                   "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
+                   "    ExpansionMap: None\n"
                    "    RotationMap:\n"
                    "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                   "    SizeMapA:\n"
-                   "      InitialValues: [1.1, 0.0, 0.0]\n"
-                   "    SizeMapB:\n"
-                   "      InitialValues: [1.2, 0.0, 0.0]\n"
                    "    ShapeMapA:\n"
                    "      LMax: 8\n"
+                   "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
                    "    ShapeMapB:\n"
                    "      LMax: 8\n"
+                   "      SizeInitialValues: [1.2, 0.0, 0.0]\n"
                  : "  TimeDependentMaps: None\n")
           : ""};
 
@@ -355,14 +350,7 @@ void test_construction(const CylBCO& creator,
 
 TimeDepOptions construct_time_dependent_options() {
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
-  constexpr double expected_asymptotic_velocity_outer_boundary =
-      -0.1;  // matches AsymptoticVelocityOuterBoundary: -0.1 above
-  constexpr double expected_decay_timescale_outer_boundary_velocity =
-      5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
 
-  // Matches ExpansionMap:InitialValues above
-  std::array<DataVector, 3> initial_expansion_factor_coefs{
-      {{1.0}, {-0.1}, {0.0}}};
   // Matches RotationMap:InitialAngularVelocity above
   const DataVector initial_angular_velocity{{0.0, 0.0, -0.2}};
 
@@ -378,21 +366,20 @@ TimeDepOptions construct_time_dependent_options() {
   std::array<DataVector, 4> initial_size_A_coefs{{{1.1}, {0.0}, {0.0}, {0.0}}};
   std::array<DataVector, 4> initial_size_B_coefs{{{1.2}, {0.0}, {0.0}, {0.0}}};
 
+  // No expansion map options because of above option string
   return TimeDepOptions{
-      expected_time,
-      TimeDepOptions::ExpansionMapOptions{
-          std::array{initial_expansion_factor_coefs[0][0],
-                     initial_expansion_factor_coefs[1][0]},
-          expected_asymptotic_velocity_outer_boundary,
-          expected_decay_timescale_outer_boundary_velocity},
-      {{initial_angular_velocity[0], initial_angular_velocity[1],
-        initial_angular_velocity[2]}},
-      {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
-        initial_size_A_coefs[1][0]}},
-      {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-        initial_size_B_coefs[1][0]}},
-      {8_st},
-      {8_st}};
+      expected_time, std::nullopt,
+      TimeDepOptions::RotationMapOptions{{initial_angular_velocity[0],
+                                          initial_angular_velocity[1],
+                                          initial_angular_velocity[2]}},
+      TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::A>{
+          8_st,
+          {initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
+           initial_size_A_coefs[1][0]}},
+      TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::B>{
+          8_st,
+          {initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
+           initial_size_B_coefs[1][0]}}};
 }
 
 void test_parse_errors() {
@@ -444,13 +431,10 @@ void test_parse_errors() {
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          TimeDepOptions{0.0,
-                         {std::array{0.0, 0.0}, 0.0, 1.0},
-                         {std::array{0.0, 0.0, 0.0}},
-                         {std::array{0.0, 0.0, 0.0}},
-                         {std::array{0.0, 0.0, 0.0}},
-                         {8},
-                         {8}},
+          TimeDepOptions{
+              0.0, std::nullopt,
+              TimeDepOptions::RotationMapOptions{std::array{0.0, 0.0, 0.0}},
+              std::nullopt, std::nullopt},
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),

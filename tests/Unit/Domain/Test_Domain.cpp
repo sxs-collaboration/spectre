@@ -439,15 +439,15 @@ void test_versioning() {
   const size_t obs_id = volfile.list_observation_ids().front();
   const auto serialized_domain = *volfile.get_domain(obs_id);
   const auto domain = deserialize<Domain<3>>(serialized_domain.data());
+  using TimeDepOps = domain::creators::bco::TimeDependentMapOptions;
   const auto expected_domain_creator = domain::creators::BinaryCompactObject{
-      domain::creators::bco::TimeDependentMapOptions{
+      TimeDepOps{
           0.,
-          {{{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
-          {{0.0, 0.0, 1.5264577062000000e-02}},
-          {{0., 0., 0.}},
-          {{0., 0., 0.}},
-          {8},
-          {8}},
+          TimeDepOps::ExpansionMapOptions{
+              {{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
+          TimeDepOps::RotationMapOptions{{0.0, 0.0, 1.5264577062000000e-02}},
+          TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
+          TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}},
       domain::creators::BinaryCompactObject::Object{0.45825, 6., 7.683, true,
                                                     true},
       domain::creators::BinaryCompactObject::Object{0.45825, 6., -7.683, true,

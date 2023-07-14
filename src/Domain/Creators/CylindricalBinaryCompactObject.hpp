@@ -142,6 +142,11 @@ namespace domain::creators {
  * - \f$R \ge 3(|c_A^0|-|c_B^0|)\f$; otherwise the blocks will be too compressed
  *   near the outer boundary.
  *
+ * All time dependent maps are optional to specify. To include a map, specify
+ * its options. Otherwise specify `None` for that map. You can also turn off
+ * time dependent maps all together by specifying `None` for the
+ * `TimeDependentMaps` option. See
+ * `domain::creators::bco::TimeDependentMapOptions`.
  */
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
  public:

@@ -309,12 +309,12 @@ BinaryCompactObject::BinaryCompactObject(
   std::optional<std::pair<double, double>> inner_outer_radii_A{};
   std::optional<std::pair<double, double>> inner_outer_radii_B{};
 
-  if (not use_single_block_a_) {
+  if (is_excised_a_) {
     inner_outer_radii_A =
         std::make_pair(std::get<Object>(object_A_).inner_radius,
                        std::get<Object>(object_A_).outer_radius);
   }
-  if (not use_single_block_b_) {
+  if (is_excised_b_) {
     inner_outer_radii_B =
         std::make_pair(std::get<Object>(object_B_).inner_radius,
                        std::get<Object>(object_B_).outer_radius);

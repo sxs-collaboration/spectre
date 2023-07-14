@@ -371,15 +371,16 @@ std::string create_option_string(
                    "      AsymptoticVelocityOuterBoundary: -0.1\n"
                    "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
                    "    RotationMap:\n"
-                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                   "    SizeMapA:\n"
-                   "      InitialValues: [0.0, -0.1, 0.01]\n"
-                   "    SizeMapB:\n"
-                   "      InitialValues: [0.0, -0.2, 0.02]\n"
-                   "    ShapeMapA:\n"
-                   "      LMax: 8\n"
-                   "    ShapeMapB:\n"
-                   "      LMax: 8"
+                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"s +
+                       (excise_A
+                            ? "    ShapeMapA:\n"
+                              "      LMax: 8\n"
+                              "      SizeInitialValues: [0.0, -0.1, 0.01]\n"s
+                            : "    ShapeMapA: None\n"s) +
+                       (excise_B ? "    ShapeMapB:\n"
+                                   "      LMax: 8\n"
+                                   "      SizeInitialValues: [0.0, -0.2, 0.02]"s
+                                 : "    ShapeMapB: None"s)
                  : "  TimeDependentMaps: None")
           : ""};
   const std::string interior_A{
@@ -536,22 +537,26 @@ void test_bns_domain_with_cubes() {
 }
 
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
-                                     const bool with_time_dependence) {
+                                     const bool with_time_dependence,
+                                     const bool excise_B) {
   INFO("BBH time dependent factory");
   CAPTURE(with_boundary_conditions);
   CAPTURE(with_time_dependence);
+  CAPTURE(excise_B);
   const auto binary_compact_object = [&with_boundary_conditions,
-                                      &with_time_dependence]() {
+                                      &with_time_dependence, &excise_B]() {
     if (with_boundary_conditions) {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, true>>(
-          create_option_string(true, true, true, with_time_dependence, false,
-                               true, 0, 0, 0, 120.0, with_boundary_conditions));
+          create_option_string(true, excise_B, true, with_time_dependence,
+                               false, true, 0, 0, 0, 120.0,
+                               with_boundary_conditions));
     } else {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, false>>(
-          create_option_string(true, true, true, with_time_dependence, false,
-                               true, 0, 0, 0, 120.0, with_boundary_conditions));
+          create_option_string(true, excise_B, true, with_time_dependence,
+                               false, true, 0, 0, 0, 120.0,
+                               with_boundary_conditions));
     }
   }();
 
@@ -697,10 +702,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
   test_bns_domain_with_cubes();
-  test_bbh_time_dependent_factory(true, true);
-  test_bbh_time_dependent_factory(true, false);
-  test_bbh_time_dependent_factory(false, true);
-  test_bbh_time_dependent_factory(false, false);
+  for (const auto& [with_bc, add_time_dep, excise_B] :
+       cartesian_product(make_array(true, false), make_array(true, false),
+                         make_array(true, false))) {
+    test_bbh_time_dependent_factory(with_bc, add_time_dep, excise_B);
+  }
   test_binary_factory();
   test_parse_errors();
 }

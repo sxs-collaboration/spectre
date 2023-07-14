@@ -68,14 +68,12 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "      InitialAngularVelocity: [0.0, 0.0," +
       angular_velocity_stream.str() +
       "]\n"
-      "    SizeMapA:\n"
-      "      InitialValues: [0.0, 0.0, 0.0]\n"
-      "    SizeMapB:\n"
-      "      InitialValues: [0.0, 0.0, 0.0]\n"
       "    ShapeMapA:\n"
       "      LMax: 8\n"
+      "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
       "    ShapeMapB:\n"
-      "      LMax: 8";
+      "      LMax: 8\n"
+      "      SizeInitialValues: [0.0, 0.0, 0.0]\n";
   return ::TestHelpers::test_option_tag<::domain::OptionTags::DomainCreator<3>,
                                         Metavariables>(
       binary_compact_object_options);

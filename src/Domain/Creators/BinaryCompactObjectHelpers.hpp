@@ -17,7 +17,9 @@
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Context.hpp"
+#include "Options/Options.hpp"
 #include "Options/String.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
@@ -63,6 +65,83 @@ std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
 create_grid_anchors(const std::array<double, 3>& center_a,
                     const std::array<double, 3>& center_b);
 
+template <domain::ObjectLabel Object>
+struct ShapeMapOptions {
+  using type = Options::Auto<ShapeMapOptions, Options::AutoLabel::None>;
+  static std::string name() { return "ShapeMap" + get_output(Object); }
+  static constexpr Options::String help = {
+      "Options for a time-dependent distortion (shape) map about the "
+      "specified object. Specify 'None' to not use this map."};
+
+  struct LMax {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "LMax used for the number of spherical harmonic coefficients of the "
+        "distortion map. Currently, all coefficients are initialized to "
+        "zero."};
+  };
+
+  struct SizeInitialValues {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "Initial value and two derivatives of the size map."};
+  };
+
+  using options = tmpl::list<LMax, SizeInitialValues>;
+
+  size_t l_max{};
+  std::array<double, 3> initial_size_values{};
+};
+
+namespace detail {
+// Convenience type alias
+template <typename... Maps>
+using gi_map = domain::CoordinateMap<Frame::Grid, Frame::Inertial, Maps...>;
+template <typename... Maps>
+using gd_map = domain::CoordinateMap<Frame::Grid, Frame::Distorted, Maps...>;
+template <typename... Maps>
+using di_map =
+    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Maps...>;
+
+template <typename List>
+struct power_set {
+  using rest = typename power_set<tmpl::pop_front<List>>::type;
+  using type = tmpl::append<
+      rest, tmpl::transform<rest, tmpl::lazy::push_front<
+                                      tmpl::_1, tmpl::pin<tmpl::front<List>>>>>;
+};
+
+template <>
+struct power_set<tmpl::list<>> {
+  using type = tmpl::list<tmpl::list<>>;
+};
+
+template <typename SourceFrame, typename TargetFrame, typename Maps>
+using produce_all_maps_helper =
+    tmpl::wrap<tmpl::push_front<Maps, SourceFrame, TargetFrame>,
+               domain::CoordinateMap>;
+
+/*
+ * This will produce all the possible combinations of maps we will need for the
+ * maps_list. It does so using a power set. Say you have 3 maps, Map1, Map2,
+ * Map3. The end result of this will be a list with the following map
+ * combinations where these combinations may not appear in the same position in
+ * the list, but the order of each combination is fixed:
+ *  - Map1
+ *  - Map2
+ *  - Map3
+ *  - Map1, Map2
+ *  - Map1, Map3
+ *  - Map2, Map3
+ *  - Map1, Map2, Map3
+ */
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+using produce_all_maps = tmpl::transform<
+    tmpl::remove<typename power_set<tmpl::list<Maps...>>::type, tmpl::list<>>,
+    tmpl::bind<produce_all_maps_helper, tmpl::pin<SourceFrame>,
+               tmpl::pin<TargetFrame>, tmpl::_1>>;
+}  // namespace detail
+
 /*!
  * \brief This holds all options related to the time dependent maps of the
  * binary compact object domains.
@@ -81,32 +160,26 @@ struct TimeDependentMapOptions {
   template <typename SourceFrame, typename TargetFrame>
   using MapType =
       std::unique_ptr<domain::CoordinateMapBase<SourceFrame, TargetFrame, 3>>;
-  using IdentityMap = domain::CoordinateMaps::Identity<3>;
   // Time-dependent maps
-  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
-  using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
-  using ShapeCoordMap = domain::CoordinateMaps::TimeDependent::Shape;
-
-  template <typename SourceFrame, typename TargetFrame>
-  using CubicScaleAndRotationMapForComposition =
-      domain::CoordinateMap<SourceFrame, TargetFrame, CubicScaleMap,
-                            RotationMap3D>;
-  using DistortedToInertialComposition =
-      CubicScaleAndRotationMapForComposition<Frame::Distorted, Frame::Inertial>;
-  using GridToDistortedComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeCoordMap>;
-  template <bool IncludeDistortedMap>
-  using GridToInertialComposition = tmpl::conditional_t<
-      IncludeDistortedMap,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeCoordMap,
-                            CubicScaleMap, RotationMap3D>,
-      CubicScaleAndRotationMapForComposition<Frame::Grid, Frame::Inertial>>;
+  using Expansion = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
+  using Rotation = domain::CoordinateMaps::TimeDependent::Rotation<3>;
+  using Shape = domain::CoordinateMaps::TimeDependent::Shape;
+  using Identity = domain::CoordinateMaps::Identity<3>;
 
  public:
-  using maps_list =
-      tmpl::list<GridToDistortedComposition, DistortedToInertialComposition,
-                 GridToInertialComposition<false>,
-                 GridToInertialComposition<true>>;
+  using maps_list = tmpl::append<
+      // We need this odd-one-out Identity map because all maps are optional to
+      // specify. It's possible to specify a shape map, but no expansion or
+      // rotation map. So we have a grid to distorted map, and need an identity
+      // distorted to inertial map. We don't need an identity grid to distorted
+      // map because if a user requests the grid to distorted frame map with a
+      // distorted frame, but didn't specify shape map options, an error occurs.
+      tmpl::list<detail::di_map<Identity>>,
+      detail::produce_all_maps<Frame::Grid, Frame::Inertial, Shape, Expansion,
+                               Rotation>,
+      detail::produce_all_maps<Frame::Grid, Frame::Distorted, Shape>,
+      detail::produce_all_maps<Frame::Distorted, Frame::Inertial, Expansion,
+                               Rotation>>;
 
   /// \brief The initial time of the functions of time.
   struct InitialTime {
@@ -120,7 +193,10 @@ struct TimeDependentMapOptions {
   /// the outer boundary of the Domain, so there is no option
   /// here to set the outer boundary radius.
   struct ExpansionMapOptions {
-    static constexpr Options::String help = {"Options for the expansion map."};
+    using type = Options::Auto<ExpansionMapOptions, Options::AutoLabel::None>;
+    static std::string name() { return "ExpansionMap"; }
+    static constexpr Options::String help = {
+        "Options for the expansion map. Specify 'None' to not use this map."};
     struct InitialValues {
       using type = std::array<double, 2>;
       static constexpr Options::String help = {
@@ -149,14 +225,12 @@ struct TimeDependentMapOptions {
         std::numeric_limits<double>::signaling_NaN()};
   };
 
-  struct ExpansionMap {
-    using type = ExpansionMapOptions;
-    static constexpr Options::String help = {"Options for CubicScale map."};
-  };
-
   struct RotationMapOptions {
+    using type = Options::Auto<RotationMapOptions, Options::AutoLabel::None>;
+    static std::string name() { return "RotationMap"; }
     static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about an arbitrary axis."};
+        "Options for a time-dependent rotation map about an arbitrary axis. "
+        "Specify 'None' to not use this map."};
 
     struct InitialAngularVelocity {
       using type = std::array<double, 3>;
@@ -168,79 +242,33 @@ struct TimeDependentMapOptions {
     std::array<double, 3> initial_angular_velocity{};
   };
 
-  struct RotationMap {
-    using type = RotationMapOptions;
-    static constexpr Options::String help = RotationMapOptions::help;
-  };
-
+  // We use a type alias here instead of defining the ShapeMapOptions struct
+  // because there appears to be a bug in clang-10. If the definition of
+  // ShapeMapOptions is here inside TimeDependentMapOptions, on clang-10 there
+  // is a linking error that there is an undefined reference to
+  // Options::Option::parse_as<TimeDependentMapOptions<A>> (and B). This doesn't
+  // show up for GCC. If we put the definition of ShapeMapOptions outside of
+  // TimeDependentMapOptions and just use a type alias here, the linking error
+  // goes away.
   template <domain::ObjectLabel Object>
-  struct SizeMapOptions {
-    static std::string name() { return "SizeMap" + get_output(Object); }
-    static constexpr Options::String help = {
-        "Options for a time-dependent size map about the specified object."};
+  using ShapeMapOptions = domain::creators::bco::ShapeMapOptions<Object>;
 
-    struct InitialValues {
-      using type = std::array<double, 3>;
-      static constexpr Options::String help = {
-          "Initial value and two derivatives of the size map."};
-    };
-
-    using options = tmpl::list<InitialValues>;
-
-    std::array<double, 3> initial_values{};
-  };
-
-  template <domain::ObjectLabel Object>
-  struct SizeMap {
-    static std::string name() { return SizeMapOptions<Object>::name(); }
-    using type = SizeMapOptions<Object>;
-    static constexpr Options::String help = SizeMapOptions<Object>::help;
-  };
-
-  template <domain::ObjectLabel Object>
-  struct ShapeMapOptions {
-    static std::string name() { return "ShapeMap" + get_output(Object); }
-    static constexpr Options::String help = {
-        "Options for a time-dependent distortion (shape) map about the "
-        "specified object."};
-
-    struct LMax {
-      using type = size_t;
-      static constexpr Options::String help = {
-          "LMax used for the number of spherical harmonic coefficients of the "
-          "distortion map. Currently, all coefficients are initialized to "
-          "zero."};
-    };
-
-    using options = tmpl::list<LMax>;
-
-    size_t l_max{};
-  };
-
-  template <domain::ObjectLabel Object>
-  struct ShapeMap {
-    static std::string name() { return ShapeMapOptions<Object>::name(); }
-    using type = ShapeMapOptions<Object>;
-    static constexpr Options::String help = ShapeMapOptions<Object>::help;
-  };
-
-  using options = tmpl::list<
-      InitialTime, ExpansionMap, RotationMap, SizeMap<domain::ObjectLabel::A>,
-      SizeMap<domain::ObjectLabel::B>, ShapeMap<domain::ObjectLabel::A>,
-      ShapeMap<domain::ObjectLabel::B>>;
+  using options =
+      tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
+                 ShapeMapOptions<domain::ObjectLabel::A>,
+                 ShapeMapOptions<domain::ObjectLabel::B>>;
   static constexpr Options::String help{
       "The options for all time dependent maps in a binary compact object "
-      "domain."};
+      "domain. Specify 'None' to not use any time dependent maps."};
 
   TimeDependentMapOptions() = default;
 
   TimeDependentMapOptions(
-      double initial_time, ExpansionMapOptions expansion_map_options,
-      RotationMapOptions rotation_options,
-      const SizeMapOptions<domain::ObjectLabel::A>& size_options_A,
-      const SizeMapOptions<domain::ObjectLabel::B>& size_options_B,
-      const ShapeMapOptions<domain::ObjectLabel::A>& shape_options_A,
-      const ShapeMapOptions<domain::ObjectLabel::B>& shape_options_B,
+      double initial_time,
+      std::optional<ExpansionMapOptions> expansion_map_options,
+      std::optional<RotationMapOptions> rotation_options,
+      std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A,
+      std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B,
       const Options::Context& context = {});
 
   /*!
@@ -279,6 +307,12 @@ struct TimeDependentMapOptions {
                   const std::optional<std::pair<double, double>>&
                       object_B_inner_outer_radii,
                   double domain_outer_radius);
+
+  /*!
+   * \brief Check whether options were specified in the constructor for the
+   * shape map of this object
+   */
+  bool has_distorted_frame_options(domain::ObjectLabel object) const;
 
   /*!
    * \brief This will construct the map from `Frame::Distorted` to
@@ -330,23 +364,15 @@ struct TimeDependentMapOptions {
   static size_t get_index(domain::ObjectLabel object);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  ExpansionMapOptions expansion_map_options_{};
-  std::array<double, 3> initial_angular_velocity_{
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN(),
-      std::numeric_limits<double>::signaling_NaN()};
-  std::array<std::array<double, 3>, 2> initial_size_values_{
-      std::array{std::numeric_limits<double>::signaling_NaN(),
-                 std::numeric_limits<double>::signaling_NaN(),
-                 std::numeric_limits<double>::signaling_NaN()},
-      std::array{std::numeric_limits<double>::signaling_NaN(),
-                 std::numeric_limits<double>::signaling_NaN(),
-                 std::numeric_limits<double>::signaling_NaN()}};
-  std::array<size_t, 2> initial_l_max_{0, 0};
+  std::optional<ExpansionMapOptions> expansion_map_options_{};
+  std::optional<RotationMapOptions> rotation_options_{};
+  std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A_{};
+  std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B_{};
+
   // Maps
-  CubicScaleMap expansion_map_{};
-  RotationMap3D rotation_map_{};
-  std::array<ShapeCoordMap, 2> shape_maps_{};
+  std::optional<Expansion> expansion_map_{};
+  std::optional<Rotation> rotation_map_{};
+  std::array<std::optional<Shape>, 2> shape_maps_{};
 };
 
 }  // namespace domain::creators::bco

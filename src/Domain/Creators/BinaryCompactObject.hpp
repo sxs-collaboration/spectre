@@ -128,8 +128,13 @@ namespace creators {
  *   (defined below), then the expansion and rotation maps go from the Distorted
  *   to the Inertial frame.
  * - If an object is excised, then the corresponding shell has a
- *   `SphericalCompression` size map. The size map goes from the Grid to the
- *   Distorted frame. We will also add a shape map here.
+ *   `Shape` map. The shape map goes from the Grid to the Distorted frame.
+ *
+ * All time dependent maps are optional to specify. To include a map, specify
+ * its options. Otherwise specify `None` for that map. You can also turn off
+ * time dependent maps all together by specifying `None` for the
+ * `TimeDependentMaps` option. See
+ * `domain::creators::bco::TimeDependentMapOptions`.
  */
 class BinaryCompactObject : public DomainCreator<3> {
  private:
@@ -436,9 +441,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       "  - A list, with [polar, azimuthal, radial] refinement for each block\n"
       "\n"
       "If time-dependent maps are enabled, the domain can rotate around the "
-      "z-axis and expand/compress radially. The two objects can also have a "
-      "spherical compression (size map), and we will add a spherical "
-      "distortion (shape map)."};
+      "z-axis and expand/compress radially. The two objects can each have a "
+      "spherical distortion (shape map)."};
 
   // Constructor for time-independent version of the domain
   // (i.e., for when
