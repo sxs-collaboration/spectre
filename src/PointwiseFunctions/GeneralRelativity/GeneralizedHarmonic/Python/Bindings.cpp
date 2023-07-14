@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
@@ -18,6 +19,13 @@ namespace GeneralizedHarmonic::py_bindings {
 namespace {
 template <size_t Dim>
 void bind_impl(py::module& m) {  // NOLINT
+  m.def(
+      "christoffel_second_kind",
+      static_cast<tnsr::Ijj<DataVector, Dim> (*)(
+          const tnsr::iaa<DataVector, Dim>&, const tnsr::II<DataVector, Dim>&)>(
+          &::gh::christoffel_second_kind),
+      py::arg("phi"), py::arg("inv_metric"));
+
   m.def("deriv_spatial_metric",
         static_cast<tnsr::ijj<DataVector, Dim> (*)(
             const tnsr::iaa<DataVector, Dim>&)>(&::gh::deriv_spatial_metric),
@@ -39,6 +47,17 @@ void bind_impl(py::module& m) {  // NOLINT
           &::gh::time_deriv_of_shift),
       py::arg("lapse"), py::arg("shift"), py::arg("inverse_spatial_metric"),
       py::arg("spacetime_unit_normal"), py::arg("phi"), py::arg("pi"));
+
+  m.def(
+      "trace_christoffel",
+      static_cast<tnsr::a<DataVector, Dim> (*)(
+          const tnsr::a<DataVector, Dim>&, const tnsr::A<DataVector, Dim>&,
+          const tnsr::II<DataVector, Dim>&, const tnsr::AA<DataVector, Dim>&,
+          const tnsr::aa<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&)>(
+          &::gh::trace_christoffel),
+      py::arg("spacetime_normal_one_form"), py::arg("spacetime_normal_vector"),
+      py::arg("inverse_spatial_metric"), py::arg("inverse_spacetime_metric"),
+      py::arg("pi"), py::arg("phi"));
 }
 }  // namespace
 
