@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
@@ -100,7 +101,8 @@ struct DummyEvolutionMetaVars {
   };
 };
 
-double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
+double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
+            const bool test_non_diagonal_jacobian) {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -121,11 +123,15 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
         grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{}
             .get_clone();
   }
-  Block<3> block{
-      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine3D{affine_map, affine_map, affine_map}),
-      0,
-      {}};
+  Block<3> block{test_non_diagonal_jacobian
+                     ? domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                        Frame::Inertial>(
+                           ::domain::CoordinateMaps::Rotation<3>(0.7, 0, 0.))
+                     : domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                        Frame::Inertial>(
+                           Affine3D{affine_map, affine_map, affine_map}),
+                 0,
+                 {}};
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -163,10 +169,42 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
           InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>(
               subcell_mesh.number_of_grid_points());
-  for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
-       ++i) {
-    cell_centered_logical_to_inertial_inv_jacobian[i] =
-        cell_centered_logical_to_grid_inv_jacobian[i];
+  const auto& cell_centered_grid_to_inertial_inv_jacobian =
+      grid_to_inertial_map->inv_jacobian(element_map(logical_coords));
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      auto& inv_jacobian_component =
+          cell_centered_logical_to_inertial_inv_jacobian.get(i, j);
+      inv_jacobian_component = 0.;
+      for (size_t k = 0; k < 3; k++) {
+        inv_jacobian_component +=
+            cell_centered_logical_to_grid_inv_jacobian.get(i, k) *
+            cell_centered_grid_to_inertial_inv_jacobian.get(k, j);
+      }
+    }
+  }
+
+  const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
+      dg_logical_to_grid_inv_jacobian =
+          InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>(
+              element_map.inv_jacobian(logical_coordinates(dg_mesh)));
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      dg_logical_to_inertial_inv_jacobian =
+          InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>(dg_mesh.number_of_grid_points());
+  const auto& dg_grid_to_inertial_inv_jacobian =
+      grid_to_inertial_map->inv_jacobian(
+          element_map(logical_coordinates(dg_mesh)));
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      auto& inv_jacobian_component =
+          dg_logical_to_inertial_inv_jacobian.get(i, j);
+      inv_jacobian_component = 0.;
+      for (size_t k = 0; k < 3; k++) {
+        inv_jacobian_component += dg_logical_to_grid_inv_jacobian.get(i, k) *
+                                  dg_grid_to_inertial_inv_jacobian.get(k, j);
+      }
+    }
   }
 
   using variables_tag = typename System::variables_tag;
@@ -196,6 +234,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
       dg_mesh_velocity.value().get(i) =
           dg_coords.get(i) * expansion_velocity.value();
     }
+
     subcell_mesh_velocity = std::optional<tnsr::I<DataVector, 3>>(
         tnsr::I<DataVector, 3>(subcell_mesh.number_of_grid_points()));
     for (int i = 0; i < 3; i++) {
@@ -387,8 +426,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
         face_mesh_velocity.value().get(i) =
             face_coords.get(i) * expansion_velocity.value();
       }
+
       tmpl::for_each<conserved_tags>(
-          [&prims_to_reconstruct, &face_mesh_velocity, &direction](auto tag_v) {
+          [&prims_to_reconstruct, &face_mesh_velocity](auto tag_v) {
             using tag = tmpl::type_from<decltype(tag_v)>;
             using flux_tag =
                 ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
@@ -398,11 +438,12 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
             for (size_t storage_index = 0; storage_index < var.size();
                  ++storage_index) {
               const auto tensor_index = var.get_tensor_index(storage_index);
-              const auto flux_storage_index = FluxTensor::get_storage_index(
-                  prepend(tensor_index, direction.dimension()));
-              flux[flux_storage_index] -=
-                  face_mesh_velocity.value().get(direction.dimension()) *
-                  var[storage_index];
+              for (size_t j = 0; j < 3; j++) {
+                const auto flux_storage_index =
+                    FluxTensor::get_storage_index(prepend(tensor_index, j));
+                flux[flux_storage_index] -=
+                    face_mesh_velocity.value().get(j) * var[storage_index];
+              }
             }
           });
     }
@@ -448,7 +489,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
       normal_dot_mesh_velocity =
           Scalar<DataVector>{interface_mesh.number_of_grid_points()};
       normal_dot_mesh_velocity.value() =
-          dot_product(face_mesh_velocity.value(), normal_vector);
+          dot_product(face_mesh_velocity.value(), normal_covector);
     }
 
     using dg_package_fields =
@@ -579,6 +620,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
           domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
           domain::Tags::DivMeshVelocity,
+          domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                        Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
@@ -606,6 +649,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       3, Frame::Grid, Frame::Inertial>,
                   3>,
+          domain::Tags::DetInvJacobianCompute<3, Frame::ElementLogical,
+                                              Frame::Inertial>,
           gr::Tags::SpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
                                                       Frame::Inertial>,
@@ -628,6 +673,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
           domain::CoordinateMaps::Identity<3>{}),
       std::move(domain), std::move(external_boundary_conditions),
       dg_mesh_velocity, div_dg_mesh_velocity,
+      dg_logical_to_inertial_inv_jacobian,
       dummy_normal_covector_and_magnitude, time,
       clone_unique_ptrs(functions_of_time), soln, DummyEvolutionMetaVars{},
       // Note: These damping functions all assume Grid==Inertial. We need to
@@ -646,7 +692,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
 
   subcell::TimeDerivative::apply(
       make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-      determinant(cell_centered_logical_to_grid_inv_jacobian));
+      determinant(cell_centered_logical_to_inertial_inv_jacobian));
 
   // We test that the time derivative converges to zero,
   // so we remove the expected value of the time derivative for moving meshes
@@ -743,7 +789,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
                output_minus_expected_dt_vars))))});
 }
 
-// [[Timeout, 10]]
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GhValenciaDivClean.Subcell.TimeDerivative",
     "[Unit][Evolution]") {
@@ -753,13 +799,18 @@ SPECTRE_TEST_CASE(
 
   std::optional<double> expansion_velocity = {};
 
-  CHECK(test(4, expansion_velocity) > test(8, expansion_velocity));
-  CHECK(test(8, expansion_velocity) < 1.0e-6);
+  CHECK(test(4, expansion_velocity, false) >
+        test(8, expansion_velocity, false));
+  CHECK(test(8, expansion_velocity, false) < 1.0e-6);
 
   expansion_velocity = 0.5;
 
-  CHECK(test(4, expansion_velocity) > test(8, expansion_velocity));
-  CHECK(test(8, expansion_velocity) < 1.0e-6);
+  CHECK(test(4, expansion_velocity, false) >
+        test(8, expansion_velocity, false));
+  CHECK(test(8, expansion_velocity, false) < 1.0e-6);
+
+  CHECK(test(4, expansion_velocity, true) > test(8, expansion_velocity, true));
+  CHECK(test(8, expansion_velocity, true) < 1.0e-6);
 }
 }  // namespace
 }  // namespace grmhd::GhValenciaDivClean
