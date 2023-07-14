@@ -31,7 +31,7 @@ spectre_unload_modules() {
     module unload pybind11/2.6.1
     module unload hdf5/1.12.2
     module unload libbacktrace/1.0
-    module unload spec-exporter/2023-05
+    module unload spec-exporter/2023-07
 }
 
 spectre_load_modules() {
@@ -58,7 +58,7 @@ spectre_load_modules() {
     module load pybind11/2.6.1
     module load hdf5/1.12.2
     module load libbacktrace/1.0
-    module load spec-exporter/2023-05
+    module load spec-exporter/2023-07
 }
 
 spectre_run_cmake() {
