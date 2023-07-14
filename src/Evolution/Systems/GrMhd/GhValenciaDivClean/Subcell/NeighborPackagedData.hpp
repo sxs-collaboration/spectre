@@ -84,6 +84,9 @@ struct NeighborPackagedData {
     using fluxes_tags =
         db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                          tmpl::size_t<3>, Frame::Inertial>;
+    using grmhd_evolved_vars_tag =
+        typename grmhd::ValenciaDivClean::System::variables_tag;
+    using grmhd_evolved_vars_tags = typename grmhd_evolved_vars_tag::tags_list;
 
     ASSERT(not db::get<domain::Tags::MeshVelocity<3>>(box).has_value(),
            "Haven't yet added support for moving mesh to DG-subcell. This "
@@ -194,8 +197,60 @@ struct NeighborPackagedData {
                       subcell_mesh, mortar_id.first);
                 });
 
+            // Get the mesh velocity if needed
+            const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+                mesh_velocity_dg = db::get<domain::Tags::MeshVelocity<3>>(box);
+            std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+                mesh_velocity_on_subcell_face = {};
+            if (mesh_velocity_dg.has_value()) {
+              // Slice data on current face
+              tnsr::I<DataVector, 3, Frame::Inertial> mesh_velocity_on_dg_face =
+                  data_on_slice(
+                      mesh_velocity_dg.value(), dg_mesh.extents(),
+                      direction.dimension(),
+                      direction.side() == Side::Lower
+                          ? 0
+                          : (dg_mesh.extents(direction.dimension()) - 1));
+
+              mesh_velocity_on_subcell_face =
+                  tnsr::I<DataVector, 3, Frame::Inertial>{num_face_pts};
+
+              for (size_t i = 0; i < 3; i++) {
+                evolution::dg::subcell::fd::project(
+                    make_not_null(
+                        &mesh_velocity_on_subcell_face.value().get(i)),
+                    mesh_velocity_on_dg_face.get(i), dg_face_mesh,
+                    subcell_face_extents);
+              }
+            }
+
             grmhd::ValenciaDivClean::subcell::compute_fluxes(
                 make_not_null(&vars_on_face));
+
+            if (mesh_velocity_on_subcell_face.has_value()) {
+              tmpl::for_each<grmhd_evolved_vars_tags>(
+                  [&vars_on_face, &mesh_velocity_on_subcell_face,
+                   &direction](auto tag_v) {
+                    using tag = tmpl::type_from<decltype(tag_v)>;
+                    using flux_tag =
+                        ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+                    using FluxTensor = typename flux_tag::type;
+                    const auto& var = get<tag>(vars_on_face);
+                    auto& flux = get<flux_tag>(vars_on_face);
+                    for (size_t storage_index = 0; storage_index < var.size();
+                         ++storage_index) {
+                      const auto tensor_index =
+                          var.get_tensor_index(storage_index);
+                      const auto flux_storage_index =
+                          FluxTensor::get_storage_index(
+                              prepend(tensor_index, direction.dimension()));
+                      flux[flux_storage_index] -=
+                          mesh_velocity_on_subcell_face.value().get(
+                              direction.dimension()) *
+                          var[storage_index];
+                    }
+                  });
+            }
 
             // Copy over Gamma1 and Gamma2. Future considerations:
             // - For LTS do we instead just recompute it since the times might
@@ -275,8 +330,8 @@ struct NeighborPackagedData {
             evolution::dg::Actions::detail::dg_package_data<System>(
                 make_not_null(&packaged_data),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                vars_on_face, normal_covector, {std::nullopt}, box,
-                typename DerivedCorrection::dg_package_data_volume_tags{},
+                vars_on_face, normal_covector, mesh_velocity_on_subcell_face,
+                box, typename DerivedCorrection::dg_package_data_volume_tags{},
                 dg_package_data_projected_tags{});
 
             // Reconstruct the DG solution.

@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -36,6 +37,7 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -56,6 +58,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -97,7 +100,7 @@ struct DummyEvolutionMetaVars {
   };
 };
 
-double test(const size_t num_dg_pts) {
+double test(const size_t num_dg_pts, std::optional<double> expansion_velocity) {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -143,23 +146,36 @@ double test(const size_t num_dg_pts) {
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const size_t num_dg_pts_3d = num_dg_pts * num_dg_pts * num_dg_pts;
 
   const auto logical_coords = logical_coordinates(subcell_mesh);
   const auto cell_centered_coords = (*grid_to_inertial_map)(
       element_map(logical_coords), time, functions_of_time);
+  const auto dg_coords = (*grid_to_inertial_map)(
+      element_map(logical_coordinates(dg_mesh)), time, functions_of_time);
 
-  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
-      cell_centered_logical_to_grid_inv_jacobian{};
-  const auto cell_centered_logical_to_inertial_inv_jacobian =
-      element_map.inv_jacobian(logical_coords);
+  const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
+      cell_centered_logical_to_grid_inv_jacobian =
+          InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>(
+              element_map.inv_jacobian(logical_coords));
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_jacobian =
+          InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>(
+              subcell_mesh.number_of_grid_points());
   for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
        ++i) {
-    cell_centered_logical_to_grid_inv_jacobian[i] =
-        cell_centered_logical_to_inertial_inv_jacobian[i];
+    cell_centered_logical_to_inertial_inv_jacobian[i] =
+        cell_centered_logical_to_grid_inv_jacobian[i];
   }
 
   using variables_tag = typename System::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  using evolved_tags = typename System::variables_tag::tags_list;
+  using conserved_tags =
+      typename grmhd::ValenciaDivClean::ConservativeFromPrimitive::return_tags;
+  using gh_variables_tag = typename System::gh_system::variables_tag;
+  using gh_variables_tags = typename gh_variables_tag::tags_list;
   Variables<typename System::primitive_variables_tag::tags_list>
       cell_centered_prim_vars{subcell_mesh.number_of_grid_points()};
   cell_centered_prim_vars.assign_subset(
@@ -170,6 +186,31 @@ double test(const size_t num_dg_pts) {
   initial_variables.assign_subset(
       soln.variables(cell_centered_coords, time,
                      typename System::gh_system::variables_tag::tags_list{}));
+  std::optional<tnsr::I<DataVector, 3, Frame::Inertial>> dg_mesh_velocity{};
+  std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+      subcell_mesh_velocity{};
+  if (expansion_velocity.has_value()) {
+    dg_mesh_velocity = std::optional<tnsr::I<DataVector, 3>>(
+        tnsr::I<DataVector, 3>(num_dg_pts_3d));
+    for (int i = 0; i < 3; i++) {
+      dg_mesh_velocity.value().get(i) =
+          dg_coords.get(i) * expansion_velocity.value();
+    }
+    subcell_mesh_velocity = std::optional<tnsr::I<DataVector, 3>>(
+        tnsr::I<DataVector, 3>(subcell_mesh.number_of_grid_points()));
+    for (int i = 0; i < 3; i++) {
+      subcell_mesh_velocity.value().get(i) =
+          cell_centered_coords.get(i) * expansion_velocity.value();
+    }
+  }
+  std::optional<Scalar<DataVector>> div_dg_mesh_velocity{};
+  if (expansion_velocity.has_value()) {
+    div_dg_mesh_velocity =
+        std::optional<Scalar<DataVector>>(Scalar<DataVector>(num_dg_pts_3d));
+    div_dg_mesh_velocity.value().get() = 3.0 * expansion_velocity.value();
+  }
+  // To be recomputed on each face.
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
   // Neighbor data for reconstruction.
   //
@@ -285,8 +326,6 @@ double test(const size_t num_dg_pts) {
       component *= get(get<hydro::Tags::LorentzFactor<DataVector>>(face_prims));
     }
 
-    using conserved_tags = typename grmhd::ValenciaDivClean::
-        ConservativeFromPrimitive::return_tags;
     using p2c_argument_tags = typename grmhd::ValenciaDivClean::
         ConservativeFromPrimitive::argument_tags;
     grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
@@ -338,6 +377,36 @@ double test(const size_t num_dg_pts) {
         get<tmpl::at_c<flux_argument_tags, 13>>(prims_to_reconstruct),
         get<tmpl::at_c<flux_argument_tags, 14>>(prims_to_reconstruct));
 
+    // Add mesh velocity contribution to neighbor fluxes
+    std::optional<tnsr::I<DataVector, 3, Frame::Inertial>> face_mesh_velocity =
+        {};
+    if (expansion_velocity.has_value()) {
+      face_mesh_velocity = tnsr::I<DataVector, 3, Frame::Inertial>{
+          interface_mesh.number_of_grid_points()};
+      for (size_t i = 0; i < 3; i++) {
+        face_mesh_velocity.value().get(i) =
+            face_coords.get(i) * expansion_velocity.value();
+      }
+      tmpl::for_each<conserved_tags>(
+          [&prims_to_reconstruct, &face_mesh_velocity, &direction](auto tag_v) {
+            using tag = tmpl::type_from<decltype(tag_v)>;
+            using flux_tag =
+                ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+            using FluxTensor = typename flux_tag::type;
+            const auto& var = get<tag>(prims_to_reconstruct);
+            auto& flux = get<flux_tag>(prims_to_reconstruct);
+            for (size_t storage_index = 0; storage_index < var.size();
+                 ++storage_index) {
+              const auto tensor_index = var.get_tensor_index(storage_index);
+              const auto flux_storage_index = FluxTensor::get_storage_index(
+                  prepend(tensor_index, direction.dimension()));
+              flux[flux_storage_index] -=
+                  face_mesh_velocity.value().get(direction.dimension()) *
+                  var[storage_index];
+            }
+          });
+    }
+
     (*gamma1)(
         make_not_null(&get<::gh::ConstraintDamping::Tags::ConstraintGamma1>(
             prims_to_reconstruct)),
@@ -374,9 +443,13 @@ double test(const size_t num_dg_pts) {
         normal_vector.get(i) *= -1.0;
       }
     }
-    const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
-        mesh_velocity{};
-    const std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+
+    if (expansion_velocity.has_value()) {
+      normal_dot_mesh_velocity =
+          Scalar<DataVector>{interface_mesh.number_of_grid_points()};
+      normal_dot_mesh_velocity.value() =
+          dot_product(face_mesh_velocity.value(), normal_vector);
+    }
 
     using dg_package_fields =
         typename BoundaryCorrection::dg_package_field_tags;
@@ -384,7 +457,6 @@ double test(const size_t num_dg_pts) {
         interface_mesh.number_of_grid_points()};
     using dg_package_data_temporary_tags =
         typename BoundaryCorrection::dg_package_data_temporary_tags;
-    using evolved_tags = typename System::variables_tag::tags_list;
     boundary_correction.dg_package_data(
         make_not_null(&get<tmpl::at_c<dg_package_fields, 0>>(dg_packaged_data)),
         make_not_null(&get<tmpl::at_c<dg_package_fields, 1>>(dg_packaged_data)),
@@ -452,7 +524,7 @@ double test(const size_t num_dg_pts) {
 
         // prims (none)
 
-        normal_covector, normal_vector, mesh_velocity,
+        normal_covector, normal_vector, face_mesh_velocity,
         normal_dot_mesh_velocity);
 
     DataVector interface_data{dg_packaged_data.size(),
@@ -483,7 +555,6 @@ double test(const size_t num_dg_pts) {
   // neighbors in all directions, BoundaryConditionGhostData::apply() is not
   // actually called so it is okay to leave these variables somewhat poorly
   // initialized.
-  std::optional<tnsr::I<DataVector, 3>> dummy_volume_mesh_velocity{};
   typename evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type
       dummy_normal_covector_and_magnitude{};
   using DampingFunction =
@@ -492,7 +563,7 @@ double test(const size_t num_dg_pts) {
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
-          fd::Tags::Reconstructor,
+          domain::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<
               grmhd::GhValenciaDivClean::System>,
           hydro::Tags::EquationOfState<
@@ -507,6 +578,7 @@ double test(const size_t num_dg_pts) {
                                                       Frame::Inertial>,
           domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
+          domain::Tags::DivMeshVelocity,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
@@ -522,12 +594,24 @@ double test(const size_t num_dg_pts) {
               evolution::dg::subcell::Tags::Coordinates<3,
                                                         Frame::ElementLogical>,
               evolution::dg::subcell::Tags::Coordinates>,
+          evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                            Frame::Inertial>>,
+          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+              ::domain::Tags::ElementMap<3, Frame::Grid>, 3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToGridCompute<3>,
+          evolution::dg::subcell::fd::Tags::
+              InverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>,
+                  3>,
           gr::Tags::SpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
                                                       Frame::Inertial>,
           gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3,
                                                 Frame::Inertial>>>(
-      element, subcell_mesh,
+      element, subcell_mesh, dg_mesh,
       std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor>{
           std::make_unique<
               grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim>()},
@@ -543,7 +627,8 @@ double test(const size_t num_dg_pts) {
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
       std::move(domain), std::move(external_boundary_conditions),
-      dummy_volume_mesh_velocity, dummy_normal_covector_and_magnitude, time,
+      dg_mesh_velocity, div_dg_mesh_velocity,
+      dummy_normal_covector_and_magnitude, time,
       clone_unique_ptrs(functions_of_time), soln, DummyEvolutionMetaVars{},
       // Note: These damping functions all assume Grid==Inertial. We need to
       // rescale the widths in the Grid frame for binaries.
@@ -563,12 +648,99 @@ double test(const size_t num_dg_pts) {
       make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
       determinant(cell_centered_logical_to_grid_inv_jacobian));
 
+  // We test that the time derivative converges to zero,
+  // so we remove the expected value of the time derivative for moving meshes
+  Variables<evolved_tags> output_minus_expected_dt_vars{
+      subcell_mesh.number_of_grid_points()};
   const auto& dt_vars = db::get<dt_variables_tag>(box);
-  // Compute norm of dt() over all evolved variables. This quantity should
-  // converge away with resolution. Individual time derivatives can end up being
-  // identically zero, e.g. no magnetic field.
-  const DataVector dt_view{const_cast<double*>(dt_vars.data()), dt_vars.size()};
-  return max(abs(dt_view));
+
+  tmpl::for_each<conserved_tags>(
+      [&box, &subcell_mesh, &expansion_velocity, &cell_centered_coords,
+       &cell_centered_logical_to_inertial_inv_jacobian,
+       &output_minus_expected_dt_vars, &dt_vars](auto var_tag_v) {
+        using var_tag = tmpl::type_from<decltype(var_tag_v)>;
+        const auto& var = get<var_tag>(box);
+        const auto deriv_var = partial_derivative(
+            var, subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+
+        auto& output_minus_expected_dt_var =
+            get<var_tag>(output_minus_expected_dt_vars);
+        const auto& output_dt_var = get<::Tags::dt<var_tag>>(dt_vars);
+        for (size_t i = 0; i < output_minus_expected_dt_var.size(); ++i) {
+          output_minus_expected_dt_var[i] = output_dt_var[i];
+          if (expansion_velocity.has_value()) {
+            for (size_t j = 0; j < 3; ++j) {
+              const auto deriv_index =
+                  j * output_minus_expected_dt_var.size() + i;
+              output_minus_expected_dt_var[i] -= cell_centered_coords.get(j) *
+                                                 deriv_var[deriv_index] *
+                                                 expansion_velocity.value();
+            }
+          }
+        }
+      });
+
+  // We need the gradient of the GR variable (and partial_derivative, as is,
+  // does not work)
+  using gh_gradient_tags = typename TimeDerivativeTerms::gh_gradient_tags;
+  const auto& gh_evolved_vars = db::get<variables_tag>(box);
+  Variables<db::wrap_tags_in<::Tags::deriv, gh_gradient_tags, tmpl::size_t<3>,
+                             Frame::Inertial>>
+      cell_centered_gh_derivs{subcell_mesh.number_of_grid_points()};
+  grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
+      make_not_null(&cell_centered_gh_derivs), gh_evolved_vars,
+      db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box),
+      subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+
+  auto& temp = get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
+      output_minus_expected_dt_vars);
+  temp = get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(dt_vars);
+
+  tmpl::for_each<gh_variables_tags>([&expansion_velocity, &cell_centered_coords,
+                                     &output_minus_expected_dt_vars, &dt_vars,
+                                     &cell_centered_gh_derivs](auto var_tag_v) {
+    using var_tag = tmpl::type_from<decltype(var_tag_v)>;
+    using grad_tag = ::Tags::deriv<var_tag, tmpl::size_t<3>, Frame::Inertial>;
+    using FluxTensor = typename grad_tag::type;
+    const auto& deriv_var = get<grad_tag>(cell_centered_gh_derivs);
+
+    auto& output_minus_expected_dt_var =
+        get<var_tag>(output_minus_expected_dt_vars);
+    const auto& output_dt_var = get<::Tags::dt<var_tag>>(dt_vars);
+    for (size_t i = 0; i < output_minus_expected_dt_var.size(); ++i) {
+      output_minus_expected_dt_var[i] = output_dt_var[i];
+      if (expansion_velocity.has_value()) {
+        const auto tensor_index = output_dt_var.get_tensor_index(i);
+        for (size_t j = 0; j < 3; ++j) {
+          const auto deriv_index =
+              FluxTensor::get_storage_index(prepend(tensor_index, j));
+          output_minus_expected_dt_var[i] -= cell_centered_coords.get(j) *
+                                             deriv_var[deriv_index] *
+                                             expansion_velocity.value();
+        }
+      }
+    }
+  });
+
+  return std::max(
+      {max(abs(get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
+           output_minus_expected_dt_vars)))),
+       max(abs(get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(
+           output_minus_expected_dt_vars)))),
+       max(abs(get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
+           output_minus_expected_dt_vars)))),
+       max(get(magnitude(get<grmhd::ValenciaDivClean::Tags::TildeS<>>(
+           output_minus_expected_dt_vars)))),
+       max(get(magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(
+           output_minus_expected_dt_vars)))),
+       max(get(pointwise_l2_norm(get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
+           output_minus_expected_dt_vars)))),
+       max(get(
+           pointwise_l2_norm(get<gh::Tags::Pi<DataVector, 3, Frame::Inertial>>(
+               output_minus_expected_dt_vars)))),
+       max(get(
+           pointwise_l2_norm(get<gh::Tags::Phi<DataVector, 3, Frame::Inertial>>(
+               output_minus_expected_dt_vars))))});
 }
 
 // [[Timeout, 10]]
@@ -579,8 +751,15 @@ SPECTRE_TEST_CASE(
   // that the time derivative vanishes. Or, more specifically, that the time
   // derivative decreases with increasing resolution and is below 1.0e-6.
 
-  CHECK(test(4) > test(8));
-  CHECK(test(8) < 1.0e-6);
+  std::optional<double> expansion_velocity = {};
+
+  CHECK(test(4, expansion_velocity) > test(8, expansion_velocity));
+  CHECK(test(8, expansion_velocity) < 1.0e-6);
+
+  expansion_velocity = 0.5;
+
+  CHECK(test(4, expansion_velocity) > test(8, expansion_velocity));
+  CHECK(test(8, expansion_velocity) < 1.0e-6);
 }
 }  // namespace
 }  // namespace grmhd::GhValenciaDivClean

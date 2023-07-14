@@ -103,7 +103,7 @@ struct TimeDerivative {
 
     // Velocity of the moving mesh on the DG grid, if applicable.
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
-        mesh_velocity = db::get<domain::Tags::MeshVelocity<3>>(*box);
+        mesh_velocity_dg = db::get<domain::Tags::MeshVelocity<3>>(*box);
     const std::optional<Scalar<DataVector>>& div_mesh_velocity =
         db::get<domain::Tags::DivMeshVelocity>(*box);
 
@@ -245,20 +245,27 @@ struct TimeDerivative {
                 make_not_null(&vars_lower_face));
 
             // Add moving mesh corrections to the fluxes, if needed
-            if (mesh_velocity.has_value()) {
+            std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+                mesh_velocity_on_face = {};
+            if (mesh_velocity_dg.has_value()) {
               // Build extents of mesh shifted by half a grid cell in direction
               // i
               const unsigned long& num_subcells_1d = subcell_mesh.extents(0);
               Index<3> face_mesh_extents(std::array<size_t, 3>{
                   num_subcells_1d, num_subcells_1d, num_subcells_1d});
               face_mesh_extents[i] = num_subcells_1d + 1;
-              // Project mesh velocity on face mesh. We only need the component
-              // orthogonal to the face.
-              const DataVector& mesh_velocity_on_face =
-                  evolution::dg::subcell::fd::project_to_face(
-                      mesh_velocity.value().get(i), dg_mesh, face_mesh_extents,
-                      i);
-
+              // Project mesh velocity on face mesh.
+              // Can we get away with only doing the normal component? It
+              // is also used in the packaged data...
+              mesh_velocity_on_face = tnsr::I<DataVector, 3, Frame::Inertial>{
+                  reconstructed_num_pts};
+              for (size_t j = 0; j < 3; j++) {
+                // j^th component of the velocity on the i^th directed face
+                mesh_velocity_on_face.value().get(j) =
+                    evolution::dg::subcell::fd::project_to_face(
+                        mesh_velocity_dg.value().get(j), dg_mesh,
+                        face_mesh_extents, i);
+              }
               tmpl::for_each<evolved_vars_tags>([&vars_upper_face,
                                                  &vars_lower_face,
                                                  &mesh_velocity_on_face,
@@ -278,9 +285,11 @@ struct TimeDerivative {
                   const auto flux_storage_index =
                       FluxTensor::get_storage_index(prepend(tensor_index, i));
                   flux_upper[flux_storage_index] -=
-                      mesh_velocity_on_face * var_upper[storage_index];
+                      mesh_velocity_on_face.value().get(i) *
+                      var_upper[storage_index];
                   flux_lower[flux_storage_index] -=
-                      mesh_velocity_on_face * var_lower[storage_index];
+                      mesh_velocity_on_face.value().get(i) *
+                      var_lower[storage_index];
                 }
               });
             }
@@ -317,14 +326,14 @@ struct TimeDerivative {
                 typename DerivedCorrection::dg_package_data_primitive_tags>;
             evolution::dg::Actions::detail::dg_package_data<System>(
                 make_not_null(&upper_packaged_data), *derived_correction,
-                vars_upper_face, upper_outward_conormal, {std::nullopt}, *box,
-                typename DerivedCorrection::dg_package_data_volume_tags{},
+                vars_upper_face, upper_outward_conormal, mesh_velocity_on_face,
+                *box, typename DerivedCorrection::dg_package_data_volume_tags{},
                 dg_package_data_projected_tags{});
 
             evolution::dg::Actions::detail::dg_package_data<System>(
                 make_not_null(&lower_packaged_data), *derived_correction,
-                vars_lower_face, lower_outward_conormal, {std::nullopt}, *box,
-                typename DerivedCorrection::dg_package_data_volume_tags{},
+                vars_lower_face, lower_outward_conormal, mesh_velocity_on_face,
+                *box, typename DerivedCorrection::dg_package_data_volume_tags{},
                 dg_package_data_projected_tags{});
 
             // Now need to check if any of our neighbors are doing DG,

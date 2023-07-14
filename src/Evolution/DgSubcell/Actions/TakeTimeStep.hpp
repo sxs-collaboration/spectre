@@ -55,8 +55,6 @@ namespace evolution::dg::subcell::fd::Actions {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
- *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - Anything that `Metavariables::SubcellOptions::TimeDerivative` modifies
  */
 template <typename TimeDerivative>
@@ -73,23 +71,11 @@ struct TakeTimeStep {
                 Dim, Frame::Grid, Frame::Inertial>>(box))
                .is_identity(),
            "Do not yet support moving mesh with DG-subcell.");
-    db::mutate<fd::Tags::InverseJacobianLogicalToGrid<Dim>,
-               fd::Tags::DetInverseJacobianLogicalToGrid>(
-        [](const auto inv_jac_ptr, const auto det_inv_jac_ptr,
-           const auto& logical_to_grid_map, const auto& logical_coords) {
-          if (not inv_jac_ptr->has_value()) {
-            *inv_jac_ptr = logical_to_grid_map.inv_jacobian(logical_coords);
-            *det_inv_jac_ptr = determinant(**inv_jac_ptr);
-          }
-        },
-        make_not_null(&box),
-        db::get<::domain::Tags::ElementMap<Dim, Frame::Grid>>(box),
-        db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(box));
 
     TimeDerivative::apply(
         make_not_null(&box),
-        *db::get<fd::Tags::InverseJacobianLogicalToGrid<Dim>>(box),
-        *db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
+        db::get<fd::Tags::InverseJacobianLogicalToGrid<Dim>>(box),
+        db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
 
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
         [](const auto mortar_data_ptr) {

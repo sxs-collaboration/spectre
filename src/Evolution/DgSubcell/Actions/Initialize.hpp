@@ -86,12 +86,14 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  *   - `subcell::Tags::TciDecision`
  *   - `subcell::Tags::DataForRdmpTci`
- *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
- *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
+ *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`(as compute tag)
+ *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid` (as compute tag)
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
  *   - `subcell::Tags::ReconstructionOrder<Dim>` (set as `std::nullopt`)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Grid>` (as compute tag)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Inertial>` (as compute tag)
+ *   - 'subcell::fd::Tags::InverseJacobianLogicalToInertial<Dim>` (as compute
+ * tag)
  * - Removes: nothing
  * - Modifies:
  *   - `System::variables_tag` and `System::primitive_variables_tag` if the cell
@@ -106,8 +108,6 @@ struct Initialize {
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
       Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
-      fd::Tags::InverseJacobianLogicalToGrid<Dim>,
-      fd::Tags::DetInverseJacobianLogicalToGrid,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
       subcell::Tags::ReconstructionOrder<Dim>>;
   using compute_tags =
@@ -118,7 +118,16 @@ struct Initialize {
                      subcell::Tags::Coordinates>,
                  Tags::InertialCoordinatesCompute<
                      ::domain::CoordinateMaps::Tags::CoordinateMap<
-                         Dim, Frame::Grid, Frame::Inertial>>>;
+                         Dim, Frame::Grid, Frame::Inertial>>,
+                 fd::Tags::InverseJacobianLogicalToGridCompute<
+                   ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+                   Dim>,
+                 fd::Tags::DetInverseJacobianLogicalToGridCompute<
+                   Dim>,
+                 fd::Tags::InverseJacobianLogicalToInertialCompute<
+                     ::domain::CoordinateMaps::Tags::CoordinateMap<
+                         Dim, Frame::Grid, Frame::Inertial>,
+                     Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,

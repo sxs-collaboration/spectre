@@ -59,12 +59,14 @@ struct component {
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>,
-      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>,
-      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid,
       evolution::dg::Tags::MortarData<Dim>>;
 
-  using initial_compute_tags =
-      tmpl::list<evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>;
+  using initial_compute_tags = tmpl::list<
+      evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>,
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+          ::domain::Tags::ElementMap<Dim, Frame::Grid>, Dim>,
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGridCompute<
+          Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -167,7 +169,7 @@ void test() {
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {subcell_mesh,
        ElementMap<Dim, Frame::Grid>{ElementId<Dim>{0}, make_grid_map<Dim>()},
-       make_inertial_map<Dim>(), std::nullopt, std::nullopt, mortar_data});
+       make_inertial_map<Dim>(), mortar_data});
 
   CHECK(ActionTesting::get_databox_tag<comp,
                                        evolution::dg::Tags::MortarData<Dim>>(
