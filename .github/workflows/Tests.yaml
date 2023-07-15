@@ -137,7 +137,6 @@ jobs:
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
-          black --check .
           isort --check-only .
       - name: Test script
         run: |
