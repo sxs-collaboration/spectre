@@ -134,7 +134,9 @@ def validate_input_file(
         input_file_path=input_file_path,
         line_number=line_number,
         yaml_path=path,
-        message="\n".join(msg).strip(),
+        message=(
+            "\n".join(msg).strip() if found_hints else process.stderr.strip()
+        ),
     )
     if print_context:
         rich.print(error.render_context())
