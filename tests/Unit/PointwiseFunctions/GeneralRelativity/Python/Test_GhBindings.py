@@ -26,6 +26,64 @@ class TestBindings(unittest.TestCase):
             phi,
         )
 
+    def test_gauge_source(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
+        deriv_lapse = tnsr.i[DataVector, 3](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        deriv_shift = tnsr.iJ[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        trace_extrinsic_curvature = Scalar[DataVector](num_points=1, fill=1.0)
+        trace_christoffel_last_indices = tnsr.i[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        gh.gauge_source(
+            lapse,
+            dt_lapse,
+            deriv_lapse,
+            shift,
+            dt_shift,
+            deriv_shift,
+            spatial_metric,
+            trace_extrinsic_curvature,
+            trace_christoffel_last_indices,
+        )
+
+    def test_phi(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        deriv_lapse = tnsr.i[DataVector, 3](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        deriv_shift = tnsr.iJ[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        deriv_spatial_metric = tnsr.ijj[DataVector, 3](num_points=1, fill=0.0)
+        gh.phi(
+            lapse,
+            deriv_lapse,
+            shift,
+            deriv_shift,
+            spatial_metric,
+            deriv_spatial_metric,
+        )
+
+    def test_pi(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        dt_spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.pi(
+            lapse,
+            dt_lapse,
+            shift,
+            dt_shift,
+            spatial_metric,
+            dt_spatial_metric,
+            phi,
+        )
+
     def test_spatial_ricci_tensor(self):
         phi = tnsr.iaa[DataVector, 3](num_points=1, fill=0.0)
         deriv_phi = tnsr.ijaa[DataVector, 3](num_points=1, fill=0.0)
