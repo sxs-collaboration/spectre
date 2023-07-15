@@ -54,7 +54,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

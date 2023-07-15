@@ -22,7 +22,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"

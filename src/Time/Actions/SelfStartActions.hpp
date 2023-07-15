@@ -19,7 +19,9 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/TimeStep.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -34,7 +36,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
 /// \endcond
 
 /// \ingroup TimeGroup

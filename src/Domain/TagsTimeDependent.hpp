@@ -19,9 +19,14 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
 
 namespace domain {
 /// \ingroup ComputationalDomainGroup

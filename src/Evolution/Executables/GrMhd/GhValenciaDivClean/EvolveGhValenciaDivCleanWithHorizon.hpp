@@ -42,7 +42,7 @@
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"

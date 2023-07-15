@@ -15,7 +15,9 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,6 +33,7 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct TimeStep;
+struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 

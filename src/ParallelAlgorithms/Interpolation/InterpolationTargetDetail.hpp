@@ -62,6 +62,7 @@ struct TemporalIds;
 }  // namespace intrp
 template <typename Id>
 struct LinkedMessageId;
+class TimeStepId;
 template <typename TagsList>
 struct Variables;
 /// \endcond

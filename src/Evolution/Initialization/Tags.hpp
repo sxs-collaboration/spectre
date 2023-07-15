@@ -7,7 +7,8 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Time/Tags.hpp"
+#include "Time/OptionTags/InitialSlabSize.hpp"
+#include "Time/OptionTags/InitialTimeStep.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

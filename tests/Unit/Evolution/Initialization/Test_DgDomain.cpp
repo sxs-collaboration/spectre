@@ -37,6 +37,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

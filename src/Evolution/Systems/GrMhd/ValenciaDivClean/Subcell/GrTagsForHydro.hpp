@@ -25,6 +25,7 @@
 #include "Evolution/Initialization/InitialData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

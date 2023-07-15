@@ -18,10 +18,12 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace gh::OptionTags {
 struct Group;
 }  // namespace gh::OptionTags

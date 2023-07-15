@@ -30,7 +30,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 

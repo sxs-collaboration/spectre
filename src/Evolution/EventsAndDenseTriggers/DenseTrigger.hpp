@@ -10,7 +10,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -20,6 +19,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace Tags {
+struct Time;
+}  // namespace Tags
 /// \endcond
 
 /// \ingroup EventsAndTriggersGroup

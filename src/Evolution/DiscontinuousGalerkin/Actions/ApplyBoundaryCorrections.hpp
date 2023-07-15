@@ -39,7 +39,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -51,6 +51,14 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+struct TimeStep;
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 /// \cond
 namespace evolution::dg::subcell {

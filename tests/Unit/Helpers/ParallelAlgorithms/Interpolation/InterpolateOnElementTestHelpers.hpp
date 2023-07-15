@@ -32,7 +32,6 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"

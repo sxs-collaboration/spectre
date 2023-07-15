@@ -20,7 +20,6 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"

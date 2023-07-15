@@ -39,6 +39,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

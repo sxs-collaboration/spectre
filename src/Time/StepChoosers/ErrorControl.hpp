@@ -21,7 +21,12 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/PreviousStepperError.hpp"
+#include "Time/Tags/StepperError.hpp"
+#include "Time/Tags/StepperErrorUpdated.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -32,6 +37,7 @@
 namespace Tags {
 template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute;
+struct StepChoosers;
 }  // namespace Tags
 /// \endcond
 

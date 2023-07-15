@@ -12,7 +12,7 @@
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Time/Tags.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"

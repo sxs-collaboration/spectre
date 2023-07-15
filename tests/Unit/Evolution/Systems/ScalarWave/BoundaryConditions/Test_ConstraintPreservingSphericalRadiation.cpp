@@ -13,7 +13,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryConditions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

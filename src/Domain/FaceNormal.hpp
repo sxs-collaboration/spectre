@@ -18,11 +18,13 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;

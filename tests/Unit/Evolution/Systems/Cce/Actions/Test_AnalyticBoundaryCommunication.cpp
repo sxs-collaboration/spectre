@@ -32,7 +32,6 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"

@@ -14,11 +14,18 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStep;
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 namespace CurvedScalarWave::Worldtube::Actions {
 

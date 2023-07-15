@@ -33,7 +33,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -43,6 +43,11 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+namespace Tags {
+struct TimeStep;
+struct TimeStepId;
+}  // namespace Tags
 
 namespace Cce {
 namespace {

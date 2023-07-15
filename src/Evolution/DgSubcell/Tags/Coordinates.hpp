@@ -14,7 +14,6 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -22,6 +21,9 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace gsl {
 template <typename>
 struct not_null;

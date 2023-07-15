@@ -30,6 +30,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -41,6 +41,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/ScalarAdvection/FiniteDifference/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

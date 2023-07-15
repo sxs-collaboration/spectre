@@ -20,6 +20,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -27,8 +28,13 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeStep.hpp"
+#include "Time/Tags/TimeStepId.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -438,6 +444,11 @@ void test_convergence(const size_t order, const bool forward_in_time) {
   // is.
   CHECK(convergence_rate == approx(order + 1).margin(0.1));
 }
+
+struct DummyType {};
+struct DummyTag : db::SimpleTag {
+  using type = DummyType;
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
@@ -456,4 +467,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
       test_convergence<true, true>(order, forward_in_time);
     }
   }
+
+  TestHelpers::db::test_prefix_tag<SelfStart::Tags::InitialValue<DummyTag>>(
+      "InitialValue(DummyTag)");
 }

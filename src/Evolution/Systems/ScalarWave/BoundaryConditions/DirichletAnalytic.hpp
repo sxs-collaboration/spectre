@@ -20,12 +20,14 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace domain::Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;

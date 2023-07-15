@@ -29,12 +29,15 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace OptionTags {
+struct InitialTime;
+}  // namespace OptionTags
 
 namespace {
 const double initial_time = 2.0;

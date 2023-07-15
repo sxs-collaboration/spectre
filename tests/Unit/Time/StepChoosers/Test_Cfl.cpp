@@ -24,7 +24,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags.hpp"  // IWYU pragma: keep
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

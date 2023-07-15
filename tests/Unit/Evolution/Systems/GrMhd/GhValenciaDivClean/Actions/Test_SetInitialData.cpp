@@ -37,7 +37,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

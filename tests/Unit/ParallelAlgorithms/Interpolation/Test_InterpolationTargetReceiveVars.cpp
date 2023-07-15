@@ -36,7 +36,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"

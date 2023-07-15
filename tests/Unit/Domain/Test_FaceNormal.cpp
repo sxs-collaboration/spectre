@@ -45,6 +45,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"

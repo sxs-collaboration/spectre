@@ -18,7 +18,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 
 namespace {
 template <size_t Dim>

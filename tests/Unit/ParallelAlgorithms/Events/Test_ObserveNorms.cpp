@@ -32,7 +32,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"

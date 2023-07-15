@@ -32,7 +32,6 @@ spectre_target_headers(
   History.hpp
   SelfStart.hpp
   Slab.hpp
-  Tags.hpp
   TakeStep.hpp
   Time.hpp
   TimeSequence.hpp
@@ -53,6 +52,7 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(OptionTags)
 add_subdirectory(StepChoosers)
 add_subdirectory(Tags)
 add_subdirectory(TimeSteppers)

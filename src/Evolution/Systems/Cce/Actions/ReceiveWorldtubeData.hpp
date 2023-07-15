@@ -12,10 +12,15 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 namespace Cce {
 namespace Actions {

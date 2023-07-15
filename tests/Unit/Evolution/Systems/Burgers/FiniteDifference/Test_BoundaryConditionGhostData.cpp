@@ -61,6 +61,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"

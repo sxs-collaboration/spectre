@@ -36,7 +36,8 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/History.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -48,6 +49,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
 namespace tuples {
 template <typename...>
 class TaggedTuple;

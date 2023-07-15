@@ -17,7 +17,6 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"

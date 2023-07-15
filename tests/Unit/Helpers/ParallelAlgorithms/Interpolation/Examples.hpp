@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

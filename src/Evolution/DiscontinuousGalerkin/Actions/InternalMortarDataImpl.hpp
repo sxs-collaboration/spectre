@@ -32,10 +32,15 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 namespace evolution::dg::Actions::detail {
 template <typename System, size_t Dim, typename BoundaryCorrection,

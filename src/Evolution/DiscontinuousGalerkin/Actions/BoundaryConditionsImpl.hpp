@@ -47,11 +47,16 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
 
 namespace evolution::dg::Actions::detail {
 template <typename BoundaryConditionHelper, typename AllTagsOnFaceList,

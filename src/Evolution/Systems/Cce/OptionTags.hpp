@@ -19,7 +19,6 @@
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Printf.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace Cce {

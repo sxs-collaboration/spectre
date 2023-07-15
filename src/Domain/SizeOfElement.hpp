@@ -14,10 +14,12 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;

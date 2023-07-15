@@ -14,6 +14,7 @@
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 static_assert(

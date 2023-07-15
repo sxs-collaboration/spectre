@@ -18,10 +18,15 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
 
 namespace evolution::Tags {
 /*!

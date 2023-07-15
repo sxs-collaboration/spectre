@@ -54,7 +54,7 @@
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"

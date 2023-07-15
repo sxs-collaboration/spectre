@@ -34,6 +34,12 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace grmhd::GhValenciaDivClean {
 
 /*!

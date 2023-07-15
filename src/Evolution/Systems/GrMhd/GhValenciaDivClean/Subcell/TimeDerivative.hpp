@@ -59,6 +59,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace grmhd::GhValenciaDivClean::subcell {
 namespace detail {
 template <class GhDtTagsList, class GhTemporariesList, class GhGradientTagsList,

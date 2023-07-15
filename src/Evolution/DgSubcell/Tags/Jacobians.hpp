@@ -13,6 +13,12 @@
 #include "Domain/ElementMap.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace evolution::dg::subcell::fd::Tags {
 /// \brief The inverse Jacobian from the element logical frame to the grid frame
 /// at the cell centers.

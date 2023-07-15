@@ -13,7 +13,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Time/Triggers/TimeCompares.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"

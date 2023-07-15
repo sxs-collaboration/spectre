@@ -42,11 +42,16 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
 /*!
