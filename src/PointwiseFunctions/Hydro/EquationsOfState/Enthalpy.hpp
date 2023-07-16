@@ -17,6 +17,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -261,6 +262,9 @@ class Enthalpy : public EquationOfState<true, 1> {
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
   double specific_enthalpy_lower_bound() const override { return 1.0; }
+
+  /// The vacuum baryon mass for this EoS
+  double baryon_mass() const override { return low_density_eos_.baryon_mass(); }
 
  private:
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(1)

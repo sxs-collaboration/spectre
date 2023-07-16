@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 namespace EquationsOfState {
 namespace {
@@ -84,6 +85,8 @@ void check_exact() {
     CHECK(eos != other_eos);
     CHECK(eos != other_type_eos);
     CHECK(other_low_eos != other_type_eos);
+    CHECK(eos.baryon_mass() ==
+          approx(hydro::units::geometric::default_baryon_mass));
   }
   // Test DataVector functions
   {

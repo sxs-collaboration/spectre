@@ -17,6 +17,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -129,6 +130,9 @@ class HybridEos
   double specific_enthalpy_lower_bound() const override {
     return cold_eos_.specific_enthalpy_lower_bound();
   }
+
+  /// The vacuum baryon mass for this EoS
+  double baryon_mass() const override { return cold_eos_.baryon_mass(); }
 
  private:
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)

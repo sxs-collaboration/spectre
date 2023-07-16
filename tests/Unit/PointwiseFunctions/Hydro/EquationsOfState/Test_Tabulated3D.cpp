@@ -228,13 +228,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
 
   get(state[1]) = 1.e-4;
 
-  CHECK(std::abs(0.302085884022446 -
-                 get(eos.specific_internal_energy_from_density_and_temperature(
-                     state[1], state[0], state[2]))) < 1.e-12);
-  CHECK(std::abs((1.10346262693259e-05) -
-                 get(eos.pressure_from_density_and_temperature(
-                     state[1], state[0], state[2]))) < 1.e-12);
-  CHECK(std::abs(0.416718905610434 -
-                 get(eos.sound_speed_squared_from_density_and_temperature(
-                     state[1], state[0], state[2]))) < 1.e-12);
+  CHECK_ITERABLE_APPROX(
+      get(eos.specific_internal_energy_from_density_and_temperature(
+          state[1], state[0], state[2])),
+      0.30204636358732767);
+  CHECK_ITERABLE_APPROX(get(eos.pressure_from_density_and_temperature(
+                            state[1], state[0], state[2])),
+                        0.00001103280164124);
+  CHECK_ITERABLE_APPROX(
+      get(eos.sound_speed_squared_from_density_and_temperature(
+          state[1], state[0], state[2])),
+      0.41669901507784435);
 }

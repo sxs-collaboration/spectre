@@ -41,7 +41,9 @@ void dump_barotropic_eos(
   // might be different from the baryon mass that the EoS uses.
   //
   // https://github.com/sxs-collaboration/spectre/issues/4694
-  const double baryon_mass_of_rotns_cgs = 1.659e-24;
+  const double baryon_mass_of_rotns_cgs =
+      hydro::units::geometric::default_baryon_mass *
+      hydro::units::cgs::mass_unit;
   const double log10_lower_bound_number_density_cgs =
       log10(lower_bound_rest_mass_density_cgs / baryon_mass_of_rotns_cgs);
   const double log10_upper_bound_number_density_cgs =
@@ -66,15 +68,13 @@ void dump_barotropic_eos(
         pow(10.0, log10_lower_bound_number_density_cgs +
                       static_cast<double>(log10_number_density_index) *
                           delta_log_number_density_cgs);
-    const double rest_mass_density_cgs =
-        number_density_cgs * baryon_mass_of_rotns_cgs;
 
     // Note: we will want to add the baryon mass to our EOS interface.
     //
     // https://github.com/sxs-collaboration/spectre/issues/4694
-    const double baryon_mass_of_eos_cgs = baryon_mass_of_rotns_cgs;
-    const Scalar<double> rest_mass_density_geometric{rest_mass_density_cgs /
-                                                     baryon_mass_of_eos_cgs};
+    const Scalar<double> rest_mass_density_geometric{
+        number_density_cgs * cube(hydro::units::cgs::length_unit) *
+        eos.baryon_mass()};
     const Scalar<double> pressure_geometric =
         eos.pressure_from_density(rest_mass_density_geometric);
     const Scalar<double> specific_internal_energy_geometric =
@@ -83,11 +83,11 @@ void dump_barotropic_eos(
         get(rest_mass_density_geometric) *
         (1.0 + get(specific_internal_energy_geometric))};
 
-    // Note: the energy density is divided by c^2, so the rest-mass part is rho
-    // c^2
+    // Note: the energy density is divided by c^2
     const double total_energy_density_cgs =
         get(total_energy_density_geometric) *
-        hydro::units::cgs::rest_mass_density_unit;
+        hydro::units::cgs::rest_mass_density_unit *
+        square(hydro::units::cgs::speed_of_light);
 
     // should be dyne cm^(-3)
     const double pressure_cgs =

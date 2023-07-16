@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // parts of PiecewisePolytropicFluid
@@ -337,6 +338,9 @@ SPECTRE_TEST_CASE(
   CHECK(eos != other_eos);
   // Different eos types should NOT match
   CHECK(eos != other_type_eos);
+  // Check baryon density
+  CHECK(eos.baryon_mass() ==
+        approx(hydro::units::geometric::default_baryon_mass));
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   const double transition_density = 10.0;
