@@ -17,6 +17,12 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace CurvedScalarWave::Initialization {
 /// \ingroup InitializationGroup
 /// \brief Mutator meant to be used with

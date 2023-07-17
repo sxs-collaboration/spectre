@@ -21,10 +21,15 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
+
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
 
 namespace domain {
 namespace Tags {

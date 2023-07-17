@@ -13,14 +13,16 @@
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+struct AllStepChoosers;
 class TimeDelta;
 class TimeStepId;
 namespace Parallel {
@@ -33,6 +35,9 @@ struct LtsStep;
 namespace Tags {
 template <typename Tag>
 struct Next;
+struct StepChoosers;
+struct TimeStep;
+struct TimeStepId;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -135,7 +140,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - Tags::StepChoosers<StepChooserRegistrars>
+///   - Tags::StepChoosers
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId

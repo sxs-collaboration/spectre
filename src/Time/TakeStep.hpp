@@ -11,7 +11,6 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -20,6 +19,9 @@
 namespace Parallel::Tags {
 struct Metavariables;
 }  // namespace Parallel::Tags
+namespace Tags {
+struct TimeStep;
+}  // namespace Tags
 /// \endcond
 
 /// Bundled method for recording the current system state in the history, and

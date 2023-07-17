@@ -12,6 +12,7 @@
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "PointwiseFunctions/AnalyticData/Burgers/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Factory.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 
 namespace Burgers::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)

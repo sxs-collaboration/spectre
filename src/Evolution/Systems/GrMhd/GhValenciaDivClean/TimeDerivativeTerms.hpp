@@ -20,6 +20,9 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+// Tag obtained from gh::TimeDerivative needs to be complete here to
+// be used in TemporaryReference.
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"

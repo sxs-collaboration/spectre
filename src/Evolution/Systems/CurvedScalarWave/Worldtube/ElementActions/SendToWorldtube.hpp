@@ -36,6 +36,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
+
 namespace CurvedScalarWave::Worldtube::Actions {
 /*!
  * \brief Projects the regular field \f$\Psi^R\f$ and its time derivative

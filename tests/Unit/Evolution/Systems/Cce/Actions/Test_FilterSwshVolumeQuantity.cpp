@@ -27,7 +27,6 @@
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/VectorAlgebra.hpp"

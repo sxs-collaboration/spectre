@@ -29,7 +29,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -38,6 +37,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
 namespace tuples {
 template <class... Tags>
 class TaggedTuple;

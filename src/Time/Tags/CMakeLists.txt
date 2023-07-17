@@ -6,4 +6,15 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AdaptiveSteppingDiagnostics.hpp
+  HistoryEvolvedVariables.hpp
+  IsUsingTimeSteppingErrorControl.hpp
+  PreviousStepperError.hpp
+  StepChoosers.hpp
+  StepperError.hpp
+  StepperErrorUpdated.hpp
+  Time.hpp
+  TimeAndPrevious.hpp
+  TimeStep.hpp
+  TimeStepId.hpp
+  TimeStepper.hpp
   )

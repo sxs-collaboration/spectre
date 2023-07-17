@@ -10,7 +10,6 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -25,6 +24,10 @@ template <size_t Dim>
 struct IsentropicVortex;
 }  // namespace Solutions
 }  // namespace NewtonianEuler
+
+namespace Tags {
+struct Time;
+}  // namespace Tags
 
 namespace gsl {
 template <typename T>

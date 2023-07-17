@@ -13,8 +13,14 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStep;
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 namespace Cce {
 namespace Actions {

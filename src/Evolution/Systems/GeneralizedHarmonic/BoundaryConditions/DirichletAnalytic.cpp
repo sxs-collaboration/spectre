@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

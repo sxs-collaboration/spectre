@@ -47,11 +47,17 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/BoundaryHistory.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TakeStep.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 /// \cond
 namespace evolution::dg::subcell {

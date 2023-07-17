@@ -23,6 +23,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace evolution::dg::subcell::Tags {
 /*!
  * \brief "Computes" the active coordinates by setting the `DataVector`s to

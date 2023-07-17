@@ -43,11 +43,17 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/History.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
 
 namespace evolution::dg::subcell::Actions {
 /*!

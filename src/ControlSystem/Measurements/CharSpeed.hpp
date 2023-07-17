@@ -28,7 +28,7 @@
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

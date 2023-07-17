@@ -17,7 +17,6 @@
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"

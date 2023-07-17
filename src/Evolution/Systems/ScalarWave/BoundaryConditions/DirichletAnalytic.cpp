@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/Factory.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace ScalarWave::BoundaryConditions {

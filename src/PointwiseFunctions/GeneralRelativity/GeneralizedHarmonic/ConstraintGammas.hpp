@@ -14,7 +14,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -22,6 +21,9 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>

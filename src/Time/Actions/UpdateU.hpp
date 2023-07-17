@@ -13,7 +13,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/PreviousStepperError.hpp"
+#include "Time/Tags/StepperError.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,8 +30,11 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare TimeDelta
-// IWYU pragma: no_forward_declare db::DataBox
+namespace Tags {
+struct IsUsingTimeSteppingErrorControl;
+struct StepperErrorUpdated;
+struct TimeStep;
+}  // namespace Tags
 /// \endcond
 
 namespace update_u_detail {

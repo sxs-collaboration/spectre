@@ -15,7 +15,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -24,6 +23,10 @@ class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
+
+namespace Tags {
+struct Time;
+}  // namespace Tags
 
 namespace gsl {
 template <class T>

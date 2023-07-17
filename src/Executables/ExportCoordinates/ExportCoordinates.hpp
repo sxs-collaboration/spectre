@@ -75,6 +75,12 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
+/// \cond
 using MinGridSpacingReductionData = Parallel::ReductionData<
     // Time
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,

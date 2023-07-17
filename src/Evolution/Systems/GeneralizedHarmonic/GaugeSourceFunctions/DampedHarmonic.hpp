@@ -12,7 +12,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

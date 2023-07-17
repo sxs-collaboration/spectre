@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -16,8 +16,12 @@
 #include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeStep.hpp"
+#include "Time/Tags/TimeStepId.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"

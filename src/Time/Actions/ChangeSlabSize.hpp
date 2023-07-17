@@ -27,8 +27,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -45,6 +46,8 @@ namespace Tags {
 struct DataBox;
 template <typename Tag>
 struct Next;
+struct TimeStep;
+struct TimeStepId;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -92,12 +95,11 @@ namespace Actions {
 /// Events::ChangeSlabSize
 ///
 /// Uses:
-/// - GlobalCache:
-///   - Tags::TimeStepperBase
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing

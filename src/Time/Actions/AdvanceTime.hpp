@@ -12,8 +12,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -26,8 +26,12 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
+struct IsUsingTimeSteppingErrorControl;
 template <typename Tag>
 struct Next;
+struct Time;
+struct TimeStep;
+struct TimeStepId;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond

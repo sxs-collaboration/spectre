@@ -14,6 +14,12 @@
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 
+/// \cond
+namespace Tags {
+struct Time;
+}  // namespace Tags
+/// \endcond
+
 namespace CurvedScalarWave::Actions {
 
 /// \ingroup ActionsGroup

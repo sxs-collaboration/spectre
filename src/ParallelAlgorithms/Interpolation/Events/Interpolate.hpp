@@ -25,6 +25,9 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace Tags {
+struct Time;
+}  // namespace Tags
 namespace domain::Tags {
 template <size_t VolumeDim>
 struct Mesh;

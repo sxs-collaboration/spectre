@@ -26,6 +26,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "Time/Tags/Time.hpp"
 
 namespace {
 template <typename BackgroundSpacetime, typename InitialData>

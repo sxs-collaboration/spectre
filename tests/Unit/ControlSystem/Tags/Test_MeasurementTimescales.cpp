@@ -27,6 +27,11 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace OptionTags {
+struct InitialTime;
+struct InitialTimeStep;
+}  // namespace OptionTags
+
 namespace {
 const double initial_time = 0.9;
 

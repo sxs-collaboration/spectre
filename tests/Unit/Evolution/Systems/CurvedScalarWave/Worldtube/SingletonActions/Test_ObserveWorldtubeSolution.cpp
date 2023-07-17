@@ -23,7 +23,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"

@@ -15,11 +15,13 @@
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
+namespace Tags {
+struct Time;
+}  // namespace Tags
 /// \endcond
 
 namespace ForceFree::BoundaryConditions {
