@@ -103,4 +103,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
         std::is_same_v<decltype(sgn(static_cast<unsigned>(2))), unsigned>,
         "Failed testing type of sgn");
   }
+
+  {
+    INFO("Test integer pow");
+
+    CHECK(integer_pow(1., 5) == approx(pow(1., 5.)));
+    CHECK(integer_pow(11., 12) == approx(pow(11., 12)));
+    CHECK(integer_pow(29375925., 0) == 1.);
+  }
 }
