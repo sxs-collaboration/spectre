@@ -334,6 +334,7 @@ spectre_unload_modules() {
 
 spectre_load_modules() {
     spectre_load_sys_modules
+    module use /central/groups/sxs/modules
 
     module load blaze
     module load brigand
@@ -347,6 +348,7 @@ spectre_load_modules() {
     module load yaml-cpp
     module load scotch
     module load charm
+    module load spec-exporter/2023-07
 }
 
 spectre_run_cmake() {
