@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <deque>
 #include <limits>
 #include <ostream>
 #include <pup.h>
@@ -58,15 +59,24 @@ struct StoredInfo<MaxDerivPlusOne, false> {
 void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
                            const double next_expiration_time);
 
-/// Returns a StoredInfo corresponding to the closest element in the range of
-/// `StoredInfo.time`s that is less than `t`. The function throws an
-/// error if `t` is less than all `StoredInfo.time`s (unless `t` is just less
-/// than the earliest `StoredInfo.time` by roundoff, in which case it returns
-/// the earliest StoredInfo.)
+/*!
+ * \brief Returns a StoredInfo corresponding to the closest element in the range
+ * of `StoredInfo.time`s that is less than `t`.
+ *
+ * The function throws an error if `t` is less than all `StoredInfo.time`s
+ * (unless `t` is just less than the earliest `StoredInfo.time` by roundoff, in
+ * which case it returns the earliest StoredInfo.)
+ *
+ * This entire operation needs to be threadsafe so an additional parameter
+ * `all_info_size` is passed which is the size of `all_stored_infos` that's
+ * allowed to be used in this operation. This avoids threading undefined
+ * behavior.
+ */
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
-    const double t, const std::vector<StoredInfo<MaxDerivPlusOne, StoreCoefs>>&
-                        all_stored_infos);
+    const double t,
+    const std::deque<StoredInfo<MaxDerivPlusOne, StoreCoefs>>& all_stored_infos,
+    const size_t all_info_size);
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 bool operator==(
