@@ -583,11 +583,11 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   tnsr::ab<DataVector, Dim> d4_gauge_h{mesh.number_of_grid_points()};
 
   gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h),
-                       lapse, shift, normal_one_form, normal_vector,
-                       sqrt_det_spatial_metric, inverse_spatial_metric,
-                       da_spacetime_metric, half_pi_two_normals,
-                       half_phi_two_normals, spacetime_metric, pi, phi, mesh,
-                       time, inertial_coords, inv_jac, gauge_condition);
+                       lapse, shift, normal_vector, sqrt_det_spatial_metric,
+                       inverse_spatial_metric, da_spacetime_metric,
+                       half_pi_two_normals, half_phi_two_normals,
+                       spacetime_metric, pi, phi, mesh, time, inertial_coords,
+                       inv_jac, gauge_condition);
 
   const auto [expected_dt_spacetime_metric, expected_dt_pi, expected_dt_phi] =
       gh_rhs_reference_impl(
@@ -620,7 +620,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gh::Tags::PhiFirstIndexUp<Dim>, gh::Tags::PhiThirdIndexUp<Dim>,
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
-      gr::Tags::SpatialMetric<DataVector, Dim>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -628,9 +627,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
-      gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>>
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
 
   gh::TimeDerivative<Dim>::apply(
@@ -664,7 +661,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
@@ -682,11 +678,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
-              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -771,7 +762,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
@@ -789,11 +779,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
-              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
@@ -834,7 +819,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::Shift<DataVector, Dim>>(buffer)),
-      make_not_null(&get<gr::Tags::SpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
@@ -852,11 +836,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>(
-              buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       std::optional{mesh_velocity});

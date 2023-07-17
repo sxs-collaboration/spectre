@@ -90,8 +90,6 @@ void wrap_dt_vars_corrections_ConstraintPreserving(
     const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, Dim, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, Dim, frame>& gauge_source,
     const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
@@ -110,9 +108,9 @@ void wrap_dt_vars_corrections_ConstraintPreserving(
       dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
       face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
       phi, coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
-      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
-      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
-      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+      spacetime_unit_normal_vector, three_index_constraint, gauge_source,
+      spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+      d_spacetime_metric, d_pi, d_phi);
 }
 
 template <size_t Dim>
@@ -135,8 +133,6 @@ void wrap_dt_vars_corrections_ConstraintPreserving_static_mesh(
     const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, Dim, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, Dim, frame>& gauge_source,
     const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
@@ -155,9 +151,9 @@ void wrap_dt_vars_corrections_ConstraintPreserving_static_mesh(
       dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
       std::nullopt, normal_covector, normal_vector, spacetime_metric, pi, phi,
       coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
-      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
-      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
-      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+      spacetime_unit_normal_vector, three_index_constraint, gauge_source,
+      spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+      d_spacetime_metric, d_pi, d_phi);
 }
 
 template <size_t Dim>
@@ -181,8 +177,6 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
     const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, Dim, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, Dim, frame>& gauge_source,
     const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
@@ -201,9 +195,9 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
       dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
       face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
       phi, coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
-      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
-      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
-      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+      spacetime_unit_normal_vector, three_index_constraint, gauge_source,
+      spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+      d_spacetime_metric, d_pi, d_phi);
 }
 
 template <size_t Dim>
@@ -226,8 +220,6 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh(
     const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, Dim, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, Dim, frame>& gauge_source,
     const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
@@ -246,9 +238,9 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh(
       dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
       std::nullopt, normal_covector, normal_vector, spacetime_metric, pi, phi,
       coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
-      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
-      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
-      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+      spacetime_unit_normal_vector, three_index_constraint, gauge_source,
+      spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+      d_spacetime_metric, d_pi, d_phi);
 }
 
 template <size_t Dim>

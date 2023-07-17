@@ -19,7 +19,6 @@
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
-#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -56,7 +55,6 @@ void TimeDerivative<Dim>::apply(
         christoffel_first_kind_3_up,
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> shift,
-    const gsl::not_null<tnsr::ii<DataVector, Dim>*> spatial_metric,
     const gsl::not_null<tnsr::II<DataVector, Dim>*> inverse_spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> det_spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
@@ -65,8 +63,6 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
     const gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
     const gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
-    const gsl::not_null<tnsr::a<DataVector, Dim>*> normal_spacetime_one_form,
-    const gsl::not_null<tnsr::abb<DataVector, Dim>*> da_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_pi,
     const tnsr::ijaa<DataVector, Dim>& d_phi,
@@ -81,26 +77,56 @@ void TimeDerivative<Dim>::apply(
                           Frame::Inertial>& inverse_jacobian,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity) {
+  const size_t number_of_points = get<0, 0>(*dt_spacetime_metric).size();
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
 
-  gr::spatial_metric(spatial_metric, spacetime_metric);
+  const tnsr::ii<DataVector, Dim> spatial_metric{};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = i; j < Dim; ++j) {
+      make_const_view(make_not_null(&spatial_metric.get(i, j)),
+                      spacetime_metric.get(i + 1, j + 1), 0, number_of_points);
+    }
+  }
   determinant_and_inverse(det_spatial_metric, inverse_spatial_metric,
-                          *spatial_metric);
+                          spatial_metric);
   gr::shift(shift, spacetime_metric, *inverse_spatial_metric);
   gr::lapse(lapse, *shift, spacetime_metric);
   gr::inverse_spacetime_metric(inverse_spacetime_metric, *lapse, *shift,
                                *inverse_spatial_metric);
-  gh::spacetime_derivative_of_spacetime_metric(da_spacetime_metric, *lapse,
-                                               *shift, pi, phi);
-  gr::christoffel_first_kind(christoffel_first_kind, *da_spacetime_metric);
+  // Compute the part of the dt_spacetime_metric equation that doesn't involve
+  // constraints so we can use it for da_spacetime_metric to compute Christoffel
+  // symbols.
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_spacetime_metric->get(mu, nu) = -get(*lapse) * pi.get(mu, nu);
+      for (size_t m = 0; m < Dim; ++m) {
+        dt_spacetime_metric->get(mu, nu) += shift->get(m) * phi.get(m, mu, nu);
+      }
+    }
+  }
+
+  const std::optional da_spacetime_metric{tnsr::abb<DataVector, Dim>{}};
+  for (size_t a = 0; a < Dim + 1; ++a) {
+    for (size_t b = a; b < Dim + 1; ++b) {
+      make_const_view(make_not_null(&da_spacetime_metric.value().get(0, a, b)),
+                      dt_spacetime_metric->get(a, b), 0, number_of_points);
+      for (size_t i = 0; i < Dim; ++i) {
+        make_const_view(
+            make_not_null(&da_spacetime_metric.value().get(i + 1, a, b)),
+            phi.get(i, a, b), 0, number_of_points);
+      }
+    }
+  }
+
+  gr::christoffel_first_kind(christoffel_first_kind,
+                             da_spacetime_metric.value());
   raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
                              *inverse_spacetime_metric);
   trace_last_indices(trace_christoffel, *christoffel_first_kind,
                      *inverse_spacetime_metric);
   gr::spacetime_normal_vector(normal_spacetime_vector, *lapse, *shift);
-  gr::spacetime_normal_one_form(normal_spacetime_one_form, *lapse);
 
   get(*gamma1gamma2) = get(gamma1) * get(gamma2);
   const DataVector& gamma12 = get(*gamma1gamma2);
@@ -230,8 +256,8 @@ void TimeDerivative<Dim>::apply(
 
   gauges::dispatch<Dim>(
       gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
-      *normal_spacetime_one_form, *normal_spacetime_vector,
-      *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
+      *normal_spacetime_vector, *sqrt_det_spatial_metric,
+      *inverse_spatial_metric, da_spacetime_metric.value(),
       *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, pi, phi,
       mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
 
@@ -249,36 +275,63 @@ void TimeDerivative<Dim>::apply(
         normal_spacetime_vector->get(mu) * gauge_constraint->get(mu);
   }
 
+  // Invalidate da_spacetime_metric since we will be modifying some of the
+  // data it points to.
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  const_cast<std::optional<tnsr::abb<DataVector, Dim>>&>(da_spacetime_metric) =
+      std::nullopt;
+
   // Here are the actual equations
 
   // Equation for dt_spacetime_metric
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      dt_spacetime_metric->get(mu, nu) = -get(*lapse) * pi.get(mu, nu);
       dt_spacetime_metric->get(mu, nu) +=
           gamma1p1 * shift_dot_three_index_constraint->get(mu, nu);
       if (mesh_velocity.has_value()) {
         dt_spacetime_metric->get(mu, nu) +=
             get(gamma1) * mesh_velocity_dot_three_index_constraint->get(mu, nu);
       }
-      for (size_t m = 0; m < Dim; ++m) {
-        dt_spacetime_metric->get(mu, nu) += shift->get(m) * phi.get(m, mu, nu);
-      }
     }
   }
 
   // Equation for dt_pi
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+
+  // We first compute the n_a contributions but only for a=0 since n_i=0
+  // identically. We also use dt_Pi_{00} as temporary storage to avoid any extra
+  // allocations and multiply normal_dot_gauge_constraint=(n^a C_a) by gamma0
+  // since it always shows up multiplied by gamma0 in the equations. This
+  // reduces the number of multiplications that are needed for the RHS
+  // evaluation.
+  //
+  // WARNING: normal_dot_gauge_constraint is rescaled by gamma0!
+  get(*normal_dot_gauge_constraint) *= get(gamma0);
+
+  // Use dt_pi_{00} as temporary storage.
+  get<0, 0>(*dt_pi) = -get(gamma0) * get(*lapse);
+  for (size_t i = 1; i < Dim + 1; ++i) {
+    dt_pi->get(0, i) =
+        get<0, 0>(*dt_pi) * gauge_constraint->get(i) -
+        get(*normal_dot_gauge_constraint) * spacetime_metric.get(0, i);
+  }
+  get<0, 0>(*dt_pi) =
+      2.0 * get<0, 0>(*dt_pi) * get<0>(*gauge_constraint) -
+      get(*normal_dot_gauge_constraint) * get<0, 0>(spacetime_metric);
+
+  // Set space-space components
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       dt_pi->get(mu, nu) =
-          -spacetime_deriv_gauge_function->get(mu, nu) -
-          spacetime_deriv_gauge_function->get(nu, mu) -
-          get(*half_pi_two_normals) * pi.get(mu, nu) +
-          get(gamma0) *
-              (normal_spacetime_one_form->get(mu) * gauge_constraint->get(nu) +
-               normal_spacetime_one_form->get(nu) * gauge_constraint->get(mu)) -
-          get(gamma0) * spacetime_metric.get(mu, nu) *
-              get(*normal_dot_gauge_constraint);
+          -get(*normal_dot_gauge_constraint) * spacetime_metric.get(mu, nu);
+    }
+  }
+
+  // Add additional pieces to dt_pi that aren't just n_a*(stuff)
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_pi->get(mu, nu) -= spacetime_deriv_gauge_function->get(mu, nu) +
+                            spacetime_deriv_gauge_function->get(nu, mu) +
+                            get(*half_pi_two_normals) * pi.get(mu, nu);
 
       for (size_t delta = 0; delta < Dim + 1; ++delta) {
         dt_pi->get(mu, nu) += 2 * christoffel_second_kind->get(delta, mu, nu) *

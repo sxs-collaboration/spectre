@@ -102,7 +102,7 @@ void test_gauge_wave(const Mesh<Dim>& mesh) {
   // Used dispatch with defaulted arguments that we don't need for Analytic
   // gauge.
   gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
-                       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
+                       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
                        inertial_coords, inverse_jacobian, *gauge_condition);
 
   CHECK_ITERABLE_APPROX(
@@ -137,7 +137,7 @@ void test_ks(const Mesh<3>& mesh) {
   // Used dispatch with defaulted arguments that we don't need for Analytic
   // gauge.
   gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
-                       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
+                       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
                        inertial_coords, inverse_jacobian, *gauge_condition);
 
   const gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr_schild{

@@ -115,7 +115,6 @@ struct TimeDerivative {
       Tags::PhiFirstIndexUp<Dim>, Tags::PhiThirdIndexUp<Dim>,
       Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
-      gr::Tags::SpatialMetric<DataVector, Dim>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim>,
       gr::Tags::DetSpatialMetric<DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -123,9 +122,7 @@ struct TimeDerivative {
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalVector<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
-      gr::Tags::DerivativesOfSpacetimeMetric<DataVector, Dim>>;
+      gr::Tags::SpacetimeNormalVector<DataVector, Dim>>;
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>,
@@ -166,7 +163,6 @@ struct TimeDerivative {
       gsl::not_null<tnsr::abC<DataVector, Dim>*> christoffel_first_kind_3_up,
       gsl::not_null<Scalar<DataVector>*> lapse,
       gsl::not_null<tnsr::I<DataVector, Dim>*> shift,
-      gsl::not_null<tnsr::ii<DataVector, Dim>*> spatial_metric,
       gsl::not_null<tnsr::II<DataVector, Dim>*> inverse_spatial_metric,
       gsl::not_null<Scalar<DataVector>*> det_spatial_metric,
       gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
@@ -175,8 +171,6 @@ struct TimeDerivative {
       gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
       gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
       gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
-      gsl::not_null<tnsr::a<DataVector, Dim>*> normal_spacetime_one_form,
-      gsl::not_null<tnsr::abb<DataVector, Dim>*> da_spacetime_metric,
       const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim>& d_pi,
       const tnsr::ijaa<DataVector, Dim>& d_phi,

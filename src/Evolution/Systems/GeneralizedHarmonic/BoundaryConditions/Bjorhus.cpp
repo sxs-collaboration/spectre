@@ -110,8 +110,6 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
     const tnsr::A<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_vector,
-    const tnsr::a<DataVector, Dim, Frame::Inertial>&
-        spacetime_unit_normal_one_form,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
     const tnsr::a<DataVector, Dim, Frame::Inertial>& gauge_source,
     const tnsr::ab<DataVector, Dim, Frame::Inertial>&
@@ -146,12 +144,17 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
                         ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>,
+                        gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>,
                         // inertial time derivatives
                         ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, Dim>>,
                         ::Tags::dt<Tags::Pi<DataVector, Dim>>,
                         ::Tags::dt<Tags::Phi<DataVector, Dim>>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);
-
+  get<0>(get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(local_buffer)) =
+      -get(lapse);
+  const tnsr::a<DataVector, Dim, Frame::Inertial>&
+      spacetime_unit_normal_one_form =
+          get<gr::Tags::SpacetimeNormalOneForm<DataVector, Dim>>(local_buffer);
   tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric;
   tnsr::aa<DataVector, Dim, Frame::Inertial> dt_pi;
   tnsr::iaa<DataVector, Dim, Frame::Inertial> dt_phi;

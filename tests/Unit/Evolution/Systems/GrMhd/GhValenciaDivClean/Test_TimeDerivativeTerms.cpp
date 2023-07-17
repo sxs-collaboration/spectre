@@ -128,8 +128,12 @@ SPECTRE_TEST_CASE(
       grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_arg_tags;
   using all_valencia_arg_tags =
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags;
+  using SpatialMetricTag = gr::Tags::SpatialMetric<DataVector, 3>;
+  using d_SpatialMetricTag =
+      ::Tags::deriv<SpatialMetricTag, tmpl::size_t<3>, Frame::Inertial>;
   using arg_variables_type = tuples::tagged_tuple_from_typelist<
-      tmpl::append<gh_arg_tags, valencia_arg_tags>>;
+      tmpl::remove<tmpl::append<gh_arg_tags, valencia_arg_tags>,
+                   gr::Tags::SpatialMetric<DataVector, 3>>>;
 
   const size_t element_size = 10_st;
   MAKE_GENERATOR(gen);
@@ -165,23 +169,25 @@ SPECTRE_TEST_CASE(
       make_with_random_values<gradient_variables_type>(
           make_not_null(&gen), make_not_null(&dist), element_size);
   arg_variables_type arg_variables;
-  tmpl::for_each<tmpl::append<gh_arg_tags, valencia_arg_tags>>(
-      [&gen, &dist, &arg_variables](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        if constexpr (std::is_same_v<typename tag::type,
-                                     std::optional<tnsr::I<DataVector, 3,
-                                                           Frame::Inertial>>>) {
-          tuples::get<tag>(arg_variables) = make_with_random_values<
-              typename tnsr::I<DataVector, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&dist),
-              DataVector{element_size});
-        } else if constexpr (tt::is_a_v<Tensor, typename tag::type>) {
-          tuples::get<tag>(arg_variables) =
-              make_with_random_values<typename tag::type>(
-                  make_not_null(&gen), make_not_null(&dist),
-                  DataVector{element_size});
-        }
-      });
+  tmpl::for_each<
+      tmpl::remove<tmpl::remove<tmpl::append<gh_arg_tags, valencia_arg_tags>,
+                                SpatialMetricTag>,
+                   d_SpatialMetricTag>>([&gen, &dist,
+                                         &arg_variables](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    if constexpr (std::is_same_v<
+                      typename tag::type,
+                      std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>>) {
+      tuples::get<tag>(arg_variables) = make_with_random_values<
+          typename tnsr::I<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&dist), DataVector{element_size});
+    } else if constexpr (tt::is_a_v<Tensor, typename tag::type>) {
+      tuples::get<tag>(arg_variables) =
+          make_with_random_values<typename tag::type>(make_not_null(&gen),
+                                                      make_not_null(&dist),
+                                                      DataVector{element_size});
+    }
+  });
   get<gh::gauges::Tags::GaugeCondition>(arg_variables) =
       std::make_unique<gh::gauges::DampedHarmonic>(
           100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6});
@@ -200,10 +206,11 @@ SPECTRE_TEST_CASE(
   ComputeVolumeTimeDerivativeTermsHelper<
       gh::TimeDerivative<3_st>, 3_st, gh_variables_tags, gh_flux_tags,
       gh_temp_tags, gh_gradient_tags,
-      gh_arg_tags>::apply(make_not_null(&expected_dt_variables),
-                          make_not_null(&expected_flux_variables),
-                          make_not_null(&expected_temp_variables),
-                          gradient_variables, arg_variables);
+      tmpl::remove<gh_arg_tags, gr::Tags::SpatialMetric<DataVector, 3>>>::
+      apply(make_not_null(&expected_dt_variables),
+            make_not_null(&expected_flux_variables),
+            make_not_null(&expected_temp_variables), gradient_variables,
+            arg_variables);
   // appropriately mimic the behavior of the `TimeDerivativeTerms`
   // implementation wherein it uses the temporary tags from the Generalized
   // Harmonic system that are applicable to the spacetime parts of the Valencia
@@ -211,10 +218,11 @@ SPECTRE_TEST_CASE(
   tuples::tagged_tuple_from_typelist<all_valencia_arg_tags>
       all_valencia_argument_variables{};
 
-  tmpl::for_each<all_valencia_arg_tags>([&arg_variables,
-                                         &expected_temp_variables,
-                                         &all_valencia_argument_variables](
-                                            const auto tag_v) {
+  tmpl::for_each<
+      tmpl::remove<all_valencia_arg_tags,
+                   SpatialMetricTag>>([&arg_variables, &expected_temp_variables,
+                                       &all_valencia_argument_variables](
+                                          const auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
       tuples::get<tag>(all_valencia_argument_variables) =
@@ -245,15 +253,6 @@ SPECTRE_TEST_CASE(
               get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
       get<tag>(expected_temp_variables) =
           tuples::get<tag>(all_valencia_argument_variables);
-    } else if constexpr (std::is_same_v<
-                             tag, ::Tags::deriv<
-                                      gr::Tags::SpatialMetric<DataVector, 3>,
-                                      tmpl::size_t<3>, Frame::Inertial>>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          gh::deriv_spatial_metric(
-              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
-      get<tag>(expected_temp_variables) =
-          tuples::get<tag>(all_valencia_argument_variables);
     } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<
                                                  DataVector, 3>>) {
       tuples::get<tag>(all_valencia_argument_variables) =
@@ -269,6 +268,32 @@ SPECTRE_TEST_CASE(
           tuples::get<tag>(arg_variables);
     }
   });
+  // Set spatial metric and its derivative
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      make_const_view(
+          make_not_null(
+              &std::as_const(get<gr::Tags::SpatialMetric<DataVector, 3>>(
+                                 all_valencia_argument_variables))
+                   .get(i, j)),
+          get<gr::Tags::SpacetimeMetric<DataVector, 3>>(arg_variables)
+              .get(i + 1, j + 1),
+          0, element_size);
+    }
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = j; k < 3; ++k) {
+        make_const_view(
+            make_not_null(&std::as_const(get<d_SpatialMetricTag>(
+                                             all_valencia_argument_variables))
+                               .get(i, j, k)),
+            get<gh::Tags::Phi<DataVector, 3>>(arg_variables)
+                .get(i, j + 1, k + 1),
+            0, element_size);
+      }
+    }
+  }
 
   ComputeVolumeTimeDerivativeTermsHelper<
       grmhd::ValenciaDivClean::TimeDerivativeTerms, 3_st,
@@ -321,7 +346,9 @@ SPECTRE_TEST_CASE(
       typename flux_variables_type::tags_list,
       typename temp_variables_type::tags_list,
       typename gradient_variables_type::tags_list,
-      typename arg_variables_type::tags_list>::
+      tmpl::remove<tmpl::remove<typename arg_variables_type::tags_list,
+                                SpatialMetricTag>,
+                   d_SpatialMetricTag>>::
       apply_packed(make_not_null(&dt_variables), make_not_null(&flux_variables),
                    make_not_null(&temp_variables), gradient_variables,
                    arg_variables);

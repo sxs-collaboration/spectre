@@ -225,7 +225,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   get<gr::Tags::Shift<DataVector, 3>>(expected_vars),
                   get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
                       expected_vars),
-                  {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+                  {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
               .has_value());
 
   const auto inverse_spacetime_metric =
@@ -233,9 +233,6 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   const auto spacetime_normal_vector = gr::spacetime_normal_vector(
       get<gr::Tags::Lapse<DataVector>>(expected_vars),
       get<gr::Tags::Shift<DataVector, 3>>(expected_vars));
-  const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<DataVector, 3, Frame::Inertial>(
-          get<gr::Tags::Lapse<DataVector>>(expected_vars));
   const auto gauge_source = make_with_random_values<tnsr::a<DataVector, 3>>(
       generator, make_not_null(&dist), num_points);
   const auto spacetime_deriv_gauge_source =
@@ -314,10 +311,10 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
                       expected_vars),
                   inverse_spacetime_metric, spacetime_normal_vector,
-                  spacetime_normal_one_form, three_index_constraint,
-                  gauge_source, spacetime_deriv_gauge_source,
-                  logical_dt_spacetime_metric, logical_dt_pi, logical_dt_phi,
-                  d_spacetime_metric, d_pi, d_phi)
+                  three_index_constraint, gauge_source,
+                  spacetime_deriv_gauge_source, logical_dt_spacetime_metric,
+                  logical_dt_pi, logical_dt_phi, d_spacetime_metric, d_pi,
+                  d_phi)
               .has_value());
 
   grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow
@@ -395,10 +392,10 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   get<gr::Tags::Lapse<DataVector>>(expected_vars),
                   get<gr::Tags::Shift<DataVector, 3>>(expected_vars),
                   inverse_spacetime_metric, spacetime_normal_vector,
-                  spacetime_normal_one_form, three_index_constraint,
-                  gauge_source, spacetime_deriv_gauge_source,
-                  logical_dt_spacetime_metric, logical_dt_pi, logical_dt_phi,
-                  d_spacetime_metric, d_pi, d_phi)
+                  three_index_constraint, gauge_source,
+                  spacetime_deriv_gauge_source, logical_dt_spacetime_metric,
+                  logical_dt_pi, logical_dt_phi, d_spacetime_metric, d_pi,
+                  d_phi)
               .has_value());
   tmpl::for_each<typename DtVars::tags_list>(
       [&dt_vars, &expected_dt_vars](auto tag_v) {

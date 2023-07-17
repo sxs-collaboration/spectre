@@ -127,6 +127,14 @@ def spacetime_normal_vector(lapse, shift):
     return vector
 
 
+def spacetime_normal_one_form(lapse, shift):
+    dim = shift.size
+    one_form = np.zeros([dim + 1])
+    one_form[0] = -lapse
+    one_form[1:] = 0.0
+    return one_form
+
+
 def extrinsic_curvature(
     lapse,
     shift,
