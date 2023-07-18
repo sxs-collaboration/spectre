@@ -39,6 +39,7 @@ namespace Tags {
 /// DataBox.
 template <size_t Index>
 struct TimeAndPrevious : db::SimpleTag {
+  static constexpr size_t index = Index;
   using type = LinkedMessageId<double>;
   static std::string name() { return "TimeAndPrevious" + get_output(Index); }
 };
