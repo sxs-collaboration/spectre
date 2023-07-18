@@ -242,6 +242,13 @@ ApparentHorizons:
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
+  ObservationAhC:
+    InitialGuess:
+      LMax: 20
+      Radius: 10.0
+      Center: [0.0, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Verbose
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
 

@@ -211,34 +211,36 @@ struct EvolutionMetavars {
     static constexpr bool enable_time_dependent_maps = true;
   };
 
-  template <::domain::ObjectLabel Horizon>
+  template <::domain::ObjectLabel Horizon, typename Frame>
   struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::Time;
+    // Offset index by 10 to avoid clashes with control system horizon finds
+    using temporal_id =
+        ::Tags::TimeAndPrevious<static_cast<size_t>(Horizon) + 10>;
     using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>;
+        ::ah::vars_to_interpolate_to_target<volume_dim, Frame>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
+    using tags_to_observe = ::ah::tags_for_observing<Frame>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
     using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame::Grid>;
+        ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<Ah<Horizon>, ::Frame::Grid>;
+        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<Ah<Horizon>, ::Frame::Grid>;
+        intrp::callbacks::FindApparentHorizon<Ah, Frame>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
-    using post_horizon_find_callbacks =
-        tmpl::list<intrp::callbacks::ObserveSurfaceData<
-                       surface_tags_to_observe, Ah<Horizon>, ::Frame::Grid>,
-                   intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                                Ah<Horizon>>>;
+    using post_horizon_find_callbacks = tmpl::list<
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
+                                             Frame>,
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>>;
     static std::string name() {
       return "ObservationAh" + ::domain::name(Horizon);
     }
   };
 
-  using AhA = Ah<::domain::ObjectLabel::A>;
-  using AhB = Ah<::domain::ObjectLabel::B>;
+  using AhA = Ah<::domain::ObjectLabel::A, ::Frame::Grid>;
+  using AhB = Ah<::domain::ObjectLabel::B, ::Frame::Grid>;
+  using AhC = Ah<::domain::ObjectLabel::C, ::Frame::Inertial>;
 
   template <::domain::ObjectLabel Excision>
   struct ExcisionBoundary
@@ -401,6 +403,7 @@ struct EvolutionMetavars {
             tmpl::flatten<tmpl::list<
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
+                intrp::Events::Interpolate<3, AhC, interpolator_source_vars>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, BondiSachs, EvolutionMetavars, source_vars_no_deriv>,
                 intrp::Events::InterpolateWithoutInterpComponent<
@@ -494,11 +497,17 @@ struct EvolutionMetavars {
                                                 use_control_systems>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
-          typename system::variables_tag,
-          ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
-                                          Frame::Inertial>,
-          typename system::gradient_variables>>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::list<::Tags::DerivCompute<typename system::variables_tag,
+                                          ::domain::Tags::InverseJacobian<
+                                              volume_dim, Frame::ElementLogical,
+                                              Frame::Inertial>,
+                                          typename system::gradient_variables>,
+                     // For observation horizon finds. The index member is
+                     // specific to TimeAndPrevious
+                     ::Tags::TimeAndPreviousCompute<AhA::temporal_id::index>,
+                     ::Tags::TimeAndPreviousCompute<AhB::temporal_id::index>,
+                     ::Tags::TimeAndPreviousCompute<AhC::temporal_id::index>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
@@ -555,7 +564,7 @@ struct EvolutionMetavars {
 
   using interpolation_target_tags = tmpl::push_back<
       control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, AhB, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
+      AhA, AhB, AhC, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
