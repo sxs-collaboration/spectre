@@ -627,7 +627,7 @@ constexpr bool any_index_in_frame_v =
 
 /// Calls compute_vars_to_interpolate to compute
 /// InterpolationTargetTag::vars_to_interpolate_to_target from the source
-/// variables.  Does any frame tranformations needed.
+/// variables.  Does any frame transformations needed.
 template <typename InterpolationTargetTag, typename SourceTags,
           typename Metavariables, typename ElementId>
 void compute_dest_vars_from_source_vars(
@@ -646,7 +646,7 @@ void compute_dest_vars_from_source_vars(
     // For interpolation without an Interpolator ParallelComponent,
     // this is because the InterpWithoutInterpComponent event will be called
     // after the Action that keeps functions of time up to date.
-    // For interpolation with an Interpolator ParallelCompoent,
+    // For interpolation with an Interpolator ParallelComponent,
     // this is because the functions of time are made up to date before
     // calling SendPointsToInterpolator.
     if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
@@ -672,7 +672,9 @@ void compute_dest_vars_from_source_vars(
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
           dest_vars, source_vars, mesh, jac_grid_to_inertial,
           invjac_grid_to_inertial, jac_logical_to_grid, invjac_logical_to_grid,
-          inertial_mesh_velocity, tnsr::I<DataVector, 3, Frame::Grid>{});
+          inertial_mesh_velocity,
+          tnsr::I<DataVector, 3, Frame::Grid>{
+              DataVector{get<0, 0>(jac_logical_to_grid).size(), 0.0}});
     } else if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
                          any_index_in_frame_v<typename InterpolationTargetTag::
                                                   vars_to_interpolate_to_target,
