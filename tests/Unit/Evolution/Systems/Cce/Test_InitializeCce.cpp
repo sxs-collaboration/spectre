@@ -652,12 +652,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
                                      number_of_radial_points);
   }
   {
-    INFO("Check no incoming radiation initial data generator")
+    INFO("Check no incoming radiation initial data generator");
     test_initialize_j_no_radiation(make_not_null(&box_to_initialize), l_max,
                                    number_of_radial_points);
   }
   {
-    INFO("Check conformal factor initial data generator")
+    INFO("Check conformal factor initial data generator");
     test_initialize_j_conformal_factor(
         make_not_null(&box_to_initialize), false, false, false, false,
         ::Cce::InitializeJ::ConformalFactorIterationHeuristic::

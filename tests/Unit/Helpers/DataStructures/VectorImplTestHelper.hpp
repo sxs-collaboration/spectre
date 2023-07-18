@@ -577,7 +577,8 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
         make_not_null(&gen), make_not_null(&dist), VectorType{size});
 
     {
-      INFO("Check construction, copy, move, and ownership of reference vectors")
+      INFO(
+          "Check construction, copy, move, and ownership of reference vectors");
       VectorType ref_vector;
       ref_vector.set_data_ref(&original_vector);
       CHECK_FALSE(ref_vector.is_owning());
@@ -604,7 +605,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       CHECK(const_view.data() == move_constructed.data() + 1);
     }
     {
-      INFO("Check move acts appropriately on both source and target refs")
+      INFO("Check move acts appropriately on both source and target refs");
       VectorType ref_original_vector;
       ref_original_vector.set_data_ref(&original_vector);
       auto generated_vector = make_with_random_values<VectorType>(
@@ -618,7 +619,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       CHECK(data_check_vector == generated_vector_copy);
     }
     {
-      INFO("Check math affects both data vectors which share a ref")
+      INFO("Check math affects both data vectors which share a ref");
       const auto generated_value1 = make_with_random_values<ValueType>(
           make_not_null(&gen), make_not_null(&dist));
       const auto generated_value2 = make_with_random_values<ValueType>(
@@ -756,7 +757,7 @@ void vector_test_math_after_move(
                             (VectorType{size, sum_generated_values}));
     }
     {
-      INFO("Check move assignment and value of target")
+      INFO("Check move assignment and value of target");
       auto from_value = make_with_random_values<ValueType>(
           make_not_null(&gen), make_not_null(&dist));
       VectorType from_vector{size, from_value};
@@ -768,7 +769,7 @@ void vector_test_math_after_move(
                             (VectorType{size, sum_generated_values}));
     }
     {
-      INFO("Check move constructor and use after move")
+      INFO("Check move constructor and use after move");
       auto from_vector = make_with_random_values<VectorType>(
           make_not_null(&gen), make_not_null(&dist), VectorType{size});
       VectorType to_vector{std::move(from_vector)};
@@ -787,7 +788,7 @@ void vector_test_math_after_move(
     }
 
     {
-      INFO("Check move constructor and value of target")
+      INFO("Check move constructor and value of target");
       auto from_value = make_with_random_values<ValueType>(
           make_not_null(&gen), make_not_null(&dist));
       VectorType from_vector{size, from_value};

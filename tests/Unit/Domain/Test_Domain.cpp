@@ -307,7 +307,8 @@ void test_1d_domains() {
 }
 
 void test_1d_rectilinear_domains() {
-  INFO("Aligned domain.") {
+  {
+    INFO("Aligned domain.");
     const std::vector<std::unordered_set<Direction<1>>>
         expected_external_boundaries{
             {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
@@ -327,7 +328,8 @@ void test_1d_rectilinear_domains() {
       CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
     }
   }
-  INFO("Antialigned domain.") {
+  {
+    INFO("Antialigned domain.");
     const OrientationMap<1> aligned{};
     const OrientationMap<1> antialigned{
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};

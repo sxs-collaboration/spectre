@@ -353,7 +353,7 @@ void test_move() {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
   {
-    INFO("Deriv Order 1")
+    INFO("Deriv Order 1");
     test_linear<1>();
     test_semianalytic<1>();
     test_functionality<1>();
@@ -363,7 +363,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
   }
 
   {
-    INFO("Deriv Order 2")
+    INFO("Deriv Order 2");
     test_linear<2>();
     test_semianalytic<2>();
     test_functionality<2>();
@@ -373,7 +373,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
   }
 
   {
-    INFO("Deriv Order 3")
+    INFO("Deriv Order 3");
     test_linear<3>();
     test_semianalytic<3>();
     test_functionality<3>();

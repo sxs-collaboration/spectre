@@ -97,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ComplexDataVector",
         ComplexDataVector, std::complex<double>>();
   }
   {
-    INFO("test math after move using doubles to initialize")
+    INFO("test math after move using doubles to initialize");
     TestHelpers::VectorImpl::vector_test_math_after_move<ComplexDataVector,
                                                          double>();
   }

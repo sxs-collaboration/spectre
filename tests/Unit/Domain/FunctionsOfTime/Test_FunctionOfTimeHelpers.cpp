@@ -15,7 +15,8 @@
 namespace domain::FunctionsOfTime {
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
                   "[Domain][Unit]") {
-  INFO("StoredInfo Construction") {
+  {
+    INFO("StoredInfo Construction");
     // mdp1 = MaxDerivPlusOne
     constexpr size_t mdp1 = 3;
     constexpr double time = 5.4;
@@ -60,7 +61,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
           "t=5.4: (1.1,1.2,1.3) (2.4,2.5,2.6) (1.85,1.9,1.95)");
   }
 
-  INFO("StoredInfo From Upper Bound") {
+  {
+    INFO("StoredInfo From Upper Bound");
     constexpr size_t mdp1 = 1;
     std::vector<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
         FunctionOfTimeHelpers::StoredInfo<mdp1>{

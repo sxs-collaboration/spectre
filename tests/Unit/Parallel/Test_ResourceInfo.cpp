@@ -908,7 +908,7 @@ void test_multi_node_multi_core_large(const gsl::not_null<Gen*> gen) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ResourceInfo", "[Unit][Parallel]") {
-  MAKE_GENERATOR(gen)
+  MAKE_GENERATOR(gen);
   test_singleton_info();
   test_singleton_pack();
   test_tags();

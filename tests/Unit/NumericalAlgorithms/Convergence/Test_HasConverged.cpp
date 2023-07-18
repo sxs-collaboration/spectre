@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
   }
 
   {
-    INFO("HasConverged - MaxIterations")
+    INFO("HasConverged - MaxIterations");
     const Convergence::HasConverged has_converged{criteria, 2, 1., 1.5};
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
@@ -58,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
   }
 
   {
-    INFO("HasConverged - AbsoluteResidual")
+    INFO("HasConverged - AbsoluteResidual");
     const Convergence::HasConverged has_converged{criteria, 1, 0., 1.};
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
   }
 
   {
-    INFO("HasConverged - RelativeResidual")
+    INFO("HasConverged - RelativeResidual");
     const Convergence::HasConverged has_converged{criteria, 1, 1., 2.};
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::RelativeResidual);
@@ -82,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
   }
 
   {
-    INFO("HasConverged - fixed number of iterations incomplete")
+    INFO("HasConverged - fixed number of iterations incomplete");
     const Convergence::HasConverged has_converged{1, 0};
     CHECK_FALSE(has_converged);
     test_serialization(has_converged);
@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
   }
 
   {
-    INFO("HasConverged - fixed number of iterations complete")
+    INFO("HasConverged - fixed number of iterations complete");
     const Convergence::HasConverged has_converged{1, 1};
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::NumIterations);

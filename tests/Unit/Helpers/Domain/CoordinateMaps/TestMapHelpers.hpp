@@ -300,7 +300,7 @@ template <typename Map, typename... Args>
 void test_coordinate_map_argument_types(
     const Map& map, const std::array<double, Map::dim>& test_point,
     const Args&... args) {
-  INFO("Test coordinate map argument types")
+  INFO("Test coordinate map argument types");
   CAPTURE(test_point);
   const auto make_array_data_vector = [](const auto& double_array) {
     std::array<DataVector, Map::dim> result;

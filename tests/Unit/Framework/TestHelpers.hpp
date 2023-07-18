@@ -394,7 +394,7 @@ void test_throw_exception(const ThrowingFunctor& func,
         .seed(MAKE_GENERATOR_seed);                                     \
     return MakeString{} << MAKE_GENERATOR_seed << " from " __FILE__ ":" \
                         << __LINE__;                                    \
-  }())
+  }());
 
 /*!
  * \ingroup TestingFrameworkGroup
