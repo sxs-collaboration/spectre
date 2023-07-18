@@ -21,6 +21,8 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace h5 {
+
 void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
                 const std::string& output);
+
 }  // namespace h5

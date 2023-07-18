@@ -15,6 +15,7 @@ spectre_python_add_module(
   VolumeData.cpp
   PYTHON_FILES
   __init__.py
+  CombineH5.py
   DeleteSubfiles.py
   ExtendConnectivityData.py
   ExtractDatFromH5.py

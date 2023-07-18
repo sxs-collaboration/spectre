@@ -46,7 +46,7 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
   }
   return total_elements;
 }
-}  // namespace
+}
 namespace h5 {
 
 void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
