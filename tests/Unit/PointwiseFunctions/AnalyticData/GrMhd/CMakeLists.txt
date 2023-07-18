@@ -33,6 +33,8 @@ target_link_libraries(
   ErrorHandling
   GrMhdAnalyticData
   Hydro
+  LinearOperators
   Options
+  Spectral
   Utilities
 )

@@ -11,5 +11,12 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticData/Burgers"
   "${LIBRARY_SOURCES}"
-  "BurgersAnalyticData;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  BurgersAnalyticData
+  Utilities
   )

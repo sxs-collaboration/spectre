@@ -11,7 +11,13 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/NonlinearSolver/NewtonRaphson"
   "${LIBRARY_SOURCES}"
-  "ParallelNonlinearSolver"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ParallelNonlinearSolver
   )
 
 set(INTEGRATION_TEST_LINK_LIBRARIES

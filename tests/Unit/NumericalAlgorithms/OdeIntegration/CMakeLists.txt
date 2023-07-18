@@ -11,5 +11,12 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/OdeIntegration/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  OdeIntegration
   )

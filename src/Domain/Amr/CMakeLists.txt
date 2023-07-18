@@ -36,6 +36,8 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   Utilities
+  PUBLIC
+  Boost::boost
   )
 
 add_subdirectory(Tags)

@@ -24,10 +24,12 @@ add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/Limiters/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Limiters"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  Boost::boost
+  Limiters
   )

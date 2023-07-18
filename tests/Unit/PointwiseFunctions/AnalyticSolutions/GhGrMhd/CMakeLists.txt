@@ -11,5 +11,15 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GhGrMhd"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativitySolutions;GhGrMhdSolutions;GrMhdSolutions;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  GeneralRelativitySolutions
+  GhGrMhdSolutions
+  GrMhdSolutions
+  Options
+  Utilities
   )

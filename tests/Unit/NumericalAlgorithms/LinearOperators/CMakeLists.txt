@@ -20,12 +20,20 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearOperators/"
   "${LIBRARY_SOURCES}"
-  "DiscontinuousGalerkin;ErrorHandling;LinearOperators;MathFunctions;Spectral;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  DiscontinuousGalerkin
+  Domain
+  ErrorHandling
+  LinearOperators
+  MathFunctions
+  Spectral
+  Utilities
   )
 
 add_subdirectory(Python)

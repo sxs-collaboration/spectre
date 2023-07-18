@@ -15,7 +15,18 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Schwarz"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;DomainStructure;LinearSolver;ParallelSchwarz;Spectral"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  DomainStructure
+  LinearSolver
+  ParallelSchwarz
+  Spectral
   )
 
 add_standalone_test(

@@ -12,5 +12,16 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticData/CurvedWaveEquation/"
   "${LIBRARY_SOURCES}"
-  "CurvedWaveEquationAnalyticData;GeneralRelativitySolutions;GeneralRelativity;MathFunctions;Utilities;WaveEquationSolutions"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CurvedWaveEquationAnalyticData
+  GeneralRelativitySolutions
+  GeneralRelativity
+  MathFunctions
+  Utilities
+  WaveEquationSolutions
   )

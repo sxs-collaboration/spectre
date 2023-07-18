@@ -191,8 +191,3 @@ target_link_libraries(
   SystemUtilities
   Utilities
 )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

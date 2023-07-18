@@ -16,5 +16,11 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/NewtonianEuler/Limiters"
   "${LIBRARY_SOURCES}"
-  "NewtonianEulerLimiters"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  NewtonianEulerLimiters
   )

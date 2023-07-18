@@ -28,8 +28,3 @@ target_link_libraries(
   DataStructures
   DomainStructure
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

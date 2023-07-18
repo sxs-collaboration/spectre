@@ -13,5 +13,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/Elasticity/ConstitutiveRelations"
   "${LIBRARY_SOURCES}"
-  "ConstitutiveRelations;DataStructures;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ConstitutiveRelations
+  DataStructures
+  Utilities
   )

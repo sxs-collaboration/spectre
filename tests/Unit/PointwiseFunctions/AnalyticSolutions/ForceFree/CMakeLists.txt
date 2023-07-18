@@ -12,5 +12,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/ForceFree"
   "${LIBRARY_SOURCES}"
-  "ForceFreeSolutions;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ForceFreeSolutions
+  Options
+  Utilities
   )

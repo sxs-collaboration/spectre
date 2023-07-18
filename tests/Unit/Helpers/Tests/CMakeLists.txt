@@ -22,6 +22,7 @@ target_link_libraries(
   DataStructures
   DataStructuresHelpers
   GeneralRelativityHelpers
+  Utilities
   )
 
 add_subdirectory(Domain)

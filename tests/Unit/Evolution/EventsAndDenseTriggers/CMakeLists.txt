@@ -14,10 +14,18 @@ add_test_library(
   ${LIBRARY}
   "Evolution/EventsAndDenseTriggers/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DenseTriggerHelpers;EventsAndDenseTriggers;EventsAndTriggers;Options;Parallel;Time;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  DenseTriggerHelpers
+  EventsAndDenseTriggers
+  EventsAndTriggers
+  Options
+  Parallel
+  Time
+  Utilities
   )

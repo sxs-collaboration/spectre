@@ -11,7 +11,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/BoundaryConditions"
   "${LIBRARY_SOURCES}"
-  "EvolutionBoundaryConditions"
+  ""
   )
 
 target_link_libraries(

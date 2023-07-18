@@ -36,8 +36,3 @@ target_link_libraries(
   GeneralRelativitySolutions
   Interpolation
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

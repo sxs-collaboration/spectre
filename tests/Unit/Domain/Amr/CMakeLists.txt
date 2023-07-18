@@ -24,8 +24,13 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Amr
+  Boost::boost
+  DataStructures
+  DataStructuresHelpers
   DomainAmrHelpers
+  DomainHelpers
   DomainStructure
   DomainStructureHelpers
+  ErrorHandling
   Utilities
   )

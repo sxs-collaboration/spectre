@@ -15,11 +15,11 @@ add_test_library(
   ${LIBRARY}
   "ErrorHandling"
   "${LIBRARY_SOURCES}"
-  "ErrorHandling"
+  ""
   )
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC
-  Framework
+  PRIVATE
+  ErrorHandling
   )

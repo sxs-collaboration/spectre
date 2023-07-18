@@ -14,10 +14,16 @@ add_test_library(
   ${LIBRARY}
   "Evolution/VariableFixing/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;VariableFixing"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  Domain
+  Hydro
+  Parallel
+  VariableFixing
+  Utilities
   )

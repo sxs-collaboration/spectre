@@ -11,5 +11,15 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativitySolutions;GhRelativisticEulerSolutions;RelativisticEulerSolutions;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  GeneralRelativitySolutions
+  GhRelativisticEulerSolutions
+  RelativisticEulerSolutions
+  Options
+  Utilities
   )

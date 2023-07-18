@@ -12,5 +12,12 @@ add_test_library(
   ${LIBRARY}
   "Helpers/Tests/IO/Observers"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ObserverHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  ObserverHelpers
   )

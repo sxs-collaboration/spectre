@@ -20,10 +20,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/WaveEquation/"
   "${LIBRARY_SOURCES}"
-  "WaveEquationSolutions;MathFunctions;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  WaveEquationSolutions
+  MathFunctions
+  Utilities
   )

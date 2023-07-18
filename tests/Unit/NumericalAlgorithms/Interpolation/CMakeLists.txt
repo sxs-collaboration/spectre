@@ -41,12 +41,8 @@ target_link_libraries(
   Interpolation
   Logging
   MathFunctions
+  ParallelInterpolation
   RelativisticEulerSolutions
   Spectral
   Utilities
-  )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
   )

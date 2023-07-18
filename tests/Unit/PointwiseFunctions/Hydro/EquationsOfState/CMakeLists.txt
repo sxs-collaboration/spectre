@@ -18,7 +18,14 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/Hydro/EquationsOfState/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Hydro"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Hydro
   )
 
 add_subdirectory(Python)

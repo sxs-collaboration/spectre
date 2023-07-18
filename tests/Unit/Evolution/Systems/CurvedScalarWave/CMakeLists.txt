@@ -50,6 +50,7 @@ target_link_libraries(
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   MathFunctions
+  ObserverHelpers
   ScalarWaveWorldtube
   Utilities
   WaveEquationSolutions
