@@ -12,6 +12,8 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
@@ -66,6 +68,21 @@ void bind_impl(py::module& m) {  // NOLINT
         py::arg("lapse"), py::arg("dt_lapse"), py::arg("shift"),
         py::arg("dt_shift"), py::arg("spatial_metric"),
         py::arg("dt_spatial_metric"), py::arg("phi"));
+
+  m.def("spatial_deriv_of_lapse",
+        static_cast<tnsr::i<DataVector, Dim> (*)(
+            const Scalar<DataVector>&, const tnsr::A<DataVector, Dim>&,
+            const tnsr::iaa<DataVector, Dim>&)>(&::gh::spatial_deriv_of_lapse),
+        py::arg("lapse"), py::arg("spacetime_unit_normal"), py::arg("phi"));
+
+  m.def(
+      "spatial_deriv_of_shift",
+      static_cast<tnsr::iJ<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::AA<DataVector, Dim>&,
+          const tnsr::A<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&)>(
+          &::gh::spatial_deriv_of_shift),
+      py::arg("lapse"), py::arg("inverse_spacetime_metric"),
+      py::arg("spacetime_unit_normal"), py::arg("phi"));
 
   m.def(
       "spatial_ricci_tensor",

@@ -26,6 +26,30 @@ class TestBindings(unittest.TestCase):
             phi,
         )
 
+    def test_spatial_deriv_of_shift(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        inverse_spacetime_metric = tnsr.AA[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.spatial_deriv_of_shift(
+            lapse,
+            inverse_spacetime_metric,
+            spacetime_unit_normal,
+            phi,
+        )
+
+    def test_spatial_deriv_of_lapse(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.spatial_deriv_of_lapse(
+            lapse,
+            spacetime_unit_normal,
+            phi,
+        )
+
     def test_gauge_source(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
