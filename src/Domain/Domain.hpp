@@ -17,8 +17,8 @@
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {

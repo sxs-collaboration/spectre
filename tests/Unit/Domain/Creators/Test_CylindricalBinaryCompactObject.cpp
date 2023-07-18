@@ -28,12 +28,12 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"

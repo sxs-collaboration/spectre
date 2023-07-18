@@ -37,11 +37,11 @@
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/MakeArray.hpp"
 

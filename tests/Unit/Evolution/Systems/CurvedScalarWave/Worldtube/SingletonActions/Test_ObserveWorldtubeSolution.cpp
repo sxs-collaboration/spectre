@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/ExcisionSphere.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ObserveWorldtubeSolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonChare.hpp"
 #include "Framework/ActionTesting.hpp"

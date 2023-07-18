@@ -13,52 +13,56 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 
 namespace Triggers {
 SeparationLessThan::SeparationLessThan(const double separation)
     : separation_(separation) {}
 
 bool SeparationLessThan::operator()(
-    const double time, const ::Domain<3>& domain, const Element<3>& element,
+    const double time, const ::Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
-    const tnsr::I<double, 3, Frame::Grid>& object_center_a,
-    const tnsr::I<double, 3, Frame::Grid>& object_center_b) const {
-  const ElementId<3>& element_id = element.id();
-  const size_t block_id = element_id.block_id();
+    const tnsr::I<double, 3, Frame::Grid>& grid_object_center_a,
+    const tnsr::I<double, 3, Frame::Grid>& grid_object_center_b) const {
+  const std::unordered_map<std::string, ExcisionSphere<3>>& excision_spheres =
+      domain.excision_spheres();
 
-  const Block<3>& block = domain.blocks()[block_id];
+  const auto check_excision_sphere =
+      [&excision_spheres](const std::string& object) {
+        if (excision_spheres.count("ExcisionSphere" + object) != 1) {
+          ERROR(
+              "SeparationLessThan trigger expects an excision sphere named "
+              "'ExcisionSphere"
+              << object
+              << "' in the domain, but there isn't one. Choose a "
+                 "DomainCreator that has this excision sphere.");
+        }
+        if (not excision_spheres.at("ExcisionSphere" + object)
+                    .is_time_dependent()) {
+          ERROR("SeparationLessThan expects ExcisionSphere"
+                << object << " to be time dependent, but it is not.");
+        }
+      };
 
-  tnsr::I<double, 3, Frame::Inertial> inertial_object_center_a{};
-  tnsr::I<double, 3, Frame::Inertial> inertial_object_center_b{};
+  check_excision_sphere(get_output(domain::ObjectLabel::A));
+  check_excision_sphere(get_output(domain::ObjectLabel::B));
 
-  if (block.has_distorted_frame()) {
-    tnsr::I<double, 3, Frame::Distorted> distorted_object_center_a{};
-    tnsr::I<double, 3, Frame::Distorted> distorted_object_center_b{};
+  const auto& grid_to_inertial_map_a =
+      excision_spheres.at("ExcisionSphere" + get_output(domain::ObjectLabel::A))
+          .moving_mesh_grid_to_inertial_map();
+  const auto& grid_to_inertial_map_b =
+      excision_spheres.at("ExcisionSphere" + get_output(domain::ObjectLabel::B))
+          .moving_mesh_grid_to_inertial_map();
 
-    for (size_t i = 0; i < 3; i++) {
-      distorted_object_center_a.get(i) = object_center_a.get(i);
-      distorted_object_center_b.get(i) = object_center_b.get(i);
-    }
-
-    const auto& dist_to_inertial_map =
-        block.moving_mesh_distorted_to_inertial_map();
-
-    inertial_object_center_a = dist_to_inertial_map(distorted_object_center_a,
-                                                    time, functions_of_time);
-    inertial_object_center_b = dist_to_inertial_map(distorted_object_center_b,
-                                                    time, functions_of_time);
-  } else {
-    const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
-
-    inertial_object_center_a =
-        grid_to_inertial_map(object_center_a, time, functions_of_time);
-    inertial_object_center_b =
-        grid_to_inertial_map(object_center_b, time, functions_of_time);
-  }
+  const tnsr::I<double, 3, Frame::Inertial> inertial_object_center_a =
+      grid_to_inertial_map_a(grid_object_center_a, time, functions_of_time);
+  const tnsr::I<double, 3, Frame::Inertial> inertial_object_center_b =
+      grid_to_inertial_map_b(grid_object_center_b, time, functions_of_time);
 
   const tnsr::I<double, 3, Frame::Inertial> position_difference =
       tenex::evaluate<ti::I>(inertial_object_center_a(ti::I) -

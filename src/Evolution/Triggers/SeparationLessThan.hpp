@@ -49,7 +49,11 @@ namespace Triggers {
  *
  * \note This trigger requires that
  * `domain::Tags::ObjectCenter<domain::ObjectLabel::A>` and
- * `domain::Tags::ObjectCenter<domain::ObjectLabel::B>` are in the DataBox.
+ * `domain::Tags::ObjectCenter<domain::ObjectLabel::B>` are in the DataBox. It
+ * also requires that there are two ExcisionSphere%s in the Domain named
+ * `ExcisionSphereA/B` and that these ExcisionSphere%s have had time dependent
+ * maps injected into them. The coordinate maps from these ExcisionSphere%s will
+ * be used to calculate the separation in the inertial frame.
  */
 class SeparationLessThan : public Trigger {
  public:
@@ -74,19 +78,19 @@ class SeparationLessThan : public Trigger {
   explicit SeparationLessThan(double separation);
 
   using argument_tags =
-      tmpl::list<Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
+      tmpl::list<Tags::Time, domain::Tags::Domain<3>,
                  domain::Tags::FunctionsOfTime,
                  domain::Tags::ObjectCenter<domain::ObjectLabel::A>,
                  domain::Tags::ObjectCenter<domain::ObjectLabel::B>>;
 
-  bool operator()(const double time, const ::Domain<3>& domain,
-                  const Element<3>& element,
-                  const std::unordered_map<
-                      std::string,
-                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time,
-                  const tnsr::I<double, 3, Frame::Grid>& object_center_a,
-                  const tnsr::I<double, 3, Frame::Grid>& object_center_b) const;
+  bool operator()(
+      const double time, const ::Domain<3>& domain,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time,
+      const tnsr::I<double, 3, Frame::Grid>& grid_object_center_a,
+      const tnsr::I<double, 3, Frame::Grid>& grid_object_center_b) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

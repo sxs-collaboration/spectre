@@ -12,17 +12,21 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 namespace {
@@ -34,6 +38,7 @@ void check_excision_sphere_work(
   const ExcisionSphere<VolumeDim> excision_sphere(radius, center,
                                                   abutting_directions);
 
+  CHECK_FALSE(excision_sphere.is_time_dependent());
   CHECK(excision_sphere.radius() == radius);
   CHECK(excision_sphere.center() == center);
   CHECK(excision_sphere.abutting_directions() == abutting_directions);
@@ -141,23 +146,50 @@ void test_abutting_direction_shell() {
   }
 }
 
+void test_error() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ExcisionSphere<3>(-2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}},
+                        {}),
+      Catch::Contains(
+          "The ExcisionSphere must have a radius greater than zero."));
+#endif
+}
+
+void test_time_dependent_maps() {
+  using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>));
+  std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>
+      time_dep_map = std::make_unique<
+          domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>>(
+          TranslationMap{"DuckDuckGoose"});
+
+  ExcisionSphere<3> excision_sphere{
+      1.0, tnsr::I<double, 3, Frame::Grid>{{0.0, 0.0, 0.0}}, {}};
+
+  CHECK_FALSE(excision_sphere.is_time_dependent());
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(excision_sphere.moving_mesh_grid_to_inertial_map(),
+                    Catch::Contains("Trying to access grid to inertial map "
+                                    "from ExcisionSphere, but it has "
+                                    "not been set."));
+#endif
+
+  excision_sphere.inject_time_dependent_maps(time_dep_map->get_clone());
+  test_serialization(excision_sphere);
+  CHECK(excision_sphere.is_time_dependent());
+  CHECK(excision_sphere.moving_mesh_grid_to_inertial_map() == *time_dep_map);
+  test_copy_semantics(excision_sphere);
+}
+
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.ExcisionSphere", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.ExcisionSphere", "[Domain][Unit]") {
   check_excision_sphere_1d();
   check_excision_sphere_2d();
   check_excision_sphere_3d();
   test_abutting_direction_shell();
-}
-
-// [[OutputRegex, The ExcisionSphere must have a radius greater than zero.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ExcisionSphereAssert",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_excision_sphere = ExcisionSphere<3>(
-      -2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}}, {});
-  static_cast<void>(failed_excision_sphere);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  test_error();
+  test_time_dependent_maps();
 }

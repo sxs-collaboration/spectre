@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
-#include "Domain/Structure/ExcisionSphere.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeSpacetimeTags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
