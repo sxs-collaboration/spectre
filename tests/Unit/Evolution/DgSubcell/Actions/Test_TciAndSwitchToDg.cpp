@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <boost/functional/hash.hpp>
-#include <catch.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>

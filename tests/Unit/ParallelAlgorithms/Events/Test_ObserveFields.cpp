@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <catch.hpp>
 #include <cstddef>
 #include <memory>
 #include <numeric>
