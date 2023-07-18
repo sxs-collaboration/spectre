@@ -82,18 +82,19 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_from_spec(
 #ifdef SPECTRE_DEBUG
       const auto component_name =
           tensor.component_name(tensor.get_tensor_index(component_i));
-      if constexpr (tensor.rank() == 1) {
+      if constexpr (std::decay_t<decltype(tensor)>::rank() == 1) {
         const std::array<std::string, 3> spec_component_order{{"x", "y", "z"}};
         ASSERT(component_name == gsl::at(spec_component_order, component_i),
                "Unexpected Tensor component order. Expected "
                    << spec_component_order);
-      } else if constexpr (tensor.rank() == 2 and tensor.size() == 6) {
+      } else if constexpr (std::decay_t<decltype(tensor)>::rank() == 2 and
+                           std::decay_t<decltype(tensor)>::size() == 6) {
         const std::array<std::string, 6> spec_component_order{
             {"xx", "yx", "zx", "yy", "zy", "zz"}};
         ASSERT(component_name == gsl::at(spec_component_order, component_i),
                "Unexpected Tensor component order. Expected "
                    << spec_component_order);
-      } else if constexpr (tensor.rank() > 0) {
+      } else if constexpr (std::decay_t<decltype(tensor)>::rank() > 0) {
         ASSERT(
             false,
             "Unsupported Tensor type for SpEC import. Only scalars, "
