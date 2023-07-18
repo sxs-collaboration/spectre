@@ -5,11 +5,13 @@ import os
 import unittest
 
 import numpy as np
+from click.testing import CliRunner
 
 import spectre.IO.H5 as spectre_h5
 from spectre import Informer
 from spectre.DataStructures import DataVector
 from spectre.IO.H5 import ElementVolumeData, TensorComponent, combine_h5
+from spectre.IO.H5.CombineH5 import combine_h5_command
 from spectre.Spectral import Basis, Quadrature
 
 
@@ -38,7 +40,7 @@ class TestCombineH5(unittest.TestCase):
 
         # Initializing attributes
         grid_names1 = ["[B0(L0I0,L0I0,L1I0)]"]
-        grid_names2 = ["[B0(L1I0,L0I0,L0I0)]"]
+        grid_names2 = ["[B1(L1I0,L0I0,L0I0)]"]
         observation_values = {0: 7.0, 1: 1.3}
         basis = Basis.Legendre
         quad = Quadrature.Gauss
@@ -46,7 +48,12 @@ class TestCombineH5(unittest.TestCase):
 
         # Writing ElementVolume data and TensorComponent Data to first file
         self.h5_file1 = spectre_h5.H5File(file_name=self.file_name1, mode="a")
-        self.tensor_component_data1 = np.array([[0.0], [0.3], [0.6]])
+        self.tensor_component_data1 = np.array(
+            [
+                [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
+                [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08],
+            ]
+        )
         self.h5_file1.insert_vol("/element_data", version=0)
         self.h5_file1.close_current_object()
         self.vol_file1 = self.h5_file1.get_vol(path="/element_data")
@@ -60,7 +67,7 @@ class TestCombineH5(unittest.TestCase):
                     ),
                     TensorComponent(
                         "field_2",
-                        DataVector(self.tensor_component_data1[i + 1]),
+                        DataVector(self.tensor_component_data1[i]),
                     ),
                 ],
                 extents=3 * [2],
@@ -89,7 +96,12 @@ class TestCombineH5(unittest.TestCase):
 
         # Writing ElementVolume data and TensorComponent Data to second file
         self.h5_file2 = spectre_h5.H5File(file_name=self.file_name2, mode="a")
-        self.tensor_component_data2 = np.array([[1.0], [0.13], [0.16]])
+        self.tensor_component_data2 = np.array(
+            [
+                [0.1, 0.12, 0.22, 0.32, 0.42, 0.52, 0.62, 0.72],
+                [0.011, 0.021, 0.031, 0.041, 0.051, 0.061, 0.079, 0.089],
+            ]
+        )
         self.h5_file2.insert_vol("/element_data", version=0)
         self.h5_file2.close_current_object()
         self.vol_file2 = self.h5_file2.get_vol(path="/element_data")
@@ -103,7 +115,7 @@ class TestCombineH5(unittest.TestCase):
                     ),
                     TensorComponent(
                         "field_2",
-                        DataVector(self.tensor_component_data2[i + 1]),
+                        DataVector(self.tensor_component_data2[i]),
                     ),
                 ],
                 extents=3 * [2],
@@ -138,9 +150,112 @@ class TestCombineH5(unittest.TestCase):
         # Run the combine_h5 command and check if any feature (for eg.
         # connectivity length has increased due to combining two files)
 
-        combine_h5(self.file_name1[:-4], "element_data", self.output_file)
+        combine_h5(
+            self.file_name1[:-4], "element_data", self.output_file, False
+        )
         h5_output = spectre_h5.H5File(
-            file_name=self.output_file + "0.h5", mode="a"
+            file_name=self.output_file + "0.h5", mode="r"
+        )
+        output_vol = h5_output.get_vol(path="/element_data")
+
+        # Test observation ids
+
+        actual_obs_ids = output_vol.list_observation_ids()
+        actual_obs_ids.sort()
+
+        expected_obs_ids = [0, 1]
+
+        self.assertEqual(actual_obs_ids, expected_obs_ids)
+
+        # Test observation values
+
+        obs_id = actual_obs_ids[0]
+
+        actual_obs_value = output_vol.get_observation_value(obs_id)
+        expected_obs_value = 7.0
+
+        self.assertEqual(actual_obs_value, expected_obs_value)
+
+        # Test tensor components
+
+        actual_tensor_component_names = output_vol.list_tensor_components(
+            obs_id
+        )
+
+        expected_tensor_component_names = ["field_1", "field_2"]
+
+        self.assertEqual(
+            actual_tensor_component_names, expected_tensor_component_names
+        )
+
+        expected_tensor_components = np.array(
+            [
+                (
+                    0,
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.5,
+                    0.6,
+                    0.7,
+                    0.1,
+                    0.12,
+                    0.22,
+                    0.32,
+                    0.42,
+                    0.52,
+                    0.62,
+                    0.72,
+                ),
+                (
+                    0.01,
+                    0.02,
+                    0.03,
+                    0.04,
+                    0.05,
+                    0.06,
+                    0.07,
+                    0.08,
+                    0.011,
+                    0.021,
+                    0.031,
+                    0.041,
+                    0.051,
+                    0.061,
+                    0.079,
+                    0.089,
+                ),
+            ]
+        )
+        for i in range(len(expected_tensor_components)):
+            value = (
+                output_vol.get_tensor_component(
+                    i, actual_tensor_component_names[i]
+                ).data
+                == expected_tensor_components[i]
+            )
+            self.assertEqual(value, True)
+
+    def test_cli(self):
+        # Checks if the CLI for CombineH5 runs properly
+        runner = CliRunner()
+        result = runner.invoke(
+            combine_h5_command,
+            [
+                "--file-prefix",
+                self.file_name1[:-4],
+                "-d",
+                "element_data",
+                "-o",
+                self.output_file,
+                "--check-src",
+            ],
+            catch_exceptions=False,
+        )
+
+        h5_output = spectre_h5.H5File(
+            file_name=self.output_file + "0.h5", mode="r"
         )
         output_vol = h5_output.get_vol(path="/element_data")
 
@@ -153,6 +268,24 @@ class TestCombineH5(unittest.TestCase):
         ).data
 
         assert len(self.initial_h5_connectivity) < len(final_h5_connectivity)
+        self.assertEqual(result.exit_code, 0, result.output)
+
+    def test_cli2(self):
+        # Checks that if no subfile name is given, the CLI prints
+        # available subfiles correctly
+        runner = CliRunner()
+        result = runner.invoke(
+            combine_h5_command,
+            [
+                "--file-prefix",
+                self.file_name1[:-4],
+                "-o",
+                self.output_file,
+                "--check-src",
+            ],
+            catch_exceptions=False,
+        )
+        assert result.output is not None
 
 
 if __name__ == "__main__":

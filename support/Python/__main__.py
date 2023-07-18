@@ -21,6 +21,7 @@ class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "clean-output",
+            "combine-h5",
             "delete-subfiles",
             "extend-connectivity",
             "extract-dat",
@@ -44,6 +45,10 @@ class Cli(click.MultiCommand):
             from spectre.tools.CleanOutput import clean_output_command
 
             return clean_output_command
+        elif name == "combine-h5":
+            from spectre.IO.H5.CombineH5 import combine_h5_command
+
+            return combine_h5_command
         elif name == "delete-subfiles":
             from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
 

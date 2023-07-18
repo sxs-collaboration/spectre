@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "IO/H5/CombineH5.hpp"
+
 #include <boost/program_options.hpp>
 #include <cstddef>
 #include <cstdlib>
@@ -46,11 +48,11 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
   }
   return total_elements;
 }
-}
+} //namespace
 namespace h5 {
 
 void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
-                const std::string& output) {
+                const std::string& output, const bool check_src) {
   // Parses for and stores all input files to be looped over
   const std::vector<std::string>& file_names =
       file_system::glob(file_prefix + "[0-9]*.h5");
@@ -58,10 +60,12 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
                    std::string{MakeString{} << file_names}.c_str());
 
   // Checks that volume data was generated with identical versions of SpECTRE
-  if (!h5::check_src_files_match(file_names)) {
+  if (check_src){
+    if (!h5::check_src_files_match(file_names)) {
     ERROR(
         "One or more of your files were found to have differing src.tar.gz "
         "files, meaning that they may be from differing versions of SpECTRE.");
+  }
   }
 
   // Checks that volume data files contain the same observation ids

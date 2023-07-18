@@ -42,12 +42,10 @@ spectre_add_python_bindings_test(
   )
 
 if(${BUILD_PYTHON_BINDINGS})
-  # Test is a bit slow because it writes a bunch of plot files to verify
-  # the argument handling works.
   set_tests_properties(
     "Unit.IO.H5.CombineH5.Python"
     PROPERTIES
-    TIMEOUT 80
+    TIMEOUT 10
     )
 endif()
 
