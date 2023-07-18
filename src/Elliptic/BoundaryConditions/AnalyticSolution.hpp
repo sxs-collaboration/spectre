@@ -15,6 +15,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/FaceNormal.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/BoundaryConditions/Tags.hpp"

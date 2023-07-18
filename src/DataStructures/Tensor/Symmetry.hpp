@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines metafunctions used to comute the Symmetry<...> for a Tensor
+/// Defines metafunctions used to compute the Symmetry<...> for a Tensor
 
 #pragma once
 
