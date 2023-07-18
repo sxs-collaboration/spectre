@@ -20,6 +20,30 @@ class TestBindings(unittest.TestCase):
             inv_metric,
         )
 
+    def test_covariant_deriv_of_extrinsic_curvature(self):
+        extrinsic_curvature = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        spacetime_unit_normal_vector = tnsr.A[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        spatial_christoffel_second_kind = tnsr.Ijj[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        inverse_spacetime_metric = tnsr.AA[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        d_pi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        d_phi = tnsr.ijaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.covariant_deriv_of_extrinsic_curvature(
+            extrinsic_curvature,
+            spacetime_unit_normal_vector,
+            spatial_christoffel_second_kind,
+            inverse_spacetime_metric,
+            phi,
+            d_pi,
+            d_phi,
+        )
+
     def test_deriv_spatial_metric(self):
         phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
         gh.deriv_spatial_metric(
