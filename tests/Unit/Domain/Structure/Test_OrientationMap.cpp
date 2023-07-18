@@ -436,9 +436,9 @@ void test_reference_wrapper() {
 
   // The value of new_points is irrelevant to this test.
   auto new_points = discrete_rotation(rotation, test_points);
-  CHECK(test_points[0] == x_points_proof);
-  CHECK(test_points[1] == y_points_proof);
-  CHECK(test_points[2] == z_points_proof);
+  CHECK(test_points[0].get() == x_points_proof);
+  CHECK(test_points[1].get() == y_points_proof);
+  CHECK(test_points[2].get() == z_points_proof);
 
   const DataVector new_pt{0.0, 0.5, -0.4, 0.0};
   new_points[0] = new_pt;
@@ -446,9 +446,9 @@ void test_reference_wrapper() {
   new_points[2] = new_pt;
 
   // Check that modifying new_points does not modify the test points.
-  CHECK(test_points[0] == x_points_proof);
-  CHECK(test_points[1] == y_points_proof);
-  CHECK(test_points[2] == z_points_proof);
+  CHECK(test_points[0].get() == x_points_proof);
+  CHECK(test_points[1].get() == y_points_proof);
+  CHECK(test_points[2].get() == z_points_proof);
 }
 }  // namespace
 
