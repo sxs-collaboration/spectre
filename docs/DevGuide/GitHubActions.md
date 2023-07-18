@@ -78,6 +78,8 @@ The following build jobs are launched:
   - The file `tests/Unit/RunSingleTest/CMakeLists.txt` wasn't modified
   In addition, the CHECK_FILES job tests Python formatting, the release
   workflow, and other tools in `tools/`.
+* "Check Python formatting" runs the `black` and `isort` formatters over the
+  source code.
 * RUN_CLANG_TIDY runs clang-tidy on the source code. This is done for both
   `Release` and `Debug` builds.
 * TEST_CHECK_FILES runs `tools/CheckFiles.sh --test` which tests the checks
@@ -111,6 +113,9 @@ is useful to perform at least the following tests locally:
   pull request, `make clang-tidy-hash HASH=UPSTREAM_HEAD` where `UPSTREAM_HEAD`
   is the hash of the commit that your pull request is based on, usually the
   `HEAD` of the `upstream/develop` branch.
+- **Python formatting:** Run `black --check .` and `isort --check-only .` over
+  the repository. You can install these tools with `pip3 install -r
+  support/Python/dev_requirements.txt`
 - **Documentation:** To render the documentation for the current state
   of the source tree the command `make doc` (or `make doc-check` to
   highlight warnings) can be used, placing its result in the `docs`

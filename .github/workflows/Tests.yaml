@@ -137,7 +137,9 @@ jobs:
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
+          echo "Using 'black' to check Python formatting..."
           black --check .
+          echo "Using 'isort' to check Python formatting..."
           isort --check-only .
       - name: Test script
         run: |
