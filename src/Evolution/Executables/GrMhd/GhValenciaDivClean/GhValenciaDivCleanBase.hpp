@@ -180,10 +180,15 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/MassWeightedFluidItems.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -415,24 +420,30 @@ struct GhValenciaDivCleanTemplateBase<
           typename system::primitive_variables_tag::tags_list,
           tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                               error_tags>,
-          tmpl::list<hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
-                     hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
-                     hydro::Tags::TildeDUnboundUtCriterionCompute<
-                         DataVector, volume_dim, domain_frame>,
-                     hydro::Tags::MassWeightedCoordsCompute<
-                         DataVector, volume_dim, ::domain::ObjectLabel::None,
-                         Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                         Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                         Frame::Inertial>,
-                     gr::Tags::SpacetimeNormalOneFormCompute<
-                         DataVector, volume_dim, domain_frame>,
-                     gr::Tags::SpacetimeNormalVectorCompute<
-                         DataVector, volume_dim, domain_frame>,
-                     gr::Tags::InverseSpacetimeMetricCompute<
-                         DataVector, volume_dim, domain_frame>,
-                     gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
-                     ::Tags::PointwiseL2NormCompute<gh::Tags::GaugeConstraint<
-                         DataVector, volume_dim, domain_frame>>>,
+          tmpl::list<
+              hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
+              hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
+              hydro::Tags::TildeDUnboundUtCriterionCompute<
+                  DataVector, volume_dim, domain_frame>,
+              hydro::Tags::LowerSpatialFourVelocityCompute,
+              hydro::Tags::MassWeightedCoordsCompute<
+                  DataVector, volume_dim, ::domain::ObjectLabel::None,
+                  Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+                  Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+                  Frame::Inertial>,
+              gr::Tags::SpacetimeNormalOneFormCompute<DataVector, volume_dim,
+                                                      domain_frame>,
+              gr::Tags::SpacetimeNormalVectorCompute<DataVector, volume_dim,
+                                                     domain_frame>,
+              gr::Tags::InverseSpacetimeMetricCompute<DataVector, volume_dim,
+                                                      domain_frame>,
+              gr::Tags::Lapse<DataVector>,
+              gr::Tags::Shift<DataVector, volume_dim, domain_frame>,
+              gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
+              gh::Tags::ExtrinsicCurvatureCompute<volume_dim, domain_frame>,
+              gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
+              ::Tags::PointwiseL2NormCompute<gh::Tags::GaugeConstraint<
+                  DataVector, volume_dim, domain_frame>>>,
           tmpl::conditional_t<use_dg_subcell,
                               tmpl::list<evolution::dg::subcell::Tags::
                                              TciStatusCompute<volume_dim>>,
