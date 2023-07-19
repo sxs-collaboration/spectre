@@ -41,6 +41,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  ApparentHorizons
   Boost::boost
   DataStructures
   Domain
@@ -48,9 +49,12 @@ target_link_libraries(
   ErrorHandling
   FiniteDifference
   FunctionsOfTime
+  GSL::gsl
+  Interpolation
   Logging
+  Parallel
   Serialization
-  SizeControlErrors
+  Utilities
   INTERFACE
   Observer
   )

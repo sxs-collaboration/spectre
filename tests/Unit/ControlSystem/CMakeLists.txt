@@ -46,7 +46,6 @@ target_link_libraries(
   ObserverHelpers
   Parallel
   PostNewtonianHelpers
-  SizeControlErrors
   SphericalHarmonics
   Utilities
 )

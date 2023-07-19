@@ -1,10 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY SizeControlErrors)
-
-add_spectre_library(${LIBRARY})
-
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
@@ -29,16 +25,4 @@ spectre_target_headers(
   Error.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
-  )
-
-target_link_libraries(
-  ${LIBRARY}
-  PUBLIC
-  ApparentHorizons
-  Boost::boost
-  DataStructures
-  ErrorHandling
-  GSL::gsl
-  Interpolation
-  Parallel
   )
