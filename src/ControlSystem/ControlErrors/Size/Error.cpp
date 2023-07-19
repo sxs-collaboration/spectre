@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
@@ -213,7 +214,7 @@ ErrorDiagnostics control_error(
       predictor_delta_radius->min_positive_zero_crossing_time(time);
 
   // Update the info, possibly changing the state inside of info.
-  info->state->get_clone()->update(
+  std::string update_message = info->state->get_clone()->update(
       info,
       StateUpdateArgs{min_char_speed, min_comoving_char_speed,
                       control_error_delta_r},
@@ -244,6 +245,7 @@ ErrorDiagnostics control_error(
       info->suggested_time_scale.value_or(0.0),
       info->damping_time,
       control_error_args,
+      std::move(update_message),
       info->discontinuous_change_has_occurred};
 }
 }  // namespace control_system::size

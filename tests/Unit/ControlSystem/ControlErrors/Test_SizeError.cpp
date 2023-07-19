@@ -46,8 +46,8 @@ namespace {
 struct Metavars {
   using const_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
-                 domain::Tags::Domain<3>,
-                 control_system::Tags::WriteDataToDisk>;
+                 domain::Tags::Domain<3>, control_system::Tags::WriteDataToDisk,
+                 control_system::Tags::Verbosity>;
   using observed_reduction_data_tags = tmpl::list<>;
   using component_list = tmpl::list<observers::ObserverWriter<Metavars>>;
   void pup(PUP::er& /*p*/) {}
@@ -186,8 +186,8 @@ void test_size_error_one_step(
                                                {}}}}};
     Parallel::MutableGlobalCache<Metavars> mutable_cache{};
     Parallel::GlobalCache<Metavars> cache{
-        {std::move(functions_of_time), std::move(domain), false, "", "",
-         std::vector<std::string>{}},
+        {std::move(functions_of_time), std::move(domain), false,
+         ::Verbosity::Silent, "", "", std::vector<std::string>{}},
         &mutable_cache};
     using ExcisionQuantities =
         control_system::QueueTags::SizeExcisionQuantities<Frame::Distorted>;
