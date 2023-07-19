@@ -91,6 +91,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Minmod.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -249,8 +250,14 @@ struct EvolutionMetavars {
       tmpl::append<
           typename system::variables_tag::tags_list,
           typename system::primitive_variables_tag::tags_list,
-          tmpl::list<grmhd::ValenciaDivClean::Tags::
-                         ComovingMagneticFieldMagnitudeCompute>,
+          tmpl::list<
+              grmhd::ValenciaDivClean::Tags::
+                  ComovingMagneticFieldMagnitudeCompute,
+              ::Tags::DivVectorCompute<
+                  hydro::Tags::MagneticField<DataVector, volume_dim>,
+                  ::Events::Tags::ObserverMesh<volume_dim>,
+                  ::Events::Tags::ObserverInverseJacobian<
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>>>,
           error_tags,
           tmpl::conditional_t<
               use_dg_subcell,
