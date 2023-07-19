@@ -16,6 +16,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
+#include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -27,7 +28,6 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/Factory.hpp"
@@ -54,6 +54,7 @@
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -187,6 +188,8 @@ struct EvolutionMetavars {
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
+      Actions::MutateApply<
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       tmpl::conditional_t<
@@ -217,7 +220,8 @@ struct EvolutionMetavars {
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
-      Initialization::Actions::GrTagsForHydro<system>,
+      Initialization::Actions::AddSimpleTags<
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>,

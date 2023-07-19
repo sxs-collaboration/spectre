@@ -20,6 +20,7 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
@@ -30,7 +31,6 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
@@ -55,6 +55,7 @@
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -172,6 +173,8 @@ struct EvolutionMetavars {
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
+      Actions::MutateApply<
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       tmpl::conditional_t<
@@ -203,7 +206,8 @@ struct EvolutionMetavars {
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
-      Initialization::Actions::GrTagsForHydro<system>,
+      Initialization::Actions::AddSimpleTags<
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<3, Frame::ElementLogical>>,
