@@ -207,78 +207,68 @@ void test_functionality() {
   averager.clear();
   CHECK_FALSE(static_cast<bool>(averager(t)));
 }
-}  // namespace
 
-// [[OutputRegex, at or before the last time]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdateTwice",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  Averager<2> averager(0.5, false);
+void test_errors() {
+  CHECK_THROWS_WITH(
+      []() {
+        Averager<2> averager(0.5, false);
 
-  averager.update(0.5, {0.0}, {0.1});
-  averager.update(0.5, {0.0}, {0.1});
+        averager.update(0.5, {0.0}, {0.1});
+        averager.update(0.5, {0.0}, {0.1});
+      }(),
+      Catch::Contains("at or before the last time"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Averager<2> averager(0.5, false);
+
+        averager.update(0.5, {0.0}, {0.1});
+        averager.update(0.3, {0.0}, {0.1});
+      }(),
+      Catch::Contains("at or before the last time"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        double t = 0.0;
+        constexpr size_t deriv_order = 2;
+
+        Averager<deriv_order> averager(1.0, false);
+        averager.update(t, {{0.2, 0.3}}, {0.1});
+      }(),
+      Catch::Contains("The number of supplied timescales (1) does not match"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        double t = 0.0;
+        constexpr size_t deriv_order = 2;
+
+        Averager<deriv_order> averager(1.0, false);
+
+        averager.update(t, {0.1}, {0.1});
+        averager.update(t, {{0.2, 0.3}}, {0.1});
+      }(),
+      Catch::Contains(
+          "The number of components in the raw_q provided (2) does"));
+
+  CHECK_THROWS_WITH(Averager<2>(0.0, true),
+                    Catch::Contains("must be positive"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Averager<2> averager(1.0, true);
+        averager.last_time_updated();
+      }(),
+      Catch::Contains("The time history has not been updated yet"));
+
+  CHECK_THROWS_WITH(
+      []() {
+        Averager<2> averager(1.0, true);
+        averager.average_time(0.0);
+      }(),
+      Catch::Contains(
+          "Cannot return averaged values because the averager does not"));
 }
 
-// [[OutputRegex, at or before the last time]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdatePast",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  Averager<2> averager(0.5, false);
-
-  averager.update(0.5, {0.0}, {0.1});
-  averager.update(0.3, {0.0}, {0.1});
-}
-
-// [[OutputRegex, The number of supplied timescales \(1\) does not match]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.WrongSizeTimescales",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-
-  double t = 0.0;
-  constexpr size_t deriv_order = 2;
-
-  Averager<deriv_order> averager(1.0, false);
-  averager.update(t, {{0.2, 0.3}}, {0.1});
-}
-
-// [[OutputRegex, The number of components in the raw_q provided \(2\) does]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.WrongSizeQProvided",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-
-  double t = 0.0;
-  constexpr size_t deriv_order = 2;
-
-  Averager<deriv_order> averager(1.0, false);
-
-  averager.update(t, {0.1}, {0.1});
-  averager.update(t, {{0.2, 0.3}}, {0.1});
-}
-
-// [[OutputRegex, must be positive]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadAvgTimescale",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  Averager<2> averager(0.0, true);
-}
-
-// [[OutputRegex, The time history has not been updated yet]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToLastTimeUpdated",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  Averager<2> averager(1.0, true);
-  averager.last_time_updated();
-}
-
-// [[OutputRegex, Cannot return averaged values because the averager does not]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  Averager<2> averager(1.0, true);
-  averager.average_time(0.0);
-}
-
-namespace {
 template <size_t DerivOrder>
 void test_equality_and_serialization() {
   INFO("Test equality.");
@@ -352,6 +342,7 @@ void test_move() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
+  test_errors();
   {
     INFO("Deriv Order 1");
     test_linear<1>();
