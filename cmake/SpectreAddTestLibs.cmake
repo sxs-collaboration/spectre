@@ -37,8 +37,8 @@ endif()
 # subdirectories of ${CMAKE_SOURCE_DIR}/tests/Unit, e.g. DataStructures
 # for the DataStructures library, or Evolution/Systems/ScalarWave for
 # a ScalarWave library. The source files to the library must be passed
-# as the third argument, and the libraries that the test library needs
-# to link to should be passed as the last argument.
+# as the third argument. The last argument (LINK_LIBS) is deprecated. Use
+# 'target_link_libraries' instead.
 function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
   foreach (SOURCE_FILE ${LIBRARY_SOURCES})
     # We only add source files that actually call SPECTRE_TEST_CASE
@@ -141,6 +141,10 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
   endif(TARGET ${SPECTRE_PCH})
 
   # Add link dependencies
+  if (NOT LINK_LIBS STREQUAL "")
+    message(WARNING "The LINK_LIBS argument to add_test_library is "
+      "deprecated. Please use target_link_libraries instead.")
+  endif()
   target_link_libraries(
     ${LIBRARY}
     PRIVATE
