@@ -13,6 +13,8 @@ enum class ObjectLabel {
   A,
   /// The object along the negative x-axis in the grid frame
   B,
+  /// A third object, typically centered at the origin.
+  C,
   /// This object has no label
   None
 };

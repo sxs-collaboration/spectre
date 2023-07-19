@@ -205,6 +205,11 @@ EventsAndTriggers:
       - MonitorMemory:
           ComponentsToMonitor: All
   - Trigger:
+      SeparationLessThan:
+        Value: 2.0
+    Events:
+      - ObservationAhC
+  - Trigger:
       TimeCompares:
         Comparison: GreaterThan
         Value: 0.02
@@ -240,6 +245,13 @@ ApparentHorizons:
       LMax: *LMax
       Radius: 2.2
       Center: [*XCoordB, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Verbose
+  ObservationAhC:
+    InitialGuess:
+      LMax: 20
+      Radius: 10.0
+      Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
   ControlSystemAhA: *AhA

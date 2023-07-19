@@ -14,6 +14,8 @@ std::string name(const ObjectLabel x) {
     return "A"s;
   } else if (x == ObjectLabel::B) {
     return "B"s;
+  } else if (x == ObjectLabel::C) {
+    return "C"s;
   } else if (x == ObjectLabel::None) {
     return ""s;
   } else {
