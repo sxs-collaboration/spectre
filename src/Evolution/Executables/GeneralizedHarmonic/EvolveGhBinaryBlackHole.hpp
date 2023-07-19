@@ -24,9 +24,8 @@
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Creators/Factory1D.hpp"
-#include "Domain/Creators/Factory2D.hpp"
-#include "Domain/Creators/Factory3D.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
@@ -395,7 +394,10 @@ struct EvolutionMetavars {
                    tmpl::flatten<tmpl::list<
                        control_system::control_system_triggers<control_systems>,
                        DenseTriggers::standard_dense_triggers>>>,
-        tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<
+            DomainCreator<volume_dim>,
+            tmpl::list<::domain::creators::BinaryCompactObject,
+                       ::domain::creators::CylindricalBinaryCompactObject>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
