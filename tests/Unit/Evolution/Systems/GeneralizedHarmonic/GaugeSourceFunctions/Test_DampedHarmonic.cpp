@@ -122,10 +122,10 @@ void wrap_damped_harmonic_rollon(
 
   gh::gauges::damped_harmonic_rollon(
       gauge_h, d4_gauge_h, gauge_h_init, dgauge_h_init, lapse, shift,
-      spacetime_normal_vector, sqrt_det_spatial_metric, inverse_spatial_metric,
-      d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
-      spacetime_metric, pi, phi, time, coords, amp_coef_L1, amp_coef_L2,
-      amp_coef_S, 4, 4, 4, rollon_start_time, rollon_width, sigma_r);
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, time,
+      coords, amp_coef_L1, amp_coef_L2, amp_coef_S, 4, 4, 4, rollon_start_time,
+      rollon_width, sigma_r);
 }
 
 template <size_t SpatialDim, typename Frame>
@@ -163,10 +163,10 @@ void wrap_damped_harmonic(
                                           spacetime_normal_vector, pi, phi);
 
   gh::gauges::damped_harmonic(
-      gauge_h, d4_gauge_h, lapse, shift, spacetime_normal_vector,
-      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-      half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
-      coords, amp_coef_L1, amp_coef_L2, amp_coef_S, 4, 4, 4, sigma_r);
+      gauge_h, d4_gauge_h, lapse, shift, sqrt_det_spatial_metric,
+      inverse_spatial_metric, d4_spacetime_metric, half_pi_two_normals,
+      half_phi_two_normals, spacetime_metric, phi, coords, amp_coef_L1,
+      amp_coef_L2, amp_coef_S, 4, 4, 4, sigma_r);
 }
 
 // Compare with Python implementation
@@ -269,28 +269,25 @@ void test_derived_class(const Mesh<Dim>& mesh) {
   dynamic_cast<const gh::gauges::DampedHarmonic&>(*gauge_condition)
       .gauge_and_spacetime_derivative(
           make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
-          spacetime_normal_vector, sqrt_det_spatial_metric,
-          inverse_spatial_metric, d4_spacetime_metric, half_pi_two_normals,
-          half_phi_two_normals, spacetime_metric, pi, phi, time,
-          inertial_coords);
+          sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+          half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi,
+          time, inertial_coords);
 
   // Used dispatch with defaulted arguments that we don't need for
   // DampedHarmonic gauge.
-  gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h),
-                       lapse, shift, spacetime_normal_vector,
-                       sqrt_det_spatial_metric, inverse_spatial_metric,
-                       d4_spacetime_metric, half_pi_two_normals,
-                       half_phi_two_normals, spacetime_metric, pi, phi, mesh,
-                       time, inertial_coords, {}, *gauge_condition);
+  gh::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, mesh,
+      time, inertial_coords, {}, *gauge_condition);
 
   tnsr::a<DataVector, Dim, Frame::Inertial> expected_gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> expected_d4_gauge_h(num_points);
   gh::gauges::damped_harmonic(
       make_not_null(&expected_gauge_h), make_not_null(&expected_d4_gauge_h),
-      lapse, shift, spacetime_normal_vector, sqrt_det_spatial_metric,
-      inverse_spatial_metric, d4_spacetime_metric, half_pi_two_normals,
-      half_phi_two_normals, spacetime_metric, pi, phi, inertial_coords, 0.5,
-      1.5, 2.5, 2, 4, 6, 100.0);
+      lapse, shift, sqrt_det_spatial_metric, inverse_spatial_metric,
+      d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
+      spacetime_metric, phi, inertial_coords, 0.5, 1.5, 2.5, 2, 4, 6, 100.0);
 
   CHECK_ITERABLE_APPROX(gauge_h, expected_gauge_h);
   CHECK_ITERABLE_APPROX(d4_gauge_h, expected_d4_gauge_h);
