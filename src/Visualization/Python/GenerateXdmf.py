@@ -272,6 +272,7 @@ def generate_xdmf(
     h5files,
     output: str,
     subfile_name: str,
+    relative_paths: bool = True,
     start_time: Optional[float] = None,
     stop_time: Optional[float] = None,
     stride: int = 1,
@@ -292,6 +293,8 @@ def generate_xdmf(
       h5files: List of H5 volume data files.
       output: Output filename. A '.xmf' extension is added if not present.
       subfile_name: Volume data subfile in the H5 files.
+      relative_paths: If True, use relative paths in the XDMF file (default). If
+        False, use absolute paths.
       start_time: Optional. The earliest time at which to start visualizing. The
         start-time value is included.
       stop_time: Optional. The time at which to stop visualizing. The stop-time
@@ -347,6 +350,15 @@ def generate_xdmf(
             ) from err
         topo_dim = int(vol_subfile.attrs["dimension"])
 
+        # Use paths relative to the output file or absolute paths
+        filename_in_output = (
+            os.path.relpath(
+                filename, os.path.dirname(output) if output else None
+            )
+            if relative_paths
+            else os.path.abspath(filename)
+        )
+
         # Sort timesteps by time
         temporal_ids_and_values = sorted(
             [
@@ -382,7 +394,7 @@ def generate_xdmf(
                 _xmf_grid(
                     observation,
                     topo_dim=topo_dim,
-                    filename=filename,
+                    filename=filename_in_output,
                     subfile_name=subfile_name,
                     temporal_id=temporal_id,
                     coordinates=coordinates,
@@ -394,7 +406,7 @@ def generate_xdmf(
                     _xmf_grid(
                         observation,
                         topo_dim=topo_dim,
-                        filename=filename,
+                        filename=filename_in_output,
                         subfile_name=subfile_name,
                         temporal_id=temporal_id,
                         coordinates=coordinates,
@@ -452,6 +464,12 @@ def generate_xdmf(
         " a single '.vol' subfile, choose that. Otherwise, list all '.vol'"
         " subfiles and exit."
     ),
+)
+@click.option(
+    "--relative-paths/--absolute-paths",
+    default=True,
+    show_default=True,
+    help="Use relative paths or absolute paths in the XDMF file.",
 )
 @click.option(
     "--stride", default=1, type=int, help="View only every stride'th time step"
