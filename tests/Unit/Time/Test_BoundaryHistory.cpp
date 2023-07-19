@@ -5,11 +5,13 @@
 
 #include <cstddef>
 #include <limits>
+#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/Slab.hpp"
@@ -22,8 +24,13 @@ namespace {
 using BoundaryHistoryType =
     TimeSteppers::BoundaryHistory<std::string, std::vector<int>, double>;
 
-TimeStepId make_time_id(const double t) {
-  return {true, 0, Slab(t, t + 0.5).start()};
+TimeStepId make_time_id(const double t, const uint64_t substep = 0) {
+  const Slab slab(t, t + 0.5);
+  if (substep == 0) {
+    return {true, 0, slab.start()};
+  } else {
+    return {true, 0, slab.start(), substep, slab.duration(), t + 0.25};
+  }
 }
 
 // Check the expected state at one particular point in the test.
@@ -361,9 +368,231 @@ void test_boundary_history() {
     CHECK(const_history.remote().empty());
   }
 }
+
+struct CacheCheck {
+  static void add(const std::pair<double, double>& entry) { ++entries[entry]; }
+
+  static void remove(const std::pair<double, double>& entry) {
+    --entries[entry];
+    if (entries[entry] == 0) {
+      entries.erase(entry);
+    }
+  }
+
+  static size_t count() {
+    size_t result = 0;
+    for (const auto& entry : entries) {
+      result += entry.second;
+    }
+    return result;
+  }
+
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static std::map<std::pair<double, double>, size_t> entries;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+std::map<std::pair<double, double>, size_t> CacheCheck::entries{};
+
+struct CacheCheckEntry {
+  std::pair<double, double> value;
+
+  CacheCheckEntry() = delete;
+
+  CacheCheckEntry(const CacheCheckEntry& other) : value(other.value) {
+    CacheCheck::add(value);
+  }
+
+  CacheCheckEntry& operator=(const CacheCheckEntry& other) {
+    CacheCheck::remove(value);
+    value = other.value;
+    CacheCheck::add(value);
+    return *this;
+  }
+
+  ~CacheCheckEntry() { CacheCheck::remove(value); }
+
+  CacheCheckEntry(const double local, const double remote)
+      : value(local, remote) {
+    CacheCheck::add(value);
+  }
+};
+
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+// Warns about missing definition.  Function only used in unevaluated context.
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+#if defined(__clang__) and __clang__ < 17
+#pragma GCC diagnostic push
+// Warning is broken.  See various LLVM bugs.
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
+MathWrapper<double> make_math_wrapper(gsl::not_null<CacheCheckEntry*> entry);
+#if defined(__clang__) and __clang__ < 17
+#pragma GCC diagnostic pop
+#endif
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+MathWrapper<const double> make_math_wrapper(const CacheCheckEntry& entry) {
+  // Doesn't matter.  Result never used.
+  return ::make_math_wrapper(entry.value.first);
+}
+
+// The template parameter has no particular meaning, it just swaps the
+// fairly arbitrary choices of which side to operator on in each
+// place.
+template <bool SwapSides>
+void test_substeps() {
+  struct Coupling {
+    CacheCheckEntry operator()(double a, double b) const {
+      if (SwapSides) {
+        std::swap(a, b);
+      }
+      call.emplace(a, b);
+      return {a, b};
+    }
+
+    // NOLINTNEXTLINE(spectre-mutable)
+    mutable std::optional<std::pair<double, double>> call{};
+  };
+
+  Coupling coupling{};
+  TimeSteppers::BoundaryHistory<double, double, CacheCheckEntry> history{};
+  auto [side1, side2] = [&history]() {
+    if constexpr (SwapSides) {
+      return std::pair{history.remote(), history.local()};
+    } else {
+      return std::pair{history.local(), history.remote()};
+    }
+  }();
+
+  const auto real_evaluator = history.evaluator(std::as_const(coupling));
+  const auto evaluator = [&real_evaluator](const TimeStepId& a,
+                                           const TimeStepId& b) {
+    if (SwapSides) {
+      return real_evaluator(b, a);
+    } else {
+      return real_evaluator(a, b);
+    }
+  };
+
+  side1.insert(make_time_id(0.0), 5, 0.0);
+  side1.insert(make_time_id(0.0, 1), 5, 0.5);
+  side1.insert(make_time_id(1.0), 5, 1.0);
+
+  CHECK(side1.size() == 2);
+  CHECK(side1[0] == make_time_id(0.0));
+  CHECK(side1[{0, 0}] == make_time_id(0.0));
+  CHECK(side1[{0, 1}] == make_time_id(0.0, 1));
+  CHECK(side1.number_of_substeps(0) == 2);
+  CHECK(side1.number_of_substeps(1) == 1);
+  CHECK(side1.number_of_substeps(make_time_id(0.0)) == 2);
+  CHECK(side1.number_of_substeps(make_time_id(0.0, 1)) == 2);
+  CHECK(side1.integration_order(make_time_id(0.0)) == 5);
+  CHECK(side1.integration_order(make_time_id(0.0, 1)) == 5);
+  CHECK(side1.data(make_time_id(0.0, 1)) == 0.5);
+
+  side1.insert(make_time_id(1.0, 1), 5, 1.5);
+
+  side2.insert(make_time_id(0.0), 5, 0.0);
+  side2.insert(make_time_id(0.0, 1), 5, 0.5);
+  side2.insert(make_time_id(1.0), 5, 1.0);
+  side2.insert(make_time_id(1.0, 1), 5, 1.5);
+
+  evaluator(make_time_id(0.0), make_time_id(0.0));
+  CHECK(coupling.call == std::pair{0.0, 0.0});
+  coupling.call.reset();
+  evaluator(make_time_id(0.0), make_time_id(1.0, 1));
+  CHECK(coupling.call == std::pair{0.0, 1.5});
+  coupling.call.reset();
+  evaluator(make_time_id(0.0, 1), make_time_id(1.0, 1));
+  CHECK(coupling.call == std::pair{0.5, 1.5});
+  coupling.call.reset();
+  evaluator(make_time_id(1.0, 0), make_time_id(1.0, 1));
+  CHECK(coupling.call == std::pair{1.0, 1.5});
+  coupling.call.reset();
+  // Repeat
+  evaluator(make_time_id(1.0, 0), make_time_id(1.0, 1));
+  CHECK(not coupling.call.has_value());
+  coupling.call.reset();
+
+  CHECK(CacheCheck::count() == 4);
+  side1.pop_front();
+  CHECK(CacheCheck::count() == 1);
+
+  {
+    const std::string expected_1_without_data =
+        " Time: 0:Slab[1,1.5]:0/1:0:1 (order 5)\n"
+        " Time: 0:Slab[1,1.5]:0/1:1:1.25\n";
+    const std::string expected_2_without_data =
+        " Time: 0:Slab[0,0.5]:0/1:0:0 (order 5)\n"
+        " Time: 0:Slab[0,0.5]:0/1:1:0.25\n"
+        " Time: 0:Slab[1,1.5]:0/1:0:1 (order 5)\n"
+        " Time: 0:Slab[1,1.5]:0/1:1:1.25\n";
+    const std::string expected_1_with_data =
+        " Time: 0:Slab[1,1.5]:0/1:0:1 (order 5)\n"
+        "  Data: 1\n"
+        " Time: 0:Slab[1,1.5]:0/1:1:1.25\n"
+        "  Data: 1.5\n";
+    const std::string expected_2_with_data =
+        " Time: 0:Slab[0,0.5]:0/1:0:0 (order 5)\n"
+        "  Data: 0\n"
+        " Time: 0:Slab[0,0.5]:0/1:1:0.25\n"
+        "  Data: 0.5\n"
+        " Time: 0:Slab[1,1.5]:0/1:0:1 (order 5)\n"
+        "  Data: 1\n"
+        " Time: 0:Slab[1,1.5]:0/1:1:1.25\n"
+        "  Data: 1.5\n";
+    const std::string expected_without_data =
+        "Local Data:\n" +
+        (SwapSides ? expected_2_without_data : expected_1_without_data) +
+        "Remote Data:\n" +
+        (SwapSides ? expected_1_without_data : expected_2_without_data);
+    const std::string expected_with_data =
+        "Local Data:\n" +
+        (SwapSides ? expected_2_with_data : expected_1_with_data) +
+        "Remote Data:\n" +
+        (SwapSides ? expected_1_with_data : expected_2_with_data);
+
+    CHECK(get_output(history) == expected_with_data);
+    {
+      std::ostringstream ss{};
+      CHECK(&history.print<true>(ss) == &ss);
+      CHECK(ss.str() == expected_with_data);
+    }
+    {
+      std::ostringstream ss{};
+      CHECK(&history.print<false>(ss) == &ss);
+      CHECK(ss.str() == expected_without_data);
+    }
+  }
+
+  side1.insert(make_time_id(2.0), 5, 2.0);
+  side1.insert(make_time_id(2.0, 1), 5, 2.5);
+
+  evaluator(make_time_id(2.0, 0), make_time_id(1.0));
+  CHECK(coupling.call == std::pair{2.0, 1.0});
+  coupling.call.reset();
+  evaluator(make_time_id(2.0, 0), make_time_id(1.0, 1));
+  CHECK(coupling.call == std::pair{2.0, 1.5});
+  coupling.call.reset();
+  evaluator(make_time_id(2.0, 1), make_time_id(1.0, 1));
+  CHECK(coupling.call == std::pair{2.5, 1.5});
+  coupling.call.reset();
+
+  CHECK(CacheCheck::count() == 4);
+  side2.clear_substeps(1);
+  CHECK(CacheCheck::count() == 1);
+  CHECK(CacheCheck::entries.at({2.0, 1.0}) == 1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   test_boundary_history<true>();
   test_boundary_history<false>();
+  test_substeps<false>();
+  test_substeps<true>();
 }
