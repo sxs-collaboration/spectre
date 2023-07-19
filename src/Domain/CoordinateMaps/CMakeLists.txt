@@ -92,6 +92,7 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   GSL::gsl
+  MathFunctions
   RootFinding
   Serialization
   SphericalHarmonics

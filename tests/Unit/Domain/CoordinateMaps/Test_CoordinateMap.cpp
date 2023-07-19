@@ -1098,10 +1098,10 @@ void test_time_dependent_map() {
       make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(affine_map,
                                                                 trans_map);
 
-  CHECK_FALSE(time_dependent_map_first.inv_jacobian_is_time_dependent());
-  CHECK_FALSE(time_dependent_map_first.jacobian_is_time_dependent());
-  CHECK_FALSE(time_dependent_map_second.inv_jacobian_is_time_dependent());
-  CHECK_FALSE(time_dependent_map_second.jacobian_is_time_dependent());
+  CHECK(time_dependent_map_first.inv_jacobian_is_time_dependent());
+  CHECK(time_dependent_map_first.jacobian_is_time_dependent());
+  CHECK(time_dependent_map_second.inv_jacobian_is_time_dependent());
+  CHECK(time_dependent_map_second.jacobian_is_time_dependent());
 
   const tnsr::I<double, 1, Frame::BlockLogical> tnsr_double_logical{{{3.2}}};
   const tnsr::I<DataVector, 1, Frame::BlockLogical> tnsr_datavector_logical{
