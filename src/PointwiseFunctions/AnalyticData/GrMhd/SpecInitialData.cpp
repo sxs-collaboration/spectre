@@ -190,7 +190,7 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
   const auto& lorentz_factor_times_spatial_velocity = cache->get_var(
       *this, hydro::Tags::LorentzFactorTimesSpatialVelocity<DataType, 3>{});
   dot_product(lorentz_factor, u_i, lorentz_factor_times_spatial_velocity);
-  get(*lorentz_factor) += 1.;
+  get(*lorentz_factor) = sqrt(1.0+get(*lorentz_factor));
 }
 
 template <typename DataType>
