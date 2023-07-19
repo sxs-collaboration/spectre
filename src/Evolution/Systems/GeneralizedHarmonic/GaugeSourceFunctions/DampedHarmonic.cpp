@@ -76,14 +76,12 @@ void damped_harmonic_impl(
     const tnsr::ab<DataVector, SpatialDim, Frame>* dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::abb<DataVector, SpatialDim, Frame>& d4_spacetime_metric,
     const Scalar<DataVector>& half_pi_two_normals,
     const tnsr::i<DataVector, SpatialDim, Frame>& half_phi_two_normals,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
@@ -133,11 +131,10 @@ void damped_harmonic_impl(
       ::Tags::Tempab<35, SpatialDim, Frame>,
       ::Tags::Tempa<36, SpatialDim, Frame>,
       ::Tags::Tempab<37, SpatialDim, Frame>, ::Tags::TempScalar<38>,
-      ::Tags::Tempi<39, SpatialDim, Frame>,
-      ::Tags::Tempa<40, SpatialDim, Frame>, ::Tags::TempScalar<41>,
-      ::Tags::Tempa<42, SpatialDim, Frame>, ::Tags::TempScalar<43>,
-      ::Tags::Tempa<44, SpatialDim, Frame>, ::Tags::TempScalar<45>,
-      ::Tags::TempScalar<46>, ::Tags::TempScalar<47>, ::Tags::TempScalar<48>>>
+      ::Tags::Tempa<39, SpatialDim, Frame>, ::Tags::TempScalar<40>,
+      ::Tags::Tempa<41, SpatialDim, Frame>, ::Tags::TempScalar<42>,
+      ::Tags::Tempa<43, SpatialDim, Frame>, ::Tags::TempScalar<44>,
+      ::Tags::TempScalar<45>, ::Tags::TempScalar<46>, ::Tags::TempScalar<47>>>
       buffer(num_points);
   auto& one_over_lapse = get<::Tags::TempScalar<5>>(buffer);
   auto& log_fac_1 = get<::Tags::TempScalar<6>>(buffer);
@@ -452,14 +449,12 @@ void damped_harmonic_rollon(
     const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::abb<DataVector, SpatialDim, Frame>& d4_spacetime_metric,
     const Scalar<DataVector>& half_pi_two_normals,
     const tnsr::i<DataVector, SpatialDim, Frame>& half_phi_two_normals,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
@@ -468,11 +463,10 @@ void damped_harmonic_rollon(
     const double sigma_r) {
   damped_harmonic_impl<true>(
       gauge_h, d4_gauge_h, &gauge_h_init, &dgauge_h_init, lapse, shift,
-      spacetime_unit_normal, sqrt_det_spatial_metric, inverse_spatial_metric,
-      d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
-      spacetime_metric, pi, phi, time, coords, amp_coef_L1, amp_coef_L2,
-      amp_coef_S, exp_L1, exp_L2, exp_S, rollon_start_time, rollon_width,
-      sigma_r);
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, time,
+      coords, amp_coef_L1, amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
+      rollon_start_time, rollon_width, sigma_r);
 }
 
 template <size_t SpatialDim, typename Frame>
@@ -481,24 +475,22 @@ void damped_harmonic(
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::abb<DataVector, SpatialDim, Frame>& d4_spacetime_metric,
     const Scalar<DataVector>& half_pi_two_normals,
     const tnsr::i<DataVector, SpatialDim, Frame>& half_phi_two_normals,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const int exp_L1, const int exp_L2, const int exp_S, const double sigma_r) {
   damped_harmonic_impl<false, SpatialDim, Frame>(
       gauge_h, d4_gauge_h, nullptr, nullptr, lapse, shift,
-      spacetime_unit_normal, sqrt_det_spatial_metric, inverse_spatial_metric,
-      d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
-      spacetime_metric, pi, phi, std::numeric_limits<double>::signaling_NaN(),
-      coords, amp_coef_L1, amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi,
+      std::numeric_limits<double>::signaling_NaN(), coords, amp_coef_L1,
+      amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN(), sigma_r);
 }
@@ -530,8 +522,6 @@ void DampedHarmonic::gauge_and_spacetime_derivative(
         d4_gauge_h,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
-    const tnsr::A<DataVector, SpatialDim, Frame::Inertial>&
-        spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
         inverse_spatial_metric,
@@ -541,17 +531,16 @@ void DampedHarmonic::gauge_and_spacetime_derivative(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
         half_phi_two_normals,
     const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame::Inertial>& phi,
     const double /*time*/,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords)
     const {
-  damped_harmonic(
-      gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal,
-      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-      half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
-      inertial_coords, amplitudes_[0], amplitudes_[1], amplitudes_[2],
-      exponents_[0], exponents_[1], exponents_[2], spatial_decay_width_);
+  damped_harmonic(gauge_h, d4_gauge_h, lapse, shift, sqrt_det_spatial_metric,
+                  inverse_spatial_metric, d4_spacetime_metric,
+                  half_pi_two_normals, half_phi_two_normals, spacetime_metric,
+                  phi, inertial_coords, amplitudes_[0], amplitudes_[1],
+                  amplitudes_[2], exponents_[0], exponents_[1], exponents_[2],
+                  spatial_decay_width_);
 }
 
 // NOLINTNEXTLINE
@@ -566,8 +555,6 @@ PUP::able::PUP_ID DampedHarmonic::my_PUP_ID = 0;
           d4_gauge_h,                                                          \
       const Scalar<DataVector>& lapse,                                         \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,            \
-      const tnsr::A<DataVector, DIM(data), Frame::Inertial>&                   \
-          spacetime_unit_normal,                                               \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
       const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                  \
           inverse_spatial_metric,                                              \
@@ -578,7 +565,6 @@ PUP::able::PUP_ID DampedHarmonic::my_PUP_ID = 0;
           half_phi_two_normals,                                                \
       const tnsr::aa<DataVector, DIM(data), Frame::Inertial>&                  \
           spacetime_metric,                                                    \
-      const tnsr::aa<DataVector, DIM(data), Frame::Inertial>& pi,              \
       const tnsr::iaa<DataVector, DIM(data), Frame::Inertial>& phi,            \
       const double /*time*/,                                                   \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords)  \
@@ -600,8 +586,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const tnsr::ab<DataVector, DIM(data), FRAME(data)>& dgauge_h_init,       \
       const Scalar<DataVector>& lapse,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
-      const tnsr::A<DataVector, DIM(data), FRAME(data)>&                       \
-          spacetime_unit_normal,                                               \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
       const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
           inverse_spatial_metric,                                              \
@@ -610,7 +594,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const Scalar<DataVector>& half_pi_two_normals,                           \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>& half_phi_two_normals, \
       const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
       const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
       const double time,                                                       \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,               \
@@ -623,8 +606,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       gsl::not_null<tnsr::ab<DataVector, DIM(data), FRAME(data)>*> d4_gauge_h, \
       const Scalar<DataVector>& lapse,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
-      const tnsr::A<DataVector, DIM(data), FRAME(data)>&                       \
-          spacetime_unit_normal,                                               \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
       const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
           inverse_spatial_metric,                                              \
@@ -633,7 +614,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const Scalar<DataVector>& half_pi_two_normals,                           \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>& half_phi_two_normals, \
       const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
       const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,               \
       const double amp_coef_L1, const double amp_coef_L2,                      \

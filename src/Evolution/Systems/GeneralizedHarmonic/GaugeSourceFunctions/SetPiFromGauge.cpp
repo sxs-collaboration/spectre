@@ -162,10 +162,9 @@ void SetPiFromGauge<Dim>::apply(
   // Note: we pass in pi to compute d4_gauge_h, but we don't use d4_gauge_h. We
   // actually reset pi from gauge_h below.
   dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
-           spacetime_unit_normal_vector, sqrt_det_spatial_metric,
-           inverse_spatial_metric, d4_spacetime_metric, half_pi_two_normals,
-           half_phi_two_normals, spacetime_metric, *pi, phi, mesh, time,
-           inertial_coords, inverse_jacobian, gauge_condition);
+           sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+           half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi,
+           mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
 
   // Compute lapse and shift time derivatives
   get(dt_lapse) =
