@@ -11,5 +11,14 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Utilities/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DomainStructure
+  Elliptic
+  Utilities
   )

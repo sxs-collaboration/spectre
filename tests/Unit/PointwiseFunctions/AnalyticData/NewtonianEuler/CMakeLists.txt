@@ -13,5 +13,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticData/NewtonianEuler"
   "${LIBRARY_SOURCES}"
-  "NewtonianEulerAnalyticData;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  NewtonianEulerAnalyticData
+  Options
+  Utilities
   )

@@ -59,8 +59,3 @@ target_link_libraries(
   Spectral
   Utilities
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

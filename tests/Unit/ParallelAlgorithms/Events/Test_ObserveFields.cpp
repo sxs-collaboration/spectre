@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <catch.hpp>
 #include <cstddef>
 #include <memory>
 #include <numeric>
@@ -354,7 +353,7 @@ void test_system(
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   {
-    INFO("No Interpolation")
+    INFO("No Interpolation");
     const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
     using system_no_section = ScalarSystem<dg::Events::ObserveFields, void>;
     using system_with_section =
@@ -374,7 +373,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to finer grid")
+    INFO("Interpolate to finer grid");
     const std::string interpolating_mesh_str =
         "  InterpolateToMesh:\n"
         "    Extents: 12\n"
@@ -395,7 +394,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to coarser grid")
+    INFO("Interpolate to coarser grid");
     const std::string interpolating_mesh_str =
         "  InterpolateToMesh:\n"
         "    Extents: 3\n"
@@ -412,7 +411,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to different basis")
+    INFO("Interpolate to different basis");
     const std::string interpolating_mesh_str =
         "  InterpolateToMesh:\n"
         "    Extents: 5\n"
@@ -429,7 +428,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to different quadrature")
+    INFO("Interpolate to different quadrature");
     const std::string interpolating_mesh_str =
         "  InterpolateToMesh:\n"
         "    Extents: 5\n"
@@ -446,7 +445,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to different extents, basis and quadrature")
+    INFO("Interpolate to different extents, basis and quadrature");
     const std::string interpolating_mesh_str =
         "  InterpolateToMesh:\n"
         "    Extents: 8\n"
@@ -463,7 +462,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   }
 
   {
-    INFO("Interpolate to non-uniform mesh")
+    INFO("Interpolate to non-uniform mesh");
     // test nonuniform mesh, these cannot be parsed yet
     const Mesh<2> interpolating_mesh(
         {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},

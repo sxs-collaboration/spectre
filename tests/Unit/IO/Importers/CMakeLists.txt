@@ -28,11 +28,6 @@ target_link_libraries(
   Utilities
   )
 
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )
-
 function(add_algorithm_test TEST_NAME DIM)
   set(TEST_BASE ${TEST_NAME}${DIM}D)
   set(HPP_NAME Test_${TEST_NAME})

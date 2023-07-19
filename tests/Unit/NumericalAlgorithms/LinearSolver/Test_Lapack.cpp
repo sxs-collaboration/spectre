@@ -102,7 +102,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Lapack",
                   "[Unit][NumericalAlgorithms][LinearSolver]") {
   MAKE_GENERATOR(gen);
   {
-    INFO("Test general linear solve on invertible square matrix")
+    INFO("Test general linear solve on invertible square matrix");
     test_square_general_matrix_linear_solve(make_not_null(&gen));
   }
 }

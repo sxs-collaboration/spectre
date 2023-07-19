@@ -12,7 +12,17 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Poisson/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;EllipticTestHelpers;Poisson;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DataStructuresHelpers
+  EllipticTestHelpers
+  Poisson
+  Utilities
   )
 
 add_subdirectory(BoundaryConditions)

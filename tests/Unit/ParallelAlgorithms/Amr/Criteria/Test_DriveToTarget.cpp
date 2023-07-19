@@ -90,7 +90,7 @@ void test(
 SPECTRE_TEST_CASE("Unit.Amr.Criteria.DriveToTarget",
                   "[Unit][ParallelAlgorithms]") {
   {
-    INFO("1D")
+    INFO("1D");
     const std::array target_extents{4_st};
     const std::array target_levels{3_st};
     const std::array flags_at_target{amr::Flag::Join};

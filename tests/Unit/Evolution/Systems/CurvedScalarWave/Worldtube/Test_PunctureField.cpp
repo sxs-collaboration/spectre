@@ -29,7 +29,7 @@ using puncture_vars =
 // tests that the puncture field corresponds to a circular orbit with angular
 // velocity = orbit_radius^(-3/2)
 void test_circular_orbit() {
-  MAKE_GENERATOR(gen)
+  MAKE_GENERATOR(gen);
   // sample 100 random points around the worldtube
   const double orbit_radius = 7.;
   const double orbit_speed = pow(orbit_radius, -1.5);

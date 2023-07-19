@@ -16,10 +16,15 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Initialization/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;Evolution;Hydro;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  Domain
+  Evolution
+  Hydro
+  Utilities
   )

@@ -47,7 +47,7 @@ void check_impl(
       [&python_function_prefix, &random_value_bounds, &member_args_tuple,
        &function_of_time_names, &used_for_size](
           const std::unique_ptr<GhDampingFunc>& gh_damping_function) {
-        INFO("Testing call operator...")
+        INFO("Testing call operator...");
         // Make a lambda that calls the damping function's call operator
         // with a hard-coded FunctionsOfTime, since check_with_random_values
         // cannot convert a FunctionsOfTime into a python type.
@@ -102,8 +102,8 @@ void check_impl(
             damping_function_call_operator_helper, "TestFunctions",
             python_function_prefix + "_call_operator", random_value_bounds,
             member_args_tuple, used_for_size);
-        INFO("Done testing call operator...")
-        INFO("Done\n\n")
+        INFO("Done testing call operator...");
+        INFO("Done\n\n");
       };
 
   helper(in_gh_damping_function);

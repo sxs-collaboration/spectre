@@ -372,7 +372,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   }
 
   {
-    INFO("Override with QuaternionFunctionOfTime")
+    INFO("Override with QuaternionFunctionOfTime");
     const std::unique_ptr<DomainCreator<3>> fake_creator =
         std::make_unique<FakeCreator>();
     const auto& functions_of_time =

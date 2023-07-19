@@ -11,5 +11,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey"
   "${LIBRARY_SOURCES}"
-  "M1Grey;M1GreySolutions;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  M1Grey
+  M1GreySolutions
+  Utilities
   )

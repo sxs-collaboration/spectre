@@ -13,5 +13,14 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/NewtonianEuler/Sources"
   "${LIBRARY_SOURCES}"
-  "NewtonianEulerSources"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  NewtonianEulerSources
+  NewtonianEulerSolutions
+  Utilities
   )

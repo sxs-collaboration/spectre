@@ -24,6 +24,8 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
+  RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers
   Utilities

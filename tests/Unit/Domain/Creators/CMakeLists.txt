@@ -41,5 +41,4 @@ target_link_libraries(
   DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
-  Test_Domain
   )

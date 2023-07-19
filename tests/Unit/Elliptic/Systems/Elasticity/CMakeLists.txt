@@ -12,7 +12,19 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Elasticity/"
   "${LIBRARY_SOURCES}"
-  "ConstitutiveRelations;DataStructures;Domain;Elasticity;LinearOperators;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ConstitutiveRelations
+  DataStructures
+  Domain
+  Elliptic
+  Elasticity
+  LinearOperators
+  Utilities
   )
 
 add_subdirectory(BoundaryConditions)

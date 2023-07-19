@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Robin",
     test_move_semantics(std::move(move_boundary_condition), boundary_condition);
   }
   {
-    INFO("Random-value tests")
+    INFO("Random-value tests");
     pypp::SetupLocalPythonEnvironment local_python_env(
         "Elliptic/Systems/Poisson/BoundaryConditions/");
     pypp::check_with_random_values<3>(

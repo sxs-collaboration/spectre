@@ -50,38 +50,38 @@ void check_impl(
         // need func variable to work around GCC bug
         CallOperatorFunction func{&MathFunc::operator()};
 
-        INFO("Testing call operator...")
+        INFO("Testing call operator...");
         pypp::check_with_random_values<1>(
             func, *math_function, "TestFunctions",
             python_function_prefix + "_call_operator", random_value_bounds,
             member_args_tuple, used_for_size);
-        INFO("Done testing call operator...")
+        INFO("Done testing call operator...");
 
         FirstDerivFunction d_func{&MathFunc::first_deriv};
-        INFO("Testing first derivative...")
+        INFO("Testing first derivative...");
         pypp::check_with_random_values<1>(
             d_func, *math_function, "TestFunctions",
             python_function_prefix + "_first_deriv", random_value_bounds,
             member_args_tuple, used_for_size);
-        INFO("Done testing first derivative...")
+        INFO("Done testing first derivative...");
 
         SecondDerivFunction d2_func{&MathFunc::second_deriv};
-        INFO("Testing second derivative...")
+        INFO("Testing second derivative...");
         pypp::check_with_random_values<1>(
             d2_func, *math_function, "TestFunctions",
             python_function_prefix + "_second_deriv", random_value_bounds,
             member_args_tuple, used_for_size);
-        INFO("Done testing second derivative...")
+        INFO("Done testing second derivative...");
 
         ThirdDerivFunction d3_func{&MathFunc::third_deriv};
-        INFO("Testing third derivative...")
+        INFO("Testing third derivative...");
         pypp::check_with_random_values<1>(
             d3_func, *math_function, "TestFunctions",
             python_function_prefix + "_third_deriv", random_value_bounds,
             member_args_tuple, used_for_size);
-        INFO("Done testing third derivative...")
+        INFO("Done testing third derivative...");
 
-        INFO("Done\n\n")
+        INFO("Done\n\n");
       };
   helper(in_math_function);
   helper(serialize_and_deserialize(in_math_function));

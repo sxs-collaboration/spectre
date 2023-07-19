@@ -1071,7 +1071,7 @@ void test_coordinate_maps_are_identity() {
 }
 
 void test_time_dependent_map() {
-  INFO("Time dependent CoordinateMap")
+  INFO("Time dependent CoordinateMap");
   // define vars for FunctionOfTime::PiecewisePolynomial f(t) = t**2.
   const double initial_time = -1.;
   const double final_time = 4.4;

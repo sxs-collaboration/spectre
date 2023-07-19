@@ -11,5 +11,16 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/DiscontinuousGalerkin/Tags/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;DiscontinuousGalerkin;ErrorHandling;Spectral;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  DiscontinuousGalerkin
+  ErrorHandling
+  Spectral
+  Utilities
   )

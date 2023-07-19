@@ -11,10 +11,13 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/Initialization/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  ErrorHandling
+  Utilities
   )

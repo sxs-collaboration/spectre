@@ -23,11 +23,6 @@ target_link_libraries(
   ParallelLinearSolver
   )
 
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )
-
 set(INTEGRATION_TEST_LINK_LIBRARIES
   # Link against Boost::program_options for now until we have proper
   # dependency handling for header-only libs

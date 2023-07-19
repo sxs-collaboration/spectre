@@ -68,7 +68,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 
 template <size_t Dim>
 void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
-  INFO("test consistency of the curved-scalar-wave upwind flux")
+  INFO("test consistency of the curved-scalar-wave upwind flux");
   std::uniform_real_distribution<> uniform_m11_dist(0.1, 1.);
 
   const size_t num_pts = 3;

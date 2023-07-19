@@ -50,18 +50,19 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Boost::boost
   DataStructures
+  DataStructuresHelpers
   DiscontinuousGalerkin
   Domain
+  DomainStructure
   DgSubcell
   DgSubcellHelpers
   ErrorHandling
+  Evolution
   FiniteDifference
   Parallel
   Spectral
-  )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
+  Time
+  Utilities
   )

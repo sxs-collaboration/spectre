@@ -11,5 +11,11 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Integration/"
   "${LIBRARY_SOURCES}"
-  "Integration"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Integration
   )

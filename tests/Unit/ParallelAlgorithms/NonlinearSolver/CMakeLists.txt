@@ -11,7 +11,15 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/NonlinearSolver/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Utilities;ParallelNonlinearSolver"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Utilities
+  ParallelNonlinearSolver
   )
 
 add_subdirectory(NewtonRaphson)

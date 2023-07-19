@@ -11,5 +11,11 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearAlgebra/"
   "${LIBRARY_SOURCES}"
-  "LinearAlgebra"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  LinearAlgebra
   )

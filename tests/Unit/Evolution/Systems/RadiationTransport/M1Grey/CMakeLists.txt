@@ -20,7 +20,6 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/RadiationTransport/M1Grey/"
   "${LIBRARY_SOURCES}"
-  "M1Grey"
   ""
   )
 
@@ -28,12 +27,12 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DataStructuresHelpers
+  DiscontinuousGalerkin
+  Domain
   M1Grey
   M1GreySolutions
+  Parallel
   Spectral
-  )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
+  Utilities
   )

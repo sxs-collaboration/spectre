@@ -11,5 +11,11 @@ add_test_library(
   ${LIBRARY}
   "Helpers/Tests/PointwiseFunctions/PostNewtonian/"
   "${LIBRARY_SOURCES}"
-  "PostNewtonianHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  PostNewtonianHelpers
   )

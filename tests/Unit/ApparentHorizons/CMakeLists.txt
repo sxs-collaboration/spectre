@@ -41,8 +41,3 @@ target_link_libraries(
   SphericalHarmonicsHelpers
   Utilities
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

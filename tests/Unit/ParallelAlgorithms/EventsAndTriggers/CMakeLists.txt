@@ -13,16 +13,16 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/EventsAndTriggers/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;EventsAndTriggers;ErrorHandling;Time;Utilities"
-  )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
+  ""
   )
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
+  DataStructures
+  EventsAndTriggers
+  ErrorHandling
   Parallel
+  Time
+  Utilities
   )

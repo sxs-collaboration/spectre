@@ -13,5 +13,12 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/"
   "${LIBRARY_SOURCES}"
-  "ScalarAdvectionSolutions;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ScalarAdvectionSolutions
+  Utilities
   )

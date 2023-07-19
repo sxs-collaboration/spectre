@@ -177,13 +177,15 @@ void test_variables_add_slice_to_data() {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
                   "[DataStructures][Unit]") {
-  INFO("Test Variables slice utilities") {
+  {
+    INFO("Test Variables slice utilities");
     test_variables_slice<ComplexDataVector>();
     test_variables_slice<ComplexModalVector>();
     test_variables_slice<DataVector>();
     test_variables_slice<ModalVector>();
   }
-  INFO("Test adding slice values to Variables") {
+  {
+    INFO("Test adding slice values to Variables");
     test_variables_add_slice_to_data<ComplexDataVector>();
     test_variables_add_slice_to_data<ComplexModalVector>();
     test_variables_add_slice_to_data<DataVector>();

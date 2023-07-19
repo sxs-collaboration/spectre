@@ -11,7 +11,13 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Richardson"
   "${LIBRARY_SOURCES}"
-  "ParallelLinearSolver"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ParallelLinearSolver
   )
 
 add_standalone_test(

@@ -14,5 +14,13 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Convergence/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Convergence;DataStructures"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  Convergence
+  DataStructures
   )

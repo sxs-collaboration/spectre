@@ -45,8 +45,3 @@ target_link_libraries(
   Spectral
   Time
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

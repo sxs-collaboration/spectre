@@ -29,5 +29,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions"
   "${LIBRARY_SOURCES}"
-  "AnalyticSolutions;DataStructures;DataStructuresHelpers"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  AnalyticSolutions
+  DataStructures
+  DataStructuresHelpers
+)

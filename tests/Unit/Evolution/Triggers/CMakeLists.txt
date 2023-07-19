@@ -27,8 +27,3 @@ target_link_libraries(
   Options
   Utilities
 )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

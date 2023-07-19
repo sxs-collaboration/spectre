@@ -37,6 +37,7 @@ target_link_libraries(
   DataBoxTestHelpers
   DataStructures
   DataStructuresHelpers
+  DiscontinuousGalerkin
   Domain
   DomainStructure
   FunctionsOfTime

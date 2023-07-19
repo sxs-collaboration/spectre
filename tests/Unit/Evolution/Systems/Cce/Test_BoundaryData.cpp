@@ -131,7 +131,7 @@ void test_trigonometric_function_identities(
   DataVector jacobian_identity{number_of_angular_points};
   const DataVector zero{number_of_angular_points, 0.0};
   {
-    INFO("Jacobian identity")
+    INFO("Jacobian identity");
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         jacobian_identity = cartesian_to_angular_jacobian.get(i, 0) *

@@ -17,10 +17,13 @@ add_test_library(
   ${LIBRARY}
   "Framework/Tests"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;SystemUtilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  Boost::boost
+  DataStructures
+  SystemUtilities
   )

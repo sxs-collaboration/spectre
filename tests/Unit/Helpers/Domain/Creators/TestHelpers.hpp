@@ -76,7 +76,7 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
     {
       INFO(
           "Test block neighbors are never in the same direction as external "
-          "boundaries")
+          "boundaries");
       for (size_t block_id = 0; block_id < block_names.size(); ++block_id) {
         for (const auto& neighbor : blocks[block_id].neighbors()) {
           // external and neighbor directions should never match

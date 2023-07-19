@@ -11,10 +11,20 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Actions/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;DiscontinuousGalerkin;Domain;ErrorHandling;EventsAndDenseTriggers"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  Boost::boost
+  DataStructures
+  DiscontinuousGalerkin
+  Domain
+  ErrorHandling
+  EventsAndDenseTriggers
+  Parallel
+  Time
+  Utilities
   )
+

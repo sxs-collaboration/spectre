@@ -17,5 +17,19 @@ add_test_library(
   ${LIBRARY}
   "Domain/Creators/TimeDependence"
   "${LIBRARY_SOURCES}"
-  "DataStructuresHelpers;DomainHelpers;DomainTimeDependence;Options"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  DataStructuresHelpers
+  DomainHelpers
+  DomainStructure
+  DomainTimeDependence
+  GeneralRelativitySolutions
+  Options
+  Utilities
   )

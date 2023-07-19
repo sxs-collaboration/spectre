@@ -42,8 +42,3 @@ target_link_libraries(
   TimeStepperHelpers
   Utilities
   )
-
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )

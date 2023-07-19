@@ -87,7 +87,7 @@ void test_rotation_matrix_helpers_2d() {
 void test_rotation_matrix_helpers_3d() {
   INFO("Dim = 3");
   {
-    INFO("Rotation about z")
+    INFO("Rotation about z");
     const double omega = 2.0;
     const double check_time = 1.0;
 
@@ -108,7 +108,7 @@ void test_rotation_matrix_helpers_3d() {
   }
 
   {
-    INFO("Rotation about x")
+    INFO("Rotation about x");
     const double omega = 2.0;
     const double check_time = 1.0;
 
@@ -129,7 +129,7 @@ void test_rotation_matrix_helpers_3d() {
   }
 
   {
-    INFO("Rotation about y")
+    INFO("Rotation about y");
     const double omega = 2.0;
     const double check_time = 1.0;
 

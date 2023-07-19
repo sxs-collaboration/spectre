@@ -25,11 +25,6 @@ target_link_libraries(
   ParallelLinearSolver
 )
 
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )
-
 add_standalone_test(
   "Integration.LinearSolver.ConjugateGradientAlgorithm"
   INPUT_FILE "Test_ConjugateGradientAlgorithm.yaml")

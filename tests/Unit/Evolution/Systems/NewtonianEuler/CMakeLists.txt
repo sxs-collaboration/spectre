@@ -53,6 +53,7 @@ target_link_libraries(
   PRIVATE
   CoordinateMaps
   DataStructures
+  DiscontinuousGalerkin
   Domain
   DomainBoundaryConditionsHelpers
   DomainHelpers

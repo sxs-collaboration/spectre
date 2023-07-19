@@ -33,5 +33,18 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Spectral/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Domain;Spectral;SpectralHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  DataStructures
+  DiscontinuousGalerkin
+  Domain
+  ErrorHandling
+  Spectral
+  SpectralHelpers
+  Utilities
   )

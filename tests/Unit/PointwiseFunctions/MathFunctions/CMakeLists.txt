@@ -14,5 +14,16 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/MathFunctions/"
   "${LIBRARY_SOURCES}"
-  "MathFunctions;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  LinearOperators
+  MathFunctions
+  Spectral
+  Utilities
   )

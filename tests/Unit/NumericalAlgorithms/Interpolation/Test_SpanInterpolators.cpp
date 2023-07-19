@@ -91,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
     // Linear interpolator will not get terribly close, but that's okay.
     Approx interpolator_approx = Approx::custom().epsilon(1.0e-2).scale(1.0);
 
-    INFO("testing LinearSpanInterpolator")
+    INFO("testing LinearSpanInterpolator");
     test_interpolator_approximate_fidelity<DataVector>(
         make_not_null(&gen), LinearSpanInterpolator{}, interpolator_approx);
     test_interpolator_approximate_fidelity<ComplexDataVector>(
@@ -125,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
             .epsilon(std::numeric_limits<double>::epsilon() * 1.0e8)
             .scale(1.0);
 
-    INFO("testing CubicSpanInterpolator")
+    INFO("testing CubicSpanInterpolator");
     test_interpolator_approximate_fidelity<DataVector>(
         make_not_null(&gen), CubicSpanInterpolator{}, interpolator_approx);
     test_interpolator_approximate_fidelity<ComplexDataVector>(
@@ -157,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
             .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
             .scale(1.0);
 
-    INFO("testing BarycentricRationalSpanInterpolator")
+    INFO("testing BarycentricRationalSpanInterpolator");
     test_interpolator_approximate_fidelity<DataVector>(
         make_not_null(&gen), BarycentricRationalSpanInterpolator{5u, 6u},
         interpolator_approx);

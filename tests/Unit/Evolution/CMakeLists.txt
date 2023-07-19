@@ -27,5 +27,13 @@ add_test_library(
   ${LIBRARY}
   "Evolution"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Evolution;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  Evolution
+  Utilities
   )

@@ -369,7 +369,7 @@ void test_dg_operator(
                                     all_zero_operator_vars);
   }
   {
-    INFO("Test A(x) = b with analytic solution")
+    INFO("Test A(x) = b with analytic solution");
     std::unordered_map<ElementId<Dim>, Vars> analytic_primal_vars{};
     std::unordered_map<ElementId<Dim>, PrimalFluxesVars>
         analytic_primal_fluxes{};
@@ -393,7 +393,7 @@ void test_dg_operator(
         analytic_solution_operator_approx);
   }
   {
-    INFO("Test A(x) = b with custom x and b")
+    INFO("Test A(x) = b with custom x and b");
     for (const auto& test_data : tests_data) {
       std::apply(apply_operator_and_check_result, test_data);
     }

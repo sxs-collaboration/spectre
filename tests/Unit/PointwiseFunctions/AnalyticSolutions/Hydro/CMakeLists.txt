@@ -11,5 +11,13 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Hydro/"
   "${LIBRARY_SOURCES}"
-  "HydroSolutions;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  HydroSolutions
+  Options
+  Utilities
   )

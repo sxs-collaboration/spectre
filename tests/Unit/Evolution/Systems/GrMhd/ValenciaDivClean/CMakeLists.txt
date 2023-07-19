@@ -54,12 +54,17 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
   DomainBoundaryConditionsHelpers
   DomainHelpers
+  DomainStructure
   Framework
   GeneralRelativityHelpers
   GrMhdAnalyticData
   GrMhdSolutions
+  Hydro
   HydroHelpers
+  Importers
+  Utilities
   ValenciaDivClean
   )

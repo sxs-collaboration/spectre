@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <catch.hpp>
 #include <cstddef>
 #include <optional>
 
