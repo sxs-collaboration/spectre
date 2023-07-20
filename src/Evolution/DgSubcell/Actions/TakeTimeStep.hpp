@@ -67,11 +67,7 @@ struct TakeTimeStep {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-
-    TimeDerivative::apply(
-        make_not_null(&box),
-        db::get<fd::Tags::InverseJacobianLogicalToGrid<Dim>>(box),
-        db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
+    TimeDerivative::apply(make_not_null(&box));
 
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
         [](const auto mortar_data_ptr) {

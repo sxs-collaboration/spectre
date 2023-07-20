@@ -364,7 +364,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<
           NewtonianEuler::subcell::PrimsAfterRollback<volume_dim>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
-          NewtonianEuler::subcell::TimeDerivative>,
+          NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
       Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<

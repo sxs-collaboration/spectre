@@ -22,6 +22,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -48,6 +50,9 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Time/Tags/Time.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace NewtonianEuler {
 namespace {
@@ -60,24 +65,24 @@ auto make_coord_map();
 
 template <>
 auto make_coord_map<1>() {
-  Affine affine_map{-1.0, 1.0, 2.0, 3.0};
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  Affine affine_map{-1.0, 1.0, 1.0, 3.0};
+  return domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       affine_map);
 }
 
 template <>
 auto make_coord_map<2>() {
-  Affine affine_map{-1.0, 1.0, 2.0, 3.0};
+  Affine affine_map{-1.0, 1.0, 1.0, 3.0};
   Affine2D product_map{affine_map, affine_map};
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       product_map);
 }
 
 template <>
 auto make_coord_map<3>() {
-  Affine affine_map{-1.0, 1.0, 2.0, 3.0};
+  Affine affine_map{-1.0, 1.0, 1.0, 3.0};
   Affine3D product_map{affine_map, affine_map, affine_map};
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       product_map);
 }
 
@@ -88,7 +93,7 @@ template <>
 auto make_element<1>() {
   Affine affine_map{-1.0, 1.0, 2.0, 3.0};
   return domain::Initialization::create_initial_element(
-      ElementId<1>{0, {SegmentId{3, 4}}},
+      ElementId<1>{0, {SegmentId{2, 2}}},
       Block<1>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                 Frame::Inertial>(affine_map),
                0,
@@ -100,7 +105,7 @@ template <>
 auto make_element<2>() {
   Affine affine_map{-1.0, 1.0, 2.0, 3.0};
   return domain::Initialization::create_initial_element(
-      ElementId<2>{0, {SegmentId{3, 4}, SegmentId{3, 4}}},
+      ElementId<2>{0, {SegmentId{2, 2}, SegmentId{2, 2}}},
       Block<2>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                 Frame::Inertial>(
                    Affine2D{affine_map, affine_map}),
@@ -113,7 +118,7 @@ template <>
 auto make_element<3>() {
   Affine affine_map{-1.0, 1.0, 2.0, 3.0};
   return domain::Initialization::create_initial_element(
-      ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}},
+      ElementId<3>{0, {SegmentId{2, 2}, SegmentId{2, 2}, SegmentId{2, 2}}},
       Block<3>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                 Frame::Inertial>(
                    Affine3D{affine_map, affine_map, affine_map}),
@@ -154,8 +159,12 @@ std::array<double, 3> test(const size_t num_dg_pts) {
   using solution = typename metavariables::initial_data;
   using eos = typename solution::equation_of_state_type;
   using system = typename metavariables::system;
-  const auto coordinate_map = make_coord_map<dim>();
   const auto element = make_element<dim>();
+  const ElementMap<dim, Frame::Grid> element_map{
+      element.id(), make_coord_map<dim>().get_clone()};
+  const auto grid_to_inertial_map =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<dim>{});
 
   const solution soln = metavariables::solution();
 
@@ -164,7 +173,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const auto cell_centered_coords =
-      coordinate_map(logical_coordinates(subcell_mesh));
+      (*grid_to_inertial_map)(element_map(logical_coordinates(subcell_mesh)));
 
   using prim_tags = typename system::primitive_variables_tag::tags_list;
   Variables<prim_tags> cell_centered_prim_vars{
@@ -190,7 +199,8 @@ std::array<double, 3> test(const size_t num_dg_pts) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=
         2.0 * direction.sign();
-    auto neighbor_coords = coordinate_map(neighbor_logical_coords);
+    auto neighbor_coords =
+        (*grid_to_inertial_map)(element_map(neighbor_logical_coords));
     const auto neighbor_prims =
         soln.variables(neighbor_coords, time, prim_tags{});
     Variables<prims_to_reconstruct_tags> prims_to_reconstruct{
@@ -215,14 +225,17 @@ std::array<double, 3> test(const size_t num_dg_pts) {
         neighbor_data_in_direction;
   }
 
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      dummy_functions_of_time{};
+
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<metavariables>,
           typename metavariables::source_term_tag,
-          ::Tags::AnalyticSolution<solution>,
-          evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>,
-          domain::Tags::Element<dim>, evolution::dg::subcell::Tags::Mesh<dim>,
-          fd::Tags::Reconstructor<dim>,
+          ::Tags::AnalyticSolution<solution>, domain::Tags::Element<dim>,
+          domain::Tags::ElementMap<dim, Frame::Grid>,
+          evolution::dg::subcell::Tags::Mesh<dim>, fd::Tags::Reconstructor<dim>,
           evolution::Tags::BoundaryCorrection<system>,
           hydro::Tags::EquationOfState<eos>,
           typename system::primitive_variables_tag, dt_variables_tag,
@@ -230,11 +243,37 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
           evolution::dg::Tags::MortarData<dim>,
           domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
-                                                      Frame::Inertial>>,
+                                                      Frame::Inertial>,
+          ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize>,
       db::AddComputeTags<
-          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<dim>>>(
+          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<dim>,
+          ::domain::Tags::MappedCoordinates<
+              ::domain::Tags::ElementMap<dim, Frame::Grid>,
+              evolution::dg::subcell::Tags::Coordinates<dim,
+                                                        Frame::ElementLogical>,
+              evolution::dg::subcell::Tags::Coordinates>,
+          evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                            Frame::Inertial>>,
+          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+              ::domain::Tags::ElementMap<dim, Frame::Grid>, dim>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToGridCompute<dim>,
+          evolution::dg::subcell::fd::Tags::
+              InverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      dim, Frame::Grid, Frame::Inertial>,
+                  dim>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      dim, Frame::Grid, Frame::Inertial>,
+                  dim>>>(
       metavariables{}, typename metavariables::source_term_tag::type{}, soln,
-      cell_centered_coords, element, subcell_mesh,
+      element,
+      ElementMap<dim, Frame::Grid>{element_map.element_id(),
+                                   element_map.block_map().get_clone()},
+      subcell_mesh,
       std::unique_ptr<NewtonianEuler::fd::Reconstructor<dim>>{
           std::make_unique<NewtonianEuler::fd::MonotonisedCentralPrim<dim>>()},
       std::unique_ptr<
@@ -245,22 +284,11 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           subcell_mesh.number_of_grid_points()},
       typename variables_tag::type{}, neighbor_data,
       typename evolution::dg::Tags::MortarData<dim>::type{},
-      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-          domain::CoordinateMaps::Identity<dim>{}));
+      grid_to_inertial_map->get_clone(), time,
+      clone_unique_ptrs(dummy_functions_of_time));
   db::mutate_apply<ConservativeFromPrimitive<dim>>(make_not_null(&box));
 
-  InverseJacobian<DataVector, dim, Frame::ElementLogical, Frame::Grid>
-      cell_centered_logical_to_grid_inv_jacobian{};
-  const auto cell_centered_logical_to_inertial_inv_jacobian =
-      coordinate_map.inv_jacobian(logical_coordinates(subcell_mesh));
-  for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
-       ++i) {
-    cell_centered_logical_to_grid_inv_jacobian[i] =
-        cell_centered_logical_to_inertial_inv_jacobian[i];
-  }
-  subcell::TimeDerivative::apply(
-      make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-      determinant(cell_centered_logical_to_grid_inv_jacobian));
+  NewtonianEuler::subcell::TimeDerivative<dim>::apply(make_not_null(&box));
 
   const auto& dt_vars = db::get<dt_variables_tag>(box);
   return {{max(abs(get(get<::Tags::dt<Tags::MassDensityCons>>(dt_vars)))),
@@ -271,6 +299,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
 
 template <typename Metavariables>
 void test_convergence() {
+  CAPTURE(pretty_type::get_name<Metavariables>());
   // This tests sets up a stationary SmoothFlow problem or LaneEmdenStar and
   // verifies that the time derivative vanishes. Or, more specifically, that the
   // time derivative decreases with increasing resolution.
@@ -280,6 +309,9 @@ void test_convergence() {
   const auto eight_pts_data = test<Metavariables>(8);
 
   for (size_t i = 0; i < four_pts_data.size(); ++i) {
+    CAPTURE(i);
+    CAPTURE(gsl::at(four_pts_data, i));
+    CAPTURE(gsl::at(eight_pts_data, i));
     const bool converging =
         gsl::at(eight_pts_data, i) < gsl::at(four_pts_data, i);
     const bool roundoff = gsl::at(eight_pts_data, i) < 1.e-14 and

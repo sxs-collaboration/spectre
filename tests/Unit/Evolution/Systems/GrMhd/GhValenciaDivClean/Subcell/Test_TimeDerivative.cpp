@@ -162,8 +162,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
 
   const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
       cell_centered_logical_to_grid_inv_jacobian =
-          InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>(
-              element_map.inv_jacobian(logical_coords));
+          element_map.inv_jacobian(logical_coords);
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       cell_centered_logical_to_inertial_inv_jacobian =
           InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -186,8 +185,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
 
   const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
       dg_logical_to_grid_inv_jacobian =
-          InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>(
-              element_map.inv_jacobian(logical_coordinates(dg_mesh)));
+          element_map.inv_jacobian(logical_coordinates(dg_mesh));
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       dg_logical_to_inertial_inv_jacobian =
           InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -649,6 +647,11 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       3, Frame::Grid, Frame::Inertial>,
                   3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>,
+                  3>,
           domain::Tags::DetInvJacobianCompute<3, Frame::ElementLogical,
                                               Frame::Inertial>,
           gr::Tags::SpatialMetricCompute<DataVector, 3, Frame::Inertial>,
@@ -673,9 +676,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           domain::CoordinateMaps::Identity<3>{}),
       std::move(domain), std::move(external_boundary_conditions),
       dg_mesh_velocity, div_dg_mesh_velocity,
-      dg_logical_to_inertial_inv_jacobian,
-      dummy_normal_covector_and_magnitude, time,
-      clone_unique_ptrs(functions_of_time), soln, DummyEvolutionMetaVars{},
+      dg_logical_to_inertial_inv_jacobian, dummy_normal_covector_and_magnitude,
+      time, clone_unique_ptrs(functions_of_time), soln,
+      DummyEvolutionMetaVars{},
       // Note: These damping functions all assume Grid==Inertial. We need to
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS
@@ -690,9 +693,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
 
-  subcell::TimeDerivative::apply(
-      make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-      determinant(cell_centered_logical_to_inertial_inv_jacobian));
+  subcell::TimeDerivative::apply(make_not_null(&box));
 
   // We test that the time derivative converges to zero,
   // so we remove the expected value of the time derivative for moving meshes

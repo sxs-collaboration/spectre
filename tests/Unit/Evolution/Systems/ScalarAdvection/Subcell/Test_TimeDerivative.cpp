@@ -106,19 +106,43 @@ void test_subcell_timederivative() {
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_test_solution);
 
-  auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
-      evolved_vars_tag, dt_variables_tag,
-      evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-      fd::Tags::Reconstructor<Dim>,
-      evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
-      domain::Tags::FunctionsOfTimeInitialize,
-      domain::Tags::ElementMap<Dim, Frame::Grid>,
-      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                  Frame::Inertial>,
-      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
-      subcell_velocity_field, subcell_faces_velocity_field,
-      evolution::dg::Tags::MortarData<Dim>>>(
+  auto box = db::create<
+      db::AddSimpleTags<
+          domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
+          evolved_vars_tag, dt_variables_tag,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+          fd::Tags::Reconstructor<Dim>,
+          evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
+          domain::Tags::FunctionsOfTimeInitialize,
+          domain::Tags::ElementMap<Dim, Frame::Grid>,
+          domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                      Frame::Inertial>,
+          subcell_velocity_field, subcell_faces_velocity_field,
+          evolution::dg::Tags::MortarData<Dim>>,
+      db::AddComputeTags<
+          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>,
+          ::domain::Tags::MappedCoordinates<
+              ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+              evolution::dg::subcell::Tags::Coordinates<Dim,
+                                                        Frame::ElementLogical>,
+              evolution::dg::subcell::Tags::Coordinates>,
+          evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>>,
+          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+              ::domain::Tags::ElementMap<Dim, Frame::Grid>, Dim>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToGridCompute<Dim>,
+          evolution::dg::subcell::fd::Tags::
+              InverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      Dim, Frame::Grid, Frame::Inertial>,
+                  Dim>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      Dim, Frame::Grid, Frame::Inertial>,
+                  Dim>>>(
       element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
@@ -134,7 +158,7 @@ void test_subcell_timederivative() {
               domain::CoordinateMaps::Identity<Dim>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{}),
-      logical_coords_subcell, typename subcell_velocity_field::type{},
+      typename subcell_velocity_field::type{},
       std::array<typename subcell_faces_velocity_field::type::value_type,
                  Dim>{},
       typename evolution::dg::Tags::MortarData<Dim>::type{});
@@ -146,23 +170,7 @@ void test_subcell_timederivative() {
   db::mutate_apply<ScalarAdvection::subcell::VelocityAtFace<Dim>>(
       make_not_null(&box));
 
-  {
-    const auto coordinate_map =
-        domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-            domain::CoordinateMaps::Identity<Dim>{});
-    InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>
-        cell_centered_logical_to_grid_inv_jacobian{};
-    const auto cell_centered_logical_to_inertial_inv_jacobian =
-        coordinate_map.inv_jacobian(logical_coords_subcell);
-    for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
-         ++i) {
-      cell_centered_logical_to_grid_inv_jacobian[i] =
-          cell_centered_logical_to_inertial_inv_jacobian[i];
-    }
-    subcell::TimeDerivative<Dim>::apply(
-        make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-        determinant(cell_centered_logical_to_grid_inv_jacobian));
-  }
+  subcell::TimeDerivative<Dim>::apply(make_not_null(&box));
 
   const auto& dt_vars = db::get<dt_variables_tag>(box);
 

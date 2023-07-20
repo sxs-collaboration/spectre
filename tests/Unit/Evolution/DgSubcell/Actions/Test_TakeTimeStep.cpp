@@ -87,12 +87,7 @@ struct Metavariables {
 
   struct TimeDerivative {
     template <typename DbTagsList>
-    static void apply(
-        const gsl::not_null<db::DataBox<DbTagsList>*> box,
-        const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                              Frame::Grid>&
-            cell_centered_logical_to_grid_inv_jacobian,
-        const Scalar<DataVector>& cell_centered_det_inv_jacobian) {
+    static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
       time_derivative_invoked = true;
       CHECK(db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box) ==
             Mesh<Dim>(5, Spectral::Basis::FiniteDifference,
@@ -101,9 +96,6 @@ struct Metavariables {
           db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(*box)
               .inv_jacobian(db::get<evolution::dg::subcell::Tags::Coordinates<
                                 Dim, Frame::ElementLogical>>(*box));
-      CHECK(cell_centered_logical_to_grid_inv_jacobian == inv_jacobian);
-      const auto det_inv_jacobian = determinant(inv_jacobian);
-      CHECK_ITERABLE_APPROX(cell_centered_det_inv_jacobian, det_inv_jacobian);
     }
   };
 };
