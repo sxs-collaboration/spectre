@@ -327,7 +327,7 @@ struct EvolutionMetavars {
               Initialization::Actions::AddSimpleTags<
                   ScalarAdvection::subcell::VelocityAtFace<volume_dim>>,
               Actions::MutateApply<
-                  ScalarAdvection::subcell::SetInitialRdmpData>>,
+                  ScalarAdvection::subcell::SetInitialRdmpData<volume_dim>>>,
           tmpl::list<>>,
 
       Initialization::Actions::AddComputeTags<

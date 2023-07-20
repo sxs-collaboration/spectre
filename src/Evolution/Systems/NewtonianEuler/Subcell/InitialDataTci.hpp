@@ -59,16 +59,18 @@ struct SetInitialRdmpData {
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
 
  public:
-  using argument_tags =
-      tmpl::list<::Tags::Variables<tmpl::list<MassDensityCons, MomentumDensity,
-                                              EnergyDensity>>,
-                 evolution::dg::subcell::Tags::ActiveGrid>;
+  using argument_tags = tmpl::list<
+      ::Tags::Variables<
+          tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>,
+      evolution::dg::subcell::Tags::ActiveGrid, ::domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>>;
   using return_tags = tmpl::list<evolution::dg::subcell::Tags::DataForRdmpTci>;
 
   static void apply(
       gsl::not_null<evolution::dg::subcell::RdmpTciData*> rdmp_tci_data,
       const Variables<tmpl::list<MassDensityCons, MomentumDensity,
                                  EnergyDensity>>& subcell_vars,
-      evolution::dg::subcell::ActiveGrid active_grid);
+      evolution::dg::subcell::ActiveGrid active_grid, const Mesh<Dim>& dg_mesh,
+      const Mesh<Dim>& subcell_mesh);
 };
 }  // namespace NewtonianEuler::subcell
