@@ -25,6 +25,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/Tags/Time.hpp"
@@ -75,11 +76,36 @@ void test() {
               InverseJacobianLogicalToInertialCompute<
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       3, Frame::Grid, Frame::Inertial>,
+                  3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToGridCompute<3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>,
                   3>>>(
       subcell_mesh, std::move(element_map),
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
       time, clone_unique_ptrs(functions_of_time));
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+          ::domain::Tags::ElementMap<3, Frame::Grid>, 3>>(
+      "InverseJacobian(Logical,Grid)");
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGridCompute<
+          3>>("Det(InverseJacobian(Logical,Grid))");
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertialCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                        Frame::Inertial>,
+          3>>("InverseJacobian(Logical,Inertial)");
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::
+          DetInverseJacobianLogicalToInertialCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                            Frame::Inertial>,
+              3>>("Det(InverseJacobian(Logical,Inertial))");
 
   const auto& inv_jac_grid = db::get<
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<3>>(box);
@@ -94,6 +120,13 @@ void test() {
     CHECK_ITERABLE_APPROX(inv_jac_inertial[storage_index],
                           inv_jac_grid[storage_index]);
   }
+
+  const auto& det_inv_jac_grid = db::get<
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(box);
+  const auto& det_inv_jac_inertial = db::get<
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
+      box);
+  CHECK_ITERABLE_APPROX(get(det_inv_jac_inertial), get(det_inv_jac_grid));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DgSubcell.JacobianCompute",

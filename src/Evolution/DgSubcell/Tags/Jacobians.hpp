@@ -39,6 +39,13 @@ struct DetInverseJacobianLogicalToGrid : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// \brief The determinant of the inverse Jacobian from the element logical
+/// frame to the inertial frame at the cell centers.
+struct DetInverseJacobianLogicalToInertial : db::SimpleTag {
+  static std::string name() { return "Det(InverseJacobian(Logical,Inertial))"; }
+  using type = Scalar<DataVector>;
+};
+
 /// \brief The inverse Jacobian from the element logical frame to the inertial
 /// frame at the cell centers.
 ///
@@ -151,4 +158,36 @@ struct InverseJacobianLogicalToInertialCompute
   }
 };
 
+/// Compute item for the determinant of the inverse jacobian matrix
+/// from logical to inertial coordinates
+template <typename MapTagGridToInertial, size_t Dim>
+struct DetInverseJacobianLogicalToInertialCompute
+    : DetInverseJacobianLogicalToInertial,
+      db::ComputeTag {
+  static constexpr size_t dim = Dim;
+  using base = DetInverseJacobianLogicalToInertial;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<MapTagGridToInertial, InverseJacobianLogicalToInertial<Dim>,
+                 DetInverseJacobianLogicalToGrid>;
+  static void function(
+      const gsl::not_null<return_type*>
+          det_inverse_jacobian_logical_to_inertial,
+      const ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, dim>&
+          grid_to_inertial_map,
+      const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                              Frame::Inertial>&
+          inverse_jacobian_logical_to_inertial,
+      const Scalar<DataVector>& det_inverse_jacobian_logical_to_grid) {
+    if (grid_to_inertial_map.is_identity()) {
+      const size_t num_pts = get(det_inverse_jacobian_logical_to_grid).size();
+      make_const_view(make_not_null(&std::as_const(
+                          get(*det_inverse_jacobian_logical_to_inertial))),
+                      get(det_inverse_jacobian_logical_to_grid), 0, num_pts);
+    } else {
+      *det_inverse_jacobian_logical_to_inertial =
+          determinant(inverse_jacobian_logical_to_inertial);
+    }
+  }
+};
 }  // namespace evolution::dg::subcell::fd::Tags

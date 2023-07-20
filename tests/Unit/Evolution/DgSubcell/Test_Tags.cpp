@@ -388,6 +388,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<
       subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
       "Det(InverseJacobian(Logical,Grid))");
+  TestHelpers::db::test_simple_tag<
+      subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
+      "Det(InverseJacobian(Logical,Inertial))");
   TestHelpers::db::test_simple_tag<subcell::Tags::DidRollback>("DidRollback");
   TestHelpers::db::test_simple_tag<subcell::Tags::Inactive<Var1>>(
       "Inactive(Var1)");
