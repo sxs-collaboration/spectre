@@ -11,6 +11,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Harmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -122,8 +123,6 @@ void TimeDerivative<Dim>::apply(
 
   gr::christoffel_first_kind(christoffel_first_kind,
                              da_spacetime_metric.value());
-  raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
-                             *inverse_spacetime_metric);
   trace_last_indices(trace_christoffel, *christoffel_first_kind,
                      *inverse_spacetime_metric);
   gr::spacetime_normal_vector(normal_spacetime_vector, *lapse, *shift);
@@ -233,6 +232,7 @@ void TimeDerivative<Dim>::apply(
   const DataVector& gamma1p1 = get(*gamma1_plus_1);
 
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    gauge_constraint->get(mu) = trace_christoffel->get(mu);
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       shift_dot_three_index_constraint->get(mu, nu) =
           get<0>(*shift) * three_index_constraint->get(0, mu, nu);
@@ -251,21 +251,36 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  // Compute gauge condition.
-  get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
-
-  gauges::dispatch<Dim>(gauge_function, spacetime_deriv_gauge_function, *lapse,
-                        *shift, *sqrt_det_spatial_metric,
-                        *inverse_spatial_metric, da_spacetime_metric.value(),
-                        *half_pi_two_normals, *half_phi_two_normals,
-                        spacetime_metric, phi, mesh, time, inertial_coords,
-                        inverse_jacobian, gauge_condition);
-
-  // Compute source function last so that we don't need to recompute any of the
-  // other temporary tags.
-  for (size_t nu = 0; nu < Dim + 1; ++nu) {
-    gauge_constraint->get(nu) =
-        gauge_function->get(nu) + trace_christoffel->get(nu);
+  const bool using_harmonic_gauge =
+      dynamic_cast<const gauges::Harmonic*>(&gauge_condition) != nullptr;
+  if (not using_harmonic_gauge) {
+    // Compute gauge condition.
+    get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
+    raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
+                               *inverse_spacetime_metric);
+    gauges::dispatch<Dim>(
+        gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
+        *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
+        *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, phi,
+        mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+    // Compute source function last so that we don't need to recompute any of
+    // the other temporary tags.
+    for (size_t nu = 0; nu < Dim + 1; ++nu) {
+      gauge_constraint->get(nu) += gauge_function->get(nu);
+    }
+  } else {
+#ifdef SPECTRE_DEBUG
+    get(*sqrt_det_spatial_metric) =
+        std::numeric_limits<double>::signaling_NaN();
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t nu = 0; nu < Dim + 1; ++nu) {
+        for (size_t rho = 0; rho < Dim + 1; ++rho) {
+          christoffel_second_kind->get(mu, nu, rho) =
+              std::numeric_limits<double>::signaling_NaN();
+        }
+      }
+    }
+#endif
   }
 
   get(*normal_dot_gauge_constraint) =
@@ -329,15 +344,19 @@ void TimeDerivative<Dim>::apply(
   // Add additional pieces to dt_pi that aren't just n_a*(stuff)
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      dt_pi->get(mu, nu) -= spacetime_deriv_gauge_function->get(mu, nu) +
-                            spacetime_deriv_gauge_function->get(nu, mu) +
-                            get(*half_pi_two_normals) * pi.get(mu, nu);
+      dt_pi->get(mu, nu) -= get(*half_pi_two_normals) * pi.get(mu, nu);
 
+      if (not using_harmonic_gauge) {
+        dt_pi->get(mu, nu) -= spacetime_deriv_gauge_function->get(mu, nu) +
+                              spacetime_deriv_gauge_function->get(nu, mu);
+      }
       for (size_t delta = 0; delta < Dim + 1; ++delta) {
-        dt_pi->get(mu, nu) += 2 * christoffel_second_kind->get(delta, mu, nu) *
-                                  gauge_function->get(delta) -
-                              2 * pi.get(mu, delta) * pi_2_up->get(nu, delta);
-
+        dt_pi->get(mu, nu) -= 2 * pi.get(mu, delta) * pi_2_up->get(nu, delta);
+        if (not using_harmonic_gauge) {
+          dt_pi->get(mu, nu) += 2 *
+                                christoffel_second_kind->get(delta, mu, nu) *
+                                gauge_function->get(delta);
+        }
         for (size_t n = 0; n < Dim; ++n) {
           dt_pi->get(mu, nu) +=
               2 * phi_1_up->get(n, mu, delta) * phi_3_up->get(n, nu, delta);

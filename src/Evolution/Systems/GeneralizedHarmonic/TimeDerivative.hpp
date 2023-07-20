@@ -97,6 +97,11 @@ namespace gh {
  * terms added to this implementation of the generalized harmonic system.
  * Mesh-velocity corrections that are applicable to all systems are made in
  * `evolution::dg::Actions::detail::volume_terms()`.
+ *
+ * \warning When using harmonic gauge,
+ * gr::Tags::SqrtDetSpatialMetric<DataVector> and
+ * gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial, DataVector>
+ * are not computed. In Debug mode, they are filled with with signaling NaNs.
  */
 template <size_t Dim>
 struct TimeDerivative {
