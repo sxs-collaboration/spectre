@@ -35,3 +35,5 @@ target_link_libraries(
   Options
   Parallel
   )
+
+add_subdirectory(Sources)

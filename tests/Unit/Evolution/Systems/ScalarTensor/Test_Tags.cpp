@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
@@ -24,4 +25,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.Tags",
   test_simple_tags<1_st, ArbitraryFrame>();
   test_simple_tags<2_st, ArbitraryFrame>();
   test_simple_tags<3_st, ArbitraryFrame>();
+  TestHelpers::db::test_simple_tag<ScalarTensor::Tags::ScalarMass>(
+      "ScalarMass");
+  TestHelpers::test_option_tag<ScalarTensor::OptionTags::ScalarMass>("1.0");
+  TestHelpers::db::test_simple_tag<ScalarTensor::Tags::ScalarSource>(
+      "ScalarSource");
 }
