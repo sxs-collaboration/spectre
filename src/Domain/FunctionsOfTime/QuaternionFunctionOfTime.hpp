@@ -4,12 +4,13 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <boost/math/quaternion.hpp>
 #include <cmath>
+#include <deque>
 #include <limits>
 #include <pup.h>
 #include <string>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -64,9 +65,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   ~QuaternionFunctionOfTime() override = default;
   QuaternionFunctionOfTime(QuaternionFunctionOfTime&&) = default;
   QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&) = default;
-  QuaternionFunctionOfTime(const QuaternionFunctionOfTime&) = default;
-  QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&) =
-      default;
+  QuaternionFunctionOfTime(const QuaternionFunctionOfTime&);
+  QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&);
 
   // LCOV_EXCL_START
   explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/) {}
@@ -152,8 +152,11 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       std::ostream& os,
       const QuaternionFunctionOfTime<LocalMaxDeriv>& quaternion_f_of_t);
 
-  std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
+  std::deque<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
+  alignas(64) std::atomic_uint64_t stored_quaternion_size_{};
+  // Pad memory to avoid false-sharing when accessing stored_quaternion_size_
+  char unused_padding_[64 - (sizeof(std::atomic_uint64_t) % 64)] = {};
 
   domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_;
 
@@ -164,7 +167,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       gsl::not_null<boost::math::quaternion<double>*> quaternion_to_integrate,
       double t0, double t) const;
 
-  /// Updates the `std::vector<StoredInfo>` to have the same number of stored
+  /// Updates the `std::deque<StoredInfo>` to have the same number of stored
   /// quaternions as the `angle_f_of_t_ptr` has stored angles. This is necessary
   /// to ensure we can solve the ODE at any time `t`
   void update_stored_info();

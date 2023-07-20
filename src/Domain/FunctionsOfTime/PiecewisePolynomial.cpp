@@ -4,12 +4,15 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 
 #include <algorithm>
+#include <atomic>
+#include <deque>
 #include <iterator>
 #include <memory>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
 #include <utility>  // IWYU pragma: keep
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -17,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
 
 namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
@@ -24,7 +28,28 @@ PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double t, value_type initial_func_and_derivs,
     const double expiration_time)
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}},
-      expiration_time_(expiration_time) {}
+      expiration_time_(expiration_time) {
+  deriv_info_size_.store(1);
+}
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
+    const PiecewisePolynomial<MaxDeriv>& rhs) {
+  *this = rhs;
+}
+
+template <size_t MaxDeriv>
+// NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
+PiecewisePolynomial<MaxDeriv>& PiecewisePolynomial<MaxDeriv>::operator=(
+    const PiecewisePolynomial<MaxDeriv>& rhs) {
+  if (this == &rhs) {
+    return *this;
+  }
+  deriv_info_at_update_times_ = rhs.deriv_info_at_update_times_;
+  expiration_time_ = rhs.expiration_time_;
+  deriv_info_size_.store(rhs.deriv_info_size_.load(std::memory_order_relaxed));
+  return *this;
+}
 
 template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone()
@@ -42,8 +67,9 @@ PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const {
           << ". The difference between times is " << t - expiration_time_
           << ".");
   }
-  const auto& deriv_info_at_t =
-      stored_info_from_upper_bound(t, deriv_info_at_update_times_);
+  const auto& deriv_info_at_t = stored_info_from_upper_bound(
+      t, deriv_info_at_update_times_,
+      deriv_info_size_.load(std::memory_order_relaxed));
   const double dt = t - deriv_info_at_t.time;
   const value_type& coefs = deriv_info_at_t.stored_quantities;
 
@@ -77,7 +103,10 @@ void PiecewisePolynomial<MaxDeriv>::update(
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     const double time_of_update, DataVector updated_max_deriv,
     const double next_expiration_time) {
-  if (time_of_update <= deriv_info_at_update_times_.back().time) {
+  if (time_of_update <=
+      deriv_info_at_update_times_
+          [deriv_info_size_.load(std::memory_order_relaxed) - 1]
+              .time) {
     ERROR("t must be increasing from call to call. "
           << "Attempted to update at time " << time_of_update
           << ", which precedes the previous update time of "
@@ -124,7 +153,12 @@ void PiecewisePolynomial<MaxDeriv>::update(
   }
 
   func[MaxDeriv] = std::move(updated_max_deriv);
+  // While it is technically possible for a different thread to call `update`
+  // during this call, there should never be two different threads trying to
+  // update this object at the same time in our algorithm. An update should come
+  // from only one place and nowhere else so this emplacement should be ok
   deriv_info_at_update_times_.emplace_back(time_of_update, std::move(func));
+  deriv_info_size_.fetch_add(1, std::memory_order_acq_rel);
 }
 
 template <size_t MaxDeriv>
@@ -137,14 +171,28 @@ void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
   // whenever possible. See `Domain` docs for details.
-  if (version >= 0) {
+  if (version == 0 and p.isUnpacking()) {
+    // An old version had a std::vector rather than a std::deque
+    std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>> pupped_info{};
+    p | pupped_info;
+    for (auto& pupped_deriv_info : pupped_info) {
+      deriv_info_at_update_times_.emplace_back(std::move(pupped_deriv_info));
+    }
+  } else {
     p | deriv_info_at_update_times_;
+  }
+  if (version >= 0) {
     p | expiration_time_;
+  }
+  if (version >= 1) {
+    p | deriv_info_size_;
+  } else if (p.isUnpacking()) {
+    deriv_info_size_.store(deriv_info_at_update_times_.size());
   }
 }
 
@@ -152,7 +200,8 @@ template <size_t MaxDeriv>
 bool operator==(const PiecewisePolynomial<MaxDeriv>& lhs,
                 const PiecewisePolynomial<MaxDeriv>& rhs) {
   return lhs.deriv_info_at_update_times_ == rhs.deriv_info_at_update_times_ and
-         lhs.expiration_time_ == rhs.expiration_time_;
+         lhs.expiration_time_ == rhs.expiration_time_ and
+         lhs.deriv_info_size_ == rhs.deriv_info_size_;
 }
 
 template <size_t MaxDeriv>
