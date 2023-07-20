@@ -134,7 +134,6 @@ void partial_derivative(
     const TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>& logical_partial_derivative_of_u,
-    const Mesh<Dim>& /*mesh*/,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
   for (size_t storage_index = 0;
@@ -174,7 +173,7 @@ void partial_derivative(
   logical_partial_derivative(make_not_null(&logical_partial_derivative_of_u), u,
                              mesh);
   partial_derivative<SymmList, IndexList>(du, logical_partial_derivative_of_u,
-                                          mesh, inverse_jacobian);
+                                          inverse_jacobian);
 }
 
 template <typename SymmList, typename IndexList, size_t Dim,
@@ -235,7 +234,6 @@ auto partial_derivative(
                GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>, \
            GET_DIM(data), UpLo::Lo,                                            \
            Frame::ElementLogical > &logical_partial_derivative_of_u,           \
-           const Mesh<GET_DIM(data)>&mesh,                                     \
            const InverseJacobian<DataVector, GET_DIM(data),                    \
                                  Frame::ElementLogical, GET_FRAME(data)>       \
                &inverse_jacobian);                                             \
@@ -315,7 +313,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_JACOBIANS, (1, 2, 3), (Frame::Inertial),
       gsl::not_null<tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>*> du, \
       const tnsr::i<DataVector, GET_DIM(data), Frame::ElementLogical>&        \
           logical_partial_derivative_of_u,                                    \
-      const Mesh<GET_DIM(data)>& mesh,                                        \
       const InverseJacobian<DataVector, GET_DIM(data), Frame::ElementLogical, \
                             GET_FRAME(data)>& inverse_jacobian);              \
   template void partial_derivative(                                           \
