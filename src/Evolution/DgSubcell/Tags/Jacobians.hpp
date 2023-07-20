@@ -4,13 +4,13 @@
 #pragma once
 
 #include <cstddef>
-#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 /// \cond
@@ -25,9 +25,6 @@ namespace evolution::dg::subcell::fd::Tags {
 ///
 /// Specifically, \f$\partial x^{\bar{i}} / \partial x^i\f$, where \f$\bar{i}\f$
 /// denotes the element logical frame and \f$i\f$ denotes the grid frame.
-///
-/// \note stored as a `std::optional` so we can reset it when switching to DG
-/// and reduce the memory footprint.
 template <size_t Dim>
 struct InverseJacobianLogicalToGrid : db::SimpleTag {
   static std::string name() { return "InverseJacobian(Logical,Grid)"; }
@@ -37,9 +34,6 @@ struct InverseJacobianLogicalToGrid : db::SimpleTag {
 
 /// \brief The determinant of the inverse Jacobian from the element logical
 /// frame to the grid frame at the cell centers.
-///
-/// \note stored as a `std::optional` so we can reset it when switching to DG
-/// and reduce the memory footprint.
 struct DetInverseJacobianLogicalToGrid : db::SimpleTag {
   static std::string name() { return "Det(InverseJacobian(Logical,Grid))"; }
   using type = Scalar<DataVector>;
@@ -50,14 +44,11 @@ struct DetInverseJacobianLogicalToGrid : db::SimpleTag {
 ///
 /// Specifically, \f$\partial x^{\bar{i}} / \partial x^i\f$, where \f$\bar{i}\f$
 /// denotes the element logical frame and \f$i\f$ denotes the inertial frame.
-///
-/// \note stored as a `std::optional` so we can reset it when switching to DG
-/// and reduce the memory footprint (is it useful for a ComputeTag though?).
 template <size_t Dim>
 struct InverseJacobianLogicalToInertial : db::SimpleTag {
   static std::string name() { return "InverseJacobian(Logical,Inertial)"; }
-  using type = ::InverseJacobian < DataVector, Dim, Frame::ElementLogical,
-        Frame::Inertial >;
+  using type = ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                 Frame::Inertial>;
 };
 
 /// Compute item for the inverse jacobian matrix from logical to
@@ -93,8 +84,7 @@ struct DetInverseJacobianLogicalToGridCompute
   static void function(
       const gsl::not_null<return_type*> det_inverse_jacobian_logical_to_grid,
       const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                              Frame::Grid>
-          inverse_jacobian_logical_to_grid) {
+                              Frame::Grid>& inverse_jacobian_logical_to_grid) {
     *det_inverse_jacobian_logical_to_grid =
         determinant(inverse_jacobian_logical_to_grid);
   }
