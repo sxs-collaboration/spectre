@@ -90,7 +90,8 @@ void insert_or_update_neighbor_volume_data(
             << end_of_volume_data
             << ") must be a multiple of the number of DG volume grid points: "
             << neighbor_mesh.number_of_grid_points() << " number of RDMP vars "
-            << number_of_rdmp_vars_in_buffer);
+            << number_of_rdmp_vars_in_buffer << "\nThis element: " << element
+            << "\nDirection: " << direction);
     const size_t number_of_vars =
         end_of_volume_data / neighbor_mesh.number_of_grid_points();
     const auto project_to_ghost_data =
