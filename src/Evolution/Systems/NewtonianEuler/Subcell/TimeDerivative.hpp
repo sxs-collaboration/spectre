@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -67,6 +68,11 @@ struct TimeDerivative {
     using prim_tags = typename system::primitive_variables_tag::tags_list;
     using fluxes_tags = db::wrap_tags_in<::Tags::Flux, evolved_vars_tags,
                                          tmpl::size_t<Dim>, Frame::Inertial>;
+
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                Dim, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
 
     // The copy of Mesh is intentional to avoid a GCC-7 internal compiler error.
     const Mesh<Dim> subcell_mesh =

@@ -55,6 +55,10 @@ struct TimeDerivative {
       const InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Grid>&
           cell_centered_logical_to_grid_inv_jacobian,
       const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                1, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
     const Element<1>& element = db::get<domain::Tags::Element<1>>(*box);
 
     const bool element_is_interior = element.external_boundaries().size() == 0;

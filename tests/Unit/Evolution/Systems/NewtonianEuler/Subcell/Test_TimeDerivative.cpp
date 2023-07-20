@@ -18,6 +18,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
@@ -227,7 +228,9 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           typename system::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
-          evolution::dg::Tags::MortarData<dim>>,
+          evolution::dg::Tags::MortarData<dim>,
+          domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                      Frame::Inertial>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<dim>>>(
       metavariables{}, typename metavariables::source_term_tag::type{}, soln,
@@ -241,7 +244,9 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       typename variables_tag::type{}, neighbor_data,
-      typename evolution::dg::Tags::MortarData<dim>::type{});
+      typename evolution::dg::Tags::MortarData<dim>::type{},
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<dim>{}));
   db::mutate_apply<ConservativeFromPrimitive<dim>>(make_not_null(&box));
 
   InverseJacobian<DataVector, dim, Frame::ElementLogical, Frame::Grid>

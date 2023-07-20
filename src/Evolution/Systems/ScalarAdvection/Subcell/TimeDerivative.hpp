@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -55,6 +56,10 @@ struct TimeDerivative {
                             Frame::Grid>&
           cell_centered_logical_to_grid_inv_jacobian,
       const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                Dim, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
     // subcell is currently not supported for external boundary elements
     const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(*box);
     ASSERT(element.external_boundaries().size() == 0,
