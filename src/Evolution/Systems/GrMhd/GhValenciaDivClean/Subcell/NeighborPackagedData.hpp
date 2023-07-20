@@ -66,6 +66,9 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * However, in practice such strict conservation doesn't seem to be necessary
  * and can be explained by that we only need strict conservation at shocks, and
  * if one element is doing DG, then we aren't at a shock.
+ *
+ * Developer note: For performance reasons We should consider storing the mesh
+ * velocity on the faces instead of re-slicing/projecting.
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
@@ -87,12 +90,6 @@ struct NeighborPackagedData {
     using grmhd_evolved_vars_tag =
         typename grmhd::ValenciaDivClean::System::variables_tag;
     using grmhd_evolved_vars_tags = typename grmhd_evolved_vars_tag::tags_list;
-
-    ASSERT(not db::get<domain::Tags::MeshVelocity<3>>(box).has_value(),
-           "Haven't yet added support for moving mesh to DG-subcell. This "
-           "should be easy to generalize, but we will want to consider "
-           "storing the mesh velocity on the faces instead of "
-           "re-slicing/projecting.");
 
     FixedHashMap<maximum_number_of_neighbors(3),
                  std::pair<Direction<3>, ElementId<3>>, DataVector,
