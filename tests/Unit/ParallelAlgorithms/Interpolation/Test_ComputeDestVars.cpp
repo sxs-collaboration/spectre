@@ -115,9 +115,7 @@ void test() {
       {}, {}, time_dep_opts);
   const Domain<3> domain = domain_creator.create_domain();
 
-  Parallel::MutableGlobalCache<Metavars> mutable_cache{};
-  Parallel::GlobalCache<Metavars> cache{{domain_creator.functions_of_time()},
-                                        &mutable_cache};
+  Parallel::GlobalCache<Metavars> cache{{domain_creator.functions_of_time()}};
 
   Variables<tmpl::list<FakeVars<Frame>>> dest_vars{num_grid_points, 0.0};
   Variables<tmpl::list<FakeVars<::Frame::Inertial>>> source_vars{

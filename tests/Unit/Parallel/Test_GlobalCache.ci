@@ -5,7 +5,7 @@ mainmodule Test_GlobalCache {
   template <typename Metavariables>
   mainchare [migratable] Test_GlobalCache {
     entry Test_GlobalCache(CkArgMsg* msg);
-    entry void exit_if_done(int index);
+    entry void exit();
   };
 
   template <typename Metavariables>

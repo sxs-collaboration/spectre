@@ -61,7 +61,7 @@ namespace evolution::dg::Initialization {
 /// \brief Initialize items related to the basic structure of the element
 ///
 /// \details See the type aliases defined below for what items are added to the
-/// GlobalCache, MutableGlobalCache, and DataBox and how they are initialized
+/// GlobalCache and DataBox and how they are initialized
 
 template <size_t Dim, bool UseControlSystems = false>
 struct Domain {
@@ -69,7 +69,7 @@ struct Domain {
   /// initialized from input file options.
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
 
-  /// Tags for mutable items added to the MutableGlobalCache.  These items are
+  /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using mutable_global_cache_tags = tmpl::list<tmpl::conditional_t<
       UseControlSystems, ::control_system::Tags::FunctionsOfTimeInitialize,

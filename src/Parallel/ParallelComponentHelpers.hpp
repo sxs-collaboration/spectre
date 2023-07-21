@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <mutex>
+#include <utility>
+
 #include "Parallel/Callback.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -177,6 +180,11 @@ template <typename Metavariables, typename Tag>
 constexpr bool is_in_global_cache =
     is_in_const_global_cache<Metavariables, Tag> or
     is_in_mutable_global_cache<Metavariables, Tag>;
+
+template <typename Tag>
+struct MutexTag {
+  using type = std::pair<std::mutex, std::mutex>;
+};
 
 template <typename Tag>
 struct MutableCacheTag {

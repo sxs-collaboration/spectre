@@ -109,15 +109,6 @@ def generic_replacements(text):
             text[i] = re.sub(
                 'Parallel::GlobalCache<.*"', 'GlobalCache"', text[i]
             )
-        if (
-            text[i].startswith("CHARE")
-            and "Parallel::MutableGlobalCache<" in text[i]
-        ):
-            text[i] = re.sub(
-                'Parallel::MutableGlobalCache<.*"',
-                'MutableGlobalCache"',
-                text[i],
-            )
         if text[i].startswith("CHARE") and "Parallel::Main<" in text[i]:
             text[i] = re.sub('Parallel::Main<.*"', 'Main"', text[i])
         if (

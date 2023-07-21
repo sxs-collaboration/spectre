@@ -186,11 +186,9 @@ void test_size_error_one_step(
                                                tnsr::I<double, 3, Frame::Grid>{
                                                    std::array{0.0, 0.0, 0.0}},
                                                {}}}}};
-    Parallel::MutableGlobalCache<Metavars> mutable_cache{};
     Parallel::GlobalCache<Metavars> cache{
         {std::move(functions_of_time), std::move(domain), false,
-         ::Verbosity::Silent, "", "", std::vector<std::string>{}},
-        &mutable_cache};
+         ::Verbosity::Silent, "", "", std::vector<std::string>{}}};
     using ExcisionQuantities =
         control_system::QueueTags::SizeExcisionQuantities<Frame::Distorted>;
     using HorizonQuantities =

@@ -25,12 +25,6 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
 class FixedHashMap;
 namespace Parallel {
 template <typename Metavariables>
-class CProxy_MutableGlobalCache;
-template <typename Metavariables>
-class CkIndex_MutableGlobalCache;
-template <typename Metavariables>
-class MutableGlobalCache;
-template <typename Metavariables>
 class CProxy_GlobalCache;
 template <typename Metavariables>
 class CProxy_Main;
@@ -588,48 +582,6 @@ struct RegisterPhaseChangeReduction : RegistrationHelper {
 
 /*!
  * \ingroup CharmExtensionsGroup
- * \brief Derived class for registering MutableGlobalCache::mutate
- *
- * Calls the appropriate Charm++ function to register the mutate function.
- */
-template <typename Metavariables, typename GlobalCacheTag, typename Function,
-          typename... Args>
-struct RegisterMutableGlobalCacheMutate : RegistrationHelper {
-  using cproxy = CProxy_MutableGlobalCache<Metavariables>;
-  using ckindex = CkIndex_MutableGlobalCache<Metavariables>;
-  using algorithm = MutableGlobalCache<Metavariables>;
-
-  RegisterMutableGlobalCacheMutate() = default;
-  RegisterMutableGlobalCacheMutate(const RegisterMutableGlobalCacheMutate&) =
-      default;
-  RegisterMutableGlobalCacheMutate& operator=(
-      const RegisterMutableGlobalCacheMutate&) = default;
-  RegisterMutableGlobalCacheMutate(RegisterMutableGlobalCacheMutate&&) =
-      default;
-  RegisterMutableGlobalCacheMutate& operator=(
-      RegisterMutableGlobalCacheMutate&&) = default;
-  ~RegisterMutableGlobalCacheMutate() override = default;
-
-  void register_with_charm() const override {
-    static bool done_registration{false};
-    if (done_registration) {
-      return;  // LCOV_EXCL_LINE
-    }
-    done_registration = true;
-    ckindex::template idx_mutate<GlobalCacheTag, Function>(
-        static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
-  }
-
-  std::string name() const override {
-    return get_template_parameters_as_string<
-        RegisterMutableGlobalCacheMutate>();
-  }
-
-  static bool registrar;
-};
-
-/*!
- * \ingroup CharmExtensionsGroup
  * \brief Derived class for registering GlobalCache::mutate
  *
  * Calls the appropriate Charm++ function to register the mutate function.
@@ -816,16 +768,6 @@ bool Parallel::charmxx::RegisterPhaseChangeReduction<
     Metavariables, Invokable, Tags...>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterPhaseChangeReduction<Metavariables, Invokable, Tags...>>();
-
-// clang-tidy: redundant declaration
-template <typename Metavariables, typename GlobalCacheTag, typename Function,
-          typename... Args>
-bool Parallel::charmxx::RegisterMutableGlobalCacheMutate<
-    Metavariables, GlobalCacheTag, Function,
-    Args...>::registrar =  // NOLINT
-    Parallel::charmxx::register_func_with_charm<
-        RegisterMutableGlobalCacheMutate<Metavariables, GlobalCacheTag,
-                                         Function, Args...>>();
 
 // clang-tidy: redundant declaration
 template <typename Metavariables, typename GlobalCacheTag, typename Function,

@@ -159,7 +159,6 @@ class MockRuntimeSystem {
               }
               return mock_nodes_and_local_cores;
             }()),
-        mutable_caches_(mock_nodes_and_local_cores_.size()),
         caches_(mock_nodes_and_local_cores_.size()) {
     // Fill the parallel components in each cache.  There is one cache
     // per mock core.  The parallel components held in each cache (i.e. the
@@ -174,12 +173,9 @@ class MockRuntimeSystem {
       // so we define node and local_core here.
       const auto& node = node_and_local_core.first.value;
       const auto& local_core = node_and_local_core.second.value;
-      mutable_caches_.at(global_core) =
-          std::make_unique<Parallel::MutableGlobalCache<Metavariables>>(
-              serialize_and_deserialize(mutable_cache_contents));
       caches_.at(global_core) = std::make_unique<GlobalCache>(
           serialize_and_deserialize(cache_contents),
-          mutable_caches_.at(global_core).get(),
+          serialize_and_deserialize(mutable_cache_contents),
           number_of_mock_cores_on_each_mock_node, static_cast<int>(global_core),
           static_cast<int>(node), static_cast<int>(local_core));
       tmpl::for_each<typename Metavariables::component_list>(
@@ -195,8 +191,8 @@ class MockRuntimeSystem {
     }
   }
 
-  /// Construct from the tuple of GlobalCache and MutableGlobalCache
-  /// objects that might be in a different order.
+  /// Construct from the tuple of const and mutable tags that might be in a
+  /// different order.
   template <typename... CacheTags, typename... MutableCacheTags>
   MockRuntimeSystem(
       tuples::TaggedTuple<CacheTags...> cache_contents,
@@ -742,13 +738,10 @@ class MockRuntimeSystem {
       mock_global_cores_{};
   std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
       mock_nodes_and_local_cores_{};
-  // There is one MutableGlobalCache and one GlobalCache per
-  // global_core.  We need to keep a vector of unique_ptrs rather than
-  // a vector of objects because MutableGlobalCache and GlobalCache
-  // are not move-assignable or copyable (because of their charm++
-  // base classes, in particular CkReductionMgr).
-  std::vector<std::unique_ptr<Parallel::MutableGlobalCache<Metavariables>>>
-      mutable_caches_{};
+  // There is one GlobalCache per global_core.  We need to keep a vector of
+  // unique_ptrs rather than a vector of objects because GlobalCache is not
+  // move-assignable or copyable (because of its charm++ base classes, in
+  // particular CkReductionMgr).
   std::vector<std::unique_ptr<GlobalCache>> caches_{};
   Inboxes inboxes_{};
   CollectionOfMockDistributedObjects mock_distributed_objects_{};

@@ -148,9 +148,9 @@ struct modify_value {
 };
 
 struct modify_number_of_legs {
-  static void apply(const gsl::not_null<std::unique_ptr<Animal>*> animal_local,
+  static void apply(const gsl::not_null<Animal*> animal_local,
                     const size_t num_legs) {
-    (*animal_local)->set_number_of_legs(num_legs);
+    animal_local->set_number_of_legs(num_legs);
   }
 };
 
@@ -220,15 +220,16 @@ struct TestMetavariables {
 // PerformAlgorithmCallback because they can be mocked.
 class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
-  explicit UseCkCallbackAsCallback(CkMigrateMessage* /*unused*/) {}
   WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
+  UseCkCallbackAsCallback() = default;
+  explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
+      : Parallel::Callback(msg) {}
   explicit UseCkCallbackAsCallback(const CkCallback& callback)
       : callback_(callback) {}
+  using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
-  void pup(PUP::er& /*p*/) override {
-    ERROR(
-        "Should not be pupping a UseCkCallbackAsCallback, since it is always "
-        "stored in the local MutableGlobalCache");
+  void pup(PUP::er& p) override {
+    p | callback_;
   }
 
  private:
@@ -246,7 +247,7 @@ void TestArrayChare<Metavariables>::run_test_one() {
       4 == Parallel::get<shape_of_nametag>(local_cache).number_of_sides());
   SPECTRE_PARALLEL_REQUIRE(
       4 == Parallel::get<shape_of_nametag_base>(local_cache).number_of_sides());
-  SPECTRE_PARALLEL_REQUIRE(160 == Parallel::get<weight>(local_cache));
+  SPECTRE_PARALLEL_REQUIRE(160.0 == Parallel::get<weight>(local_cache));
   SPECTRE_PARALLEL_REQUIRE("joe@somewhere.com" ==
                            Parallel::get<email>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(6 ==
@@ -277,12 +278,11 @@ void TestArrayChare<Metavariables>::run_test_one() {
 
   // Mutate the weight to 150.
   Parallel::mutate<weight, modify_value<double>>(local_cache, 150.0);
-  run_test_two();
 }
 
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_two() {
-  // Move on when the weight is 150.
+  // Move on when the weight is 150 (mutated in run_test_one)
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_two(),
                  this->thisProxy[this->thisIndex]);
@@ -302,13 +302,12 @@ void TestArrayChare<Metavariables>::run_test_two() {
         local_cache, std::string("albert@einstein.de"));
     // ... and make the arthropod into a lobster.
     Parallel::mutate<animal, modify_number_of_legs>(local_cache, 10_st);
-    run_test_three();
   }
 }
 
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_three() {
-  // Move on when the email is Albert's.
+  // Move on when the email is Albert's (mutated in run_test_two)
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_three(),
                  this->thisProxy[this->thisIndex]);
@@ -327,13 +326,12 @@ void TestArrayChare<Metavariables>::run_test_three() {
 
     // Now make the arthropod into a spider.
     Parallel::mutate<animal, modify_number_of_legs>(local_cache, 8_st);
-    run_test_four();
   }
 }
 
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_four() {
-  // Move on when the animal has 8 legs.
+  // Move on when the animal has 8 legs (mutated in run_test_three)
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_four(),
                  this->thisProxy[this->thisIndex]);
@@ -352,14 +350,12 @@ void TestArrayChare<Metavariables>::run_test_four() {
 
     // Make the arthropod into a Scutigera coleoptrata.
     Parallel::mutate<animal_base, modify_number_of_legs>(local_cache, 30_st);
-
-    run_test_five();
   }
 }
 
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_five() {
-  // Move on when the animal has 30 legs.
+  // Move on when the animal has 30 legs (mutated in run_test_four)
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_five(),
                  this->thisProxy[this->thisIndex]);
@@ -375,7 +371,7 @@ void TestArrayChare<Metavariables>::run_test_five() {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
         30 == Parallel::get<animal_base>(local_cache).number_of_legs());
-    main_proxy_.exit_if_done(this->thisIndex);
+    main_proxy_.exit();
   }
 }
 
@@ -402,10 +398,8 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() {
       mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
                                 "joe@somewhere.com");
 
-  Parallel::MutableGlobalCache<TestMetavariables> mutable_cache(
-      std::move(mutable_data_to_be_cached));
   Parallel::GlobalCache<TestMetavariables> cache(
-      std::move(const_data_to_be_cached), &mutable_cache);
+      std::move(const_data_to_be_cached), std::move(mutable_data_to_be_cached));
   SPECTRE_PARALLEL_REQUIRE("Nobody" == Parallel::get<name>(cache));
   SPECTRE_PARALLEL_REQUIRE(178 == Parallel::get<age>(cache));
   SPECTRE_PARALLEL_REQUIRE(2.2 == Parallel::get<height>(cache));
@@ -438,35 +432,14 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() {
   SPECTRE_PARALLEL_REQUIRE(30 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
-
-  // Check the serialization of the mutable global cache
-  Parallel::MutableGlobalCache<TestMetavariables>
-      serialized_and_deserialized_mutable_cache{};
-  serialize_and_deserialize(
-      make_not_null(&serialized_and_deserialized_mutable_cache), mutable_cache);
-
-  Parallel::GlobalCache<TestMetavariables> cache_with_serialized_mutable_cache(
-      tuples::tagged_tuple_from_typelist<const_tag_list>{
-          "Nobody", 178, 2.2, std::make_unique<Square>()},
-      &serialized_and_deserialized_mutable_cache);
-  SPECTRE_PARALLEL_REQUIRE(
-      150 == Parallel::get<weight>(cache_with_serialized_mutable_cache));
-  SPECTRE_PARALLEL_REQUIRE(
-      "isaac@newton.com" ==
-      Parallel::get<email>(cache_with_serialized_mutable_cache));
-  SPECTRE_PARALLEL_REQUIRE(
-      30 == Parallel::get<animal>(cache_with_serialized_mutable_cache)
-                .number_of_legs());
-  SPECTRE_PARALLEL_REQUIRE(
-      30 == Parallel::get<animal_base>(cache_with_serialized_mutable_cache)
-                .number_of_legs());
 }
 
 template <typename Metavariables>
 Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
                                                   /*msg*/) {
   // Register the pup functions.
-  register_classes_with_charm<Triangle, Square, Arthropod>();
+  register_classes_with_charm<Triangle, Square, Arthropod,
+                              UseCkCallbackAsCallback>();
 
   // Call the single core test before doing anything else.
   run_single_core_test();
@@ -490,18 +463,6 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   static_assert(Parallel::is_in_global_cache<TestMetavariables, animal_base>);
   static_assert(
       not Parallel::is_in_const_global_cache<TestMetavariables, animal_base>);
-  // Arthropod begins as an insect.
-  tuples::tagged_tuple_from_typelist<mutable_tag_list>
-      mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
-                                "joe@somewhere.com");
-  mutable_global_cache_proxy_ =
-      Parallel::CProxy_MutableGlobalCache<TestMetavariables>::ckNew(
-          mutable_data_to_be_cached);
-
-  // global_cache_proxy_ depends on mutable_global_cache_proxy_.
-  CkEntryOptions mutable_global_cache_dependency;
-  mutable_global_cache_dependency.setGroupDepID(
-      mutable_global_cache_proxy_.ckGetGroupID());
 
   using const_tag_list =
       typename Parallel::get_const_global_cache_tags<TestMetavariables>;
@@ -522,18 +483,19 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
       not Parallel::is_in_mutable_global_cache<TestMetavariables,
                                                shape_of_nametag_base>);
 
+  // Arthropod begins as an insect.
+  tuples::tagged_tuple_from_typelist<mutable_tag_list>
+      mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
+                                "joe@somewhere.com");
   tuples::tagged_tuple_from_typelist<const_tag_list> const_data_to_be_cached(
       "Nobody", 178, 2.2, std::make_unique<Square>());
   global_cache_proxy_ = Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(
-      const_data_to_be_cached, mutable_global_cache_proxy_, std::nullopt,
-      &mutable_global_cache_dependency);
+      std::move(const_data_to_be_cached), std::move(mutable_data_to_be_cached),
+      std::nullopt);
 
   Parallel::ResourceInfo<TestMetavariables> resource_info{false};
 
   const auto local_cache = Parallel::local_branch(global_cache_proxy_);
-  auto mutable_global_cache_proxy = local_cache->mutable_global_cache_proxy();
-  SPECTRE_PARALLEL_REQUIRE(mutable_global_cache_proxy ==
-                           mutable_global_cache_proxy_);
 
   resource_info.build_singleton_map(*local_cache);
 
@@ -551,39 +513,28 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
       CProxy_TestArrayChare<Metavariables>::ckNew(
           this->thisProxy, global_cache_proxy_, num_elements_);
 
-  array_proxy.run_test_one();
+  array_proxy[3].run_test_five();
+  array_proxy[2].run_test_four();
+  array_proxy[1].run_test_three();
+  array_proxy[0].run_test_two();
+  array_proxy[3].run_test_one();
 }
 
 template <typename Metavariables>
-void Test_GlobalCache<Metavariables>::exit_if_done(int index) {
-  elements_that_are_finished_.insert(index);
-  if (elements_that_are_finished_.size() >= num_elements_) {
-    sys::exit();
-  }
-}
-
-// [[OutputRegex, MutableGlobalCache has been constructed with a nullptr]]
-SPECTRE_TEST_CASE("Unit.Parallel.GlobalCache.NullptrConstructError",
-                  "[Parallel][Unit]") {
-  ERROR_TEST();
-  Parallel::GlobalCache<TestMetavariables>{nullptr};
-}
-
-// [[OutputRegex, MutableGlobalCache has been constructed with a nullptr]]
-SPECTRE_TEST_CASE("Unit.Parallel.MutableGlobalCache.NullptrConstructError",
-                  "[Parallel][Unit]") {
-  ERROR_TEST();
-  Parallel::MutableGlobalCache<TestMetavariables>{nullptr};
+void Test_GlobalCache<Metavariables>::exit() {
+  sys::exit();
 }
 
 // --------- registration stuff below -------
 
+// clang-format off
 PUPable_def(UseCkCallbackAsCallback)
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
-PUP::able::PUP_ID Triangle::my_PUP_ID = 0;   // NOLINT
-PUP::able::PUP_ID Square::my_PUP_ID = 0;     // NOLINT
-PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID Square::my_PUP_ID = 0;        // NOLINT
+PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;     // NOLINT
+// clang-format on
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting};

@@ -123,9 +123,8 @@ void test(const std::string& filename_prefix,
   intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
                                            angular_ordering);
 
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
   Parallel::GlobalCache<metavars> cache{
-      {std::move(sphere_opts), filename_prefix}, &mutable_cache};
+      {std::move(sphere_opts), filename_prefix}};
 
   // Only need variables in the box for this test
   using db_tags = tmpl::list<::Tags::Variables<spacetime_tags>>;
@@ -133,13 +132,13 @@ void test(const std::string& filename_prefix,
 
   // Check the error
   CHECK_THROWS_WITH(
-      ([&box, &radii, &center, &filename_prefix, &mutable_cache]() {
+      ([&box, &radii, &center, &filename_prefix]() {
         const intrp::AngularOrdering local_angular_ordering =
             intrp::AngularOrdering::Strahlkorper;
         intrp::OptionHolders::Sphere local_sphere_opts(l_max, center, radii,
                                                        local_angular_ordering);
         Parallel::GlobalCache<metavars> local_cache{
-            {std::move(local_sphere_opts), filename_prefix}, &mutable_cache};
+            {std::move(local_sphere_opts), filename_prefix}};
 
         target::post_interpolation_callback::apply(box, local_cache, 0.1);
       })(),

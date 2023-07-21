@@ -2,9 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Forward-declares CProxy_GlobalCache which MutableGlobalCache needs, but
-/// GlobalCache is defined after MutableGlobalCache. Also forward declares
-/// ResourceInfo which the GlobalCache has an entry method for.
+/// Forward-declares ResourceInfo which the GlobalCache has an entry method for.
 
 #pragma once
 

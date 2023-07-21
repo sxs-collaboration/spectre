@@ -115,17 +115,13 @@ static_assert(Parallel::is_singleton_v<SingletonParallelComponent>);
 static_assert(Parallel::is_array_v<ArrayParallelComponent>);
 static_assert(Parallel::is_group_v<GroupParallelComponent>);
 static_assert(Parallel::is_nodegroup_v<NodegroupParallelComponent>);
-// These are special because they are (node)groups, but they don't run the
-// Algorithm but they still have a `chare_type` type alias.
-static_assert(
-    Parallel::is_group_v<Parallel::MutableGlobalCache<Metavariables>>);
+// This is special because it is a nodegroups, but it doesn't run the
+// Algorithm but it still has a `chare_type` type alias.
 static_assert(Parallel::is_nodegroup_v<Parallel::GlobalCache<Metavariables>>);
 
 static_assert(Parallel::is_singleton<SingletonParallelComponent>::value);
 static_assert(Parallel::is_array<ArrayParallelComponent>::value);
 static_assert(Parallel::is_group<GroupParallelComponent>::value);
 static_assert(Parallel::is_nodegroup<NodegroupParallelComponent>::value);
-static_assert(
-    Parallel::is_group<Parallel::MutableGlobalCache<Metavariables>>::value);
 static_assert(
     Parallel::is_nodegroup<Parallel::GlobalCache<Metavariables>>::value);

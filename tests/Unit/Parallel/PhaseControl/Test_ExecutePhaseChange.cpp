@@ -187,11 +187,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
            std::make_unique<Triggers::Always>()),
        std::move(phase_change_vector)});
 
-  Parallel::MutableGlobalCache<Metavariables> mutable_cache{};
   Parallel::GlobalCache<Metavariables> global_cache{
       tuples::TaggedTuple<phase_change_and_triggers>{
-          std::move(vector_of_triggers_and_phase_changes)},
-      &mutable_cache};
+          std::move(vector_of_triggers_and_phase_changes)}};
 
   {
     INFO("Initialize phase change decision data");

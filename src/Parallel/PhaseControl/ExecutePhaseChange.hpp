@@ -131,9 +131,9 @@ typename std::optional<Parallel::Phase> arbitrate_phase_change(
         phase_change_decision_data,
     Parallel::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
-  if constexpr (tmpl::list_contains_v<
-                    typename Parallel::GlobalCache<Metavariables>::tags_list,
-                    Tags::PhaseChangeAndTriggers>) {
+  if constexpr (tmpl::list_contains_v<typename Parallel::GlobalCache<
+                                          Metavariables>::const_tags_list,
+                                      Tags::PhaseChangeAndTriggers>) {
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool phase_chosen = false;
