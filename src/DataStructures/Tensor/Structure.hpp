@@ -477,12 +477,19 @@ struct Structure {
     static_assert(sizeof...(Indices) == sizeof...(N),
                   "the number arguments must be equal to rank_");
     constexpr auto collapsed_to_storage = collapsed_to_storage_;
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 10 and __GNUC__ < 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     return gsl::at(
         collapsed_to_storage,
         compute_collapsed_index(
             cpp20::array<size_t, sizeof...(N)>{{static_cast<size_t>(args)...}},
             make_cpp20_array_from_list<tmpl::conditional_t<
                 0 != sizeof...(Indices), index_list, size_t>>()));
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 10 and __GNUC__ < 12
+#pragma GCC diagnostic pop
+#endif
   }
 
   /// \brief Get the storage_index of a tensor_index

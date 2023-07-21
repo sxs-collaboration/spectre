@@ -25,6 +25,11 @@ const int exception_flags = FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW;
 #endif
 
 [[noreturn]] void fpe_signal_handler(int /*signal*/) {
+#if SPECTRE_FPE_CSR
+  _mm_setcsr(exception_flags);
+#elif SPECTRE_FPE_FENV
+  feenableexcept(exception_flags);
+#endif
   ERROR("Floating point exception!");
 }
 }  // namespace
@@ -35,7 +40,13 @@ void enable_floating_point_exceptions() {
 #elif SPECTRE_FPE_FENV
   feenableexcept(exception_flags);
 #endif
-  std::signal(SIGFPE, fpe_signal_handler);
+
+  struct sigaction handler {};
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+  handler.sa_handler = fpe_signal_handler;
+  handler.sa_flags = SA_NODEFER;
+  sigemptyset(&handler.sa_mask);
+  sigaction(SIGFPE, &handler, nullptr);
 }
 
 void disable_floating_point_exceptions() {

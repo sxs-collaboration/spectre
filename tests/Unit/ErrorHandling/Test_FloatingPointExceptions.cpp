@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
@@ -18,58 +19,54 @@
 // the arm64 architecture, so when building on Apple Silicon,
 // directly call the fpe_signal_handler in these tests so that they pass.
 
-// [[OutputRegex, Floating point exception!]]
-SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
-                  "[ErrorHandling][Unit]") {
-  ERROR_TEST();
-
-#ifdef __APPLE__
-#ifdef __arm64__
-  ERROR("Floating point exception!");
-#endif
-#endif
-
-  enable_floating_point_exceptions();
+namespace {
+// Compilers (both gcc and clang) seem prone to deciding that these
+// can't actually throw exceptions and then optimizing away the
+// try-catch logic (despite explicit requests to treat floating-point
+// instructions as potentially throwing).  All this nonsense is to
+// convince them not to do that.  In real code nothing is likely to be
+// simple enough that the compiler can "prove" to itself that no
+// exception can be thrown, so hopefully this won't be a real issue.
+[[noreturn]] __attribute__((noinline)) void throw_invalid() {
   volatile double x = -1.0;
   volatile double invalid = sqrt(x);
   static_cast<void>(invalid);
-  CHECK(true);
+  asm("");
+  throw std::runtime_error("wrong");
 }
 
-// [[OutputRegex, Floating point exception!]]
-SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Overflow",
-                  "[ErrorHandling][Unit]") {
-  ERROR_TEST();
-
-#ifdef __APPLE__
-#ifdef __arm64__
-  ERROR("Floating point exception!");
-#endif
-#endif
-
-  enable_floating_point_exceptions();
+[[noreturn]] __attribute__((noinline)) void throw_overflow() {
   volatile double overflow = std::numeric_limits<double>::max();
   overflow *= 1.0e300;
   (void)overflow;
-  CHECK(true);
+  asm("");
+  throw std::runtime_error("wrong");
 }
 
-// [[OutputRegex, Floating point exception!]]
-SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.DivByZero",
-                  "[ErrorHandling][Unit]") {
-  ERROR_TEST();
-
-#ifdef __APPLE__
-#ifdef __arm64__
-  ERROR("Floating point exception!");
-#endif
-#endif
-
-  enable_floating_point_exceptions();
+[[noreturn]] __attribute__((noinline)) void throw_div_by_zero() {
   volatile double div_by_zero = 1.0;
   div_by_zero /= 0.0;
   (void)div_by_zero;
+  asm("");
+  throw std::runtime_error("wrong");
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions",
+                  "[ErrorHandling][Unit]") {
+#if defined(__APPLE__) and defined(__arm64__)
   CHECK(true);
+#else
+  enable_floating_point_exceptions();
+  CHECK_THROWS_WITH(throw_invalid(), Catch::Matchers::ContainsSubstring(
+                                         "Floating point exception!"));
+
+  CHECK_THROWS_WITH(throw_overflow(), Catch::Matchers::ContainsSubstring(
+                                          "Floating point exception!"));
+
+  CHECK_THROWS_WITH(throw_div_by_zero(), Catch::Matchers::ContainsSubstring(
+                                             "Floating point exception!"));
+#endif
 }
 
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
