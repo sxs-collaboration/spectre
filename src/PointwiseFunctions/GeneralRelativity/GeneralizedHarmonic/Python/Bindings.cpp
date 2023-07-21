@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/CovariantDerivOfExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
@@ -28,6 +29,19 @@ void bind_impl(py::module& m) {  // NOLINT
           const tnsr::iaa<DataVector, Dim>&, const tnsr::II<DataVector, Dim>&)>(
           &::gh::christoffel_second_kind),
       py::arg("phi"), py::arg("inv_metric"));
+
+  m.def(
+      "covariant_deriv_of_extrinsic_curvature",
+      static_cast<tnsr::ijj<DataVector, Dim> (*)(
+          const tnsr::ii<DataVector, Dim>&, const tnsr::A<DataVector, Dim>&,
+          const tnsr::Ijj<DataVector, Dim>&, const tnsr::AA<DataVector, Dim>&,
+          const tnsr::iaa<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&,
+          const tnsr::ijaa<DataVector, Dim>&)>(
+          &::gh::covariant_deriv_of_extrinsic_curvature),
+      py::arg("extrinsic_curvature"), py::arg("spacetime_unit_normal_vector"),
+      py::arg("spatial_christoffel_second_kind"),
+      py::arg("inverse_spacetime_metric"), py::arg("phi"), py::arg("d_pi"),
+      py::arg("d_phi"));
 
   m.def("deriv_spatial_metric",
         static_cast<tnsr::ijj<DataVector, Dim> (*)(
