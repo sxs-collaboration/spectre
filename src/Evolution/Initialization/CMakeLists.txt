@@ -14,7 +14,6 @@ spectre_target_headers(
   ConservativeSystem.hpp
   DgDomain.hpp
   Evolution.hpp
-  GrTagsForHydro.hpp
   InitialData.hpp
   Limiter.hpp
   NonconservativeSystem.hpp

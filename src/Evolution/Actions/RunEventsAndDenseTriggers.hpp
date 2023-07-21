@@ -302,7 +302,7 @@ struct InitializeRunEventsAndDenseTriggers {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::nullopt);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Initialization/Test_QuadratureTag.cpp
   Messages/Test_BoundaryMessage.cpp
   Tags/Test_NeighborMesh.cpp
+  Test_BackgroundGrVars.cpp
   Test_BoundaryCorrectionsHelper.cpp
   Test_InboxTags.cpp
   Test_InterpolateFromBoundary.cpp
