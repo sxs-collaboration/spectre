@@ -25,12 +25,6 @@ if(USE_GIT_HOOKS)
       )
 
     configure_file(
-      ${CMAKE_SOURCE_DIR}/tools/Hooks/ClangFormat.py
-      ${CMAKE_SOURCE_DIR}/.git/hooks/ClangFormat.py
-      @ONLY
-      )
-
-    configure_file(
       ${CMAKE_SOURCE_DIR}/tools/Hooks/CheckFileSize.py
       ${CMAKE_SOURCE_DIR}/.git/hooks/CheckFileSize.py
       @ONLY
