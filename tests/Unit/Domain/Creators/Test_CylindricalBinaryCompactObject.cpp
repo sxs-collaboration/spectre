@@ -231,7 +231,7 @@ std::string stringize(const std::array<double, 3>& t) {
 }
 
 std::string create_option_string(
-    const bool add_time_dependence,
+    const bool enable_time_dependence, const bool add_time_dependence,
     const bool with_additional_outer_radial_refinement,
     const bool with_additional_grid_points, const bool include_outer_sphere,
     const bool include_inner_sphere_A, const bool include_inner_sphere_B,
@@ -241,23 +241,21 @@ std::string create_option_string(
     const double inner_radius_objectA, const double inner_radius_objectB,
     const double outer_radius) {
   const std::string time_dependence{
-      add_time_dependence ? "  TimeDependentMaps:\n"
-                            "    InitialTime: 1.0\n"
-                            "    ExpansionMap:\n"
-                            "      InitialValues: [1.0, -0.1]\n"
-                            "      AsymptoticVelocityOuterBoundary: -0.1\n"
-                            "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
-                            "    RotationMap:\n"
-                            "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                            "    SizeMapA:\n"
-                            "      InitialValues: [1.1, 0.0, 0.0]\n"
-                            "    SizeMapB:\n"
-                            "      InitialValues: [1.2, 0.0, 0.0]\n"
-                            "    ShapeMapA:\n"
-                            "      LMax: 8\n"
-                            "    ShapeMapB:\n"
-                            "      LMax: 8\n"
-                          : ""};
+      enable_time_dependence
+          ? (add_time_dependence
+                 ? "  TimeDependentMaps:\n"
+                   "    InitialTime: 1.0\n"
+                   "    ExpansionMap: None\n"
+                   "    RotationMap:\n"
+                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+                   "    ShapeMapA:\n"
+                   "      LMax: 8\n"
+                   "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
+                   "    ShapeMapB:\n"
+                   "      LMax: 8\n"
+                   "      SizeInitialValues: [1.2, 0.0, 0.0]\n"
+                 : "  TimeDependentMaps: None\n")
+          : ""};
 
   const std::string boundary_conditions{
       add_boundary_condition ? std::string{"  BoundaryConditions:\n"
@@ -352,14 +350,7 @@ void test_construction(const CylBCO& creator,
 
 TimeDepOptions construct_time_dependent_options() {
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
-  constexpr double expected_asymptotic_velocity_outer_boundary =
-      -0.1;  // matches AsymptoticVelocityOuterBoundary: -0.1 above
-  constexpr double expected_decay_timescale_outer_boundary_velocity =
-      5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
 
-  // Matches ExpansionMap:InitialValues above
-  std::array<DataVector, 3> initial_expansion_factor_coefs{
-      {{1.0}, {-0.1}, {0.0}}};
   // Matches RotationMap:InitialAngularVelocity above
   const DataVector initial_angular_velocity{{0.0, 0.0, -0.2}};
 
@@ -375,21 +366,20 @@ TimeDepOptions construct_time_dependent_options() {
   std::array<DataVector, 4> initial_size_A_coefs{{{1.1}, {0.0}, {0.0}, {0.0}}};
   std::array<DataVector, 4> initial_size_B_coefs{{{1.2}, {0.0}, {0.0}, {0.0}}};
 
+  // No expansion map options because of above option string
   return TimeDepOptions{
-      expected_time,
-      TimeDepOptions::ExpansionMapOptions{
-          std::array{initial_expansion_factor_coefs[0][0],
-                     initial_expansion_factor_coefs[1][0]},
-          expected_asymptotic_velocity_outer_boundary,
-          expected_decay_timescale_outer_boundary_velocity},
-      {{initial_angular_velocity[0], initial_angular_velocity[1],
-        initial_angular_velocity[2]}},
-      {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
-        initial_size_A_coefs[1][0]}},
-      {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-        initial_size_B_coefs[1][0]}},
-      8_st,
-      8_st};
+      expected_time, std::nullopt,
+      TimeDepOptions::RotationMapOptions{{initial_angular_velocity[0],
+                                          initial_angular_velocity[1],
+                                          initial_angular_velocity[2]}},
+      TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::A>{
+          8_st,
+          {initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
+           initial_size_A_coefs[1][0]}},
+      TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::B>{
+          8_st,
+          {initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
+           initial_size_B_coefs[1][0]}}};
 }
 
 void test_parse_errors() {
@@ -441,11 +431,10 @@ void test_parse_errors() {
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          TimeDepOptions{0.0,
-                         TimeDepOptions::ExpansionMapOptions{
-                             std::array{0.0, 0.0}, 0.0, 1.0},
-                         std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0},
-                         std::array{0.0, 0.0, 0.0}, 8, 8},
+          TimeDepOptions{
+              0.0, std::nullopt,
+              TimeDepOptions::RotationMapOptions{std::array{0.0, 0.0, 0.0}},
+              std::nullopt, std::nullopt},
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -529,14 +518,15 @@ void test_cylindrical_bbh() {
   for (auto [include_outer_sphere, include_inner_sphere_A,
              include_inner_sphere_B, use_equiangular_map,
              with_additional_outer_radial_refinement,
-             with_additional_grid_points, with_time_dependence,
-             with_control_systems, with_boundary_conditions] :
+             with_additional_grid_points, enable_time_dependence,
+             with_time_dependence, with_control_systems,
+             with_boundary_conditions] :
        random_sample<5>(
            cartesian_product(make_array(true, false), make_array(true, false),
                              make_array(true, false), make_array(true, false),
                              make_array(true, false), make_array(true, false),
                              make_array(true, false), make_array(true, false),
-                             make_array(true, false)),
+                             make_array(true, false), make_array(true, false)),
            make_not_null(&gen))) {
     CAPTURE(with_sphere_e);
     CAPTURE(include_outer_sphere);
@@ -589,9 +579,13 @@ void test_cylindrical_bbh() {
     }
 
     CylBCO cyl_binary_compact_object{};
-    if (with_time_dependence) {
+    if (enable_time_dependence) {
+      std::optional<TimeDepOptions> time_dep_opts{};
+      if (with_time_dependence) {
+        time_dep_opts = construct_time_dependent_options();
+      }
       cyl_binary_compact_object =
-          CylBCO{construct_time_dependent_options(),
+          CylBCO{std::move(time_dep_opts),
                  center_objectA,
                  center_objectB,
                  inner_radius_objectA,
@@ -632,15 +626,16 @@ void test_cylindrical_bbh() {
                       inner_radius_objectB, center_objectA, center_objectB,
                       times_to_check);
     TestHelpers::domain::creators::test_creation(
-        create_option_string(
-            with_time_dependence, with_additional_outer_radial_refinement,
-            with_additional_grid_points, include_outer_sphere,
-            include_inner_sphere_A, include_inner_sphere_B,
-            with_boundary_conditions, use_equiangular_map, center_objectA,
-            center_objectB, inner_radius_objectA, inner_radius_objectB,
-            outer_radius),
+        create_option_string(enable_time_dependence, with_time_dependence,
+                             with_additional_outer_radial_refinement,
+                             with_additional_grid_points, include_outer_sphere,
+                             include_inner_sphere_A, include_inner_sphere_B,
+                             with_boundary_conditions, use_equiangular_map,
+                             center_objectA, center_objectB,
+                             inner_radius_objectA, inner_radius_objectB,
+                             outer_radius),
         cyl_binary_compact_object, with_boundary_conditions,
-        with_time_dependence);
+        enable_time_dependence);
   }
 }
 }  // namespace

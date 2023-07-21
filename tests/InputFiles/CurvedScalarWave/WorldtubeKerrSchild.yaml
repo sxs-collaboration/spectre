@@ -69,14 +69,12 @@ DomainCreator:
         DecayTimescaleOuterBoundaryVelocity: 1.
       RotationMap:
         InitialAngularVelocity: [0., 0., 0.08944271909999159]
-      SizeMapA:
-        InitialValues: [0., 0., 0.]
-      SizeMapB:
-        InitialValues: [0., 0., 0.]
       ShapeMapA:
         LMax: 8
+        SizeInitialValues: [0., 0., 0.]
       ShapeMapB:
         LMax: 8
+        SizeInitialValues: [0., 0., 0.]
 
 SpatialDiscretization:
   BoundaryCorrection:

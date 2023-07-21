@@ -351,30 +351,38 @@ void test_connectivity() {
 
 std::string stringize(const bool t) { return t ? "true" : "false"; }
 
+// There are two options for time dependence because the first is whether time
+// dependent maps are even enabled. If they aren't then there's no options at
+// all. The second determines if we specify time dep options or `None` (assuming
+// time dependent maps are enabled)
 std::string create_option_string(
-    const bool excise_A, const bool excise_B, const bool add_time_dependence,
-    const bool use_logarithmic_map_AB, const bool use_equiangular_map,
-    const size_t additional_refinement_outer,
+    const bool excise_A, const bool excise_B, const bool enable_time_dependence,
+    const bool add_time_dependence, const bool use_logarithmic_map_AB,
+    const bool use_equiangular_map, const size_t additional_refinement_outer,
     const size_t additional_refinement_A, const size_t additional_refinement_B,
     const double opening_angle, const bool add_boundary_condition) {
   const std::string time_dependence{
-      add_time_dependence ? "  TimeDependentMaps:\n"
-                            "    InitialTime: 1.0\n"
-                            "    ExpansionMap: \n"
-                            "      InitialValues: [1.0, -0.1]\n"
-                            "      AsymptoticVelocityOuterBoundary: -0.1\n"
-                            "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
-                            "    RotationMap:\n"
-                            "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                            "    SizeMapA:\n"
-                            "      InitialValues: [0.0, -0.1, 0.01]\n"
-                            "    SizeMapB:\n"
-                            "      InitialValues: [0.0, -0.2, 0.02]\n"
-                            "    ShapeMapA:\n"
-                            "      LMax: 8\n"
-                            "    ShapeMapB:\n"
-                            "      LMax: 8"
-                          : ""};
+      enable_time_dependence
+          ? (add_time_dependence
+                 ? "  TimeDependentMaps:\n"
+                   "    InitialTime: 1.0\n"
+                   "    ExpansionMap: \n"
+                   "      InitialValues: [1.0, -0.1]\n"
+                   "      AsymptoticVelocityOuterBoundary: -0.1\n"
+                   "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
+                   "    RotationMap:\n"
+                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"s +
+                       (excise_A
+                            ? "    ShapeMapA:\n"
+                              "      LMax: 8\n"
+                              "      SizeInitialValues: [0.0, -0.1, 0.01]\n"s
+                            : "    ShapeMapA: None\n"s) +
+                       (excise_B ? "    ShapeMapB:\n"
+                                   "      LMax: 8\n"
+                                   "      SizeInitialValues: [0.0, -0.2, 0.02]"s
+                                 : "    ShapeMapB: None"s)
+                 : "  TimeDependentMaps: None")
+          : ""};
   const std::string interior_A{
       add_boundary_condition
           ? std::string{"    Interior:\n" +
@@ -529,20 +537,25 @@ void test_bns_domain_with_cubes() {
 }
 
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
-                                     const bool with_control_systems) {
+                                     const bool with_time_dependence,
+                                     const bool excise_B) {
   INFO("BBH time dependent factory");
   CAPTURE(with_boundary_conditions);
-  CAPTURE(with_control_systems);
-  const auto binary_compact_object = [&with_boundary_conditions]() {
+  CAPTURE(with_time_dependence);
+  CAPTURE(excise_B);
+  const auto binary_compact_object = [&with_boundary_conditions,
+                                      &with_time_dependence, &excise_B]() {
     if (with_boundary_conditions) {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, true>>(
-          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
+          create_option_string(true, excise_B, true, with_time_dependence,
+                               false, true, 0, 0, 0, 120.0,
                                with_boundary_conditions));
     } else {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
                                           Metavariables<3, true, false>>(
-          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
+          create_option_string(true, excise_B, true, with_time_dependence,
+                               false, true, 0, 0, 0, 120.0,
                                with_boundary_conditions));
     }
   }();
@@ -571,7 +584,6 @@ void test_binary_factory() {
     TestHelpers::domain::creators::test_domain_creator(
         *binary_compact_object, with_boundary_conditions);
   };
-  const bool add_time_dependence = false;
   for (const auto& [excise_A, excise_B, use_log_maps, use_equiangular_map,
                     additional_refinement_outer, additional_refinement_A,
                     additional_refinement_B, opening_angle,
@@ -589,7 +601,7 @@ void test_binary_factory() {
       continue;
     }
     check_impl(create_option_string(
-                   excise_A, excise_B, add_time_dependence, use_log_maps,
+                   excise_A, excise_B, false, false, use_log_maps,
                    opening_angle == 90.0 ? use_equiangular_map : true,
                    additional_refinement_outer, additional_refinement_A,
                    additional_refinement_B, opening_angle, with_boundary_conds),
@@ -690,10 +702,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
   test_bns_domain_with_cubes();
-  test_bbh_time_dependent_factory(true, true);
-  test_bbh_time_dependent_factory(true, false);
-  test_bbh_time_dependent_factory(false, true);
-  test_bbh_time_dependent_factory(false, false);
+  for (const auto& [with_bc, add_time_dep, excise_B] :
+       cartesian_product(make_array(true, false), make_array(true, false),
+                         make_array(true, false))) {
+    test_bbh_time_dependent_factory(with_bc, add_time_dep, excise_B);
+  }
   test_binary_factory();
   test_parse_errors();
 }

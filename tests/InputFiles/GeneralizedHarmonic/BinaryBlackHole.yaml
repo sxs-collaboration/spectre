@@ -75,14 +75,12 @@ DomainCreator:
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:
         InitialAngularVelocity: [0.0, 0.0, 0.0]
-      SizeMapA:
-        InitialValues: [0.0, 0.0, 0.0]
-      SizeMapB:
-        InitialValues: [0.0, 0.0, 0.0]
       ShapeMapA:
         LMax: &LMax 10
+        SizeInitialValues: [0.0, 0.0, 0.0]
       ShapeMapB:
         LMax: *LMax
+        SizeInitialValues: [0.0, 0.0, 0.0]
 
 EventsAndDenseTriggers:
 
