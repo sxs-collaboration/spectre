@@ -19,7 +19,10 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
+#include "PointwiseFunctions/MathFunctions/RegisterDerivedWithCharm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -34,6 +37,11 @@ void test_translation() {
   const double dt = 0.6;
   const double final_time = 4.0;
   constexpr size_t deriv_order = 3;
+  const double amplitude = 1.0;
+  const double width = 20.0;
+  std::array<double, 1> gauss_center{0.};
+  const MathFunctions::Gaussian<1, Frame::Inertial> gaussian{amplitude, width,
+                                                             gauss_center};
 
   const std::array<DataVector, deriv_order + 1> init_func{
       {{Dim, 1.0}, {Dim, -2.0}, {Dim, 2.0}, {Dim, 0.0}}};
@@ -46,72 +54,115 @@ void test_translation() {
 
   const FoftPtr& f_of_t = f_of_t_list.at("translation");
 
-  const CoordinateMaps::TimeDependent::Translation<Dim> trans_map{
-      "translation"};
-  // test serialized/deserialized map
-  const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
-
   UniformCustomDistribution<double> dist_double{-5.0, 5.0};
   std::array<double, Dim> point_xi{};
+  std::array<double, Dim> center{};
   fill_with_random_values(make_not_null(&point_xi), make_not_null(&gen),
                           make_not_null(&dist_double));
+  fill_with_random_values(make_not_null(&center), make_not_null(&gen),
+                          make_not_null(&dist_double));
+  const CoordinateMaps::TimeDependent::Translation<Dim> translation_map{
+      "translation"};
+  const CoordinateMaps::TimeDependent::Translation<Dim> radial_translation_map{
+      "translation",
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+          amplitude, width, gauss_center),
+      center};
+  // test serialized/deserialized map
+  MathFunctions::register_derived_with_charm();
+  const auto translation_map_deserialized =
+      serialize_and_deserialize(translation_map);
+  const auto radial_translation_map_deserialized =
+      serialize_and_deserialize(radial_translation_map);
 
   while (t < final_time) {
     std::array<double, Dim> translation{};
+    std::array<double, Dim> distance_to_center{};
+    double radius = 0;
     for (size_t i = 0; i < Dim; i++) {
       gsl::at(translation, i) = square(t);
+      distance_to_center[i] = point_xi[i] - center[i];
+      radius += square(distance_to_center[i]);
     }
+    radius = sqrt(radius);
     std::array<double, Dim> frame_vel{};
+    std::array<double, Dim> radial_frame_vel{};
     for (size_t i = 0; i < Dim; i++) {
       gsl::at(frame_vel, i) = f_of_t->func_and_deriv(t)[1][i];
+      gsl::at(radial_frame_vel, i) =
+          f_of_t->func_and_deriv(t)[1][i] * gaussian(radius);
     }
 
-    CHECK_ITERABLE_APPROX(trans_map(point_xi, t, f_of_t_list),
+    CHECK_ITERABLE_APPROX(translation_map(point_xi, t, f_of_t_list),
                           point_xi + translation);
+    CHECK_ITERABLE_APPROX(radial_translation_map(point_xi, t, f_of_t_list),
+                          point_xi + (translation * gaussian(radius)));
     CHECK_ITERABLE_APPROX(
-        trans_map.inverse(point_xi + translation, t, f_of_t_list).value(),
+        translation_map.inverse(point_xi + translation, t, f_of_t_list).value(),
         point_xi);
-    CHECK_ITERABLE_APPROX(trans_map.frame_velocity(point_xi, t, f_of_t_list),
-                          frame_vel);
-
-    CHECK_ITERABLE_APPROX(trans_map_deserialized(point_xi, t, f_of_t_list),
-                          point_xi + translation);
     CHECK_ITERABLE_APPROX(
-        trans_map_deserialized.inverse(point_xi + translation, t, f_of_t_list)
+        radial_translation_map
+            .inverse(point_xi + (translation * gaussian(radius)), t,
+                     f_of_t_list)
             .value(),
         point_xi);
-    CHECK_ITERABLE_APPROX(trans_map_deserialized.frame_velocity(
-                              point_xi + translation, t, f_of_t_list),
-                          frame_vel);
+    CHECK_ITERABLE_APPROX(
+        translation_map.frame_velocity(point_xi, t, f_of_t_list), frame_vel);
+    CHECK_ITERABLE_APPROX(
+        radial_translation_map.frame_velocity(point_xi, t, f_of_t_list),
+        radial_frame_vel);
+
+    CHECK_ITERABLE_APPROX(
+        radial_translation_map_deserialized(point_xi, t, f_of_t_list),
+        point_xi + (translation * gaussian(radius)));
+    CHECK_ITERABLE_APPROX(translation_map_deserialized
+                              .inverse(point_xi + translation, t, f_of_t_list)
+                              .value(),
+                          point_xi);
+    CHECK_ITERABLE_APPROX(
+        radial_translation_map_deserialized
+            .inverse(point_xi + (translation * gaussian(radius)), t,
+                     f_of_t_list)
+            .value(),
+        point_xi);
+    CHECK_ITERABLE_APPROX(
+        translation_map_deserialized.frame_velocity(point_xi, t, f_of_t_list),
+        frame_vel);
+    CHECK_ITERABLE_APPROX(radial_translation_map_deserialized.frame_velocity(
+                              point_xi, t, f_of_t_list),
+                          radial_frame_vel);
+
+    test_jacobian(translation_map, point_xi, t, f_of_t_list);
+    test_inv_jacobian(translation_map, point_xi, t, f_of_t_list);
+    test_jacobian(translation_map_deserialized, point_xi, t, f_of_t_list);
+    test_inv_jacobian(translation_map_deserialized, point_xi, t, f_of_t_list);
+    test_jacobian(radial_translation_map, point_xi, t, f_of_t_list);
+    test_inv_jacobian(radial_translation_map, point_xi, t, f_of_t_list);
+    test_jacobian(radial_translation_map_deserialized, point_xi, t,
+                  f_of_t_list);
+    test_inv_jacobian(radial_translation_map_deserialized, point_xi, t,
+                      f_of_t_list);
 
     t += dt;
   }
 
-  // time-independent checks
-  {
-    const auto identity_matrix = identity<Dim>(point_xi[0]);
-    const auto jacobian = trans_map.jacobian(point_xi);
-    const auto jacobian_deserialized =
-        trans_map_deserialized.jacobian(point_xi);
-    const auto inv_jacobian = trans_map.inv_jacobian(point_xi);
-    const auto inv_jacobian_deserialized =
-        trans_map_deserialized.inv_jacobian(point_xi);
-
-    CHECK_ITERABLE_APPROX(jacobian, identity_matrix);
-    CHECK_ITERABLE_APPROX(jacobian_deserialized, identity_matrix);
-    CHECK_ITERABLE_APPROX(inv_jacobian, identity_matrix);
-    CHECK_ITERABLE_APPROX(inv_jacobian_deserialized, identity_matrix);
-  }
-
   // Check inequivalence operator
-  CHECK_FALSE(trans_map != trans_map);
-  CHECK_FALSE(trans_map_deserialized != trans_map_deserialized);
+  CHECK_FALSE(translation_map != translation_map);
+  CHECK_FALSE(translation_map_deserialized != translation_map_deserialized);
+  CHECK_FALSE(radial_translation_map != radial_translation_map);
+  CHECK_FALSE(radial_translation_map_deserialized !=
+              radial_translation_map_deserialized);
 
   // Check serialization
-  CHECK(trans_map == trans_map_deserialized);
-  CHECK_FALSE(trans_map != trans_map_deserialized);
+  CHECK(translation_map == translation_map_deserialized);
+  CHECK_FALSE(translation_map != translation_map_deserialized);
 
-  test_coordinate_map_argument_types(trans_map, point_xi, t, f_of_t_list);
+  test_coordinate_map_argument_types(translation_map, point_xi, t, f_of_t_list);
+  CHECK(radial_translation_map == radial_translation_map_deserialized);
+  CHECK_FALSE(radial_translation_map != radial_translation_map_deserialized);
+
+  test_coordinate_map_argument_types(radial_translation_map, point_xi, t,
+                                     f_of_t_list);
   CHECK(not CoordinateMaps::TimeDependent::Translation<Dim>{}.is_identity());
 }
 }  // namespace

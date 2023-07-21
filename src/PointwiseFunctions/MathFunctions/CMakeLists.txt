@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Gaussian.cpp
   PowX.cpp
+  RegisterDerivedWithCharm.cpp
   Sinusoid.cpp
   TensorProduct.cpp
   )
@@ -22,6 +23,7 @@ spectre_target_headers(
   Gaussian.hpp
   MathFunction.hpp
   PowX.hpp
+  RegisterDerivedWithCharm.hpp
   Sinusoid.hpp
   TensorProduct.hpp
   )
