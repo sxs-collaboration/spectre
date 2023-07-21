@@ -57,59 +57,43 @@ void test_find_generalized_eigenvalues(const Matrix& matrix_a,
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
                   "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
-  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
-  test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
-}
+  {
+    Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+    Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
+    test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
+  }
 
-// [[OutputRegex, Matrix A should be square]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.LinearAlgebra.GeneralizedEigenvalueAssertSquare",
-    "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Matrix matrix_a{{1.0}, {-3.0}};
-  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
-  test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Matrix A and matrix B should be the same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.LinearAlgebra.GeneralizedEigenvalueAssertABSameSize",
-    "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
-  Matrix matrix_b{{4.0}};
-  test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Matrix A and matrix eigenvectors should have the same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.LinearAlgebra.GeneralizedEigenvalueAssertSizeEigenvectors",
-    "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
-  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
-  test_find_generalized_eigenvalues(matrix_a, matrix_b, 1, 2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, eigenvalues DataVector sizes should equal number of columns]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.LinearAlgebra.GeneralizedEigenvalueAssertSizeEigenvalues",
-    "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
-  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
-  test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(([]() {
+                      Matrix matrix_a{{1.0}, {-3.0}};
+                      Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
+                      test_find_generalized_eigenvalues(matrix_a, matrix_b, 2,
+                                                        2);
+                    }()),
+                    Catch::Matchers::Contains("Matrix A should be square"));
+  CHECK_THROWS_WITH(([]() {
+                      Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+                      Matrix matrix_b{{4.0}};
+                      test_find_generalized_eigenvalues(matrix_a, matrix_b, 2,
+                                                        2);
+                    }()),
+                    Catch::Matchers::Contains(
+                        "Matrix A and matrix B should be the same size"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+        Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
+        test_find_generalized_eigenvalues(matrix_a, matrix_b, 1, 2);
+      }()),
+      Catch::Matchers::Contains(
+          "Matrix A and matrix eigenvectors should have the same size"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+        Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
+        test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 1);
+      }()),
+      Catch::Matchers::Contains(
+          "eigenvalues DataVector sizes should equal number of columns"));
 #endif
 }

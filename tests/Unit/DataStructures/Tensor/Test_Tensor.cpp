@@ -463,49 +463,30 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
   CHECK(scalar.component_suffix(0).empty());
   CHECK(tensor_2.component_suffix(3) == "_tyx");
   CHECK(tensor_3.component_suffix(12) == "_xzy");
-}
 
-// [[OutputRegex, Tensor dim\[0\] must be 1,2,3, or 4 for default axis_labels]]
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim1",
-                  "[DataStructures][Unit]") {
-  ERROR_TEST();
-  Tensor<double, Symmetry<1>,
-         index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>
-      tensor_5{3.0};
-  std::stringstream os;
-  os << tensor_5.component_name(std::array<size_t, 1>{{4}});
-}
-
-// [[OutputRegex, Tensor dim\[0\] must be 1,2, or 3 for default axis_labels]]
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim2",
-                  "[DataStructures][Unit]") {
-  ERROR_TEST();
-  Tensor<double, Symmetry<1>,
-         index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>
-      tensor_6{3.0};
-  std::stringstream os;
-  os << tensor_6.component_name(std::array<size_t, 1>{{4}});
-}
-
-namespace {
-void trigger_bad_stream() {
-  Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      tensor_5{};
-  auto bla = tensor_5.component_name(
-      tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
-      make_array<3>(std::string("abcdefgh")));
-}
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamBad",
-                  "[DataStructures][Unit]") {
   CHECK_THROWS_WITH(
-      trigger_bad_stream(),
-      Catch::Contains("Dimension mismatch: Tensor has dim = 4, but you "
-                      "specified 8 different labels in abcdefgh"));
+      (Tensor<double, Symmetry<1>,
+              index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>{3.0}
+           .component_name(std::array<size_t, 1>{{4}})),
+      Catch::Matchers::Contains(
+          "Tensor dim[0] must be 1,2,3, or 4 for default axis_labels"));
+  CHECK_THROWS_WITH(
+      (Tensor<double, Symmetry<1>,
+              index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>{3.0}
+           .component_name(std::array<size_t, 1>{{4}})),
+      Catch::Matchers::Contains(
+          "Tensor dim[0] must be 1,2, or 3 for default axis_labels"));
+  CHECK_THROWS_WITH(
+      (Tensor<double, Symmetry<1, 2, 2>,
+              index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>{}
+           .component_name(
+               tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
+               make_array<3>(std::string("abcdefgh")))),
+      Catch::Matchers::Contains(
+          "Dimension mismatch: Tensor has dim = 4, but you "
+          "specified 8 different labels in abcdefgh"));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
@@ -1314,51 +1295,35 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
   test_serialization(tensor);
 }
 
-// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.out_of_bounds_subscript",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.out_of_bounds",
+                  "[DataStructures][Unit]") {
 #ifdef SPECTRE_DEBUG
-  tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
-  tensor[1000];
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.const_out_of_bounds_subscript",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
-  tensor[1000];
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.const_out_of_bounds_multiplicity",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Scalar<double> tensor(1_st);
-  tensor.multiplicity(1000);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_vector",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  tnsr::I<double, 3, Frame::Grid> tensor(1_st);
-  tensor.get_tensor_index(1000);
-  ERROR("Bad test end");
+  CHECK_THROWS_WITH(
+      ([]() {
+        tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+        tensor[1000];
+      }()),
+      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+        tensor[1000];
+      }()),
+      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Scalar<double> tensor(1_st);
+        tensor.multiplicity(1000);
+      }()),
+      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        tnsr::I<double, 3, Frame::Grid> tensor(1_st);
+        tensor.get_tensor_index(1000);
+      }()),
+      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
+#else
+  CHECK(true);
 #endif
 }
 

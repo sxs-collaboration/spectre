@@ -157,44 +157,35 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
   test_datavector();
   test_convergence_error_double();
   test_convergence_error_datavector();
-}
 
-// [[OutputRegex, The relative tolerance is too small.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.TOMS748.RelativeTol.DataVector",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const double abs_tol = 1e-15;
-  const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
-  const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
-  const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
+        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
+        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
 
-  const DataVector constant{2.0, 4.0, 2.0, 4.0};
-  const auto f_lambda = [&constant](const double x, const size_t i) {
-    return constant[i] - square(x);
-  };
+        const DataVector constant{2.0, 4.0, 2.0, 4.0};
+        const auto f_lambda = [&constant](const double x, const size_t i) {
+          return constant[i] - square(x);
+        };
 
-  RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+        RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
+      }()),
+      Catch::Matchers::Contains("The relative tolerance is too small."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
+        double upper = 2.0;
+        double lower = sqrt(2.0) - abs_tol;
+        const auto f_lambda = [](double x) { return 2.0 - square(x); };
 
-// [[OutputRegex, The relative tolerance is too small.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.TOMS748.RelativeTol.Double",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const double abs_tol = 1e-15;
-  const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
-  double upper = 2.0;
-  double lower = sqrt(2.0) - abs_tol;
-  const auto f_lambda = [](double x) { return 2.0 - square(x); };
-
-  // NOLINTNEXTLINE(clang-analyzer-core)
-  RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+        // NOLINTNEXTLINE(clang-analyzer-core)
+        RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
+      }()),
+      Catch::Matchers::Contains("The relative tolerance is too small."));
 #endif
 }
 }  // namespace

@@ -102,16 +102,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
   test_suite();
   test_radius();
   test_is_identity();
-}
-// [[OutputRegex, The aspect_ratio must be greater than zero.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.EquatorialCompression.Assert2",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
+
 #ifdef SPECTRE_DEBUG
-  auto failed_angular_compression = CoordinateMaps::EquatorialCompression(-0.2);
-  static_cast<void>(failed_angular_compression);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::EquatorialCompression(-0.2)),
+      Catch::Matchers::Contains("The aspect_ratio must be greater than zero."));
 #endif
 }
 }  // namespace domain

@@ -8,13 +8,11 @@ set(LIBRARY_SOURCES
   Test_BlazeInteroperability.cpp
   Test_CachedTempBuffer.cpp
   Test_ComplexDataVector.cpp
-  Test_ComplexDataVectorAsserts.cpp
   Test_ComplexDataVectorBinaryOperations.cpp
   Test_ComplexDiagonalModalOperator.cpp
   Test_ComplexModalVector.cpp
   Test_ComplexModalVectorInhomogeneousOperations.cpp
   Test_DataVector.cpp
-  Test_DataVectorAsserts.cpp
   Test_DataVectorBinaryOperations.cpp
   Test_DiagonalModalOperator.cpp
   Test_DynamicBuffer.cpp

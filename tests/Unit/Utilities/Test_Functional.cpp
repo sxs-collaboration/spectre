@@ -490,28 +490,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   test_assert_equal();
   test_get_argument();
   test_vector_plus();
-}
 
-// [[OutputRegex, Values are not equal in funcl::AssertEqual 7 and 8]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Functional.AssertEqual",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  AssertEqual<>{}(7, 8);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-    // clang-format off
-// [[OutputRegex, Sizes must be the same but got]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Functional.VectorPlus",
-                               "[Unit][Utilities]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  funcl::ElementWise<funcl::Plus<>>{}(std::vector<double>{2.0},
-                                      std::vector<double>{0.4, -19.90});
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH((AssertEqual<>{}(7, 8)),
+                    Catch::Matchers::Contains(
+                        "Values are not equal in funcl::AssertEqual 7 and 8"));
+  CHECK_THROWS_WITH(
+      (funcl::ElementWise<funcl::Plus<>>{}(std::vector<double>{2.0},
+                                           std::vector<double>{0.4, -19.90})),
+      Catch::Matchers::Contains("Sizes must be the same but got"));
 #endif
 }
 

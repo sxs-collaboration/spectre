@@ -191,37 +191,30 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
     test_variables_add_slice_to_data<DataVector>();
     test_variables_add_slice_to_data<ModalVector>();
   }
-}
 
-// [[OutputRegex, volume_vars has wrong number of grid points.
-//  Expected 8, got 10]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.add_slice_to_data.BadSize.volume",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(10, 0.);
-  const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> slice(2,
-                                                                           0.);
-  add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0, 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// clang-format off
-// [[OutputRegex, vars_on_slice has wrong number of grid points.
-//  Expected 2, got 5]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.add_slice_to_data.BadSize.slice",
-    "[DataStructures][Unit]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(8, 0.);
-  const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> slice(5,
-                                                                           0.);
-  add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0, 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(10,
+                                                                          0.);
+        const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>
+            slice(2, 0.);
+        add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0,
+                          0);
+      }()),
+      Catch::Matchers::Contains(
+          "volume_vars has wrong number of grid points.  Expected 8, got 10"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(8,
+                                                                          0.);
+        const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>
+            slice(5, 0.);
+        add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0,
+                          0);
+      }()),
+      Catch::Matchers::Contains(
+          "vars_on_slice has wrong number of grid points.  Expected 2, got 5"));
 #endif
 }
 }  // namespace

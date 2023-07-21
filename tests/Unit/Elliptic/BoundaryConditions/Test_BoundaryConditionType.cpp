@@ -18,13 +18,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditionType", "[Unit][Elliptic]") {
         BoundaryConditionType::Dirichlet);
   CHECK(TestHelpers::test_creation<BoundaryConditionType>("Neumann") ==
         BoundaryConditionType::Neumann);
-}
 
-// [[OutputRegex, Failed to convert "nil" to elliptic::BoundaryConditionType.]]
-SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditionType.ParseError",
-                  "[Unit][Elliptic]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<elliptic::BoundaryConditionType>("nil");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<elliptic::BoundaryConditionType>("nil")),
+      Catch::Matchers::Contains(
+          "Failed to convert \"nil\" to elliptic::BoundaryConditionType."));
 }
 
 }  // namespace elliptic

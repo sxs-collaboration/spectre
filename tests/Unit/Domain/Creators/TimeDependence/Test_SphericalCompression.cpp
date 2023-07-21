@@ -227,22 +227,19 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.SphericalCompression",
        initial_time, f_of_t_name, min_radius, max_radius, center);
 
   test_equivalence();
-}
 
-// [[OutputRegex, Tried to create a SphericalCompression TimeDependence]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.TimeDependence.SphericalCompression.ErrorTest",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
-      "SphericalCompression:\n"
-      "  InitialTime: 1.3\n"
-      "  MinRadius: 4.0\n"
-      "  MaxRadius: 0.4\n"
-      "  Center: [-0.01, 0.02, 0.01]\n"
-      "  InitialValue: 3.5\n"
-      "  InitialVelocity: -4.6\n"
-      "  InitialAcceleration: 5.7\n");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
+          "SphericalCompression:\n"
+          "  InitialTime: 1.3\n"
+          "  MinRadius: 4.0\n"
+          "  MaxRadius: 0.4\n"
+          "  Center: [-0.01, 0.02, 0.01]\n"
+          "  InitialValue: 3.5\n"
+          "  InitialVelocity: -4.6\n"
+          "  InitialAcceleration: 5.7\n")),
+      Catch::Matchers::Contains(
+          "Tried to create a SphericalCompression TimeDependence"));
 }
 }  // namespace
 

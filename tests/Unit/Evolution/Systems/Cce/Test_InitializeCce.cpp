@@ -169,89 +169,15 @@ void test_initialize_j_zero_nonsmooth(
   }
 }
 
-// [[OutputRegex, Initial data iterative angular solve]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.Cce.InitializeJ.ZeroNonSmoothError",
-    "[Unit][Cce]") {
-  ERROR_TEST();
-  MAKE_GENERATOR(generator);
-  UniformCustomDistribution<size_t> sdist{5, 8};
-  const size_t l_max = sdist(generator);
-  const size_t number_of_radial_points = sdist(generator);
-
-  using boundary_variables_tag =
-      ::Tags::Variables<InitializeJ::InverseCubic<false>::boundary_tags>;
-  using pre_swsh_derivatives_variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
-  using tensor_variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords>>;
-
-  const size_t number_of_boundary_points =
-      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  const size_t number_of_volume_points =
-      number_of_boundary_points * number_of_radial_points;
-  auto box_to_initialize = db::create<db::AddSimpleTags<
-      boundary_variables_tag, pre_swsh_derivatives_variables_tag,
-      tensor_variables_tag, Tags::LMax, Tags::NumberOfRadialPoints,
-      Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>>(
-      typename boundary_variables_tag::type{number_of_boundary_points},
-      typename pre_swsh_derivatives_variables_tag::type{
-          number_of_volume_points},
-      typename tensor_variables_tag::type{number_of_boundary_points}, l_max,
-      number_of_radial_points, Spectral::Swsh::SwshInterpolator{});
-
-  // generate some random values for the boundary data. Mode magnitudes are
-  // roughly representative of typical strains seen in simulations, and are of a
-  // scale that can be fully solved by the iterative procedure used in the more
-  // elaborate initial data generators.
-  UniformCustomDistribution<double> dist(1.0e-5, 1.0e-4);
-  db::mutate<Tags::BoundaryValue<Tags::BondiR>,
-             Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
-             Tags::BoundaryValue<Tags::BondiJ>>(
-      [&generator, &dist, &l_max](
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              boundary_r,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
-              boundary_dr_j,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
-              boundary_j) {
-        SpinWeighted<ComplexModalVector, 2> generated_modes{
-            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
-        Spectral::Swsh::TestHelpers::generate_swsh_modes<2>(
-            make_not_null(&generated_modes.data()), make_not_null(&generator),
-            make_not_null(&dist), 1, l_max);
-
-        get(*boundary_j) =
-            Spectral::Swsh::inverse_swsh_transform(l_max, 1, generated_modes);
-        Spectral::Swsh::filter_swsh_boundary_quantity(
-            make_not_null(&get(*boundary_j)), l_max, l_max / 2);
-
-        Spectral::Swsh::TestHelpers::generate_swsh_modes<2>(
-            make_not_null(&generated_modes.data()), make_not_null(&generator),
-            make_not_null(&dist), 1, l_max);
-        get(*boundary_dr_j) =
-            Spectral::Swsh::inverse_swsh_transform(l_max, 1, generated_modes) /
-            10.0;
-
-        SpinWeighted<ComplexModalVector, 0> generated_r_modes{
-            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
-        Spectral::Swsh::TestHelpers::generate_swsh_modes<0>(
-            make_not_null(&generated_modes.data()), make_not_null(&generator),
-            make_not_null(&dist), 1, l_max);
-
-        get(*boundary_r) = Spectral::Swsh::inverse_swsh_transform(
-                               l_max, 1, generated_r_modes) +
-                           10.0;
-        Spectral::Swsh::filter_swsh_boundary_quantity(
-            make_not_null(&get(*boundary_r)), l_max, l_max / 2);
-      },
-      make_not_null(&box_to_initialize));
+template <typename DbTags>
+void test_zero_non_smooth_error(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
+    const size_t /*l_max*/, const size_t /*number_of_radial_points*/) {
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      InitializeJ::ZeroNonSmooth{1.0e-12, 1, true},
-      make_not_null(&box_to_initialize), make_not_null(&node_lock));
-  ERROR("Failed to trigger ERROR in an error test");
+      InitializeJ::ZeroNonSmooth{1.0e-12, 1, true}, box_to_initialize,
+      make_not_null(&node_lock));
 }
 
 template <typename DbTags>
@@ -651,6 +577,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
     test_initialize_j_zero_nonsmooth(make_not_null(&box_to_initialize), l_max,
                                      number_of_radial_points);
   }
+  CHECK_THROWS_WITH(
+      (test_zero_non_smooth_error(make_not_null(&box_to_initialize), l_max,
+                                  number_of_radial_points)),
+      Catch::Matchers::Contains("Initial data iterative angular solve"));
   {
     INFO("Check no incoming radiation initial data generator");
     test_initialize_j_no_radiation(make_not_null(&box_to_initialize), l_max,

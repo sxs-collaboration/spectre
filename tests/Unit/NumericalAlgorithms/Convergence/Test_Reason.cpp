@@ -32,11 +32,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Reason",
   test_construct_from_options<Convergence::Reason::MaxIterations>();
   test_construct_from_options<Convergence::Reason::AbsoluteResidual>();
   test_construct_from_options<Convergence::Reason::RelativeResidual>();
-}
 
-// [[OutputRegex, Failed to convert "Miracle" to Convergence::Reason]]
-SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Reason.FailOptionParsing",
-                  "[Unit][NumericalAlgorithms]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<Convergence::Reason>("Miracle");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Convergence::Reason>("Miracle")),
+      Catch::Matchers::Contains(
+          "Failed to convert \"Miracle\" to Convergence::Reason"));
 }

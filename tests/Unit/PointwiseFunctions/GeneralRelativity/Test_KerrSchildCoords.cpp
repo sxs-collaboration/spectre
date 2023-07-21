@@ -150,59 +150,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords",
   gr::KerrSchildCoords kerr_schild_coords_copy(0.8624, 0.151);
   test_move_semantics(std::move(kerr_schild_coords),
                       kerr_schild_coords_copy);  // NOLINT
-}
 
-// [[OutputRegex, The input vector must have a vanishing theta component]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords.AlongZDouble",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  test_theta_component(std::numeric_limits<double>::signaling_NaN());
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The input vector must have a vanishing theta component]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords.AlongZDv",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  test_theta_component(DataVector(5));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The mass must be positive]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords.Mass",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  gr::KerrSchildCoords ks_coords(-4.21, 0.999);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The dimensionless spin must be in the range \(-1, 1\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords.SpinLower",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  gr::KerrSchildCoords ks_coords(0.15, -1.3);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The dimensionless spin must be in the range \(-1, 1\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords.SpinUpper",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  gr::KerrSchildCoords ks_coords(1.532, 4.2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      (test_theta_component(std::numeric_limits<double>::signaling_NaN())),
+      Catch::Matchers::Contains(
+          "The input vector must have a vanishing theta component"));
+  CHECK_THROWS_WITH(
+      (test_theta_component(DataVector(5))),
+      Catch::Matchers::Contains(
+          "The input vector must have a vanishing theta component"));
+  CHECK_THROWS_WITH((gr::KerrSchildCoords(-4.21, 0.999)),
+                    Catch::Matchers::Contains("The mass must be positive"));
+  CHECK_THROWS_WITH((gr::KerrSchildCoords(0.15, -1.3)),
+                    Catch::Matchers::Contains(
+                        "The dimensionless spin must be in the range (-1, 1)"));
+  CHECK_THROWS_WITH((gr::KerrSchildCoords(1.532, 4.2)),
+                    Catch::Matchers::Contains(
+                        "The dimensionless spin must be in the range (-1, 1)"));
 #endif
 }

@@ -63,12 +63,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   test_use<StepChooserUse::Slab>();
 
   CHECK(not StepChoosers::Constant<StepChooserUse::Slab>{}.uses_local_data());
-}
 
-// [[OutputRegex, Requested step magnitude should be positive]]
-SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant.bad_create",
-                  "[Unit][Time]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
-                             Metavariables>("Constant: -5.4");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<
+          std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables>(
+          "Constant: -5.4")),
+      Catch::Matchers::Contains("Requested step magnitude should be positive"));
 }

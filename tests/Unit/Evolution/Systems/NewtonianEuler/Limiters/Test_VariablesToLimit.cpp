@@ -29,13 +29,10 @@ SPECTRE_TEST_CASE(
       "Characteristic");
   CHECK(get_output(NewtonianEuler::Limiters::VariablesToLimit::
                        NumericalCharacteristic) == "NumericalCharacteristic");
-}
 
-// [[OutputRegex, Failed to convert "BadVars" to VariablesToLimit]]
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.NewtonianEuler.Limiters.VariablesToLimit.ParseErr",
-    "[Limiters][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<NewtonianEuler::Limiters::VariablesToLimit>(
-      "BadVars");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<NewtonianEuler::Limiters::VariablesToLimit>(
+          "BadVars")),
+      Catch::Matchers::Contains(
+          "Failed to convert \"BadVars\" to VariablesToLimit"));
 }

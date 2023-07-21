@@ -105,4 +105,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ComplexDataVector",
     INFO("test ComplexDataVector math operations");
     test_complex_data_vector_math();
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign),
+      Catch::Matchers::Contains("Must assign into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy),
+      Catch::Matchers::Contains("Must copy into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Move),
+      Catch::Matchers::Contains("Must copy into same size"));
+#endif
 }

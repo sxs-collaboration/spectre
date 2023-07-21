@@ -17,11 +17,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType", "[Limiters][Unit]") {
 
   CHECK(get_output(Limiters::WenoType::Hweno) == "Hweno");
   CHECK(get_output(Limiters::WenoType::SimpleWeno) == "SimpleWeno");
-}
 
-// [[OutputRegex, Failed to convert "BadType" to WenoType]]
-SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType.OptionParseError",
-                  "[Limiters][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<Limiters::WenoType>("BadType");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Limiters::WenoType>("BadType")),
+      Catch::Matchers::Contains("Failed to convert \"BadType\" to WenoType"));
 }

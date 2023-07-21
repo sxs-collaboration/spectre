@@ -20,11 +20,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
   CHECK(get_output(Limiters::MinmodType::LambdaPi1) == "LambdaPi1");
   CHECK(get_output(Limiters::MinmodType::LambdaPiN) == "LambdaPiN");
   CHECK(get_output(Limiters::MinmodType::Muscl) == "Muscl");
-}
 
-// [[OutputRegex, Failed to convert "BadType" to MinmodType]]
-SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType.OptionParseError",
-                  "[Limiters][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<Limiters::MinmodType>("BadType");
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Limiters::MinmodType>("BadType")),
+      Catch::Matchers::Contains("Failed to convert \"BadType\" to MinmodType"));
 }

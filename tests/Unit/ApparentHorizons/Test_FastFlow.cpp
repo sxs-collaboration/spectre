@@ -307,34 +307,26 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
   test_copy_and_move();
   test_serialize();
   test_ostream();
-}
 
-// [[OutputRegex, Value 0.5 is below the lower bound of 1.]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowOptFail",
-                  "[Utilities][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<FastFlow>(
-      "Flow: Fast\n"
-      "Alpha: 1.1\n"
-      "Beta: 0.6\n"
-      "AbsTol: 1.e-10\n"
-      "TruncationTol: 1.e-3\n"
-      "DivergenceTol: 0.5\n"
-      "DivergenceIter: 6\n"
-      "MaxIts: 200");
-}
-
-// [[OutputRegex, Failed to convert "Crud" to FastFlow::FlowType]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowOptFail2",
-                  "[Utilities][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<FastFlow>(
-      "Flow: Crud\n"
-      "Alpha: 1.1\n"
-      "Beta: 0.6\n"
-      "AbsTol: 1.e-10\n"
-      "TruncationTol: 1.e-3\n"
-      "DivergenceTol: 1.1\n"
-      "DivergenceIter: 6\n"
-      "MaxIts: 200");
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<FastFlow>("Flow: Fast\n"
+                                           "Alpha: 1.1\n"
+                                           "Beta: 0.6\n"
+                                           "AbsTol: 1.e-10\n"
+                                           "TruncationTol: 1.e-3\n"
+                                           "DivergenceTol: 0.5\n"
+                                           "DivergenceIter: 6\n"
+                                           "MaxIts: 200"),
+      Catch::Matchers::Contains("Value 0.5 is below the lower bound of 1."));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<FastFlow>("Flow: Crud\n"
+                                           "Alpha: 1.1\n"
+                                           "Beta: 0.6\n"
+                                           "AbsTol: 1.e-10\n"
+                                           "TruncationTol: 1.e-3\n"
+                                           "DivergenceTol: 1.1\n"
+                                           "DivergenceIter: 6\n"
+                                           "MaxIts: 200"),
+      Catch::Matchers::Contains(
+          "Failed to convert \"Crud\" to FastFlow::FlowType"));
 }

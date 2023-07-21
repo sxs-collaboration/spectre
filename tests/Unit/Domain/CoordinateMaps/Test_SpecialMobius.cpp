@@ -126,27 +126,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius",
   test_map();
   test_large_mu();
   test_is_identity();
-}
 
-// [[OutputRegex, The magnitude of mu must be less than 0.96.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.SpecialMobius.Assert1", "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_special_mobius = CoordinateMaps::SpecialMobius(-2.3);
-  static_cast<void>(failed_special_mobius);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The magnitude of mu must be less than 0.96.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.SpecialMobius.Assert2", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_special_mobius = CoordinateMaps::SpecialMobius(0.98);
-  static_cast<void>(failed_special_mobius);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      CoordinateMaps::SpecialMobius(-2.3),
+      Catch::Matchers::Contains("The magnitude of mu must be less than 0.96."));
+  CHECK_THROWS_WITH(
+      CoordinateMaps::SpecialMobius(0.98),
+      Catch::Matchers::Contains("The magnitude of mu must be less than 0.96."));
 #endif
 }
 }  // namespace domain

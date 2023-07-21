@@ -148,19 +148,15 @@ SPECTRE_TEST_CASE(
         solution, mesh, coord_map, 0.05,
         std::make_tuple(constitutive_relation, inertial_coords));
   };
-}
 
-// [[OutputRegex, The numerical integral failed]]
-SPECTRE_TEST_CASE(
-    "Unit.AnalyticSolutions.Elasticity.HalfSpaceMirror.ConvergenceError",
-    "[PointwiseFunctions][Unit][Elasticity]") {
-  ERROR_TEST();
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
-      constitutive_relation{36.36363636363637, 30.76923076923077};
-  const HalfSpaceMirrorProxy solution{0.177, constitutive_relation, 5, 1e-15,
-                                      1e-15};
-  const tnsr::I<DataVector, 3> x{{{{0.3}, {1.3}, {2.3}}}};
-  const auto solution_vars = variables_from_tagged_tuple(
-      solution.variables(x, tmpl::list<Elasticity::Tags::Displacement<3>,
-                                       Elasticity::Tags::Strain<3>>{}));
+  CHECK_THROWS_WITH(
+      ([&constitutive_relation]() {
+        const HalfSpaceMirrorProxy bad_solution{0.177, constitutive_relation, 5,
+                                                1e-15, 1e-15};
+        const tnsr::I<DataVector, 3> x{{{{0.3}, {1.3}, {2.3}}}};
+        variables_from_tagged_tuple(bad_solution.variables(
+            x, tmpl::list<Elasticity::Tags::Displacement<3>,
+                          Elasticity::Tags::Strain<3>>{}));
+      }()),
+      Catch::Matchers::Contains("The numerical integral failed"));
 }

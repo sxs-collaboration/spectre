@@ -193,6 +193,7 @@ void test_gh_initialization() {
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 }
 
+template <typename SolutionType>
 void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
@@ -203,8 +204,8 @@ void test_analytic_initialization() {
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
-      AnalyticBoundaryDataManager{
-          12_st, 20.0, std::make_unique<Solutions::RotatingSchwarzschild>()},
+      AnalyticBoundaryDataManager{12_st, 20.0,
+                                  std::make_unique<SolutionType>()},
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
   // this should run the initialization
@@ -231,28 +232,10 @@ SPECTRE_TEST_CASE(
   MAKE_GENERATOR(gen);
   test_h5_initialization(make_not_null(&gen));
   test_gh_initialization();
-  test_analytic_initialization();
-}
-
-// [[OutputRegex, Do not use RobinsonTrautman analytic solution with]]
-SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
-                  "[Utilities][Unit]") {
-  ERROR_TEST();
-  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
-  using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
-  const size_t l_max = 8;
-  ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, 100.0, 0.0}};
-  runner.set_phase(Parallel::Phase::Initialization);
-  ActionTesting::emplace_component<component>(
-      &runner, 0,
-      AnalyticBoundaryDataManager{
-          12_st, 20.0, std::make_unique<Solutions::RobinsonTrautman>()},
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
-  // this should run the initialization
-  for (size_t i = 0; i < 3; ++i) {
-    ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  }
+  test_analytic_initialization<Solutions::RotatingSchwarzschild>();
+  CHECK_THROWS_WITH(
+      (test_analytic_initialization<Solutions::RobinsonTrautman>()),
+      Catch::Matchers::Contains(
+          "Do not use RobinsonTrautman analytic solution with"));
 }
 }  // namespace Cce

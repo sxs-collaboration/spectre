@@ -237,42 +237,18 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
   test_std_hash();
   test_direction_hash();
   test_output();
-}
 
-// [[OutputRegex, dim = 1, for Direction<1> only dim = 0 is allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction.FirstDimension",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_direction = Direction<1>(1, Side::Upper);
-  static_cast<void>(failed_direction);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, dim = 2, for Direction<2> only dim = 0 or dim = 1 are
-// allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Structure.Direction.SecondDimension", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_direction = Direction<2>(2, Side::Upper);
-  static_cast<void>(failed_direction);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, dim = 3, for Direction<3> only dim = 0, dim = 1, or dim = 2
-// are allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction.ThirdDimension",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_direction = Direction<3>(3, Side::Upper);
-  static_cast<void>(failed_direction);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH((Direction<1>(1, Side::Upper)),
+                    Catch::Matchers::Contains(
+                        "dim = 1, for Direction<1> only dim = 0 is allowed."));
+  CHECK_THROWS_WITH(
+      (Direction<2>(2, Side::Upper)),
+      Catch::Matchers::Contains(
+          "dim = 2, for Direction<2> only dim = 0 or dim = 1 are allowed."));
+  CHECK_THROWS_WITH(
+      (Direction<3>(3, Side::Upper)),
+      Catch::Matchers::Contains("dim = 3, for Direction<3> only dim = 0, dim = "
+                                "1, or dim = 2 are allowed."));
 #endif
 }

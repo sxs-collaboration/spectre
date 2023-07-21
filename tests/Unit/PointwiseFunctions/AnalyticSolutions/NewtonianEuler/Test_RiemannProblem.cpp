@@ -158,48 +158,19 @@ SPECTRE_TEST_CASE(
       {{-6.19633}}, 46.0950);
   CHECK_ITERABLE_CUSTOM_APPROX(shock_collision.diagnostic_star_region_values(),
                                make_array(1691.64, 8.68975), larger_approx);
-}
 
-// [[OutputRegex, The pressure positivity condition must be met.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.PositP",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
 #ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::RiemannProblem<1> solution(
-      1.4, 0.7, 1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-    // clang-format off
-// [[OutputRegex, The mass density must be positive.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.Dens",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-  // clang-format on
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
-#ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::RiemannProblem<2> solution(
-      1.4, 0.7, -1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The pressure must be positive.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.Pres",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
-#ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::RiemannProblem<3> solution(
-      1.4, 0.7, 1.0, {{0.0}}, -1.0, 0.125, {{30.0}}, 1.1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH((NewtonianEuler::Solutions::RiemannProblem<1>(
+                        1.4, 0.7, 1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1)),
+                    Catch::Matchers::Contains(
+                        "The pressure positivity condition must be met."));
+  CHECK_THROWS_WITH(
+      (NewtonianEuler::Solutions::RiemannProblem<2>(1.4, 0.7, -1.0, {{0.0}},
+                                                    1.0, 0.125, {{30.0}}, 1.1)),
+      Catch::Matchers::Contains("The mass density must be positive."));
+  CHECK_THROWS_WITH(
+      (NewtonianEuler::Solutions::RiemannProblem<3>(
+          1.4, 0.7, 1.0, {{0.0}}, -1.0, 0.125, {{30.0}}, 1.1)),
+      Catch::Matchers::Contains("The pressure must be positive."));
 #endif
 }

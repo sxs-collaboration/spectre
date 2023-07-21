@@ -108,16 +108,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   for (IndexIterator<3> ii{extents_for_iterator}; ii; ++ii) {
     CHECK(collapsed_index(*ii, extents_for_iterator) == ii.collapsed_index());
   }
-}
 
-// [[OutputRegex, The requested index in the dimension]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Index.Assert",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto extents = Index<3>{4, 4, 4};
-  auto failed_index_with = Index<3>{2, 3, 4};
-  static_cast<void>(collapsed_index(failed_index_with, extents));
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      (collapsed_index(Index<3>{4, 4, 4}, Index<3>{2, 3, 4})),
+      Catch::Matchers::Contains("The requested index in the dimension"));
 #endif
 }

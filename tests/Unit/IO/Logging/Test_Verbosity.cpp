@@ -30,7 +30,9 @@ void test_construct_from_options_fail() {
   Options::Parser<tmpl::list<logging::OptionTags::Verbosity<TestGroup>>> opts(
       "");
   opts.parse("TestGroup:\n  Verbosity: Braggadocious\n");  // Meant to fail.
-  opts.get<logging::OptionTags::Verbosity<TestGroup>>();
+  CHECK_THROWS_WITH((opts.get<logging::OptionTags::Verbosity<TestGroup>>()),
+                    Catch::Matchers::Contains(
+                        "Failed to convert \"Braggadocious\" to Verbosity"));
 }
 
 void test_ostream() {
@@ -45,10 +47,5 @@ void test_ostream() {
 SPECTRE_TEST_CASE("Unit.Logging.Verbosity", "[Unit]") {
   test_construct_from_options();
   test_ostream();
-}
-
-// [[OutputRegex, Failed to convert "Braggadocious" to Verbosity]]
-SPECTRE_TEST_CASE("Unit.Logging.Verbosity.Fail", "[Unit]") {
-  ERROR_TEST();
   test_construct_from_options_fail();
 }

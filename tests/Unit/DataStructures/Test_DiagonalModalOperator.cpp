@@ -13,44 +13,6 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 
-// IWYU pragma: no_include <algorithm>
-
-// [[OutputRegex, Must assign into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DiagonalModalOperator.ExpressionAssignError",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DiagonalModalOperator>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DiagonalModalOperator.RefDiffSize",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DiagonalModalOperator>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DiagonalModalOperator.MoveRefDiffSize",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DiagonalModalOperator>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 namespace {
 void test_diagonal_modal_operator_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
@@ -110,4 +72,20 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DiagonalModalOperator",
     INFO("test DiagonalModalOperator math operations");
     test_diagonal_modal_operator_math();
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<
+          DiagonalModalOperator>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign),
+      Catch::Matchers::Contains("Must assign into same size"));
+  CHECK_THROWS_WITH(TestHelpers::VectorImpl::vector_ref_test_size_error<
+                        DiagonalModalOperator>(
+                        TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy),
+                    Catch::Matchers::Contains("Must copy into same size"));
+  CHECK_THROWS_WITH(TestHelpers::VectorImpl::vector_ref_test_size_error<
+                        DiagonalModalOperator>(
+                        TestHelpers::VectorImpl::RefSizeErrorTestKind::Move),
+                    Catch::Matchers::Contains("Must copy into same size"));
+#endif
 }

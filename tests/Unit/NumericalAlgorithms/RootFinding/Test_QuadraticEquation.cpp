@@ -12,28 +12,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// [[OutputRegex, There are no real roots]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.positive_root.no_real_roots",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  positive_root(1.0, -3.0, 3.0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, There are two positive roots]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.positive_root.two_positive_roots",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  positive_root(1.0, -3.0, 2.0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 namespace {
 template <typename T>
 void test_smallest_root_greater_than_value_within_roundoff(
@@ -129,4 +107,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.QuadraticEquation",
   test_smallest_root_greater_than_value_within_roundoff(DataVector(5));
   test_largest_root_between_values_within_roundoff<double>(1.0);
   test_largest_root_between_values_within_roundoff(DataVector(5));
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH((positive_root(1.0, -3.0, 3.0)),
+                    Catch::Matchers::Contains("There are no real roots"));
+  CHECK_THROWS_WITH((positive_root(1.0, -3.0, 2.0)),
+                    Catch::Matchers::Contains("There are two positive roots"));
+#endif
 }

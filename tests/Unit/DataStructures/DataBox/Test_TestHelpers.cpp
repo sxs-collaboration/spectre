@@ -39,17 +39,3 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TestHelpers",
   TestHelpers::db::test_compute_tag<TestHelpers::db::Tags::SimpleCompute>(
       "Simple");
 }
-
-namespace {
-struct RedundantName : db::SimpleTag {
-  static std::string name() { return "RedundantName"; }
-  using type = int;
-};
-}  // namespace
-
-// [[OutputRegex, Do not define name for Tag]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TestHelpers.redundant_name",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  TestHelpers::db::test_simple_tag<RedundantName>("RedundantName");
-}

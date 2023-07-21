@@ -131,4 +131,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
     INFO("test integer power of DataVectors");
     test_integer_pow();
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign),
+      Catch::Matchers::Contains("Must assign into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy),
+      Catch::Matchers::Contains("Must copy into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Move),
+      Catch::Matchers::Contains("Must copy into same size"));
+#endif
 }
