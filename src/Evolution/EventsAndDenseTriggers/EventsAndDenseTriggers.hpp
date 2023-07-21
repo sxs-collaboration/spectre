@@ -237,6 +237,7 @@ void EventsAndDenseTriggers::run_events(
                    Event>,
           get_tags<tmpl::_1>>>,
       db::is_compute_tag<tmpl::_1>>>;
+  const auto observation_box = make_observation_box<compute_tags>(box);
 
   for (auto& trigger_entry : events_and_triggers_) {
     if (trigger_entry.is_triggered == std::optional{true}) {
@@ -247,7 +248,6 @@ void EventsAndDenseTriggers::run_events(
                 trigger_entry.trigger->previous_trigger_time();
           },
           make_not_null(&box));
-      const auto observation_box = make_observation_box<compute_tags>(box);
       for (const auto& event : trigger_entry.events) {
         event->run(observation_box, cache, array_index, component);
       }
