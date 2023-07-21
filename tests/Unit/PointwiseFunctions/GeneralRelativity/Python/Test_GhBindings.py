@@ -116,9 +116,9 @@ class TestBindings(unittest.TestCase):
 
     def test_pi(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
-        dt_lapse = Scalar[DataVector](num_points=1, fill=0.0)
-        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
-        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        dt_lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        dt_shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
         spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
         dt_spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
         phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
@@ -130,6 +130,28 @@ class TestBindings(unittest.TestCase):
             spatial_metric,
             dt_spatial_metric,
             phi,
+        )
+
+    def test_spacetime_deriv_of_norm_of_shift(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
+        inverse_spacetime_metric = tnsr.AA[DataVector, 3](
+            num_points=1, fill=1.0
+        )
+        spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        gh.spacetime_deriv_of_norm_of_shift(
+            lapse,
+            shift,
+            spatial_metric,
+            inverse_spatial_metric,
+            inverse_spacetime_metric,
+            spacetime_unit_normal,
+            phi,
+            pi,
         )
 
     def test_spatial_ricci_tensor(self):
