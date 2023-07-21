@@ -119,31 +119,28 @@ class MockRuntimeSystem {
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
-
   /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(
       CacheTuple cache_contents, MutableCacheTuple mutable_cache_contents = {},
       const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
-      : mock_global_cores_(
-            [&number_of_mock_cores_on_each_mock_node]() {
-              std::unordered_map<NodeId,
-                                 std::unordered_map<LocalCoreId, GlobalCoreId>>
-                  mock_global_cores{};
-              size_t global_core = 0;
-              for (size_t node = 0;
-                   node < number_of_mock_cores_on_each_mock_node.size();
-                   ++node) {
-                std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
-                for (size_t local_core = 0;
-                     local_core < number_of_mock_cores_on_each_mock_node[node];
-                     ++local_core, ++global_core) {
-                  global_cores.insert(
-                      {LocalCoreId{local_core}, GlobalCoreId{global_core}});
-                }
-                mock_global_cores.insert({NodeId{node}, global_cores});
-              }
-              return mock_global_cores;
-            }()),
+      : mock_global_cores_([&number_of_mock_cores_on_each_mock_node]() {
+          std::unordered_map<NodeId,
+                             std::unordered_map<LocalCoreId, GlobalCoreId>>
+              mock_global_cores{};
+          size_t global_core = 0;
+          for (size_t node = 0;
+               node < number_of_mock_cores_on_each_mock_node.size(); ++node) {
+            std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
+            for (size_t local_core = 0;
+                 local_core < number_of_mock_cores_on_each_mock_node[node];
+                 ++local_core, ++global_core) {
+              global_cores.insert(
+                  {LocalCoreId{local_core}, GlobalCoreId{global_core}});
+            }
+            mock_global_cores.insert({NodeId{node}, global_cores});
+          }
+          return mock_global_cores;
+        }()),
         mock_nodes_and_local_cores_(
             [&number_of_mock_cores_on_each_mock_node]() {
               std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
@@ -192,8 +189,8 @@ class MockRuntimeSystem {
                 *caches_.at(global_core))
                 .set_data(&tuples::get<MockDistributedObjectsTag<Component>>(
                               mock_distributed_objects_),
-                          &tuples::get<InboxesTag<Component>>(inboxes_),
-                          node, local_core, global_core);
+                          &tuples::get<InboxesTag<Component>>(inboxes_), node,
+                          local_core, global_core);
           });
     }
   }
@@ -618,23 +615,23 @@ class MockRuntimeSystem {
         "'force_next_action_to_be' for the component and the second template "
         "parameter for the action.");
     bool found_matching_phase = false;
-    const auto invoke_for_phase =
-        [this, &array_index, &found_matching_phase](auto phase_dep_v) {
-          using PhaseDep = decltype(phase_dep_v);
-          constexpr Parallel::Phase phase = PhaseDep::type::phase;
-          using actions_list = typename PhaseDep::type::action_list;
-          auto& distributed_object =
-              this->mock_distributed_objects<Component>().at(array_index);
-          if (distributed_object.get_phase() == phase) {
-            found_matching_phase = true;
-            distributed_object.force_next_action_to_be(
-                tmpl::conditional_t<
-                    std::is_same<tmpl::no_such_type_,
-                                 tmpl::index_of<actions_list, Action>>::value,
-                    std::integral_constant<size_t, 0>,
-                    tmpl::index_of<actions_list, Action>>::value);
-          }
-        };
+    const auto invoke_for_phase = [this, &array_index,
+                                   &found_matching_phase](auto phase_dep_v) {
+      using PhaseDep = decltype(phase_dep_v);
+      constexpr Parallel::Phase phase = PhaseDep::type::phase;
+      using actions_list = typename PhaseDep::type::action_list;
+      auto& distributed_object =
+          this->mock_distributed_objects<Component>().at(array_index);
+      if (distributed_object.get_phase() == phase) {
+        found_matching_phase = true;
+        distributed_object.force_next_action_to_be(
+            tmpl::conditional_t<
+                std::is_same<tmpl::no_such_type_,
+                             tmpl::index_of<actions_list, Action>>::value,
+                std::integral_constant<size_t, 0>,
+                tmpl::index_of<actions_list, Action>>::value);
+      }
+    };
     tmpl::for_each<typename MockDistributedObject<
         Component>::phase_dependent_action_lists>(invoke_for_phase);
     if (not found_matching_phase) {
@@ -726,13 +723,12 @@ class MockRuntimeSystem {
 
   /// Set the phase of all parallel components to `next_phase`
   void set_phase(const Parallel::Phase next_phase) {
-    tmpl::for_each<mock_objects_tags>(
-        [this, &next_phase](auto component_v) {
-          for (auto& object : tuples::get<typename decltype(component_v)::type>(
-                   mock_distributed_objects_)) {
-            object.second.set_phase(next_phase);
-          }
-        });
+    tmpl::for_each<mock_objects_tags>([this, &next_phase](auto component_v) {
+      for (auto& object : tuples::get<typename decltype(component_v)::type>(
+               mock_distributed_objects_)) {
+        object.second.set_phase(next_phase);
+      }
+    });
   }
 
   /// Return number of (mock) global cores.
