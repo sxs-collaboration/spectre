@@ -115,7 +115,7 @@ namespace Tags {
  *
  * This tag inherits from `db::add_tag_prefix<Tags::div, Tag>`.
  */
-template <typename Tag, typename InverseJacobianTag>
+template <typename Tag, typename MeshTag, typename InverseJacobianTag>
 struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
@@ -138,7 +138,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
 /// \brief Compute the divergence of a `tnsr::I` (vector)
 ///
 /// This tag inherits from `db::add_tag_prefix<Tags::div, Tag>`.
-template <typename Tag, typename InverseJacobianTag>
+template <typename Tag, typename MeshTag, typename InverseJacobianTag>
 struct DivVectorCompute : div<Tag>, db::ComputeTag {
  private:
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
@@ -154,7 +154,6 @@ struct DivVectorCompute : div<Tag>, db::ComputeTag {
                                     const typename Tag::type&, const Mesh<dim>&,
                                     const typename InverseJacobianTag::type&) =
       divergence<dim, typename tmpl::back<inv_jac_indices>::Frame>;
-  using argument_tags =
-      tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
+  using argument_tags = tmpl::list<Tag, MeshTag, InverseJacobianTag>;
 };
 }  // namespace Tags
