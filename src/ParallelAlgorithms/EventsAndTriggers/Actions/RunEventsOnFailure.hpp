@@ -42,7 +42,9 @@ struct RunEventsOnFailure {
   };
 
  public:
-  using const_global_cache_tags = tmpl::list<::Tags::EventsRunAtCleanup>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::EventsRunAtCleanup,
+                 ::Tags::EventsRunAtCleanupObservationValue>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -56,9 +58,9 @@ struct RunEventsOnFailure {
     // so can't rely on the data being safe.
     disable_floating_point_exceptions();
 
-    // This will be fixed in the next commit.
     const Event::ObservationValue observation_value{
-        db::tag_name<ObservationId>(), 123456.7};
+        db::tag_name<ObservationId>(),
+        db::get<Tags::EventsRunAtCleanupObservationValue>(box)};
 
     using compute_tags = tmpl::remove_duplicates<tmpl::filter<
         tmpl::flatten<tmpl::transform<

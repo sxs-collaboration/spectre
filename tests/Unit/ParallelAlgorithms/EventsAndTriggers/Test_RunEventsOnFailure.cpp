@@ -54,7 +54,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.RunEventsOnFailure",
 
   using my_component = Component<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {serialize_and_deserialize(events)}};
+      {serialize_and_deserialize(events), 1234.5}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 

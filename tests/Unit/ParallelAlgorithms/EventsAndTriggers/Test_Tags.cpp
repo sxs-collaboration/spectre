@@ -12,4 +12,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers.Tags",
                   "[Unit][ParallelAlgorithms]") {
   TestHelpers::db::test_simple_tag<Tags::EventsAndTriggers>(
       "EventsAndTriggers");
+  TestHelpers::db::test_simple_tag<Tags::EventsRunAtCleanup>(
+      "EventsRunAtCleanup");
+  TestHelpers::db::test_simple_tag<Tags::EventsRunAtCleanupObservationValue>(
+      "EventsRunAtCleanupObservationValue");
 }

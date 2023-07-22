@@ -138,6 +138,8 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:
 
 Observers:
   VolumeFileName: "ValenciaDivCleanFishboneMoncriefDiskVolume"
