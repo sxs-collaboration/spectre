@@ -218,8 +218,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
+                         Actions::RunEventsAndTriggers<Tags::Time>,
+                         Actions::ChangeSlabSize, step_actions,
+                         Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   template <typename ParallelComponent>

@@ -522,13 +522,11 @@ struct GhValenciaDivCleanTemplateBase<
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
+                dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>,
-                dg::Events::ObserveVolumeIntegrals<volume_dim,
-                                                   Tags::Time, integrand_fields,
+                dg::Events::ObserveVolumeIntegrals<volume_dim, integrand_fields,
                                                    non_tensor_compute_tags>,
-                Events::ObserveAtExtremum<Tags::Time, observe_fields,
+                Events::ObserveAtExtremum<observe_fields,
                                           non_tensor_compute_tags>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
@@ -758,12 +756,13 @@ struct GhValenciaDivCleanTemplateBase<
               tmpl::list<VariableFixing::Actions::FixVariables<
                              VariableFixing::FixToAtmosphere<volume_dim>>,
                          Actions::UpdateConservatives,
-                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
+                         Actions::RunEventsAndTriggers<Tags::Time>,
+                         Actions::ChangeSlabSize, step_actions,
+                         Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
-              tmpl::list<Actions::RunEventsOnFailure,
+              tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
                          Parallel::Actions::TerminatePhase>>>>>;
 
   template <typename ParallelComponent>

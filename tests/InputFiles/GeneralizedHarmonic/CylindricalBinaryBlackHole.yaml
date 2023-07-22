@@ -185,7 +185,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
-          OverrideObservationValue: None
   - Trigger:
       Slabs:
         EvenlySpaced:

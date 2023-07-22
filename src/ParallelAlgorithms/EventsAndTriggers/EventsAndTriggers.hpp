@@ -67,8 +67,8 @@ class EventsAndTriggers {
             typename Component>
   void run_events(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
-                  const ArrayIndex& array_index,
-                  const Component* component) const {
+                  const ArrayIndex& array_index, const Component* component,
+                  const Event::ObservationValue& observation_value) const {
     using compute_tags = tmpl::remove_duplicates<tmpl::filter<
         tmpl::flatten<tmpl::transform<
             tmpl::at<typename Metavariables::factory_creation::factory_classes,
@@ -85,7 +85,8 @@ class EventsAndTriggers {
           observation_box = make_observation_box<compute_tags>(box);
         }
         for (const auto& event : events) {
-          event->run(observation_box.value(), cache, array_index, component);
+          event->run(observation_box.value(), cache, array_index, component,
+                     observation_value);
         }
       }
     }

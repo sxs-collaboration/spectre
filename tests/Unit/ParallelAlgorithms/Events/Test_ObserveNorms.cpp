@@ -32,7 +32,6 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -151,7 +150,7 @@ struct MockObserverComponent {
 
 template <typename ArraySectionIdTag>
 using ObserveNormsEvent = Events::ObserveNorms<
-    ::Tags::Time, tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
+    tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
     tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag>;
 
 template <size_t Dim, typename ArraySectionIdTag>
@@ -195,14 +194,14 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                                                       array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavariables>,
-      ::Events::Tags::ObserverMesh<3>,
-      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
-                                             Frame::Inertial>,
-      ::Tags::Time, Tags::Variables<typename decltype(vars)::tags_list>,
-      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, det_inv_jacobian, observation_time, vars, section);
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                        ::Events::Tags::ObserverMesh<3>,
+                        ::Events::Tags::ObserverDetInvJacobian<
+                            Frame::ElementLogical, Frame::Inertial>,
+                        Tags::Variables<typename decltype(vars)::tags_list>,
+                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, mesh, det_inv_jacobian, vars, section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -229,7 +228,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                            ArraySectionIdTag>::compute_tags_for_observation_box,
                        db::is_compute_tag<tmpl::_1>>>(box),
       ActionTesting::cache<element_component>(runner, array_index), array_index,
-      std::add_pointer_t<element_component>{});
+      std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -240,7 +239,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.observation_id.observation_key() ==
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
-  CHECK(results.reduction_names[0] == "Time");
+  CHECK(results.reduction_names[0] == "TimeName");
   CHECK(results.time == observation_time);
   CHECK(results.reduction_names[1] == "NumberOfPoints");
   CHECK(results.number_of_grid_points == num_points);

@@ -104,7 +104,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const typename SourceVarTags::type&... source_vars_input,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const /*meta*/) const {
+      const ParallelComponent* const /*meta*/,
+      const ObservationValue& /*observation_value*/) const {
     const auto& block_logical_coords =
         InterpolationTarget_detail::block_logical_coords<
             InterpolationTargetTag>(
@@ -209,15 +210,16 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const typename SourceVarTags::type&... source_vars,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const meta) const {
+      const ParallelComponent* const meta,
+      const ObservationValue& observation_value) const {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
       this->operator()(temporal_id, point_infos, dg_mesh, source_vars..., cache,
-                       array_index, meta);
+                       array_index, meta, observation_value);
     } else {
       ASSERT(active_grid == evolution::dg::subcell::ActiveGrid::Subcell,
              "Active grid must be either Dg or Subcell");
       this->operator()(temporal_id, point_infos, subcell_mesh, source_vars...,
-                       cache, array_index, meta);
+                       cache, array_index, meta, observation_value);
     }
   }
 

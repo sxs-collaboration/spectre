@@ -207,17 +207,18 @@ struct EvolutionMetavars {
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event, tmpl::flatten<tmpl::list<
-                              Events::time_events<system>, Events::Completion,
-                              intrp::Events::InterpolateWithoutInterpComponent<
-                                  volume_dim, PsiAlongAxis<1>,
-                                  EvolutionMetavars, interpolator_source_vars>,
-                              intrp::Events::InterpolateWithoutInterpComponent<
-                                  volume_dim, PsiAlongAxis<2>,
-                                  EvolutionMetavars, interpolator_source_vars>,
-                              dg::Events::field_observations<
-                                  volume_dim, Tags::Time, observe_fields,
-                                  non_tensor_compute_tags>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::time_events<system>, Events::Completion,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, PsiAlongAxis<1>, EvolutionMetavars,
+                    interpolator_source_vars>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, PsiAlongAxis<2>, EvolutionMetavars,
+                    interpolator_source_vars>,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<PhaseChange,
@@ -319,8 +320,9 @@ struct EvolutionMetavars {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
+              tmpl::list<Actions::RunEventsAndTriggers<Tags::Time>,
+                         Actions::ChangeSlabSize, step_actions,
+                         Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   template <typename ParallelComponent>

@@ -311,7 +311,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   event.run(
       make_observation_box<
           typename metavars::event::compute_tags_for_observation_box>(box),
-      cache, array_index, std::add_pointer_t<elem_component>{});
+      cache, array_index, std::add_pointer_t<elem_component>{}, {});
 
   check_results();
 }

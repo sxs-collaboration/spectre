@@ -61,7 +61,7 @@ struct Inertial;
 namespace dg {
 namespace Events {
 /// \cond
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+template <size_t VolumeDim, typename Tensors,
           typename NonTensorComputeTagsList = tmpl::list<>,
           typename ArraySectionIdTag = void>
 class ObserveFields;
@@ -93,9 +93,9 @@ class ObserveFields;
  * available in the DataBox. It identifies the section and is used as a suffix
  * for the path in the output file.
  */
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                     tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
     : public Event {
  public:
@@ -155,26 +155,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     using type = FloatingPointType;
   };
 
-  /// \brief Override the observation value in the ObservationBox.
-  ///
-  /// Set to 'None' if you want to use the value in the ObservationBox.
-  /// Overwriting is useful when dumping data on failure so that all elements
-  /// have the 'same' observation value even though their boxes are in different
-  /// states.
-  struct OverrideObservationValue {
-    static constexpr Options::String help =
-        "Override the observation value in the ObservationBox. Set to 'None' "
-        "if you want to use the value in the ObservationBox. Overwriting is "
-        "useful when dumping data on failure so that all elements have the "
-        "'same' observation value even though their boxes are in different "
-        "states.";
-    using type = Options::Auto<typename ObservationValueTag::type,
-                               Options::AutoLabel::None>;
-  };
-
-  using options = tmpl::list<SubfileName, CoordinatesFloatingPointType,
-                             FloatingPointTypes, VariablesToObserve,
-                             InterpolateToMesh, OverrideObservationValue>;
+  using options =
+      tmpl::list<SubfileName, CoordinatesFloatingPointType, FloatingPointTypes,
+                 VariablesToObserve, InterpolateToMesh>;
 
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
@@ -190,24 +173,22 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                 const std::vector<FloatingPointType>& floating_point_types,
                 const std::vector<std::string>& variables_to_observe,
                 std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
-                std::optional<typename ObservationValueTag::type>
-                    override_observation_value = {},
                 const Options::Context& context = {});
 
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
-  using argument_tags = tmpl::list<::Tags::ObservationBox, ObservationValueTag,
+  using argument_tags = tmpl::list<::Tags::ObservationBox,
                                    ::Events::Tags::ObserverMesh<VolumeDim>>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ParallelComponent>
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
-                  const typename ObservationValueTag::type& observation_value,
                   const Mesh<VolumeDim>& mesh,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& array_index,
-                  const ParallelComponent* const component) const {
+                  const ParallelComponent* const component,
+                  const ObservationValue& observation_value) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -215,9 +196,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       return;
     }
     call_operator_impl(subfile_path_ + *section_observation_key,
-                       variables_to_observe_, interpolation_mesh_,
-                       override_observation_value_.value_or(observation_value),
-                       mesh, box, cache, array_index, component);
+                       variables_to_observe_, interpolation_mesh_, mesh, box,
+                       cache, array_index, component, observation_value);
   }
 
   // We factor out the work into a static member function so it can  be shared
@@ -230,12 +210,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const std::unordered_map<std::string, FloatingPointType>&
           variables_to_observe,
       const std::optional<Mesh<VolumeDim>>& interpolation_mesh,
-      const typename ObservationValueTag::type& observation_value,
       const Mesh<VolumeDim>& mesh,
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& element_id,
-      const ParallelComponent* const /*meta*/) {
+      const ParallelComponent* const /*meta*/,
+      const ObservationValue& observation_value) {
     // if no interpolation_mesh is provided, the interpolation is essentially
     // ignored by the RegularGridInterpolant except for a single copy.
     const intrp::RegularGrid interpolant(mesh,
@@ -296,7 +276,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             cache));
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
-        observers::ObservationId(observation_value, subfile_path + ".vol"),
+        observers::ObservationId(observation_value.value,
+                                 subfile_path + ".vol"),
         subfile_path,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
@@ -339,7 +320,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     p | subfile_path_;
     p | variables_to_observe_;
     p | interpolation_mesh_;
-    p | override_observation_value_;
   }
 
  private:
@@ -358,21 +338,17 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   std::string subfile_path_;
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
-  std::optional<typename ObservationValueTag::type>
-      override_observation_value_{};
 };
 
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+ObserveFields<VolumeDim, tmpl::list<Tensors...>,
               tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
     ObserveFields(const std::string& subfile_name,
                   const FloatingPointType coordinates_floating_point_type,
                   const std::vector<FloatingPointType>& floating_point_types,
                   const std::vector<std::string>& variables_to_observe,
                   std::optional<Mesh<VolumeDim>> interpolation_mesh,
-                  std::optional<typename ObservationValueTag::type>
-                      override_observation_value,
                   const Options::Context& context)
     : subfile_path_("/" + subfile_name),
       variables_to_observe_([&context, &floating_point_types,
@@ -400,8 +376,7 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         }
         return result;
       }()),
-      interpolation_mesh_(interpolation_mesh),
-      override_observation_value_(std::move(override_observation_value)) {
+      interpolation_mesh_(interpolation_mesh) {
   using ::operator<<;
   const std::unordered_set<std::string> valid_tensors{
       db::tag_name<Tensors>()...};
@@ -427,12 +402,11 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 }
 
 /// \cond
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-PUP::able::PUP_ID
-    ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                  tmpl::list<NonTensorComputeTags...>,
-                  ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID ObserveFields<VolumeDim, tmpl::list<Tensors...>,
+                                tmpl::list<NonTensorComputeTags...>,
+                                ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events
 }  // namespace dg

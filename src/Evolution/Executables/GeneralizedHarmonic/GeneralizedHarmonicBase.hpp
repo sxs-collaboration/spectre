@@ -245,7 +245,7 @@ struct ObserverTags {
       gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
 
   using field_observations =
-      dg::Events::field_observations<volume_dim, Tags::Time, observe_fields,
+      dg::Events::field_observations<volume_dim, observe_fields,
                                      non_tensor_compute_tags>;
 };
 
@@ -259,8 +259,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<
           Event,
           tmpl::flatten<tmpl::list<
-              Events::Completion,
-              Events::MonitorMemory<volume_dim, ::Tags::Time>,
+              Events::Completion, Events::MonitorMemory<volume_dim>,
               typename detail::ObserverTags<volume_dim>::field_observations,
               Events::time_events<system>>>>,
       tmpl::pair<

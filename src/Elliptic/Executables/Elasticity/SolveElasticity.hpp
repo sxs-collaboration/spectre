@@ -201,11 +201,10 @@ struct Metavariables {
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
                        dg::Events::field_observations<
-                           volume_dim, linear_solver_iteration_id,
-                           observe_fields, observer_compute_tags,
+                           volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>,
                        dg::Events::ObserveVolumeIntegrals<
-                           volume_dim, linear_solver_iteration_id,
+                           volume_dim,
                            tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
                                volume_dim>>,
                            tmpl::list<>,
@@ -260,14 +259,15 @@ struct Metavariables {
 
   using solve_actions = tmpl::list<
       typename linear_solver::template solve<tmpl::list<
-          Actions::RunEventsAndTriggers,
+          Actions::RunEventsAndTriggers<linear_solver_iteration_id>,
           typename multigrid::template solve<
               build_linear_operator_actions,
               smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
               smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
           ::LinearSolver::Actions::make_identity_if_skipped<
               multigrid, build_linear_operator_actions>>>,
-      Actions::RunEventsAndTriggers, Parallel::Actions::TerminatePhase>;
+      Actions::RunEventsAndTriggers<linear_solver_iteration_id>,
+      Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,

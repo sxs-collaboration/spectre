@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
@@ -237,6 +238,8 @@ void EventsAndDenseTriggers::run_events(
                    Event>,
           get_tags<tmpl::_1>>>,
       db::is_compute_tag<tmpl::_1>>>;
+  const Event::ObservationValue observation_value{db::tag_name<::Tags::Time>(),
+                                                  db::get<::Tags::Time>(box)};
   const auto observation_box = make_observation_box<compute_tags>(box);
 
   for (auto& trigger_entry : events_and_triggers_) {
@@ -249,7 +252,8 @@ void EventsAndDenseTriggers::run_events(
           },
           make_not_null(&box));
       for (const auto& event : trigger_entry.events) {
-        event->run(observation_box, cache, array_index, component);
+        event->run(observation_box, cache, array_index, component,
+                   observation_value);
       }
       db::mutate<::evolution::Tags::PreviousTriggerTime>(
           [](const gsl::not_null<std::optional<double>*>

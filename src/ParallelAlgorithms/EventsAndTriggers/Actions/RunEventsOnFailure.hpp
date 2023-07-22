@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -29,14 +30,10 @@ namespace Actions {
  * This action is intended to be executed in the
  * `Parallel::Phase::PostFailureCleanup` phase.
  *
- * \note When using local time stepping, the simulation will almost certainly
- * fail with different elements at different times. This can also happen
- * with global time stepping if some elements updated their current time
- * before other elements hit an error. If an event requires consistent
- * observation IDs, then an option should be added to that event that specifies
- * what should be used instead of the received observation IDs. See
- * the ObserveFields event for an example.
+ * \note The simulation will almost certainly fail with different
+ * elements at different times.
  */
+template <typename ObservationId>
 struct RunEventsOnFailure {
  private:
   template <typename Event>
@@ -59,6 +56,10 @@ struct RunEventsOnFailure {
     // so can't rely on the data being safe.
     disable_floating_point_exceptions();
 
+    // This will be fixed in the next commit.
+    const Event::ObservationValue observation_value{
+        db::tag_name<ObservationId>(), 123456.7};
+
     using compute_tags = tmpl::remove_duplicates<tmpl::filter<
         tmpl::flatten<tmpl::transform<
             tmpl::at<typename Metavariables::factory_creation::factory_classes,
@@ -69,7 +70,8 @@ struct RunEventsOnFailure {
         observation_box{make_observation_box<compute_tags>(box)};
 
     for (const auto& event : db::get<::Tags::EventsRunAtCleanup>(box)) {
-      event->run(observation_box.value(), cache, array_index, component);
+      event->run(observation_box.value(), cache, array_index, component,
+                 observation_value);
     }
 
     // Do not re-enable FPEs because other parts of the pipeline might rely on

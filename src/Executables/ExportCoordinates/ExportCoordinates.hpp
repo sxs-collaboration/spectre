@@ -319,7 +319,7 @@ struct Metavariables {
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
                              Actions::FindGlobalMinimumGridSpacing,
-                             Actions::RunEventsAndTriggers>>>>,
+                             Actions::RunEventsAndTriggers<Tags::Time>>>>>,
       observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>>;
 

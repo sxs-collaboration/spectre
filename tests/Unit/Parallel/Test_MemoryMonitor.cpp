@@ -33,10 +33,6 @@
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace {
-struct TimeTag {
-  using type = double;
-};
-
 template <typename Metavariables>
 struct MockMemoryMonitor {
   using chare_type = ActionTesting::MockSingletonChare;
@@ -486,7 +482,7 @@ void test_event_construction() {
       ([]() {
         std::vector<std::string> misspelled_component{"GlabolCahce"};
 
-        Events::MonitorMemory<1, TimeTag> event{
+        Events::MonitorMemory<1> event{
             {misspelled_component}, Options::Context{}, metavars{}};
       }()),
       Catch::Contains(
@@ -496,9 +492,9 @@ void test_event_construction() {
       ([]() {
         std::vector<std::string> array_component{"ArrayParallelComponent"};
 
-        Events::MonitorMemory<2, TimeTag> event{{array_component},
-                                                Options::Context{},
-                                                BadArrayChareMetavariables{}};
+        Events::MonitorMemory<2> event{{array_component},
+                                       Options::Context{},
+                                       BadArrayChareMetavariables{}};
       }()),
       Catch::Contains("Currently, the only Array parallel component allowed to "
                       "be monitored is the DgElementArray."));
@@ -533,7 +529,7 @@ void test_monitor_memory_event() {
   });
 
   // Create event
-  Events::MonitorMemory<3, TimeTag> monitor_memory{
+  Events::MonitorMemory<3> monitor_memory{
       {components_to_monitor}, Options::Context{}, metavars{}};
 
   const auto& element =
@@ -542,8 +538,9 @@ void test_monitor_memory_event() {
 
   // Run the event. This will queue a lot of actions
   const double time = 1.4;
-  monitor_memory(time, element, cache, 0,
-                 std::add_pointer_t<dg_elem_comp<event_metavars>>{});
+  monitor_memory(element, cache, 0,
+                 std::add_pointer_t<dg_elem_comp<event_metavars>>{},
+                 {"TimeName", time});
 
   // Check how many simple actions are queued:
   // - MemoryMonitor: 1

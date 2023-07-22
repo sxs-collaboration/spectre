@@ -93,7 +93,7 @@ struct initialize_elements_and_queue_simple_actions {
           make_observation_box<
               typename metavars::event::compute_tags_for_observation_box>(box),
           ActionTesting::cache<elem_component>(runner, element_id), element_id,
-          std::add_pointer_t<elem_component>{});
+          std::add_pointer_t<elem_component>{}, {});
     }
   }
 };

@@ -124,14 +124,12 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Xcts::BoundaryConditions::standard_boundary_conditions<system>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, typename solver::nonlinear_solver_iteration_id,
-                    observe_fields, observer_compute_tags,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, observer_compute_tags,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger,
                    elliptic::Triggers::all_triggers<
                        typename solver::nonlinear_solver::options_group>>>;
@@ -151,7 +149,8 @@ struct Metavariables {
                       observers::Actions::RegisterEventsWithObservers,
                       Parallel::Actions::TerminatePhase>;
 
-  using step_actions = tmpl::list<Actions::RunEventsAndTriggers>;
+  using step_actions = tmpl::list<
+      Actions::RunEventsAndTriggers<solver::nonlinear_solver_iteration_id>>;
 
   using solve_actions =
       tmpl::push_back<typename solver::template solve_actions<step_actions>,

@@ -44,7 +44,7 @@ struct Inertial;
 
 namespace dg::Events {
 /// \cond
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+template <size_t VolumeDim, typename Tensors,
           typename NonTensorComputeTagsList = tmpl::list<>,
           typename ArraySectionIdTag = void>
 class ObserveVolumeIntegrals;
@@ -55,7 +55,7 @@ class ObserveVolumeIntegrals;
  * \brief %Observe the volume integrals of the tensors over the domain.
  *
  * Writes reduction quantities:
- * - `ObservationValueTag`
+ * - Observation value
  * - `Volume` = volume of the domain
  * - `VolumeIntegral(*)` = volume integral of the tensor
  *
@@ -66,11 +66,11 @@ class ObserveVolumeIntegrals;
  * available in the DataBox. It identifies the section and is used as a suffix
  * for the path in the output file.
  */
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-class ObserveVolumeIntegrals<
-    VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-    tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag> : public Event {
+class ObserveVolumeIntegrals<VolumeDim, tmpl::list<Tensors...>,
+                             tmpl::list<NonTensorComputeTags...>,
+                             ArraySectionIdTag> : public Event {
  private:
   using VolumeIntegralDatum =
       Parallel::ReductionDatum<std::vector<double>,
@@ -102,7 +102,7 @@ class ObserveVolumeIntegrals<
       "Observe the volume integrals of the tensors over the domain.\n"
       "\n"
       "Writes reduction quantities:\n"
-      " * ObservationValueTag\n"
+      " * Observation value\n"
       " * Volume = volume of the domain\n"
       " * VolumeIntegral(*) = volume integral of the tensor\n"
       "\n"
@@ -120,7 +120,7 @@ class ObserveVolumeIntegrals<
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
   using argument_tags =
-      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
+      tmpl::list<::Tags::ObservationBox,
                  ::Events::Tags::ObserverMesh<VolumeDim>,
                  ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                         Frame::Inertial>,
@@ -130,13 +130,13 @@ class ObserveVolumeIntegrals<
             typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
-                  const typename ObservationValueTag::type& observation_value,
                   const Mesh<VolumeDim>& mesh,
                   const Scalar<DataVector>& det_inv_jacobian,
                   const typename Tensors::type&... tensors,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const {
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& observation_value) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -150,8 +150,7 @@ class ObserveVolumeIntegrals<
     const double local_volume = definite_integral(det_jacobian, mesh);
 
     std::vector<double> local_volume_integrals{};
-    std::vector<std::string> reduction_names = {
-        db::tag_name<ObservationValueTag>(), "Volume"};
+    std::vector<std::string> reduction_names{observation_value.name, "Volume"};
     const auto record_integrals = [&local_volume_integrals, &reduction_names,
                                    &det_jacobian,
                                    &mesh](const auto tensor_tag_v,
@@ -177,12 +176,13 @@ class ObserveVolumeIntegrals<
         subfile_path_ + section_observation_key.value();
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(observation_value, subfile_path_with_suffix),
+        observers::ObservationId(observation_value.value,
+                                 subfile_path_with_suffix),
         observers::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ArrayIndex>(array_index)},
         subfile_path_with_suffix, reduction_names,
-        ReductionData{static_cast<double>(observation_value), local_volume,
+        ReductionData{observation_value.value, local_volume,
                       local_volume_integrals});
   }
 
@@ -224,18 +224,17 @@ class ObserveVolumeIntegrals<
   std::string subfile_path_;
 };
 
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-ObserveVolumeIntegrals<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                       tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
-    ObserveVolumeIntegrals(const std::string& subfile_name)
+ObserveVolumeIntegrals<
+    VolumeDim, tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>,
+    ArraySectionIdTag>::ObserveVolumeIntegrals(const std::string& subfile_name)
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
-PUP::able::PUP_ID ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
-                                         tmpl::list<Tensors...>,
+PUP::able::PUP_ID ObserveVolumeIntegrals<VolumeDim, tmpl::list<Tensors...>,
                                          tmpl::list<NonTensorComputeTags...>,
                                          ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT

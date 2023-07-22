@@ -36,7 +36,6 @@
 
 /// \cond
 namespace Tags {
-struct Time;
 struct TimeStep;
 }  // namespace Tags
 /// \endcond
@@ -164,16 +163,17 @@ class ObserveTimeStep : public Event {
 
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
-  using argument_tags = tmpl::list<::Tags::Time, ::Tags::TimeStep,
-                                   typename System::variables_tag>;
+  using argument_tags =
+      tmpl::list<::Tags::TimeStep, typename System::variables_tag>;
 
   template <typename ArrayIndex, typename ParallelComponent,
             typename Metavariables>
-  void operator()(const double& time, const TimeDelta& time_step,
+  void operator()(const TimeDelta& time_step,
                   const typename System::variables_tag::type& variables,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const {
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& observation_value) const {
     const size_t number_of_grid_points = variables.number_of_grid_points();
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
@@ -186,18 +186,20 @@ class ObserveTimeStep : public Event {
         output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
                      : std::nullopt;
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
-        local_observer, observers::ObservationId(time, subfile_path_ + ".dat"),
+        local_observer,
+        observers::ObservationId(observation_value.value,
+                                 subfile_path_ + ".dat"),
         observers::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ArrayIndex>(array_index)},
         subfile_path_,
-        std::vector<std::string>{"Time", "NumberOfPoints", "Slab size",
-                                 "Minimum time step", "Maximum time step",
-                                 "Effective time step", "Minimum Walltime",
-                                 "Maximum Walltime"},
-        ReductionData{time, number_of_grid_points, slab_size, step_size,
-                      step_size, number_of_grid_points / step_size, wall_time,
-                      wall_time},
+        std::vector<std::string>{observation_value.name, "NumberOfPoints",
+                                 "Slab size", "Minimum time step",
+                                 "Maximum time step", "Effective time step",
+                                 "Minimum Walltime", "Maximum Walltime"},
+        ReductionData{observation_value.value, number_of_grid_points, slab_size,
+                      step_size, step_size, number_of_grid_points / step_size,
+                      wall_time, wall_time},
         std::move(formatter), observe_per_core_);
   }
 

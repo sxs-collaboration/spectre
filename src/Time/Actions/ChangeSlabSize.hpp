@@ -278,7 +278,8 @@ class ChangeSlabSize : public Event {
                   const db::DataBox<DbTags>& box_for_step_choosers,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const {
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& /*observation_value*/) const {
     const auto next_changable_slab = time_step_id.is_at_slab_boundary()
                                          ? time_step_id.slab_number()
                                          : time_step_id.slab_number() + 1;

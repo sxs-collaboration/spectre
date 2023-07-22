@@ -86,12 +86,10 @@ struct Metavariables {
             tmpl::flatten<tmpl::list<
                 Events::Completion,
                 dg::Events::field_observations<
-                    volume_dim, typename solver::nonlinear_solver_iteration_id,
-                    observe_fields, observer_compute_tags,
+                    volume_dim, observe_fields, observer_compute_tags,
                     LinearSolver::multigrid::Tags::IsFinestGrid>,
                 dg::Events::ObserveVolumeIntegrals<
-                    volume_dim, typename solver::nonlinear_solver_iteration_id,
-                    observe_integral_fields, observer_compute_tags,
+                    volume_dim, observe_integral_fields, observer_compute_tags,
                     LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger,
                    elliptic::Triggers::all_triggers<
@@ -116,7 +114,8 @@ struct Metavariables {
                       observers::Actions::RegisterEventsWithObservers,
                       Parallel::Actions::TerminatePhase>;
 
-  using step_actions = tmpl::list<Actions::RunEventsAndTriggers>;
+  using step_actions = tmpl::list<
+      Actions::RunEventsAndTriggers<solver::nonlinear_solver_iteration_id>>;
 
   using solve_actions =
       tmpl::push_back<typename solver::template solve_actions<step_actions>,

@@ -28,7 +28,6 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -137,7 +136,7 @@ struct MockObserverComponent {
 
 template <typename ArraySectionIdTag>
 using ObserveAtExtremumEvent = Events::ObserveAtExtremum<
-    ::Tags::Time, tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
+    tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
     tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag>;
 
 template <size_t Dim, typename ArraySectionIdTag>
@@ -184,10 +183,10 @@ void test(const std::unique_ptr<ObserveEvent> observe,
 
   const auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                        ::Events::Tags::ObserverMesh<3>, ::Tags::Time,
+                        ::Events::Tags::ObserverMesh<3>,
                         Tags::Variables<typename decltype(vars)::tags_list>,
                         observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, observation_time, vars, section);
+      metavariables{}, mesh, vars, section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -214,7 +213,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                            ArraySectionIdTag>::compute_tags_for_observation_box,
                        db::is_compute_tag<tmpl::_1>>>(box),
       ActionTesting::cache<element_component>(runner, array_index), array_index,
-      std::add_pointer_t<element_component>{});
+      std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -226,7 +225,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.time == observation_time);
-  CHECK(results.legend[0] == "Time");
+  CHECK(results.legend[0] == "TimeName");
   if (extremum_type == "Max") {
     CHECK(results.legend[1] == "Max(Var0)");
     CHECK(results.legend[2] == "AtVar0Max(Var0)");

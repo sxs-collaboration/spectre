@@ -16,6 +16,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -28,9 +29,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags =
-      typename Actions::RunEventsOnFailure::const_global_cache_tags;
+      Actions::RunEventsOnFailure<Tags::Time>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Parallel::Phase::Testing, tmpl::list<Actions::RunEventsOnFailure>>>;
+      Parallel::Phase::Testing,
+      tmpl::list<Actions::RunEventsOnFailure<Tags::Time>>>>;
 };
 
 struct Metavariables {

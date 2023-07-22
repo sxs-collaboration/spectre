@@ -65,10 +65,6 @@ struct ContributeReductionData;
 
 namespace {
 
-struct ObservationTimeTag : db::SimpleTag {
-  using type = double;
-};
-
 struct TestSectionIdTag {};
 
 struct MockContributeReductionData {
@@ -172,7 +168,7 @@ struct Metavariables {
   using const_global_cache_tags = tmpl::list<>;  //  unused
 
   using ObserveEvent = dg::Events::ObserveVolumeIntegrals<
-      VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>,
+      VolumeDim, variables_for_test<VolumeDim>,
       tmpl::list<ScalarVarTimesTwoCompute>, ArraySectionIdTag>;
 
   struct factory_creation
@@ -239,8 +235,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   const DataVector det_jacobian = 1.0 / get(det_inv_jacobian);
   const double expected_volume = definite_integral(det_jacobian, mesh);
   std::vector<double> expected_volume_integrals{};
-  std::vector<std::string> expected_reduction_names = {
-      db::tag_name<ObservationTimeTag>(), "Volume"};
+  std::vector<std::string> expected_reduction_names = {"TimeName", "Volume"};
   tmpl::for_each<typename std::decay_t<decltype(vars)>::tags_list>(
       [&num_tensor_components, &vars, &expected_volume_integrals,
        &expected_reduction_names, &det_jacobian, &mesh](auto tag) {
@@ -257,14 +252,14 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
       });
 
   const double observation_time = 2.0;
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
-      ::Events::Tags::ObserverMesh<VolumeDim>,
-      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
-                                             Frame::Inertial>,
-      Tags::Variables<typename decltype(vars)::tags_list>,
-      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, observation_time, mesh, det_inv_jacobian, vars, section);
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                        ::Events::Tags::ObserverMesh<VolumeDim>,
+                        ::Events::Tags::ObserverDetInvJacobian<
+                            Frame::ElementLogical, Frame::Inertial>,
+                        Tags::Variables<typename decltype(vars)::tags_list>,
+                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, mesh, det_inv_jacobian, vars, section);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
@@ -288,7 +283,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
   observe->run(make_observation_box<db::AddComputeTags<>>(box),
                ActionTesting::cache<element_component>(runner, array_index),
-               array_index, std::add_pointer_t<element_component>{});
+               array_index, std::add_pointer_t<element_component>{},
+               {"TimeName", observation_time});
 
   if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));

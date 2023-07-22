@@ -45,6 +45,8 @@ struct SendGhVarsToCce {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
+    // not used by interpolation
+    const Event::ObservationValue observation_value{};
     auto interpolate_event = intrp::Events::InterpolateWithoutInterpComponent<
         Metavariables::volume_dim, CceWorltubeTargetTag, Metavariables,
         typename CceWorltubeTargetTag::vars_to_interpolate_to_target>{};
@@ -52,7 +54,7 @@ struct SendGhVarsToCce {
         interpolate_event,
         make_observation_box<db::AddComputeTags<
             Events::Tags::ObserverMeshCompute<Metavariables::volume_dim>>>(box),
-        cache, array_index, component);
+        cache, array_index, component, observation_value);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

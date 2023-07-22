@@ -168,7 +168,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
-          OverrideObservationValue: None
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan

@@ -417,9 +417,8 @@ struct EvolutionMetavars {
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, ExcisionBoundaryB, EvolutionMetavars,
                     interpolator_source_vars>,
-                Events::MonitorMemory<3, ::Tags::Time>, Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
+                Events::MonitorMemory<3>, Events::Completion,
+                dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>,
                 control_system::control_system_events<control_systems>,
                 Events::time_events<system>>>>,
@@ -552,8 +551,9 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
+                         Actions::RunEventsAndTriggers<Tags::Time>,
+                         Actions::ChangeSlabSize, step_actions,
+                         Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {

@@ -177,21 +177,20 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
   const double observation_time = 2.0;
   const Slab slab(1.23, 4.56);
 
-  using tag_list =
-      tmpl::list<Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Time,
-                 Tags::TimeStep, System::variables_tag>;
+  using tag_list = tmpl::list<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                              Tags::TimeStep, System::variables_tag>;
   std::vector<db::compute_databox_type<tag_list>> element_boxes;
 
-  const auto create_element = [&backwards_in_time, &element_boxes,
-                               &observation_time, &observer, &runner,
+  const auto create_element = [&backwards_in_time, &element_boxes, &observer,
+                               &runner,
                                &slab](const size_t num_points,
                                       TimeDelta::rational_t slab_fraction) {
     if (backwards_in_time) {
       slab_fraction *= -1;
     }
-    auto box = db::create<tag_list>(Metavariables{}, observation_time,
-                                    slab.duration() * slab_fraction,
-                                    System::variables_tag::type(num_points));
+    auto box =
+        db::create<tag_list>(Metavariables{}, slab.duration() * slab_fraction,
+                             System::variables_tag::type(num_points));
 
     const auto ids_to_register =
         observers::get_registration_observation_type_and_key(observer, box);
@@ -224,7 +223,8 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
         make_observation_box<db::AddComputeTags<>>(element_boxes[index]),
         ActionTesting::cache<element_component>(runner, index),
         static_cast<element_component::array_index>(index),
-        std::add_pointer_t<element_component>{});
+        std::add_pointer_t<element_component>{},
+        {"TimeName", observation_time});
   }
 
   // Process the data
@@ -242,7 +242,7 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
 
   CHECK(results->observation_id.value() == observation_time);
   CHECK(results->subfile_name == "/time_step_subfile");
-  CHECK(results->reduction_names[0] == "Time");
+  CHECK(results->reduction_names[0] == "TimeName");
   CHECK(std::get<0>(reduction_data.data()) == observation_time);
   CHECK(results->reduction_names[1] == "NumberOfPoints");
   CHECK(std::get<1>(reduction_data.data()) == expected_num_points);
