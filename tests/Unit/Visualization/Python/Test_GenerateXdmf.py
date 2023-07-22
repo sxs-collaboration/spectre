@@ -68,7 +68,10 @@ class TestGenerateXdmf(unittest.TestCase):
                 ET.canonicalize(
                     from_file=os.path.join(self.data_dir, "VolTestData.xmf"),
                     strip_text=True,
-                ).replace("VolTestData0.h5", data_files[0]),
+                ).replace(
+                    "VolTestData0.h5",
+                    os.path.relpath(data_files[0], self.test_dir),
+                ),
             )
 
     def test_surface_generate_xdmf(self):
