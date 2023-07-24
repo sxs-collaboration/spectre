@@ -1,165 +1,193 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// This file checks the Completion event and the basic logical
+// This file checks EventsAndTriggers and the basic logical
 // triggers (Always, And, Not, and Or).
 
 #include "Framework/TestingFramework.hpp"
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
-#include "Framework/ActionTesting.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
+#include "Options/String.hpp"
+#include "Parallel/GlobalCache.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Tags/Time.hpp"
-#include "Time/Tags/TimeStepId.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 namespace {
-template <typename Metavariables>
-struct Component {
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<ActionTesting::InitializeDataBox<
-                                 typename Metavariables::simple_tags>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::RunEventsAndTriggers<
-                                 typename Metavariables::observation_id>>>>;
+namespace Tags {
+struct Data : db::SimpleTag {
+  using type = int;
 };
 
-template <typename ObservationId, typename SimpleTags>
+struct Observation : db::SimpleTag {
+  using type = int;
+};
+
+struct ObservationCompute : Observation, db::ComputeTag {
+  using base = Observation;
+  using argument_tags = tmpl::list<Data>;
+  static void function(const gsl::not_null<int*> observation, const int data) {
+    *observation = data + 1;
+  }
+};
+}  // namespace Tags
+
+struct TestEvent : public Event {
+ public:
+  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
+#pragma GCC diagnostic pop
+
+  using compute_tags_for_observation_box = tmpl::list<Tags::ObservationCompute>;
+  using options = tmpl::list<>;
+  static constexpr Options::String help = "";
+
+  TestEvent() = default;
+
+  using argument_tags = tmpl::list<Tags::Data, Tags::Observation>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  void operator()(const int data, const int observation,
+                  Parallel::GlobalCache<Metavariables>& /*cache*/,
+                  const ArrayIndex& /*array_index*/,
+                  const Component* const /*meta*/,
+                  const ObservationValue& observation_value) const {
+    CHECK(data == 2);
+    CHECK(observation == 3);
+    CHECK(observation_value.name == "Name");
+    CHECK(observation_value.value == 1234.5);
+    ++run_count;
+  }
+
+  using is_ready_argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/) const {
+    return true;
+  }
+
+  bool needs_evolved_variables() const override { return false; }
+
+  static int run_count;
+};
+
+int TestEvent::run_count = 0;
+PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+
+struct Component {};
+
 struct Metavariables {
-  using component_list = tmpl::list<Component<Metavariables>>;
-  using observation_id = ObservationId;
-  using simple_tags = SimpleTags;
+  using component_list = tmpl::list<>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<Event, tmpl::list<Events::Completion>>,
+        tmpl::map<tmpl::pair<Event, tmpl::list<TestEvent>>,
                   tmpl::pair<Trigger, Triggers::logical_triggers>>;
   };
 };
 
-struct Label {};
-
-using iteration_metavars =
-    Metavariables<Convergence::Tags::IterationId<Label>,
-                  tmpl::list<Convergence::Tags::IterationId<Label>>>;
-
-using time_metavars =
-    Metavariables<Tags::Time, tmpl::list<Tags::Time, Tags::TimeStepId>>;
-
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
-                             const bool expected) {
-  using my_component = Component<iteration_metavars>;
-  ActionTesting::MockRuntimeSystem<iteration_metavars> runner{
-      {serialize_and_deserialize(events_and_triggers)}};
-  ActionTesting::emplace_component<my_component>(&runner, 0);
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  db::mutate<Convergence::Tags::IterationId<Label>>(
-      [](const gsl::not_null<size_t*> n) { *n = 10; },
-      make_not_null(&ActionTesting::get_databox<my_component>(
-          make_not_null(&runner), 0)));
-  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
+                             const int expected) {
+  const auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
+      Metavariables{}, 2);
+  Event::ObservationValue observation_value{"Name", 1234.5};
 
-  CHECK(ActionTesting::get_terminate<my_component>(runner, 0) == expected);
+  Parallel::GlobalCache<Metavariables> cache{};
+  Component* const component_ptr = nullptr;
+
+  TestEvent::run_count = 0;
+  events_and_triggers.run_events(box, cache, 0, component_ptr,
+                                 observation_value);
+  CHECK(TestEvent::run_count == expected);
+
+  TestEvent::run_count = 0;
+  serialize_and_deserialize(events_and_triggers)
+      .run_events(box, cache, 0, component_ptr, observation_value);
+  CHECK(TestEvent::run_count == expected);
 }
 
-void check_trigger(const bool expected, const std::string& trigger_string) {
-  // Test factory
+void check_trigger(const int expected, const std::string& trigger_string) {
   auto trigger =
-      TestHelpers::test_creation<std::unique_ptr<Trigger>, iteration_metavars>(
+      TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
           trigger_string);
 
   EventsAndTriggers::Storage events_and_triggers_input;
   events_and_triggers_input.push_back(
-      {std::move(trigger), make_vector<std::unique_ptr<Event>>(
-                               std::make_unique<Events::Completion>())});
+      {std::move(trigger),
+       make_vector<std::unique_ptr<Event>>(std::make_unique<TestEvent>())});
   const EventsAndTriggers events_and_triggers(
       std::move(events_and_triggers_input));
 
   run_events_and_triggers(events_and_triggers, expected);
 }
 
-void test_completion() {
-  const auto completion =
-      TestHelpers::test_creation<std::unique_ptr<Event>, iteration_metavars>(
-          "Completion");
-  CHECK(not completion->needs_evolved_variables());
-}
-
 void test_basic_triggers() {
-  check_trigger(true, "Always");
-  check_trigger(false, "Not: Always");
-  check_trigger(true,
+  check_trigger(1, "Always");
+  check_trigger(0, "Not: Always");
+  check_trigger(1,
                 "Not:\n"
                 "  Not: Always");
 
-  check_trigger(true,
+  check_trigger(1,
                 "And:\n"
                 "  - Always\n"
                 "  - Always");
-  check_trigger(false,
+  check_trigger(0,
                 "And:\n"
                 "  - Always\n"
                 "  - Not: Always");
-  check_trigger(false,
+  check_trigger(0,
                 "And:\n"
                 "  - Not: Always\n"
                 "  - Always");
-  check_trigger(false,
+  check_trigger(0,
                 "And:\n"
                 "  - Not: Always\n"
                 "  - Not: Always");
-  check_trigger(false,
+  check_trigger(0,
                 "And:\n"
                 "  - Always\n"
                 "  - Always\n"
                 "  - Not: Always");
 
-  check_trigger(true,
+  check_trigger(1,
                 "Or:\n"
                 "  - Always\n"
                 "  - Always");
-  check_trigger(true,
+  check_trigger(1,
                 "Or:\n"
                 "  - Always\n"
                 "  - Not: Always");
-  check_trigger(true,
+  check_trigger(1,
                 "Or:\n"
                 "  - Not: Always\n"
                 "  - Always");
-  check_trigger(false,
+  check_trigger(0,
                 "Or:\n"
                 "  - Not: Always\n"
                 "  - Not: Always");
-  check_trigger(true,
+  check_trigger(1,
                 "Or:\n"
                 "  - Not: Always\n"
                 "  - Not: Always\n"
@@ -168,79 +196,31 @@ void test_basic_triggers() {
 
 void test_factory() {
   const auto events_and_triggers =
-      TestHelpers::test_creation<EventsAndTriggers, iteration_metavars>(
+      TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
           "- Trigger:\n"
           "    Not: Always\n"
           "  Events:\n"
-          "    - Completion\n"
+          "    - TestEvent\n"
           "- Trigger:\n"
           "    Or:\n"
           "      - Not: Always\n"
           "      - Always\n"
           "  Events:\n"
-          "    - Completion\n"
-          "    - Completion\n"
+          "    - TestEvent\n"
+          "    - TestEvent\n"
           "- Trigger:\n"
           "    Not: Always\n"
           "  Events:\n"
-          "    - Completion\n");
+          "    - TestEvent\n");
 
-  run_events_and_triggers(events_and_triggers, true);
-}
-
-void test_slab_limits() {
-  EventsAndTriggers::Storage events_and_triggers_input;
-  events_and_triggers_input.push_back(
-      {std::make_unique<Triggers::Always>(),
-       make_vector<std::unique_ptr<Event>>(
-           std::make_unique<Events::Completion>())});
-
-  const Slab slab(0.0, 1.0);
-  const auto start = slab.start();
-  const auto center = start + slab.duration() / 2;
-
-  using my_component = Component<time_metavars>;
-  ActionTesting::MockRuntimeSystem<time_metavars> runner{
-      {EventsAndTriggers(std::move(events_and_triggers_input))}};
-  ActionTesting::emplace_component<my_component>(&runner, 0);
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-
-  auto& box =
-      ActionTesting::get_databox<my_component>(make_not_null(&runner), 0);
-  db::mutate<Tags::Time>([](const gsl::not_null<double*> t) { *t = -10.0; },
-                         make_not_null(&box));
-
-  db::mutate<Tags::TimeStepId>(
-      [&](const gsl::not_null<TimeStepId*> id) {
-        *id = TimeStepId(true, 0, center);
-      },
-      make_not_null(&box));
-  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
-  CHECK(not ActionTesting::get_terminate<my_component>(runner, 0));
-
-  db::mutate<Tags::TimeStepId>(
-      [&](const gsl::not_null<TimeStepId*> id) {
-        *id = TimeStepId(true, 0, start, 1, slab.duration(), start.value());
-      },
-      make_not_null(&box));
-  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
-  CHECK(not ActionTesting::get_terminate<my_component>(runner, 0));
-
-  db::mutate<Tags::TimeStepId>(
-      [&](const gsl::not_null<TimeStepId*> id) {
-        *id = TimeStepId(true, 0, start);
-      },
-      make_not_null(&box));
-  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
-  CHECK(ActionTesting::get_terminate<my_component>(runner, 0));
+  run_events_and_triggers(events_and_triggers, 2);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  register_factory_classes_with_charm<iteration_metavars>();
+SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers",
+                  "[Unit][ParallelAlgorithms]") {
+  register_factory_classes_with_charm<Metavariables>();
 
-  test_completion();
   test_basic_triggers();
   test_factory();
-  test_slab_limits();
 }
