@@ -11,6 +11,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Actions/RunEventsAndTriggers.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
@@ -32,7 +33,6 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -149,8 +149,8 @@ struct Metavariables {
                       observers::Actions::RegisterEventsWithObservers,
                       Parallel::Actions::TerminatePhase>;
 
-  using step_actions = tmpl::list<
-      Actions::RunEventsAndTriggers<solver::nonlinear_solver_iteration_id>>;
+  using step_actions = tmpl::list<elliptic::Actions::RunEventsAndTriggers<
+      solver::nonlinear_solver_iteration_id>>;
 
   using solve_actions =
       tmpl::push_back<typename solver::template solve_actions<step_actions>,

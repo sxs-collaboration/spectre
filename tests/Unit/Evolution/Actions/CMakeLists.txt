@@ -5,6 +5,7 @@ set(LIBRARY "Test_EvolutionActions")
 
 set(LIBRARY_SOURCES
   Test_RunEventsAndDenseTriggers.cpp
+  Test_RunEventsAndTriggers.cpp
   )
 
 add_test_library(

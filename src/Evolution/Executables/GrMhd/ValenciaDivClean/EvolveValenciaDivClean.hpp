@@ -13,6 +13,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
+#include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
@@ -111,7 +112,6 @@
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -529,7 +529,7 @@ struct EvolutionMetavars {
 
                  Parallel::PhaseActions<
                      Parallel::Phase::Evolve,
-                     tmpl::list<Actions::RunEventsAndTriggers<Tags::Time>,
+                     tmpl::list<evolution::Actions::RunEventsAndTriggers,
                                 Actions::ChangeSlabSize, step_actions,
                                 Actions::AdvanceTime,
                                 PhaseControl::Actions::ExecutePhaseChange>>,
