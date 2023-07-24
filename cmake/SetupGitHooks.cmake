@@ -16,6 +16,9 @@ if(USE_GIT_HOOKS)
 
   # The logic is inverted because shell
   if(NOT CHECK_SOURCE_DIR_WRITABLE_RESULT AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    find_package(ClangFormat)
+    find_package(Git)
+
     # We use several client-side git hooks to ensure commits are correct as
     # early as possible.
     configure_file(
