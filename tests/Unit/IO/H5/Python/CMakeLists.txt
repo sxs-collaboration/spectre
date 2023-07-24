@@ -1,11 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-spectre_add_python_bindings_test(
-  "Unit.IO.H5.Python.DeleteSubfiles"
-  Test_DeleteSubfiles.py
-  "unit;IO;H5;python"
-  PyH5)
+# The HDF5_REPACK_EXECUTABLE is inserted in DeleteSubfiles.py by cmake, so this
+# test doesn't work in PY_DEV_MODE
+if (NOT PY_DEV_MODE)
+  spectre_add_python_bindings_test(
+    "Unit.IO.H5.Python.DeleteSubfiles"
+    Test_DeleteSubfiles.py
+    "unit;IO;H5;python"
+    PyH5)
+endif()
 
 spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.ExtendConnectivity"
