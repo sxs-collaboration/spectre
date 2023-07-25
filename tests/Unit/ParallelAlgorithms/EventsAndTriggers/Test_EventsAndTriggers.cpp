@@ -215,6 +215,61 @@ void test_factory() {
 
   run_events_and_triggers(events_and_triggers, 2);
 }
+
+void test_custom_check_trigger() {
+  const auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
+      Metavariables{}, 2);
+  Event::ObservationValue observation_value{"Name", 1234.5};
+
+  Parallel::GlobalCache<Metavariables> cache{};
+  Component* const component_ptr = nullptr;
+
+  TestEvent::run_count = 0;
+
+  const EventsAndTriggers always_eat = []() {
+    EventsAndTriggers::Storage events_and_triggers_input;
+    events_and_triggers_input.push_back(
+        {std::make_unique<Triggers::Always>(),
+         make_vector<std::unique_ptr<Event>>(std::make_unique<TestEvent>())});
+    return EventsAndTriggers(std::move(events_and_triggers_input));
+  }();
+  const EventsAndTriggers never_eat = []() {
+    EventsAndTriggers::Storage events_and_triggers_input;
+    events_and_triggers_input.push_back(
+        {std::make_unique<Triggers::Not>(std::make_unique<Triggers::Always>()),
+         make_vector<std::unique_ptr<Event>>(std::make_unique<TestEvent>())});
+    return EventsAndTriggers(std::move(events_and_triggers_input));
+  }();
+
+  TestEvent::run_count = 0;
+  always_eat.run_events(box, cache, 0, component_ptr, observation_value);
+  CHECK(TestEvent::run_count == 1);
+
+  TestEvent::run_count = 0;
+  never_eat.run_events(box, cache, 0, component_ptr, observation_value);
+  CHECK(TestEvent::run_count == 0);
+
+  TestEvent::run_count = 0;
+  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+                        [](const Trigger& /*trigger*/) { return false; });
+  CHECK(TestEvent::run_count == 0);
+
+  TestEvent::run_count = 0;
+  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+                       [](const Trigger& /*trigger*/) { return false; });
+  CHECK(TestEvent::run_count == 0);
+
+  TestEvent::run_count = 0;
+  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+                        [](const Trigger& /*trigger*/) { return true; });
+  CHECK(TestEvent::run_count == 1);
+
+  TestEvent::run_count = 0;
+  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+                       [](const Trigger& /*trigger*/) { return true; });
+  CHECK(TestEvent::run_count == 1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers",
@@ -223,4 +278,5 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers",
 
   test_basic_triggers();
   test_factory();
+  test_custom_check_trigger();
 }

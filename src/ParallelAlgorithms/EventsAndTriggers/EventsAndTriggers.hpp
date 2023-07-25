@@ -63,12 +63,19 @@ class EventsAndTriggers {
   explicit EventsAndTriggers(Storage events_and_triggers)
       : events_and_triggers_(std::move(events_and_triggers)) {}
 
+  /// Check the triggers and run the associated events.
+  ///
+  /// By default the trigger check just calls the `is_triggered`
+  /// method, but the last argument can be passed to override this.
+  /// It must be a functor taking a `const Trigger&` and returning
+  /// `bool`.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
-            typename Component>
+            typename Component, typename CheckTrigger = std::nullptr_t>
   void run_events(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index, const Component* component,
-                  const Event::ObservationValue& observation_value) const {
+                  const Event::ObservationValue& observation_value,
+                  const CheckTrigger& check_trigger = nullptr) const {
     using compute_tags = tmpl::remove_duplicates<tmpl::filter<
         tmpl::flatten<tmpl::transform<
             tmpl::at<typename Metavariables::factory_creation::factory_classes,
@@ -80,7 +87,15 @@ class EventsAndTriggers {
     for (const auto& trigger_and_events : events_and_triggers_) {
       const auto& trigger = trigger_and_events.trigger;
       const auto& events = trigger_and_events.events;
-      if (trigger->is_triggered(box)) {
+      const bool is_triggered = [&]() {
+        if constexpr (std::is_same_v<std::decay_t<CheckTrigger>,
+                                     std::nullptr_t>) {
+          return trigger->is_triggered(box);
+        } else {
+          return check_trigger(std::as_const(*trigger));
+        }
+      }();
+      if (is_triggered) {
         if (not observation_box.has_value()) {
           observation_box = make_observation_box<compute_tags>(box);
         }
