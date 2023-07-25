@@ -37,4 +37,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Tags",
   TestHelpers::db::test_simple_tag<ForceFree::Tags::KappaPhi>("KappaPhi");
   TestHelpers::db::test_simple_tag<ForceFree::Tags::ParallelConductivity>(
       "ParallelConductivity");
+
+  // etc.
+  TestHelpers::db::test_simple_tag<ForceFree::Tags::NsInteriorMask>(
+      "NsInteriorMask");
 }

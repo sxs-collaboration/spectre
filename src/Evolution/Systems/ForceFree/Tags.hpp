@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -115,6 +116,23 @@ struct TildeJ : db::SimpleTag {
 struct LargestCharacteristicSpeed : db::SimpleTag {
   using type = double;
 };
+
+/*!
+ * \brief An optional scalar variable used for masking the interior of neutron
+ * star(s) when running neutron star magnetosphere simulations.
+ *
+ * For elements that contain any grid points inside the NS, we assign the value
+ * +1.0 to the grid points located outside the NS and assign -1.0 if located
+ * inside the NS.
+ *
+ * For elements that do not contain any grid points inside the NS, this tag is
+ * not initialized and has `null` value i.e. `has_value() == false`.
+ *
+ */
+struct NsInteriorMask : db::SimpleTag {
+  using type = std::optional<Scalar<DataVector>>;
+};
+
 }  // namespace Tags
 
 namespace OptionTags {
