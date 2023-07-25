@@ -166,11 +166,8 @@ std::string option_string(
          std::to_string(initial_extents[2]) +
          "]\n"
          "  UseEquiangularMap: " +
-         stringize(equiangular) +
-         "\n"
-         "  EquatorialCompression: None\n"
-         "  WhichWedges: " +
-         get_output(which_wedges) +
+         stringize(equiangular) + "\n" + equatorial_compression_option +
+         "  WhichWedges: " + get_output(which_wedges) +
          "\n"
          "  RadialPartitioning: " +
          stringize(radial_partitioning) +
@@ -601,8 +598,12 @@ void test_sphere() {
     const auto& interior = interiors[interior_index];
     const bool fill_interior =
         std::holds_alternative<creators::Sphere::InnerCube>(interior);
+    if (equatorial_compression.has_value() and fill_interior) {
+      continue;
+    }
     CAPTURE(fill_interior);
     CAPTURE(equiangular);
+    CAPTURE(equatorial_compression.has_value());  // Whether map is present.
     CAPTURE(radial_partitioning[array_index]);
     CAPTURE(radial_distribution[array_index]);
     CAPTURE(which_wedges);

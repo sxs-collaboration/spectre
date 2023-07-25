@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -100,7 +101,11 @@ Sphere::Sphere(
                     std::to_string(inner_radius_) + " and outer radius is " +
                     std::to_string(outer_radius_) + ".");
   }
-
+  if (equatorial_compression_.has_value() and fill_interior_) {
+    PARSE_ERROR(context,
+                "The equatorial compression map can only be used with a shell, "
+                "not with a filled sphere.");
+  }
   // Validate radial partitions
   if (not std::is_sorted(radial_partitioning_.begin(),
                          radial_partitioning_.end())) {
@@ -276,6 +281,14 @@ Domain<3> Sphere::create_domain() const {
       corners_for_radially_layered_domains(num_shells_, fill_interior_,
                                            {{1, 2, 3, 4, 5, 6, 7, 8}},
                                            which_wedges_);
+  double aspect_ratio = 1.0;
+  size_t index_polar_axis = 2;
+  if (equatorial_compression_.has_value()) {
+    aspect_ratio = equatorial_compression_.value().aspect_ratio;
+    index_polar_axis = equatorial_compression_.value().index_polar_axis;
+  }
+  const domain::CoordinateMaps::EquatorialCompression compression{
+      aspect_ratio, index_polar_axis};
 
   auto coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                             Frame::Inertial, 3>(
@@ -283,7 +296,7 @@ Domain<3> Sphere::create_domain() const {
           inner_radius_, outer_radius_,
           fill_interior_ ? std::get<InnerCube>(interior_).sphericity : 1.0, 1.0,
           use_equiangular_map_, false, radial_partitioning_,
-          radial_distribution_, which_wedges_));
+          radial_distribution_, which_wedges_), compression);
 
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
