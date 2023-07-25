@@ -30,7 +30,7 @@ file(
   DESTINATION ${SPHINX_SOURCE}
 )
 
-add_custom_target(py-docs ALL
+add_custom_target(py-docs
   COMMAND
   ${CMAKE_COMMAND} -E env
   ${CMAKE_BINARY_DIR}/bin/python-spectre -m sphinx -b html
