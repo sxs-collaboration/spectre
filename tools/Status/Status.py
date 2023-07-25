@@ -114,10 +114,12 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
             )
     # Fallback: Get the input file from the submit context file if present
     context_file = Path(work_dir) / "SubmitContext.yaml"
-    if context_file.exists():
+    try:
         with open(context_file, "r") as open_context_file:
             input_file = yaml.safe_load(open_context_file)["input_file"]
             return os.path.join(work_dir, input_file)
+    except:
+        logger.debug("Failed to read file '{context_file}'.", exc_info=True)
     # Fallback: Check if there's a single YAML file in the work dir
     yaml_files = glob.glob(os.path.join(work_dir, "*.yaml"))
     if len(yaml_files) == 1:
