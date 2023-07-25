@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 
+#include "ControlSystem/Averager.hpp"
 #include "ControlSystem/ControlErrors/Size.hpp"
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
@@ -16,6 +17,7 @@
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
+#include "ControlSystem/ControlErrors/Size/Update.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -212,7 +214,42 @@ void test_size_error_one_step(
     // The current time is popped back so we only get times in the past
     CHECK(control_error_history.empty());
 
-    error_class.reset();
+    size_error error_class_copied = error_class;
+
+    // We test the update_averager and update_tuner functions here because we
+    // already have the nice infrastructure of a cache and the control error
+    // class.
+    Averager<1> averager{0.25, true};
+    const DataVector timescale{1, 0.1};
+    // Populate the averager so it will have data
+    averager.update(time - 1.0, DataVector{1, 0.0}, timescale);
+    averager.update(time, DataVector{1, 0.0}, timescale);
+    CHECK(averager(0.0).has_value());
+
+    const bool expected_discontinuous_change =
+        error_class.discontinuous_change_has_occurred();
+    // If a discontinuous change has occurred, this call will clear the control
+    // error and the averager, then repopulate the averager with the existing
+    // control error history. However, since there is no history (checked
+    // above), the operator() of the averager will return a nullopt. If there
+    // wasn't a discontinuous change, then nothing happens
+    control_system::size::update_averager(make_not_null(&averager),
+                                          make_not_null(&error_class), cache,
+                                          time, timescale, "Size"s, 2);
+
+    CHECK(averager(0.0).has_value() != expected_discontinuous_change);
+
+    error_class = error_class_copied;
+
+    const DataVector old_timescale = tuner.current_timescale();
+
+    control_system::size::update_tuner(make_not_null(&tuner),
+                                       make_not_null(&error_class), cache, time,
+                                       "Size"s);
+
+    // Since there is no suggested timescale, the tuner keeps its old timescale.
+    // However the control error is always reset.
+    CHECK(old_timescale == tuner.current_timescale());
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
