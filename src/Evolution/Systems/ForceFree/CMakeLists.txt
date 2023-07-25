@@ -23,6 +23,7 @@ spectre_target_headers(
   Characteristics.hpp
   ElectricCurrentDensity.hpp
   Fluxes.hpp
+  SimulationType.hpp
   Sources.hpp
   System.hpp
   Tags.hpp
