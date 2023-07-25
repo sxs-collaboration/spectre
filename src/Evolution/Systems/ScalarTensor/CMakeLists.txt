@@ -40,4 +40,5 @@ target_link_libraries(
   Parallel
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(Sources)
