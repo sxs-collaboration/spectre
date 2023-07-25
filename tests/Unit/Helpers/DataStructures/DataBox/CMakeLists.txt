@@ -9,6 +9,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit
   HEADERS
+  Examples.hpp
   TestHelpers.hpp
   TestTags.hpp
   )
