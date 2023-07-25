@@ -137,12 +137,28 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
 }
 
 template <size_t Dim>
+bool operator==(const UpwindPenalty<Dim>& /*lhs*/,
+                const UpwindPenalty<Dim>& /*rhs*/) {
+  return true;
+}
+
+template <size_t Dim>
+bool operator!=(const UpwindPenalty<Dim>& lhs, const UpwindPenalty<Dim>& rhs) {
+  return not(lhs == rhs);
+}
+
+template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID UpwindPenalty<Dim>::my_PUP_ID = 0;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data) template class UpwindPenalty<DIM(data)>;
+#define INSTANTIATION(_, data)                                       \
+  template class UpwindPenalty<DIM(data)>;                           \
+  template bool operator==(const UpwindPenalty<DIM(data)>& /*lhs*/,  \
+                           const UpwindPenalty<DIM(data)>& /*rhs*/); \
+  template bool operator!=(const UpwindPenalty<DIM(data)>& /*lhs*/,  \
+                           const UpwindPenalty<DIM(data)>& /*rhs*/);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

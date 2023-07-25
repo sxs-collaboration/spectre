@@ -172,4 +172,9 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
       dg::Formulation /*dg_formulation*/) const;
 };
+
+template <size_t Dim>
+bool operator==(const UpwindPenalty<Dim>& lhs, const UpwindPenalty<Dim>& rhs);
+template <size_t Dim>
+bool operator!=(const UpwindPenalty<Dim>& lhs, const UpwindPenalty<Dim>& rhs);
 }  // namespace CurvedScalarWave::BoundaryCorrections
