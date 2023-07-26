@@ -305,15 +305,15 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event, tmpl::flatten<tmpl::list<
-                              Events::Completion,
-                              dg::Events::field_observations<
-                                  volume_dim, Tags::Time, observe_fields,
-                                  non_tensor_compute_tags>,
-                              Events::time_events<system>,
-                              intrp::Events::InterpolateWithoutInterpComponent<
-                                  3, InterpolationTargetTags, EvolutionMetavars,
-                                  interpolator_source_vars>...>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       Events::time_events<system>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, InterpolationTargetTags, EvolutionMetavars,
+                           interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::
@@ -515,28 +515,28 @@ struct EvolutionMetavars {
 
   using dg_element_array_component = DgElementArray<
       EvolutionMetavars,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::InitializeTimeStepperHistory,
-              SelfStart::self_start_procedure<step_actions, system>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::InitializeTimeStepperHistory,
+                     SelfStart::self_start_procedure<step_actions, system>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::Register,
-              tmpl::push_back<dg_registration_list,
-                              Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<dg_registration_list,
+                                     Parallel::Actions::TerminatePhase>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::Evolve,
-              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::PostFailureCleanup,
-              tmpl::list<Actions::RunEventsOnFailure,
-                         Parallel::Actions::TerminatePhase>>>>;
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Evolve,
+                     tmpl::list<Actions::RunEventsAndTriggers<Tags::Time>,
+                                Actions::ChangeSlabSize, step_actions,
+                                Actions::AdvanceTime,
+                                PhaseControl::Actions::ExecutePhaseChange>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::PostFailureCleanup,
+                     tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
+                                Parallel::Actions::TerminatePhase>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {

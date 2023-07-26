@@ -33,7 +33,8 @@ class Completion : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   void operator()(Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const Component* const /*meta*/) const {
+                  const Component* const /*meta*/,
+                  const ObservationValue& /*observation_value*/) const {
     auto al_gore = Parallel::local(
         Parallel::get_parallel_component<Component>(cache)[array_index]);
     al_gore->set_terminate(true);

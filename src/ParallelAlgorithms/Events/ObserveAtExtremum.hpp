@@ -57,15 +57,14 @@ namespace Events {
  * available in the DataBox. It identifies the section and is used as a suffix
  * for the path in the output file.
  */
-template <typename ObservationValueTag, typename ObservableTensorTagsList,
+template <typename ObservableTensorTagsList,
           typename NonTensorComputeTagsList = tmpl::list<>,
           typename ArraySectionIdTag = void>
 class ObserveAtExtremum;
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-class ObserveAtExtremum<ObservationValueTag,
-                        tmpl::list<ObservableTensorTags...>,
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                         tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
     : public Event {
  private:
@@ -142,7 +141,7 @@ class ObserveAtExtremum<ObservationValueTag,
       "Observe extremum of a scalar in the DataBox.\n"
       "\n"
       "Writes reduction quantities:\n"
-      " * ObservationValueTag (e.g. Time or IterationId)\n"
+      " * Observation value (e.g. Time or IterationId)\n"
       " * Extremum value of the desired scalar\n"
       " * Additional data at extremum\n";
 
@@ -157,16 +156,16 @@ class ObserveAtExtremum<ObservationValueTag,
   using compute_tags_for_observation_box =
       tmpl::list<ObservableTensorTags..., NonTensorComputeTags...>;
 
-  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::ObservationBox>;
+  using argument_tags = tmpl::list<::Tags::ObservationBox>;
 
   template <typename ComputeTagsList, typename DataBoxType,
             typename Metavariables, size_t VolumeDim,
             typename ParallelComponent>
-  void operator()(const typename ObservationValueTag::type& observation_value,
-                  const ObservationBox<ComputeTagsList, DataBoxType>& box,
+  void operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& array_index,
-                  const ParallelComponent* const /*meta*/) const;
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& observation_value) const;
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
 
@@ -208,27 +207,27 @@ class ObserveAtExtremum<ObservationValueTag,
 /// @}
 
 /// \cond
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                   tmpl::list<NonTensorComputeTags...>,
                   ArraySectionIdTag>::ObserveAtExtremum(CkMigrateMessage* msg)
     : Event(msg) {}
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-                  tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
-    ObserveAtExtremum(std::string subfile_name,
-                      ObserveTensors observe_tensors)
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+ObserveAtExtremum<
+    tmpl::list<ObservableTensorTags...>, tmpl::list<NonTensorComputeTags...>,
+    ArraySectionIdTag>::ObserveAtExtremum(std::string subfile_name,
+                                          ObserveTensors observe_tensors)
     : subfile_path_("/" + subfile_name),
       scalar_name_(std::move(observe_tensors.scalar_name)),
       extremum_type_(std::move(observe_tensors.extremum_type)),
       additional_tensor_names_(std::move(observe_tensors.additional_data)) {}
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                   tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
     ObserveTensors::ObserveTensors(std::string in_scalar,
                                    std::string in_extremum_type,
@@ -274,17 +273,17 @@ ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   }
 }
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
 template <typename ComputeTagsList, typename DataBoxType,
           typename Metavariables, size_t VolumeDim, typename ParallelComponent>
-void ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+void ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                        tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
-operator()(const typename ObservationValueTag::type& observation_value,
-           const ObservationBox<ComputeTagsList, DataBoxType>& box,
+operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
            Parallel::GlobalCache<Metavariables>& cache,
            const ElementId<VolumeDim>& array_index,
-           const ParallelComponent* const /*meta*/) const {
+           const ParallelComponent* const /*meta*/,
+           const ObservationValue& observation_value) const {
   // Skip observation on elements that are not part of a section
   const std::optional<std::string> section_observation_key =
       observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -298,7 +297,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
   // of other tensors at that extremum
   std::vector<double> data_to_reduce{};
   // Vector containing a description of the data to be reduced.
-  std::vector<std::string> legend{db::tag_name<ObservationValueTag>()};
+  std::vector<std::string> legend{observation_value.name};
   // Location of the local extremum
   size_t index_of_extremum = 0;
   // First, look for local extremum of desired scalar
@@ -375,31 +374,31 @@ operator()(const typename ObservationValueTag::type& observation_value,
   if (extremum_type_ == "Max") {
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(observation_value,
+        observers::ObservationId(observation_value.value,
                                  subfile_path_with_suffix + ".dat"),
         observers::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
         subfile_path_with_suffix, std::move(legend),
-        ReductionData<funcl::Max<>>{static_cast<double>(observation_value),
+        ReductionData<funcl::Max<>>{observation_value.value,
                                     std::move(data_to_reduce)});
   } else {
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(observation_value,
+        observers::ObservationId(observation_value.value,
                                  subfile_path_with_suffix + ".dat"),
         observers::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
         subfile_path_with_suffix, std::move(legend),
-        ReductionData<funcl::Min<>>{static_cast<double>(observation_value),
+        ReductionData<funcl::Min<>>{observation_value.value,
                                     std::move(data_to_reduce)});
   }
 }
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-void ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+void ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                        tmpl::list<NonTensorComputeTags...>,
                        ArraySectionIdTag>::pup(PUP::er& p) {
   Event::pup(p);
@@ -409,11 +408,11 @@ void ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   p | additional_tensor_names_;
 }
 
-template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename... NonTensorComputeTags, typename ArraySectionIdTag>
-PUP::able::PUP_ID
-    ObserveAtExtremum<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-                      tmpl::list<NonTensorComputeTags...>,
-                      ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+PUP::able::PUP_ID ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
+                                    tmpl::list<NonTensorComputeTags...>,
+                                    ArraySectionIdTag>::my_PUP_ID =
+    0;  // NOLINT
 /// \endcond
 }  // namespace Events

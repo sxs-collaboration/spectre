@@ -98,7 +98,6 @@ void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions,
-    const std::optional<double> override_observation_time = std::nullopt,
     const std::optional<std::string>& section = std::nullopt) {
   using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
@@ -114,9 +113,6 @@ void test_observe(
 
   const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
-  const double expected_observation_time =
-      override_observation_time.value_or(observation_time);
-  CAPTURE(expected_observation_time);
   Variables<typename System::variables_tag::tags_list> vars(
       mesh.number_of_grid_points());
   Variables<tmpl::list<coordinates_tag>> coordinate_vars(
@@ -164,13 +160,13 @@ void test_observe(
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
+      Parallel::Tags::MetavariablesImpl<metavariables>,
       domain::Tags::Mesh<volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>,
       ::Tags::Variables<typename decltype(prim_vars)::tags_list>,
       coordinates_tag, ::Tags::AnalyticSolutions<solution_variables>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, observation_time, mesh, vars, prim_vars,
+      metavariables{}, mesh, vars, prim_vars,
       get<coordinates_tag>(coordinate_vars),
       [&solutions, &has_analytic_solutions]() {
         return has_analytic_solutions ? std::make_optional(solutions)
@@ -200,7 +196,7 @@ void test_observe(
               db::is_compute_tag<tmpl::_1>>,
           ::Events::Tags::ObserverMeshCompute<volume_dim>>>(box),
       ActionTesting::cache<element_component>(runner, array_index), array_index,
-      std::add_pointer_t<element_component>{});
+      std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
 
   if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
@@ -212,7 +208,7 @@ void test_observe(
   CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
 
   const auto& results = MockContributeVolumeData::results;
-  CHECK(results.observation_id.value() == expected_observation_time);
+  CHECK(results.observation_id.value() == observation_time);
   CHECK(results.observation_id.observation_key() ==
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
@@ -320,34 +316,20 @@ void test_system(
   test_observe<System, ArraySectionIdTag>(
       std::make_unique<typename System::ObserveEvent>(
           System::make_test_object(interpolating_mesh)),
-      interpolating_mesh, has_analytic_solutions, std::nullopt, section);
+      interpolating_mesh, has_analytic_solutions, section);
   INFO("create/serialize");
   register_factory_classes_with_charm<metavariables>();
   {
     const std::string creation_string = System::creation_string_for_test +
-                                        mesh_creation_string +
-                                        "\n  OverrideObservationValue: None\n";
+                                        mesh_creation_string;
     const auto factory_event =
         TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
             creation_string);
     auto serialized_event = serialize_and_deserialize(factory_event);
     test_observe<System, ArraySectionIdTag>(
         std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
-        std::nullopt, section);
+        section);
   }
-  {
-    const std::string creation_string = System::creation_string_for_test +
-                                        mesh_creation_string +
-                                        "\n  OverrideObservationValue: 3.0\n";
-    const auto factory_event =
-        TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
-            creation_string);
-    auto serialized_event = serialize_and_deserialize(factory_event);
-    test_observe<System, ArraySectionIdTag>(
-        std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
-        3.0, section);
-  }
-
 }
 }  // namespace
 
@@ -482,8 +464,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "CoordinatesFloatingPointType: Double\n"
           "VariablesToObserve: [NotAVar]\n"
           "FloatingPointTypes: [Double]\n"
-          "InterpolateToMesh: None\n"
-          "OverrideObservationValue: None\n"),
+          "InterpolateToMesh: None\n"),
       Catch::Matchers::Contains("NotAVar is not an available variable"));
 
   CHECK_THROWS_WITH(
@@ -493,7 +474,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "CoordinatesFloatingPointType: Double\n"
           "VariablesToObserve: [Scalar, Scalar]\n"
           "FloatingPointTypes: [Double]\n"
-          "InterpolateToMesh: None\n"
-          "OverrideObservationValue: None\n"),
+          "InterpolateToMesh: None\n"),
       Catch::Matchers::Contains("Scalar specified multiple times"));
 }

@@ -7,13 +7,20 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
+namespace Convergence::Tags {
+template <typename Label>
+struct IterationId;
+}  // namespace Convergence::Tags
 namespace Tags {
+struct Time;
 struct TimeStepId;
 }  // namespace Tags
 /// \endcond
@@ -32,7 +39,10 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
+template <typename ObservationId>
 struct RunEventsAndTriggers {
+  static_assert(std::is_same_v<ObservationId, Tags::Time> or
+                tt::is_a_v<Convergence::Tags::IterationId, ObservationId>);
   using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -47,15 +57,16 @@ struct RunEventsAndTriggers {
     // non-evolutions and does not require linking against any
     // evolution-related libraries because everything is duck-typed
     // off the DataBox.
-    if constexpr (db::tag_is_retrievable_v<Tags::TimeStepId,
-                                           db::DataBox<DbTags>>) {
+    if constexpr (std::is_same_v<ObservationId, Tags::Time>) {
       if (not db::get<Tags::TimeStepId>(box).is_at_slab_boundary()) {
         return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
     }
 
     Parallel::get<Tags::EventsAndTriggers>(cache).run_events(
-        box, cache, array_index, component);
+        box, cache, array_index, component,
+        {db::tag_name<ObservationId>(),
+         static_cast<double>(db::get<ObservationId>(box))});
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

@@ -183,7 +183,8 @@ void test_observe(const Observer& observer) {
         make_observation_box<db::AddComputeTags<>>(element_boxes[index]),
         ActionTesting::cache<element_component>(runner, index),
         static_cast<element_component::array_index>(index),
-        std::add_pointer_t<element_component>{});
+        std::add_pointer_t<element_component>{},
+        {"TimeName", observation_time});
   }
 
   // Process the data
@@ -201,7 +202,7 @@ void test_observe(const Observer& observer) {
 
   CHECK(results->observation_id.value() == observation_time);
   CHECK(results->subfile_name == "/subfile");
-  CHECK(results->reduction_names[0] == "Time");
+  CHECK(results->reduction_names[0] == "TimeName");
   CHECK(std::get<0>(reduction_data.data()) == observation_time);
   CHECK(results->reduction_names[1] == "Number of slabs");
   CHECK(std::get<1>(reduction_data.data()) == num_slabs);

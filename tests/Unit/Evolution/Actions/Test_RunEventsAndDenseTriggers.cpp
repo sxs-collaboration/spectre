@@ -179,7 +179,8 @@ struct TestEvent : public Event {
   void operator()(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
-                  const Component* const /*meta*/) const {
+                  const Component* const /*meta*/,
+                  const ObservationValue& /*observation_value*/) const {
     tmpl::as_pack<all_data>([&](auto... tags_v) {
       calls.emplace_back(db::get<tmpl::type_from<decltype(tags_v)>>(box)...);
     });

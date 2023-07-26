@@ -14,12 +14,12 @@
 #include "Utilities/TMPL.hpp"
 
 namespace dg::Events {
-template <size_t VolumeDim, typename TimeTag, typename Fields,
-          typename NonTensorComputeTagsList, typename ArraySectionIdTag = void>
+template <size_t VolumeDim, typename Fields, typename NonTensorComputeTagsList,
+          typename ArraySectionIdTag = void>
 using field_observations = tmpl::flatten<
-    tmpl::list<ObserveFields<VolumeDim, TimeTag, Fields,
-                             NonTensorComputeTagsList, ArraySectionIdTag>,
-               ::Events::ObserveNorms<TimeTag, Fields, NonTensorComputeTagsList,
+    tmpl::list<ObserveFields<VolumeDim, Fields, NonTensorComputeTagsList,
+                             ArraySectionIdTag>,
+               ::Events::ObserveNorms<Fields, NonTensorComputeTagsList,
                                       ArraySectionIdTag>>>;
 }  // namespace dg::Events
 

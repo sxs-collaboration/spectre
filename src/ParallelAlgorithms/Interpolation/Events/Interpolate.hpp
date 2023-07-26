@@ -77,7 +77,8 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
           type&... interpolator_source_vars,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const /*meta*/) const {
+      const ParallelComponent* const /*meta*/,
+      const ObservationValue& /*observation_value*/) const {
     static_assert(
         std::is_same_v<typename Metavariables::interpolator_source_vars,
                        tmpl::list<InterpolatorSourceVarTags...>>);

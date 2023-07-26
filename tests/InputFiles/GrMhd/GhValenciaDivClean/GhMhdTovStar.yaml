@@ -211,7 +211,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
-          OverrideObservationValue: None
   - Trigger:
       Slabs:
         Specified:
@@ -229,3 +228,5 @@ Interpolator:
 EventsAndDenseTriggers:
 
 EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:

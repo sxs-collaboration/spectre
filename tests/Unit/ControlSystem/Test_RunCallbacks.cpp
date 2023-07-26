@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   const MeasureEvent event{};
   CHECK(event.needs_evolved_variables());
   event.run(make_observation_box<db::AddComputeTags<>>(box), cache, 0,
-            element_component_p);
+            element_component_p, {});
 
   ActionTesting::invoke_queued_simple_action<control_system_component>(
       make_not_null(&runner), 0);

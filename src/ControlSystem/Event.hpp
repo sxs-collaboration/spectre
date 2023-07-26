@@ -92,7 +92,8 @@ class Event : public ::Event {
   void operator()(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const Component* const component) const {
+                  const Component* const component,
+                  const ObservationValue& /*observation_value*/) const {
     const LinkedMessageId<double> measurement_id{
         db::get<::Tags::Time>(box),
         db::get<::evolution::Tags::PreviousTriggerTime>(box)};

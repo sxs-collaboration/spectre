@@ -203,9 +203,8 @@ struct EvolutionMetavars {
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
-                       dg::Events::field_observations<volume_dim, Tags::Time,
-                                                      observe_fields,
-                                                      non_tensor_compute_tags>,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
                        tmpl::conditional_t<
                            interpolate,
                            intrp::Events::InterpolateWithoutInterpComponent<
@@ -312,8 +311,9 @@ struct EvolutionMetavars {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                         step_actions, Actions::AdvanceTime,
+              tmpl::list<Actions::RunEventsAndTriggers<Tags::Time>,
+                         Actions::ChangeSlabSize, step_actions,
+                         Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   template <typename ParallelComponent>

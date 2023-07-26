@@ -75,7 +75,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Float, Float]
-          OverrideObservationValue: None
 
 EventsAndDenseTriggers:
 

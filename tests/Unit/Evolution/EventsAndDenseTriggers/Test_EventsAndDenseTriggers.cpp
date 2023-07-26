@@ -76,11 +76,14 @@ class TestEvent : public Event {
                   const double time_plus_two,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
-                  const Component* const /*meta*/) const {
+                  const Component* const /*meta*/,
+                  const ObservationValue& observation_value) const {
     event_ran = true;
     time_during_event = time;
     CHECK(time_plus_two == time + 2.0);
     previous_time_during_event = previous_trigger_time;
+    CHECK(observation_value.name == "Time");
+    CHECK(observation_value.value == time);
   }
 
   struct IsReady : db::SimpleTag {

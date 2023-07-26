@@ -76,7 +76,7 @@ namespace Events {
  * can be monitored is the DgElementArray itself.
  */
 
-template <size_t Dim, typename ObservationValueTag>
+template <size_t Dim>
 class MonitorMemory : public Event {
  private:
   // Reduction data for arrays
@@ -118,16 +118,15 @@ class MonitorMemory : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using argument_tags =
-      tmpl::list<ObservationValueTag, domain::Tags::Element<Dim>>;
+  using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const typename ObservationValueTag::type& observation_value,
-                  const ::Element<Dim>& element,
+  void operator()(const ::Element<Dim>& element,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const;
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& observation_value) const;
 
   using observation_registration_tags = tmpl::list<>;
 
@@ -156,13 +155,12 @@ class MonitorMemory : public Event {
 };
 
 /// \cond
-template <size_t Dim, typename ObservationValueTag>
-MonitorMemory<Dim, ObservationValueTag>::MonitorMemory(CkMigrateMessage* msg)
-    : Event(msg) {}
+template <size_t Dim>
+MonitorMemory<Dim>::MonitorMemory(CkMigrateMessage* msg) : Event(msg) {}
 
-template <size_t Dim, typename ObservationValueTag>
+template <size_t Dim>
 template <typename Metavariables>
-MonitorMemory<Dim, ObservationValueTag>::MonitorMemory(
+MonitorMemory<Dim>::MonitorMemory(
     const std::optional<std::vector<std::string>>& components_to_monitor,
     const Options::Context& context, Metavariables /*meta*/) {
   using component_list = tmpl::push_back<typename Metavariables::component_list,
@@ -226,14 +224,13 @@ MonitorMemory<Dim, ObservationValueTag>::MonitorMemory(
   }
 }
 
-template <size_t Dim, typename ObservationValueTag>
+template <size_t Dim>
 template <typename Metavariables, typename ArrayIndex,
           typename ParallelComponent>
-void MonitorMemory<Dim, ObservationValueTag>::operator()(
-    const typename ObservationValueTag::type& observation_value,
+void MonitorMemory<Dim>::operator()(
     const ::Element<Dim>& element, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index,
-    const ParallelComponent* const /*meta*/) const {
+    const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
+    const ObservationValue& observation_value) const {
   using component_list = tmpl::push_back<typename Metavariables::component_list,
                                          Parallel::GlobalCache<Metavariables>>;
 
@@ -282,8 +279,8 @@ void MonitorMemory<Dim, ObservationValueTag>::operator()(
 
       Parallel::contribute_to_reduction<
           mem_monitor::ProcessArray<ParallelComponent>>(
-          ReductionData{static_cast<double>(observation_value), data},
-          array_element_proxy, memory_monitor_proxy);
+          ReductionData{observation_value.value, data}, array_element_proxy,
+          memory_monitor_proxy);
     } else if constexpr (Parallel::is_singleton_v<component>) {
       // If this is a singleton, we only run this once so use the designated
       // element. Nothing to reduce with singletons so just call the simple
@@ -293,7 +290,7 @@ void MonitorMemory<Dim, ObservationValueTag>::operator()(
             Parallel::get_parallel_component<component>(cache);
 
         Parallel::simple_action<mem_monitor::ProcessSingleton>(
-            singleton_proxy, static_cast<double>(observation_value));
+            singleton_proxy, observation_value.value);
       }
     } else if constexpr (Parallel::is_nodegroup_v<component> or
                          Parallel::is_group_v<component>) {
@@ -308,8 +305,7 @@ void MonitorMemory<Dim, ObservationValueTag>::operator()(
           auto cache_proxy = cache.get_this_proxy();
 
           // This will be called on all branches of the GlobalCache
-          cache_proxy.compute_size_for_memory_monitor(
-              static_cast<double>(observation_value));
+          cache_proxy.compute_size_for_memory_monitor(observation_value.value);
         } else if constexpr (std::is_same_v<
                                  component,
                                  Parallel::MutableGlobalCache<Metavariables>>) {
@@ -325,7 +321,7 @@ void MonitorMemory<Dim, ObservationValueTag>::operator()(
 
           // This will be called on all branches of the MutableGlobalCache
           mutable_global_cache_proxy.compute_size_for_memory_monitor(
-              cache.get_this_proxy(), static_cast<double>(observation_value));
+              cache.get_this_proxy(), observation_value.value);
         } else {
           // Groups and nodegroups share an action
           auto& group_proxy =
@@ -333,22 +329,21 @@ void MonitorMemory<Dim, ObservationValueTag>::operator()(
 
           // This will be called on all branches of the (node)group
           Parallel::simple_action<mem_monitor::ProcessGroups>(
-              group_proxy, static_cast<double>(observation_value));
+              group_proxy, observation_value.value);
         }
       }
     }
   });
 }
 
-template <size_t Dim, typename ObservationValueTag>
-void MonitorMemory<Dim, ObservationValueTag>::pup(PUP::er& p) {
+template <size_t Dim>
+void MonitorMemory<Dim>::pup(PUP::er& p) {
   Event::pup(p);
   p | components_to_monitor_;
 }
 
-template <size_t Dim, typename ObservationValueTag>
-PUP::able::PUP_ID MonitorMemory<Dim, ObservationValueTag>::my_PUP_ID =
-    0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID MonitorMemory<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace Events

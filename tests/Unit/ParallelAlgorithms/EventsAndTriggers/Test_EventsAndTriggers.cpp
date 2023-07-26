@@ -14,6 +14,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -25,6 +26,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -47,12 +49,14 @@ struct Component {
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  typename Metavariables::simple_tags>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::RunEventsAndTriggers>>>;
+                             tmpl::list<Actions::RunEventsAndTriggers<
+                                 typename Metavariables::observation_id>>>>;
 };
 
-template <typename SimpleTags = tmpl::list<>>
+template <typename ObservationId, typename SimpleTags>
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
+  using observation_id = ObservationId;
   using simple_tags = SimpleTags;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -62,14 +66,26 @@ struct Metavariables {
   };
 };
 
+struct Label {};
+
+using iteration_metavars =
+    Metavariables<Convergence::Tags::IterationId<Label>,
+                  tmpl::list<Convergence::Tags::IterationId<Label>>>;
+
+using time_metavars =
+    Metavariables<Tags::Time, tmpl::list<Tags::Time, Tags::TimeStepId>>;
+
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
                              const bool expected) {
-  using my_component = Component<Metavariables<>>;
-  ActionTesting::MockRuntimeSystem<Metavariables<>> runner{
+  using my_component = Component<iteration_metavars>;
+  ActionTesting::MockRuntimeSystem<iteration_metavars> runner{
       {serialize_and_deserialize(events_and_triggers)}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-
+  db::mutate<Convergence::Tags::IterationId<Label>>(
+      [](const gsl::not_null<size_t*> n) { *n = 10; },
+      make_not_null(&ActionTesting::get_databox<my_component>(
+          make_not_null(&runner), 0)));
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
 
   CHECK(ActionTesting::get_terminate<my_component>(runner, 0) == expected);
@@ -78,7 +94,7 @@ void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
 void check_trigger(const bool expected, const std::string& trigger_string) {
   // Test factory
   auto trigger =
-      TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables<>>(
+      TestHelpers::test_creation<std::unique_ptr<Trigger>, iteration_metavars>(
           trigger_string);
 
   EventsAndTriggers::Storage events_and_triggers_input;
@@ -93,7 +109,7 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 
 void test_completion() {
   const auto completion =
-      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables<>>(
+      TestHelpers::test_creation<std::unique_ptr<Event>, iteration_metavars>(
           "Completion");
   CHECK(not completion->needs_evolved_variables());
 }
@@ -152,7 +168,7 @@ void test_basic_triggers() {
 
 void test_factory() {
   const auto events_and_triggers =
-      TestHelpers::test_creation<EventsAndTriggers, Metavariables<>>(
+      TestHelpers::test_creation<EventsAndTriggers, iteration_metavars>(
           "- Trigger:\n"
           "    Not: Always\n"
           "  Events:\n"
@@ -183,15 +199,16 @@ void test_slab_limits() {
   const auto start = slab.start();
   const auto center = start + slab.duration() / 2;
 
-  using metavars = Metavariables<tmpl::list<Tags::TimeStepId>>;
-  using my_component = Component<metavars>;
-  ActionTesting::MockRuntimeSystem<metavars> runner{
+  using my_component = Component<time_metavars>;
+  ActionTesting::MockRuntimeSystem<time_metavars> runner{
       {EventsAndTriggers(std::move(events_and_triggers_input))}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box =
       ActionTesting::get_databox<my_component>(make_not_null(&runner), 0);
+  db::mutate<Tags::Time>([](const gsl::not_null<double*> t) { *t = -10.0; },
+                         make_not_null(&box));
 
   db::mutate<Tags::TimeStepId>(
       [&](const gsl::not_null<TimeStepId*> id) {
@@ -220,7 +237,7 @@ void test_slab_limits() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  register_factory_classes_with_charm<Metavariables<>>();
+  register_factory_classes_with_charm<iteration_metavars>();
 
   test_completion();
   test_basic_triggers();

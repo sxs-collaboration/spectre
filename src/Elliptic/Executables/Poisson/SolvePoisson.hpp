@@ -191,8 +191,7 @@ struct Metavariables {
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
                        dg::Events::field_observations<
-                           volume_dim, linear_solver_iteration_id,
-                           observe_fields, observer_compute_tags,
+                           volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;
@@ -257,7 +256,7 @@ struct Metavariables {
                   smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
               ::LinearSolver::Actions::make_identity_if_skipped<
                   multigrid, build_linear_operator_actions>>,
-          Actions::RunEventsAndTriggers>,
+          Actions::RunEventsAndTriggers<linear_solver_iteration_id>>,
       Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<

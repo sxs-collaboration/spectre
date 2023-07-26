@@ -48,15 +48,33 @@ struct EventsAndTriggers {
   static std::string name() { return "EventsAndTriggers"; }
 };
 
-/// \brief A list of events to run at cleanpppp.
+namespace EventsRunAtCleanup {
+struct Group {
+  static std::string name() { return "EventsRunAtCleanup"; }
+  static constexpr Options::String help =
+      "Options related to running events on failure.  This is generally "
+      "intended for dumping volume data to diagnose failure reasons.";
+};
+
+/// \brief A list of events to run at cleanup.
 ///
 /// See `Actions::RunEventsOnFailure` for details and caveats.
-struct EventsRunAtCleanup {
+struct Events {
+  static std::string name() { return "Events"; }
   using type = std::vector<std::unique_ptr<::Event>>;
   static constexpr Options::String help =
-      "Events to run during the cleanup phase. This is generally intended for "
-      "dumping volume data to diagnose failure reasons.";
+      "Events to run during the cleanup phase.";
+  using group = Group;
 };
+
+/// \brief Observation value for Actions::RunEventsOnFailure.
+struct ObservationValue {
+  using type = double;
+  static constexpr Options::String help =
+      "Observation value for events run during the cleanup phase.";
+  using group = Group;
+};
+}  // namespace EventsRunAtCleanup
 }  // namespace OptionTags
 
 namespace Tags {
@@ -78,11 +96,21 @@ struct EventsAndTriggers : db::SimpleTag {
 /// Useful for troubleshooting runs that are failing.
 struct EventsRunAtCleanup : db::SimpleTag {
   using type = std::vector<std::unique_ptr<::Event>>;
-  using option_tags = tmpl::list<OptionTags::EventsRunAtCleanup>;
+  using option_tags = tmpl::list<OptionTags::EventsRunAtCleanup::Events>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_run_at_cleanup) {
     return deserialize<type>(serialize<type>(events_run_at_cleanup).data());
   }
+};
+
+/// \brief Observation value for Actions::RunEventsOnFailure.
+struct EventsRunAtCleanupObservationValue : db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::EventsRunAtCleanup::ObservationValue>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& value) { return value; }
 };
 }  // namespace Tags

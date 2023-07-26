@@ -146,4 +146,3 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
-          OverrideObservationValue: None

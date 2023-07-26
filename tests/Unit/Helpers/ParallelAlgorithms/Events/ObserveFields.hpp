@@ -49,10 +49,6 @@ struct ContributeVolumeData;
 /// \endcond
 
 namespace TestHelpers::dg::Events::ObserveFields {
-struct ObservationTimeTag : db::SimpleTag {
-  using type = double;
-};
-
 struct TestSectionIdTag {};
 
 struct MockContributeVolumeData {
@@ -202,7 +198,7 @@ struct ScalarSystem {
   };
 
   using ObserveEvent = ObservationEvent<
-      volume_dim, ObservationTimeTag,
+      volume_dim,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
                       Tags::ScalarVarTimesThree,
@@ -319,7 +315,7 @@ struct ComplicatedSystem {
   };
 
   using ObserveEvent = ObservationEvent<
-      volume_dim, ObservationTimeTag,
+      volume_dim,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
                       Tags::ScalarVarTimesThree,

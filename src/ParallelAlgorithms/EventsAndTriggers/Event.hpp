@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <limits>
+
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -40,18 +42,24 @@ class Event : public PUP::able {
 
   WRAPPED_PUPable_abstract(Event);  // NOLINT
 
+  struct ObservationValue {
+    std::string name{};
+    double value = std::numeric_limits<double>::signaling_NaN();
+  };
+
   template <typename ComputeTagsList, typename DataBoxType,
             typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   void run(const ObservationBox<ComputeTagsList, DataBoxType>& box,
            Parallel::GlobalCache<Metavariables>& cache,
-           const ArrayIndex& array_index,
-           const ComponentPointer /*meta*/) const {
+           const ArrayIndex& array_index, const ComponentPointer /*meta*/,
+           const ObservationValue& observation_value) const {
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
     call_with_dynamic_type<void, tmpl::at<factory_classes, Event>>(
-        this, [&box, &cache, &array_index](auto* const event) {
-          apply(*event, box, cache, array_index, ComponentPointer{});
+        this, [&](auto* const event) {
+          apply(*event, box, cache, array_index, ComponentPointer{},
+                observation_value);
         });
   }
 
