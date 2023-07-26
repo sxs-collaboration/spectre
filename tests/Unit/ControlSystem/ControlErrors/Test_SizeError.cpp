@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/ControlErrors/Size.hpp"
@@ -92,6 +93,8 @@ void test_size_error_one_step(
   const double initial_damping_time = 0.1;
   const double initial_target_drift_velocity = 0.0;
   const double initial_suggested_time_scale = 0.0;
+  // Set constants so that State::DeltaROutward is turned off.
+  const std::optional<double> max_allowed_radial_distance{};
   control_system::size::Info info{std::make_unique<InitialState>(),
                                   initial_damping_time,
                                   target_char_speed,
@@ -166,9 +169,13 @@ void test_size_error_one_step(
           lambda_dt_lambda[0][0], lambda_dt_lambda[1][0],
           grid_excision_boundary_radius);
 
+  // For this test, DeltaRDriftOutward is turned off.
+  const std::optional<double> control_error_delta_r_outward{};
+
   auto error = control_system::size::control_error(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
       predictor_delta_radius, time, control_error_delta_r,
+      control_error_delta_r_outward, max_allowed_radial_distance,
       time_deriv_horizon.coefficients()[0], horizon, excision_boundary, lapse,
       shifty_quantity, spatial_metric, inverse_spatial_metric);
 
@@ -196,6 +203,7 @@ void test_size_error_one_step(
     auto error_class = TestHelpers::test_creation<size_error>(
         "MaxNumTimesForZeroCrossingPredictor: 4\n"
         "SmoothAvgTimescaleFraction: 0.25\n"
+        "DeltaRDriftOutwardOptions: None\n"
         "SmootherTuner:\n"
         "  InitialTimescales: 0.2\n"
         "  MinTimescale: 1.0e-4\n"

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -64,6 +65,13 @@ struct ErrorDiagnostics {
  * \param time the current time.
  * \param control_error_delta_r the control error for the DeltaR state. This is
  *        used in other states as well.
+ * \param control_error_delta_r_outward the control error for the
+ *        DeltaRDriftOutward state.  If std::nullopt, then DeltaRDriftOutward
+ *        will not be used.
+ * \param max_allowed_radial_distance the maximum average radial distance
+ *        between the horizon and the excision boundary that is allowed without
+ *        triggering the DeltaRDriftOutward state.  If std::nullopt, then
+ *        DeltaRDriftOutward will not be used.
  * \param dt_lambda_00 the time derivative of the map parameter lambda_00
  * \param apparent_horizon the current horizon in frame Frame.
  * \param excision_boundary a Strahlkorper representing the excision
@@ -135,7 +143,9 @@ ErrorDiagnostics control_error(
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
-    double time, double control_error_delta_r, double dt_lambda_00,
+    double time, double control_error_delta_r,
+    std::optional<double> control_error_delta_r_outward,
+    std::optional<double> max_allowed_radial_distance, double dt_lambda_00,
     const ylm::Strahlkorper<Frame>& apparent_horizon,
     const ylm::Strahlkorper<Frame>& excision_boundary,
     const Scalar<DataVector>& lapse_on_excision_boundary,

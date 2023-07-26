@@ -4,10 +4,12 @@
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
 
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace control_system::size::States {
@@ -46,6 +48,12 @@ std::string DeltaR::update(const gsl::not_null<Info*> info,
       crossing_time_info.t_char_speed.value_or(
           std::numeric_limits<double>::infinity()) < info->damping_time and
       not delta_radius_is_in_danger;
+
+  // This factor is present in SpEC, and it is used to prevent
+  // oscillations between states.  The value was chosen in SpEC, but
+  // nothing should be sensitive to small changes in this value as
+  // long as it is slightly greater than unity.
+  constexpr double non_oscillation_drift_outward_factor = 1.1;
 
   std::stringstream ss{};
 
@@ -96,6 +104,15 @@ std::string DeltaR::update(const gsl::not_null<Info*> info,
        << std::abs(update_args.control_error_delta_r) << " > threshold "
        << delta_r_control_error_threshold << ". Staying in DeltaR.\n";
     ss << " Suggested timescale = " << info->suggested_time_scale;
+  } else if (update_args.average_radial_distance.has_value() and
+             update_args.average_radial_distance.value() >
+                 non_oscillation_drift_outward_factor *
+                     update_args.max_allowed_radial_distance.value()) {
+    info->discontinuous_change_has_occurred = true;
+    info->state = std::make_unique<States::DeltaRDriftOutward>();
+    ss << "Current state DeltaR. "
+          "Horizon too far from excision boundary. Switching to "
+          "DeltaRDriftOutward";
   } else {
     ss << "Current state DeltaR. No change necessary. Staying in DeltaR.";
   }

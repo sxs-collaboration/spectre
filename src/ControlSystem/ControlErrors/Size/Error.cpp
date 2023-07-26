@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
@@ -37,6 +38,8 @@ ErrorDiagnostics control_error(
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
     const double time, const double control_error_delta_r,
+    const std::optional<double> control_error_delta_r_outward,
+    const std::optional<double> max_allowed_radial_distance,
     const double dt_lambda_00, const ylm::Strahlkorper<Frame>& apparent_horizon,
     const ylm::Strahlkorper<Frame>& excision_boundary,
     const Scalar<DataVector>& lapse_on_excision_boundary,
@@ -184,17 +187,28 @@ ErrorDiagnostics control_error(
   const std::optional<double> delta_radius_crossing_time =
       predictor_delta_radius->min_positive_zero_crossing_time(time);
 
+  // Compute average radial distance for state DeltaRDriftOutward.
+  const std::optional<double> average_radial_distance =
+      max_allowed_radial_distance.has_value()
+          ? std::optional<double>(
+                gr::surfaces::surface_integral_of_scalar(
+                    area_element, radial_distance, excision_boundary) /
+                gr::surfaces::surface_integral_of_scalar(area_element, unity,
+                                                         excision_boundary))
+          : std::nullopt;
+
   // Update the info, possibly changing the state inside of info.
   std::string update_message = info->state->get_clone()->update(
       info,
       StateUpdateArgs{min_char_speed, min_comoving_char_speed,
-                      control_error_delta_r},
+                      control_error_delta_r, average_radial_distance,
+                      max_allowed_radial_distance},
       CrossingTimeInfo{char_speed_crossing_time,
                        comoving_char_speed_crossing_time,
                        delta_radius_crossing_time});
 
   const ControlErrorArgs control_error_args{
-      min_char_speed, control_error_delta_r,
+      min_char_speed, control_error_delta_r, control_error_delta_r_outward,
       avg_distorted_normal_dot_unit_coord_vector, dt_lambda_00};
 
   const double control_error =
@@ -229,7 +243,9 @@ ErrorDiagnostics control_error(
           predictor_comoving_char_speed,                                       \
       const gsl::not_null<intrp::ZeroCrossingPredictor*>                       \
           predictor_delta_radius,                                              \
-      double time, double control_error_delta_r, double dt_lambda_00,          \
+      double time, double control_error_delta_r,                               \
+      std::optional<double> control_error_delta_r_outward,                     \
+      std::optional<double> max_allowed_radial_distance, double dt_lambda_00,  \
       const ylm::Strahlkorper<FRAME(data)>& apparent_horizon,                  \
       const ylm::Strahlkorper<FRAME(data)>& excision_boundary,                 \
       const Scalar<DataVector>& lapse_on_excision_boundary,                    \

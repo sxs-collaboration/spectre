@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 
@@ -34,6 +35,15 @@ struct StateUpdateArgs {
   /// is in state Label::DeltaR.
   /// This is Q in Eq. 96 of \cite Hemberger2012jz.
   double control_error_delta_r;
+  /// average_radial_distance is the average distance between the horizon and
+  /// the excision boundary. Used only for state DeltaRDriftOutward.
+  /// If std::nullopt, then DeltaRDriftOutward will not be used.
+  std::optional<double> average_radial_distance;
+  /// max_allowed_radial_distance is the minimum distance between the horizon
+  /// and the excision boundary that will trigger state
+  /// Label::DeltaRDriftOutward.  If std::nullopt, then DeltaRDriftOutward
+  /// will never be triggered.
+  std::optional<double> max_allowed_radial_distance;
 };
 
 /*!
@@ -43,6 +53,13 @@ struct StateUpdateArgs {
 struct ControlErrorArgs {
   double min_char_speed;
   double control_error_delta_r;
+  /*!
+   * \brief control_error_delta_r_outward is the control error in the
+   * case DeltaRDriftOutward, the state where there is an outward drift
+   * caused by too large separation between the horizon and the excision
+   * boundary.  If std::nullopt, then state DeltaRDriftOutward will not be used.
+   */
+  std::optional<double> control_error_delta_r_outward;
   /*!
    * \brief avg_distorted_normal_dot_unit_coord_vector is the average of
    * distorted_normal_dot_unit_coord_vector over the excision

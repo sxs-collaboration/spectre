@@ -4,11 +4,13 @@
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace control_system::size::States {
@@ -39,6 +41,12 @@ std::string Initial::update(const gsl::not_null<Info*> info,
   // as it is something slightly greater than unity.
   constexpr double non_oscillation_factor = 1.01;
 
+  // This factor is present in SpEC, and it is used to prevent
+  // oscillations between states.  The value was chosen in SpEC, but
+  // nothing should be sensitive to small changes in this value as
+  // long as it is slightly greater than unity.
+  constexpr double non_oscillation_drift_outward_factor = 1.1;
+
   std::stringstream ss{};
 
   if (char_speed_is_in_danger) {
@@ -66,6 +74,15 @@ std::string Initial::update(const gsl::not_null<Info*> info,
     ss << "Current state Initial. Comoving char speed positive. Switching to "
           "DeltaR.";
     // Here is where transition to State DeltaRDriftInward will go.
+  } else if (update_args.average_radial_distance.has_value() and
+             update_args.average_radial_distance.value() >
+                 non_oscillation_drift_outward_factor *
+                     update_args.max_allowed_radial_distance.value()) {
+    info->discontinuous_change_has_occurred = true;
+    info->state = std::make_unique<States::DeltaRDriftOutward>();
+    ss << "Current state Initial. "
+          "Horizon too far from excision boundary. Switching to "
+          "DeltaRDriftOutward";
   } else {
     ss << "Current state Initial. No change necessary. Staying in Initial.";
   }

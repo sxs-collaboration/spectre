@@ -7,6 +7,7 @@ spectre_target_sources(
   Info.cpp
   AhSpeed.cpp
   DeltaR.cpp
+  DeltaRDriftOutward.cpp
   Error.cpp
   Initial.cpp
   RegisterDerivedWithCharm.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   StateHistory.hpp
   AhSpeed.hpp
   DeltaR.hpp
+  DeltaRDriftOutward.hpp
   Error.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
