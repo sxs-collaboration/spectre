@@ -12,11 +12,12 @@ spectre_target_headers(
   Coordinates.hpp
   DataForRdmpTci.hpp
   DidRollback.hpp
+  GhostDataForReconstruction.hpp
   Inactive.hpp
+  InitialTciData.hpp
   Jacobians.hpp
   Mesh.hpp
   MethodOrder.hpp
-  GhostDataForReconstruction.hpp
   ObserverCoordinates.hpp
   ObserverMesh.hpp
   OnSubcellFaces.hpp
@@ -32,8 +33,8 @@ spectre_target_headers(
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ObserverMesh.cpp
   Mesh.cpp
   MethodOrder.cpp
+  ObserverMesh.cpp
   TciStatus.cpp
   )
