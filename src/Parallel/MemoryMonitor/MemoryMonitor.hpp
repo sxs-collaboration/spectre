@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
@@ -12,6 +13,7 @@
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /*!
@@ -23,7 +25,7 @@ namespace mem_monitor {}
 
 namespace mem_monitor {
 namespace detail {
-struct InitializeMutator {
+struct InitializeMutator : tt::ConformsTo<db::protocols::Mutator> {
   using return_tags = tmpl::list<mem_monitor::Tags::MemoryHolder>;
   using argument_tags = tmpl::list<>;
 

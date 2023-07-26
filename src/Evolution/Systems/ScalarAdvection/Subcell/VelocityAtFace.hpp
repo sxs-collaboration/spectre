@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/ElementMap.hpp"
@@ -27,6 +28,7 @@
 #include "Time/Tags/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -67,7 +69,7 @@ namespace ScalarAdvection::subcell {
  * `Initialization::Actions::AddSimpleTags`.
  */
 template <size_t Dim>
-struct VelocityAtFace {
+struct VelocityAtFace : tt::ConformsTo<db::protocols::Mutator> {
   using simple_tags_from_options = tmpl::list<::Tags::Time>;
 
   using velocity_field = ::ScalarAdvection::Tags::VelocityField<Dim>;

@@ -25,6 +25,7 @@ namespace db::protocols {
 ///      - A `const db::const_item_type<Tag, BoxTags>` for each `Tag` in
 ///        `argument_tags`
 ///      - The additional arguments passed to `db::mutate_apply`
+///
 ///   Note: use the explicit type whenever possible, not the type aliases.
 ///   `db::const_item_type` will usually be `Tag::type` unless that is a
 ///   `std::unique_ptr<T>`, in which case it will be `T`

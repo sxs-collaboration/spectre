@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -43,6 +44,9 @@ struct AddSimpleTags {
   using simple_tags =
       tmpl::flatten<tmpl::append<typename Mutators::return_tags...>>;
   using compute_tags = tmpl::list<>;
+
+  static_assert((tt::assert_conforms_to_v<Mutators, db::protocols::Mutator> and
+                 ...));
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

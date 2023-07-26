@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
@@ -16,6 +17,7 @@
 #include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 /// \cond
 namespace Tags {
@@ -37,7 +39,8 @@ namespace CurvedScalarWave::Initialization {
 /// - Modifies: nothing
 
 template <size_t Dim>
-struct InitializeConstraintDampingGammas {
+struct InitializeConstraintDampingGammas
+    : tt::ConformsTo<db::protocols::Mutator> {
   using return_tags =
       tmpl::list<Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
   using argument_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
@@ -88,7 +91,7 @@ struct InitializeConstraintDampingGammas {
  */
 
 template <size_t Dim>
-struct InitializeEvolvedVariables {
+struct InitializeEvolvedVariables : tt::ConformsTo<db::protocols::Mutator> {
   using flat_variables_tag = typename ScalarWave::System<Dim>::variables_tag;
   using curved_variables_tag =
       typename CurvedScalarWave::System<Dim>::variables_tag;
