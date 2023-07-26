@@ -10,6 +10,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# This script is a template for submitting jobs to a cluster with Slurm.
+# See `support/Python/Schedule.py` for how this template is used and how
+# placeholders are resolved.
+
 export RUN_DIR={{ run_dir }}
 export SPECTRE_INPUT_FILE={{ input_file }}
 export SPECTRE_EXECUTABLE={{ executable }}
