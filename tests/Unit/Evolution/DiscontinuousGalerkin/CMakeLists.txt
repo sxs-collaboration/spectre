@@ -43,6 +43,9 @@ target_link_libraries(
   DomainStructure
   Evolution
   EvolutionDgActionsHelpers
+  GeneralRelativitySolutions
+  Hydro
+  RelativisticEulerSolutions
   Spectral
   Time
   )
