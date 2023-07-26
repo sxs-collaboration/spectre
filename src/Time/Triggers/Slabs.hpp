@@ -45,9 +45,6 @@ class Slabs : public Trigger {
   using argument_tags = tmpl::list<Tags::TimeStepId>;
 
   bool operator()(const TimeStepId& time_id) const {
-    if (not time_id.is_at_slab_boundary() or time_id.slab_number() < 0) {
-      return false;
-    }
     const auto unsigned_slab =
         static_cast<std::uint64_t>(time_id.slab_number());
     return slabs_->times_near(unsigned_slab)[1] == unsigned_slab;

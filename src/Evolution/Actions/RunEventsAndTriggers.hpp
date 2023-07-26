@@ -10,6 +10,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "Time/SelfStart.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Triggers/OnSubsteps.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,7 +51,8 @@ struct RunEventsAndTriggers {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
     const auto time_step_id = db::get<::Tags::TimeStepId>(box);
-    if (not time_step_id.step_time().is_at_slab_boundary()) {
+    if (SelfStart::is_self_starting(time_step_id) or
+        not time_step_id.step_time().is_at_slab_boundary()) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 

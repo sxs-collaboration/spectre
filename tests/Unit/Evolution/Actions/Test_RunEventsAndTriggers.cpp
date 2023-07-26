@@ -178,6 +178,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndTriggers",
   test_all(TimeStepId(true, 0, center), {}, {}, {}, {});
   test_all(TimeStepId(true, 1, start), 1.0, {}, 1.0, {});
   test_all(TimeStepId(true, 1, center), {}, {}, {}, {});
+  test_all(TimeStepId(true, -1, start), {}, {}, {}, {});
+  test_all(TimeStepId(true, -1, center), {}, {}, {}, {});
   test_all(TimeStepId(true, 0, start, 1, step, 1.5), {}, {}, 1000001.0, {});
   test_all(TimeStepId(true, 0, center, 1, step, 2.0), {}, {}, {}, {});
   test_all(TimeStepId(true, 0, start, 2, step, 1.0), {}, {}, 2000001.0, {});
