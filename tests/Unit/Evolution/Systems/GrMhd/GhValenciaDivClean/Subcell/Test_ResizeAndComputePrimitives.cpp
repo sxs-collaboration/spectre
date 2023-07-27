@@ -44,8 +44,10 @@ namespace grmhd::GhValenciaDivClean {
 namespace {
 void test(const gsl::not_null<std::mt19937*> gen,
           const gsl::not_null<std::uniform_real_distribution<>*> dist,
-          const evolution::dg::subcell::ActiveGrid active_grid) {
+          const evolution::dg::subcell::ActiveGrid active_grid,
+          const bool start_on_dg) {
   CAPTURE(active_grid);
+  CAPTURE(start_on_dg);
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -78,7 +80,9 @@ void test(const gsl::not_null<std::mt19937*> gen,
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(1.4, 5.0 / 3.0);
   auto prim_vars = make_with_random_values<PrimVars>(
-      gen, dist, subcell_mesh.number_of_grid_points());
+      gen, dist,
+      start_on_dg ? dg_mesh.number_of_grid_points()
+                  : subcell_mesh.number_of_grid_points());
   get<hydro::Tags::Pressure<DataVector>>(prim_vars) =
       eos->pressure_from_density(
           get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
@@ -95,7 +99,9 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
             prim_vars);
     tnsr::ii<DataVector, 3, Frame::Inertial> subcell_spatial_metric{
-        subcell_mesh.number_of_grid_points(), 0.0};
+        start_on_dg ? dg_mesh.number_of_grid_points()
+                    : subcell_mesh.number_of_grid_points(),
+        0.0};
     for (size_t i = 0; i < 3; ++i) {
       subcell_spatial_metric.get(i, i) = 1.0 + 0.01 * i;
     }
@@ -128,9 +134,12 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(prims));
   };
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-    const auto dg_prims = evolution::dg::subcell::fd::reconstruct(
-        prim_vars, dg_mesh, subcell_mesh.extents(),
-        evolution::dg::subcell::fd ::ReconstructionMethod::AllDimsAtOnce);
+    auto dg_prims = prim_vars;
+    if (not start_on_dg) {
+      dg_prims = evolution::dg::subcell::fd::reconstruct(
+          prim_vars, dg_mesh, subcell_mesh.extents(),
+          evolution::dg::subcell::fd ::ReconstructionMethod::AllDimsAtOnce);
+    }
     compute_cons(dg_prims);
   } else {
     compute_cons(prim_vars);
@@ -194,7 +203,10 @@ SPECTRE_TEST_CASE(
   std::uniform_real_distribution<> dist(0.5, 0.505);
   for (const auto active_grid : {evolution::dg::subcell::ActiveGrid::Dg,
                                  evolution::dg::subcell::ActiveGrid::Subcell}) {
-    test(make_not_null(&gen), make_not_null(&dist), active_grid);
+    test(make_not_null(&gen), make_not_null(&dist), active_grid, false);
+    if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
+      test(make_not_null(&gen), make_not_null(&dist), active_grid, true);
+    }
   }
 }
 }  // namespace

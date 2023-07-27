@@ -35,13 +35,7 @@ void ResizeAndComputePrims<Dim>::apply(
                                                              : subcell_mesh)
           .number_of_grid_points();
   if (prim_vars->number_of_grid_points() != num_grid_points) {
-    ASSERT(active_grid == evolution::dg::subcell::ActiveGrid::Dg,
-           "ResizeAndComputePrims should only be resizing when switching from "
-           "subcell to DG");
     prim_vars->initialize(num_grid_points);
-
-    // We only need to compute the prims if we switched to the DG grid because
-    // otherwise we computed the prims during the FD TCI.
     NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         make_not_null(&get<MassDensity>(*prim_vars)),
         make_not_null(&get<Velocity>(*prim_vars)),
