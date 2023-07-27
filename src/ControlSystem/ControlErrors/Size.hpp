@@ -119,6 +119,8 @@ namespace ControlErrors {
  *   horizon and the excision surfaces.
  * - MinRelativeDeltaR: MinDeltaR divided by the `Strahlkorper::average_radius`
  *   of the horizon
+ * - AvgDeltaR: Same as MinDeltaR except it's the average radii.
+ * - AvgRelativeDeltaR: AvgDeltaR divided by the average radius of the horizon
  * - ControlErrorDeltaR: \f$ \dot{S}_{00} (\lambda_{00} -
  *   r_{\mathrm{excision}}^{\mathrm{grid}} / Y_{00}) / S_{00} -
  *   \dot{\lambda}_{00} \f$
@@ -294,6 +296,15 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
       auto& observer_writer_proxy = Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache);
 
+      const double Y00 = 0.25 * M_2_SQRTPI;
+      // \Delta R = < R_ah > - < R_ex >
+      // < R_ah > = S_00 * Y_00
+      // < R_ex > = R_ex^grid - \lambda_00 * Y_00
+      // < \Delta R > = \Delta R / < R_ah >
+      const double avg_delta_r =
+          (horizon_00 + lambda_00) * Y00 - grid_frame_excision_sphere_radius;
+      const double avg_relative_delta_r = avg_delta_r / (horizon_00 * Y00);
+
       Parallel::threaded_action<
           observers::ThreadedActions::WriteReductionDataRow>(
           observer_writer_proxy[0], subfile_name_, legend_,
@@ -303,7 +314,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               error_diagnostics.discontinuous_change_has_occurred ? 1.0 : 0.0,
               lambda_00, dt_lambda_00, horizon_00, dt_horizon_00,
               error_diagnostics.min_delta_r,
-              error_diagnostics.min_relative_delta_r,
+              error_diagnostics.min_relative_delta_r, avg_delta_r,
+              avg_relative_delta_r,
               error_diagnostics.control_error_args.control_error_delta_r,
               error_diagnostics.target_char_speed,
               error_diagnostics.control_error_args.min_char_speed,
