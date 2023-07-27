@@ -102,6 +102,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
 
+    using compute_tags_for_observation_box = tmpl::list<>;
+
     using argument_tags =
         tmpl::push_front<::ah::source_vars<3>, intrp::Tags::InterpPointInfoBase,
                          domain::Tags::Mesh<3>>;
@@ -171,6 +173,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
    public:
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
+
+    using compute_tags_for_observation_box = tmpl::list<>;
 
     using argument_tags =
         tmpl::push_front<::ah::source_vars<3>, domain::Tags::Mesh<3>>;

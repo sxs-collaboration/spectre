@@ -61,6 +61,8 @@ struct Submeasurement
   template <typename ControlSystems>
   using interpolation_target_tag = void;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ParallelComponent,

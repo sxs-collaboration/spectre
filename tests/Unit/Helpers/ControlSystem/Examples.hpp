@@ -33,6 +33,17 @@ struct SomeTagOnElement : db::SimpleTag {
   using type = double;
 };
 
+struct SomeOtherTagOnElement : db::SimpleTag {
+  using type = double;
+};
+
+struct SomeOtherTagOnElementCompute : SomeOtherTagOnElement, db::ComputeTag {
+  using base = SomeOtherTagOnElement;
+  using return_type = double;
+  using argument_tags = tmpl::list<>;
+  static void function(const gsl::not_null<double*> result) { *result = 0.0; }
+};
+
 struct MeasurementResultTag : db::SimpleTag {
   using type = double;
 };
@@ -67,6 +78,9 @@ struct ExampleSubmeasurement
   // This submeasurement does not use an interpolation component.
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+
+  using compute_tags_for_observation_box =
+      tmpl::list<SomeOtherTagOnElementCompute>;
 
   using argument_tags = tmpl::list<SomeTagOnElement>;
 

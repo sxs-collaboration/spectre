@@ -8,6 +8,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
+#include "Helpers/ControlSystem/Examples.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -62,6 +63,13 @@ static_assert(
 static_assert(std::is_same_v<
               control_systems_with_measurement_t<test_systems, MeasurementB>,
               tmpl::list<SystemB0>>);
+
+static_assert(std::is_same_v<compute_tags_for_observation_box_t<MeasurementA>,
+                             tmpl::list<>>);
+static_assert(
+    std::is_same_v<
+        compute_tags_for_observation_box_t<TestHelpers::ExampleMeasurement>,
+        tmpl::list<TestHelpers::SomeOtherTagOnElementCompute>>);
 
 static_assert(
     std::is_same_v<
