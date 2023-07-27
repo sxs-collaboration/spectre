@@ -55,6 +55,23 @@ struct Metavars {
   void pup(PUP::er& /*p*/) {}
 };
 
+void test_control_error_delta_r() {
+  const double horizon_00 = 2.0;
+  const double dt_horizon_00 = 1.0;
+  const double lambda_00 = 3.0;
+  const double dt_lambda_00 = 4.0;
+  // This is 0 so we avoid the term with Y00 so we can get an (easy) exact
+  // calculation
+  const double grid_frame_excision_radius = 0.0;
+
+  const double control_error_delta_r =
+      control_system::size::control_error_delta_r(horizon_00, dt_horizon_00,
+                                                  lambda_00, dt_lambda_00,
+                                                  grid_frame_excision_radius);
+
+  CHECK(control_error_delta_r == approx(-2.5));
+}
+
 template <typename InitialState, typename FinalState>
 void test_size_error_one_step(
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
@@ -292,6 +309,7 @@ void test_size_error(const double grid_excision_boundary_radius,
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
+  test_control_error_delta_r();
   // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
   test_size_error<control_system::size::States::Initial,

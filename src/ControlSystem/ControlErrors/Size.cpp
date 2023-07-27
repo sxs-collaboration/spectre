@@ -16,7 +16,22 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 
-namespace control_system::ControlErrors {
+namespace control_system {
+namespace size {
+double control_error_delta_r(const double horizon_00,
+                             const double dt_horizon_00, const double lambda_00,
+                             const double dt_lambda_00,
+                             const double grid_frame_excision_sphere_radius) {
+  const double Y00 = 0.25 * M_2_SQRTPI;
+
+  // This corresponds to 'DeltaRPolicy=Relative' in SpEC.
+  return dt_horizon_00 * (lambda_00 - grid_frame_excision_sphere_radius / Y00) /
+             horizon_00 -
+         dt_lambda_00;
+}
+}  // namespace size
+
+namespace ControlErrors {
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 Size<DerivOrder, Horizon>::Size(const int max_times) {
   const auto max_times_size_t = static_cast<size_t>(max_times);
@@ -99,4 +114,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
 #undef INSTANTIATE
 #undef HORIZON
 #undef DERIV_ORDER
-}  // namespace control_system::ControlErrors
+}  // namespace ControlErrors
+}  // namespace control_system

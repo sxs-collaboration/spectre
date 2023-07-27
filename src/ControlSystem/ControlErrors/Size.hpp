@@ -44,7 +44,35 @@ struct Distorted;
 }  // namespace Frame
 /// \endcond
 
-namespace control_system::ControlErrors {
+namespace control_system {
+namespace size {
+/*!
+ * \brief Function that computes the control error for
+ * `control_system::size::States::DeltaR`.
+ *
+ * This is helpful to have calculated separately because other control errors
+ * may make use of this quantity. The equation for the control error is given in
+ * Eq. 96 in \cite Hemberger2012jz.
+ *
+ * \param horizon_00 The $l=0,m=0$ coefficient of the apparent horizon in the
+ * distorted frame.
+ * \param dt_horizon_00 The $l=0,m=0$ coefficient of the time derivative of the
+ * apparent horizon in the distorted frame, where the derivative is taken in the
+ * distorted frame as well.
+ * \param lambda_00 The $l=0,m=0$ component of the function of time for the time
+ * dependent map
+ * \param dt_lambda_00 The $l=0,m=0$ component of the time derivative of the
+ * function of time for the time dependent map
+ * \param grid_frame_excision_sphere_radius Radius of the excision sphere in the
+ * grid frame
+ */
+double control_error_delta_r(const double horizon_00,
+                             const double dt_horizon_00, const double lambda_00,
+                             const double dt_lambda_00,
+                             const double grid_frame_excision_sphere_radius);
+}  // namespace size
+
+namespace ControlErrors {
 /*!
  * \brief Control error in the for the \f$l=0\f$ component of the
  * `domain::CoordinateMaps::TimeDependent::Shape` map.
@@ -288,4 +316,5 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   std::vector<std::string> legend_{};
   std::string subfile_name_{};
 };
-}  // namespace control_system::ControlErrors
+}  // namespace ControlErrors
+}  // namespace control_system
