@@ -26,6 +26,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -430,11 +431,7 @@ struct ComputeTimeDerivImpl<
  */
 struct TimeDerivative {
   template <typename DbTagsList>
-  static void apply(
-      const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
-      /*cell_centered_logical_to_grid_inv_jacobian*/,
-      const Scalar<DataVector>& cell_centered_det_inv_jacobian) {
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
     using evolved_vars_tag =
         typename grmhd::GhValenciaDivClean::System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
@@ -790,9 +787,11 @@ struct TimeDerivative {
                                  gh_gradient_tags, gh_extra_tags,
                                  grmhd_evolved_vars_tags, grmhd_source_tags,
                                  grmhd_source_argument_tags>::
-        apply(box, inertial_coords, cell_centered_det_inv_jacobian,
-              cell_centered_logical_to_inertial_inv_jacobian,
-              one_over_delta_xi, boundary_corrections, cell_centered_gh_derivs);
+        apply(box, inertial_coords,
+              db::get<evolution::dg::subcell::fd::Tags::
+                          DetInverseJacobianLogicalToInertial>(*box),
+              cell_centered_logical_to_inertial_inv_jacobian, one_over_delta_xi,
+              boundary_corrections, cell_centered_gh_derivs);
   }
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell

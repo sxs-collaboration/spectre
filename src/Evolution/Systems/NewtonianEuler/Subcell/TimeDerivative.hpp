@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -21,6 +22,7 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -51,14 +53,10 @@ namespace NewtonianEuler::subcell {
  * from the logical to the inertial frame
  * - Assumes the mesh is not moving (grid and inertial frame are the same)
  */
+template <size_t Dim>
 struct TimeDerivative {
-  template <size_t Dim, typename DbTagsList>
-  static void apply(
-      const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+  template <typename DbTagsList>
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
     using metavariables = typename std::decay_t<decltype(
         db::get<Parallel::Tags::Metavariables>(*box))>;
     using system = typename metavariables::system;
@@ -67,6 +65,11 @@ struct TimeDerivative {
     using prim_tags = typename system::primitive_variables_tag::tags_list;
     using fluxes_tags = db::wrap_tags_in<::Tags::Flux, evolved_vars_tags,
                                          tmpl::size_t<Dim>, Frame::Inertial>;
+
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                Dim, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
 
     // The copy of Mesh is intentional to avoid a GCC-7 internal compiler error.
     const Mesh<Dim> subcell_mesh =
@@ -227,8 +230,10 @@ struct TimeDerivative {
             ::evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>,
         tmpl::list<>>;
     db::mutate_apply<tmpl::list<dt_variables_tag>, source_argument_tags>(
-        [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
-         &boundary_corrections, &subcell_mesh, &one_over_delta_xi](
+        [&num_pts, &boundary_corrections, &subcell_mesh, &one_over_delta_xi,
+         &cell_centered_logical_to_grid_inv_jacobian =
+             db::get<evolution::dg::subcell::fd::Tags::
+                         InverseJacobianLogicalToGrid<Dim>>(*box)](
             const auto dt_vars_ptr, const auto&... source_args) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
@@ -278,7 +283,7 @@ struct TimeDerivative {
   }
 
  private:
-  template <size_t Dim, typename SourceTerm, typename... SourceTermArgs,
+  template <typename SourceTerm, typename... SourceTermArgs,
             typename... SourcedVars>
   static void sources_impl(std::tuple<gsl::not_null<Scalar<DataVector>*>,
                                       gsl::not_null<tnsr::I<DataVector, Dim>*>,

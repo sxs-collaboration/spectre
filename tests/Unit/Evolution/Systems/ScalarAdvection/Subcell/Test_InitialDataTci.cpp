@@ -108,17 +108,25 @@ void test() {
     INFO("Test SetInitialRdmpData");
     // While the code is supposed to be used on the subcells, that doesn't
     // actually matter.
+    const auto& dg_u = get<ScalarAdvection::Tags::U>(dg_vars);
+    using std::max;
+    using std::min;
+    const auto subcell_u = evolution::dg::subcell::fd::project(
+        get(dg_u), dg_mesh, subcell_mesh.extents());
     evolution::dg::subcell::RdmpTciData rdmp_data{};
-    ScalarAdvection::subcell::SetInitialRdmpData::apply(
-        make_not_null(&rdmp_data), get<ScalarAdvection::Tags::U>(dg_vars),
-        evolution::dg::subcell::ActiveGrid::Dg);
-    CHECK(rdmp_data == evolution::dg::subcell::RdmpTciData{});
-    ScalarAdvection::subcell::SetInitialRdmpData::apply(
-        make_not_null(&rdmp_data), get<ScalarAdvection::Tags::U>(dg_vars),
-        evolution::dg::subcell::ActiveGrid::Subcell);
+    ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
+        make_not_null(&rdmp_data), dg_u, evolution::dg::subcell::ActiveGrid::Dg,
+        dg_mesh, subcell_mesh);
+    const evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{
+        {max(max(get(dg_u), max(subcell_u)))},
+        {min(min(get(dg_u)), min(subcell_u))}};
+    CHECK(rdmp_data == expected_dg_rdmp_data);
+
+    ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
+        make_not_null(&rdmp_data), dg_u,
+        evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
     const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
-        {max(get(get<ScalarAdvection::Tags::U>(dg_vars)))},
-        {min(get(get<ScalarAdvection::Tags::U>(dg_vars)))}};
+        {max(get(dg_u))}, {min(get(dg_u))}};
     CHECK(rdmp_data == expected_rdmp_data);
   }
 }

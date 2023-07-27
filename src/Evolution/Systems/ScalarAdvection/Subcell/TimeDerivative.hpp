@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -21,6 +22,7 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
@@ -49,12 +51,11 @@ namespace ScalarAdvection::subcell {
 template <size_t Dim>
 struct TimeDerivative {
   template <typename DbTagsList>
-  static void apply(
-      const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                Dim, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
     // subcell is currently not supported for external boundary elements
     const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(*box);
     ASSERT(element.external_boundaries().size() == 0,
@@ -231,9 +232,11 @@ struct TimeDerivative {
         db::add_tag_prefix<::Tags::dt, typename System<Dim>::variables_tag>;
     const size_t num_pts = subcell_mesh.number_of_grid_points();
     db::mutate<dt_variables_tag>(
-        [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
-         &fd_boundary_corrections, &subcell_mesh,
-         &one_over_delta_xi](const auto dt_vars_ptr) {
+        [&num_pts, &fd_boundary_corrections, &subcell_mesh, &one_over_delta_xi](
+            const auto dt_vars_ptr,
+            const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Grid>&
+                cell_centered_logical_to_grid_inv_jacobian) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           auto& dt_u =
               get<::Tags::dt<::ScalarAdvection::Tags::U>>(*dt_vars_ptr);
@@ -247,7 +250,9 @@ struct TimeDerivative {
                 get(u_correction), subcell_mesh.extents(), dim);
           }
         },
-        box);
+        box,
+        db::get<evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<
+            Dim>>(*box));
   }
 };
 }  // namespace ScalarAdvection::subcell

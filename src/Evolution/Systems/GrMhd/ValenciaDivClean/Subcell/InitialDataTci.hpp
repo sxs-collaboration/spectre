@@ -112,7 +112,8 @@ struct SetInitialRdmpData {
   using argument_tags = tmpl::list<
       ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
       ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeB<>,
-      evolution::dg::subcell::Tags::ActiveGrid>;
+      evolution::dg::subcell::Tags::ActiveGrid, ::domain::Tags::Mesh<3>,
+      evolution::dg::subcell::Tags::Mesh<3>>;
   using return_tags = tmpl::list<evolution::dg::subcell::Tags::DataForRdmpTci>;
 
   static void apply(
@@ -121,6 +122,7 @@ struct SetInitialRdmpData {
       const Scalar<DataVector>& subcell_tilde_ye,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
-      const evolution::dg::subcell::ActiveGrid active_grid);
+      evolution::dg::subcell::ActiveGrid active_grid, const Mesh<3>& dg_mesh,
+      const Mesh<3>& subcell_mesh);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

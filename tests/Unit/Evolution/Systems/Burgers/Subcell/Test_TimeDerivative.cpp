@@ -29,6 +29,7 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
@@ -133,20 +134,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       dummy_functions_of_time{};
 
-  auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Element<1>, evolution::dg::subcell::Tags::Mesh<1>,
-      evolved_vars_tag, dt_variables_tag,
-      evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
-      fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
-      domain::Tags::ElementMap<1, Frame::Grid>,
-      domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
-                                                  Frame::Inertial>,
-      evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
-      evolution::dg::Tags::MortarData<1>, domain::Tags::Domain<1>,
-      domain::Tags::MeshVelocity<1, Frame::Inertial>,
-      evolution::dg::Tags::NormalCovectorAndMagnitude<1>, ::Tags::Time,
-      domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
-      Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>>>(
+  auto box = db::create<
+      db::AddSimpleTags<
+          domain::Tags::Element<1>, evolution::dg::subcell::Tags::Mesh<1>,
+          evolved_vars_tag, dt_variables_tag,
+          evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
+          fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
+          domain::Tags::ElementMap<1, Frame::Grid>,
+          domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                      Frame::Inertial>,
+          evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
+          evolution::dg::Tags::MortarData<1>, domain::Tags::Domain<1>,
+          domain::Tags::MeshVelocity<1, Frame::Inertial>,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<1>, ::Tags::Time,
+          domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
+          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>>,
+      db::AddComputeTags<
+          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+              domain::Tags::ElementMap<1, Frame::Grid>, 1>>>(
       element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
@@ -168,23 +173,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
       clone_unique_ptrs(dummy_functions_of_time),
       Burgers::Solutions::Step{2.0, 1.0, 0.0}, DummyEvolutionMetaVars{});
 
-  {
-    const auto coordinate_map =
-        domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-            domain::CoordinateMaps::Identity<1>{});
-    InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Grid>
-        cell_centered_logical_to_grid_inv_jacobian{};
-    const auto cell_centered_logical_to_inertial_inv_jacobian =
-        coordinate_map.inv_jacobian(logical_coords_subcell);
-    for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
-         ++i) {
-      cell_centered_logical_to_grid_inv_jacobian[i] =
-          cell_centered_logical_to_inertial_inv_jacobian[i];
-    }
-    subcell::TimeDerivative::apply(
-        make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-        determinant(cell_centered_logical_to_grid_inv_jacobian));
-  }
+  subcell::TimeDerivative::apply(make_not_null(&box));
 
   const auto& dt_vars = db::get<dt_variables_tag>(box);
 

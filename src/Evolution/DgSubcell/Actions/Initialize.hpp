@@ -120,11 +120,13 @@ struct Initialize {
                      ::domain::CoordinateMaps::Tags::CoordinateMap<
                          Dim, Frame::Grid, Frame::Inertial>>,
                  fd::Tags::InverseJacobianLogicalToGridCompute<
-                   ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                   Dim>,
-                 fd::Tags::DetInverseJacobianLogicalToGridCompute<
-                   Dim>,
+                     ::domain::Tags::ElementMap<Dim, Frame::Grid>, Dim>,
+                 fd::Tags::DetInverseJacobianLogicalToGridCompute<Dim>,
                  fd::Tags::InverseJacobianLogicalToInertialCompute<
+                     ::domain::CoordinateMaps::Tags::CoordinateMap<
+                         Dim, Frame::Grid, Frame::Inertial>,
+                     Dim>,
+                 fd::Tags::DetInverseJacobianLogicalToInertialCompute<
                      ::domain::CoordinateMaps::Tags::CoordinateMap<
                          Dim, Frame::Grid, Frame::Inertial>,
                      Dim>>;

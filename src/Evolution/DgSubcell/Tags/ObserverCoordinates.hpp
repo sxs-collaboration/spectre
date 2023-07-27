@@ -139,7 +139,7 @@ struct ObserverInverseJacobianCompute
  * \brief Computes the active Jacobian and determinant of the inverse Jacobian.
  */
 template <size_t Dim, typename SourceFrame, typename TargetFrame>
-struct ObserverJacobianAndDetInvJacobian
+struct ObserverJacobianAndDetInvJacobianCompute
     : ::Tags::Variables<tmpl::list<
           ::Events::Tags::ObserverDetInvJacobian<SourceFrame, TargetFrame>,
           ::Events::Tags::ObserverJacobian<Dim, SourceFrame, TargetFrame>>>,

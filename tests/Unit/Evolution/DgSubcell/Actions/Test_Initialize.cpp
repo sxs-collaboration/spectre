@@ -314,6 +314,13 @@ void test(const bool always_use_subcell, const bool interior_element,
         evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::fd::Tags::
+                  InverseJacobianLogicalToInertial<Dim>>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp,
+        evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
+      runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
       runner, 0));

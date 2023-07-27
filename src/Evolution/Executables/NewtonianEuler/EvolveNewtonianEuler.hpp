@@ -212,8 +212,9 @@ struct EvolutionMetavars {
               evolution::dg::subcell::Tags::ObserverMeshCompute<volume_dim>,
               evolution::dg::subcell::Tags::ObserverInverseJacobianCompute<
                   volume_dim, Frame::ElementLogical, Frame::Inertial>,
-              evolution::dg::subcell::Tags::ObserverJacobianAndDetInvJacobian<
-                  volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+              evolution::dg::subcell::Tags::
+                  ObserverJacobianAndDetInvJacobianCompute<
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>>,
           tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                      ::Events::Tags::ObserverInverseJacobianCompute<
                          volume_dim, Frame::ElementLogical, Frame::Inertial>,
@@ -364,7 +365,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<
           NewtonianEuler::subcell::PrimsAfterRollback<volume_dim>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
-          NewtonianEuler::subcell::TimeDerivative>,
+          NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
       Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<

@@ -99,8 +99,9 @@ struct DummyEvolutionMetaVars {
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
-    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
-                                Maps...>& map,
+    const ElementMap<3, Frame::Grid>& element_map,
+    const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
+        grid_to_inertial_map,
     const Solution& soln) {
   std::array<typename System::flux_spacetime_variables_tag::type, Dim>
       face_centered_gr_vars{};
@@ -115,7 +116,7 @@ auto face_centered_gr_tags(
     const auto face_centered_logical_coords =
         logical_coordinates(face_centered_mesh);
     const auto face_centered_inertial_coords =
-        map(face_centered_logical_coords);
+        grid_to_inertial_map(element_map(face_centered_logical_coords));
 
     gsl::at(face_centered_gr_vars, d)
         .initialize(face_centered_mesh.number_of_grid_points());
@@ -136,18 +137,22 @@ std::array<double, 5> test(const size_t num_dg_pts,
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  const Affine affine_map{-1.0, 1.0, 7.0, 10.0};
-  const auto coordinate_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-          Affine3D{affine_map, affine_map, affine_map});
+  const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
   const auto element = domain::Initialization::create_initial_element(
-      ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}},
+      ElementId<3>{0, {SegmentId{2, 2}, SegmentId{2, 2}, SegmentId{2, 2}}},
       Block<3>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                 Frame::Inertial>(
                    Affine3D{affine_map, affine_map, affine_map}),
                0,
                {}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
+  const ElementMap<3, Frame::Grid> element_map{
+      element.id(),
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          Affine3D{affine_map, affine_map, affine_map})};
+  const auto grid_to_inertial_map =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{});
 
   const grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim
       recons{
@@ -165,8 +170,9 @@ std::array<double, 5> test(const size_t num_dg_pts,
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const size_t num_dg_pts_3d = num_dg_pts * num_dg_pts * num_dg_pts;
   const auto cell_centered_coords =
-      coordinate_map(logical_coordinates(subcell_mesh));
-  const auto dg_coords = coordinate_map(logical_coordinates(dg_mesh));
+      (*grid_to_inertial_map)(element_map(logical_coordinates(subcell_mesh)));
+  const auto dg_coords =
+      (*grid_to_inertial_map)(element_map(logical_coordinates(dg_mesh)));
 
   Variables<typename System::spacetime_variables_tag::tags_list>
       cell_centered_spacetime_vars{subcell_mesh.number_of_grid_points()};
@@ -224,7 +230,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=
         2.0 * direction.sign();
-    auto neighbor_coords = coordinate_map(neighbor_logical_coords);
+    auto neighbor_coords =
+        (*grid_to_inertial_map)(element_map(neighbor_logical_coords));
     const auto neighbor_prims =
         soln.variables(neighbor_coords, time,
                        typename System::primitive_variables_tag::tags_list{});
@@ -395,7 +402,29 @@ std::array<double, 5> test(const size_t num_dg_pts,
           evolution::dg::subcell::Tags::SubcellOptions<3>,
           evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
       db::AddComputeTags<
-          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
+          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>,
+          ::domain::Tags::MappedCoordinates<
+              ::domain::Tags::ElementMap<3, Frame::Grid>,
+              evolution::dg::subcell::Tags::Coordinates<3,
+                                                        Frame::ElementLogical>,
+              evolution::dg::subcell::Tags::Coordinates>,
+          evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                            Frame::Inertial>>,
+          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+              ::domain::Tags::ElementMap<3, Frame::Grid>, 3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToGridCompute<3>,
+          evolution::dg::subcell::fd::Tags::
+              InverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>,
+                  3>,
+          evolution::dg::subcell::fd::Tags::
+              DetInverseJacobianLogicalToInertialCompute<
+                  ::domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>,
+                  3>>>(
       element, subcell_mesh, dg_mesh,
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
           std::make_unique<std::decay_t<decltype(recons)>>(recons)},
@@ -408,15 +437,13 @@ std::array<double, 5> test(const size_t num_dg_pts,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       cell_centered_cons_vars,
-      face_centered_gr_tags(subcell_mesh, time, coordinate_map, soln),
+      face_centered_gr_tags(subcell_mesh, time, element_map,
+                            *grid_to_inertial_map, soln),
       neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{},
-      ElementMap<3, Frame::Grid>{
-          ElementId<3>{0},
-          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-              domain::CoordinateMaps::Identity<3>{})},
-      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-          domain::CoordinateMaps::Identity<3>{}),
-      std::move(dummy_domain), dg_mesh_velocity, div_dg_mesh_velocity,
+      ElementMap<3, Frame::Grid>{element_map.element_id(),
+                                 element_map.block_map().get_clone()},
+      grid_to_inertial_map->get_clone(), std::move(dummy_domain),
+      dg_mesh_velocity, div_dg_mesh_velocity,
       dummy_normal_covector_and_magnitude, dummy_time,
       clone_unique_ptrs(dummy_functions_of_time),
       grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
@@ -429,18 +456,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
 
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
-  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
-      cell_centered_logical_to_grid_inv_jacobian{};
-  const auto cell_centered_logical_to_inertial_inv_jacobian =
-      coordinate_map.inv_jacobian(logical_coordinates(subcell_mesh));
-  for (size_t i = 0; i < cell_centered_logical_to_grid_inv_jacobian.size();
-       ++i) {
-    cell_centered_logical_to_grid_inv_jacobian[i] =
-        cell_centered_logical_to_inertial_inv_jacobian[i];
-  }
-  subcell::TimeDerivative::apply(
-      make_not_null(&box), cell_centered_logical_to_grid_inv_jacobian,
-      determinant(cell_centered_logical_to_grid_inv_jacobian));
+  subcell::TimeDerivative::apply(make_not_null(&box));
 
   if (static_cast<int>(fd_derivative_order) < 0) {
     CHECK(db::get<evolution::dg::subcell::Tags::ReconstructionOrder<3>>(box)
@@ -456,6 +472,9 @@ std::array<double, 5> test(const size_t num_dg_pts,
       output_minus_expected_dt_cons_vars{subcell_mesh.number_of_grid_points()};
   const auto& dt_vars = db::get<dt_variables_tag>(box);
 
+  const auto& cell_centered_logical_to_inertial_inv_jacobian = db::get<
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<3>>(
+      box);
   tmpl::for_each<typename System::variables_tag::tags_list>(
       [&box, &subcell_mesh, &expansion_velocity, &cell_centered_coords,
        &cell_centered_logical_to_inertial_inv_jacobian,

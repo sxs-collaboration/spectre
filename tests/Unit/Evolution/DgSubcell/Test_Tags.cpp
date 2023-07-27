@@ -130,18 +130,18 @@ void test(const bool moving_mesh) {
       "InverseJacobian(Grid,Inertial)");
 
   TestHelpers::db::test_compute_tag<
-      subcell::Tags::ObserverJacobianAndDetInvJacobian<
+      subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
           Dim, Frame::ElementLogical, Frame::Grid>>(
       "Variables(DetInvJacobian(ElementLogical,Grid),Jacobian(ElementLogical,"
       "Grid))");
   TestHelpers::db::test_compute_tag<
-      subcell::Tags::ObserverJacobianAndDetInvJacobian<
+      subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
           Dim, Frame::ElementLogical, Frame::Inertial>>(
       "Variables(DetInvJacobian(ElementLogical,Inertial),Jacobian("
       "ElementLogical,Inertial))");
   TestHelpers::db::test_compute_tag<
-      subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
-                                                       Frame::Inertial>>(
+      subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<Dim, Frame::Grid,
+                                                              Frame::Inertial>>(
       "Variables(DetInvJacobian(Grid,Inertial),Jacobian(Grid,Inertial))");
   TestHelpers::db::test_compute_tag<subcell::Tags::TciStatusCompute<Dim>>(
       "TciStatus");
@@ -210,12 +210,12 @@ void test(const bool moving_mesh) {
               Dim, Frame::ElementLogical, Frame::Inertial>,
           subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::Grid,
                                                         Frame::Inertial>,
-          subcell::Tags::ObserverJacobianAndDetInvJacobian<
+          subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
               Dim, Frame::ElementLogical, Frame::Grid>,
-          subcell::Tags::ObserverJacobianAndDetInvJacobian<
+          subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
               Dim, Frame::ElementLogical, Frame::Inertial>,
-          subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
-                                                           Frame::Inertial>,
+          subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
+              Dim, Frame::Grid, Frame::Inertial>,
           subcell::Tags::TciStatusCompute<Dim>,
           subcell::Tags::MethodOrderCompute<Dim>>>(
       ElementMap<Dim, Frame::Grid>{
@@ -388,6 +388,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<
       subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
       "Det(InverseJacobian(Logical,Grid))");
+  TestHelpers::db::test_simple_tag<
+      subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
+      "Det(InverseJacobian(Logical,Inertial))");
   TestHelpers::db::test_simple_tag<subcell::Tags::DidRollback>("DidRollback");
   TestHelpers::db::test_simple_tag<subcell::Tags::Inactive<Var1>>(
       "Inactive(Var1)");

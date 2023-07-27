@@ -115,6 +115,47 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.InitialDataTci",
     CHECK(std::get<0>(result) == -4);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
+
+  {
+    INFO("Test SetInitialRdmpData");
+    // While the code is supposed to be used on the subcells, that doesn't
+    // actually matter.
+    const auto& dg_tilde_e = get<Tags::TildeE>(dg_vars);
+    const auto& dg_tilde_b = get<Tags::TildeB>(dg_vars);
+    const auto& dg_tilde_q = get<Tags::TildeQ>(dg_vars);
+    using std::max;
+    using std::min;
+    const auto dg_tilde_e_magnitude = magnitude(dg_tilde_e);
+    const auto dg_tilde_b_magnitude = magnitude(dg_tilde_b);
+    const auto subcell_tilde_e_magnitude = evolution::dg::subcell::fd::project(
+        get(dg_tilde_e_magnitude), dg_mesh, subcell_mesh.extents());
+    const auto subcell_tilde_b_magnitude = evolution::dg::subcell::fd::project(
+        get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents());
+    const auto subcell_tilde_q = evolution::dg::subcell::fd::project(
+        get(dg_tilde_q), dg_mesh, subcell_mesh.extents());
+    evolution::dg::subcell::RdmpTciData rdmp_data{};
+    ForceFree::subcell::SetInitialRdmpData::apply(
+        make_not_null(&rdmp_data), dg_tilde_e, dg_tilde_b, dg_tilde_q,
+        evolution::dg::subcell::ActiveGrid::Dg, dg_mesh, subcell_mesh);
+    const evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{
+        {max(max(get(dg_tilde_e_magnitude)), max(subcell_tilde_e_magnitude)),
+         max(max(get(dg_tilde_b_magnitude)), max(subcell_tilde_b_magnitude)),
+         max(max(get(dg_tilde_q)), max(subcell_tilde_q))},
+        {min(min(get(dg_tilde_e_magnitude)), min(subcell_tilde_e_magnitude)),
+         min(min(get(dg_tilde_b_magnitude)), min(subcell_tilde_b_magnitude)),
+         min(min(get(dg_tilde_q)), min(subcell_tilde_q))}};
+    CHECK(rdmp_data == expected_dg_rdmp_data);
+
+    ForceFree::subcell::SetInitialRdmpData::apply(
+        make_not_null(&rdmp_data), dg_tilde_e, dg_tilde_b, dg_tilde_q,
+        evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
+    const evolution::dg::subcell::RdmpTciData expected_subcell_rdmp_data{
+        {max(get(dg_tilde_e_magnitude)), max(get(dg_tilde_b_magnitude)),
+         max(get(dg_tilde_q))},
+        {min(get(dg_tilde_e_magnitude)), min(get(dg_tilde_b_magnitude)),
+         min(get(dg_tilde_q))}};
+    CHECK(rdmp_data == expected_subcell_rdmp_data);
+  }
 }
 
 }  // namespace

@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -50,11 +51,11 @@ namespace Burgers::subcell {
  */
 struct TimeDerivative {
   template <typename DbTagsList>
-  static void apply(
-      const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                1, Frame::Grid, Frame::Inertial>>(*box))
+               .is_identity(),
+           "Do not yet support moving mesh with DG-subcell.");
     const Element<1>& element = db::get<domain::Tags::Element<1>>(*box);
 
     const bool element_is_interior = element.external_boundaries().size() == 0;
@@ -211,9 +212,11 @@ struct TimeDerivative {
         db::add_tag_prefix<::Tags::dt, typename System::variables_tag>;
     const size_t num_pts = subcell_mesh.number_of_grid_points();
     db::mutate<dt_variables_tag>(
-        [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
-         &fd_boundary_corrections, &subcell_mesh,
-         &one_over_delta_xi](const auto dt_vars_ptr) {
+        [&num_pts, &fd_boundary_corrections, &subcell_mesh, &one_over_delta_xi](
+            const auto dt_vars_ptr,
+            const InverseJacobian<DataVector, 1, Frame::ElementLogical,
+                                  Frame::Grid>&
+                cell_centered_logical_to_grid_inv_jacobian) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           auto& dt_u = get<::Tags::dt<::Burgers::Tags::U>>(*dt_vars_ptr);
 
@@ -224,7 +227,10 @@ struct TimeDerivative {
               cell_centered_logical_to_grid_inv_jacobian.get(0, 0),
               get(u_correction), subcell_mesh.extents(), 0);
         },
-        box);
+        box,
+        db::get<
+            evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<1>>(
+            *box));
   }
 };
 }  // namespace Burgers::subcell

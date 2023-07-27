@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -62,11 +63,7 @@ namespace grmhd::ValenciaDivClean::subcell {
  */
 struct TimeDerivative {
   template <typename DbTagsList>
-  static void apply(
-      const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
-          cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -75,6 +72,18 @@ struct TimeDerivative {
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>;
     using fluxes_tags = db::wrap_tags_in<::Tags::Flux, evolved_vars_tags,
                                          tmpl::size_t<3>, Frame::Inertial>;
+
+    ASSERT(
+        (db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+             3, Frame::Grid, Frame::Inertial>>(*box))
+            .is_identity(),
+        "Moving mesh is only partly implemented in ValenciaDivClean. If you "
+        "need this look at the complete implementation in GhValenciaDivClean. "
+        "You will at least need to get the normal vectors correct, multiply "
+        "the boundary correction by the determinant of the Jacobian on the "
+        "faces and use det_cell_centered_inv_jacobian in "
+        "add_cartesian_flux_divergence, but there might be more that hasn't "
+        "been updated.");
 
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box);
@@ -427,6 +436,9 @@ struct TimeDerivative {
         reconstruction_order.value_or(
             std::array<gsl::span<std::uint8_t>, 3>{}));
 
+    const auto& cell_centered_logical_to_grid_inv_jacobian = db::get<
+        evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<3>>(
+        *box);
     for (size_t dim = 0; dim < 3; ++dim) {
       const auto& boundary_correction_in_axis =
           high_order_corrections.has_value()

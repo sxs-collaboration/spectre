@@ -67,15 +67,7 @@ struct TakeTimeStep {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
-                Dim, Frame::Grid, Frame::Inertial>>(box))
-               .is_identity(),
-           "Do not yet support moving mesh with DG-subcell.");
-
-    TimeDerivative::apply(
-        make_not_null(&box),
-        db::get<fd::Tags::InverseJacobianLogicalToGrid<Dim>>(box),
-        db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
+    TimeDerivative::apply(make_not_null(&box));
 
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
         [](const auto mortar_data_ptr) {
