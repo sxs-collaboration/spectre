@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <string>
@@ -147,6 +148,8 @@ void test(const bool moving_mesh) {
       "TciStatus");
   TestHelpers::db::test_compute_tag<subcell::Tags::MethodOrderCompute<Dim>>(
       "MethodOrder");
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverMeshVelocityCompute<Dim>>("InertialMeshVelocity");
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -186,6 +189,7 @@ void test(const bool moving_mesh) {
               domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                           Frame::Inertial>>,
           domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
+          domain::Tags::InertialMeshVelocityCompute<Dim>,
 
           subcell::Tags::MeshCompute<Dim>,
           subcell::Tags::LogicalCoordinatesCompute<Dim>,
@@ -217,7 +221,8 @@ void test(const bool moving_mesh) {
           subcell::Tags::ObserverJacobianAndDetInvJacobianCompute<
               Dim, Frame::Grid, Frame::Inertial>,
           subcell::Tags::TciStatusCompute<Dim>,
-          subcell::Tags::MethodOrderCompute<Dim>>>(
+          subcell::Tags::MethodOrderCompute<Dim>,
+          subcell::Tags::ObserverMeshVelocityCompute<Dim>>>(
       ElementMap<Dim, Frame::Grid>{
           ElementId<Dim>{0},
           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -236,7 +241,8 @@ void test(const bool moving_mesh) {
           false,
           {},
           ::fd::DerivativeOrder::Two});
-  const auto check_box = [&active_coords_box,
+  const auto check_box = [&active_coords_box, &grid_to_inertial_map,
+                          &moving_mesh,
                           &tci_decision](const Mesh<Dim>& expected_mesh) {
     (void)tci_decision;  // Incorrect compiler warning.
     CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_coords_box) ==
@@ -356,6 +362,26 @@ void test(const bool moving_mesh) {
                                    .finite_difference_derivative_order()))});
         }
       }
+    }
+    if (moving_mesh) {
+      REQUIRE(db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
+                  active_coords_box)
+                  .has_value());
+      const auto& mesh_velocity =
+          db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
+              active_coords_box)
+              .value();
+      const auto [coords, inv_jac, jac, expected_mesh_velocity] =
+          grid_to_inertial_map->coords_frame_velocity_jacobians(
+              db::get<::Events::Tags::ObserverCoordinates<Dim, Frame::Grid>>(
+                  active_coords_box),
+              db::get<::Tags::Time>(active_coords_box),
+              db::get<domain::Tags::FunctionsOfTime>(active_coords_box));
+      CHECK_ITERABLE_APPROX(mesh_velocity, expected_mesh_velocity);
+    } else {
+      CHECK_FALSE(db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
+                      active_coords_box)
+                      .has_value());
     }
   };
 

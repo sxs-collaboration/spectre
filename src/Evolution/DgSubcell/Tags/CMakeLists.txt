@@ -20,6 +20,7 @@ spectre_target_headers(
   MethodOrder.hpp
   ObserverCoordinates.hpp
   ObserverMesh.hpp
+  ObserverMeshVelocity.hpp
   OnSubcellFaces.hpp
   OnSubcells.hpp
   ReconstructionOrder.hpp
@@ -36,5 +37,6 @@ spectre_target_sources(
   Mesh.cpp
   MethodOrder.cpp
   ObserverMesh.cpp
+  ObserverMeshVelocity.cpp
   TciStatus.cpp
   )
