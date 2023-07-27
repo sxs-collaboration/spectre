@@ -251,8 +251,7 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  const bool using_harmonic_gauge =
-      dynamic_cast<const gauges::Harmonic*>(&gauge_condition) != nullptr;
+  const bool using_harmonic_gauge = gauge_condition.is_harmonic();
   if (not using_harmonic_gauge) {
     // Compute gauge condition.
     get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
