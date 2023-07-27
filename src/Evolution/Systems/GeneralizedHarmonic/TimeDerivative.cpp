@@ -268,19 +268,6 @@ void TimeDerivative<Dim>::apply(
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       gauge_constraint->get(nu) += gauge_function->get(nu);
     }
-  } else {
-#ifdef SPECTRE_DEBUG
-    get(*sqrt_det_spatial_metric) =
-        std::numeric_limits<double>::signaling_NaN();
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t nu = 0; nu < Dim + 1; ++nu) {
-        for (size_t rho = 0; rho < Dim + 1; ++rho) {
-          christoffel_second_kind->get(mu, nu, rho) =
-              std::numeric_limits<double>::signaling_NaN();
-        }
-      }
-    }
-#endif
   }
 
   get(*normal_dot_gauge_constraint) =
