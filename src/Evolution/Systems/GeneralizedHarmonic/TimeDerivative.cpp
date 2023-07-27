@@ -257,11 +257,13 @@ void TimeDerivative<Dim>::apply(
     get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
     raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
                                *inverse_spacetime_metric);
-    gauges::dispatch<Dim>(
-        gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
-        *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
-        *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, phi,
-        mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+  }
+  gauges::dispatch<Dim>(
+      gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
+      *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
+      *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, phi, mesh,
+      time, inertial_coords, inverse_jacobian, gauge_condition);
+  if (not using_harmonic_gauge) {
     // Compute source function last so that we don't need to recompute any of
     // the other temporary tags.
     for (size_t nu = 0; nu < Dim + 1; ++nu) {

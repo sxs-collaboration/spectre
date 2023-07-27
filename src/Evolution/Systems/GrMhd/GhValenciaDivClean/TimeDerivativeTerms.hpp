@@ -12,6 +12,7 @@
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/PassVariables.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Harmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/StressEnergy.hpp"
@@ -84,6 +85,13 @@ struct TimeDerivativeTermsImpl<
         get<GhDtTags>(dt_vars_ptr)..., get<GhTempTags>(temps_ptr)...,
         d_spacetime_metric, d_pi, d_phi,
         get<Tags::detail::TemporaryReference<GhArgTags>>(arguments)...);
+
+    if (get<Tags::detail::TemporaryReference<gh::gauges::Tags::GaugeCondition>>(
+            arguments)
+            .is_harmonic()) {
+      get(get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*temps_ptr)) =
+          sqrt(get(get<gr::Tags::DetSpatialMetric<DataVector>>(*temps_ptr)));
+    }
 
     for (size_t i = 0; i < 3; ++i) {
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
