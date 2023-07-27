@@ -36,19 +36,20 @@ printf '%s\0' "${commit_files[@]}" | \
 # Use git-clang-format to check for any suspicious formatting of code.
 @CLANG_FORMAT_BIN@ --version > /dev/null
 if [ $? -eq 0 ]; then
-    clang_format_diffstat=$(@GIT_EXECUTABLE@ --no-pager \
-        clang-format --binary @CLANG_FORMAT_BIN@ --diffstat --quiet)
+    clang_format_diff=$(@GIT_EXECUTABLE@ --no-pager \
+        clang-format --binary @CLANG_FORMAT_BIN@ --diff --quiet)
     # Clang-format didn't always return the right exit code before version 15,
-    # so we check the diffstat output instead (see issue:
+    # so we check the diff output instead (see issue:
     # https://github.com/llvm/llvm-project/issues/54758)
-    if [ -n "$clang_format_diffstat" ]; then
-        @GIT_EXECUTABLE@ clang-format --binary @CLANG_FORMAT_BIN@ --diff \
-            > @CMAKE_SOURCE_DIR@/.clang_format_diff.patch
-        echo "Found C++ formatting errors:"
-        echo "$clang_format_diffstat"
+    if [ -n "$clang_format_diff" ] \
+        && [[ "$clang_format_diff" != *"no modified files to format"* ]] \
+        && [[ "$clang_format_diff" != *"did not modify any files"* ]]; then
+        echo "$clang_format_diff" > @CMAKE_SOURCE_DIR@/.clang_format_diff.patch
+        echo "Found C++ formatting errors."
         echo "Please run 'git clang-format' in the repository."
         echo "You can also apply the patch directly:"
         echo "git apply @CMAKE_SOURCE_DIR@/.clang_format_diff.patch"
+        echo ""
     fi
 fi
 
