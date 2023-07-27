@@ -36,40 +36,15 @@ ErrorDiagnostics control_error(
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
-    const double time, const Strahlkorper<Frame>& apparent_horizon,
+    const double time, const double control_error_delta_r,
+    const double dt_lambda_00, const Strahlkorper<Frame>& apparent_horizon,
     const Strahlkorper<Frame>& excision_boundary,
-    const double grid_frame_excision_boundary_radius,
-    const Strahlkorper<Frame>& time_deriv_apparent_horizon,
     const Scalar<DataVector>& lapse_on_excision_boundary,
     const tnsr::I<DataVector, 3, Frame>& frame_components_of_grid_shift,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric_on_excision_boundary,
     const tnsr::II<DataVector, 3, Frame>&
-        inverse_spatial_metric_on_excision_boundary,
-    const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&
-        function_of_time) {
-  // Compute some quantities that are used in many of the states.
-
-  // lambda_00 is the quantity of the same name in ArXiv:1211.6079,
-  // and dt_lambda_00 is its time derivative.
-  // This is the map parameter that maps the excision boundary in the grid
-  // frame to the excision boundary in the distorted frame.
-  const auto map_lambda_and_deriv = function_of_time->func_and_deriv(time);
-  const double lambda_00 = map_lambda_and_deriv[0][0];
-  const double dt_lambda_00 = map_lambda_and_deriv[1][0];
-
-  // horizon_00 is \hat{S}_00 in ArXiv:1211.6079,
-  // and dt_horizon_00 is its time derivative.
-  // These are coefficients of the horizon in the distorted frame.
-  const double horizon_00 = apparent_horizon.coefficients()[0];
-  const double dt_horizon_00 = time_deriv_apparent_horizon.coefficients()[0];
-
-  // control_error_delta_r is Q in Eq. 96 in ArXiv:1211.6079.
-  // This corresponds to 'DeltaRPolicy=Relative' in SpEC.
+        inverse_spatial_metric_on_excision_boundary) {
   const double Y00 = 0.25 * M_2_SQRTPI;
-  const double control_error_delta_r =
-      dt_horizon_00 * (lambda_00 - grid_frame_excision_boundary_radius / Y00) /
-          horizon_00 -
-      dt_lambda_00;
 
   // Define various quantities on excision boundary.
   // Declare a TempBuffer to do this with a single memory allocation.
@@ -234,9 +209,6 @@ ErrorDiagnostics control_error(
   return ErrorDiagnostics{
       control_error,
       info->state->number(),
-      lambda_00,
-      horizon_00,
-      dt_horizon_00,
       min(get(radial_distance)),
       min(get(radial_distance)) / apparent_horizon.average_radius(),
       min_comoving_char_speed,
@@ -263,19 +235,16 @@ ErrorDiagnostics control_error(
           predictor_comoving_char_speed,                                       \
       const gsl::not_null<intrp::ZeroCrossingPredictor*>                       \
           predictor_delta_radius,                                              \
-      double time, const Strahlkorper<FRAME(data)>& apparent_horizon,          \
+      double time, double control_error_delta_r, double dt_lambda_00,          \
+      const Strahlkorper<FRAME(data)>& apparent_horizon,                       \
       const Strahlkorper<FRAME(data)>& excision_boundary,                      \
-      double grid_frame_excision_boundary_radius,                              \
-      const Strahlkorper<FRAME(data)>& time_deriv_apparent_horizon,            \
       const Scalar<DataVector>& lapse_on_excision_boundary,                    \
       const tnsr::I<DataVector, 3, FRAME(data)>&                               \
           frame_components_of_grid_shift,                                      \
       const tnsr::ii<DataVector, 3, FRAME(data)>&                              \
           spatial_metric_on_excision_boundary,                                 \
       const tnsr::II<DataVector, 3, FRAME(data)>&                              \
-          inverse_spatial_metric_on_excision_boundary,                         \
-      const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&          \
-          function_of_time);
+          inverse_spatial_metric_on_excision_boundary);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Distorted, ::Frame::Inertial))
 

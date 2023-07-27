@@ -258,16 +258,35 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
             QueueTags::InverseSpatialMetricOnExcisionSurface<Frame::Distorted>>(
             excision_quantities);
 
+    // lambda_00 is the quantity of the same name in ArXiv:1211.6079,
+    // and dt_lambda_00 is its time derivative.
+    // This is the map parameter that maps the excision boundary in the grid
+    // frame to the excision boundary in the distorted frame.
+    const auto map_lambda_and_deriv =
+        functions_of_time.at(function_of_time_name)->func_and_deriv(time);
+    const double lambda_00 = map_lambda_and_deriv[0][0];
+    const double dt_lambda_00 = map_lambda_and_deriv[1][0];
+
+    // horizon_00 is \hat{S}_00 in ArXiv:1211.6079,
+    // and dt_horizon_00 is its time derivative.
+    // These are coefficients of the horizon in the distorted frame.
+    const double horizon_00 = apparent_horizon.coefficients()[0];
+    const double dt_horizon_00 = time_deriv_apparent_horizon.coefficients()[0];
+
+    // This is needed for every state
+    const double control_error_delta_r = size::control_error_delta_r(
+        horizon_00, dt_horizon_00, lambda_00, dt_lambda_00,
+        grid_frame_excision_sphere_radius);
+
     info_.damping_time = min(tuner.current_timescale());
 
     const size::ErrorDiagnostics error_diagnostics = size::control_error(
         make_not_null(&info_), make_not_null(&char_speed_predictor_),
         make_not_null(&comoving_char_speed_predictor_),
-        make_not_null(&delta_radius_predictor_), time, apparent_horizon,
-        excision_surface, grid_frame_excision_sphere_radius,
-        time_deriv_apparent_horizon, lapse, shifty_quantity,
-        spatial_metric_on_excision, inverse_spatial_metric_on_excision,
-        functions_of_time.at(function_of_time_name));
+        make_not_null(&delta_radius_predictor_), time, control_error_delta_r,
+        dt_lambda_00, apparent_horizon, excision_surface, lapse,
+        shifty_quantity, spatial_metric_on_excision,
+        inverse_spatial_metric_on_excision);
 
     state_history_.store(time, info_, error_diagnostics.control_error_args);
 
@@ -282,9 +301,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               time, error_diagnostics.control_error,
               static_cast<double>(error_diagnostics.state_number),
               error_diagnostics.discontinuous_change_has_occurred ? 1.0 : 0.0,
-              error_diagnostics.lambda_00,
-              error_diagnostics.control_error_args.time_deriv_of_lambda_00,
-              error_diagnostics.horizon_00, error_diagnostics.dt_horizon_00,
+              lambda_00, dt_lambda_00, horizon_00, dt_horizon_00,
               error_diagnostics.min_delta_r,
               error_diagnostics.min_relative_delta_r,
               error_diagnostics.control_error_args.control_error_delta_r,
