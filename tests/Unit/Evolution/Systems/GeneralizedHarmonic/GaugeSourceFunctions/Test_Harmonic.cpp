@@ -36,6 +36,7 @@ void test() {
       TestHelpers::test_creation<std::unique_ptr<gh::gauges::GaugeCondition>,
                                  Metavariables>("Harmonic:")
           ->get_clone());
+  CHECK(gauge_condition->is_harmonic());
 
   const size_t num_points = 5;
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);

@@ -214,6 +214,7 @@ void test_derived_class(const Mesh<Dim>& mesh) {
           "  Amplitudes: [0.5, 1.5, 2.5]\n"
           "  Exponents: [2, 4, 6]\n")
           ->get_clone());
+  CHECK_FALSE(gauge_condition->is_harmonic());
 
   const size_t num_points = mesh.number_of_grid_points();
 

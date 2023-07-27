@@ -38,6 +38,8 @@ void Harmonic::gauge_and_spacetime_derivative(
   }
 }
 
+bool Harmonic::is_harmonic() const { return true; }
+
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Harmonic::my_PUP_ID = 0;
 
