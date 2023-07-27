@@ -84,6 +84,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/ParameterizedDeleptonization.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -209,6 +210,13 @@ struct EvolutionMetavars {
   static_assert(
       is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data or an analytic_solution");
+  // Boolean verifying if parameterized deleptonization will be active.  This
+  // will only be active for CCSN evolution.
+  using parameterized_deleptonization = tmpl::conditional_t<
+      std::is_same_v<initial_data, grmhd::AnalyticData::CcsnCollapse>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::ParameterizedDeleptonization>,
+      tmpl::list<>>;
   using eos_base = typename EquationsOfState::get_eos_base<
       typename initial_data::equation_of_state_type>;
   using equation_of_state_type = typename std::unique_ptr<eos_base>;
@@ -399,6 +407,7 @@ struct EvolutionMetavars {
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<grmhd::ValenciaDivClean::Flattener<
           ordered_list_of_primitive_recovery_schemes>>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives>>;
@@ -423,6 +432,7 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives,
@@ -457,6 +467,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::ResizeAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives,
@@ -481,6 +492,7 @@ struct EvolutionMetavars {
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<3, Frame::ElementLogical>>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives,
@@ -496,6 +508,7 @@ struct EvolutionMetavars {
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SwapGrTags>,
+              parameterized_deleptonization,
               VariableFixing::Actions::FixVariables<
                   VariableFixing::FixToAtmosphere<volume_dim>>,
               Actions::UpdateConservatives,

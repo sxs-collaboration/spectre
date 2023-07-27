@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   FixToAtmosphere.cpp
   LimitLorentzFactor.cpp
+  ParameterizedDeleptonization.cpp
   RadiallyFallingFloor.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   Actions.hpp
   FixToAtmosphere.hpp
   LimitLorentzFactor.hpp
+  ParameterizedDeleptonization.hpp
   RadiallyFallingFloor.hpp
   Tags.hpp
   )
