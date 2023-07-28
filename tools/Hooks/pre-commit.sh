@@ -63,7 +63,7 @@ done
 
 # Python file checks
 if [ ${#python_files[@]} -ne 0 ]; then
-    # Use black to check Python file formatting, only if it is installed.
+    # Use black to check Python file formatting
     @Python_EXECUTABLE@ -m black --version > /dev/null
     if [ $? -eq 0 ]; then
         @Python_EXECUTABLE@ -m black --check --quiet ${python_files[@]}
@@ -72,6 +72,10 @@ if [ ${#python_files[@]} -ne 0 ]; then
             printf "Found Python formatting errors.\n"
             printf "Please run 'black .' in the repository.\n"
         fi
+    else
+        printf "Could not find 'black' Python formatter. Install with:\n"
+        printf "pip3 install -r support/Python/dev_requirements.txt\n"
+        exit 1
     fi
 
     # Use isort to check python import order, only if it is installed.
@@ -83,6 +87,10 @@ if [ ${#python_files[@]} -ne 0 ]; then
             printf "Found unsorted Python imports.\n"
             printf "Please run 'isort .' in the repository.\n"
         fi
+    else
+        printf "Could not find 'isort' Python formatter. Install with:\n"
+        printf "pip3 install -r support/Python/dev_requirements.txt\n"
+        exit 1
     fi
 fi
 
