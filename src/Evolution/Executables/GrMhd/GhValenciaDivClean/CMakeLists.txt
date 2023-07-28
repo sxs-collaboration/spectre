@@ -52,43 +52,57 @@ set(LIBS_TO_LINK
   ValenciaDivClean
   )
 
+set(LIBS_TO_LINK_WITH_CONTROL_SYSTEM
+    ControlSystem
+    ControlSystemMeasurements
+    ${LIBS_TO_LINK}
+)
+
 add_ghmhd_executable(
   ""
-  evolution::NumericInitialData
+  "evolution::NumericInitialData,false"
   "${LIBS_TO_LINK}"
+  )
+
+add_ghmhd_executable(
+  "Bns"
+  "evolution::NumericInitialData,true"
+  "${LIBS_TO_LINK_WITH_CONTROL_SYSTEM}"
   )
 
 if (TARGET SpEC::Exporter)
   target_compile_definitions(
     EvolveGhValenciaDivClean PRIVATE HAS_SPEC_EXPORTER)
+  target_compile_definitions(
+    EvolveGhValenciaDivCleanBns PRIVATE HAS_SPEC_EXPORTER)
 endif()
 
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
-  gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>
-  "${LIBS_TO_LINK}"
+  "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false"
+  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
-  gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>
-  "${LIBS_TO_LINK}"
+  "gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>,false"
+  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   BondiMichel
-  gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
-  "${LIBS_TO_LINK};ParallelInterpolation"
+  "gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>,false"
+  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   FishboneMoncriefDisk
-  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>
-  "${LIBS_TO_LINK}"
+  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>,false"
+  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_executable(
   TovStar
-  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>
+  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>,false"
   "${LIBS_TO_LINK}"
   )

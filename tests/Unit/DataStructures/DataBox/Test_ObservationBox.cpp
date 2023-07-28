@@ -107,6 +107,25 @@ struct SubtractNumberAndReturn {
   }
 };
 
+struct SubtractNumberAndReturnApply {
+  using argument_tags =
+      tmpl::list<::Tags::ObservationBox, ::Tags::DataBox, Tag3>;
+
+  template <typename DbTagsList, typename ComputeTagsList>
+  static double apply(
+      const ObservationBox<ComputeTagsList, db::DataBox<DbTagsList>>& obs_box,
+      const db::DataBox<DbTagsList>& box, const double tag3,
+      const double number) {
+    CHECK(get<Tag0>(obs_box) == 2.0);
+    CHECK(get<Tag1>(obs_box) == 4.0);
+    CHECK(get<Tag2>(obs_box) == (2.0 * 2.0 * 2.0));
+    CHECK(get<Tag3>(obs_box) == (2.0 + 2.0 * 2.0 + 2.0 * 2.0 * 2.0));
+    CHECK(get<Tag0>(box) == 2.0);
+    CHECK(get<Tag1>(box) == 4.0);
+    return tag3 - number;
+  }
+};
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
                   "[Unit][DataStructures]") {
   const auto db_box =
@@ -131,6 +150,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
   CHECK(get<0>(get<VectorVar>(obs_box)) == DataVector(5, 2.0));
   CHECK(get<1>(get<VectorVar>(obs_box)) == DataVector(5, 3.0));
   CHECK(get<2>(get<VectorVar>(obs_box)) == DataVector(5, 4.0));
+
+  CHECK(apply(SubtractNumberAndReturnApply{}, obs_box, 2.0) ==
+        (get<Tag3>(obs_box) - 2.0));
 }
 
 }  // namespace

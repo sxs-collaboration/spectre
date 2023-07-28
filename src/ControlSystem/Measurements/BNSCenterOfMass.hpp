@@ -99,6 +99,8 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     using interpolation_target_tag = void;
 
+    using compute_tags_for_observation_box = tmpl::list<>;
+
     /// Tags for the arguments to the apply function.
     using argument_tags =
         tmpl::list<Events::Tags::ObserverMesh<3>,

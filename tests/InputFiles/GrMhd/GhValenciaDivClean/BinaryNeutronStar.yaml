@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveGhValenciaDivClean
+Executable: EvolveGhValenciaDivCleanBns
 Testing:
   Check: parse
 
@@ -9,12 +9,16 @@ Testing:
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
-  # The initial time step gets overriden by `ChangeSlabSize` below
+  # The initial time step gets overridden by `ChangeSlabSize` below
   InitialTimeStep: 0.075
-  TimeStepper: Rk3HesthavenSsp
+  # Control systems only work with AdamsBashforth
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
 
 PhaseChangeAndTriggers:
 
@@ -25,22 +29,38 @@ EquationOfState:
       PolytropicExponent: 2.
 
 DomainCreator:
-  Sphere:
-    InnerRadius: 80.
-    OuterRadius: 200.
-    Interior:
-      FillWithSphericity: 0.
-    InitialRefinement: 3
-    InitialGridPoints: 8
+  BinaryCompactObject:
+    ObjectA:
+      CartesianCubeAtXCoord: &XCoordA 20
+    ObjectB:
+      CartesianCubeAtXCoord: &XCoordB -20
+    Envelope:
+      Radius: 100.0
+      RadialDistribution: Linear
+    OuterShell:
+      OpeningAngle: 90
+      Radius: 250.0
+      RadialDistribution: Linear
+      BoundaryCondition:
+        ConstraintPreservingFreeOutflow:
+          Type: ConstraintPreservingPhysical
     UseEquiangularMap: False
-    RadialPartitioning: []
-    RadialDistribution: [Linear]
-    EquatorialCompression: None
-    WhichWedges: All
-    TimeDependentMaps: None
-    OuterBoundaryCondition:
-      ConstraintPreservingFreeOutflow:
-        Type: ConstraintPreservingPhysical
+    InitialRefinement:
+      ObjectA: [4, 4, 4]
+      ObjectB: [4, 4, 4]
+      Envelope: [3, 3, 3]
+      OuterShell: [2 ,2 ,3]
+    InitialGridPoints: 5
+    TimeDependentMaps:
+      InitialTime: 0.0
+      ExpansionMap:
+        InitialValues: [1.0, 0.0]
+        AsymptoticVelocityOuterBoundary: -1.0e-6
+        DecayTimescaleOuterBoundaryVelocity: 50.0
+      RotationMap:
+        InitialAngularVelocity: [0.0, 0.0, 0.00826225]
+      ShapeMapA: None
+      ShapeMapB: None
 
 VariableFixing:
   FixConservatives:
@@ -187,6 +207,44 @@ EventsAndDenseTriggers:
 EventsRunAtCleanup:
   ObservationValue: -1000.0
   Events:
+
+# Control systems are disabled by default
+ControlSystems:
+  WriteDataToDisk: true
+  MeasurementsPerUpdate: 4
+  Verbosity: Silent
+  Expansion:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+  Rotation:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2, 0.2, 0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
 
 InitialData:
   NumericInitialData:

@@ -57,6 +57,27 @@ template <typename Measurement>
 using submeasurements_t = typename submeasurements<Measurement>::type;
 /// @}
 
+template <typename Submeasurement>
+struct compute_tags_for_observation_box_from_submeasurements {
+  using type = typename Submeasurement::compute_tags_for_observation_box;
+};
+
+/// Given a measurement, obtain a list of compute tags for the ObservationBox
+/// from the `compute_tags_for_observation_box` type alias of all
+/// submeasurements of that measurement.
+/// @{
+template <typename Measurement>
+struct compute_tags_for_observation_box {
+  using type = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+      submeasurements_t<Measurement>,
+      compute_tags_for_observation_box_from_submeasurements<tmpl::_1>>>>;
+};
+
+template <typename Measurement>
+using compute_tags_for_observation_box_t =
+    typename compute_tags_for_observation_box<Measurement>::type;
+/// @}
+
 namespace detail {
 template <typename Submeasurement, typename ControlSystems>
 struct interpolation_target_tags_for_submeasurement {

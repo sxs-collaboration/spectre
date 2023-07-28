@@ -56,6 +56,9 @@ struct Submeasurement {
         typename ConformingType::template interpolation_target_tag<
             tmpl::list<DummyControlSystem>>;
 
+    using compute_tags_for_observation_box =
+        typename ConformingType::compute_tags_for_observation_box;
+
     using argument_tags = typename ConformingType::argument_tags;
 
     // We can't check the apply operator, because the tags may be

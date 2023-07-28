@@ -51,13 +51,19 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename InitialData, typename... InterpolationTargetTags>
-struct EvolutionMetavars
-    : public GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars<InitialData, InterpolationTargetTags...>, false> {
+template <typename InitialData, bool UseControlSystems,
+          typename... InterpolationTargetTags>
+struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
+                               EvolutionMetavars<InitialData, UseControlSystems,
+                                                 InterpolationTargetTags...>,
+                               false, false> {
+  static_assert(not UseControlSystems,
+                "GhValenciaWithHorizon doesn't support control systems yet.");
   static constexpr bool use_dg_subcell = false;
 
   using defaults = GhValenciaDivCleanDefaults<use_dg_subcell>;
+  using base = GhValenciaDivCleanTemplateBase<EvolutionMetavars, use_dg_subcell,
+                                              UseControlSystems>;
   static constexpr size_t volume_dim = defaults::volume_dim;
   using domain_frame = typename defaults::domain_frame;
   static constexpr bool use_damped_harmonic_rollon =
@@ -109,34 +115,25 @@ struct EvolutionMetavars
       gh::Tags::Pi<DataVector, volume_dim, domain_frame>,
       gh::Tags::Phi<DataVector, volume_dim, domain_frame>>;
 
-  using observe_fields =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
-                                              use_dg_subcell>::observe_fields;
+  using observe_fields = typename base::observe_fields;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
-        typename GhValenciaDivCleanTemplateBase<
-            EvolutionMetavars,
-            use_dg_subcell>::factory_creation::factory_classes,
+        typename base::factory_creation::factory_classes,
         tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using initial_data =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
-                                              use_dg_subcell>::initial_data;
-  using initial_data_tag =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
-                                              use_dg_subcell>::initial_data_tag;
+  using initial_data = typename base::initial_data;
+  using initial_data_tag = typename base::initial_data_tag;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       gh::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      typename GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars, use_dg_subcell>::equation_of_state_tag,
+      typename base::equation_of_state_tag,
       gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
                                                          Frame::Grid>,
       gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
@@ -147,22 +144,18 @@ struct EvolutionMetavars
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
 
-  using dg_registration_list = typename GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars, use_dg_subcell>::dg_registration_list;
+  using dg_registration_list = typename base::dg_registration_list;
 
   template <typename ParallelComponent>
   struct registration_list {
     using type = std::conditional_t<
-        std::is_same_v<
-            ParallelComponent,
-            typename GhValenciaDivCleanTemplateBase<
-                EvolutionMetavars, use_dg_subcell>::dg_element_array_component>,
+        std::is_same_v<ParallelComponent,
+                       typename base::dg_element_array_component>,
         dg_registration_list, tmpl::list<>>;
   };
 
   using component_list =
-      tmpl::push_back<typename GhValenciaDivCleanTemplateBase<
-                          EvolutionMetavars, use_dg_subcell>::component_list,
+      tmpl::push_back<typename base::component_list,
                       intrp::InterpolationTarget<EvolutionMetavars, AhA>>;
 };
 

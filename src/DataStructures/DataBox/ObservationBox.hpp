@@ -27,7 +27,7 @@ struct ObservationBox {
   // NoSuchtype****& is rather useless
   using type = NoSuchType****;
 };
-}
+}  // namespace Tags
 
 /*!
  * \ingroup DataStructuresGroup
@@ -71,8 +71,7 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
   }
 
   template <typename ComputeTag, typename... ArgumentTags>
-  void evaluate_compute_item(
-      tmpl::list<ArgumentTags...> /*meta*/) const;
+  void evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const;
 
   template <typename ReferenceTag, typename... ArgumentTags>
   const auto& get_reference_item(tmpl::list<ArgumentTags...> /*meta*/) const;
@@ -167,8 +166,24 @@ template <typename DataBoxType, typename ComputeTagsList, typename... Args,
 auto apply(F&& f, tmpl::list<ArgumentTags...> /*meta*/,
            const ObservationBox<ComputeTagsList, DataBoxType>& observation_box,
            Args&&... args) {
-  return std::forward<F>(f)(get<ArgumentTags>(observation_box)...,
-                            std::forward<Args>(args)...);
+  if constexpr (db::detail::is_apply_callable_v<
+                    F,
+                    std::decay_t<decltype(
+                        get<ArgumentTags>(observation_box))>...,
+                    Args...>) {
+    return std::decay_t<F>::apply(get<ArgumentTags>(observation_box)...,
+                    std::forward<Args>(args)...);
+  } else if constexpr (::tt::is_callable_v<
+                 F,
+                 std::decay_t<decltype(get<ArgumentTags>(observation_box))>...,
+                 Args...>) {
+    return std::forward<F>(f)(get<ArgumentTags>(observation_box)...,
+                              std::forward<Args>(args)...);
+  } else {
+    db::detail::error_function_not_callable<
+        F, std::decay_t<decltype(get<ArgumentTags>(observation_box))>...,
+        Args...>();
+  }
 }
 }  // namespace observation_box_detail
 

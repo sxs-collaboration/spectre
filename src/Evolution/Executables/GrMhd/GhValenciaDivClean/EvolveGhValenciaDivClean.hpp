@@ -29,12 +29,16 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename InitialData, typename... InterpolationTargetTags>
-struct EvolutionMetavars
-    : public GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars<InitialData, InterpolationTargetTags...>, true> {
+template <typename InitialData, bool UseControlSystems,
+          typename... InterpolationTargetTags>
+struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
+                               EvolutionMetavars<InitialData, UseControlSystems,
+                                                 InterpolationTargetTags...>,
+                               true, UseControlSystems> {
   using base = GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars<InitialData, InterpolationTargetTags...>, true>;
+      EvolutionMetavars<InitialData, UseControlSystems,
+                        InterpolationTargetTags...>,
+      true, UseControlSystems>;
   using const_global_cache_tags = typename base::const_global_cache_tags;
   using observed_reduction_data_tags =
       typename base::observed_reduction_data_tags;
