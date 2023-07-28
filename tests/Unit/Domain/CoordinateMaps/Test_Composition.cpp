@@ -67,6 +67,7 @@ void test_composition() {
   CHECK_FALSE(map.is_identity());
   CHECK_FALSE(map.inv_jacobian_is_time_dependent());
   CHECK_FALSE(map.jacobian_is_time_dependent());
+  CHECK(map.function_of_time_names().empty());
 
   const auto xi =
       make_with_random_values<tnsr::I<DataVector, 2, Frame::ElementLogical>>(
@@ -112,6 +113,7 @@ void test_identity() {
                   {-1., 1., -1., 1.}, {-1., 1., -1., 1.}, {-1., 1., -1., 1.}})};
 
   CHECK(map.is_identity());
+  CHECK(map.function_of_time_names().empty());
 
   const auto xi =
       make_with_random_values<tnsr::I<DataVector, 3, Frame::ElementLogical>>(
@@ -155,6 +157,7 @@ void test_3d() {
       std::make_unique<
           CoordinateMap<Frame::BlockLogical, Frame::Inertial, Wedge<3>>>(
           Wedge<3>{1., 3., 1., 1., {}, true})};
+  CHECK(map.function_of_time_names().empty());
 
   // Check some points that are easy to calculate
   // - On inner boundary

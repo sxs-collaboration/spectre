@@ -9,6 +9,7 @@
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -115,6 +116,11 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
 
   bool jacobian_is_time_dependent() const override;
 
+  const std::unordered_set<std::string>& function_of_time_names()
+      const override {
+    return function_of_time_names_;
+  }
+
   tnsr::I<double, Dim, TargetFrame> operator()(
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
@@ -208,6 +214,7 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
       CoordinateMapBase<tmpl::at<frames, tmpl::size_t<Is>>,
                         tmpl::at<frames, tmpl::size_t<Is + 1>>, Dim>>...>
       maps_;
+  std::unordered_set<std::string> function_of_time_names_;
 };
 
 // Template deduction guide
