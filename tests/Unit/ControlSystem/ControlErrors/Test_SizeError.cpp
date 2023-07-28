@@ -194,7 +194,16 @@ void test_size_error_one_step(
                                  control_system::protocols::ControlError>);
 
     auto error_class = TestHelpers::test_creation<size_error>(
-        "MaxNumTimesForZeroCrossingPredictor: 4");
+        "MaxNumTimesForZeroCrossingPredictor: 4\n"
+        "SmoothAvgTimescaleFraction: 0.25\n"
+        "SmootherTuner:\n"
+        "  InitialTimescales: 0.2\n"
+        "  MinTimescale: 1.0e-4\n"
+        "  MaxTimescale: 20.0\n"
+        "  IncreaseThreshold: 2.5e-4\n"
+        "  DecreaseThreshold: 1.0e-3\n"
+        "  IncreaseFactor: 1.01\n"
+        "  DecreaseFactor: 0.98\n");
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
@@ -228,7 +237,11 @@ void test_size_error_one_step(
     const auto control_error_history = error_class.control_error_history();
 
     // These should be identical because the control error class calls the
-    // control_error function
+    // control_error function. The horizon smoothing averager would normally
+    // make this slightly different, but it needs a few times before it can do
+    // anything. Therefore, the smoothing aspect of the control error from class
+    // is not tested yet. So in the meantime, the initial values for the horizon
+    // coef and its derivatives are the ones specified above
     CHECK(control_error_from_class == error.control_error);
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());

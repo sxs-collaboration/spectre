@@ -5,9 +5,11 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 
+#include "ControlSystem/Averager.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -99,6 +101,24 @@ namespace ControlErrors {
  * repopulate the `Averager` with a history of the control error. It also
  * conforms to the `control_system::protocols::ControlError` protocol.
  *
+ * In order to calculate the control error, we need the $\ell = 0, m = 0$
+ * coefficient of the horizon and its time derivative. However, because we will
+ * be finding the horizon fairly often, the value of the coefficient and its
+ * derivative won't change smoothly because of horizon finder noise (different
+ * number of iterations). But we expect these quantities to be smooth when
+ * making state decisions. So to account for this, we use an `Averager` and a
+ * `TimescaleTuner` to smooth out the horizon coefficient and get its
+ * derivative. Every measurement, we update this smoothing averager with the
+ * $\ell = 0, m = 0$ coefficient of the horizon and the current smoothing
+ * timescale. Then, once we have enough measurements, we use the
+ * `Averager::operator()` to get the averaged coefficient and its time
+ * derivative. Since `Averager%s` calculate the average at an "averaged time",
+ * we have to account for this small offset from the current time with a simple
+ * Taylor expansion. Then we use this newly averaged and corrected coefficient
+ * (and time derivative) in our calculation of the control error. The timescale
+ * in the smoothing `TimescaleTuner` is then updated using the difference
+ * between the averaged and un-averaged coefficient (and its time derivative).
+ *
  * In addition to calculating the control error, if the
  * `control_system::Tags::WriteDataToDisk` tag inside the
  * `Parallel::GlobalCache` is true, then a diagnostic file named
@@ -112,9 +132,12 @@ namespace ControlErrors {
  * - StateNumber: Result of `control_system::size::State::number()`
  * - DiscontinuousChangeHasOccurred: 1.0 for true, 0.0 for false.
  * - FunctionOfTime
- * - dtFunctionOfTime
+ * - DtFunctionOfTime
  * - HorizonCoef00
- * - dtHorizonCoef00
+ * - AveragedDtHorizonCoef00: The averaged 00 component of the horizon
+ *   (averaging scheme detailed above.)
+ * - RawDtHorizonCoef00: The raw 00 component of the horizon passed in to the
+ *   control error.
  * - MinDeltaR: The minimum of the `StrahlkorperGr::radial_distance` between the
  *   horizon and the excision surfaces.
  * - MinRelativeDeltaR: MinDeltaR divided by the `Strahlkorper::average_radius`
@@ -154,22 +177,41 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     static int lower_bound() { return 3; }
   };
 
-  using options = tmpl::list<MaxNumTimesForZeroCrossingPredictor>;
+  struct SmoothAvgTimescaleFraction {
+    using type = double;
+    static constexpr Options::String help{
+        "Average timescale fraction for smoothing horizon measurements."};
+  };
+
+  struct SmootherTuner {
+    using type = TimescaleTuner;
+    static constexpr Options::String help{
+        "TimescaleTuner for smoothing horizon measurements."};
+  };
+
+  using options = tmpl::list<MaxNumTimesForZeroCrossingPredictor,
+                             SmoothAvgTimescaleFraction, SmootherTuner>;
   static constexpr Options::String help{
       "Computes the control error for size control. Will also write a "
       "diagnostics file if the control systems are allowed to write data to "
       "disk."};
 
+  Size() = default;
+
   /*!
-   * \brief Initializes the `intrp::ZeroCrossingPredictor`s with the number of
-   * times passed in (default 3).
+   * \brief Initializes the `intrp::ZeroCrossingPredictor`s and the horizon
+   * smoothing `Averager` and `TimescaleTuner`.
    *
-   * \details The internal `control_system::size::Info::state` is initialized to
-   * `control_system::size::States::Initial`. All zero crossing predictors are
-   * initialized with a minimum number of times 3. The input argument
-   * `max_times` represents the maximum number of times.
+   * \details All `intrp::ZeroCrossingPredictor`s are initialized with a minimum
+   * number of times 3 and a maximum number of times `max_times`. The internal
+   * `control_system::size::Info::state` is initialized to
+   * `control_system::size::States::Initial`. The smoothing `Averager` uses the
+   * input average timescale fraction and always smooths the "0th" deriv (aka
+   * the horizon coefficients themselves). The input smoothing `TimescaleTuner`
+   * is moved inside this class.
    */
-  Size(const int max_times = 3);
+  Size(const int max_times, const double smooth_avg_timescale_frac,
+       TimescaleTuner smoother_tuner);
 
   /// Returns the internal `control_system::size::Info::suggested_time_scale`. A
   /// std::nullopt means that no timescale is suggested.
@@ -260,6 +302,14 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
             QueueTags::InverseSpatialMetricOnExcisionSurface<Frame::Distorted>>(
             excision_quantities);
 
+    const double Y00 = 0.25 * M_2_SQRTPI;
+
+    horizon_coef_averager_.update(time, {apparent_horizon.coefficients()[0]},
+                                  smoother_tuner_.current_timescale());
+
+    const std::optional<std::array<DataVector, DerivOrder + 1>>&
+        averaged_horizon_coef_at_average_time = horizon_coef_averager_(time);
+
     // lambda_00 is the quantity of the same name in ArXiv:1211.6079,
     // and dt_lambda_00 is its time derivative.
     // This is the map parameter that maps the excision boundary in the grid
@@ -271,9 +321,39 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
 
     // horizon_00 is \hat{S}_00 in ArXiv:1211.6079,
     // and dt_horizon_00 is its time derivative.
-    // These are coefficients of the horizon in the distorted frame.
-    const double horizon_00 = apparent_horizon.coefficients()[0];
-    const double dt_horizon_00 = time_deriv_apparent_horizon.coefficients()[0];
+    // These are coefficients of the horizon in the distorted frame. However, we
+    // want them averaged
+    double horizon_00 = apparent_horizon.coefficients()[0];
+    double dt_horizon_00 = time_deriv_apparent_horizon.coefficients()[0];
+
+    // Only for the first few measurements will this not have a value
+    if (LIKELY(averaged_horizon_coef_at_average_time.has_value())) {
+      // We need to get the averaged time and evaluate the averaged coefs at
+      // that time, not the time passed in
+      const double averaged_time = horizon_coef_averager_.average_time(time);
+
+      horizon_00 = averaged_horizon_coef_at_average_time.value()[0][0];
+      dt_horizon_00 = averaged_horizon_coef_at_average_time.value()[1][0];
+      const double d2t_horizon_00 =
+          averaged_horizon_coef_at_average_time.value()[2][0];
+
+      // Must account for time offset of averaged time. Do a simple Taylor
+      // expansion
+      const double time_diff = time - averaged_time;
+      horizon_00 += time_diff * dt_horizon_00;
+      dt_horizon_00 += 0.5 * square(time_diff) * d2t_horizon_00;
+
+      // The "control error" for the averaged horizon coefficients is just the
+      // averaged coefs minus the actual coef and time derivative from
+      // apparent_horizon and time_deriv_apparent_horizon
+      smoother_tuner_.update_timescale(
+          std::array{
+              DataVector{averaged_horizon_coef_at_average_time.value()[0][0]},
+              DataVector{averaged_horizon_coef_at_average_time.value()[1][0]}} -
+          std::array{
+              DataVector{apparent_horizon.coefficients()[0]},
+              DataVector{time_deriv_apparent_horizon.coefficients()[0]}});
+    }
 
     // This is needed for every state
     const double control_error_delta_r = size::control_error_delta_r(
@@ -296,7 +376,6 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
       auto& observer_writer_proxy = Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache);
 
-      const double Y00 = 0.25 * M_2_SQRTPI;
       // \Delta R = < R_ah > - < R_ex >
       // < R_ah > = S_00 * Y_00
       // < R_ex > = R_ex^grid - \lambda_00 * Y_00
@@ -313,6 +392,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               static_cast<double>(error_diagnostics.state_number),
               error_diagnostics.discontinuous_change_has_occurred ? 1.0 : 0.0,
               lambda_00, dt_lambda_00, horizon_00, dt_horizon_00,
+              time_deriv_apparent_horizon.coefficients()[0],
               error_diagnostics.min_delta_r,
               error_diagnostics.min_relative_delta_r, avg_delta_r,
               avg_relative_delta_r,
@@ -337,6 +417,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   }
 
  private:
+  TimescaleTuner smoother_tuner_{};
+  Averager<DerivOrder> horizon_coef_averager_{};
   size::Info info_{};
   intrp::ZeroCrossingPredictor char_speed_predictor_{};
   intrp::ZeroCrossingPredictor comoving_char_speed_predictor_{};
