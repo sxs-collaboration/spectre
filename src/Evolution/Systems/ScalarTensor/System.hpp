@@ -8,6 +8,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/ScalarTensor/Characteristics.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -76,6 +77,9 @@ struct System {
   using gradients_tags = gradient_variables;
 
   static constexpr bool is_in_flux_conservative_form = false;
+
+  using compute_largest_characteristic_speed =
+      Tags::ComputeLargestCharacteristicSpeed<>;
 
   using inverse_spatial_metric_tag =
       typename gh_system::inverse_spatial_metric_tag;
