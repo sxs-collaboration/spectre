@@ -606,14 +606,16 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           # it is a random timeout or systematic
           ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
       - name: Install
-        if: matrix.COVERAGE != 'ON'
+        # Coverage and ASAN builds are larger, so skip install to avoid running
+        # out of disk space
+        if: matrix.COVERAGE != 'ON' && matrix.ASAN != 'ON'
         working-directory: /work/build
         # Make sure the `install` target runs without error. We could add some
         # basic smoke tests here to make sure the installation worked.
         run: |
           make install
       - name: Print size of install directory
-        if: matrix.COVERAGE != 'ON'
+        if: matrix.COVERAGE != 'ON' && matrix.ASAN != 'ON'
         working-directory: /work/spectre_install
         # Remove files post-install to reduce disk space for later on.
         run: |
