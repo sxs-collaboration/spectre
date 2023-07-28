@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -13,6 +14,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -28,7 +30,7 @@ struct SquareNumber : db::SimpleTag {
   using type = double;
 };
 
-struct AddSomeAndOtherNumber {
+struct AddSomeAndOtherNumber : tt::ConformsTo<db::protocols::Mutator> {
   using return_tags = tmpl::list<SomeNumber, SomeOtherNumber>;
   using argument_tags = tmpl::list<>;
 
@@ -39,7 +41,7 @@ struct AddSomeAndOtherNumber {
   }
 };
 
-struct AddSquareNumber {
+struct AddSquareNumber : tt::ConformsTo<db::protocols::Mutator> {
   using return_tags = tmpl::list<SquareNumber>;
   using argument_tags = tmpl::list<SomeNumber>;
   static void apply(const gsl::not_null<double*> square_number,

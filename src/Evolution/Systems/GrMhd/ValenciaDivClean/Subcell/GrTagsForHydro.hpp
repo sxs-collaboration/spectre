@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -28,6 +29,7 @@
 #include "Time/Tags/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -71,7 +73,7 @@ namespace subcell {
  * - Modifies: nothing
  */
 template <typename System, size_t Dim>
-struct GrTagsForHydro {
+struct GrTagsForHydro : tt::ConformsTo<db::protocols::Mutator> {
   using simple_tags_from_options = tmpl::list<::Tags::Time>;
 
   using gr_tag = typename System::spacetime_variables_tag;

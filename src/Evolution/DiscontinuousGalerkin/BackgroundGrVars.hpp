@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -23,6 +24,7 @@
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
@@ -46,7 +48,7 @@ struct EmptyStruct {
  *
  */
 template <typename System, typename Metavariables, bool UsingRuntimeId>
-struct BackgroundGrVars {
+struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
   static constexpr size_t volume_dim = System::volume_dim;
 
   // Collect all the GR quantities used in the templated evolution system
