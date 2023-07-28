@@ -87,6 +87,7 @@ void test_gauge_wave(const Mesh<Dim>& mesh) {
                                                      "      Amplitude: 0.0012\n"
                                                      "      Wavelength: 1.4\n")
           ->get_clone());
+  CHECK_FALSE(gauge_condition->is_harmonic());
 
   const size_t num_points = mesh.number_of_grid_points();
 
@@ -122,6 +123,7 @@ void test_ks(const Mesh<3>& mesh) {
           "      Spin: [0.1, 0.2, 0.3]\n"
           "      Center: [-0.1, -0.2, -0.4]\n")
           ->get_clone());
+  CHECK_FALSE(gauge_condition->is_harmonic());
 
   const size_t num_points = mesh.number_of_grid_points();
 

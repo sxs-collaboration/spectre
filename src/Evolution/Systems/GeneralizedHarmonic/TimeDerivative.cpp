@@ -251,36 +251,24 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  const bool using_harmonic_gauge =
-      dynamic_cast<const gauges::Harmonic*>(&gauge_condition) != nullptr;
+  const bool using_harmonic_gauge = gauge_condition.is_harmonic();
   if (not using_harmonic_gauge) {
     // Compute gauge condition.
     get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
     raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
                                *inverse_spacetime_metric);
-    gauges::dispatch<Dim>(
-        gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
-        *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
-        *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, phi,
-        mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+  }
+  gauges::dispatch<Dim>(
+      gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
+      *sqrt_det_spatial_metric, *inverse_spatial_metric, *da_spacetime_metric,
+      *half_pi_two_normals, *half_phi_two_normals, spacetime_metric, phi, mesh,
+      time, inertial_coords, inverse_jacobian, gauge_condition);
+  if (not using_harmonic_gauge) {
     // Compute source function last so that we don't need to recompute any of
     // the other temporary tags.
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       gauge_constraint->get(nu) += gauge_function->get(nu);
     }
-  } else {
-#ifdef SPECTRE_DEBUG
-    get(*sqrt_det_spatial_metric) =
-        std::numeric_limits<double>::signaling_NaN();
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t nu = 0; nu < Dim + 1; ++nu) {
-        for (size_t rho = 0; rho < Dim + 1; ++rho) {
-          christoffel_second_kind->get(mu, nu, rho) =
-              std::numeric_limits<double>::signaling_NaN();
-        }
-      }
-    }
-#endif
   }
 
   get(*normal_dot_gauge_constraint) =

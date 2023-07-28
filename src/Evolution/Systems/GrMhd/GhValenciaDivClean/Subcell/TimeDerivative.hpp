@@ -186,6 +186,11 @@ struct ComputeTimeDerivImpl<
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box), time,
         inertial_coords, cell_centered_logical_to_inertial_inv_jacobian,
         mesh_velocity_subcell);
+    if (get<gh::gauges::Tags::GaugeCondition>(*box).is_harmonic()) {
+      get(get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*temp_tags_ptr)) =
+          sqrt(
+              get(get<gr::Tags::DetSpatialMetric<DataVector>>(*temp_tags_ptr)));
+    }
 
     // Add source terms from moving mesh
     if (mesh_velocity_dg.has_value()) {

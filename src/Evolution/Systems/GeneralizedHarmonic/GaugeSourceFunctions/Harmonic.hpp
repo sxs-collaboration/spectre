@@ -56,5 +56,7 @@ class Harmonic final : public GaugeCondition {
   void pup(PUP::er& p) override;
 
   std::unique_ptr<GaugeCondition> get_clone() const override;
+
+  bool is_harmonic() const override;
 };
 }  // namespace gh::gauges

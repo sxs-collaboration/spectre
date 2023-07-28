@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <limits>
 #include <optional>
 #include <tuple>
 #include <type_traits>
@@ -484,7 +485,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
   using VarsFaceTemporaries = Variables<all_face_temporary_tags>;
   using DgPackagedDataVarsOnFace = Variables<all_mortar_tags>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
-  auto buffer = cpp20::make_unique_for_overwrite<double[]>(
+  const size_t buffer_size =
       (VarsTemporaries::number_of_independent_components +
        VarsFluxes::number_of_independent_components +
        VarsPartialDerivatives::number_of_independent_components +
@@ -494,7 +495,12 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       // num_face_temporary_grid_points is defined
       (VarsFaceTemporaries::number_of_independent_components +
        DgPackagedDataVarsOnFace::number_of_independent_components) *
-          num_face_temporary_grid_points);
+          num_face_temporary_grid_points;
+  auto buffer = cpp20::make_unique_for_overwrite<double[]>(buffer_size);
+#ifdef SPECTRE_DEBUG
+  std::fill(&buffer[0], &buffer[buffer_size],
+            std::numeric_limits<double>::signaling_NaN());
+#endif
   VarsTemporaries temporaries{
       &buffer[0], VarsTemporaries::number_of_independent_components *
                       number_of_grid_points};

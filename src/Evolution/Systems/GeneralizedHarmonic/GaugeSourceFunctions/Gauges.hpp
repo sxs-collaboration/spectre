@@ -34,6 +34,8 @@ class GaugeCondition : public PUP::able {
   WRAPPED_PUPable_abstract(GaugeCondition);  // NOLINT
 
   virtual std::unique_ptr<GaugeCondition> get_clone() const = 0;
+
+  virtual bool is_harmonic() const { return false; }
 };
 }  // namespace gauges
 }  // namespace gh
