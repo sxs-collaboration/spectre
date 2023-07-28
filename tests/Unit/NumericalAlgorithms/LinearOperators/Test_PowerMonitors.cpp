@@ -92,10 +92,73 @@ void test_power_monitors_second_impl() {
   CHECK_ITERABLE_APPROX(test_power_monitors, expected_power_monitors);
 }
 
+void test_relative_truncation_error_impl() {
+  // We recompute the truncation error for a function where we know the
+  // power monitors analytically
+  const size_t number_of_points_per_dimension = 8;
+  const Mesh<1_st> mesh{number_of_points_per_dimension,
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
+
+  // Build a test function with no zero power monitors
+  const std::vector<int> coeffs = {0, 1, 2, 3, 4, 5, 6, 7};
+  DataVector u_nodal(mesh.number_of_grid_points(), 0.0);
+  double ampl = 0.0;
+  for (auto coeff : coeffs) {
+    ampl = pow(10.0, -coeff);
+    u_nodal +=
+        ampl *
+        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
+            static_cast<size_t>(coeff), logical_coords.get(0_st));
+  }
+
+  // Compute the relative truncation error
+  const int last_coeff = 7;
+  double weight = 0.0;
+  double avg = 0.0;
+  double weight_sum = 0.0;
+  for (auto coeff : coeffs) {
+    ampl = pow(10.0, -coeff);
+    weight = exp(-square(coeff - last_coeff + 0.5));
+    avg += log10(ampl) * weight;
+    weight_sum += weight;
+  }
+  avg = avg / weight_sum;
+  // By construction the maximum of the magnitude of the first two modes is
+  // unity.
+  // We test the order of magnitude of the relative error
+  const double expected_relative_truncation_error = pow(10.0, avg);
+
+  const auto power_monitors =
+      PowerMonitors::power_monitors<1_st>(u_nodal, mesh);
+  const DataVector& power_monitor_x = gsl::at(power_monitors, 0_st);
+  // We use all of the modes as above
+  const double test_relative_truncation_error =
+      pow(10.0, -1.0 * PowerMonitors::relative_truncation_error(
+                           power_monitor_x, power_monitor_x.size()));
+
+  CHECK_ITERABLE_APPROX(expected_relative_truncation_error,
+                        test_relative_truncation_error);
+
+  // Test truncation error
+  const double test_truncation_error = gsl::at(
+      PowerMonitors::truncation_error<1_st>(power_monitors, u_nodal), 0_st);
+
+  // Compare with the result from the relative truncation error
+  const double expected_truncation_error_x =
+      max(abs(u_nodal)) *
+      pow(10.0, -1.0 * PowerMonitors::relative_truncation_error(
+                           power_monitor_x, power_monitor_x.size()));
+
+  CHECK_ITERABLE_APPROX(test_truncation_error, expected_truncation_error_x);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   test_power_monitors_impl();
   test_power_monitors_second_impl();
+  test_relative_truncation_error_impl();
 }
