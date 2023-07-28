@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   NearTimes.cpp
+  OnSubsteps.cpp
   SlabCompares.cpp
   Slabs.cpp
   TimeCompares.cpp
@@ -16,6 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   NearTimes.hpp
+  OnSubsteps.hpp
   SlabCompares.hpp
   Slabs.hpp
   TimeCompares.hpp

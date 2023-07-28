@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EventsAndTriggers")
 
 set(LIBRARY_SOURCES
+  Test_Completion.cpp
   Test_EventsAndTriggers.cpp
   Test_RunEventsOnFailure.cpp
   Test_Tags.cpp

@@ -62,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
                                 time_id->step_time().value());
         },
         make_not_null(&box));
-    CHECK_FALSE(sent_trigger->is_triggered(box));
+    CHECK(sent_trigger->is_triggered(box) == expected);
     db::mutate<Tags::TimeStepId>(
         [](const gsl::not_null<TimeStepId*> time_id) {
           *time_id = TimeStepId(true, time_id->slab_number() + 1,

@@ -22,6 +22,7 @@
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -51,7 +52,6 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -319,7 +319,7 @@ struct Metavariables {
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
                              Actions::FindGlobalMinimumGridSpacing,
-                             Actions::RunEventsAndTriggers<Tags::Time>>>>>,
+                             evolution::Actions::RunEventsAndTriggers>>>>,
       observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>>;
 
