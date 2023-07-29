@@ -21,7 +21,6 @@ spectre_target_headers(
   HEADERS
   ComputeFluxes.hpp
   FixConservativesAndComputePrims.hpp
-  GrTagsForHydro.hpp
   NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
