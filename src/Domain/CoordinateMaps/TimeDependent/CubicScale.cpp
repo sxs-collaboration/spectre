@@ -150,7 +150,7 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
     return {make_array<Dim>(0.0)};
   }
 
-  double scale_factor;
+  double scale_factor = std::numeric_limits<double>::signaling_NaN();
   // Check if x_bar is outside of the range of the map.
   // We need a slight buffer because computing (r/R) is not equal to (r * (1/R))
   // at roundoff and thus to make sure we include the boundary we need to
