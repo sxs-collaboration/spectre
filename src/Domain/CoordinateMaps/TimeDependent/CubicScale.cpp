@@ -12,6 +12,7 @@
 #include <pup_stl.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -37,6 +38,7 @@ CubicScale<Dim>::CubicScale(const double outer_boundary,
                             std::string function_of_time_name_b)
     : f_of_t_a_(std::move(function_of_time_name_a)),
       f_of_t_b_(std::move(function_of_time_name_b)),
+      f_of_t_names_({f_of_t_a_, f_of_t_b_}),
       functions_of_time_equal_(f_of_t_a_ == f_of_t_b_) {
   if (outer_boundary <= 0.0) {
     ERROR("For invertability, we require outer_boundary to be positive, but is "
@@ -378,6 +380,11 @@ void CubicScale<Dim>::pup(PUP::er& p) {
     p | f_of_t_b_;
     p | one_over_outer_boundary_;
     p | functions_of_time_equal_;
+  }
+
+  // No need to pup this because it is uniquely determined by f_of_t_{a,b}_
+  if (p.isUnpacking()) {
+    f_of_t_names_ = std::unordered_set<std::string>{{f_of_t_a_, f_of_t_b_}};
   }
 }
 

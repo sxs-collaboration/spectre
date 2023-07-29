@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -154,6 +155,10 @@ class CubicScale {
 
   static bool is_identity() { return false; }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -162,6 +167,7 @@ class CubicScale {
 
   std::string f_of_t_a_{};
   std::string f_of_t_b_{};
+  std::unordered_set<std::string> f_of_t_names_;
   double one_over_outer_boundary_{std::numeric_limits<double>::signaling_NaN()};
   bool functions_of_time_equal_{false};
 };

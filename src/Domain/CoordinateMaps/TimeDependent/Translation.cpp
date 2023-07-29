@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -30,6 +31,7 @@ namespace domain::CoordinateMaps::TimeDependent {
 template <size_t Dim>
 Translation<Dim>::Translation(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       f_of_r_(nullptr),
       center_(make_array<Dim, double>(0.0)) {}
 
@@ -39,12 +41,14 @@ Translation<Dim>::Translation(
     std::unique_ptr<MathFunction<1, Frame::Inertial>> radial_function,
     std::array<double, Dim>& center)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       f_of_r_(std::move(radial_function)),
       center_(center) {}
 
 template <size_t Dim>
 Translation<Dim>::Translation(const Translation<Dim>& Translation_Map)
     : f_of_t_name_(Translation_Map.f_of_t_name_),
+      f_of_t_names_(Translation_Map.f_of_t_names_),
       center_(Translation_Map.center_) {
   if (Translation_Map.f_of_r_ == nullptr) {
     f_of_r_ = nullptr;
@@ -259,6 +263,12 @@ void Translation<Dim>::pup(PUP::er& p) {
   } else if (p.isUnpacking()) {
     f_of_r_ = nullptr;
     center_ = make_array<Dim, double>(0.0);
+  }
+
+  // No need to pup this because it is uniquely determined by f_of_t_name_
+  if (p.isUnpacking()) {
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(f_of_t_name_);
   }
 }
 

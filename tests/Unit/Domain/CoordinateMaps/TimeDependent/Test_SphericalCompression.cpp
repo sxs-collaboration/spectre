@@ -82,6 +82,10 @@ void generate_map_time_and_f_of_time(
       random_map{f_of_t_name, *min_radius, *max_radius, *center};
   *map = random_map;
 
+  const auto& names = map->function_of_time_names();
+  CHECK(names.size() == 1);
+  CHECK(names.count(f_of_t_name) == 1);
+
   // Choose a random time for evaluating the FunctionOfTime
   std::uniform_real_distribution<> time_dis{-1.0, 1.0};
   *time = time_dis(*generator);

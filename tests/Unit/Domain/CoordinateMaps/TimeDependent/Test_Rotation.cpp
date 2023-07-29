@@ -178,8 +178,14 @@ void test_rotation_map() {
 
   const domain::CoordinateMaps::TimeDependent::Rotation<Dim> rotation_map{
       f_of_t_name};
+  const auto check_names = [&f_of_t_name](const auto& names) {
+    CHECK(names.size() == 1);
+    CHECK(names.count(f_of_t_name) == 1);
+  };
+  check_names(rotation_map.function_of_time_names());
   const auto rotation_map_deserialized =
       serialize_and_deserialize(rotation_map);
+  check_names(rotation_map_deserialized.function_of_time_names());
 
   const std::uniform_real_distribution<double> dist{0.0, 5.0};
   auto initial_unmapped_point =

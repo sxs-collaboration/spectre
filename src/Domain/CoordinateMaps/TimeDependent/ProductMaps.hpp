@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -103,6 +104,10 @@ class ProductOf2Maps {
     return map1_.is_identity() and map2_.is_identity();
   }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   friend bool operator==(const ProductOf2Maps& lhs, const ProductOf2Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_;
@@ -110,6 +115,7 @@ class ProductOf2Maps {
 
   Map1 map1_;
   Map2 map2_;
+  std::unordered_set<std::string> f_of_t_names_;
 };
 
 template <typename Map1, typename Map2>
@@ -183,6 +189,10 @@ class ProductOf3Maps {
     return map1_.is_identity() and map2_.is_identity() and map3_.is_identity();
   }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   friend bool operator==(const ProductOf3Maps& lhs, const ProductOf3Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
@@ -192,6 +202,7 @@ class ProductOf3Maps {
   Map1 map1_;
   Map2 map2_;
   Map3 map3_;
+  std::unordered_set<std::string> f_of_t_names_;
 };
 
 template <typename Map1, typename Map2, typename Map3>

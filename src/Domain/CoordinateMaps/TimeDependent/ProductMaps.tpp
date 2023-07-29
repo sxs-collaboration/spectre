@@ -10,6 +10,7 @@
 #include <functional>
 #include <optional>
 #include <pup.h>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -17,6 +18,7 @@
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace domain {
 namespace CoordinateMaps {
@@ -126,11 +128,33 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Size, Frame::NoFrame> apply_jac(
   }
   return jac;
 }
+
+CREATE_IS_CALLABLE(function_of_time_names)
+CREATE_IS_CALLABLE_V(function_of_time_names)
+
+template <typename... Maps>
+std::unordered_set<std::string> initialize_names(const Maps&... maps) {
+  std::unordered_set<std::string> names{};
+
+  const auto add_name = [&names](const auto& map) {
+    using Map = std::decay_t<decltype(map)>;
+    if constexpr (is_function_of_time_names_callable_v<Map>) {
+      const auto& map_names = map.function_of_time_names();
+      names.insert(map_names.begin(), map_names.end());
+    }
+  };
+
+  EXPAND_PACK_LEFT_TO_RIGHT(add_name(maps));
+
+  return names;
+}
 }  // namespace product_detail
 
 template <typename Map1, typename Map2>
 ProductOf2Maps<Map1, Map2>::ProductOf2Maps(Map1 map1, Map2 map2)
-    : map1_(std::move(map1)), map2_(std::move(map2)) {}
+    : map1_(std::move(map1)),
+      map2_(std::move(map2)),
+      f_of_t_names_(product_detail::initialize_names(map1_, map2_)) {}
 
 template <typename Map1, typename Map2>
 template <typename T>
@@ -230,6 +254,11 @@ void ProductOf2Maps<Map1, Map2>::pup(PUP::er& p) {
     p | map1_;
     p | map2_;
   }
+
+  // No need to pup this because it is uniquely determined by the maps
+  if (p.isUnpacking()) {
+    f_of_t_names_ = product_detail::initialize_names(map1_, map2_);
+  }
 }
 
 template <typename Map1, typename Map2>
@@ -241,7 +270,10 @@ bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
 template <typename Map1, typename Map2, typename Map3>
 ProductOf3Maps<Map1, Map2, Map3>::ProductOf3Maps(Map1 map1, Map2 map2,
                                                  Map3 map3)
-    : map1_(std::move(map1)), map2_(std::move(map2)), map3_(std::move(map3)) {}
+    : map1_(std::move(map1)),
+      map2_(std::move(map2)),
+      map3_(std::move(map3)),
+      f_of_t_names_(product_detail::initialize_names(map1_, map2_, map3_)) {}
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
@@ -400,9 +432,21 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(
 }
 template <typename Map1, typename Map2, typename Map3>
 void ProductOf3Maps<Map1, Map2, Map3>::pup(PUP::er& p) {
-  p | map1_;
-  p | map2_;
-  p | map3_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  if (version >= 0) {
+    p | map1_;
+    p | map2_;
+    p | map3_;
+  }
+
+  // No need to pup this because it is uniquely determined by the maps
+  if (p.isUnpacking()) {
+    f_of_t_names_ = product_detail::initialize_names(map1_, map2_, map3_);
+  }
 }
 
 template <typename Map1, typename Map2, typename Map3>

@@ -47,6 +47,17 @@ void test_product_of_2_maps_time_dep(
       std::is_same_v<Map2, AffineMap> or std::is_same_v<Map2, TranslationMap>,
       "Map2 must be either an affine map or a translation map");
 
+  const auto& names = map2d.function_of_time_names();
+  if (std::is_same_v<Map1, TranslationMap> and
+      std::is_same_v<Map2, TranslationMap>) {
+    CHECK(names.size() == 2);
+    CHECK(names.count("translation_x") == 1);
+    CHECK(names.count("translation_y") == 1);
+  } else {
+    CHECK(names.size() == 1);
+    CHECK(names.count("translation") == 1);
+  }
+
   const std::array<double, 2> point_source_a{{x_source_a, y_source_a}};
   const std::array<double, 2> point_source_b{{x_source_b, y_source_b}};
   const std::array<double, 2> point_xi{{xi, eta}};
@@ -301,6 +312,23 @@ void test_product_of_3_maps_time_dep(
   static_assert(
       std::is_same_v<Map3, AffineMap> or std::is_same_v<Map3, TranslationMap>,
       "Map3 must be either an affine map or a translation map");
+
+  const auto& names = map3d.function_of_time_names();
+  const size_t expected_size =
+      (std::is_same_v<Map1, TranslationMap> ? 1_st : 0_st) +
+      (std::is_same_v<Map2, TranslationMap> ? 1_st : 0_st) +
+      (std::is_same_v<Map3, TranslationMap> ? 1_st : 0_st);
+  CHECK(names.size() == expected_size);
+
+  if (std::is_same_v<Map1, TranslationMap>) {
+    CHECK(names.count("translation_x") == 1);
+  }
+  if (std::is_same_v<Map2, TranslationMap>) {
+    CHECK(names.count("translation_y") == 1);
+  }
+  if (std::is_same_v<Map3, TranslationMap>) {
+    CHECK(names.count("translation_z") == 1);
+  }
 
   const std::array<double, 3> point_source_a{
       {x_source_a, y_source_a, z_source_a}};

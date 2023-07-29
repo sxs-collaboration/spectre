@@ -11,6 +11,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 #include <string>
+#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -46,6 +47,10 @@ Shape::Shape(
       m_max_(m_max),
       ylm_(l_max, m_max),
       transition_func_(std::move(transition_func)) {
+  f_of_t_names_.insert(shape_f_of_t_name_);
+  if (size_f_of_t_name_.has_value()) {
+    f_of_t_names_.insert(size_f_of_t_name_.value());
+  }
   ASSERT(l_max >= 2, "The shape map requires l_max >= 2 but l_max = " << l_max);
   ASSERT(m_max >= 2, "The shape map requires m_max >= 2 but m_max = " << m_max);
   ASSERT(l_max >= m_max, "The shape map requires l_max >= m_max but l_max = "
@@ -56,6 +61,7 @@ Shape& Shape::operator=(const Shape& rhs) {
   if (*this != rhs) {
     shape_f_of_t_name_ = rhs.shape_f_of_t_name_;
     size_f_of_t_name_ = rhs.size_f_of_t_name_;
+    f_of_t_names_ = rhs.f_of_t_names_;
     center_ = rhs.center_;
     l_max_ = rhs.l_max_;
     m_max_ = rhs.m_max_;
@@ -395,8 +401,14 @@ void Shape::pup(PUP::er& p) {
     p | transition_func_;
   }
 
+  // No need to pup these because they are uniquely determined by other members
   if (p.isUnpacking()) {
     ylm_ = ylm::Spherepack(l_max_, m_max_);
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(shape_f_of_t_name_);
+    if (size_f_of_t_name_.has_value()) {
+      f_of_t_names_.insert(size_f_of_t_name_.value());
+    }
   }
 }
 

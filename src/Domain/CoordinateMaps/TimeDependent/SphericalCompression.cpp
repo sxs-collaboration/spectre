@@ -11,6 +11,7 @@
 #include <pup_stl.h>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -136,6 +137,7 @@ SphericalCompression<InteriorMap>::SphericalCompression(
     std::string function_of_time_name, const double min_radius,
     const double max_radius, const std::array<double, 3>& center)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       min_radius_(min_radius),
       max_radius_(max_radius),
       center_(center) {
@@ -296,6 +298,12 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) {
     p | max_radius_;
     p | center_;
   }
+
+  // No need to pup this because it is uniquely determined by f_of_t_name_
+  if (p.isUnpacking()) {
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(f_of_t_name_);
+  }
 }
 
 #define INTERIOR_MAP(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -354,6 +362,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
 GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false))
 #undef INTERIOR_MAP
 #undef INSTANTIATE
-
 
 }  // namespace domain::CoordinateMaps::TimeDependent
