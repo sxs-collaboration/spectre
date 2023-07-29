@@ -22,10 +22,12 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
+#include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Amr/Actions/InitializeParent.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -50,7 +52,18 @@ struct Component {
 
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
-  using component_list = tmpl::list<Component<Metavariables>>;
+  using component_list = tmpl::list<Component<Metavariables>,
+                                    TestHelpers::amr::Registrar<Metavariables>>;
+  template <typename ParallelComponent>
+  struct registration_list {
+    using type = std::conditional_t<
+        std::is_same_v<ParallelComponent, Component<Metavariables>>,
+        tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
+  };
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::list<>;
+  };
 };
 
 // Test setup showing xi and eta dimensions which are hp-refined; only
@@ -83,8 +96,6 @@ struct Metavariables {
 // Elments N6, N7, and N8 are in Block 3 which is anti-aligned with Block 0
 // Elements N1, N2, and N3 are in Block 4 which is rotated 90 deg. clockwise
 void test() {
-  using my_component = Component<Metavariables>;
-
   OrientationMap<3> aligned{};
   OrientationMap<3> b1_orientation{};
   OrientationMap<3> b2_orientation{std::array{Direction<3>::lower_eta(),
@@ -268,19 +279,37 @@ void test() {
   const std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>
       expected_parent_neighbor_flags{};
 
+  using array_component = Component<Metavariables>;
+  using registrar = TestHelpers::amr::Registrar<Metavariables>;
+
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
-  ActionTesting::emplace_component<my_component>(&runner, parent_id);
-  ActionTesting::simple_action<my_component, amr::Actions::InitializeParent>(
+  ActionTesting::emplace_group_component<registrar>(&runner);
+  ActionTesting::emplace_component<array_component>(&runner, parent_id);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<3>>(
+            runner, 0)
+            .empty());
+  ActionTesting::simple_action<array_component, amr::Actions::InitializeParent>(
       make_not_null(&runner), parent_id, children_items);
-  CHECK(ActionTesting::get_databox_tag<my_component, domain::Tags::Element<3>>(
-            runner, parent_id) == expected_parent);
-  CHECK(ActionTesting::get_databox_tag<my_component, domain::Tags::Mesh<3>>(
-            runner, parent_id) == expected_parent_mesh);
-  CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Flags<3>>(
-            runner, parent_id) == expected_parent_flags);
   CHECK(
-      ActionTesting::get_databox_tag<my_component, amr::Tags::NeighborFlags<3>>(
-          runner, parent_id) == expected_parent_neighbor_flags);
+      ActionTesting::get_databox_tag<array_component, domain::Tags::Element<3>>(
+          runner, parent_id) == expected_parent);
+  CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<3>>(
+            runner, parent_id) == expected_parent_mesh);
+  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Flags<3>>(
+            runner, parent_id) == expected_parent_flags);
+  CHECK(ActionTesting::get_databox_tag<array_component,
+                                       amr::Tags::NeighborFlags<3>>(
+            runner, parent_id) == expected_parent_neighbor_flags);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<3>>(
+            runner, 0)
+            .empty());
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<3>>(
+            runner, 0) == std::unordered_set{parent_id});
 }
 }  // namespace
 

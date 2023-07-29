@@ -11,8 +11,13 @@ ExpectedOutput:
 
 ---
 
+Amr:
+  Criteria:
+  Verbosity: Quiet
+
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 DomainCreator:
   # Parameters are chosen for an equal-mass, non-spinning binary black hole
@@ -86,3 +91,5 @@ EventsAndTriggers:
 Observers:
   VolumeFileName: "ExportTimeDependentCoordinates3DVolume"
   ReductionFileName: "ExportTimeDependentCoordinates3DReductions"
+
+PhaseChangeAndTriggers:

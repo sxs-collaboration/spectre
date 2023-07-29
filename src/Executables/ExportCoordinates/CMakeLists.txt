@@ -2,6 +2,9 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Amr
+  AmrCriteria
+  AmrProjectors
   CoordinateMaps
   DgSubcell
   Domain
@@ -13,6 +16,8 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  PhaseControl
+  Spectral
   Time
   Utilities
   )

@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Amr/Actions/InitializeChild.hpp"
@@ -37,6 +38,9 @@ struct SendDataToChildren {
               typename db::DataBox<DbTagList>::mutable_item_creation_tags>(
               box));
     }
+
+    Parallel::deregister_element<ParallelComponent>(box, cache, element_id);
+
     array_proxy[element_id].ckDestroy();
   }
 };

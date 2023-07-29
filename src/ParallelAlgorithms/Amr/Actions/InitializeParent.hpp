@@ -21,6 +21,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,14 +39,11 @@ namespace amr::Actions {
 /// \brief Initializes the data of a newly created parent element from the data
 /// of its children elements
 ///
-/// \warning At the moment, this action only initializes the Element, Mesh,
-/// and amr::Flag%s of the parent element.  It does not initialize any data
-/// related to evolution or elliptic solves.
-///
 /// DataBox:
 /// - Modifies:
 ///   * domain::Tags::Element<volume_dim>
 ///   * domain::Tags::Mesh<volume_dim>
+///   * all return_tags of Metavariables::amr::projectors
 ///
 /// \details This action is meant to be invoked by
 /// amr::Actions::CollectDataFromChildren
@@ -53,8 +51,7 @@ struct InitializeParent {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables>
   static void apply(
-      db::DataBox<DbTagList>& box,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Metavariables::volume_dim>& parent_id,
       std::unordered_map<
           ElementId<Metavariables::volume_dim>,
@@ -95,8 +92,13 @@ struct InitializeParent {
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
         make_not_null(&box), std::move(parent), std::move(parent_mesh));
 
-    // In the near future, add the capability of updating all data needed for
-    // an evolution or elliptic system
+    tmpl::for_each<typename Metavariables::amr::projectors>(
+        [&box, &children_items](auto projector_v) {
+          using projector = typename decltype(projector_v)::type;
+          db::mutate_apply<projector>(make_not_null(&box), children_items);
+        });
+
+    Parallel::register_element<ParallelComponent>(box, cache, parent_id);
   }
 };
 }  // namespace amr::Actions

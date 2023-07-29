@@ -16,6 +16,7 @@ spectre_target_headers(
   Initialize.hpp
   InitializeChild.hpp
   InitializeParent.hpp
+  RegisterCallbacks.hpp
   RunAmrDiagnostics.hpp
   SendAmrDiagnostics.hpp
   SendDataToChildren.hpp

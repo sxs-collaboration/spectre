@@ -21,6 +21,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -98,13 +99,20 @@ struct Component {
 
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
-  using component_list = tmpl::list<Component<Metavariables>>;
+  using component_list = tmpl::list<Component<Metavariables>,
+                                    TestHelpers::amr::Registrar<Metavariables>>;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  template <typename ParallelComponent>
+  struct registration_list {
+    using type = std::conditional_t<
+        std::is_same_v<ParallelComponent, Component<Metavariables>>,
+        tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
+  };
 };
 
 void test() {
-  using my_component = Component<Metavariables>;
   const auto parent = create_parent();
   const ElementId<1>& parent_id = parent.id();
   const auto parent_mesh = create_parent_mesh();
@@ -112,28 +120,42 @@ void test() {
   const auto parent_neighbor_flags = create_parent_neighbor_flags();
   const auto children_ids = amr::ids_of_children(parent_id, parent_flags);
 
+  using array_component = Component<Metavariables>;
+  using registrar = TestHelpers::amr::Registrar<Metavariables>;
+
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
-  ActionTesting::emplace_component_and_initialize<my_component>(
+  ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, parent_id,
       {parent, parent_mesh, parent_flags, parent_neighbor_flags});
   for (const auto& child_id : children_ids) {
-    ActionTesting::emplace_component<my_component>(&runner, child_id);
-    CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+    ActionTesting::emplace_component<array_component>(&runner, child_id);
+    CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
               runner, child_id) == 0);
   }
-  ActionTesting::simple_action<my_component, amr::Actions::SendDataToChildren>(
+  ActionTesting::emplace_group_component_and_initialize<registrar>(
+      &runner, std::unordered_set{parent_id});
+
+  ActionTesting::simple_action<array_component,
+                               amr::Actions::SendDataToChildren>(
       make_not_null(&runner), parent_id, children_ids);
   // SendDataToChildren calls InitializeChild on each child element
   for (const auto& child_id : children_ids) {
-    CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+    CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(
               runner, child_id) == 1);
     // Invoke the mock action to check that SendDataToChildren sent the correct
     // data
-    ActionTesting::invoke_queued_simple_action<my_component>(
+    ActionTesting::invoke_queued_simple_action<array_component>(
         make_not_null(&runner), child_id);
-    CHECK(ActionTesting::is_simple_action_queue_empty<my_component>(runner,
-                                                                    child_id));
+    CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(
+        runner, child_id));
   }
+  CHECK(ActionTesting::number_of_queued_simple_actions<registrar>(runner, 0) ==
+        1);
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<1>>(
+            runner, 0) == std::unordered_set<ElementId<1>>{});
 }
 }  // namespace
 

@@ -19,6 +19,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
@@ -36,14 +37,11 @@ namespace amr::Actions {
 /// \brief Initializes the data of a newly created child element from the data
 /// of its parent element
 ///
-/// \warning At the moment, this action only initializes the Element, Mesh,
-/// and amr::Flag%s of the child element.  It does not initialize any data
-/// related to evolution or elliptic solves.
-///
 /// DataBox:
 /// - Modifies:
 ///   * domain::Tags::Element<volume_dim>
 ///   * domain::Tags::Mesh<volume_dim>
+///   * all return_tags of Metavariables::amr::projectors
 ///
 /// \details This action is meant to be invoked by
 /// amr::Actions::SendDataToChildren
@@ -51,7 +49,7 @@ struct InitializeChild {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename... Tags>
   static void apply(db::DataBox<DbTagList>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ElementId<Metavariables::volume_dim>& child_id,
                     const tuples::TaggedTuple<Tags...>& parent_items) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
@@ -75,8 +73,13 @@ struct InitializeChild {
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
         make_not_null(&box), std::move(child), std::move(child_mesh));
 
-    // In the near future, add the capability of updating all data needed for
-    // an evolution or elliptic system
+    tmpl::for_each<typename Metavariables::amr::projectors>(
+        [&box, &parent_items](auto projector_v) {
+          using projector = typename decltype(projector_v)::type;
+          db::mutate_apply<projector>(make_not_null(&box), parent_items);
+        });
+
+    Parallel::register_element<ParallelComponent>(box, cache, child_id);
   }
 };
 }  // namespace amr::Actions

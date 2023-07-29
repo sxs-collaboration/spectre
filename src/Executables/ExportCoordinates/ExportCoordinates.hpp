@@ -47,11 +47,25 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
+#include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -269,7 +283,7 @@ struct Metavariables {
     static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
   };
 
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
@@ -282,53 +296,86 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<amr::Criterion,
+                   tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+                              amr::Criteria::Random>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<
+                PhaseControl::VisitAndReturn<
+                    Parallel::Phase::EvaluateAmrCriteria>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>,
+                PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>, tmpl::list<>>,
         tmpl::pair<Event, tmpl::list<Events::Completion>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger,
-                   tmpl::list<Triggers::SlabCompares, Triggers::TimeCompares>>>;
+        tmpl::pair<Trigger, tmpl::list<Triggers::Always, Triggers::SlabCompares,
+                                       Triggers::TimeCompares>>>;
   };
 
-  using component_list = tmpl::list<
-      DgElementArray<
-          Metavariables,
-          tmpl::list<
-              Parallel::PhaseActions<
-                  Parallel::Phase::Initialization,
-                  tmpl::list<
-                      Initialization::Actions::InitializeItems<
-                          Initialization::TimeStepping<Metavariables,
-                                                       local_time_stepping>,
-                          evolution::dg::Initialization::Domain<Dim>,
-                          Initialization::SetMeshType<Dim>>,
-                      Initialization::Actions::AddComputeTags<tmpl::list<
-                          ::domain::Tags::MinimumGridSpacingCompute<
-                              Dim, Frame::Inertial>,
-                          ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
-                      Parallel::Actions::TerminatePhase>>,
-              Parallel::PhaseActions<
-                  Parallel::Phase::Register,
-                  tmpl::list<observers::Actions::RegisterWithObservers<
-                                 Actions::ExportCoordinates<Dim>>,
-                             observers::Actions::RegisterWithObservers<
-                                 Actions::FindGlobalMinimumGridSpacing>,
-                             Parallel::Actions::TerminatePhase>>,
-              Parallel::PhaseActions<
-                  Parallel::Phase::Execute,
-                  tmpl::list<Actions::AdvanceTime,
-                             Actions::ExportCoordinates<Dim>,
-                             Actions::FindGlobalMinimumGridSpacing,
-                             evolution::Actions::RunEventsAndTriggers>>>>,
-      observers::Observer<Metavariables>,
-      observers::ObserverWriter<Metavariables>>;
+  using dg_registration_list =
+      tmpl::list<observers::Actions::RegisterWithObservers<
+                     Actions::ExportCoordinates<Dim>>,
+                 observers::Actions::RegisterWithObservers<
+                     Actions::FindGlobalMinimumGridSpacing>>;
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors =
+        tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
+                   evolution::dg::Initialization::ProjectDomain<volume_dim>>;
+  };
+
+  using dg_element_array = DgElementArray<
+      Metavariables,
+      tmpl::list<
+          Parallel::PhaseActions<
+              Parallel::Phase::Initialization,
+              tmpl::list<Initialization::Actions::InitializeItems<
+                             Initialization::TimeStepping<Metavariables,
+                                                          local_time_stepping>,
+                             evolution::dg::Initialization::Domain<Dim>,
+                             ::amr::Initialization::Initialize<volume_dim>,
+                             Initialization::SetMeshType<Dim>>,
+                         Initialization::Actions::AddComputeTags<tmpl::list<
+                             ::domain::Tags::MinimumGridSpacingCompute<
+                                 Dim, Frame::Inertial>,
+                             ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Register,
+              tmpl::push_back<dg_registration_list,
+                              Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<Parallel::Phase::CheckDomain,
+                                 tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                                            Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Execute,
+              tmpl::list<Actions::AdvanceTime, Actions::ExportCoordinates<Dim>,
+                         Actions::FindGlobalMinimumGridSpacing,
+                         evolution::Actions::RunEventsAndTriggers,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>;
+
+  template <typename ParallelComponent>
+  struct registration_list {
+    using type =
+        std::conditional_t<std::is_same_v<ParallelComponent, dg_element_array>,
+                           dg_registration_list, tmpl::list<>>;
+  };
+
+  using component_list =
+      tmpl::list<::amr::Component<Metavariables>, dg_element_array,
+                 observers::Observer<Metavariables>,
+                 observers::ObserverWriter<Metavariables>>;
 
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<MinGridSpacingReductionData>>;
 
-  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
-      {Parallel::Phase::Initialization, Parallel::Phase::Register,
-       Parallel::Phase::Execute, Parallel::Phase::Exit}};
+  static constexpr auto default_phase_order =
+      std::array{Parallel::Phase::Initialization, Parallel::Phase::Register,
+                 Parallel::Phase::CheckDomain, Parallel::Phase::Execute,
+                 Parallel::Phase::Exit};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -341,7 +388,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>};
+    &register_factory_classes_with_charm<metavariables>,
+    &amr::register_callbacks<metavariables,
+                             typename metavariables::dg_element_array>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions, &enable_segfault_handler};
 /// \endcond
