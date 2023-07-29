@@ -151,15 +151,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagneticRotor",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
-}
 
-// [[OutputRegex, MagneticRotor expects RotorRadius * | AngularVelocity | < 1]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagneticRotorBadVelocity",
-    "[Unit][PointwiseFunctions]") {
-  ERROR_TEST();
-  grmhd::AnalyticData::MagneticRotor magnetic_rotor(
-      0.2, 10.0, 1.0, 1.0, -9.95,
-      std::array<double, 3>{{3.5449077018, 0.0, 0.0}}, 1.6666666666666666);
-  ERROR("Failed to trigger PARSE_ERROR in a parse error test");
+  CHECK_THROWS_WITH(
+      (grmhd::AnalyticData::MagneticRotor(
+          0.2, 10.0, 1.0, 1.0, -9.95,
+          std::array<double, 3>{{3.5449077018, 0.0, 0.0}}, 1.6666666666666666)),
+      Catch::Matchers::Contains(
+          "MagneticRotor expects RotorRadius * | AngularVelocity | < 1"));
 }

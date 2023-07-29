@@ -473,74 +473,63 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericalCompression",
   test_map<false>(make_not_null(&gen));
   test_is_identity<false>(make_not_null(&gen));
   test_out_of_bounds_inverse<false>(make_not_null(&gen));
-}
 
-// [[OutputRegex, max_radius must be greater]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.SphericalCompression.MaxGreater",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  MAKE_GENERATOR(gen);
-  CoordinateMaps::TimeDependent::SphericalCompression<false> map{};
-  double time{std::numeric_limits<double>::signaling_NaN()};
-  std::unordered_map<std::string,
-                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
-      functions_of_time{};
-  generate_map_time_and_f_of_time(make_not_null(&map), make_not_null(&time),
-                                  make_not_null(&functions_of_time),
-                                  make_not_null(&gen), true, false);
-  test_suite<false>(make_not_null(&gen));
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([&gen]() {
+        CoordinateMaps::TimeDependent::SphericalCompression<false> map{};
+        double time{std::numeric_limits<double>::signaling_NaN()};
+        std::unordered_map<
+            std::string,
+            std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+            functions_of_time{};
+        generate_map_time_and_f_of_time(make_not_null(&map),
+                                        make_not_null(&time),
+                                        make_not_null(&functions_of_time),
+                                        make_not_null(&gen), true, false);
+      }()),
+      Catch::Matchers::Contains("max_radius must be greater"));
+  CHECK_THROWS_WITH(
+      ([&gen]() {
+        CoordinateMaps::TimeDependent::SphericalCompression<false> map{};
+        double time{std::numeric_limits<double>::signaling_NaN()};
+        std::unordered_map<
+            std::string,
+            std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+            functions_of_time{};
+        double min_radius{std::numeric_limits<double>::signaling_NaN()};
+        double max_radius{std::numeric_limits<double>::signaling_NaN()};
+        std::array<double, 3> center{};
+        generate_map_time_and_f_of_time(
+            make_not_null(&map), make_not_null(&time),
+            make_not_null(&functions_of_time), make_not_null(&min_radius),
+            make_not_null(&max_radius), make_not_null(&center),
+            make_not_null(&gen), false, false);
+        CoordinateMaps::TimeDependent::SphericalCompression<false> bad_map{};
+        double bad_time{std::numeric_limits<double>::signaling_NaN()};
+        std::unordered_map<
+            std::string,
+            std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+            bad_functions_of_time{};
+        generate_map_time_and_f_of_time(make_not_null(&bad_map),
+                                        make_not_null(&bad_time),
+                                        make_not_null(&bad_functions_of_time),
+                                        make_not_null(&gen), false, true);
+        const std::array<double, 3> point{
+            {0.5 * (max_radius + min_radius) + center[0], center[1],
+             center[2]}};
+        map(point, 0.4, bad_functions_of_time);
+      }()),
+      Catch::Matchers::Contains("Could not find function of time"));
 #endif
-}
 
-// [[OutputRegex, Could not find function of time]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.SphericalCompression.MissingFofT",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  MAKE_GENERATOR(gen);
-  CoordinateMaps::TimeDependent::SphericalCompression<false> map{};
-  double time{std::numeric_limits<double>::signaling_NaN()};
-  std::unordered_map<std::string,
-                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
-      functions_of_time{};
-  double min_radius{std::numeric_limits<double>::signaling_NaN()};
-  double max_radius{std::numeric_limits<double>::signaling_NaN()};
-  std::array<double, 3> center{};
-  generate_map_time_and_f_of_time(
-      make_not_null(&map), make_not_null(&time),
-      make_not_null(&functions_of_time), make_not_null(&min_radius),
-      make_not_null(&max_radius), make_not_null(&center), make_not_null(&gen),
-      false, false);
-  CoordinateMaps::TimeDependent::SphericalCompression<false> bad_map{};
-  double bad_time{std::numeric_limits<double>::signaling_NaN()};
-  std::unordered_map<std::string,
-                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
-      bad_functions_of_time{};
-  generate_map_time_and_f_of_time(
-      make_not_null(&bad_map), make_not_null(&bad_time),
-      make_not_null(&bad_functions_of_time), make_not_null(&gen), false, true);
-  const std::array<double, 3> point{
-      {0.5 * (max_radius + min_radius) + center[0], center[1], center[2]}};
-  map(point, 0.4, bad_functions_of_time);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  CHECK_THROWS_WITH(([&gen]() {
+                      if (random_bool(make_not_null(&gen))) {
+                        test_out_of_bounds<true>(make_not_null(&gen));
+                      } else {
+                        test_out_of_bounds<false>(make_not_null(&gen));
+                      }
+                    }()),
+                    Catch::Matchers::Contains("not in expected range"));
 }
 }  // namespace domain
-
-// [[OutputRegex, not in expected range]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.SphericalCompression.MapOutOfBounds",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  MAKE_GENERATOR(gen);
-  if (random_bool(make_not_null(&gen))) {
-    test_out_of_bounds<true>(make_not_null(&gen));
-  } else {
-    test_out_of_bounds<false>(make_not_null(&gen));
-  }
-  ERROR("Failed to trigger ERROR in an error test");
-}

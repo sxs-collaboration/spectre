@@ -205,55 +205,46 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
         INFO("Test RealsThenImags view");
         test_view<ComplexRepresentation::RealsThenImags>();
     }
-}
 
-// spot-test two assignment asserts - they all call the same size-checking
-// function, so this should be sufficiently robust.
-
-// [[OutputRegex, Assignment must be to the same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.ComplexDataView.ComplexSizeError",
-    "[Unit][NumericalAlgorithms]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  MAKE_GENERATOR(gen);
-  UniformCustomDistribution<size_t> sdist{5, 50};
-  const size_t overall_size = sdist(gen);
-  const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
-  const size_t offset = sdist(gen) % (overall_size - view_size + 1);
+    // spot-test two assignment asserts - they all call the same size-checking
+    // function, so this should be sufficiently robust.
+    CHECK_THROWS_WITH(
+        ([]() {
+          MAKE_GENERATOR(gen);
+          UniformCustomDistribution<size_t> sdist{5, 50};
+          const size_t overall_size = sdist(gen);
+          const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
+          const size_t offset = sdist(gen) % (overall_size - view_size + 1);
 
-  ComplexDataVector source_vec{overall_size};
-  ComplexDataView<ComplexRepresentation::Interleaved> vector_view_1{
-      make_not_null(&source_vec), view_size, offset};
-  ComplexDataView<ComplexRepresentation::Interleaved> vector_view_2{
-      make_not_null(&source_vec), view_size + 1, offset};
+          ComplexDataVector source_vec{overall_size};
+          ComplexDataView<ComplexRepresentation::Interleaved> vector_view_1{
+              make_not_null(&source_vec), view_size, offset};
+          ComplexDataView<ComplexRepresentation::Interleaved> vector_view_2{
+              make_not_null(&source_vec), view_size + 1, offset};
 
-  // this line should fail the size assert
-  vector_view_1 = vector_view_2;
-  ERROR("Failed to trigger ASSERT in an assertion test");
+          // this line should fail the size assert
+          vector_view_1 = vector_view_2;
+        }()),
+        Catch::Matchers::Contains("Assignment must be to the same size"));
+    CHECK_THROWS_WITH(
+        ([]() {
+          MAKE_GENERATOR(gen);
+          UniformCustomDistribution<size_t> sdist{5, 50};
+          const size_t overall_size = sdist(gen);
+          const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
+          const size_t offset = sdist(gen) % (overall_size - view_size + 1);
+
+          ComplexDataVector source_vec{overall_size};
+          ComplexDataView<ComplexRepresentation::RealsThenImags> vector_view_1{
+              make_not_null(&source_vec), view_size, offset};
+
+          // this line should fail the size assert
+          vector_view_1.assign_real(real(source_vec));
+        }()),
+        Catch::Matchers::Contains("Assignment must be to the same size"));
 #endif
 }
 
-// [[OutputRegex, Assignment must be to the same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.ComplexDataView.RealSizeError",
-    "[Unit][NumericalAlgorithms]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  MAKE_GENERATOR(gen);
-  UniformCustomDistribution<size_t> sdist{5, 50};
-  const size_t overall_size = sdist(gen);
-  const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
-  const size_t offset = sdist(gen) % (overall_size - view_size + 1);
-
-  ComplexDataVector source_vec{overall_size};
-  ComplexDataView<ComplexRepresentation::RealsThenImags> vector_view_1{
-      make_not_null(&source_vec), view_size, offset};
-
-  // this line should fail the size assert
-  vector_view_1.assign_real(real(source_vec));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
 }  // namespace
 }  // namespace Spectral::Swsh::detail

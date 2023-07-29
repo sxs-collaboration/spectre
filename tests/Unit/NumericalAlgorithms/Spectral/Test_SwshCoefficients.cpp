@@ -263,15 +263,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCoefficients",
     check_goldberg_mode_conversion<0>();
     check_goldberg_mode_conversion<2>();
   }
-}
 
-// [[OutputRegex, Index out of range]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.SwshCoefficients.PrecomputationOverrun",
-    "[Unit][NumericalAlgorithms]") {
-  ERROR_TEST();
-  cached_coefficients_metadata(detail::coefficients_maximum_l_max + 1);
-  ERROR("Failed to trigger ERROR in an error test");
+  CHECK_THROWS_WITH(
+      (cached_coefficients_metadata(detail::coefficients_maximum_l_max + 1)),
+      Catch::Matchers::Contains("Index out of range"));
 }
 }  // namespace
 }  // namespace Spectral::Swsh

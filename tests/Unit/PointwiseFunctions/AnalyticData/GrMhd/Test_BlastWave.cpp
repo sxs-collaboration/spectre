@@ -232,16 +232,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWave",
     test_variables(DataVector(5), geometry);
     test_density_on_and_near_boundaries(geometry);
   }
-}
 
-// [[OutputRegex, BlastWave expects InnerRadius < OuterRadius]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWaveInRadLess",
-    "[Unit][PointwiseFunctions]") {
-  ERROR_TEST();
-  grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
-      1.2, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
-      std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333,
-      grmhd::AnalyticData::BlastWave::Geometry::Cylindrical);
-  ERROR("Failed to trigger PARSE_ERROR in a parse error test");
+  CHECK_THROWS_WITH(
+      (grmhd::AnalyticData::BlastWave(
+          1.2, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
+          std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333,
+          grmhd::AnalyticData::BlastWave::Geometry::Cylindrical)),
+      Catch::Matchers::Contains("BlastWave expects InnerRadius < OuterRadius"));
 }

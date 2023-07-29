@@ -355,27 +355,13 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
            16., 17., 18.});
     }
   }
-}
 
-// [[OutputRegex, Overlap extent '4' exceeds volume extents]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.ParallelSchwarz.OverlapHelpers.AssertOverlapNumPoints",
-    "[Unit][ParallelAlgorithms][LinearSolver]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  overlap_num_points(Index<1>{{{3}}}, 4, 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      (overlap_num_points(Index<1>{{{3}}}, 4, 0)),
+      Catch::Matchers::Contains("Overlap extent '4' exceeds volume extents"));
+  CHECK_THROWS_WITH((overlap_num_points(Index<1>{{{3}}}, 0, 1)),
+                    Catch::Matchers::Contains("Invalid dimension '1' in 1D"));
 #endif
 }
-
-// [[OutputRegex, Invalid dimension '1' in 1D]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers.AssertDim",
-                               "[Unit][ParallelAlgorithms][LinearSolver]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  overlap_num_points(Index<1>{{{3}}}, 0, 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 }  // namespace LinearSolver::Schwarz

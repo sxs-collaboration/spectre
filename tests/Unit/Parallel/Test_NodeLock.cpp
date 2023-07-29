@@ -6,16 +6,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/NodeLock.hpp"
 
-// [[OutputRegex, Trying to lock a destroyed lock]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Parallel.NodeLock.DestroyedReuseError",
-                               "[Parallel][Unit]") {
-  ERROR_TEST();
-  Parallel::NodeLock lock{};
-  lock.destroy();
-  lock.lock();
-  ERROR("Error not triggered in error test");
-}
-
 namespace {
 void test_two_locks() {
   Parallel::NodeLock first{};
@@ -184,4 +174,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.NodeLock", "[Unit][Parallel]") {
   test_move_semantics();
   test_move_assign_semantics();
   test_serialization();
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        Parallel::NodeLock lock{};
+        lock.destroy();
+        lock.lock();
+      }()),
+      Catch::Matchers::Contains("Trying to lock a destroyed lock"));
 }

@@ -97,18 +97,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }
-}
 
-// [[OutputRegex, Tried to retrieve the convergence reason, but has not yet
-// converged.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.Convergence.HasConvergedReasonAssert",
-    "[Unit][NumericalAlgorithms]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const Convergence::HasConverged has_not_converged{
-      Convergence::Criteria{2, 0., 0.5}, 1, 1., 1.};
-  has_not_converged.reason();
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([]() {
+        const Convergence::HasConverged has_not_converged{
+            Convergence::Criteria{2, 0., 0.5}, 1, 1., 1.};
+        has_not_converged.reason();
+      }()),
+      Catch::Matchers::Contains("Tried to retrieve the convergence reason, but "
+                                "has not yet converged."));
 #endif
 }

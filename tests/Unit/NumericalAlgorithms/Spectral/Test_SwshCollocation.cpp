@@ -135,16 +135,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCollocation",
     test_spherical_harmonic_collocation<
         ComplexRepresentation::RealsThenImags>();
   }
-}
 
-// [[OutputRegex, Index out of range]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.SwshCollocation.PrecomputationOverrun",
-    "[Unit][NumericalAlgorithms]") {
-  ERROR_TEST();
-  cached_collocation_metadata<ComplexRepresentation::RealsThenImags>(
-      collocation_maximum_l_max + 1);
-  ERROR("Failed to trigger ERROR in an error test");
+  CHECK_THROWS_WITH(
+      (cached_collocation_metadata<ComplexRepresentation::RealsThenImags>(
+          collocation_maximum_l_max + 1)),
+      Catch::Matchers::Contains("Index out of range"));
 }
 }  // namespace
 }  // namespace Spectral::Swsh

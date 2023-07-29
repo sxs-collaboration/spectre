@@ -156,16 +156,11 @@ SPECTRE_TEST_CASE(
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
-}
 
-// [[OutputRegex, MagneticFieldLoop: superluminal AdvectionVelocity]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagneticFieldLoopBadVelocity",
-    "[Unit][PointwiseFunctions]") {
-  ERROR_TEST();
-  grmhd::AnalyticData::MagneticFieldLoop magnetic_loop(
-      3.0, 1.0, 1.66666666666666667,
-      std::array<double, 3>{{0.5, 0.04166666666666667, -0.9}}, 0.001, 0.06,
-      0.3);
-  ERROR("Failed to trigger PARSE_ERROR in a parse error test");
+  CHECK_THROWS_WITH((grmhd::AnalyticData::MagneticFieldLoop(
+                        3.0, 1.0, 1.66666666666666667,
+                        std::array<double, 3>{{0.5, 0.04166666666666667, -0.9}},
+                        0.001, 0.06, 0.3)),
+                    Catch::Matchers::Contains(
+                        "MagneticFieldLoop: superluminal AdvectionVelocity"));
 }

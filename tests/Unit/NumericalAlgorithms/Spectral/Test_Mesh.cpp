@@ -279,91 +279,44 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
   test_option_parsing<1>();
   test_option_parsing<2>();
   test_option_parsing<3>();
-}
 
-// [[OutputRegex, Tried to slice through non-existing dimension]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceThroughNonExistingDimension",
-    "[NumericalAlgorithms][Spectral][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-  mesh1d.slice_through(1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      (Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
+           .slice_through(1)),
+      Catch::Matchers::Contains(
+          "Tried to slice through non-existing dimension"));
+  CHECK_THROWS_WITH(
+      (Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
+           .slice_away(1)),
+      Catch::Matchers::Contains("Tried to slice away non-existing dimension"));
+  CHECK_THROWS_WITH(
+      (Mesh<3>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
+           .slice_through(2, 1, 1)),
+      Catch::Matchers::Contains(
+          "Dimensions to slice through contain duplicates"));
+  CHECK_THROWS_WITH((Mesh<1>{2, Spectral::Basis::SphericalHarmonic,
+                             Spectral::Quadrature::GaussLobatto}),
+                    Catch::Matchers::Contains(
+                        "SphericalHarmonic is not a valid basis for the Mesh"));
+  CHECK_THROWS_WITH(
+      (Mesh<2>{
+          {{2, 2}},
+          {{Spectral::Basis::SphericalHarmonic, Spectral::Basis::Legendre}},
+          {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}}),
+      Catch::Matchers::Contains(
+          "SphericalHarmonic is not a valid basis for the Mesh"));
 #endif
-}
-
-// [[OutputRegex, Tried to slice away non-existing dimension]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceAwayNonExistingDimension",
-    "[NumericalAlgorithms][Spectral][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-  mesh1d.slice_away(1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Dimensions to slice through contain duplicates]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceThroughDuplicateDimensions",
-    "[NumericalAlgorithms][Spectral][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const Mesh<3> mesh3d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-  mesh3d.slice_through(2, 1, 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, SphericalHarmonic is not a valid basis for the Mesh]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.Mesh.InvalidBasis",
-    "[NumericalAlgorithms][Spectral][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const Mesh<1> mesh1d{2, Spectral::Basis::SphericalHarmonic,
-                       Spectral::Quadrature::GaussLobatto};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, SphericalHarmonic is not a valid basis for the Mesh]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.Mesh.InvalidBases",
-    "[NumericalAlgorithms][Spectral][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const Mesh<2> mesh2d{
-      {{2, 2}},
-      {{Spectral::Basis::SphericalHarmonic, Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Failed to convert ".*" to Spectral::Basis.]]
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh.WrongBasis",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
-  ERROR_TEST();
-  const std::string creation_string =
-      "Extents: 5\n"
-      "Basis: invalidBasis\n"
-      "Quadrature: Gauss";
-  TestHelpers::test_creation<Mesh<3>>(creation_string);
-}
-
-// [[OutputRegex, Failed to convert ".*" to Spectral::Quadrature.]]
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh.WrongQuadrature",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
-  ERROR_TEST();
-  const std::string creation_string =
-      "Extents: 5\n"
-      "Basis: Chebyshev\n"
-      "Quadrature: invalidQuadrature";
-  TestHelpers::test_creation<Mesh<3>>(creation_string);
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Mesh<3>>("Extents: 5\n"
+                                           "Basis: invalidBasis\n"
+                                           "Quadrature: Gauss")),
+      Catch::Matchers::Contains(
+          "Failed to convert \"invalidBasis\" to Spectral::Basis."));
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Mesh<3>>("Extents: 5\n"
+                                           "Basis: Chebyshev\n"
+                                           "Quadrature: invalidQuadrature")),
+      Catch::Matchers::Contains(
+          "Failed to convert \"invalidQuadrature\" to Spectral::Quadrature."));
 }

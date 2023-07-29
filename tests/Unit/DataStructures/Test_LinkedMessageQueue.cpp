@@ -70,44 +70,34 @@ void test_queue() {
 SPECTRE_TEST_CASE("Unit.DataStructures.LinkedMessageQueue",
                   "[Unit][DataStructures]") {
   test_queue();
-}
 
-// [[OutputRegex, Received duplicate messages at id 1 and previous id --\.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.LinkedMessageQueue.Duplicate",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
-  queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
-  queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif /* SPECTRE_DEBUG */
-}
-
-// [[OutputRegex, Received messages with different ids \(1 and 2\) but the same
-// previous id \(--\)\.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.LinkedMessageQueue.Inconsistent",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
-  queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
-  queue.insert<MyQueue<Label2>>({2, {}}, std::make_unique<double>(1.1));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif /* SPECTRE_DEBUG */
-}
-
-// [[OutputRegex, Cannot extract before all messages have been received\.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.LinkedMessageQueue.NotReady",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
-  queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
-  queue.extract();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif /* SPECTRE_DEBUG */
+  CHECK_THROWS_WITH(
+      ([]() {
+        LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>>
+            queue{};
+        queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
+        queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
+      }()),
+      Catch::Matchers::Contains("Received duplicate messages at id 1 and "
+                                "previous id --."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>>
+            queue{};
+        queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
+        queue.insert<MyQueue<Label2>>({2, {}}, std::make_unique<double>(1.1));
+      }()),
+      Catch::Matchers::Contains("Received messages with different ids (1 and "
+                                "2) but the same previous id (--)."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>>
+            queue{};
+        queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
+        queue.extract();
+      }()),
+      Catch::Matchers::Contains(
+          "Cannot extract before all messages have been received."));
+#endif
 }

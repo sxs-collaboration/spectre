@@ -17,36 +17,6 @@
 namespace Spectral::Swsh {
 namespace {
 
-// [[OutputRegex, Attempting to perform interpolation]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.InterpolateError",
-    "[Unit][NumericalAlgorithms]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  SwshInterpolator interp{};
-  SpinWeighted<ComplexDataVector, 1> interp_source{
-      number_of_swsh_collocation_points(5_st)};
-  SpinWeighted<ComplexDataVector, 1> interp_target{
-      number_of_swsh_collocation_points(5_st)};
-  interp.interpolate(make_not_null(&interp_target), interp_source);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Attempting to perform spin-weighted evaluation]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.EvaluationError",
-    "[Unit][NumericalAlgorithms]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  SwshInterpolator interp{};
-  SpinWeighted<ComplexDataVector, 1> interp_target{
-      number_of_swsh_collocation_points(5_st)};
-  interp.direct_evaluation_swsh_at_l_min(make_not_null(&interp_target), 1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 template <typename Generator>
 void test_basis_function(const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<double> phi_dist{0.0, 2.0 * M_PI};
@@ -278,6 +248,28 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
   test_interpolation<-1>(make_not_null(&generator));
   test_interpolation<0>(make_not_null(&generator));
   test_interpolation<2>(make_not_null(&generator));
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        SwshInterpolator interp{};
+        SpinWeighted<ComplexDataVector, 1> interp_source{
+            number_of_swsh_collocation_points(5_st)};
+        SpinWeighted<ComplexDataVector, 1> interp_target{
+            number_of_swsh_collocation_points(5_st)};
+        interp.interpolate(make_not_null(&interp_target), interp_source);
+      }()),
+      Catch::Matchers::Contains("Attempting to perform interpolation"));
+  CHECK_THROWS_WITH(([]() {
+                      SwshInterpolator interp{};
+                      SpinWeighted<ComplexDataVector, 1> interp_target{
+                          number_of_swsh_collocation_points(5_st)};
+                      interp.direct_evaluation_swsh_at_l_min(
+                          make_not_null(&interp_target), 1);
+                    }()),
+                    Catch::Matchers::Contains(
+                        "Attempting to perform spin-weighted evaluation"));
+#endif
 }
 }  // namespace
 }  // namespace Spectral::Swsh

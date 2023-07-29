@@ -16,44 +16,6 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 
-// IWYU pragma: no_include <algorithm>
-
-// [[OutputRegex, Must assign into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.ComplexModalVector.ExpressionAssignError",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-        "Unit.DataStructures.ComplexModalVector.RefDiffSize",
-        "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.ComplexModalVector.MoveRefDiffSize",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 namespace {
 void test_complex_modal_vector_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
@@ -130,4 +92,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ComplexModalVector",
     INFO("test ComplexModalVector math operations");
     test_complex_modal_vector_math();
   }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign),
+      Catch::Matchers::Contains("Must assign into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy),
+      Catch::Matchers::Contains("Must copy into same size"));
+  CHECK_THROWS_WITH(
+      TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
+          TestHelpers::VectorImpl::RefSizeErrorTestKind::Move),
+      Catch::Matchers::Contains("Must copy into same size"));
+#endif
 }

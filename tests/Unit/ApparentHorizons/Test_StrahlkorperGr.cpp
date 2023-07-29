@@ -1181,22 +1181,16 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance",
                    strahlkorper_b),
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
-}
 
-// [[OutputRegex, Currently computing the radial distance between]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance.Error",
-                  "[ApparentHorizons][Unit]") {
-  ERROR_TEST();
-  const double y11_amplitude = 1.0;
-  const double radius = 2.0;
-  const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
-  const auto strahlkorper_a =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
-  const std::array<double, 3> different_center{{0.1, 0.4, 0.3}};
-  const auto strahlkorper_b =
-      create_strahlkorper_y11(4.0 * y11_amplitude, radius, different_center);
-  Scalar<DataVector> radial_dist{
-      strahlkorper_a.ylm_spherepack().physical_size()};
-  StrahlkorperGr::radial_distance(make_not_null(&radial_dist), strahlkorper_a,
-                                  strahlkorper_b);
+  CHECK_THROWS_WITH(
+      ([&strahlkorper_a, &y11_amplitude, &radius, &radial_dist]() {
+        const std::array<double, 3> different_center{{0.1, 0.4, 0.3}};
+        const auto strahlkorper_off_center = create_strahlkorper_y11(
+            4.0 * y11_amplitude, radius, different_center);
+        StrahlkorperGr::radial_distance(make_not_null(&radial_dist),
+                                        strahlkorper_a,
+                                        strahlkorper_off_center);
+      }()),
+      Catch::Matchers::Contains(
+          "Currently computing the radial distance between"));
 }
