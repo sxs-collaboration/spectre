@@ -511,6 +511,12 @@ class CoordinateMap
     return *this == cast_of_other;
   }
 
+  void check_functions_of_time(
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const;
+
   template <typename T, size_t... Is>
   tnsr::I<T, dim, TargetFrame> call_impl(
       tnsr::I<T, dim, SourceFrame>&& source_point, double time,

@@ -37,10 +37,6 @@ double lambda00_y00(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
   return functions_of_time.at(f_of_t_name)->func(time)[0][0] * 0.25 *
          M_2_SQRTPI;
 }
@@ -51,10 +47,6 @@ double dt_lambda00_y00(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
   return functions_of_time.at(f_of_t_name)->func_and_deriv(time)[1][0] * 0.25 *
          M_2_SQRTPI;
 }

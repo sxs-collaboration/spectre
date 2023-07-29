@@ -21,7 +21,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -54,15 +53,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_a_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-  ASSERT(functions_of_time.find(f_of_t_b_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_b_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {
@@ -100,15 +90,6 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_a_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-  ASSERT(functions_of_time.find(f_of_t_b_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_b_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
     const double one_over_a_of_t =
@@ -188,15 +169,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_a_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-  ASSERT(functions_of_time.find(f_of_t_b_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_b_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const double dt_a_of_t =
       functions_of_time.at(f_of_t_a_)->func_and_deriv(time)[1][0];
 
@@ -238,15 +210,6 @@ CubicScale<Dim>::jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_a_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-  ASSERT(functions_of_time.find(f_of_t_b_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_b_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {
@@ -299,15 +262,6 @@ CubicScale<Dim>::inv_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_a_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-  ASSERT(functions_of_time.find(f_of_t_b_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_b_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {

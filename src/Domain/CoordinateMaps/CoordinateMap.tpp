@@ -26,6 +26,7 @@
 #include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -123,6 +124,24 @@ bool CoordinateMap<SourceFrame, TargetFrame,
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
+void CoordinateMap<SourceFrame, TargetFrame, Maps...>::check_functions_of_time(
+    [[maybe_unused]] const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) const {
+// Even though an assert is already in debug mode, we also want to avoid the
+// loop
+#ifdef SPECTRE_DEBUG
+  for (const std::string& name : function_of_time_names_) {
+    ASSERT(functions_of_time.count(name) == 1,
+           "The function of time '" << name
+                                    << "' is not one of the known functions of "
+                                       "time. The known functions of time are: "
+                                    << keys_of(functions_of_time));
+  }
+#endif
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
 tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
@@ -131,6 +150,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::index_sequence<Is...> /*meta*/) const {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   EXPAND_PACK_LEFT_TO_RIGHT(
@@ -163,6 +183,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::index_sequence<Is...> /*meta*/) const {
+  check_functions_of_time(functions_of_time);
   std::optional<std::array<T, dim>> mapped_point(
       make_array<T, dim>(std::move(target_point)));
 
@@ -297,6 +318,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const
     -> InverseJacobian<T, dim, SourceFrame, TargetFrame> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
@@ -343,6 +365,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const -> Jacobian<T, dim, SourceFrame, TargetFrame> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
 
@@ -416,6 +439,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
                   InverseJacobian<T, dim, SourceFrame, TargetFrame>,
                   Jacobian<T, dim, SourceFrame, TargetFrame>,
                   tnsr::I<T, dim, TargetFrame>> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};

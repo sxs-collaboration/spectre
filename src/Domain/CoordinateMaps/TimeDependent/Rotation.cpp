@@ -16,7 +16,6 @@
 #include "Domain/CoordinateMaps/TimeDependent/RotationMatrixHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -35,11 +34,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -59,11 +53,6 @@ std::optional<std::array<double, Dim>> Rotation<Dim>::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -86,11 +75,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix_deriv =
       rotation_matrix_deriv<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -113,11 +97,6 @@ Rotation<Dim>::jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -143,11 +122,6 @@ Rotation<Dim>::inv_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
