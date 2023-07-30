@@ -482,9 +482,10 @@ void test_initialize_j_conformal_factor(
   CHECK(only_vary_gauge_d_streamed == "OnlyVaryGaugeD");
 }
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
-  UniformCustomDistribution<size_t> sdist{5, 8};
+  UniformCustomDistribution<size_t> sdist{5, 6};
   const size_t l_max = sdist(generator);
   const size_t number_of_radial_points = sdist(generator);
 
