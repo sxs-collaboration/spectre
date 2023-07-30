@@ -35,6 +35,11 @@ authors:
   family-names: Moxon
   given-names: Jordan
   orcid: https://orcid.org/0000-0001-9891-8677
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Nelli
+  given-names: Kyle C.
+  orcid: https://orcid.org/0000-0003-2426-8768
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Armaza
@@ -68,11 +73,6 @@ authors:
   family-names: Macedo
   given-names: Alexandra
   orcid: https://orcid.org/0000-0001-5139-9013
-- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
-    California Institute of Technology, Pasadena, CA 91125, USA
-  family-names: Nelli
-  given-names: Kyle C.
-  orcid: https://orcid.org/0000-0003-2426-8768
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: O'Shea
@@ -157,6 +157,11 @@ authors:
   family-names: Jones
   given-names: Ken Z.
   orcid: https://orcid.org/0009-0003-1034-0498
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Lara
+  given-names: Guillermo
+  orcid: https://orcid.org/0000-0001-9461-6292
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Legred
@@ -184,9 +189,8 @@ authors:
   family-names: Morales
   given-names: Marlo
   orcid: https://orcid.org/0000-0002-0593-4318
-- affiliation: Princeton Center for Theoretical Science and Gravity Initiative, Princeton
-    University, Princeton, NJ 08544, USA and School of Natural Sciences, Institute
-    for Advanced Study, Princeton, NJ 08540, USA
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Most
   given-names: Elias R.
   orcid: https://orcid.org/0000-0002-0491-1210
@@ -195,6 +199,12 @@ authors:
   family-names: Nee
   given-names: Peter James
   orcid: https://orcid.org/0000-0002-2362-5420
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Osorio
+  given-names: Alejandro
+  orcid: https://orcid.org/0009-0000-5024-0086
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Pajkos
@@ -262,8 +272,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.2.0
-date-released: 2023-06-19
-doi: 10.5281/zenodo.8056569
+date-released: 2023-07-29
+doi: 10.5281/zenodo.8196313
 keywords:
 - Software
 - Astrophysics
@@ -981,4 +991,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.06.19
+version: 2023.07.29
