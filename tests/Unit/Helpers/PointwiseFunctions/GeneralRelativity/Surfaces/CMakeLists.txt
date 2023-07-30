@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "ApparentHorizonsHelpers")
+set(LIBRARY "StrahlkorperGrHelpers")
 
 set(LIBRARY_SOURCES
   StrahlkorperGrTestHelpers.cpp

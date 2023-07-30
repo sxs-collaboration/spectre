@@ -8,7 +8,6 @@
 #include <limits>
 #include <tuple>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ObserverComponent.hpp"

@@ -10,7 +10,6 @@ set(LIBRARY_SOURCES
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
   Test_ObserveCenters.cpp
-  Test_StrahlkorperGr.cpp
   Test_StrahlkorperCoordsInDifferentFrame.cpp
   Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
@@ -28,7 +27,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   ApparentHorizons
-  ApparentHorizonsHelpers
   FiniteDifference
   GeneralRelativitySolutions
   LinearOperators

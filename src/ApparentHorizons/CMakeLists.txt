@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   FastFlow.cpp
   TimeDerivStrahlkorper.cpp
-  StrahlkorperGr.cpp
   StrahlkorperCoordsInDifferentFrame.cpp
   StrahlkorperInDifferentFrame.cpp
   )
@@ -27,7 +26,6 @@ spectre_target_headers(
   FastFlow.hpp
   HorizonAliases.hpp
   ObserveCenters.hpp
-  StrahlkorperGr.hpp
   StrahlkorperCoordsInDifferentFrame.hpp
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
@@ -45,6 +43,7 @@ target_link_libraries(
   LinearAlgebra
   Options
   SphericalHarmonics
+  StrahlkorperGr
   PRIVATE
   CoordinateMaps
   Domain

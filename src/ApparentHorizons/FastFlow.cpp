@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
@@ -20,6 +19,10 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Expansion.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/InverseSurfaceMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/UnitNormalOneForm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

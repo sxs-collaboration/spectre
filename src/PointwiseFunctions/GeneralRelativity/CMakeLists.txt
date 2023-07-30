@@ -77,4 +77,5 @@ target_link_libraries(
 
 add_subdirectory(GeneralizedHarmonic)
 add_subdirectory(Python)
+add_subdirectory(Surfaces)
 add_subdirectory(Tags)

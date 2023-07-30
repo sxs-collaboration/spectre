@@ -7,7 +7,6 @@
 #include <string>
 
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"

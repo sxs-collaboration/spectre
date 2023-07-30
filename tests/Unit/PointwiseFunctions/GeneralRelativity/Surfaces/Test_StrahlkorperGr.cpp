@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <random>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -19,9 +18,9 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/Surfaces/StrahlkorperGrTestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
@@ -33,6 +32,19 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianAreaElement.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianSurfaceIntegralOfVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Expansion.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/InverseSurfaceMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Mass.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/RadialDistance.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/RicciScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Spin.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/UnitNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

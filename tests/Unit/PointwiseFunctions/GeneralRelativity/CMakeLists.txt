@@ -47,3 +47,4 @@ target_link_libraries(
 )
 
 add_subdirectory(Python)
+add_subdirectory(Surfaces)

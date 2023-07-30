@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/TimeDerivStrahlkorper.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -19,6 +18,16 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianAreaElement.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianSurfaceIntegralOfVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Mass.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/RicciScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Spin.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/UnitNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"

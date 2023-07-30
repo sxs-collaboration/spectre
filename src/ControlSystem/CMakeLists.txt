@@ -57,6 +57,8 @@ target_link_libraries(
   Utilities
   INTERFACE
   Observer
+  PRIVATE
+  StrahlkorperGr
   )
 
 add_subdirectory(Actions)

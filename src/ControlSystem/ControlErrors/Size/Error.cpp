@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <string>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -22,6 +21,9 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/RadialDistance.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
