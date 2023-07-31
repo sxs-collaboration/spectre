@@ -233,7 +233,7 @@ double Translation<Dim>::root_finder(const double target_radius,
   }
   // If the upper and lower bounds are < 0., then there's no need to find a root
   // the root will be 0.
-  if (upper_bound < 0.) {
+  if (upper_bound <= 0.) {
     return 0.;
   }
   double function_at_lower_bound = std::numeric_limits<double>::min();
@@ -247,6 +247,10 @@ double Translation<Dim>::root_finder(const double target_radius,
                (root_factor + squared_function_of_time * (*f_of_r_)(x)) -
            square(x);
   };
+  if (radius_bracket_function(lower_bound).value() <=
+      std::numeric_limits<double>::min()) {
+    return lower_bound;
+  }
   RootFinder::bracket_possibly_undefined_function_in_interval(
       &lower_bound, &upper_bound, &function_at_lower_bound,
       &function_at_upper_bound, radius_bracket_function);

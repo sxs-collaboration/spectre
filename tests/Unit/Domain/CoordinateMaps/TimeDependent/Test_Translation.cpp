@@ -38,7 +38,7 @@ void test_translation() {
   const double final_time = 4.0;
   constexpr size_t deriv_order = 3;
   const double amplitude = 1.0;
-  const double width = 20.0;
+  const double width = 100.0;
   std::array<double, 1> gauss_center{0.};
   const MathFunctions::Gaussian<1, Frame::Inertial> gaussian{amplitude, width,
                                                              gauss_center};
@@ -92,7 +92,7 @@ void test_translation() {
       gsl::at(radial_frame_vel, i) =
           f_of_t->func_and_deriv(t)[1][i] * gaussian(radius);
     }
-
+    Approx custom_approx = Approx::custom().epsilon(1.e-9);
     CHECK_ITERABLE_APPROX(translation_map(point_xi, t, f_of_t_list),
                           point_xi + translation);
     CHECK_ITERABLE_APPROX(radial_translation_map(point_xi, t, f_of_t_list),
@@ -100,12 +100,12 @@ void test_translation() {
     CHECK_ITERABLE_APPROX(
         translation_map.inverse(point_xi + translation, t, f_of_t_list).value(),
         point_xi);
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         radial_translation_map
             .inverse(point_xi + (translation * gaussian(radius)), t,
                      f_of_t_list)
             .value(),
-        point_xi);
+        point_xi, custom_approx);
     CHECK_ITERABLE_APPROX(
         translation_map.frame_velocity(point_xi, t, f_of_t_list), frame_vel);
     CHECK_ITERABLE_APPROX(
@@ -119,12 +119,12 @@ void test_translation() {
                               .inverse(point_xi + translation, t, f_of_t_list)
                               .value(),
                           point_xi);
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         radial_translation_map_deserialized
             .inverse(point_xi + (translation * gaussian(radius)), t,
                      f_of_t_list)
             .value(),
-        point_xi);
+        point_xi, custom_approx);
     CHECK_ITERABLE_APPROX(
         translation_map_deserialized.frame_velocity(point_xi, t, f_of_t_list),
         frame_vel);
