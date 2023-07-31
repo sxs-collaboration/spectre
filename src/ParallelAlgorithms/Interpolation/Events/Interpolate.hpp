@@ -29,10 +29,12 @@ namespace Tags {
 struct Time;
 }  // namespace Tags
 namespace domain::Tags {
-template <size_t VolumeDim>
-struct Mesh;
 struct FunctionsOfTime;
 }  // namespace domain::Tags
+namespace Events::Tags {
+template <size_t Dim>
+struct ObserverMesh;
+}  // namespace Events::Tags
 /// \endcond
 
 namespace intrp {
@@ -65,9 +67,9 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using argument_tags =
-      tmpl::list<typename InterpolationTargetTag::temporal_id,
-                 domain::Tags::Mesh<VolumeDim>, InterpolatorSourceVarTags...>;
+  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
+                                   ::Events::Tags::ObserverMesh<VolumeDim>,
+                                   InterpolatorSourceVarTags...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(

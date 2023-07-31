@@ -30,6 +30,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
@@ -283,11 +284,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   MockInterpolatorReceiveVolumeData::results = {};
 
   // Test the event version
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
-                        metavars::InterpolatorTargetA::temporal_id,
-                        ::Tags::Time, domain::Tags::Mesh<metavars::volume_dim>,
-                        ::Tags::Variables<typename decltype(vars)::tags_list>>>(
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavars>,
+      metavars::InterpolatorTargetA::temporal_id, ::Tags::Time,
+      ::Events::Tags::ObserverMesh<metavars::volume_dim>,
+      ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       metavars{}, temporal_id, invalid_time, mesh, vars);
 
   metavars::event event{};
