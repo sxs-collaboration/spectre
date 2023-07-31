@@ -54,19 +54,16 @@ namespace domain::CoordinateMaps::TimeDependent {
  * where r is the radius and \f$\vec{c}\f$ is the center argument.
  *
  * ### Inverse Translation
+ *
  * The inverse translation translates the coordinate \f$\vec{\bar{\xi}}\f$ to
- * the original coordinates
+ * the original coordinates using
  * \f{equation}{
- * \vec{\xi} = \vec{\bar{\xi}} - F(R)\vec{T}(t)
+ * \vec{\xi} = \vec{\bar{\xi}} - F(r)\vec{T}(t)
  * \f}
- * Where R is the root where \f$F(r)\f$ and \f$\vec{T}(t)\f$
- * cross zero. This is done by bracketing and finding the root of
+ * where \f$r^2\f$ is found as the root of
  * \f{equation}{
- * \bar{r}^2 + F(x) (A + |\vec{T}(t)| F(x)) - x^2
+ *   r^2 = \Big(\vec{\bar{\xi}} - \vec{c} - F(r) \vec{T}(t)\Big)^2.
  * \f}
- * This equation comes from the SpEC implementation where \f$x\f$ is the root
- * guess and \f$A\f$ is the Root Factor given by \f{equation}{ A = -2.0
- * (\vec{\xi} - \vec{c}) \cdot \vec{T}(t) \f}
  *
  * ### Frame Velocity
  *
@@ -182,8 +179,8 @@ class Translation {
           functions_of_time,
       size_t function_or_deriv_index) const;
 
-  double root_finder(double target_radius, double squared_function_of_time,
-                     double root_factor) const;
+  double root_finder(const std::array<double, Dim>& distance_to_center,
+                     const DataVector& function_of_time) const;
 
   std::string f_of_t_name_{};
   std::unique_ptr<MathFunction<1, Frame::Inertial>> f_of_r_{};
