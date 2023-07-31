@@ -45,7 +45,6 @@ target_link_libraries(
   Utilities
   INTERFACE
   EventsAndTriggers
-  GeneralizedHarmonic
   Observer
   )
 
