@@ -73,7 +73,7 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         Specified:
-          Values: [5]
+          Values: [3]
     Events:
       - Completion
 

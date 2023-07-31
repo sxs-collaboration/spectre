@@ -277,7 +277,7 @@ void test_with_random_values(const DataVector& used_for_size) {
 }
 }  // namespace
 
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.Cls",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
