@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Characteristics.hpp
+  Initialize.hpp
   StressEnergy.hpp
   System.hpp
   Tags.hpp
