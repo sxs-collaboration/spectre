@@ -26,6 +26,7 @@ spectre_target_sources(
   MinimumGridSpacing.cpp
   RadiallyCompressedCoordinates.cpp
   SizeOfElement.cpp
+  StrahlkorperTransformations.cpp
   TagsTimeDependent.cpp
 )
 
@@ -54,6 +55,7 @@ spectre_target_headers(
   MinimumGridSpacing.hpp
   RadiallyCompressedCoordinates.hpp
   SizeOfElement.hpp
+  StrahlkorperTransformations.hpp
   Tags.hpp
   TagsCharacteristicSpeeds.hpp
   TagsTimeDependent.hpp
@@ -73,6 +75,8 @@ target_link_libraries(
   Utilities
   PRIVATE
   LinearOperators
+  RootFinding
+  SphericalHarmonics
   INTERFACE
   FunctionsOfTime
 )

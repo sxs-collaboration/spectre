@@ -9,7 +9,6 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size.hpp"
@@ -24,6 +23,7 @@
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/StrahlkorperTransformations.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf.hpp"

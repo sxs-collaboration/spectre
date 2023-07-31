@@ -9,8 +9,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
-  StrahlkorperCoordsInDifferentFrame.cpp
-  StrahlkorperInDifferentFrame.cpp
   )
 
 spectre_target_headers(
@@ -25,8 +23,6 @@ spectre_target_headers(
   FastFlow.hpp
   HorizonAliases.hpp
   ObserveCenters.hpp
-  StrahlkorperCoordsInDifferentFrame.hpp
-  StrahlkorperInDifferentFrame.hpp
   Tags.hpp
   TagsDeclarations.hpp
   )

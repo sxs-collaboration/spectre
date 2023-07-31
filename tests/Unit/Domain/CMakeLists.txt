@@ -31,6 +31,7 @@ set(LIBRARY_SOURCES
   Test_Protocols.cpp
   Test_RadiallyCompressedCoordinates.cpp
   Test_SizeOfElement.cpp
+  Test_StrahlkorperTransformations.cpp
   Test_Tags.cpp
   Test_TagsCharacteristicSpeeds.cpp
   Test_TagsTimeDependent.cpp
@@ -59,5 +60,6 @@ target_link_libraries(
   DomainHelpers
   GeneralRelativitySolutions
   LinearOperators
+  SphericalHarmonics
   Utilities
   )

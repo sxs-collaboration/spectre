@@ -16,7 +16,6 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/StrahlkorperCoordsInDifferentFrame.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -33,6 +32,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/StrahlkorperTransformations.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"

@@ -10,8 +10,6 @@ set(LIBRARY_SOURCES
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
   Test_ObserveCenters.cpp
-  Test_StrahlkorperCoordsInDifferentFrame.cpp
-  Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
   )
 
