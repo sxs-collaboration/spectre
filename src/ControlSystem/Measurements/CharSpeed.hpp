@@ -129,8 +129,10 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
       Event event{};
 
+      // ObservationValue unused
       event(measurement_id, point_infos, mesh, spacetime_metric, pi, phi,
-            deriv_phi, constraint_gamma1, cache, array_index, component);
+            deriv_phi, constraint_gamma1, cache, array_index, component,
+            ::Event::ObservationValue{});
     }
   };
 
