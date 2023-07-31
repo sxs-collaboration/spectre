@@ -1337,7 +1337,7 @@ void test_coords_frame_velocity_jacobians() {
   using trans_map_3d = CoordinateMaps::TimeDependent::Translation<3>;
 
   const double initial_time = 0.0;
-  const double final_time   = 2.0;
+  const double final_time = 2.0;
   const double time = 2.0;
   constexpr size_t deriv_order = 3;
 
