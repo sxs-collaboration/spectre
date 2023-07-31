@@ -13,7 +13,6 @@ set(LIBRARY_SOURCES
   Test_StrahlkorperCoordsInDifferentFrame.cpp
   Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
-  Test_TimeDerivStrahlkorper.cpp
   )
 
 add_test_library(

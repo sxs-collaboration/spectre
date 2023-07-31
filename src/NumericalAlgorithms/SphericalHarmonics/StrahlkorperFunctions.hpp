@@ -3,9 +3,12 @@
 
 #pragma once
 
-#include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
+#include <deque>
+#include <utility>
+
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
 
 /// \cond
 class DataVector;
@@ -141,8 +144,7 @@ void radius(const gsl::not_null<Scalar<DataVector>*> result,
  */
 template <typename Fr>
 tnsr::I<DataVector, 3, Fr> cartesian_coords(
-    const Strahlkorper<Fr>& strahlkorper,
-    const Scalar<DataVector>& radius,
+    const Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Fr>& r_hat);
 
 /*!
@@ -369,4 +371,21 @@ std::vector<std::array<double, 4>> fit_ylm_coeffs(
     const DataVector& times,
     const std::vector<Strahlkorper<Fr>>& strahlkorpers);
 
+/*!
+ * \brief Compute the time derivative of a Strahlkorper from a number of
+ * previous Strahlkorpers
+ *
+ * \details Does simple 1D FD with non-uniform spacing using
+ * `fd::non_uniform_1d_weights`.
+ * \param time_deriv Strahlkorper whose coefficients are the time derivative of
+ * `previous_strahlkorpers`' coefficients.
+ * \param previous_strahlkorpers All previous Strahlkorpers and the times they
+ * are at. They are expected to have the most recent Strahlkorper in the front
+ * and the Strahlkorper furthest in the past in the back of the deque.
+ */
+template <typename Frame>
+void time_deriv_of_strahlkorper(
+    gsl::not_null<Strahlkorper<Frame>*> time_deriv,
+    const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
+        previous_strahlkorpers);
 }  // namespace StrahlkorperFunctions

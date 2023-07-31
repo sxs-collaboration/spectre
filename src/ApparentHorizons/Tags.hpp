@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "ApparentHorizons/TimeDerivStrahlkorper.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
@@ -80,7 +80,7 @@ struct TimeDerivStrahlkorperCompute : db::ComputeTag,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<::Strahlkorper<Frame>*>,
       const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&)>(
-      &ah::time_deriv_of_strahlkorper<Frame>);
+      &StrahlkorperFunctions::time_deriv_of_strahlkorper<Frame>);
 
   using argument_tags = tmpl::list<PreviousStrahlkorpers<Frame>>;
 };

@@ -9,7 +9,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
-  TimeDerivStrahlkorper.cpp
   StrahlkorperCoordsInDifferentFrame.cpp
   StrahlkorperInDifferentFrame.cpp
   )
@@ -30,7 +29,6 @@ spectre_target_headers(
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
   TagsDeclarations.hpp
-  TimeDerivStrahlkorper.hpp
   )
 
 target_link_libraries(

@@ -3,12 +3,20 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <deque>
+#include <utility>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Frame {
 struct Inertial;
@@ -38,7 +46,7 @@ void test_radius_and_derivs() {
       get(StrahlkorperFunctions::radius(strahlkorper))};
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
-   // Test derivative of radius
+  // Test derivative of radius
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   tnsr::i<DataVector, 3> expected_dx_radius(n_pts);
   for (size_t s = 0; s < n_pts; ++s) {
@@ -86,11 +94,11 @@ void test_radius_and_derivs() {
         (9. * sin(3. * phi) * sin_theta -
          sin_phi * (7. * sin_theta + 12. * square(cos_phi) * sin(3. * theta))) /
         (16. * square(r));
-    expected_d2x_radius.get(0, 1)[s] =
-        -((cos_phi * (square(cos_phi) +
-                      ((-1. + 3. * cos_2_theta) * square(sin_phi)) / 2.) *
-           sin_theta) /
-          square(r));
+    expected_d2x_radius.get(0, 1)[s] = -(
+        (cos_phi *
+         (square(cos_phi) + ((-1. + 3. * cos_2_theta) * square(sin_phi)) / 2.) *
+         sin_theta) /
+        square(r));
     expected_d2x_radius.get(0, 2)[s] =
         (3. * cos_phi * cos_theta * sin_phi * square(sin_theta)) / square(r);
     expected_d2x_radius.get(1, 1)[s] =
@@ -161,8 +169,8 @@ void test_rhat_jacobian_hessian() {
   const DataVector sin_theta = sin(theta);
 
   tnsr::i<DataVector, 3> expected_rhat(theta.size());
-  get<0>(expected_rhat) = sin_theta*cos_phi;
-  get<1>(expected_rhat) = sin_theta*sin_phi;
+  get<0>(expected_rhat) = sin_theta * cos_phi;
+  get<1>(expected_rhat) = sin_theta * sin_phi;
   get<2>(expected_rhat) = cos_theta;
   CHECK_ITERABLE_APPROX(expected_rhat,
                         StrahlkorperFunctions::rhat(
@@ -466,6 +474,63 @@ void test_fit_ylm_coeffs_diff() {
   Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(result, expected_result, custom_approx);
 }
+
+void test_time_deriv_strahlkorper() {
+  const size_t l_max = 2;
+  Strahlkorper<Frame::Inertial> strahlkorper{l_max, l_max, 1.0,
+                                             std::array{0.0, 0.0, 0.0}};
+  SpherepackIterator iter{l_max, l_max};
+  // Set a random coefficient non-zero
+  strahlkorper.coefficients()[iter.set(2, 1)()] = 1.3;
+
+  for (size_t num_times = 2; num_times <= 4; num_times++) {
+    CAPTURE(num_times);
+    std::deque<std::pair<double, Strahlkorper<Frame::Inertial>>>
+        previous_strahlkorpers{};
+
+    // Set all strahlkorpers to be the same
+    for (size_t i = 0; i < num_times; i++) {
+      // If num_times = 3, set one of the times == NaN to test that we get back
+      // zero
+      previous_strahlkorpers.emplace_front(std::make_pair(
+          (num_times == 3 and i == 0) ? std::numeric_limits<double>::quiet_NaN()
+                                      : static_cast<double>(i),
+          strahlkorper));
+    }
+
+    auto time_deriv = strahlkorper;
+
+    StrahlkorperFunctions::time_deriv_of_strahlkorper(
+        make_not_null(&time_deriv), previous_strahlkorpers);
+
+    const DataVector& time_deriv_strahlkorper_coefs = time_deriv.coefficients();
+
+    // Since we made all the Strahlkorpers the same (or there is a NaN time),
+    // the time deriv should be zero.
+    CHECK_ITERABLE_APPROX(
+        time_deriv_strahlkorper_coefs,
+        (DataVector{time_deriv_strahlkorper_coefs.size(), 0.0}));
+
+    // Check that the deriv works for 2 times (easy to calculate by hand)
+    if (num_times == 2) {
+      // Set a single coefficient to a random value for each previous
+      // strahlkorper
+      previous_strahlkorpers.front().second.coefficients()[iter.set(2, -1)()] =
+          2.0;
+      previous_strahlkorpers.back().second.coefficients()[iter()] = 2.5;
+
+      StrahlkorperFunctions::time_deriv_of_strahlkorper(
+          make_not_null(&time_deriv), previous_strahlkorpers);
+
+      const DataVector& coefs = time_deriv.coefficients();
+
+      DataVector expected_coefs{coefs.size(), 0.0};
+      expected_coefs[iter()] = -0.5;
+
+      CHECK_ITERABLE_APPROX(coefs, expected_coefs);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
@@ -477,4 +542,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
   test_normals();
   test_fit_ylm_coeffs_same();
   test_fit_ylm_coeffs_diff();
+  test_time_deriv_strahlkorper();
 }

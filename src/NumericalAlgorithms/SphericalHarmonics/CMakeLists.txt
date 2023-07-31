@@ -46,5 +46,6 @@ target_link_libraries(
   SPHEREPACK
   Utilities
   PRIVATE
+  FiniteDifference
   Interpolation
   )
