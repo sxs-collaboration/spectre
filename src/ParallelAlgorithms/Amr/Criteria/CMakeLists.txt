@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   DriveToTarget.cpp
   Random.cpp
+  TruncationError.cpp
   )
 
 spectre_target_headers(
@@ -20,6 +21,7 @@ spectre_target_headers(
   Criterion.hpp
   DriveToTarget.hpp
   Random.hpp
+  TruncationError.hpp
   )
 
 add_dependencies(
@@ -36,6 +38,8 @@ target_link_libraries(
   Parallel
   Spectral
   Utilities
+  PRIVATE
+  LinearOperators
   )
 
 add_subdirectory(Tags)
