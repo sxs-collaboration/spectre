@@ -70,6 +70,8 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
  * average with larger weights toward the highest modes. This number should
  * correspond to the number of digits resolved by the spectral expansion.
  *
+ * \note Modes that are identically zero are ignored in the weighted average.
+ *
  * \details The number of modes (`num_modes_to_use`) argument needs to be less
  * or equal than the total number of power monitors (`power_monitor.size()`).
  * In contrast with Ref. \cite Szilagyi2014fna, here we index the modes starting

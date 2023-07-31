@@ -69,15 +69,14 @@ double relative_truncation_error(const DataVector& power_monitor,
   double weight_value = 0.0;
   const size_t last_index = num_modes_to_use - 1;
   for (size_t index = 0; index <= last_index; ++index) {
+    const double mode = power_monitor[index];
+    if (mode == 0.) {
+      continue;
+    }
     // Compute current weight
     weight_value =
         exp(-square(index - static_cast<double>(last_index) + 0.5));
     // Add weighted power monitor
-    const double mode = power_monitor[index];
-    ASSERT(not(mode == 0.0),
-           "A power monitor is zero bitwise. If this is one of "
-           "the highest modes, reduce the number of power monitors used to "
-           "estimate the relative truncation error.");
     weighted_average += weight_value * log10(mode);
     // Add term to weighted sum
     weight_sum += weight_value;
