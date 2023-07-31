@@ -5,8 +5,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Callbacks.hpp
-  ObserveLineSegment.hpp
-  ObserveSurfaceData.hpp
-  ObserveTimeSeriesOnSurface.hpp
+  ErrorOnFailedApparentHorizon.hpp
+  FindApparentHorizon.hpp
+  IgnoreFailedApparentHorizon.hpp
   )

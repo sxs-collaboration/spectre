@@ -31,7 +31,6 @@ add_dependencies(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  ApparentHorizons
   DataStructures
   Domain
   ErrorHandling

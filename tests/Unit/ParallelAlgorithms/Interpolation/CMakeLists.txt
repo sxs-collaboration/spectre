@@ -13,7 +13,6 @@ set(LIBRARY_SOURCES
   Test_InitializeInterpolator.cpp
   Test_Interpolate.cpp
   Test_InterpolateWithoutInterpComponent.cpp
-  Test_InterpolationTargetApparentHorizon.cpp
   Test_InterpolationTargetKerrHorizon.cpp
   Test_InterpolationTargetLineSegment.cpp
   Test_InterpolationTargetReceiveVars.cpp

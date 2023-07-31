@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <vector>
 
+#include "ApparentHorizons/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
+#include "ApparentHorizons/Callbacks/IgnoreFailedApparentHorizon.hpp"
 #include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
@@ -13,6 +16,7 @@
 #include "ApparentHorizons/ComputeItems.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
 #include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/Target.hpp"
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
@@ -42,9 +46,6 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/IgnoreFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
@@ -53,7 +54,6 @@
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"

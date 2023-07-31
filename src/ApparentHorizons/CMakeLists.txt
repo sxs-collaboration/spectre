@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
+  Target.cpp
   )
 
 spectre_target_headers(
@@ -25,6 +26,7 @@ spectre_target_headers(
   ObserveCenters.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  Target.hpp
   )
 
 target_link_libraries(
@@ -35,6 +37,7 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   LinearAlgebra
+  Logging
   Options
   SphericalHarmonics
   StrahlkorperGr
@@ -42,5 +45,10 @@ target_link_libraries(
   CoordinateMaps
   Domain
   INTERFACE
+  Initialization
   Observer
+  Parallel
+  ParallelInterpolation
   )
+
+  add_subdirectory(Callbacks)

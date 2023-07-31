@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
+  Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
   Test_Tags.cpp
   )
