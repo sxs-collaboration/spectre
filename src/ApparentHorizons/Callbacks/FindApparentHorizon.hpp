@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -161,7 +162,7 @@ struct FindApparentHorizon
       // search, because only now do we know the temporal_id of this horizon
       // search.
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-                 ::ah::Tags::PreviousStrahlkorpers<Frame>>(
+                 StrahlkorperTags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
               const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<
@@ -292,7 +293,7 @@ struct FindApparentHorizon
             // to be in previous_strahlkorpers).
             *strahlkorper = previous_strahlkorpers.front().second;
           },
-          box, db::get<::ah::Tags::PreviousStrahlkorpers<Frame>>(*box));
+          box, db::get<StrahlkorperTags::PreviousStrahlkorpers<Frame>>(*box));
     } else {
       // The interpolated variables
       // Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
@@ -366,7 +367,7 @@ struct FindApparentHorizon
       // in case any of the callbacks need the previous strahlkorpers with the
       // current strahlkorper already in it.
       db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-                 ::ah::Tags::PreviousStrahlkorpers<Frame>>(
+                 StrahlkorperTags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
               const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<

@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

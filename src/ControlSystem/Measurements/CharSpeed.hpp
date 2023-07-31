@@ -11,7 +11,6 @@
 #include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/Tags.hpp"
 #include "ApparentHorizons/Target.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
@@ -28,6 +27,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -157,7 +157,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
       using compute_items_on_target = tmpl::push_back<
           ::ah::compute_items_on_target<3, Frame::Distorted>,
-          ::ah::Tags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
+          StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Distorted>;

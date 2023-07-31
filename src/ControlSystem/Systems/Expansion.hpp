@@ -8,7 +8,6 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
@@ -27,6 +26,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

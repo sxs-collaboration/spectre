@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
-#include "ApparentHorizons/ComputeItems.hpp"
-#include "ApparentHorizons/Tags.hpp"
 #include "ApparentHorizons/Target.hpp"
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
@@ -195,6 +193,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"

@@ -28,6 +28,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AreaElement.hpp
+  ComputeItems.hpp
   EuclidianAreaElement.hpp
   EuclidianSurfaceIntegralOfVector.hpp
   Expansion.hpp
@@ -39,6 +40,8 @@ spectre_target_headers(
   RicciScalar.hpp
   Spin.hpp
   SurfaceIntegralOfScalar.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
   UnitNormalOneForm.hpp
 )
 

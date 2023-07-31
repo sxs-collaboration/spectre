@@ -9,7 +9,6 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size.hpp"
 #include "ControlSystem/Measurements/CharSpeed.hpp"
@@ -28,6 +27,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -99,7 +99,7 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
             gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
             gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>>,
         tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>,
-                   ::ah::Tags::TimeDerivStrahlkorper<Frame::Distorted>>>;
+                   StrahlkorperTags::TimeDerivStrahlkorper<Frame::Distorted>>>;
 
     template <typename Metavariables>
     static void apply(

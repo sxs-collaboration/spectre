@@ -20,12 +20,10 @@ spectre_target_headers(
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
-  ComputeItems.hpp
   FastFlow.hpp
   HorizonAliases.hpp
   ObserveCenters.hpp
   Tags.hpp
-  TagsDeclarations.hpp
   Target.hpp
   )
 

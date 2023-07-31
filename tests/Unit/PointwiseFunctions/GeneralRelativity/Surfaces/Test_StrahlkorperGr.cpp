@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <random>
 
-#include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
@@ -44,6 +43,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/RicciScalar.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Spin.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/UnitNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"

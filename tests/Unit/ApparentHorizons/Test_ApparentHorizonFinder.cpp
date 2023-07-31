@@ -16,7 +16,6 @@
 #include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
-#include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Target.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
