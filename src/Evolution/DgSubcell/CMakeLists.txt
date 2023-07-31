@@ -15,6 +15,7 @@ spectre_target_headers(
   ComputeBoundaryTerms.hpp
   CorrectPackagedData.hpp
   DgSubcell.hpp
+  GetActiveTag.hpp
   GetTciDecision.hpp
   GhostData.hpp
   GhostZoneLogicalCoordinates.hpp

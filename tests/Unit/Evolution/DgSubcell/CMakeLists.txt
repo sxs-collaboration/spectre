@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_CellCenteredFlux.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
+  Test_GetActiveTag.cpp
   Test_GetTciDecision.cpp
   Test_GhostData.cpp
   Test_GhostZoneLogicalCoordinates.cpp
