@@ -11,8 +11,6 @@
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
-#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -27,18 +25,14 @@
 #include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
 
 /// \cond
-namespace domain {
-namespace Tags {
-template <size_t VolumeDim>
-struct Mesh;
-}  // namespace Tags
-}  // namespace domain
+namespace Events::Tags {
+template <size_t Dim>
+struct ObserverMesh;
+}  // namespace Events::Tags
 namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-template <size_t Dim>
-class Mesh;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {
@@ -53,10 +47,6 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
           typename Metavariables, typename SourceVarTags>
 class InterpolateWithoutInterpComponent;
 /// \endcond
-
-namespace detail {
-CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(use_dg_subcell)
-}  // namespace detail
 
 /// Does an interpolation onto an InterpolationTargetTag by calling Actions on
 /// the InterpolationTarget component.
@@ -85,16 +75,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using argument_tags = tmpl::conditional_t<
-      detail::get_use_dg_subcell_or_default_v<Metavariables, false>,
+  using argument_tags =
       tmpl::list<typename InterpolationTargetTag::temporal_id,
                  Tags::InterpPointInfo<Metavariables>,
-                 domain::Tags::Mesh<VolumeDim>,
-                 evolution::dg::subcell::Tags::Mesh<VolumeDim>,
-                 evolution::dg::subcell::Tags::ActiveGrid, SourceVarTags...>,
-      tmpl::list<typename InterpolationTargetTag::temporal_id,
-                 Tags::InterpPointInfo<Metavariables>,
-                 domain::Tags::Mesh<VolumeDim>, SourceVarTags...>>;
+                 ::Events::Tags::ObserverMesh<VolumeDim>, SourceVarTags...>;
 
   template <typename ParallelComponent>
   void operator()(
@@ -199,28 +183,6 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         block_logical_coords,
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
         temporal_id);
-  }
-
-  template <typename ParallelComponent>
-  void operator()(
-      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
-      const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
-      const Mesh<VolumeDim>& dg_mesh, const Mesh<VolumeDim>& subcell_mesh,
-      const evolution::dg::subcell::ActiveGrid active_grid,
-      const typename SourceVarTags::type&... source_vars,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const meta,
-      const ObservationValue& observation_value) const {
-    if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      this->operator()(temporal_id, point_infos, dg_mesh, source_vars..., cache,
-                       array_index, meta, observation_value);
-    } else {
-      ASSERT(active_grid == evolution::dg::subcell::ActiveGrid::Subcell,
-             "Active grid must be either Dg or Subcell");
-      this->operator()(temporal_id, point_infos, subcell_mesh, source_vars...,
-                       cache, array_index, meta, observation_value);
-    }
   }
 
   using is_ready_argument_tags = tmpl::list<>;

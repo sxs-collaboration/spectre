@@ -47,6 +47,7 @@ target_link_libraries(
   Domain
   DomainCreators
   DomainStructure
+  Events
   GeneralRelativitySolutions
   H5
   Interpolation
