@@ -178,10 +178,10 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
-            ::fd::reconstruction::detail::Wcns5zReconstructor<2, void>, false,
-            2>(tensor_component_on_face_ptr, tensor_component_volume,
-               tensor_component_neighbor, subcell_extents, ghost_data_extents,
-               local_direction_to_reconstruct, 1.0e-17, 0_st);
+            ::fd::reconstruction::detail::UnlimitedReconstructor<2>>(
+            tensor_component_on_face_ptr, tensor_component_volume,
+            tensor_component_neighbor, subcell_extents, ghost_data_extents,
+            local_direction_to_reconstruct);
       },
       [](const auto tensor_component_on_face_ptr,
          const auto& tensor_component_volume,
@@ -204,10 +204,10 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
-            ::fd::reconstruction::detail::Wcns5zReconstructor<2, void>, false,
-            2>(tensor_component_on_face_ptr, tensor_component_volume,
-               tensor_component_neighbor, subcell_extents, ghost_data_extents,
-               local_direction_to_reconstruct, 1.0e-17, 0_st);
+            ::fd::reconstruction::detail::UnlimitedReconstructor<2>>(
+            tensor_component_on_face_ptr, tensor_component_volume,
+            tensor_component_neighbor, subcell_extents, ghost_data_extents,
+            local_direction_to_reconstruct);
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
