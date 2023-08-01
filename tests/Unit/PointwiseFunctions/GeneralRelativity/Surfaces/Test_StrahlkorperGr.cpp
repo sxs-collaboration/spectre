@@ -33,7 +33,6 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianAreaElement.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianSurfaceIntegralOfVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Expansion.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
@@ -43,6 +42,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/RicciScalar.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Spin.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/UnitNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"

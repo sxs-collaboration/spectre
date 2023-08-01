@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianSurfaceIntegralOfVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfVector.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"

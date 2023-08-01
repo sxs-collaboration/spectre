@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   AreaElement.cpp
   EuclidianAreaElement.cpp
-  EuclidianSurfaceIntegralOfVector.cpp
   Expansion.cpp
   ExtrinsicCurvature.cpp
   GradUnitNormalOneForm.cpp
@@ -20,6 +19,7 @@ spectre_target_sources(
   RicciScalar.cpp
   Spin.cpp
   SurfaceIntegralOfScalar.cpp
+  SurfaceIntegralOfVector.cpp
   UnitNormalOneForm.cpp
 )
 
@@ -30,8 +30,6 @@ spectre_target_headers(
   AreaElement.hpp
   ComputeItems.hpp
   EuclidianAreaElement.hpp
-  EuclidianSurfaceIntegralOfVector.hpp
-  Expansion.hpp
   ExtrinsicCurvature.hpp
   GradUnitNormalOneForm.hpp
   InverseSurfaceMetric.hpp
@@ -40,6 +38,8 @@ spectre_target_headers(
   RicciScalar.hpp
   Spin.hpp
   SurfaceIntegralOfScalar.hpp
+  SurfaceIntegralOfVector.hpp
+  Expansion.hpp
   Tags.hpp
   TagsDeclarations.hpp
   UnitNormalOneForm.hpp
