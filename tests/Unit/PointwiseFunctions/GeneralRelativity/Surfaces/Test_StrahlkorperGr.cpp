@@ -32,7 +32,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianAreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Expansion.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"

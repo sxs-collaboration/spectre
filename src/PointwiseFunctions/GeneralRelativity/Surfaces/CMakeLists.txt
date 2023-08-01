@@ -9,7 +9,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AreaElement.cpp
-  EuclidianAreaElement.cpp
   Expansion.cpp
   ExtrinsicCurvature.cpp
   GradUnitNormalOneForm.cpp
@@ -29,7 +28,6 @@ spectre_target_headers(
   HEADERS
   AreaElement.hpp
   ComputeItems.hpp
-  EuclidianAreaElement.hpp
   ExtrinsicCurvature.hpp
   GradUnitNormalOneForm.hpp
   InverseSurfaceMetric.hpp

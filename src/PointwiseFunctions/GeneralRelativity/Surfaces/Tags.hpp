@@ -18,7 +18,6 @@
 #include "NumericalAlgorithms/SphericalHarmonics/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Surfaces/EuclidianAreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Mass.hpp"
