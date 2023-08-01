@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -31,6 +32,15 @@ namespace Actions {
 struct RegisterElementWithSelf;
 }  // namespace Actions
 }  // namespace importers
+namespace evolution::dg::subcell {
+template <typename DgTag, typename SubcellTag, typename DbTagsList>
+const typename DgTag::type& get_active_tag(const db::DataBox<DbTagsList>& box);
+namespace Tags {
+template <size_t Dim, typename Frame>
+struct Coordinates;
+struct ActiveGrid;
+}  // namespace Tags
+}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace importers::Actions {
@@ -40,6 +50,11 @@ namespace importers::Actions {
  *
  * Invoke this action on each element of an array parallel component to register
  * them for receiving imported volume data.
+ *
+ * \note If the tags `evolution::dg::subcell::Tags::ActiveGrid` and
+ * `evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>` are
+ * retrievable from the DataBox, then interpolation to the FD/subcell grid is
+ * possible.
  *
  * \see Dev guide on \ref dev_guide_importing
  */
@@ -55,12 +70,28 @@ struct RegisterWithElementDataReader {
     auto& local_reader_component = *Parallel::local_branch(
         Parallel::get_parallel_component<
             importers::ElementDataReader<Metavariables>>(cache));
+    const auto& coords = [&box]() {
+      if constexpr (db::tag_is_retrievable_v<
+                        evolution::dg::subcell::Tags::ActiveGrid,
+                        db::DataBox<DbTagsList>> and
+                    db::tag_is_retrievable_v<
+                        evolution::dg::subcell::Tags::Coordinates<
+                            Dim, Frame::Inertial>,
+                        db::DataBox<DbTagsList>>) {
+        return evolution::dg::subcell::get_active_tag<
+            domain::Tags::Coordinates<Dim, Frame::Inertial>,
+            evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
+            box);
+      } else {
+        return db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+      }
+    }();
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
-        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box));
+        coords);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

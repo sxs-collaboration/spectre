@@ -29,6 +29,7 @@ target_link_libraries(
   Options
   INTERFACE
   DataStructures
+  Domain
   DomainStructure
   Initialization
   Interpolation

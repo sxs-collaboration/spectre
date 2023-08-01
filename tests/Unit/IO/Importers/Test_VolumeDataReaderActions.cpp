@@ -17,6 +17,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/GetActiveTag.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
@@ -53,17 +57,22 @@ struct TestVolumeData {};
 
 using ElementIdType = ElementId<2>;
 
-template <typename Metavariables>
+template <typename Metavariables, bool AddSubcell>
 struct MockElementArray {
   using component_being_mocked = void;  // Not needed
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIdType;
+  using extra_tags_for_subcell = tmpl::conditional_t<
+      AddSubcell,
+      tmpl::list<evolution::dg::subcell::Tags::ActiveGrid,
+                 evolution::dg::subcell::Tags::Coordinates<2, Frame::Inertial>>,
+      tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
-                         import_tags_list,
+                         tmpl::append<import_tags_list, extra_tags_for_subcell>,
                          domain::Tags::Coordinates<2, Frame::Inertial>>>,
                      importers::Actions::RegisterWithElementDataReader>>,
       Parallel::PhaseActions<
@@ -85,20 +94,28 @@ struct MockVolumeDataReader {
           metavariables::volume_dim>>>>;
 };
 
+template <bool AddSubcell>
 struct Metavariables {
   static constexpr size_t volume_dim = 2;
-  using component_list = tmpl::list<MockElementArray<Metavariables>,
+  using component_list = tmpl::list<MockElementArray<Metavariables, AddSubcell>,
                                     MockVolumeDataReader<Metavariables>>;
 };
 
+template <bool AddSubcell>
 void test_actions(const std::variant<double, importers::ObservationSelector>&
-                      observation_selection) {
-  using reader_component = MockVolumeDataReader<Metavariables>;
-  using element_array = MockElementArray<Metavariables>;
+                      observation_selection,
+                  const bool subcell_is_active) {
+  CAPTURE(AddSubcell);
+  CAPTURE(subcell_is_active);
+  if (subcell_is_active) {
+    REQUIRE(AddSubcell);
+  }
+  using metavars = Metavariables<AddSubcell>;
+  using reader_component = MockVolumeDataReader<metavars>;
+  using element_array = MockElementArray<metavars, AddSubcell>;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {importers::ImporterOptions{"TestVolumeData*.h5", "element_data",
-                                  observation_selection, false}}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{importers::ImporterOptions{
+      "TestVolumeData*.h5", "element_data", observation_selection, false}}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -150,15 +167,25 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
 
     // Initialize element with no data, it should be populated from the volume
     // data file
-    ActionTesting::emplace_component_and_initialize<element_array>(
-        make_not_null(&runner), ElementIdType{id},
-        {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}, coords});
+    if constexpr (AddSubcell) {
+      ActionTesting::emplace_component_and_initialize<element_array>(
+          make_not_null(&runner), ElementIdType{id},
+          {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{},
+           subcell_is_active ? evolution::dg::subcell::ActiveGrid::Subcell
+                             : evolution::dg::subcell::ActiveGrid::Dg,
+           subcell_is_active ? coords : tnsr::I<DataVector, 2>{},
+           subcell_is_active ? tnsr::I<DataVector, 2>{} : coords});
+    } else {
+      ActionTesting::emplace_component_and_initialize<element_array>(
+          make_not_null(&runner), ElementIdType{id},
+          {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}, coords});
+    }
 
     // Register element
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
     // Invoke the simple_action RegisterElementWithSelf that was called on the
     // reader component by the RegisterWithElementDataReader action.
-    runner.invoke_queued_simple_action<reader_component>(0);
+    runner.template invoke_queued_simple_action<reader_component>(0);
   }
 
   const auto get_element_tag =
@@ -222,7 +249,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
           (first_invocation ? 0 : 1));
     // Invoke the simple_action `ReadAllVolumeDataAndDistribute` that was called
     // on the reader component by the `ReadVolumeData` action.
-    runner.invoke_queued_simple_action<reader_component>(0);
+    runner.template invoke_queued_simple_action<reader_component>(0);
     CAPTURE(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}));
     CHECK(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}).size() ==
           1);
@@ -246,8 +273,16 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
-  test_actions(0.);
-  test_actions(importers::ObservationSelector::First);
-  test_actions(importers::ObservationSelector::Last);
+  test_actions<false>(0., false);
+  test_actions<false>(importers::ObservationSelector::First, false);
+  test_actions<false>(importers::ObservationSelector::Last, false);
+
+  for (const bool subcell_is_active : {false, true}) {
+    test_actions<true>(0., subcell_is_active);
+    test_actions<true>(importers::ObservationSelector::First,
+                       subcell_is_active);
+    test_actions<true>(importers::ObservationSelector::Last, subcell_is_active);
+  }
 }

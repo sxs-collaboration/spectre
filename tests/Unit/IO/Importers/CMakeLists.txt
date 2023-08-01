@@ -46,6 +46,7 @@ function(add_algorithm_test TEST_NAME DIM)
     ${EXECUTABLE_NAME}
     PRIVATE
     DataStructures
+    DgSubcell
     Domain
     DomainCreators
     DomainStructure
