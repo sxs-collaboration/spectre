@@ -359,8 +359,7 @@ bool Composition<Frames, Dim, std::index_sequence<Is...>>::is_equal_to(
     const CoordinateMapBase<SourceFrame, TargetFrame, Dim>& other) const {
   const auto& cast_of_other = dynamic_cast<const Composition&>(other);
 
-  return ((function_of_time_names_ == cast_of_other.function_of_time_names_) and
-          ... and (*get<Is>(maps_) == *get<Is>(cast_of_other.maps_)));
+  return (... and (*get<Is>(maps_) == *get<Is>(cast_of_other.maps_)));
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
