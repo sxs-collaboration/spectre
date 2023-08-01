@@ -75,7 +75,6 @@ target_link_libraries(
   LinearOperators
   INTERFACE
   FunctionsOfTime
-  Time
 )
 
 add_subdirectory(Amr)
