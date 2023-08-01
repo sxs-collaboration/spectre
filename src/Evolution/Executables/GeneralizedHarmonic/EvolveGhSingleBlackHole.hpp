@@ -14,7 +14,7 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/Target.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"

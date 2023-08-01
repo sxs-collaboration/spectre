@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ApparentHorizons/Target.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 
 #include <algorithm>
 

@@ -9,7 +9,7 @@
 #include "ApparentHorizons/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/Target.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/Creators/Factory3D.hpp"

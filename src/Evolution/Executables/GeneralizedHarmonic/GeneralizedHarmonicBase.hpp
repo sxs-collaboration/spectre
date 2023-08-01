@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
-#include "ApparentHorizons/Target.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/Factory1D.hpp"

@@ -10,7 +10,7 @@
 #include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/Target.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"

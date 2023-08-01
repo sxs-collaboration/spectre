@@ -9,7 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
-  Target.cpp
+  InterpolationTarget.cpp
   )
 
 spectre_target_headers(
@@ -22,9 +22,9 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.tpp
   FastFlow.hpp
   HorizonAliases.hpp
+  InterpolationTarget.hpp
   ObserveCenters.hpp
   Tags.hpp
-  Target.hpp
   )
 
 target_link_libraries(
