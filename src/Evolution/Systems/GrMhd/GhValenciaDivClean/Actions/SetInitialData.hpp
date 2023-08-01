@@ -12,6 +12,11 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
@@ -233,10 +238,30 @@ struct SetInitialData {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ParallelComponent* const /*meta*/) {
     // Get ADM + hydro variables from analytic data / solution
-    const auto& x =
-        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box);
+    const auto& [coords, mesh, inv_jacobian] = [&box]() {
+      if constexpr (db::tag_is_retrievable_v<
+                        evolution::dg::subcell::Tags::ActiveGrid,
+                        db::DataBox<DbTagsList>>) {
+        const bool on_subcell =
+            db::get<evolution::dg::subcell::Tags::ActiveGrid>(*box) ==
+            evolution::dg::subcell::ActiveGrid::Subcell;
+        if (on_subcell) {
+          return std::forward_as_tuple(
+              db::get<evolution::dg::subcell::Tags::Coordinates<
+                  Dim, Frame::Inertial>>(*box),
+              db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box),
+              db::get<evolution::dg::subcell::fd::Tags::
+                          InverseJacobianLogicalToInertial<Dim>>(*box));
+        }
+      }
+      return std::forward_as_tuple(
+          db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box),
+          db::get<domain::Tags::Mesh<Dim>>(*box),
+          db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                Frame::Inertial>>(*box));
+    }();
     auto vars = evolution::Initialization::initial_data(
-        initial_data, x, db::get<::Tags::Time>(*box),
+        initial_data, coords, db::get<::Tags::Time>(*box),
         tmpl::append<tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
                                 gr::Tags::Lapse<DataVector>,
                                 gr::Tags::Shift<DataVector, 3>,
@@ -250,10 +275,6 @@ struct SetInitialData {
         get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars);
 
     // Compute GH vars from ADM vars
-    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
-    const auto& inv_jacobian =
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                              Frame::Inertial>>(*box);
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>(
         &gh::initial_gh_variables_from_adm<3>, box, spatial_metric, lapse,
@@ -315,10 +336,25 @@ struct ReceiveNumericInitialData {
     }
     auto numeric_data = std::move(inbox.extract(volume_data_id).mapped());
 
-    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    const auto& inv_jacobian =
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                              Frame::Inertial>>(box);
+    const auto& [mesh, inv_jacobian] = [&box]() {
+      if constexpr (db::tag_is_retrievable_v<
+                        evolution::dg::subcell::Tags::ActiveGrid,
+                        db::DataBox<DbTagsList>>) {
+        const bool on_subcell =
+            db::get<evolution::dg::subcell::Tags::ActiveGrid>(box) ==
+            evolution::dg::subcell::ActiveGrid::Subcell;
+        if (on_subcell) {
+          return std::forward_as_tuple(
+              db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box),
+              db::get<evolution::dg::subcell::fd::Tags::
+                          InverseJacobianLogicalToInertial<Dim>>(box));
+        }
+      }
+      return std::forward_as_tuple(
+          db::get<domain::Tags::Mesh<Dim>>(box),
+          db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                Frame::Inertial>>(box));
+    }();
     const auto& equation_of_state =
         db::get<hydro::Tags::EquationOfStateBase>(box);
 
@@ -333,8 +369,7 @@ struct ReceiveNumericInitialData {
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::SpecificEnthalpy<DataVector>>(
-        [&initial_data, &numeric_data, &mesh, &inv_jacobian,
-         &equation_of_state](
+        [&initial_data, &numeric_data, &equation_of_state](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
             const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
             const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi,
@@ -346,15 +381,16 @@ struct ReceiveNumericInitialData {
             const gsl::not_null<Scalar<DataVector>*> div_cleaning_field,
             const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
             const gsl::not_null<Scalar<DataVector>*> pressure,
-            const gsl::not_null<Scalar<DataVector>*> specific_enthalpy) {
+            const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+            const auto& local_mesh, const auto& local_inv_jacobian) {
           initial_data.set_initial_data(
               spacetime_metric, pi, phi, rest_mass_density, electron_fraction,
               specific_internal_energy, spatial_velocity, magnetic_field,
               div_cleaning_field, lorentz_factor, pressure, specific_enthalpy,
-              make_not_null(&numeric_data), mesh, inv_jacobian,
+              make_not_null(&numeric_data), local_mesh, local_inv_jacobian,
               equation_of_state);
         },
-        make_not_null(&box));
+        make_not_null(&box), mesh, inv_jacobian);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

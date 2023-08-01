@@ -18,6 +18,7 @@ spectre_target_headers(
   GetTciDecision.hpp
   GhostData.hpp
   GhostZoneLogicalCoordinates.hpp
+  InitialTciData.hpp
   Matrices.hpp
   Mesh.hpp
   NeighborRdmpAndVolumeData.hpp
@@ -45,6 +46,7 @@ spectre_target_sources(
   CartesianFluxDivergence.cpp
   GhostData.cpp
   GhostZoneLogicalCoordinates.cpp
+  InitialTciData.cpp
   Matrices.cpp
   Mesh.cpp
   NeighborRdmpAndVolumeData.cpp

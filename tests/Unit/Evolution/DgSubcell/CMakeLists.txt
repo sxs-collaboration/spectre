@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_GetTciDecision.cpp
   Test_GhostData.cpp
   Test_GhostZoneLogicalCoordinates.cpp
+  Test_InitialTciData.cpp
   Test_JacobianCompute.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp

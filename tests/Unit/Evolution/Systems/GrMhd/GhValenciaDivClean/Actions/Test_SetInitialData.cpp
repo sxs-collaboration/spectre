@@ -20,6 +20,11 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -59,15 +64,22 @@ struct MockElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-              ::Tags::Variables<all_ghmhd_vars>,
-              hydro::Tags::EquationOfState<
-                  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
-              domain::Tags::Mesh<3>,
-              domain::Tags::Coordinates<3, Frame::Inertial>,
-              domain::Tags::InverseJacobian<3, Frame::ElementLogical,
-                                            Frame::Inertial>,
-              ::Tags::Time>>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::list<
+                  ::Tags::Variables<all_ghmhd_vars>,
+                  hydro::Tags::EquationOfState<std::unique_ptr<
+                      EquationsOfState::EquationOfState<true, 1>>>,
+                  domain::Tags::Mesh<3>,
+                  domain::Tags::Coordinates<3, Frame::Inertial>,
+                  domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                                Frame::Inertial>,
+                  ::Tags::Time, evolution::dg::subcell::Tags::ActiveGrid,
+                  evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
+                  evolution::dg::subcell::fd::Tags::
+                      InverseJacobianLogicalToInertial<3>>,
+              db::AddComputeTags<evolution::dg::subcell::Tags::MeshCompute<3>,
+                                 evolution::dg::subcell::Tags::
+                                     LogicalCoordinatesCompute<3>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<
@@ -128,7 +140,8 @@ struct Metavariables {
 
 void test_set_initial_data(
     const evolution::initial_data::InitialData& initial_data,
-    const std::string& option_string, const bool is_numeric) {
+    const std::string& option_string, const bool is_numeric,
+    const evolution::dg::subcell::ActiveGrid active_grid) {
   {
     INFO("Factory creation");
     const auto created = TestHelpers::test_creation<
@@ -162,22 +175,32 @@ void test_set_initial_data(
 
   // Setup element
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-  const size_t num_points = mesh.number_of_grid_points();
+  const Mesh<3> dg_mesh{8, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const size_t dg_num_points = dg_mesh.number_of_grid_points();
+  const size_t subcell_num_points = subcell_mesh.number_of_grid_points();
   const auto map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           domain::CoordinateMaps::Wedge<3>{
               0.75 * star_radius, star_radius * 1.25, 1., 1., {}, true});
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto coords = map(logical_coords);
-  auto inv_jacobian = map.inv_jacobian(logical_coords);
+  const auto dg_logical_coords = logical_coordinates(dg_mesh);
+  const auto dg_coords = map(dg_logical_coords);
+  const auto dg_inv_jacobian = map.inv_jacobian(dg_logical_coords);
+  const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
+  const auto subcell_coords = map(subcell_logical_coords);
+  const auto subcell_inv_jacobian = map.inv_jacobian(subcell_logical_coords);
+  const bool subcell_active =
+      active_grid == evolution::dg::subcell::ActiveGrid::Subcell;
+  const auto& active_coords = subcell_active ? subcell_coords : dg_coords;
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
-      {Variables<all_ghmhd_vars>{num_points}, eos.get_clone(), mesh, coords,
-       std::move(inv_jacobian), 0.});
+      {Variables<all_ghmhd_vars>{subcell_active ? subcell_num_points
+                                                : dg_num_points},
+       eos.get_clone(), dg_mesh, dg_coords, dg_inv_jacobian, 0., active_grid,
+       subcell_coords, subcell_inv_jacobian});
   auto tov_vars = tov_star.variables(
-      coords, 0.,
+      active_coords, 0.,
       tmpl::append<hydro::grmhd_tags<DataVector>, gh_system_vars,
                    tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>>{});
 
@@ -222,7 +245,7 @@ void test_set_initial_data(
     } else if (std::holds_alternative<gh::NumericInitialData::AdmVars>(
                    gh_selected_vars)) {
       const auto tov_adm_vars = tov_star.variables(
-          coords, 0.,
+          active_coords, 0.,
           tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
                      gr::Tags::Lapse<DataVector>,
                      gr::Tags::Shift<DataVector, 3>,
@@ -307,68 +330,72 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
                   "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
   EquationsOfState::register_derived_with_charm();
-  test_set_initial_data(
-      NumericInitialData{
-          "TestInitialData.h5",
-          "VolumeData",
-          0.,
-          false,
-          gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"},
-          {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
-          1.e-14},
-      "NumericInitialData:\n"
-      "  FileGlob: TestInitialData.h5\n"
-      "  Subgroup: VolumeData\n"
-      "  ObservationValue: 0.\n"
-      "  Interpolate: False\n"
-      "  GhVariables:\n"
-      "    SpacetimeMetric: CustomSpacetimeMetric\n"
-      "    Pi: CustomPi\n"
-      "  HydroVariables:\n"
-      "    RestMassDensity: CustomRho\n"
-      "    LowerSpatialFourVelocity: CustomUi\n"
-      "    ElectronFraction: CustomYe\n"
-      "    MagneticField: CustomB\n"
-      "  DensityCutoff: 1.e-14",
-      true);
-  test_set_initial_data(
-      NumericInitialData{"TestInitialData.h5",
-                         "VolumeData",
-                         0.,
-                         false,
-                         gh::NumericInitialData::AdmVars{
-                             "CustomSpatialMetric", "CustomLapse",
-                             "CustomShift", "CustomExtrinsicCurvature"},
-                         {"CustomRho", "CustomUi", 0.15, 0.},
-                         1.e-14},
-      "NumericInitialData:\n"
-      "  FileGlob: TestInitialData.h5\n"
-      "  Subgroup: VolumeData\n"
-      "  ObservationValue: 0.\n"
-      "  Interpolate: False\n"
-      "  GhVariables:\n"
-      "    SpatialMetric: CustomSpatialMetric\n"
-      "    Lapse: CustomLapse\n"
-      "    Shift: CustomShift\n"
-      "    ExtrinsicCurvature: CustomExtrinsicCurvature\n"
-      "  HydroVariables:\n"
-      "    RestMassDensity: CustomRho\n"
-      "    LowerSpatialFourVelocity: CustomUi\n"
-      "    ElectronFraction: 0.15\n"
-      "    MagneticField: 0.\n"
-      "  DensityCutoff: 1.e-14",
-      true);
-  test_set_initial_data(
-      TovStar{1.e-3, std::make_unique<EquationsOfState::PolytropicFluid<true>>(
-                         100., 2.)},
-      "TovStar:\n"
-      "  CentralDensity: 1.e-3\n"
-      "  EquationOfState:\n"
-      "    PolytropicFluid:\n"
-      "      PolytropicConstant: 100.\n"
-      "      PolytropicExponent: 2.\n"
-      "  Coordinates: Schwarzschild\n",
-      false);
+  for (const auto active_grid : {evolution::dg::subcell::ActiveGrid::Dg,
+                                 evolution::dg::subcell::ActiveGrid::Subcell}) {
+    test_set_initial_data(
+        NumericInitialData{
+            "TestInitialData.h5",
+            "VolumeData",
+            0.,
+            false,
+            gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"},
+            {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
+            1.e-14},
+        "NumericInitialData:\n"
+        "  FileGlob: TestInitialData.h5\n"
+        "  Subgroup: VolumeData\n"
+        "  ObservationValue: 0.\n"
+        "  Interpolate: False\n"
+        "  GhVariables:\n"
+        "    SpacetimeMetric: CustomSpacetimeMetric\n"
+        "    Pi: CustomPi\n"
+        "  HydroVariables:\n"
+        "    RestMassDensity: CustomRho\n"
+        "    LowerSpatialFourVelocity: CustomUi\n"
+        "    ElectronFraction: CustomYe\n"
+        "    MagneticField: CustomB\n"
+        "  DensityCutoff: 1.e-14",
+        true, active_grid);
+    test_set_initial_data(
+        NumericInitialData{"TestInitialData.h5",
+                           "VolumeData",
+                           0.,
+                           false,
+                           gh::NumericInitialData::AdmVars{
+                               "CustomSpatialMetric", "CustomLapse",
+                               "CustomShift", "CustomExtrinsicCurvature"},
+                           {"CustomRho", "CustomUi", 0.15, 0.},
+                           1.e-14},
+        "NumericInitialData:\n"
+        "  FileGlob: TestInitialData.h5\n"
+        "  Subgroup: VolumeData\n"
+        "  ObservationValue: 0.\n"
+        "  Interpolate: False\n"
+        "  GhVariables:\n"
+        "    SpatialMetric: CustomSpatialMetric\n"
+        "    Lapse: CustomLapse\n"
+        "    Shift: CustomShift\n"
+        "    ExtrinsicCurvature: CustomExtrinsicCurvature\n"
+        "  HydroVariables:\n"
+        "    RestMassDensity: CustomRho\n"
+        "    LowerSpatialFourVelocity: CustomUi\n"
+        "    ElectronFraction: 0.15\n"
+        "    MagneticField: 0.\n"
+        "  DensityCutoff: 1.e-14",
+        true, active_grid);
+    test_set_initial_data(
+        TovStar{1.e-3,
+                std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.,
+                                                                          2.)},
+        "TovStar:\n"
+        "  CentralDensity: 1.e-3\n"
+        "  EquationOfState:\n"
+        "    PolytropicFluid:\n"
+        "      PolytropicConstant: 100.\n"
+        "      PolytropicExponent: 2.\n"
+        "  Coordinates: Schwarzschild\n",
+        false, active_grid);
+  }
 }
 
 }  // namespace
