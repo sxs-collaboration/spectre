@@ -136,8 +136,7 @@ void test_tags() {
   TestHelpers::db::test_simple_tag<Tags::ResourceInfo<metavars>>(
       "ResourceInfo");
 
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
-  Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
+  Parallel::GlobalCache<metavars> cache{};
   const SingletonInfoHolder<FakeSingleton<metavars, 0>> info_holder{{0}, false};
 
   ResourceInfo<metavars> resource_info{false, std::optional{info_holder}};
@@ -148,8 +147,7 @@ void test_single_core() {
   {
     INFO("AvoidGlobalProc0 and Singletons");
     using metavars = Metavariables<0>;
-    Parallel::MutableGlobalCache<metavars> mutable_cache{};
-    Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
+    Parallel::GlobalCache<metavars> cache{};
     // Both of these should be identical since we are running on one proc
     auto resource_info_0 =
         TestHelpers::test_option_tag<OptionTags::ResourceInfo<metavars>>(
@@ -211,8 +209,7 @@ void test_single_core() {
         TestHelpers::test_option_tag<OptionTags::ResourceInfo<metavars>>(
             "AvoidGlobalProc0: false\n"
             "Singletons: Auto\n");
-    Parallel::MutableGlobalCache<metavars> mutable_cache{};
-    Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
+    Parallel::GlobalCache<metavars> cache{};
     resource_info.build_singleton_map(cache);
     const size_t proc_0 =
         resource_info.template proc_for<FakeSingleton<metavars, 0>>();
@@ -236,8 +233,7 @@ void test_single_core() {
 
 void test_errors() {
   using metavars = Metavariables<0>;
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
-  Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
+  Parallel::GlobalCache<metavars> cache{};
 
   // Check as many errors as we can on one proc
   CHECK_THROWS_WITH(
@@ -459,9 +455,8 @@ void check_resource_info(
 
 template <typename Gen>
 void test_single_node_multi_core(const gsl::not_null<Gen*> gen) {
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
   // 1 node, 3 procs per node
-  Parallel::GlobalCache<metavars> cache{{}, &mutable_cache, {3}};
+  Parallel::GlobalCache<metavars> cache{{}, {}, {3}};
 
   INFO("1 node, 3 procs per node");
 
@@ -591,9 +586,8 @@ void test_single_node_multi_core(const gsl::not_null<Gen*> gen) {
 
 template <typename Gen>
 void test_multi_node_multi_core(const gsl::not_null<Gen*> gen) {
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
   // 3 nodes, 2 procs per node
-  Parallel::GlobalCache<metavars> cache{{}, &mutable_cache, {2, 2, 2}};
+  Parallel::GlobalCache<metavars> cache{{}, {}, {2, 2, 2}};
 
   INFO("3 nodes, 2 procs per node");
 
@@ -743,10 +737,8 @@ void test_multi_node_multi_core(const gsl::not_null<Gen*> gen) {
     INFO(
         "AvoidGlobalProc0 false; Mix and match singletons #9: Different number "
         "of procs on node");
-    Parallel::MutableGlobalCache<metavars> local_mutable_cache{};
     // 3 nodes, (1,2,2) procs on each node
-    Parallel::GlobalCache<metavars> local_cache{
-        {}, &local_mutable_cache, {1, 2, 2}};
+    Parallel::GlobalCache<metavars> local_cache{{}, {}, {1, 2, 2}};
     std::vector<std::pair<bool, int>> singletons{
         {false, -1}, {true, -1}, {false, -1}, {false, -1},
         {true, -1},  {true, 0},  {true, 1}};
@@ -760,13 +752,12 @@ void test_multi_node_multi_core(const gsl::not_null<Gen*> gen) {
 
 template <typename Gen>
 void test_multi_node_multi_core_large(const gsl::not_null<Gen*> gen) {
-  Parallel::MutableGlobalCache<metavars> mutable_cache{};
   // 8 nodes, 25 procs per node
   const size_t num_nodes = 8;
   const size_t num_procs_per_node = 25;
   const size_t num_procs = num_nodes * num_procs_per_node;
   Parallel::GlobalCache<metavars> cache{
-      {}, &mutable_cache, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
 
   INFO("8 nodes, 25 procs per node");
 

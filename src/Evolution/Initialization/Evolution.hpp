@@ -71,7 +71,7 @@ void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
 /// \brief Initialize items related to time stepping
 ///
 /// \details See the type aliases defined below for what items are added to the
-/// GlobalCache, MutableGlobalCache, and DataBox and how they are initialized
+/// GlobalCache and DataBox and how they are initialized
 ///
 /// Since the evolution has not started yet, initialize the state
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
@@ -86,7 +86,7 @@ struct TimeStepping {
   using const_global_cache_tags =
       tmpl::list<::Tags::TimeStepper<TimeStepperType>>;
 
-  /// Tags for mutable items added to the MutableGlobalCache.  These items are
+  /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using mutable_global_cache_tags = tmpl::list<>;
 

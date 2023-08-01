@@ -66,11 +66,10 @@ namespace Events {
  *
  * The parallel components available to monitor are the ones defined in the
  * `component_list` type alias in the metavariables. In addition to these
- * components, you can also monitor the size of the GlobalCache. Currently, you
- * cannot monitor the size of the MutableGlobalCache. To see which parallel
- * components are available to monitor, request to monitor an invalid parallel
- * component ("Blah" for example) in the input file. An ERROR will occur and a
- * list of the available components to monitor will be printed.
+ * components, you can also monitor the size of the GlobalCache. To see which
+ * parallel components are available to monitor, request to monitor an invalid
+ * parallel component ("Blah" for example) in the input file. An ERROR will
+ * occur and a list of the available components to monitor will be printed.
  *
  * \note Currently, the only Parallel::Algorithms::Array parallel component that
  * can be monitored is the DgElementArray itself.
@@ -306,22 +305,6 @@ void MonitorMemory<Dim>::operator()(
 
           // This will be called on all branches of the GlobalCache
           cache_proxy.compute_size_for_memory_monitor(observation_value.value);
-        } else if constexpr (std::is_same_v<
-                                 component,
-                                 Parallel::MutableGlobalCache<Metavariables>>) {
-          // Currently, this branch is unreachable because the
-          // MutableGlobalCache is not in `component_list` above. We keep the
-          // branch in anyways for consistency and because we anticipate to be
-          // able to monitor the MutableGlobalCache in the future.
-
-          // Can't run simple actions on the mutable cache so broadcast a
-          // specific entry method that will calculate the size and send it to
-          // the memory monitor
-          auto mutable_global_cache_proxy = cache.mutable_global_cache_proxy();
-
-          // This will be called on all branches of the MutableGlobalCache
-          mutable_global_cache_proxy.compute_size_for_memory_monitor(
-              cache.get_this_proxy(), observation_value.value);
         } else {
           // Groups and nodegroups share an action
           auto& group_proxy =

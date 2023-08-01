@@ -41,9 +41,9 @@ struct Component {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy);
     Parallel::get_parallel_component<Component>(local_cache)
         .start_phase(next_phase);
-    if constexpr (tmpl::list_contains_v<
-                      typename Parallel::GlobalCache<Metavariables>::tags_list,
-                      amr::Criteria::Tags::Criteria>) {
+    if constexpr (tmpl::list_contains_v<typename Parallel::GlobalCache<
+                                            Metavariables>::const_tags_list,
+                                        amr::Criteria::Tags::Criteria>) {
       if (Parallel::Phase::EvaluateAmrCriteria == next_phase) {
         Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
             Parallel::get_parallel_component<

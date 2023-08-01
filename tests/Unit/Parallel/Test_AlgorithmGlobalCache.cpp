@@ -228,9 +228,9 @@ struct use_stored_double {
 //    against the Parallel:: and sys:: functions.
 //
 // 5) CheckMemoryMonitorRelatedMethods calls the
-//    `compute_size_for_memory_monitor` entry method of the GlobalCache and the
-//    MutableGlobalCache which requires there to be a MemoryMonitor in the
-//    component list (and also an ObserverWriter for writing data)
+//    `compute_size_for_memory_monitor` entry method of the GlobalCache which
+//    requires there to be a MemoryMonitor in the component list (and also an
+//    ObserverWriter for writing data)
 template <class Metavariables>
 struct MutateCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
@@ -364,7 +364,6 @@ template <class Metavariables>
 struct CheckMemoryMonitorRelatedMethods {
  private:
   static inline double cache_size_ = 0.0;
-  static inline double mutable_cache_size_ = 0.0;
   static inline std::string filename_{"Test_AlgorithmGlobalCacheReduction.h5"};
 
  public:
@@ -394,14 +393,6 @@ struct CheckMemoryMonitorRelatedMethods {
       // arbitrary
       local_cache.compute_size_for_memory_monitor(time);
 
-      // This will broadcast to all branches of the mutable global cache. This
-      // executable is run on 1 core so there is only 1 branch. The time is
-      // arbitrary
-      auto mutable_global_cache_proxy =
-          local_cache.mutable_global_cache_proxy();
-      mutable_global_cache_proxy.compute_size_for_memory_monitor(global_cache,
-                                                                 time);
-
       // Store the values for testing. The only reason this works is because we
       // are running on 1 core, so we are always on the "local" branch of an
       // object whether that object be a group or nodegroup. If this is run on
@@ -410,9 +401,6 @@ struct CheckMemoryMonitorRelatedMethods {
       SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(local_cache) ==
                                1);
       cache_size_ = size_of_object_in_bytes(local_cache) / 1.0e6;
-      mutable_cache_size_ = size_of_object_in_bytes(*Parallel::local_branch(
-                                local_cache.mutable_global_cache_proxy())) /
-                            1.0e6;
     } else if (next_phase == Parallel::Phase::Cleanup) {
       auto hdf5_lock =
           Parallel::local_branch(
@@ -434,8 +422,6 @@ struct CheckMemoryMonitorRelatedMethods {
            "Size on proc of max size (MB)", "Average size per node (MB)"}};
 
       const std::string cache_name{"/MemoryMonitors/GlobalCache"};
-      const std::string mutable_cache_name{
-          "/MemoryMonitors/MutableGlobalCache"};
 
       const auto check_caches = [&read_file, &time](
                                     const std::string& name,
@@ -456,20 +442,11 @@ struct CheckMemoryMonitorRelatedMethods {
         // Last column is always average per node, but since we are running on
         // one node, this should be the same as the size on node 0
         SPECTRE_PARALLEL_REQUIRE(data(0, data.columns() - 1) == check_size);
-        // For groups, check the max proc and size on that proc. Since we are
-        // running on one proc, this will always be proc 0 and the size will be
-        // the same as that on node 0
-        if (data.columns() > 3) {
-          SPECTRE_PARALLEL_REQUIRE(data(0, 2) == 0.0);
-          SPECTRE_PARALLEL_REQUIRE(data(0, 3) == check_size);
-        }
 
         read_file.close_current_object();
       };
 
       check_caches(cache_name, cache_legend, cache_size_);
-      check_caches(mutable_cache_name, mutable_cache_legend,
-                   mutable_cache_size_);
 
       hdf5_lock->unlock();
 

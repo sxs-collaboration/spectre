@@ -74,11 +74,8 @@ void test_gts() {
   tuples::TaggedTuple<::Tags::TimeStepper<TimeStepper>>
       const_global_cache_items(std::move(time_stepper));
 
-  Parallel::MutableGlobalCache<TestMetavariables<TimeStepper>>
-      mutable_global_cache(tuples::TaggedTuple<>{});
-
   Parallel::GlobalCache<TestMetavariables<TimeStepper>> global_cache(
-      std::move(const_global_cache_items), &mutable_global_cache);
+      std::move(const_global_cache_items));
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::GlobalCacheImpl<TestMetavariables<TimeStepper>>,
@@ -121,11 +118,8 @@ void test_lts() {
   tuples::TaggedTuple<::Tags::TimeStepper<LtsTimeStepper>>
       const_global_cache_items(std::move(lts_time_stepper));
 
-  Parallel::MutableGlobalCache<TestMetavariables<TimeStepper>>
-      mutable_global_cache(tuples::TaggedTuple<>{});
-
   Parallel::GlobalCache<TestMetavariables<LtsTimeStepper>> global_cache(
-      std::move(const_global_cache_items), &mutable_global_cache);
+      std::move(const_global_cache_items));
 
   auto box = db::create<
       db::AddSimpleTags<

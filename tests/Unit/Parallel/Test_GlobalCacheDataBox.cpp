@@ -41,41 +41,10 @@ struct EmptyMetavars {
   using component_list = tmpl::list<>;
 };
 
-void test_mutable_cache_proxy_error() {
-  CHECK_THROWS_WITH(
-      ([]() {
-        MutableGlobalCache<EmptyMetavars> mutable_cache{
-            tuples::TaggedTuple<>{}};
-        GlobalCache<EmptyMetavars> cache{tuples::TaggedTuple<>{},
-                                         &mutable_cache};
-
-        auto mutable_cache_proxy = cache.mutable_global_cache_proxy();
-      })(),
-      Catch::Contains(
-          "Cannot get a proxy to the mutable global cache because the proxy "
-          "isn't set."));
-}
-
 void test_mem_monitor_entry_method_error() {
   CHECK_THROWS_WITH(
       ([]() {
-        MutableGlobalCache<EmptyMetavars> mutable_cache{
-            tuples::TaggedTuple<>{}};
-        CProxy_GlobalCache<EmptyMetavars> empty_cache_proxy{};
-
-        mutable_cache.compute_size_for_memory_monitor(empty_cache_proxy, 0.0);
-      })(),
-      Catch::Contains(
-          "MutableGlobalCache::compute_size_for_memory_monitor can only be "
-          "called if the MemoryMonitor is in the component list in the "
-          "metavariables.\n"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        MutableGlobalCache<EmptyMetavars> mutable_cache{
-            tuples::TaggedTuple<>{}};
-        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{},
-                                               &mutable_cache};
+        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{}};
 
         empty_cache.compute_size_for_memory_monitor(0.0);
       })(),
@@ -89,10 +58,7 @@ void test_resource_info_error() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       ([]() {
-        MutableGlobalCache<EmptyMetavars> mutable_cache{
-            tuples::TaggedTuple<>{}};
-        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{},
-                                               &mutable_cache};
+        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{}};
 
         empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
         empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
@@ -104,7 +70,6 @@ void test_resource_info_error() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
-  test_mutable_cache_proxy_error();
   test_mem_monitor_entry_method_error();
   test_resource_info_error();
 
@@ -112,8 +77,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   tuples::get<Tags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
   tuples::get<Tags::UniquePtrIntegerList>(tuple) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}});
-  MutableGlobalCache<Metavars> mutable_cache{tuples::TaggedTuple<>{}};
-  GlobalCache<Metavars> cache{std::move(tuple), &mutable_cache};
+  GlobalCache<Metavars> cache{std::move(tuple)};
   Parallel::ResourceInfo<Metavars> resource_info{false};
   resource_info.build_singleton_map(cache);
   cache.set_resource_info(resource_info);
@@ -144,8 +108,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   tuples::get<Tags::IntegerList>(tuple2) = std::array<int, 3>{{10, -3, 700}};
   tuples::get<Tags::UniquePtrIntegerList>(tuple2) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{100, -7, -300}});
-  MutableGlobalCache<Metavars> mutable_cache2{tuples::TaggedTuple<>{}};
-  GlobalCache<Metavars> cache2{std::move(tuple2), &mutable_cache2};
+  GlobalCache<Metavars> cache2{std::move(tuple2)};
   db::mutate<Tags::GlobalCache>(
       [&cache2](const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
         *t = std::addressof(cache2);

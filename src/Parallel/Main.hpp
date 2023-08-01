@@ -187,7 +187,6 @@ class Main : public CBase_Main<Metavariables> {
       tmpl::filter<component_list, Parallel::is_singleton<tmpl::_1>>;
 
   Parallel::Phase current_phase_{Parallel::Phase::Initialization};
-  CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
   // This is only used during startup, and will be cleared after all
@@ -306,8 +305,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     Overloader{
         [&command_line_options](std::true_type /*meta*/, auto mv,
                                 int /*gcc_bug*/)
-            -> std::void_t<
-                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<decltype(
+                tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has options and default input file name
           command_line_options.add_options()(
               "input-file",
@@ -322,8 +321,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
               "input-file", bpo::value<std::string>(), "Input file name");
         },
         [](std::false_type /*meta*/, auto mv, int /*gcc_bug*/)
-            -> std::void_t<
-                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<decltype(
+                tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has no options and default input file name
 
           // always false, but must depend on mv
@@ -341,10 +340,10 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
     const bool ignore_unrecognized_command_line_options = Overloader{
         [](auto mv, int /*gcc_bug*/)
-            -> decltype(tmpl::type_from<decltype(mv)>::
-                            ignore_unrecognized_command_line_options) {
-          return tmpl::type_from<
-              decltype(mv)>::ignore_unrecognized_command_line_options;
+            -> decltype(tmpl::type_from<decltype(
+                            mv)>::ignore_unrecognized_command_line_options) {
+          return tmpl::type_from<decltype(
+              mv)>::ignore_unrecognized_command_line_options;
         },
         [](auto /*mv*/, auto... /*meta*/) { return false; }}(
         tmpl::type_<Metavariables>{}, 0);
@@ -453,20 +452,12 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
   check_future_checkpoint_dirs_available();
 
-  mutable_global_cache_proxy_ = CProxy_MutableGlobalCache<Metavariables>::ckNew(
-      Parallel::create_from_options<Metavariables>(
-          options_, mutable_global_cache_tags{}));
-
-  // global_cache_proxy_ depends on mutable_global_cache_proxy_.
-  CkEntryOptions mutable_global_cache_dependency;
-  mutable_global_cache_dependency.setGroupDepID(
-      mutable_global_cache_proxy_.ckGetGroupID());
-
   global_cache_proxy_ = CProxy_GlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(options_,
                                                    const_global_cache_tags{}),
-      mutable_global_cache_proxy_, this->thisProxy,
-      &mutable_global_cache_dependency);
+      Parallel::create_from_options<Metavariables>(options_,
+                                                   mutable_global_cache_tags{}),
+      this->thisProxy);
 
   // Now that the GlobalCache has been built, create the singleton map which
   // will be used to allocate all the singletons. We need to be careful here
@@ -479,10 +470,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
   // Now that the singleton map has been built, set the resource info in the
   // GlobalCache (if the tags exist). Since this info will be constant
-  // throughout a simulation, we opt for directly editing the tags in the const
+  // throughout a simulation, we opt for directly editing a const tag in the
   // GlobalCache before we pass it to any other parallel component rather than
-  // having the tags in the MutableGlobalCache and using a mutate call to set
-  // them.
+  // having a mutable tag and using a mutate call to set it.
   global_cache_proxy_.set_resource_info(resource_info_);
 
   // Now that the singleton map has been built, we have to replace the
@@ -601,7 +591,6 @@ Main<Metavariables>::Main(CkMigrateMessage* msg)
 template <typename Metavariables>
 void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | current_phase_;
-  p | mutable_global_cache_proxy_;
   p | global_cache_proxy_;
   p | at_sync_indicator_proxy_;
   // Note: we do NOT serialize the options.
@@ -860,12 +849,11 @@ void Main<Metavariables>::add_exception_message(std::string exception_message) {
   ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
   // Set terminate_=true on all components to cause them to stop the current
   // phase.
-  tmpl::for_each<component_list>(
-      [global_cache](auto component_tag_v) {
-        using component_tag = tmpl::type_from<decltype(component_tag_v)>;
-        Parallel::get_parallel_component<component_tag>(*global_cache)
-            .set_terminate(true);
-      });
+  tmpl::for_each<component_list>([global_cache](auto component_tag_v) {
+    using component_tag = tmpl::type_from<decltype(component_tag_v)>;
+    Parallel::get_parallel_component<component_tag>(*global_cache)
+        .set_terminate(true);
+  });
 }
 
 template <typename Metavariables>

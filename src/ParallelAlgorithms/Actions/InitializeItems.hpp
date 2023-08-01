@@ -37,7 +37,7 @@ struct InitializeItems {
   /// initialized from input file options.
   using const_global_cache_tags = tmpl::remove_duplicates<tmpl::flatten<
       tmpl::append<typename Mutators::const_global_cache_tags...>>>;
-  /// Tags for mutable items added to the MutableGlobalCache.  These items are
+  /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using mutable_global_cache_tags = tmpl::remove_duplicates<tmpl::flatten<
       tmpl::append<typename Mutators::mutable_global_cache_tags...>>>;

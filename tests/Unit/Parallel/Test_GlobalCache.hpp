@@ -33,16 +33,13 @@ class Test_GlobalCache : public CBase_Test_GlobalCache<Metavariables> {
   explicit Test_GlobalCache(CkArgMsg* msg);
   explicit Test_GlobalCache(CkMigrateMessage* /*msg*/) {}
 
-  void exit_if_done(int index);
+  void exit();
 
   void run_single_core_test();
 
  private:
-  Parallel::CProxy_MutableGlobalCache<Metavariables>
-      mutable_global_cache_proxy_{};
   Parallel::CProxy_GlobalCache<Metavariables> global_cache_proxy_{};
   size_t num_elements_{4};
-  std::set<int> elements_that_are_finished_{};
 };
 
 template <typename Metavariables>

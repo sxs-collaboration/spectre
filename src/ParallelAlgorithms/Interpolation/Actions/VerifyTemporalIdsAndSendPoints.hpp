@@ -134,8 +134,8 @@ void verify_temporal_ids_and_send_points_time_dependent(
 
   if (not at_least_one_pending_temporal_id_is_ready) {
     // A callback has been set so that VerifyTemporalIdsAndSendPoints will
-    // be called by MutableGlobalCache when domain::Tags::FunctionsOfTime
-    // is updated.  So we can exit now.
+    // be called by the GlobalCache when domain::Tags::FunctionsOfTime is
+    // updated.  So we can exit now.
     return;
   }
 

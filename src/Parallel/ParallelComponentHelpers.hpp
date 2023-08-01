@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <mutex>
+#include <utility>
+
 #include "Parallel/Callback.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -77,7 +80,7 @@ template <class PhaseDependentActionList>
 struct get_mutable_global_cache_tags_from_pdal {
   using type = tmpl::join<tmpl::transform<
       tmpl::flatten<tmpl::transform<
-                      PhaseDependentActionList,
+          PhaseDependentActionList,
           get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
       get_mutable_global_cache_tags_from_parallel_struct<tmpl::_1>>>;
 };
@@ -179,8 +182,13 @@ constexpr bool is_in_global_cache =
     is_in_mutable_global_cache<Metavariables, Tag>;
 
 template <typename Tag>
+struct MutexTag {
+  using type = std::pair<std::mutex, std::mutex>;
+};
+
+template <typename Tag>
 struct MutableCacheTag {
-  using tag  = Tag;
+  using tag = Tag;
   using type =
       std::tuple<typename Tag::type, std::vector<std::unique_ptr<Callback>>>;
 };
@@ -211,8 +219,9 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
 // an unknown tag is requested from the GlobalCache.
 template <typename GlobalCacheTag, typename ListOfPossibleTags>
 struct matching_tag_helper {
-  using found_tags = tmpl::filter<ListOfPossibleTags,
-               std::is_base_of<tmpl::pin<GlobalCacheTag>, tmpl::_1>>;
+  using found_tags =
+      tmpl::filter<ListOfPossibleTags,
+                   std::is_base_of<tmpl::pin<GlobalCacheTag>, tmpl::_1>>;
   static_assert(not std::is_same_v<found_tags, tmpl::list<>>,
                 "Trying to get a nonexistent tag from the GlobalCache. "
                 "To diagnose the problem, search for "

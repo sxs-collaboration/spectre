@@ -145,9 +145,9 @@ namespace intrp {
 ///   }
 /// } else {
 ///   set VerifyTemporalIdsAndSendPoints as a callback for the
-///   `domain::Tags::FunctionsOfTime` in MutableGlobalCache, so that
-///   once `FunctionsOfTime` are updated, VerifyTemporalIdsAndSendPoints
-///   is called.
+///   `domain::Tags::FunctionsOfTime` in the mutable part of the GlobalCache, so
+///   that once `FunctionsOfTime` are updated, VerifyTemporalIdsAndSendPoints is
+///   called.
 /// }
 /// ```
 ///
@@ -251,10 +251,8 @@ namespace intrp {
 /// and then the InterpolationTarget invokes another Action to send points
 /// to only those `Elements` that contain the points; this alternative
 /// uses less memory but much more communication. Another alternative would
-/// be to place the points in the MutableGlobalCache (so that there is one
-/// copy per core, rather than one copy per Element), or even in the
-/// GlobalCache (one copy per node) since the points need be computed only
-/// once.
+/// be to place the points in the GlobalCache (one copy per node) since the
+/// points need be computed only once.
 ///
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {

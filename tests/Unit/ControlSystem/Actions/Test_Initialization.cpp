@@ -86,9 +86,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           initial_time, std::array<DataVector, 1>{{timescale}}, expr_time);
 
-  Parallel::MutableGlobalCache<MockMetavars> mutable_cache{
-      {std::move(measurement_timescales)}};
-  Parallel::GlobalCache<MockMetavars> cache{{}, &mutable_cache};
+  Parallel::GlobalCache<MockMetavars> cache{
+      {}, {std::move(measurement_timescales)}};
 
   const Parallel::GlobalCache<MockMetavars>& cache_reference = cache;
 

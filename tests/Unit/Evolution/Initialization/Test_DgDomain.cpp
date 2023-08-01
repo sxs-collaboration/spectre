@@ -554,9 +554,6 @@ TimeIndependentMap<TargetFrame> create_affine_map() {
 
 template <bool IsTimeDependent>
 Parallel::GlobalCache<TestMetavariables> make_global_cache() {
-  static Parallel::MutableGlobalCache<TestMetavariables> mutable_global_cache(
-      tuples::TaggedTuple<>{});
-
   std::vector<Block<1>> blocks{1};
   blocks[0] = Block<1>{std::make_unique<TimeIndependentMap<Frame::Inertial>>(
                            create_affine_map<Frame::Inertial>()),
@@ -573,7 +570,7 @@ Parallel::GlobalCache<TestMetavariables> make_global_cache() {
   tuples::TaggedTuple<domain::Tags::Domain<1>> const_global_cache_items(
       std::move(domain));
 
-  return {std::move(const_global_cache_items), &mutable_global_cache};
+  return {std::move(const_global_cache_items)};
 }
 
 template <bool IsTimeDependent>

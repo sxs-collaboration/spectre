@@ -23,11 +23,9 @@ struct EmptyMetavars {
 };
 
 void test_diagnostic_info() {
-  Parallel::MutableGlobalCache<EmptyMetavars> mutable_cache{
-      tuples::TaggedTuple<>{}};
   std::vector<size_t> procs_per_node{2, 7, 5};
-  Parallel::GlobalCache<EmptyMetavars> cache{tuples::TaggedTuple<>{},
-                                             &mutable_cache, procs_per_node};
+  Parallel::GlobalCache<EmptyMetavars> cache{
+      tuples::TaggedTuple<>{}, {}, procs_per_node};
 
   const size_t number_of_cores = Parallel::number_of_procs<size_t>(cache);
   const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(cache);

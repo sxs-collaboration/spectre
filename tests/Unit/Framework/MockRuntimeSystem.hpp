@@ -119,31 +119,28 @@ class MockRuntimeSystem {
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
-
   /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(
       CacheTuple cache_contents, MutableCacheTuple mutable_cache_contents = {},
       const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
-      : mock_global_cores_(
-            [&number_of_mock_cores_on_each_mock_node]() {
-              std::unordered_map<NodeId,
-                                 std::unordered_map<LocalCoreId, GlobalCoreId>>
-                  mock_global_cores{};
-              size_t global_core = 0;
-              for (size_t node = 0;
-                   node < number_of_mock_cores_on_each_mock_node.size();
-                   ++node) {
-                std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
-                for (size_t local_core = 0;
-                     local_core < number_of_mock_cores_on_each_mock_node[node];
-                     ++local_core, ++global_core) {
-                  global_cores.insert(
-                      {LocalCoreId{local_core}, GlobalCoreId{global_core}});
-                }
-                mock_global_cores.insert({NodeId{node}, global_cores});
-              }
-              return mock_global_cores;
-            }()),
+      : mock_global_cores_([&number_of_mock_cores_on_each_mock_node]() {
+          std::unordered_map<NodeId,
+                             std::unordered_map<LocalCoreId, GlobalCoreId>>
+              mock_global_cores{};
+          size_t global_core = 0;
+          for (size_t node = 0;
+               node < number_of_mock_cores_on_each_mock_node.size(); ++node) {
+            std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
+            for (size_t local_core = 0;
+                 local_core < number_of_mock_cores_on_each_mock_node[node];
+                 ++local_core, ++global_core) {
+              global_cores.insert(
+                  {LocalCoreId{local_core}, GlobalCoreId{global_core}});
+            }
+            mock_global_cores.insert({NodeId{node}, global_cores});
+          }
+          return mock_global_cores;
+        }()),
         mock_nodes_and_local_cores_(
             [&number_of_mock_cores_on_each_mock_node]() {
               std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
@@ -162,7 +159,6 @@ class MockRuntimeSystem {
               }
               return mock_nodes_and_local_cores;
             }()),
-        mutable_caches_(mock_nodes_and_local_cores_.size()),
         caches_(mock_nodes_and_local_cores_.size()) {
     // Fill the parallel components in each cache.  There is one cache
     // per mock core.  The parallel components held in each cache (i.e. the
@@ -177,12 +173,9 @@ class MockRuntimeSystem {
       // so we define node and local_core here.
       const auto& node = node_and_local_core.first.value;
       const auto& local_core = node_and_local_core.second.value;
-      mutable_caches_.at(global_core) =
-          std::make_unique<Parallel::MutableGlobalCache<Metavariables>>(
-              serialize_and_deserialize(mutable_cache_contents));
       caches_.at(global_core) = std::make_unique<GlobalCache>(
           serialize_and_deserialize(cache_contents),
-          mutable_caches_.at(global_core).get(),
+          serialize_and_deserialize(mutable_cache_contents),
           number_of_mock_cores_on_each_mock_node, static_cast<int>(global_core),
           static_cast<int>(node), static_cast<int>(local_core));
       tmpl::for_each<typename Metavariables::component_list>(
@@ -192,14 +185,14 @@ class MockRuntimeSystem {
                 *caches_.at(global_core))
                 .set_data(&tuples::get<MockDistributedObjectsTag<Component>>(
                               mock_distributed_objects_),
-                          &tuples::get<InboxesTag<Component>>(inboxes_),
-                          node, local_core, global_core);
+                          &tuples::get<InboxesTag<Component>>(inboxes_), node,
+                          local_core, global_core);
           });
     }
   }
 
-  /// Construct from the tuple of GlobalCache and MutableGlobalCache
-  /// objects that might be in a different order.
+  /// Construct from the tuple of const and mutable tags that might be in a
+  /// different order.
   template <typename... CacheTags, typename... MutableCacheTags>
   MockRuntimeSystem(
       tuples::TaggedTuple<CacheTags...> cache_contents,
@@ -618,23 +611,23 @@ class MockRuntimeSystem {
         "'force_next_action_to_be' for the component and the second template "
         "parameter for the action.");
     bool found_matching_phase = false;
-    const auto invoke_for_phase =
-        [this, &array_index, &found_matching_phase](auto phase_dep_v) {
-          using PhaseDep = decltype(phase_dep_v);
-          constexpr Parallel::Phase phase = PhaseDep::type::phase;
-          using actions_list = typename PhaseDep::type::action_list;
-          auto& distributed_object =
-              this->mock_distributed_objects<Component>().at(array_index);
-          if (distributed_object.get_phase() == phase) {
-            found_matching_phase = true;
-            distributed_object.force_next_action_to_be(
-                tmpl::conditional_t<
-                    std::is_same<tmpl::no_such_type_,
-                                 tmpl::index_of<actions_list, Action>>::value,
-                    std::integral_constant<size_t, 0>,
-                    tmpl::index_of<actions_list, Action>>::value);
-          }
-        };
+    const auto invoke_for_phase = [this, &array_index,
+                                   &found_matching_phase](auto phase_dep_v) {
+      using PhaseDep = decltype(phase_dep_v);
+      constexpr Parallel::Phase phase = PhaseDep::type::phase;
+      using actions_list = typename PhaseDep::type::action_list;
+      auto& distributed_object =
+          this->mock_distributed_objects<Component>().at(array_index);
+      if (distributed_object.get_phase() == phase) {
+        found_matching_phase = true;
+        distributed_object.force_next_action_to_be(
+            tmpl::conditional_t<
+                std::is_same<tmpl::no_such_type_,
+                             tmpl::index_of<actions_list, Action>>::value,
+                std::integral_constant<size_t, 0>,
+                tmpl::index_of<actions_list, Action>>::value);
+      }
+    };
     tmpl::for_each<typename MockDistributedObject<
         Component>::phase_dependent_action_lists>(invoke_for_phase);
     if (not found_matching_phase) {
@@ -726,13 +719,12 @@ class MockRuntimeSystem {
 
   /// Set the phase of all parallel components to `next_phase`
   void set_phase(const Parallel::Phase next_phase) {
-    tmpl::for_each<mock_objects_tags>(
-        [this, &next_phase](auto component_v) {
-          for (auto& object : tuples::get<typename decltype(component_v)::type>(
-                   mock_distributed_objects_)) {
-            object.second.set_phase(next_phase);
-          }
-        });
+    tmpl::for_each<mock_objects_tags>([this, &next_phase](auto component_v) {
+      for (auto& object : tuples::get<typename decltype(component_v)::type>(
+               mock_distributed_objects_)) {
+        object.second.set_phase(next_phase);
+      }
+    });
   }
 
   /// Return number of (mock) global cores.
@@ -746,13 +738,10 @@ class MockRuntimeSystem {
       mock_global_cores_{};
   std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
       mock_nodes_and_local_cores_{};
-  // There is one MutableGlobalCache and one GlobalCache per
-  // global_core.  We need to keep a vector of unique_ptrs rather than
-  // a vector of objects because MutableGlobalCache and GlobalCache
-  // are not move-assignable or copyable (because of their charm++
-  // base classes, in particular CkReductionMgr).
-  std::vector<std::unique_ptr<Parallel::MutableGlobalCache<Metavariables>>>
-      mutable_caches_{};
+  // There is one GlobalCache per global_core.  We need to keep a vector of
+  // unique_ptrs rather than a vector of objects because GlobalCache is not
+  // move-assignable or copyable (because of its charm++ base classes, in
+  // particular CkReductionMgr).
   std::vector<std::unique_ptr<GlobalCache>> caches_{};
   Inboxes inboxes_{};
   CollectionOfMockDistributedObjects mock_distributed_objects_{};

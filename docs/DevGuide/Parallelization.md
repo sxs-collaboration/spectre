@@ -302,7 +302,6 @@ An example of an array parallel component is:
 There are some parallel components that are common to many executables.
 
 - Parallel::GlobalCache (a Parallel::Algorithms::Nodegroup)
-- Parallel::MutableGlobalCache (a Parallel::Algorithms::Group)
 - DgElementArray (a Parallel::Algorithms::Array)
 - observers::Observer (a Parallel::Algorithms::Group)
 - observers::ObserverWriter (a Parallel::Algorithms::Nodegroup)
