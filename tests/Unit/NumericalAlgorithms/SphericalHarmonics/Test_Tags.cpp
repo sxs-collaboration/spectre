@@ -299,6 +299,9 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags", "[ApparentHorizons][Unit]") {
       StrahlkorperTags::NormalOneForm<Frame::Inertial>>("NormalOneForm");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::Tangents<Frame::Inertial>>(
       "Tangents");
+  TestHelpers::db::test_simple_tag<
+      StrahlkorperTags::TimeDerivStrahlkorper<Frame::Inertial>>(
+      "TimeDerivStrahlkorper");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::ThetaPhiCompute<Frame::Inertial>>("ThetaPhi");
   TestHelpers::db::test_compute_tag<
@@ -328,4 +331,7 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags", "[ApparentHorizons][Unit]") {
       StrahlkorperTags::NormalOneFormCompute<Frame::Inertial>>("NormalOneForm");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::TangentsCompute<Frame::Inertial>>("Tangents");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame::Inertial>>(
+      "TimeDerivStrahlkorper");
 }

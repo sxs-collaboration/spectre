@@ -65,9 +65,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
   TestHelpers::db::test_simple_tag<
       StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::TimeDerivStrahlkorper<Frame::Inertial>>(
-      "TimeDerivStrahlkorper");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::EuclideanAreaElementCompute<Frame::Inertial>>(
       "EuclideanAreaElement");
@@ -135,7 +132,4 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
-  TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame::Inertial>>(
-      "TimeDerivStrahlkorper");
 }

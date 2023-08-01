@@ -24,6 +24,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
