@@ -295,16 +295,20 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<1>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<1, Frame::ElementLogical>>,
 
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<
-              evolution::dg::subcell::Actions::Initialize<
-                  volume_dim, system, Burgers::subcell::DgInitialDataTci>,
-              Actions::MutateApply<Burgers::subcell::SetInitialRdmpData>>,
-          tmpl::list<>>,
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, false>,
+              evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+                  volume_dim, Burgers::subcell::SetInitialRdmpData>,
+              evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+                  volume_dim, system, Burgers::subcell::TciOnFdGrid>,
+              evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+                  volume_dim, system>>,
+          tmpl::list<evolution::Initialization::Actions::SetVariables<
+              domain::Tags::Coordinates<1, Frame::ElementLogical>>>>,
 
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,

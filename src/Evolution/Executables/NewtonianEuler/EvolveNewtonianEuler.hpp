@@ -268,18 +268,25 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<Dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-      Actions::UpdateConservatives,
+
       tmpl::conditional_t<
           use_dg_subcell,
-          tmpl::list<evolution::dg::subcell::Actions::Initialize<
-                         volume_dim, system,
-                         NewtonianEuler::subcell::DgInitialDataTci<volume_dim>>,
-                     Actions::UpdateConservatives,
-                     Actions::MutateApply<NewtonianEuler::subcell::
-                                              SetInitialRdmpData<volume_dim>>>,
-          tmpl::list<>>,
+          tmpl::list<
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, false>,
+              Actions::UpdateConservatives,
+              evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+                  volume_dim,
+                  NewtonianEuler::subcell::SetInitialRdmpData<volume_dim>>,
+              evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+                  volume_dim, system,
+                  NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,
+              evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+                  volume_dim, system>,
+              Actions::UpdateConservatives>,
+          tmpl::list<evolution::Initialization::Actions::SetVariables<
+                         domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+                     Actions::UpdateConservatives>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,
                      NewtonianEuler::Tags::SoundSpeedCompute<DataVector>>>,
