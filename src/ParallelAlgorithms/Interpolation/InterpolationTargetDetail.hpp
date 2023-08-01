@@ -5,12 +5,14 @@
 
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/IdPair.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
@@ -31,6 +33,7 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -70,9 +73,21 @@ struct Variables;
 namespace intrp {
 
 namespace InterpolationTarget_detail {
-double get_temporal_id_value(double time);
-double get_temporal_id_value(const LinkedMessageId<double>& id);
-double get_temporal_id_value(const TimeStepId& time_id);
+CREATE_IS_CALLABLE(substep_time)
+CREATE_IS_CALLABLE_V(substep_time)
+template <typename T>
+double get_temporal_id_value(const T& id) {
+  if constexpr (std::is_same_v<T, LinkedMessageId<double>>) {
+    return id.id;
+  } else if constexpr (is_substep_time_callable_v<T>) {
+    return id.substep_time();
+  } else {
+    static_assert(std::is_same_v<T, double>,
+                  "get_temporal_id_value only supports 'double', "
+                  "'LinkedMessageId<double>', or 'TimeStepId'.");
+    return id;
+  }
+}
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.

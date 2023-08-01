@@ -5,12 +5,6 @@ set(LIBRARY ParallelInterpolation)
 
 add_spectre_library(${LIBRARY})
 
-spectre_target_sources(
-  ${LIBRARY}
-  PRIVATE
-  InterpolationTargetDetail.cpp
-  )
-
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
@@ -49,7 +43,6 @@ target_link_libraries(
   Serialization
   Spectral
   SphericalHarmonics
-  Time
   Utilities
   INTERFACE
   EventsAndTriggers
