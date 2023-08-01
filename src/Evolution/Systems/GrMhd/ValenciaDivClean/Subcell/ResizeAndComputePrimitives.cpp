@@ -39,24 +39,20 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-    ASSERT(prim_vars->number_of_grid_points() ==
-               subcell_mesh.number_of_grid_points(),
-           "The number of grid points of the primitive variables should also "
-           "be the number of grid points the subcell mesh has ("
-               << subcell_mesh.number_of_grid_points() << ") but got "
-               << prim_vars->number_of_grid_points() << ". The DG grid has "
-               << dg_mesh.number_of_grid_points() << " grid points");
     const size_t num_grid_points = dg_mesh.number_of_grid_points();
     // Reconstruct a copy of the pressure from the FD grid to the DG grid to
     // provide a high-order initial guess.
     const Scalar<DataVector> fd_pressure =
         get<hydro::Tags::Pressure<DataVector>>(*prim_vars);
     prim_vars->initialize(num_grid_points);
-    evolution::dg::subcell::fd::reconstruct(
-        make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
-        get(fd_pressure), dg_mesh, subcell_mesh.extents(),
-        // Always do dim-by-dim reconstruction because it's fast
-        evolution::dg::subcell::fd ::ReconstructionMethod::DimByDim);
+    if (get(fd_pressure).size() == subcell_mesh.number_of_grid_points()) {
+      evolution::dg::subcell::fd::reconstruct(
+          make_not_null(
+              &get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
+          get(fd_pressure), dg_mesh, subcell_mesh.extents(),
+          // Always do dim-by-dim reconstruction because it's fast
+          evolution::dg::subcell::fd ::ReconstructionMethod::DimByDim);
+    }
 
     // We only need to compute the prims if we switched to the DG grid because
     // otherwise we computed the prims during the FD TCI.
