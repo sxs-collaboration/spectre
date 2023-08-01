@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -482,8 +483,8 @@ struct TimeDerivative {
         evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<3>>(
         *box);
     const auto& inertial_coords =
-      db::get<evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>>(
-           *box);
+        db::get<evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>>(
+            *box);
 
     const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
     const bool element_is_interior = element.external_boundaries().empty();
@@ -505,6 +506,8 @@ struct TimeDerivative {
         fd::BoundaryConditionGhostData::apply(box, element, recons);
       }
     }
+    std::optional<std::array<gsl::span<std::uint8_t>, 3>>
+        reconstruction_order{};
 
     if (const auto& filter_options =
             db::get<grmhd::GhValenciaDivClean::fd::Tags::FilterOptions>(*box);
@@ -562,14 +565,15 @@ struct TimeDerivative {
     // This is reasonable since the systems are a tensor product system.
     const auto& base_boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
-    using derived_boundary_corrections = typename std::decay_t<decltype(
-        base_boundary_correction)>::creatable_classes;
+    using derived_boundary_corrections = typename std::decay_t<
+        decltype(base_boundary_correction)>::creatable_classes;
     std::array<Variables<grmhd_evolved_vars_tags>, 3> boundary_corrections{};
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &base_boundary_correction, [&](const auto* gh_grmhd_correction) {
           // Need the GH packaged tags to avoid projecting them.
-          using gh_dg_package_field_tags = typename std::decay_t<decltype(
-              gh_grmhd_correction->gh_correction())>::dg_package_field_tags;
+          using gh_dg_package_field_tags = typename std::decay_t<
+              decltype(gh_grmhd_correction
+                           ->gh_correction())>::dg_package_field_tags;
           // Only apply correction to GRMHD variables.
           const auto& boundary_correction =
               gh_grmhd_correction->valencia_correction();
@@ -595,18 +599,28 @@ struct TimeDerivative {
           // Reconstruct data to the face
           call_with_dynamic_type<void, typename grmhd::GhValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons,
-              [&box, &package_data_argvars_lower_face,
-               &package_data_argvars_upper_face](const auto& reconstructor) {
-                db::apply<typename std::decay_t<decltype(
-                    *reconstructor)>::reconstruction_argument_tags>(
+              &recons, [&box, &package_data_argvars_lower_face,
+                        &package_data_argvars_upper_face,
+                        &reconstruction_order](const auto& reconstructor) {
+                using ReconstructorType =
+                    std::decay_t<decltype(*reconstructor)>;
+                db::apply<
+                    typename ReconstructorType::reconstruction_argument_tags>(
                     [&package_data_argvars_lower_face,
-                     &package_data_argvars_upper_face,
-                     &reconstructor](const auto&... args) {
-                      reconstructor->reconstruct(
-                          make_not_null(&package_data_argvars_lower_face),
-                          make_not_null(&package_data_argvars_upper_face),
-                          args...);
+                     &package_data_argvars_upper_face, &reconstructor,
+                     &reconstruction_order](const auto&... args) {
+                      if constexpr (ReconstructorType::use_adaptive_order) {
+                        reconstructor->reconstruct(
+                            make_not_null(&package_data_argvars_lower_face),
+                            make_not_null(&package_data_argvars_upper_face),
+                            make_not_null(&reconstruction_order), args...);
+                      } else {
+                        (void)reconstruction_order;
+                        reconstructor->reconstruct(
+                            make_not_null(&package_data_argvars_lower_face),
+                            make_not_null(&package_data_argvars_upper_face),
+                            args...);
+                      }
                     },
                     *box);
               });
@@ -650,34 +664,34 @@ struct TimeDerivative {
                         face_mesh_extents, i);
               }
 
-              tmpl::for_each<grmhd_evolved_vars_tags>([&vars_upper_face,
-                                                       &vars_lower_face,
-                                                       &mesh_velocity_on_face](
-                                                          auto tag_v) {
-                using tag = tmpl::type_from<decltype(tag_v)>;
-                using flux_tag =
-                    ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
-                using FluxTensor = typename flux_tag::type;
-                const auto& var_upper = get<tag>(vars_upper_face);
-                const auto& var_lower = get<tag>(vars_lower_face);
-                auto& flux_upper = get<flux_tag>(vars_upper_face);
-                auto& flux_lower = get<flux_tag>(vars_lower_face);
-                for (size_t storage_index = 0; storage_index < var_upper.size();
-                     ++storage_index) {
-                  const auto tensor_index =
-                      var_upper.get_tensor_index(storage_index);
-                  for (size_t j = 0; j < 3; j++) {
-                    const auto flux_storage_index =
-                        FluxTensor::get_storage_index(prepend(tensor_index, j));
-                    flux_upper[flux_storage_index] -=
-                        mesh_velocity_on_face.value().get(j) *
-                        var_upper[storage_index];
-                    flux_lower[flux_storage_index] -=
-                        mesh_velocity_on_face.value().get(j) *
-                        var_lower[storage_index];
-                  }
-                }
-              });
+              tmpl::for_each<grmhd_evolved_vars_tags>(
+                  [&vars_upper_face, &vars_lower_face,
+                   &mesh_velocity_on_face](auto tag_v) {
+                    using tag = tmpl::type_from<decltype(tag_v)>;
+                    using flux_tag =
+                        ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+                    using FluxTensor = typename flux_tag::type;
+                    const auto& var_upper = get<tag>(vars_upper_face);
+                    const auto& var_lower = get<tag>(vars_lower_face);
+                    auto& flux_upper = get<flux_tag>(vars_upper_face);
+                    auto& flux_lower = get<flux_tag>(vars_lower_face);
+                    for (size_t storage_index = 0;
+                         storage_index < var_upper.size(); ++storage_index) {
+                      const auto tensor_index =
+                          var_upper.get_tensor_index(storage_index);
+                      for (size_t j = 0; j < 3; j++) {
+                        const auto flux_storage_index =
+                            FluxTensor::get_storage_index(
+                                prepend(tensor_index, j));
+                        flux_upper[flux_storage_index] -=
+                            mesh_velocity_on_face.value().get(j) *
+                            var_upper[storage_index];
+                        flux_lower[flux_storage_index] -=
+                            mesh_velocity_on_face.value().get(j) *
+                            var_lower[storage_index];
+                      }
+                    }
+                  });
             }
 
             // Normal vectors in curved spacetime normalized by inverse
@@ -797,6 +811,8 @@ struct TimeDerivative {
                           DetInverseJacobianLogicalToInertial>(*box),
               cell_centered_logical_to_inertial_inv_jacobian, one_over_delta_xi,
               boundary_corrections, cell_centered_gh_derivs);
+    evolution::dg::subcell::store_reconstruction_order_in_databox(
+        box, reconstruction_order);
   }
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell
