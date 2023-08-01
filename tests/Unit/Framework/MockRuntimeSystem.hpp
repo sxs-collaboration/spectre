@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <stdexcept>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -475,19 +476,29 @@ class MockRuntimeSystem {
             typename... Args>
   void simple_action(const typename Component::array_index& array_index,
                      Arg0&& arg0, Args&&... args) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template simple_action<Action>(
-            std::make_tuple(std::forward<Arg0>(arg0),
-                            std::forward<Args>(args)...),
-            true);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template simple_action<Action>(
+              std::make_tuple(std::forward<Arg0>(arg0),
+                              std::forward<Args>(args)...),
+              true);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   template <typename Component, typename Action>
   void simple_action(const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template simple_action<Action>(true);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template simple_action<Action>(true);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
   /// @}
 
@@ -498,19 +509,29 @@ class MockRuntimeSystem {
             typename... Args>
   void queue_simple_action(const typename Component::array_index& array_index,
                            Arg0&& arg0, Args&&... args) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template simple_action<Action>(
-            std::make_tuple(std::forward<Arg0>(arg0),
-                            std::forward<Args>(args)...),
-            false);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template simple_action<Action>(
+              std::make_tuple(std::forward<Arg0>(arg0),
+                              std::forward<Args>(args)...),
+              false);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   template <typename Component, typename Action>
   void queue_simple_action(const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template simple_action<Action>(false);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template simple_action<Action>(false);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
   /// @}
 
@@ -521,19 +542,29 @@ class MockRuntimeSystem {
             typename... Args>
   void threaded_action(const typename Component::array_index& array_index,
                        Arg0&& arg0, Args&&... args) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template threaded_action<Action>(
-            std::make_tuple(std::forward<Arg0>(arg0),
-                            std::forward<Args>(args)...),
-            true);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template threaded_action<Action>(
+              std::make_tuple(std::forward<Arg0>(arg0),
+                              std::forward<Args>(args)...),
+              true);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   template <typename Component, typename Action>
   void threaded_action(const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .template threaded_action<Action>(true);
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .template threaded_action<Action>(true);
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
   /// @}
 
@@ -542,9 +573,14 @@ class MockRuntimeSystem {
   template <typename Component>
   bool is_simple_action_queue_empty(
       const typename Component::array_index& array_index) const {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .is_simple_action_queue_empty();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .is_simple_action_queue_empty();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Return the number of queued simple actions on the
@@ -552,9 +588,14 @@ class MockRuntimeSystem {
   template <typename Component>
   size_t number_of_queued_simple_actions(
       const typename Component::array_index& array_index) const {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .simple_action_queue_size();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .simple_action_queue_size();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Invoke the next queued simple action on the `Component` labeled by
@@ -562,9 +603,14 @@ class MockRuntimeSystem {
   template <typename Component>
   void invoke_queued_simple_action(
       const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .invoke_queued_simple_action();
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .invoke_queued_simple_action();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Return true if there are no queued threaded actions on the
@@ -572,9 +618,14 @@ class MockRuntimeSystem {
   template <typename Component>
   bool is_threaded_action_queue_empty(
       const typename Component::array_index& array_index) const {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .is_threaded_action_queue_empty();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .is_threaded_action_queue_empty();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Return the number of queued threaded actions on the
@@ -582,9 +633,14 @@ class MockRuntimeSystem {
   template <typename Component>
   size_t number_of_queued_threaded_actions(
       const typename Component::array_index& array_index) const {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .threaded_action_queue_size();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .threaded_action_queue_size();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Invoke the next queued threaded action on the `Component` labeled by
@@ -592,9 +648,14 @@ class MockRuntimeSystem {
   template <typename Component>
   void invoke_queued_threaded_action(
       const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>()
-        .at(array_index)
-        .invoke_queued_threaded_action();
+    try {
+      mock_distributed_objects<Component>()
+          .at(array_index)
+          .invoke_queued_threaded_action();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Instead of the next call to `next_action` applying the next action in
@@ -646,9 +707,14 @@ class MockRuntimeSystem {
   template <typename Component>
   size_t get_next_action_index(
       const typename Component::array_index& array_index) const {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .get_next_action_index();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .get_next_action_index();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Invoke the next action in the ActionList on the parallel component
@@ -656,7 +722,12 @@ class MockRuntimeSystem {
   /// not ready.
   template <typename Component>
   void next_action(const typename Component::array_index& array_index) {
-    mock_distributed_objects<Component>().at(array_index).next_action();
+    try {
+      mock_distributed_objects<Component>().at(array_index).next_action();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// Invoke the next action in the ActionList on the parallel component
@@ -665,9 +736,14 @@ class MockRuntimeSystem {
   template <typename Component>
   bool next_action_if_ready(
       const typename Component::array_index& array_index) {
-    return mock_distributed_objects<Component>()
-        .at(array_index)
-        .next_action_if_ready();
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .next_action_if_ready();
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
   }
 
   /// @{
