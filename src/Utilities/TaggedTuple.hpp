@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "Utilities/Overloader.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
@@ -696,33 +697,21 @@ ReturnedTaggedTuple reorder(TaggedTuple<Tags...> input) {
 using ::operator<<;
 template <class... Tags>
 std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
-  os << "(";
-  size_t current_value = 0;
-  auto helper = Overloader{
-      [&current_value, &os](const auto& element,
-                            const std::integral_constant<bool, true> /*meta*/) {
-        using ::operator<<;
-        os << element;
-        current_value++;
-        if (current_value < sizeof...(Tags)) {
-          os << ", ";
-        }
-      },
-      [&current_value, &os](
-          const auto& /*element*/,
-          const std::integral_constant<bool, false> /*meta*/) {
-        os << "NOT STREAMABLE";
-        current_value++;
-        if (current_value < sizeof...(Tags)) {
-          os << ", ";
-        }
-      }};
-  // With empty TaggedTuple's helper is unused
-  static_cast<void>(helper);
-  static_cast<void>(std::initializer_list<char>{(
-      helper(get<Tags>(t), tt::is_streamable_t<std::ostream, tag_type<Tags>>{}),
-      '0')...});
-  return os << ")";
+  os << "TaggedTuple:\n";
+  const auto print_item = [&os, &t](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    using type = typename tag::type;
+    os << "----------\n";
+    os << "Name:  " << pretty_type::get_name<tag>() << "\n";
+    os << "Type:  " << pretty_type::get_name<type>() << "\n";
+    if constexpr (tt::is_streamable_v<std::ostringstream, type>) {
+      os << "Value: " << get<tag>(t) << "\n";
+    } else {
+      os << "Value: UNSTREAMABLE\n";
+    }
+  };
+  tmpl::for_each<tmpl::list<Tags...>>(print_item);
+  return os;
 }
 
 namespace TaggedTuple_detail {
