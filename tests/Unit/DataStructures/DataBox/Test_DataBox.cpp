@@ -2790,7 +2790,23 @@ void test_output() {
   remove_whitespace(expected_types);
   CHECK(output_types == expected_types);
 
-  std::string output_items = box.print_items();
+  std::string output_mutable_items = box.print_items<false>();
+  std::string expected_mutable_items =
+      "Items:\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0\n"
+      "Type:  double\n"
+      "Value: 3.14\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag1\n"
+      "Type:  std::vector<double>\n"
+      "Value: (8.7,93.2,84.7)\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag2\n"
+      "Type:  std::string\n"
+      "Value: My Sample String\n";
+  CHECK(output_mutable_items == expected_mutable_items);
+  std::string output_items = box.print_items<true>();
   std::string expected_items =
       "Items:\n"
       "----------\n"
