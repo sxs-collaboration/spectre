@@ -31,104 +31,28 @@ void test() {
   // create scalar field U for DG mesh
   Vars dg_vars{number_of_dg_grid_points, 1.0};
 
-  // TCI parameters
-  const double persson_exponent{4.0};
-  const double rdmp_delta0{1.0e-4};
-  const double rdmp_epsilon{1.0e-3};
-  const ScalarAdvection::subcell::TciOptions tci_options{1.0e-8};
+  // While the code is supposed to be used on the subcells, that doesn't
+  // actually matter.
+  const auto& dg_u = get<ScalarAdvection::Tags::U>(dg_vars);
+  using std::max;
+  using std::min;
+  const auto subcell_u = evolution::dg::subcell::fd::project(
+      get(dg_u), dg_mesh, subcell_mesh.extents());
+  evolution::dg::subcell::RdmpTciData rdmp_data{};
+  ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
+      make_not_null(&rdmp_data), dg_u, evolution::dg::subcell::ActiveGrid::Dg,
+      dg_mesh, subcell_mesh);
+  const evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{
+      {max(max(get(dg_u), max(subcell_u)))},
+      {min(min(get(dg_u)), min(subcell_u))}};
+  CHECK(rdmp_data == expected_dg_rdmp_data);
 
-  const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
-                                               &subcell_mesh]() {
-    const auto subcell_vars = evolution::dg::subcell::fd::project(
-        dg_vars, dg_mesh, subcell_mesh.extents());
-    using std::max;
-    using std::min;
-    evolution::dg::subcell::RdmpTciData rdmp_tci_data{
-        {max(max(get(get<ScalarAdvection::Tags::U>(dg_vars))),
-             max(get(get<ScalarAdvection::Tags::U>(subcell_vars))))},
-        {min(min(get(get<ScalarAdvection::Tags::U>(dg_vars))),
-             min(get(get<ScalarAdvection::Tags::U>(subcell_vars))))}};
-    return rdmp_tci_data;
-  };
-
-  {
-    INFO("TCI is happy");
-    const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, rdmp_delta0, rdmp_epsilon, persson_exponent, dg_mesh,
-        subcell_mesh, tci_options);
-    CHECK_FALSE(std::get<0>(result));
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-  }
-
-  {
-    INFO("Two mesh RDMP fails");
-    // set subcell_vars to be smooth but quite different from dg_vars
-    // Test that the 2-mesh RDMP fails be setting an absurdly small epsilon
-    // and delta_0 tolerance.
-    get(get<ScalarAdvection::Tags::U>(
-        dg_vars))[dg_mesh.number_of_grid_points() / 2] *=
-        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
-    const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, 1.0e-100, 1.0e-18, persson_exponent, dg_mesh, subcell_mesh,
-        tci_options);
-    CHECK(std::get<0>(result));
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-    get(get<ScalarAdvection::Tags::U>(
-        dg_vars))[dg_mesh.number_of_grid_points() / 2] /=
-        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
-  }
-
-  {
-    INFO("Persson TCI fails");
-    // set dg_vars to have a sharp peak
-    get(get<ScalarAdvection::Tags::U>(dg_vars))[number_of_dg_grid_points / 2] +=
-        1.0;
-    // set rdmp_delta0 to be very large to ensure that it's the Persson TCI
-    // which triggers alarm here
-    const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh, subcell_mesh,
-        tci_options);
-    CHECK(std::get<0>(result));
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-  }
-
-  {
-    INFO("U is below absolute cutoff");
-    // dg_vars is troubled but it is scaled to be smaller than the cutoff
-    get(get<ScalarAdvection::Tags::U>(dg_vars)) *= 1.0e-10;
-    const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh, subcell_mesh,
-        tci_options);
-    CHECK_FALSE(std::get<0>(result));
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-    get(get<ScalarAdvection::Tags::U>(dg_vars)) *= 1.0e+10;
-  }
-
-  {
-    INFO("Test SetInitialRdmpData");
-    // While the code is supposed to be used on the subcells, that doesn't
-    // actually matter.
-    const auto& dg_u = get<ScalarAdvection::Tags::U>(dg_vars);
-    using std::max;
-    using std::min;
-    const auto subcell_u = evolution::dg::subcell::fd::project(
-        get(dg_u), dg_mesh, subcell_mesh.extents());
-    evolution::dg::subcell::RdmpTciData rdmp_data{};
-    ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
-        make_not_null(&rdmp_data), dg_u, evolution::dg::subcell::ActiveGrid::Dg,
-        dg_mesh, subcell_mesh);
-    const evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{
-        {max(max(get(dg_u), max(subcell_u)))},
-        {min(min(get(dg_u)), min(subcell_u))}};
-    CHECK(rdmp_data == expected_dg_rdmp_data);
-
-    ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
-        make_not_null(&rdmp_data), dg_u,
-        evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
-    const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
-        {max(get(dg_u))}, {min(get(dg_u))}};
-    CHECK(rdmp_data == expected_rdmp_data);
-  }
+  ScalarAdvection::subcell::SetInitialRdmpData<Dim>::apply(
+      make_not_null(&rdmp_data), dg_u,
+      evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
+  const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
+      {max(get(dg_u))}, {min(get(dg_u))}};
+  CHECK(rdmp_data == expected_rdmp_data);
 }
 }  // namespace
 

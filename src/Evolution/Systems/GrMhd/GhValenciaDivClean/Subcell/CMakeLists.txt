@@ -5,7 +5,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FixConservativesAndComputePrims.cpp
-  InitialDataTci.cpp
   PrimitiveGhostData.cpp
   PrimsAfterRollback.cpp
   ResizeAndComputePrimitives.cpp
@@ -16,7 +15,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FixConservativesAndComputePrims.hpp
-  InitialDataTci.hpp
   NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
