@@ -9,13 +9,13 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "Evolution/Systems/Burgers/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/Burgers/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.InitialDataTci",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.SetInitialRdmpData",
                   "[Unit][Evolution]") {
   using Vars = Variables<tmpl::list<Burgers::Tags::U>>;
 

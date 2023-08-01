@@ -5,10 +5,10 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FixConservativesAndComputePrims.cpp
-  InitialDataTci.cpp
   PrimitiveGhostData.cpp
   PrimsAfterRollback.cpp
   ResizeAndComputePrimitives.cpp
+  SetInitialRdmpData.cpp
   SwapGrTags.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
@@ -22,11 +22,11 @@ spectre_target_headers(
   ComputeFluxes.hpp
   FixConservativesAndComputePrims.hpp
   GrTagsForHydro.hpp
-  InitialDataTci.hpp
   NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
+  SetInitialRdmpData.hpp
   Subcell.hpp
   SwapGrTags.hpp
   TciOnDgGrid.hpp

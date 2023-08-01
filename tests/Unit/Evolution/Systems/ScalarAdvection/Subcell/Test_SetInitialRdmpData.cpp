@@ -9,7 +9,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "Evolution/Systems/ScalarAdvection/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -57,7 +57,7 @@ void test() {
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.ScalarAdvection.Subcell.InitialDataTci",
+    "Unit.Evolution.Systems.ScalarAdvection.Subcell.SetInitialRdmpData",
     "[Unit][Evolution]") {
   test<1>();
   test<2>();

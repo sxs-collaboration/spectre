@@ -5,7 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   GhostData.cpp
-  InitialDataTci.cpp
+  SetInitialRdmpData.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
@@ -16,8 +16,8 @@ spectre_target_headers(
   HEADERS
   ComputeFluxes.hpp
   GhostData.hpp
-  InitialDataTci.hpp
   NeighborPackagedData.hpp
+  SetInitialRdmpData.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp

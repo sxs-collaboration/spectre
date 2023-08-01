@@ -15,13 +15,13 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.ValenciaDivClean.Subcell.InitialDataTci",
+    "Unit.Evolution.Systems.ValenciaDivClean.Subcell.SetInitialRdmpData",
     "[Unit][Evolution]") {
   using ConsVars =
       typename grmhd::ValenciaDivClean::System::variables_tag::type;

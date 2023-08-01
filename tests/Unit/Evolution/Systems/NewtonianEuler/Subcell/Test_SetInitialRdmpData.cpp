@@ -11,7 +11,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/NewtonianEuler/Subcell/SetInitialRdmpData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
@@ -62,7 +62,7 @@ void test() {
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.NewtonianEuler.Subcell.InitialDataTci",
+    "Unit.Evolution.Systems.NewtonianEuler.Subcell.SetInitialRdmpData",
     "[Unit][Evolution]") {
   test<1>();
   test<2>();

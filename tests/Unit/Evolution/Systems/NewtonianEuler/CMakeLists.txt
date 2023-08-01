@@ -15,11 +15,11 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_MonotonisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
   Subcell/Test_ComputeFluxes.cpp
-  Subcell/Test_InitialDataTci.cpp
   Subcell/Test_NeighborPackagedData.cpp
   Subcell/Test_PrimitiveGhostData.cpp
   Subcell/Test_PrimsAfterRollback.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
+  Subcell/Test_SetInitialRdmpData.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
   Subcell/Test_TimeDerivative.cpp
