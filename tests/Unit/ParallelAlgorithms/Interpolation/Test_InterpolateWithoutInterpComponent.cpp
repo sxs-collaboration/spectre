@@ -24,6 +24,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
@@ -82,7 +83,7 @@ struct initialize_elements_and_queue_simple_actions {
           Parallel::Tags::MetavariablesImpl<metavars>,
           typename metavars::InterpolationTargetA::temporal_id,
           intrp::Tags::InterpPointInfo<metavars>,
-          domain::Tags::Mesh<metavars::volume_dim>,
+          ::Events::Tags::ObserverMesh<metavars::volume_dim>,
           ::Tags::Variables<
               typename std::remove_reference_t<decltype(vars)>::tags_list>>>(
           metavars{}, temporal_id, interp_point_info, mesh, vars);

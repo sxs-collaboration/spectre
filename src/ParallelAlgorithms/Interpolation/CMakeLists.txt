@@ -52,7 +52,6 @@ target_link_libraries(
   Time
   Utilities
   INTERFACE
-  DgSubcell
   EventsAndTriggers
   GeneralizedHarmonic
   Observer
