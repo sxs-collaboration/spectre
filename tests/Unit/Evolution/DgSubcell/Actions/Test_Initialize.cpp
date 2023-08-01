@@ -30,7 +30,7 @@
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
@@ -48,6 +48,7 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -94,31 +95,45 @@ template <size_t Dim, typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  using initial_tags =
-      tmpl::list<Tags::Time,
-                 domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-                 domain::Tags::FunctionsOfTimeInitialize,
-                 domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
-                 domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                             Frame::Inertial>,
-                 Tags::Variables<tmpl::list<Var1>>,
-                 Tags::Variables<tmpl::list<::Tags::dt<Var1>>>>;
+  using initial_tags = tmpl::list<
+      Tags::Time, domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      domain::Tags::FunctionsOfTimeInitialize,
+      domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
+      domain::Tags::ElementMap<Dim, Frame::Grid>,
+      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                  Frame::Inertial>,
+      Tags::Variables<tmpl::list<Var1>>,
+      Tags::Variables<tmpl::list<::Tags::dt<Var1>>>,
+      ::Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<
-          ActionTesting::InitializeDataBox<initial_tags>,
-          evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-          evolution::dg::subcell::Actions::Initialize<
-              Dim, System<Dim>, typename Metavariables::DgInitialDataTci>>>>;
+          ActionTesting::InitializeDataBox<
+              initial_tags,
+              db::AddComputeTags<
+                  domain::Tags::MappedCoordinates<
+                      domain::Tags::ElementMap<Dim, Frame::Grid>,
+                      domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+                  domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
+                      domain::CoordinateMaps::Tags::CoordinateMap<
+                          Dim, Frame::Grid, Frame::Inertial>>,
+                  domain::Tags::InertialFromGridCoordinatesCompute<Dim>>>,
+          evolution::dg::subcell::Actions::SetSubcellGrid<Dim, System<Dim>,
+                                                          false>,
+
+          evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+              Dim, typename Metavariables::SetInitialRdmpData>,
+          evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+              Dim, System<Dim>, typename Metavariables::FdInitialDataTci>,
+          evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+              Dim, System<Dim>>>>>;
 };
 
-template <size_t Dim, bool TciFails>
+template <size_t Dim, bool TciFails, bool SubcellEnabledOnExternalBoundary>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using analytic_solution = SystemAnalyticSolution;
@@ -131,49 +146,63 @@ struct Metavariables {
   void pup(PUP::er& /*p*/) {}
 
   struct SubcellOptions {
-    static constexpr bool subcell_enabled_at_external_boundary = false;
+    static constexpr bool subcell_enabled_at_external_boundary =
+        SubcellEnabledOnExternalBoundary;
   };
 
-  struct DgInitialDataTci {
+  struct FdInitialDataTci {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     static bool invoked;
 
-    using argument_tags =
-        tmpl::list<domain::Tags::Mesh<volume_dim>,
-                   evolution::dg::subcell::Tags::Mesh<volume_dim>>;
+    using return_tags = tmpl::list<>;
+    using argument_tags = tmpl::list<::Tags::Variables<tmpl::list<Var1>>,
+                                     domain::Tags::Mesh<volume_dim>>;
 
     static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
-        const Variables<tmpl::list<Var1>>& dg_vars, const double rdmp_delta0,
-        const double rdmp_epsilon, const double persson_exponent,
-        const Mesh<volume_dim>& dg_mesh, const Mesh<volume_dim>& subcell_mesh) {
+        const Variables<tmpl::list<Var1>>& fd_vars,
+        const Mesh<volume_dim>& dg_mesh, const double persson_exponent,
+        const bool need_rdmp_data_only) {
       CHECK(dg_mesh == Mesh<Dim>(5, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto));
-      CHECK(rdmp_delta0 == 1.0e-3);
-      CHECK(rdmp_epsilon == 1.0e-4);
-      CHECK(persson_exponent == 4.0);
-      Variables<tmpl::list<Var1>> projected_dg_vars{
-          subcell_mesh.number_of_grid_points()};
-      evolution::dg::subcell::fd::project(
-          make_not_null(&projected_dg_vars), dg_vars, dg_mesh,
-          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+      CHECK(persson_exponent == 5.1);
       evolution::dg::subcell::RdmpTciData rdmp_data{};
-      using std::max;
-      using std::min;
-      rdmp_data.max_variables_values =
-          DataVector{max(max(get(get<Var1>(dg_vars))),
-                         max(get(get<Var1>(projected_dg_vars))))};
-      rdmp_data.min_variables_values =
-          DataVector{min(min(get(get<Var1>(dg_vars))),
-                         min(get(get<Var1>(projected_dg_vars))))};
+      rdmp_data.max_variables_values = DataVector{max(get(get<Var1>(fd_vars)))};
+      rdmp_data.min_variables_values = DataVector{min(get(get<Var1>(fd_vars)))};
+      REQUIRE(not need_rdmp_data_only);
       invoked = true;
       return {static_cast<int>(TciFails), std::move(rdmp_data)};
     }
   };
+
+  struct SetInitialRdmpData {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    static bool invoked;
+
+    using return_tags =
+        tmpl::list<evolution::dg::subcell::Tags::DataForRdmpTci>;
+    using argument_tags = tmpl::list<::Tags::Variables<tmpl::list<Var1>>>;
+
+    static void apply(
+        const gsl::not_null<evolution::dg::subcell::RdmpTciData*> rdmp_tci_data,
+        const Variables<tmpl::list<Var1>>& fd_vars) {
+      invoked = true;
+      evolution::dg::subcell::RdmpTciData rdmp_data{};
+      rdmp_data.max_variables_values = DataVector{max(get(get<Var1>(fd_vars)))};
+      rdmp_data.min_variables_values = DataVector{min(get(get<Var1>(fd_vars)))};
+      *rdmp_tci_data = std::move(rdmp_data);
+    }
+  };
 };
 
-template <size_t Dim, bool TciFails>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
+template <size_t Dim, bool TciFails, bool SubcellEnabledOnExternalBoundary>
+bool Metavariables<
+    Dim, TciFails,
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    SubcellEnabledOnExternalBoundary>::FdInitialDataTci::invoked = false;
+template <size_t Dim, bool TciFails, bool SubcellEnabledOnExternalBoundary>
+bool Metavariables<Dim, TciFails, SubcellEnabledOnExternalBoundary>::
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    SetInitialRdmpData::invoked = false;
 
 template <size_t Dim>
 class TestCreator : public DomainCreator<Dim> {
@@ -196,15 +225,17 @@ class TestCreator : public DomainCreator<Dim> {
   }
 };
 
-template <size_t Dim, bool TciFails>
+template <size_t Dim, bool TciFails, bool SubcellEnabledOnExternalBoundary>
 void test(const bool always_use_subcell, const bool interior_element,
           const bool allow_subcell_in_block) {
   CAPTURE(Dim);
   CAPTURE(TciFails);
+  CAPTURE(SubcellEnabledOnExternalBoundary);
   CAPTURE(always_use_subcell);
   CAPTURE(interior_element);
   CAPTURE(allow_subcell_in_block);
-  using metavars = Metavariables<Dim, TciFails>;
+  using metavars =
+      Metavariables<Dim, TciFails, SubcellEnabledOnExternalBoundary>;
   using comp = Component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
@@ -219,10 +250,12 @@ void test(const bool always_use_subcell, const bool interior_element,
                    : std::optional{std::vector<std::string>{"Block0"}},
                ::fd::DerivativeOrder::Two},
            TestCreator<Dim>{}}}};
-  Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
+  metavars::FdInitialDataTci::invoked = false;
+  metavars::SetInitialRdmpData::invoked = false;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const ElementId<Dim> self_id{0};
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   if (interior_element) {
@@ -234,10 +267,12 @@ void test(const bool always_use_subcell, const bool interior_element,
   }
   const Element<Dim> element{self_id, neighbors};
   const auto logical_coords = logical_coordinates(dg_mesh);
-  ElementMap<Dim, Frame::Grid> logical_to_grid_map{
-      self_id,
-      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-          domain::CoordinateMaps::Identity<Dim>{})};
+  const auto make_element_map = [](const auto& element_id) {
+    return ElementMap<Dim, Frame::Grid>{
+        element_id,
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            domain::CoordinateMaps::Identity<Dim>{})};
+  };
   const auto grid_to_inertial_map =
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{});
@@ -245,115 +280,277 @@ void test(const bool always_use_subcell, const bool interior_element,
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  Variables<tmpl::list<Var1>> var(get<0>(logical_coords).size(), 8.9999);
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
-      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {initial_time, dg_mesh, element,
-       clone_unique_ptrs(functions_of_time), logical_coords,
-       std::move(logical_to_grid_map), grid_to_inertial_map->get_clone(), var,
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
+      {initial_time, dg_mesh, element, clone_unique_ptrs(functions_of_time),
+       logical_coords, make_element_map(self_id),
+       grid_to_inertial_map->get_clone(),
+       Variables<tmpl::list<Var1>>{subcell_mesh.number_of_grid_points()},
        Variables<tmpl::list<::Tags::dt<Var1>>>{
-           dg_mesh.number_of_grid_points()}});
+           subcell_mesh.number_of_grid_points()},
+       typename ::Tags::HistoryEvolvedVariables<
+           Tags::Variables<tmpl::list<Var1>>>::type{}});
 
-  // Invoke the SetVariables action on the runner
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
-  // Update the variables with the latest in the DataBox
-  var =
+  if (interior_element) {
+    // Add neighboring elements into runner
+    for (const auto& [direction, neighbors_in_direction] :
+         element.neighbors()) {
+      DirectionMap<Dim, Neighbors<Dim>> neighbor_neighbors{};
+      neighbor_neighbors[direction.opposite()] = Neighbors<Dim>{{self_id}, {}};
+      const auto neighbor_id = *neighbors_in_direction.begin();
+      // We use the time to get different solutions on the different neighbors
+      // since the analytic solution includes the time.
+      const double neighbor_time = initial_time + neighbor_id.block_id();
+
+      ActionTesting::emplace_array_component_and_initialize<comp>(
+          &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
+          neighbor_id,
+          {neighbor_time, dg_mesh,
+           Element<Dim>{neighbor_id, neighbor_neighbors},
+           clone_unique_ptrs(functions_of_time), logical_coords,
+           make_element_map(neighbor_id), grid_to_inertial_map->get_clone(),
+           Variables<tmpl::list<Var1>>{subcell_mesh.number_of_grid_points()},
+           Variables<tmpl::list<::Tags::dt<Var1>>>{
+               subcell_mesh.number_of_grid_points()},
+           typename ::Tags::HistoryEvolvedVariables<
+               Tags::Variables<tmpl::list<Var1>>>::type{}});
+    }
+  }
+
+  REQUIRE(
       ActionTesting::get_databox_tag<comp, typename System<Dim>::variables_tag>(
-          runner, 0);
+          runner, self_id)
+          .number_of_grid_points() == subcell_mesh.number_of_grid_points());
 
-  // Invoke the Initialize action on the runner
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
-
-  // TCI is always invoked since even at computational boundary it must set the
-  // RDMP data.
-  REQUIRE(Metavariables<Dim, TciFails>::DgInitialDataTci::invoked);
-
-  CHECK(
-      ActionTesting::get_databox_tag<comp,
-                                     evolution::dg::subcell::Tags::DidRollback>(
-          runner, 0) == false);
-  CHECK(
+  // Invoke SetSubcellGrid action on the runner
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
+  for (size_t count = 1; interior_element and count <= 2 * Dim; ++count) {
+    ActionTesting::next_action<comp>(make_not_null(&runner),
+                                     ElementId<Dim>{count});
+  }
+  const auto active_grid_before_tci =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::ActiveGrid>(
-          runner, 0) == ((TciFails or always_use_subcell) and
-                                 interior_element and allow_subcell_in_block
-                             ? evolution::dg::subcell::ActiveGrid::Subcell
-                             : evolution::dg::subcell::ActiveGrid::Dg));
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
-  CHECK(ActionTesting::get_databox_tag<comp,
-                                       evolution::dg::subcell::Tags::Mesh<Dim>>(
-            runner, 0) == subcell_mesh);
+          runner, self_id);
+  CHECK(active_grid_before_tci ==
+        (((element.external_boundaries().empty() or
+           SubcellEnabledOnExternalBoundary) and
+          allow_subcell_in_block)
+             ? evolution::dg::subcell::ActiveGrid::Subcell
+             : evolution::dg::subcell::ActiveGrid::Dg));
 
-  if ((TciFails or always_use_subcell) and interior_element and
-      allow_subcell_in_block) {
-    Variables<tmpl::list<Var1>> subcell_vars{
-        subcell_mesh.number_of_grid_points()};
-    evolution::dg::subcell::fd::project(make_not_null(&subcell_vars), var,
-                                        dg_mesh, subcell_mesh.extents());
-    CHECK_ITERABLE_APPROX(
-        get<Var1>(ActionTesting::get_databox_tag<
-                  comp, typename System<Dim>::variables_tag>(runner, 0)),
-        get<Var1>(subcell_vars));
+  // Invoke SetAndCommunicateInitialRdmpData action on the runner
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
+  REQUIRE(metavars::SetInitialRdmpData::invoked);
+  REQUIRE_FALSE(metavars::FdInitialDataTci::invoked);
+  if (interior_element) {
+    for (size_t count = 1; count <= 2 * Dim; ++count) {
+      ActionTesting::next_action<comp>(make_not_null(&runner),
+                                       ElementId<Dim>{count});
+      if (count < 2 * Dim) {
+        REQUIRE(ActionTesting::get_next_action_index<comp>(runner, self_id) ==
+                3);
+        REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
+            make_not_null(&runner), self_id));
+        REQUIRE(ActionTesting::get_next_action_index<comp>(runner, self_id) ==
+                3);
+      }
+    }
+
+    // Check RDMP data was communicated correctly by looking at inboxes.
+    const auto& self_inbox = ActionTesting::get_inbox_tag<
+        comp, evolution::dg::subcell::Tags::InitialTciData<Dim>>(
+        make_not_null(&runner), self_id);
+    REQUIRE(self_inbox.size() == 1);
+    REQUIRE(self_inbox.find(0) != self_inbox.end());
+    const auto& self_inbox_at_time = self_inbox.at(0);
+    for (const auto& [direction, neighbors_in_direction] :
+         element.neighbors()) {
+      const std::pair id{direction, *neighbors_in_direction.begin()};
+      CAPTURE(id);
+      REQUIRE(self_inbox_at_time.find(id) != self_inbox_at_time.end());
+      CHECK_FALSE(self_inbox_at_time.at(id).tci_status.has_value());
+      REQUIRE(self_inbox_at_time.at(id).initial_rdmp_data.has_value());
+      CHECK(
+          self_inbox_at_time.at(id)
+              .initial_rdmp_data.value()
+              .max_variables_values[0] ==
+          approx(((SubcellEnabledOnExternalBoundary and allow_subcell_in_block)
+                      ? 2.18888888888888888
+                      : 2.3) +
+                 neighbors_in_direction.begin()->block_id()));
+      CHECK(
+          self_inbox_at_time.at(id)
+              .initial_rdmp_data.value()
+              .min_variables_values[0] ==
+          approx(((SubcellEnabledOnExternalBoundary and allow_subcell_in_block)
+                      ? 0.41111111111111111
+                      : 0.3) +
+                 neighbors_in_direction.begin()->block_id()));
+    }
   }
+  metavars::FdInitialDataTci::invoked = false;
+  metavars::SetInitialRdmpData::invoked = false;
+
+  REQUIRE(ActionTesting::get_next_action_index<comp>(runner, self_id) == 3);
+  // Invoke ComputeAndSendTciOnInitialGrid action on self_id
+  REQUIRE(ActionTesting::next_action_if_ready<comp>(make_not_null(&runner),
+                                                    self_id));
+  REQUIRE(ActionTesting::get_next_action_index<comp>(runner, self_id) == 4);
+  REQUIRE_FALSE(metavars::SetInitialRdmpData::invoked);
+  if (always_use_subcell or
+      ActionTesting::get_databox_tag<comp,
+                                     evolution::dg::subcell::Tags::ActiveGrid>(
+          runner, self_id) == evolution::dg::subcell::ActiveGrid::Dg) {
+    REQUIRE_FALSE(metavars::FdInitialDataTci::invoked);
+  } else {
+    REQUIRE(metavars::FdInitialDataTci::invoked);
+  }
+  if (interior_element) {
+    // Invoke ComputeAndSendTciOnInitialGrid action on the neighbors
+    for (size_t i = 0; i < neighbors.size(); ++i) {
+      CAPTURE(i + 1);
+      metavars::FdInitialDataTci::invoked = false;
+      metavars::SetInitialRdmpData::invoked = false;
+      ActionTesting::next_action<comp>(make_not_null(&runner),
+                                       ElementId<Dim>{i + 1});
+      REQUIRE_FALSE(metavars::SetInitialRdmpData::invoked);
+      if (not SubcellEnabledOnExternalBoundary or always_use_subcell or
+          ActionTesting::get_databox_tag<
+              comp, evolution::dg::subcell::Tags::ActiveGrid>(
+              runner, self_id) == evolution::dg::subcell::ActiveGrid::Dg) {
+        REQUIRE_FALSE(metavars::FdInitialDataTci::invoked);
+      } else {
+        REQUIRE(metavars::FdInitialDataTci::invoked);
+      }
+    }
+
+    // Check TCI status data was communicated correctly by looking at inboxes.
+    const auto& self_inbox = ActionTesting::get_inbox_tag<
+        comp, evolution::dg::subcell::Tags::InitialTciData<Dim>>(
+        make_not_null(&runner), self_id);
+    REQUIRE(self_inbox.size() == 1);
+    REQUIRE(self_inbox.find(1) != self_inbox.end());
+    const auto& self_inbox_at_time = self_inbox.at(1);
+    for (const auto& [direction, neighbors_in_direction] :
+         element.neighbors()) {
+      const std::pair id{direction, *neighbors_in_direction.begin()};
+      CAPTURE(id);
+      REQUIRE(self_inbox_at_time.find(id) != self_inbox_at_time.end());
+      CHECK_FALSE(self_inbox_at_time.at(id).initial_rdmp_data.has_value());
+      REQUIRE(self_inbox_at_time.at(id).tci_status.has_value());
+      if (metavars::FdInitialDataTci::invoked) {
+        CHECK(self_inbox_at_time.at(id).tci_status.value() ==
+              static_cast<int>(TciFails));
+      } else {
+        CHECK(self_inbox_at_time.at(id).tci_status.value() == 0);
+      }
+    }
+  }
+
+  metavars::FdInitialDataTci::invoked = false;
+  metavars::SetInitialRdmpData::invoked = false;
+
+  REQUIRE(ActionTesting::get_next_action_index<comp>(runner, self_id) == 4);
+  // Invoke SetInitialGridFromTciData action on self_id
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
+  REQUIRE_FALSE(metavars::FdInitialDataTci::invoked);
+  REQUIRE_FALSE(metavars::SetInitialRdmpData::invoked);
+
+  const auto active_grid =
+      ActionTesting::get_databox_tag<comp,
+                                     evolution::dg::subcell::Tags::ActiveGrid>(
+          runner, self_id);
+
+  if (SubcellEnabledOnExternalBoundary) {
+    CHECK(active_grid ==
+          (((TciFails or always_use_subcell) and allow_subcell_in_block)
+               ? evolution::dg::subcell::ActiveGrid::Subcell
+               : evolution::dg::subcell::ActiveGrid::Dg));
+  } else {
+    CHECK(active_grid == (((TciFails or always_use_subcell) and
+                           allow_subcell_in_block and interior_element)
+                              ? evolution::dg::subcell::ActiveGrid::Subcell
+                              : evolution::dg::subcell::ActiveGrid::Dg));
+  }
+
+  CHECK(
+      ActionTesting::get_databox_tag<comp, typename System<Dim>::variables_tag>(
+          runner, self_id)
+          .number_of_grid_points() ==
+      (active_grid == evolution::dg::subcell::ActiveGrid::Dg
+           ? dg_mesh.number_of_grid_points()
+           : subcell_mesh.number_of_grid_points()));
+
+  // Check that tags were added.
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
+        comp, evolution::dg::subcell::Tags::DidRollback>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0));
+        comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0));
+        comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::fd::Tags::
-                  InverseJacobianLogicalToInertial<Dim>>(runner, 0));
+                  InverseJacobianLogicalToInertial<Dim>>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
-      runner, 0));
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0));
+        comp, evolution::dg::subcell::Tags::TciDecision>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(runner,
-                                                                       0));
+        comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+      runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::ReconstructionOrder<Dim>>(runner,
-                                                                      0));
+                                                                      self_id));
+
+  // Check things have correct values.
   CHECK(ActionTesting::get_databox_tag<
             comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
-            runner, 0)
+            runner, self_id)
             .size() ==
         (interior_element ? Direction<Dim>::all_directions().size() : 0));
+  CHECK(
+      ActionTesting::get_databox_tag<comp,
+                                     evolution::dg::subcell::Tags::DidRollback>(
+          runner, self_id) == false);
+  CHECK(ActionTesting::get_databox_tag<comp,
+                                       evolution::dg::subcell::Tags::Mesh<Dim>>(
+            runner, self_id) == subcell_mesh);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction.ids()) {
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
-                runner, 0)
+                runner, self_id)
                 .contains(std::pair{direction, neighbor}));
     }
   }
   const auto& subcell_inertial_coords = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
-      runner, 0);
+      runner, self_id);
   const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
   for (size_t d = 0; d < Dim; ++d) {
     CHECK(subcell_inertial_coords[d] == subcell_logical_coords[d]);
@@ -361,8 +558,30 @@ void test(const bool always_use_subcell, const bool interior_element,
   CHECK(not ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::CellCenteredFlux<
                           typename metavars::system::flux_variables, Dim>>(
-                runner, 0)
+                runner, self_id)
                 .has_value());
+
+  // Update the variables with the latest in the DataBox
+  const auto& vars =
+      ActionTesting::get_databox_tag<comp, typename System<Dim>::variables_tag>(
+          runner, self_id);
+  Variables<tmpl::list<Var1>> expected_vars{};
+  if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
+    expected_vars.initialize(subcell_mesh.number_of_grid_points());
+  } else {
+    expected_vars.initialize(dg_mesh.number_of_grid_points());
+  }
+  expected_vars.assign_subset(SystemAnalyticSolution{}.variables(
+      active_grid == evolution::dg::subcell::ActiveGrid::Subcell
+          ? ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::Coordinates<
+                          Dim, Frame::Inertial>>(runner, self_id)
+          : ActionTesting::get_databox_tag<
+                comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner,
+                                                                       self_id),
+      ActionTesting::get_databox_tag<comp, ::Tags::Time>(runner, self_id),
+      tmpl::list<Var1>{}));
+  CHECK_ITERABLE_APPROX(get<Var1>(vars), get<Var1>(expected_vars));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
@@ -383,10 +602,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
   for (const bool always_use_subcell : {false, true}) {
     for (const bool interior_element : {false, true}) {
       for (const bool allow_subcell_in_block : {false, true}) {
-        test<1, true>(always_use_subcell, interior_element,
-                      allow_subcell_in_block);
-        test<1, false>(always_use_subcell, interior_element,
-                       allow_subcell_in_block);
+        test<1, true, false>(always_use_subcell, interior_element,
+                             allow_subcell_in_block);
+        test<1, false, false>(always_use_subcell, interior_element,
+                              allow_subcell_in_block);
+
+        test<1, true, true>(always_use_subcell, interior_element,
+                            allow_subcell_in_block);
+        test<1, false, true>(always_use_subcell, interior_element,
+                             allow_subcell_in_block);
       }
     }
   }
