@@ -3,6 +3,7 @@
 
 import fnmatch
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Dict, Iterable, Optional, Sequence, Union
 
 import numpy as np
@@ -22,13 +23,6 @@ from spectre.Domain.CoordinateMaps import (
     CoordinateMapElementLogicalToInertial3D,
 )
 from spectre.Spectral import Mesh, logical_coordinates
-
-# functools.cached_property was added in Py 3.8. Fall back to a plain
-# `property` in Py 3.7.
-try:
-    from functools import cached_property
-except ImportError:
-    cached_property = property
 
 
 @dataclass(frozen=True)

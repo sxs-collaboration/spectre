@@ -58,21 +58,18 @@ class TestGenerateXdmf(unittest.TestCase):
         # bugs.
         # - Compare canonicalized XML with stripped whitespace. Pretty
         #   indentation was only added in Python 3.9.
-        # - Skip test in Python 3.7 because it doesn't preserve ordering of XML
-        #   attributes like <Tag Arg1="1" Arg2="2"> and <Tag Arg2="2" Arg1="1">.
-        if sys.version_info >= (3, 8):
-            self.assertEqual(
-                ET.canonicalize(
-                    from_file=output_filename + ".xmf", strip_text=True
-                ),
-                ET.canonicalize(
-                    from_file=os.path.join(self.data_dir, "VolTestData.xmf"),
-                    strip_text=True,
-                ).replace(
-                    "VolTestData0.h5",
-                    os.path.relpath(data_files[0], self.test_dir),
-                ),
-            )
+        self.assertEqual(
+            ET.canonicalize(
+                from_file=output_filename + ".xmf", strip_text=True
+            ),
+            ET.canonicalize(
+                from_file=os.path.join(self.data_dir, "VolTestData.xmf"),
+                strip_text=True,
+            ).replace(
+                "VolTestData0.h5",
+                os.path.relpath(data_files[0], self.test_dir),
+            ),
+        )
 
     def test_surface_generate_xdmf(self):
         data_files = [os.path.join(self.data_dir, "SurfaceTestData.h5")]
