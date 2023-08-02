@@ -9,10 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FastFlow.cpp
-  TimeDerivStrahlkorper.cpp
-  StrahlkorperGr.cpp
-  StrahlkorperCoordsInDifferentFrame.cpp
-  StrahlkorperInDifferentFrame.cpp
+  InterpolationTarget.cpp
   )
 
 spectre_target_headers(
@@ -23,16 +20,11 @@ spectre_target_headers(
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
-  ComputeItems.hpp
   FastFlow.hpp
   HorizonAliases.hpp
+  InterpolationTarget.hpp
   ObserveCenters.hpp
-  StrahlkorperGr.hpp
-  StrahlkorperCoordsInDifferentFrame.hpp
-  StrahlkorperInDifferentFrame.hpp
   Tags.hpp
-  TagsDeclarations.hpp
-  TimeDerivStrahlkorper.hpp
   )
 
 target_link_libraries(
@@ -43,11 +35,18 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   LinearAlgebra
+  Logging
   Options
   SphericalHarmonics
+  StrahlkorperGr
   PRIVATE
   CoordinateMaps
   Domain
   INTERFACE
+  Initialization
   Observer
+  Parallel
+  ParallelInterpolation
   )
+
+  add_subdirectory(Callbacks)

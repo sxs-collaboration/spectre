@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ApparentHorizons/FastFlow.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
@@ -25,7 +26,6 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"

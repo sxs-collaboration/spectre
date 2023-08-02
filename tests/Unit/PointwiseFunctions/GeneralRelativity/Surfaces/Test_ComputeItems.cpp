@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <random>
 
-#include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -21,6 +20,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/ComputeItems.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -91,9 +91,10 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
                      gh::Tags::Pi<DataVector, Dim, Frame>,
                      gh::Tags::Phi<DataVector, Dim, Frame>>>,
       db::AddComputeTags<tmpl::list<
-          ah::Tags::InverseSpatialMetricCompute<Dim, Frame>,
-          ah::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,
-          ah::Tags::SpatialChristoffelSecondKindCompute<Dim, Frame>>>>(
+          StrahlkorperGr::Tags::InverseSpatialMetricCompute<Dim, Frame>,
+          StrahlkorperGr::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,
+          StrahlkorperGr::Tags::SpatialChristoffelSecondKindCompute<Dim,
+                                                                    Frame>>>>(
       spacetime_metric, pi, phi);
 
   const auto& inverse_spatial_metric =
@@ -111,18 +112,19 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeItems",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.PointwiseFunctions.GeneralRelativity.Surfaces.ComputeItems",
+    "[PointwiseFunctions][Unit]") {
   const DataVector used_for_size(20);
   // Need only Dim=3 and DataVectors for apparent horizons.
   test_strahlkorper_compute_items<3, Frame::Inertial>(used_for_size);
   TestHelpers::db::test_compute_tag<
-      ah::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>>(
+      StrahlkorperGr::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>>(
       "InverseSpatialMetric");
   TestHelpers::db::test_compute_tag<
-      ah::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      StrahlkorperGr::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
       "ExtrinsicCurvature");
   TestHelpers::db::test_compute_tag<
-      ah::Tags::SpatialChristoffelSecondKindCompute<3, Frame::Inertial>>(
-      "SpatialChristoffelSecondKind");
+      StrahlkorperGr::Tags::SpatialChristoffelSecondKindCompute<
+          3, Frame::Inertial>>("SpatialChristoffelSecondKind");
 }

@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "ApparentHorizons/ComputeItems.hpp"
-#include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
@@ -156,13 +156,11 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
@@ -196,6 +194,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"

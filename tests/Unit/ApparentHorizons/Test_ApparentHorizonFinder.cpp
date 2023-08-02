@@ -12,11 +12,12 @@
 #include <utility>
 #include <vector>
 
+#include "ApparentHorizons/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
-#include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/StrahlkorperCoordsInDifferentFrame.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -33,6 +34,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/StrahlkorperTransformations.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -60,11 +62,8 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"

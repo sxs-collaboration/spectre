@@ -1,7 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(ApparentHorizons)
 add_subdirectory(ControlSystem)
 add_subdirectory(DataStructures)
 add_subdirectory(Domain)

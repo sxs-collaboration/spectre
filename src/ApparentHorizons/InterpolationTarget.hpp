@@ -21,6 +21,7 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -153,7 +154,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using common_tags =
       tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
                       logging::Tags::Verbosity<InterpolationTargetTag>,
-                      ::ah::Tags::PreviousStrahlkorpers<Frame>>;
+                      StrahlkorperTags::PreviousStrahlkorpers<Frame>>;
   using simple_tags = tmpl::append<
       common_tags,
       tmpl::conditional_t<
@@ -161,7 +162,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
           tmpl::list<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>>>;
   using compute_tags =
       tmpl::append<typename StrahlkorperTags::compute_items_tags<Frame>,
-                   ::ah::Tags::TimeDerivStrahlkorperCompute<Frame>>;
+                   StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame>>;
 
   template <typename DbTags, typename Metavariables>
   static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,

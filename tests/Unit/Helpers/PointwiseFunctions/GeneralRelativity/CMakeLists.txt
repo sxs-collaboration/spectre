@@ -18,3 +18,5 @@ target_link_libraries(
   PUBLIC
   DataStructures
   )
+
+add_subdirectory(Surfaces)

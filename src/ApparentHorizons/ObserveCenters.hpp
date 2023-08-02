@@ -8,7 +8,6 @@
 #include <limits>
 #include <tuple>
 
-#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -20,6 +19,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 

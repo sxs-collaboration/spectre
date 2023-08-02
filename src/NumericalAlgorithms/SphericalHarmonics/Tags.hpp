@@ -346,6 +346,36 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
 };
 /// @}
 
+/// Tag for holding the previously-found values of a Strahlkorper,
+/// which are saved for extrapolation for future initial guesses
+/// and for computing the time deriv of a Strahlkorper.
+template <typename Frame>
+struct PreviousStrahlkorpers : db::SimpleTag {
+  using type = std::deque<std::pair<double, ::Strahlkorper<Frame>>>;
+};
+
+/// @{
+/// Tag to compute the time derivative of the coefficients of a Strahlkorper
+/// from a number of previous Strahlkorpers.
+template <typename Frame>
+struct TimeDerivStrahlkorper : db::SimpleTag {
+  using type = ::Strahlkorper<Frame>;
+};
+
+template <typename Frame>
+struct TimeDerivStrahlkorperCompute : db::ComputeTag,
+                                      TimeDerivStrahlkorper<Frame> {
+  using base = TimeDerivStrahlkorper<Frame>;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<::Strahlkorper<Frame>*>,
+      const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&)>(
+      &StrahlkorperFunctions::time_deriv_of_strahlkorper<Frame>);
+
+  using argument_tags = tmpl::list<PreviousStrahlkorpers<Frame>>;
+};
+/// @}
+
 template <typename Frame>
 using items_tags = tmpl::list<Strahlkorper<Frame>>;
 

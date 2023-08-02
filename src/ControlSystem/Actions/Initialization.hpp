@@ -7,7 +7,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Tags/IsActive.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -16,6 +15,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

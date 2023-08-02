@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "ApparentHorizons/ComputeItems.hpp"
-#include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
+#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/Factory1D.hpp"
@@ -86,13 +86,11 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
@@ -104,6 +102,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"

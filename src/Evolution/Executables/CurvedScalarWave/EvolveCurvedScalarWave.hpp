@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
@@ -91,6 +90,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"

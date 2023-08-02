@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <string>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
@@ -25,6 +24,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"

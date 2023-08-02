@@ -7,14 +7,10 @@ set(LIBRARY_SOURCES
   Test_ApparentHorizonFinder.cpp
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
-  Test_ComputeItems.cpp
   Test_FastFlow.cpp
+  Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
-  Test_StrahlkorperGr.cpp
-  Test_StrahlkorperCoordsInDifferentFrame.cpp
-  Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
-  Test_TimeDerivStrahlkorper.cpp
   )
 
 add_test_library(
@@ -28,7 +24,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   ApparentHorizons
-  ApparentHorizonsHelpers
   FiniteDifference
   GeneralRelativitySolutions
   LinearOperators
