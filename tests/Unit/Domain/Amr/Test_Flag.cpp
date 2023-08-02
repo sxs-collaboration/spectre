@@ -29,7 +29,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Amr.Flag", "[Domain][Unit]") {
 
   CHECK_THROWS_WITH(
       ([]() { TestHelpers::test_creation<amr::Flag>("Bad flag name"); }()),
-      Catch::Contains(MakeString{} << "Failed to convert \"Bad flag name\" to "
-                                      "amr::Flag.\nMust be one of "
-                                   << known_amr_flags << "."));
+      Catch::Matchers::ContainsSubstring(
+          MakeString{} << "Failed to convert \"Bad flag name\" to "
+                          "amr::Flag.\nMust be one of "
+                       << known_amr_flags << "."));
 }

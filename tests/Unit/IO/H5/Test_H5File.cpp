@@ -147,7 +147,7 @@ void test_error_messages() {
         h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
         my_file.get<h5::Header>("/Dummy").get_header();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot open the object '/Dummy.hdr' because it does not exist."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectNotExist.h5")) {
@@ -162,7 +162,7 @@ void test_error_messages() {
         }
         h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "All HDF5 file names must end in '.h5'. The path and file name "
           "'./Unit.IO.H5.FileErrorNotH5.h5ab' does not satisfy this"));
   if (file_system::check_if_file_exists("./Unit.IO.H5.FileErrorNotH5.h5ab")) {
@@ -177,7 +177,7 @@ void test_error_messages() {
         }
         h5::H5File<h5::AccessType::ReadOnly> my_file(file_name);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Trying to open the file './Unit.IO.H5.FileErrorFileNotExist.h5'"));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorFileNotExist.h5")) {
@@ -194,7 +194,7 @@ void test_error_messages() {
         { h5::H5File<h5::AccessType::ReadWrite> my_file(file_name); }
         h5::H5File<h5::AccessType::ReadOnly> my_file(file_name, true);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot append to a file opened in read-only mode. File name is: "
           "./Unit.IO.H5.FileErrorCannotAppendReadOnly.h5"));
   if (file_system::check_if_file_exists(
@@ -218,7 +218,7 @@ void test_error_messages() {
         }
         h5::H5File<h5::AccessType::ReadWrite> my_file_2(file_name);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "File './Unit.IO.H5.FileErrorExists.h5' already exists and we are "
           "not allowed to append. To reduce the risk of accidental deletion "
           "you must explicitly delete the file first using the file_system "
@@ -237,7 +237,7 @@ void test_error_messages() {
         const h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
         my_file.get<h5::Header>("/Dummy").get_header();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot open the object '/Dummy.hdr' because it does not exist."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectNotExistConst.h5")) {

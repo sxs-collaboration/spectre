@@ -17,8 +17,10 @@ namespace {
 SPECTRE_TEST_CASE("Unit.ErrorHandling.AssertAndError",
                   "[Unit][ErrorHandling]") {
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(trigger_assert(), Catch::Contains("Testing assert") &&
-                                          Catch::Contains("false"));
+  CHECK_THROWS_WITH(trigger_assert(),
+                    Catch::Matchers::ContainsSubstring("Testing assert") &&
+                        Catch::Matchers::ContainsSubstring("false"));
 #endif
-  CHECK_THROWS_WITH(trigger_error(), Catch::Contains("Testing error"));
+  CHECK_THROWS_WITH(trigger_error(),
+                    Catch::Matchers::ContainsSubstring("Testing error"));
 }

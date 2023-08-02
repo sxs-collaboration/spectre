@@ -79,12 +79,12 @@ void test_make_tagged_tuple() {
   }
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      make_with_value<Makeable>(
-          tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
-              Makeable{1, 0.0}, Makeable{2, 0.0}),
-          0.0),
-      Catch::Contains("Inconsistent number of points in tuple entries"));
+  CHECK_THROWS_WITH(make_with_value<Makeable>(
+                        tuples::TaggedTuple<Tags::Makeable, Tags::Makeable2>(
+                            Makeable{1, 0.0}, Makeable{2, 0.0}),
+                        0.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Inconsistent number of points in tuple entries"));
 #endif  // SPECTRE_DEBUG
 }
 
@@ -109,10 +109,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                         make_array<4>(Makeable{5, 4.5}), 8.3);
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      make_with_value<Makeable>(make_array(Makeable{1, 0.0}, Makeable{2, 0.0}),
-                                0.0),
-      Catch::Contains("Inconsistent number of points in array entries"));
+  CHECK_THROWS_WITH(make_with_value<Makeable>(
+                        make_array(Makeable{1, 0.0}, Makeable{2, 0.0}), 0.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Inconsistent number of points in array entries"));
 #endif  // SPECTRE_DEBUG
 
   // std::vector is only usable as input because the number of entries
@@ -122,13 +122,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                         std::vector{Makeable{5, 4.5}, Makeable{5, 1.2}}, 8.3);
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      make_with_value<Makeable>(std::vector{Makeable{1, 0.0}, Makeable{2, 0.0}},
-                                0.0),
-      Catch::Contains("Inconsistent number of points in vector entries"));
-  CHECK_THROWS_WITH(
-      make_with_value<Makeable>(std::vector<Makeable>{}, 0.0),
-      Catch::Contains("Cannot get number of points from empty std::vector"));
+  CHECK_THROWS_WITH(make_with_value<Makeable>(
+                        std::vector{Makeable{1, 0.0}, Makeable{2, 0.0}}, 0.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Inconsistent number of points in vector entries"));
+  CHECK_THROWS_WITH(make_with_value<Makeable>(std::vector<Makeable>{}, 0.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot get number of points from empty std::vector"));
 #endif  // SPECTRE_DEBUG
 
   // std::reference_wrapper is only usable as input.

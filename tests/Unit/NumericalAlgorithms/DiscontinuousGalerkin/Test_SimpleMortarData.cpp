@@ -32,26 +32,27 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
   }
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(([]() {
-                      dg::SimpleMortarData<size_t, std::string, double> data;
-                      data.remote_insert(0, 1.234);
-                      data.local_data(0);
-                    }()),
-                    Catch::Matchers::Contains("Local data not available."));
   CHECK_THROWS_WITH(
       ([]() {
         dg::SimpleMortarData<size_t, std::string, double> data;
-        data.local_insert(1, "");
+        data.remote_insert(0, 1.234);
         data.local_data(0);
       }()),
-      Catch::Matchers::Contains("Only have local data at temporal_id"));
+      Catch::Matchers::ContainsSubstring("Local data not available."));
+  CHECK_THROWS_WITH(([]() {
+                      dg::SimpleMortarData<size_t, std::string, double> data;
+                      data.local_insert(1, "");
+                      data.local_data(0);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "Only have local data at temporal_id"));
   CHECK_THROWS_WITH(
       ([]() {
         dg::SimpleMortarData<size_t, std::string, double> data;
         data.remote_insert(0, 0.);
         data.local_insert(1, "");
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Received local data at 1, but already have remote data at 0"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -59,26 +60,28 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
         data.local_insert(1, "");
         data.remote_insert(0, 0.);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Received remote data at 0, but already have local data at 1"));
-  CHECK_THROWS_WITH(([]() {
-                      dg::SimpleMortarData<size_t, std::string, double> data;
-                      data.local_insert(1, "");
-                      data.local_insert(1, "");
-                    }()),
-                    Catch::Matchers::Contains("Already received local data"));
-  CHECK_THROWS_WITH(([]() {
-                      dg::SimpleMortarData<size_t, std::string, double> data;
-                      data.remote_insert(0, 0.);
-                      data.remote_insert(0, 0.);
-                    }()),
-                    Catch::Matchers::Contains("Already received remote data"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        dg::SimpleMortarData<size_t, std::string, double> data;
+        data.local_insert(1, "");
+        data.local_insert(1, "");
+      }()),
+      Catch::Matchers::ContainsSubstring("Already received local data"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        dg::SimpleMortarData<size_t, std::string, double> data;
+        data.remote_insert(0, 0.);
+        data.remote_insert(0, 0.);
+      }()),
+      Catch::Matchers::ContainsSubstring("Already received remote data"));
   CHECK_THROWS_WITH(
       ([]() {
         dg::SimpleMortarData<size_t, std::string, double> data;
         data.extract();
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tried to extract boundary data, but do not have any data"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -86,7 +89,7 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
         data.local_insert(1, "");
         data.extract();
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tried to extract boundary data, but do not have remote data"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -94,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
         data.remote_insert(0, 0.);
         data.extract();
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tried to extract boundary data, but do not have local data"));
 #endif
 }

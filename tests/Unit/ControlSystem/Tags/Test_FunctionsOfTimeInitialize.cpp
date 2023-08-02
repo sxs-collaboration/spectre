@@ -470,14 +470,14 @@ void test_errors(const bool is_active) {
   if (is_active) {
     CHECK_THROWS_WITH(
         not_controlling(is_active),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "is not controlling a function of time. Check that the "
             "DomainCreator you have chosen uses all of the control systems in "
             "the executable. The existing functions of time are"));
-    CHECK_THROWS_WITH(
-        incompatible(is_active),
-        Catch::Contains("It is possible that the DomainCreator you are using "
-                        "isn't compatible with the control systems"));
+    CHECK_THROWS_WITH(incompatible(is_active),
+                      Catch::Matchers::ContainsSubstring(
+                          "It is possible that the DomainCreator you are using "
+                          "isn't compatible with the control systems"));
   } else {
     CHECK_NOTHROW(not_controlling(is_active));
     CHECK_NOTHROW(incompatible(is_active));

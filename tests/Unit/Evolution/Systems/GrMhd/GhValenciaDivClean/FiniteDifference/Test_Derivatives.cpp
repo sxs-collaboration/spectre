@@ -179,7 +179,7 @@ SPECTRE_TEST_CASE(
                           make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
                           bad_ghost_data, fd_deriv_order, subcell_mesh,
                           cell_centered_logical_to_inertial_inv_jacobian),
-                      Catch::Contains(match_string));
+                      Catch::Matchers::ContainsSubstring(match_string));
   }
 #endif  // SPECTRE_DEBUG
 }

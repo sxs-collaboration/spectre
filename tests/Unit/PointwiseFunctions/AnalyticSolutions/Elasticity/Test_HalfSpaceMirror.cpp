@@ -158,5 +158,5 @@ SPECTRE_TEST_CASE(
             x, tmpl::list<Elasticity::Tags::Displacement<3>,
                           Elasticity::Tags::Strain<3>>{}));
       }()),
-      Catch::Matchers::Contains("The numerical integral failed"));
+      Catch::Matchers::ContainsSubstring("The numerical integral failed"));
 }

@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ChildSize", "[Domain][Unit]") {
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((child_size({1, 1}, {1, 0})),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "Segment id 'L1I0' is not the parent of 'L1I1'."));
 #endif
 }

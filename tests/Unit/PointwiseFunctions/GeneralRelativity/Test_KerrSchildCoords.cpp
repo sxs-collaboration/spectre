@@ -154,19 +154,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.KerrSchildCoords",
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       (test_theta_component(std::numeric_limits<double>::signaling_NaN())),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The input vector must have a vanishing theta component"));
   CHECK_THROWS_WITH(
       (test_theta_component(DataVector(5))),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The input vector must have a vanishing theta component"));
-  CHECK_THROWS_WITH((gr::KerrSchildCoords(-4.21, 0.999)),
-                    Catch::Matchers::Contains("The mass must be positive"));
+  CHECK_THROWS_WITH(
+      (gr::KerrSchildCoords(-4.21, 0.999)),
+      Catch::Matchers::ContainsSubstring("The mass must be positive"));
   CHECK_THROWS_WITH((gr::KerrSchildCoords(0.15, -1.3)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The dimensionless spin must be in the range (-1, 1)"));
   CHECK_THROWS_WITH((gr::KerrSchildCoords(1.532, 4.2)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The dimensionless spin must be in the range (-1, 1)"));
 #endif
 }

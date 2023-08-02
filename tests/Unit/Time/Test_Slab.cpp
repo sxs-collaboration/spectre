@@ -111,49 +111,67 @@ SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
 #endif
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(Slab(1., 0.), Catch::Contains("Backwards Slab"));
+  CHECK_THROWS_WITH(Slab(1., 0.),
+                    Catch::Matchers::ContainsSubstring("Backwards Slab"));
   CHECK_THROWS_WITH(Slab::with_duration_from_start(0., -1.),
-                    Catch::Contains("Backwards Slab"));
+                    Catch::Matchers::ContainsSubstring("Backwards Slab"));
   CHECK_THROWS_WITH(Slab::with_duration_to_end(0., -1.),
-                    Catch::Contains("Backwards Slab"));
+                    Catch::Matchers::ContainsSubstring("Backwards Slab"));
 
   CHECK_THROWS_WITH(slab.advance_towards(0 * slab.duration()),
-                    Catch::Contains("Can't advance along a zero time vector"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't advance along a zero time vector"));
 
-  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(-0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) < Slab(-0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) < Slab(0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) < Slab(0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) < Slab(-0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) < Slab(-0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
 
-  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(-0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) > Slab(-0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) > Slab(0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) > Slab(0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) > Slab(-0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) > Slab(-0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
 
-  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(-0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) <= Slab(-0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) <= Slab(0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) <= Slab(0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) <= Slab(-0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) <= Slab(-0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
 
-  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(-0.1, 0.9),
-                    Catch::Contains("Cannot compare overlapping slabs"));
-  CHECK_THROWS_WITH(Slab(0., 1.) >= Slab(-0.1, 1.1),
-                    Catch::Contains("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) >= Slab(0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) >= Slab(0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) >= Slab(-0.1, 0.9),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
+  CHECK_THROWS_WITH(
+      Slab(0., 1.) >= Slab(-0.1, 1.1),
+      Catch::Matchers::ContainsSubstring("Cannot compare overlapping slabs"));
 #endif /*SPECTRE_DEBUG*/
 }

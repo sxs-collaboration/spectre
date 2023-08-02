@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
   CHECK_THROWS_WITH(
       SINGLE_ARG(ExpandOverBlocks<size_t, 1>{3}(
           std::vector<std::array<size_t, 1>>{{2}, {3}})),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "You supplied 2 values, but the domain creator has 3 blocks."));
   {
     // [expand_over_blocks_example]
@@ -97,21 +97,21 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
               {{2, 3}}, {{3, 4}}, {{3, 4}}, {{3, 4}}, {{3, 4}}});
     // [expand_over_blocks_named_example]
     CHECK_THROWS_WITH(expand({{"InnerCube", {{2, 3}}}, {"East", {{3, 4}}}}),
-                      Catch::Matchers::Contains(
+                      Catch::Matchers::ContainsSubstring(
                           "You supplied 2 values, but the domain creator has 5 "
                           "blocks: InnerCube, East, North, West, South"));
     CHECK_THROWS_WITH(expand({{{"Wedges", {{3, 4}}}}}),
-                      Catch::Matchers::Contains(
+                      Catch::Matchers::ContainsSubstring(
                           "You supplied 4 values, but the domain creator has 5 "
                           "blocks: InnerCube, East, North, West, South"));
     CHECK_THROWS_WITH(
         expand({{"Wedges", {{3, 4}}}, {"East", {{3, 4}}}}),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Duplicate block name 'East' (expanded from 'Wedges')."));
-    CHECK_THROWS_WITH(
-        expand({{"noblock", {{3, 4}}}, {"Wedges", {{3, 4}}}}),
-        Catch::Matchers::Contains("Value for block 'InnerCube' is missing. Did "
-                                  "you misspell its name?"));
+    CHECK_THROWS_WITH(expand({{"noblock", {{3, 4}}}, {"Wedges", {{3, 4}}}}),
+                      Catch::Matchers::ContainsSubstring(
+                          "Value for block 'InnerCube' is missing. Did "
+                          "you misspell its name?"));
   }
 }
 

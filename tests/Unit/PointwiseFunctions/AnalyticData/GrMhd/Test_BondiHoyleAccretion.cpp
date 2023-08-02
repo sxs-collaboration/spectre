@@ -152,7 +152,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: 0.52\n"
           "PolytropicConstant: 0.12\n"
           "PolytropicExponent: 1.5"),
-      Catch::Contains("Value -1.345 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -1.345 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 4.4231\n"
@@ -162,7 +163,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: 2.4\n"
           "PolytropicConstant: 300.0\n"
           "PolytropicExponent: 1.4"),
-      Catch::Contains("Value -1.23 is below the lower bound of -1"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -1.23 is below the lower bound of -1"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 0.654\n"
@@ -172,7 +174,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: -0.352\n"
           "PolytropicConstant: 80.123\n"
           "PolytropicExponent: 1.66"),
-      Catch::Contains("Value 3.99 is above the upper bound of 1"));
+      Catch::Matchers::ContainsSubstring(
+          "Value 3.99 is above the upper bound of 1"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 12.34\n"
@@ -182,7 +185,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: 0.21\n"
           "PolytropicConstant: 54.16\n"
           "PolytropicExponent: 1.598"),
-      Catch::Contains("Value -4.21 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -4.21 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 0.765\n"
@@ -192,7 +196,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: 1.454\n"
           "PolytropicConstant: -1.52\n"
           "PolytropicExponent: 2.0"),
-      Catch::Contains("Value -1.52 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -1.52 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 4.21\n"
@@ -202,5 +207,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
           "MagFieldStrength: 3.44\n"
           "PolytropicConstant: 0.653\n"
           "PolytropicExponent: 0.123"),
-      Catch::Contains("Value 0.123 is below the lower bound of 1"));
+      Catch::Matchers::ContainsSubstring(
+          "Value 0.123 is below the lower bound of 1"));
 }

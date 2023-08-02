@@ -513,7 +513,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
               make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
                   CoordinateMaps::Affine{-1., 1., -1., 1.})),
           std::vector<std::array<size_t, 2>>{{{1, 2}}}),
-      Catch::Contains("Must pass same number of maps as block corner sets"));
+      Catch::Matchers::ContainsSubstring(
+          "Must pass same number of maps as block corner sets"));
 #endif
 }
 }  // namespace domain

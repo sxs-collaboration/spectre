@@ -34,7 +34,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",
     CHECK(v == blaze::StaticVector<double, 4>{0., 1., 0., 2.});
 #ifdef SPECTRE_DEBUG
     CHECK_THROWS_WITH(set_number_of_grid_points(make_not_null(&v), 3_st),
-                      Catch::Contains("Tried to resize a StaticVector to 3"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Tried to resize a StaticVector to 3"));
 #endif  // SPECTRE_DEBUG
   }
   {

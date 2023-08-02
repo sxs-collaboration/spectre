@@ -377,38 +377,39 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
   CHECK_THROWS_WITH(
       Wedge3D(0.2, 4.0, -0.2, 1.0, OrientationMap<3>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Sphericity of the inner surface must be between 0 and 1"));
   CHECK_THROWS_WITH(
       Wedge3D(0.2, 4.0, 0.0, -0.2, OrientationMap<3>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Sphericity of the outer surface must be between 0 and 1"));
   CHECK_THROWS_WITH(
       Wedge3D(4.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The radius of the outer surface must be greater than the "
           "radius of the inner surface."));
   CHECK_THROWS_WITH(
       Wedge3D(3.0, 4.0, 1.0, 0.0, OrientationMap<3>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The arguments passed into the constructor for Wedge result in an "
           "object where the outer surface is pierced by the inner surface."));
   CHECK_THROWS_WITH(Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true,
                             Wedge3D::WedgeHalves::Both,
                             domain::CoordinateMaps::Distribution::Logarithmic),
-                    Catch::Contains("Only the 'Linear' radial distribution is "
-                                    "supported for non-spherical wedges."));
-  CHECK_THROWS_WITH(
-      Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, false,
-              Wedge3D::WedgeHalves::Both,
-              domain::CoordinateMaps::Distribution::Linear,
-              std::array<double, 2>{{M_PI_4 * 0.70, M_PI_4}}),
-      Catch::Contains("If using opening angles other than pi/2, then the "
-                      "equiangular map option must be turned on."));
+                    Catch::Matchers::ContainsSubstring(
+                        "Only the 'Linear' radial distribution is "
+                        "supported for non-spherical wedges."));
+  CHECK_THROWS_WITH(Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, false,
+                            Wedge3D::WedgeHalves::Both,
+                            domain::CoordinateMaps::Distribution::Linear,
+                            std::array<double, 2>{{M_PI_4 * 0.70, M_PI_4}}),
+                    Catch::Matchers::ContainsSubstring(
+                        "If using opening angles other than pi/2, then the "
+                        "equiangular map option must be turned on."));
 #endif
 }
 }  // namespace domain

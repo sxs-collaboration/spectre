@@ -11,24 +11,27 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage",
       abort_with_error_message("a == b", __FILE__, __LINE__,
                                static_cast<const char*>(__PRETTY_FUNCTION__),
                                "Test Abort"),
-      Catch::Contains("ASSERT FAILED") && Catch::Contains("a == b") &&
-          Catch::Contains("Test Abort") &&
-          Catch::Contains("Test_AbortWithErrorMessage") &&
-          Catch::Contains("Stack trace:"));
+      Catch::Matchers::ContainsSubstring("ASSERT FAILED") &&
+          Catch::Matchers::ContainsSubstring("a == b") &&
+          Catch::Matchers::ContainsSubstring("Test Abort") &&
+          Catch::Matchers::ContainsSubstring("Test_AbortWithErrorMessage") &&
+          Catch::Matchers::ContainsSubstring("Stack trace:"));
   CHECK_THROWS_WITH(
       abort_with_error_message(__FILE__, __LINE__,
                                static_cast<const char*>(__PRETTY_FUNCTION__),
                                "Test Error"),
-      Catch::Contains("ERROR") && Catch::Contains("Test Error") &&
-          Catch::Contains("Test_AbortWithErrorMessage") &&
-          Catch::Contains("Stack trace:"));
+      Catch::Matchers::ContainsSubstring("ERROR") &&
+          Catch::Matchers::ContainsSubstring("Test Error") &&
+          Catch::Matchers::ContainsSubstring("Test_AbortWithErrorMessage") &&
+          Catch::Matchers::ContainsSubstring("Stack trace:"));
   CHECK_THROWS_WITH(
       abort_with_error_message_no_trace(
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
           "Test no trace"),
-      Catch::Contains("ERROR") && Catch::Contains("Test no trace") &&
-          Catch::Contains("Test_AbortWithErrorMessage") &&
-          not Catch::Contains("Stack trace:"));
+      Catch::Matchers::ContainsSubstring("ERROR") &&
+          Catch::Matchers::ContainsSubstring("Test no trace") &&
+          Catch::Matchers::ContainsSubstring("Test_AbortWithErrorMessage") &&
+          not Catch::Matchers::ContainsSubstring("Stack trace:"));
   CHECK_THROWS_AS(
       abort_with_error_message_no_trace(
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
@@ -40,6 +43,6 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage",
         abort_with_error_message(__FILE__, __LINE__,
                                  static_cast<const char*>(__PRETTY_FUNCTION__),
                                  "Test demangling"),
-        Catch::Contains("Catch::Session::run()"));
+        Catch::Matchers::ContainsSubstring("Catch::Session::run()"));
   }
 }

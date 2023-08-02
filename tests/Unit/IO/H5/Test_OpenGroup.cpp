@@ -37,8 +37,9 @@ void test_errors() {
         CHECK_H5(H5Fclose(file_id),
                  "Failed to close file: '" << file_name << "'");
       }(),
-      Catch::Contains("Cannot create group 'group' in path: /group because the "
-                      "access is ReadOnly"));
+      Catch::Matchers::ContainsSubstring(
+          "Cannot create group 'group' in path: /group because the "
+          "access is ReadOnly"));
   if (file_system::check_if_file_exists(
           "Unit.IO.H5.OpenGroup_read_access.h5")) {
     file_system::rm("Unit.IO.H5.OpenGroup_read_access.h5", true);
@@ -48,7 +49,7 @@ void test_errors() {
       []() {
         h5::detail::OpenGroup group(-1, "/group", h5::AccessType::ReadWrite);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to open the group 'group' because the file_id passed in is "
           "invalid, or because the group_id inside the OpenGroup constructor "
           "got corrupted. It is most likely that the file_id is invalid."));

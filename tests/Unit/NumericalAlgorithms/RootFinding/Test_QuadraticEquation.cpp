@@ -109,9 +109,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.QuadraticEquation",
   test_largest_root_between_values_within_roundoff(DataVector(5));
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH((positive_root(1.0, -3.0, 3.0)),
-                    Catch::Matchers::Contains("There are no real roots"));
-  CHECK_THROWS_WITH((positive_root(1.0, -3.0, 2.0)),
-                    Catch::Matchers::Contains("There are two positive roots"));
+  CHECK_THROWS_WITH(
+      (positive_root(1.0, -3.0, 3.0)),
+      Catch::Matchers::ContainsSubstring("There are no real roots"));
+  CHECK_THROWS_WITH(
+      (positive_root(1.0, -3.0, 2.0)),
+      Catch::Matchers::ContainsSubstring("There are two positive roots"));
 #endif
 }

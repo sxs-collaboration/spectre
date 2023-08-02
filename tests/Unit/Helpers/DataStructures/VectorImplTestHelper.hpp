@@ -201,9 +201,9 @@ void test_unowning_construct_and_assign() {
     VectorType v1 = make_vector();
     VectorType v1_ref(v1.data(), v1.size());
     VectorType v2 = make_vector();
-    CHECK_THROWS_WITH(
-        v2 = std::move(v1_ref),
-        Catch::Contains("Cannot move assign from a non-owning vector"));
+    CHECK_THROWS_WITH(v2 = std::move(v1_ref),
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot move assign from a non-owning vector"));
 #endif  // SPECTRE_DEBUG
   }
 
@@ -264,9 +264,9 @@ void test_unowning_construct_and_assign() {
     VectorType v2 = make_vector();
     VectorType v1_ref(v1.data(), v1.size());
     VectorType v2_ref(v2.data(), v2.size());
-    CHECK_THROWS_WITH(
-        v2_ref = std::move(v1_ref),
-        Catch::Contains("Cannot move assign from a non-owning vector"));
+    CHECK_THROWS_WITH(v2_ref = std::move(v1_ref),
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot move assign from a non-owning vector"));
 #endif  // SPECTRE_DEBUG
   }
 

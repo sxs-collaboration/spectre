@@ -468,13 +468,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
       (Tensor<double, Symmetry<1>,
               index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>{3.0}
            .component_name(std::array<size_t, 1>{{4}})),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tensor dim[0] must be 1,2,3, or 4 for default axis_labels"));
   CHECK_THROWS_WITH(
       (Tensor<double, Symmetry<1>,
               index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>{3.0}
            .component_name(std::array<size_t, 1>{{4}})),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tensor dim[0] must be 1,2, or 3 for default axis_labels"));
   CHECK_THROWS_WITH(
       (Tensor<double, Symmetry<1, 2, 2>,
@@ -484,7 +484,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
            .component_name(
                tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
                make_array<3>(std::string("abcdefgh")))),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Dimension mismatch: Tensor has dim = 4, but you "
           "specified 8 different labels in abcdefgh"));
 }
@@ -1298,30 +1298,30 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.out_of_bounds",
                   "[DataStructures][Unit]") {
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      ([]() {
-        tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
-        tensor[1000];
-      }()),
-      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
-  CHECK_THROWS_WITH(
-      ([]() {
-        const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
-        tensor[1000];
-      }()),
-      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
-  CHECK_THROWS_WITH(
-      ([]() {
-        Scalar<double> tensor(1_st);
-        tensor.multiplicity(1000);
-      }()),
-      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
-  CHECK_THROWS_WITH(
-      ([]() {
-        tnsr::I<double, 3, Frame::Grid> tensor(1_st);
-        tensor.get_tensor_index(1000);
-      }()),
-      Catch::Matchers::Contains("index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(([]() {
+                      tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+                      tensor[1000];
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(([]() {
+                      const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+                      tensor[1000];
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(([]() {
+                      Scalar<double> tensor(1_st);
+                      tensor.multiplicity(1000);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "index >= 0 and index < narrow_cast<Size>"));
+  CHECK_THROWS_WITH(([]() {
+                      tnsr::I<double, 3, Frame::Grid> tensor(1_st);
+                      tensor.get_tensor_index(1000);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "index >= 0 and index < narrow_cast<Size>"));
 #else
   CHECK(true);
 #endif

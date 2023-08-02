@@ -154,11 +154,12 @@ void test(const FallbackReconstructorType fallback_recons) {
   test_function_pointers<Dim, 2, FallbackReconstructor, true>(fallback_recons);
 
   // check for failing case (nonlinear weight exponent = 3)
-  CHECK_THROWS_WITH(
-      ([&fallback_recons]() {
-        ::fd::reconstruction::wcns5z_function_pointers<Dim>(3, fallback_recons);
-      })(),
-      Catch::Contains("Nonlinear weight exponent should be 1 or 2"));
+  CHECK_THROWS_WITH(([&fallback_recons]() {
+                      ::fd::reconstruction::wcns5z_function_pointers<Dim>(
+                          3, fallback_recons);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Nonlinear weight exponent should be 1 or 2"));
 }
 }  // namespace
 

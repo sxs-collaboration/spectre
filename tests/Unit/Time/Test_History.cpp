@@ -557,22 +557,22 @@ void test_history_assertions() {
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(
         history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0),
-        Catch::Contains("must be later"));
+        Catch::Matchers::ContainsSubstring("must be later"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert_initial(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(
         history.insert_initial(TimeStepId(true, 0, slab.start()), 0.0, 0.0),
-        Catch::Contains("must be earlier"));
+        Catch::Matchers::ContainsSubstring("must be earlier"));
   }
   {
     TimeSteppers::History<double> history(1);
-    CHECK_THROWS_WITH(
-        history.insert(
-            TimeStepId(true, 0, slab.start(), 1, step, slab.start().value()),
-            0.0, 0.0),
-        Catch::Contains("Cannot insert substep into empty history"));
+    CHECK_THROWS_WITH(history.insert(TimeStepId(true, 0, slab.start(), 1, step,
+                                                slab.start().value()),
+                                     0.0, 0.0),
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot insert substep into empty history"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -580,16 +580,18 @@ void test_history_assertions() {
     CHECK_THROWS_WITH(history.insert(TimeStepId(true, 0, slab.start(), 2, step,
                                                 slab.start().value()),
                                      0.0, 0.0),
-                      Catch::Contains("Cannot insert substep 2 following 0"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot insert substep 2 following 0"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
-    CHECK_THROWS_WITH(history.insert(TimeStepId(true, 0, slab_half, 1, step,
-                                                slab.end().value()),
-                                     0.0, 0.0),
-                      Catch::Contains("Cannot insert substep ") and
-                          Catch::Contains(" of different step "));
+    CHECK_THROWS_WITH(
+        history.insert(
+            TimeStepId(true, 0, slab_half, 1, step, slab.end().value()), 0.0,
+            0.0),
+        Catch::Matchers::ContainsSubstring("Cannot insert substep ") and
+            Catch::Matchers::ContainsSubstring(" of different step "));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -598,7 +600,8 @@ void test_history_assertions() {
         history.insert_initial(
             TimeStepId(true, 0, slab.start(), 2, step, slab.start().value()),
             0.0, 0.0),
-        Catch::Contains("Cannot use insert_initial for substeps"));
+        Catch::Matchers::ContainsSubstring(
+            "Cannot use insert_initial for substeps"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -613,7 +616,7 @@ void test_history_assertions() {
             TimeStepId(true, 0, slab.start(), history.substeps().max_size() + 1,
                        step, slab.start().value()),
             0.0, 0.0),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Cannot insert new substep because the History is full"));
   }
 
@@ -622,13 +625,13 @@ void test_history_assertions() {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(std::as_const(history)[TimeStepId(true, 1, slab.start())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(history[TimeStepId(true, 1, slab.start())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -636,14 +639,14 @@ void test_history_assertions() {
     CHECK_THROWS_WITH(
         std::as_const(history)[TimeStepId(true, 0, slab.start(), 1, step,
                                           slab.start().value())],
-        Catch::Contains("not present"));
+        Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(history[TimeStepId(true, 0, slab.start(), 1, step,
                                          slab.start().value())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -653,42 +656,46 @@ void test_history_assertions() {
         0.0);
     CHECK_THROWS_WITH(
         history[TimeStepId(true, 0, slab_half, 1, step, slab.end().value())],
-        Catch::Contains("not present"));
+        Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     const TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(history.substeps()[0],
-                      Catch::Contains("Requested substep 0 but only have 0"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Requested substep 0 but only have 0"));
   }
   {
     const TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(history.substeps()[1],
-                      Catch::Contains("Requested substep 1 but only have 0"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Requested substep 1 but only have 0"));
   }
   {
     TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(history.substeps()[0],
-                      Catch::Contains("Requested substep 0 but only have 0"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Requested substep 0 but only have 0"));
   }
 
   // Untyped indexing errors
   {
     const TimeSteppers::History<double> history(1);
-    CHECK_THROWS_WITH(history.untyped()[0],
-                      Catch::Contains("Requested step 0 but only have 0"));
+    CHECK_THROWS_WITH(
+        history.untyped()[0],
+        Catch::Matchers::ContainsSubstring("Requested step 0 but only have 0"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(history.untyped()[TimeStepId(true, 1, slab.start())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(history.untyped()[TimeStepId(true, 0, slab.start(), 1,
                                                    step, slab.start().value())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -698,23 +705,25 @@ void test_history_assertions() {
         0.0);
     CHECK_THROWS_WITH(history.untyped()[TimeStepId(true, 0, slab_half, 1, step,
                                                    slab.end().value())],
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     const TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(history.untyped().substeps()[0],
-                      Catch::Contains("Requested substep 0 but only have 0"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Requested substep 0 but only have 0"));
   }
 
   // Record removal errors
   {
     TimeSteppers::History<double> history(1);
-    CHECK_THROWS_WITH(history.pop_front(), Catch::Contains("History is empty"));
+    CHECK_THROWS_WITH(history.pop_front(),
+                      Catch::Matchers::ContainsSubstring("History is empty"));
   }
   {
     TimeSteppers::History<double> history(1);
     CHECK_THROWS_WITH(history.undo_latest(),
-                      Catch::Contains("History is empty"));
+                      Catch::Matchers::ContainsSubstring("History is empty"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -723,8 +732,9 @@ void test_history_assertions() {
         TimeStepId(true, 0, slab.start(), 1, step, slab.start().value()), 0.0,
         0.0);
     CHECK_THROWS_WITH(history.pop_front(),
-                      Catch::Contains("Cannot remove a step with substeps.  "
-                                      "Call clear_substeps() first"));
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot remove a step with substeps.  "
+                          "Call clear_substeps() first"));
   }
 
   // Value discarding errors
@@ -732,7 +742,7 @@ void test_history_assertions() {
     TimeSteppers::History<double> history(1);
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(history.discard_value(TimeStepId(true, 1, slab.start())),
-                      Catch::Contains("not present"));
+                      Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -740,7 +750,7 @@ void test_history_assertions() {
     CHECK_THROWS_WITH(
         history.discard_value(
             TimeStepId(true, 0, slab.start(), 1, step, slab.start().value())),
-        Catch::Contains("not present"));
+        Catch::Matchers::ContainsSubstring("not present"));
   }
 
   // Untyped value discarding errors
@@ -749,7 +759,7 @@ void test_history_assertions() {
     history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
     CHECK_THROWS_WITH(
         history.untyped().discard_value(TimeStepId(true, 1, slab.start())),
-        Catch::Contains("not present"));
+        Catch::Matchers::ContainsSubstring("not present"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -757,7 +767,7 @@ void test_history_assertions() {
     CHECK_THROWS_WITH(
         history.untyped().discard_value(
             TimeStepId(true, 0, slab.start(), 1, step, slab.start().value())),
-        Catch::Contains("not present"));
+        Catch::Matchers::ContainsSubstring("not present"));
   }
 
   // latest_value errors
@@ -767,8 +777,9 @@ void test_history_assertions() {
     history.discard_value(TimeStepId(true, 0, slab.start()));
     history.insert(TimeStepId(true, 1, slab.start()), 0.0, 0.0);
     history.undo_latest();
-    CHECK_THROWS_WITH(history.latest_value(),
-                      Catch::Contains("Latest value unavailable"));
+    CHECK_THROWS_WITH(
+        history.latest_value(),
+        Catch::Matchers::ContainsSubstring("Latest value unavailable"));
   }
   {
     TimeSteppers::History<double> history(1);
@@ -777,8 +788,9 @@ void test_history_assertions() {
     history.insert(TimeStepId(true, 1, slab.start()), 0.0, 0.0);
     history.discard_value(TimeStepId(true, 1, slab.start()));
     history.undo_latest();
-    CHECK_THROWS_WITH(history.latest_value(),
-                      Catch::Contains("Latest value unavailable"));
+    CHECK_THROWS_WITH(
+        history.latest_value(),
+        Catch::Matchers::ContainsSubstring("Latest value unavailable"));
   }
 
 #endif  // SPECTRE_DEBUG

@@ -408,33 +408,34 @@ void trigger_missing_arg() {
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
   CHECK_THROWS_WITH(trigger_missing(),
-                    Catch::Contains("At line 1 column 1:\nExpected a class to "
-                                    "create:\nKnown Ids:\n  Test1"));
+                    Catch::Matchers::ContainsSubstring(
+                        "At line 1 column 1:\nExpected a class to "
+                        "create:\nKnown Ids:\n  Test1"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       trigger_multiple(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 2 column 3:\nExpected a single class to create, got 2"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       trigger_vector(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 1 column 13:\nExpected a class or a class with options"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      trigger_unknown(),
-      Catch::Contains("At line 1 column 13:\nUnknown Id 'Potato'"));
+  CHECK_THROWS_WITH(trigger_unknown(),
+                    Catch::Matchers::ContainsSubstring(
+                        "At line 1 column 13:\nUnknown Id 'Potato'"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       trigger_missing_arg(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 2 column 1:\nYou did not specify the option (Arg)"));
 }

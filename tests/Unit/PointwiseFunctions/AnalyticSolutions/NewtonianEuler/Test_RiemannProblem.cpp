@@ -162,15 +162,15 @@ SPECTRE_TEST_CASE(
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((NewtonianEuler::Solutions::RiemannProblem<1>(
                         1.4, 0.7, 1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The pressure positivity condition must be met."));
   CHECK_THROWS_WITH(
       (NewtonianEuler::Solutions::RiemannProblem<2>(1.4, 0.7, -1.0, {{0.0}},
                                                     1.0, 0.125, {{30.0}}, 1.1)),
-      Catch::Matchers::Contains("The mass density must be positive."));
+      Catch::Matchers::ContainsSubstring("The mass density must be positive."));
   CHECK_THROWS_WITH(
       (NewtonianEuler::Solutions::RiemannProblem<3>(
           1.4, 0.7, 1.0, {{0.0}}, -1.0, 0.125, {{30.0}}, 1.1)),
-      Catch::Matchers::Contains("The pressure must be positive."));
+      Catch::Matchers::ContainsSubstring("The pressure must be positive."));
 #endif
 }

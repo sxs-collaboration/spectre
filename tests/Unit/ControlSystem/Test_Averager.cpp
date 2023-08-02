@@ -216,7 +216,7 @@ void test_errors() {
         averager.update(0.5, {0.0}, {0.1});
         averager.update(0.5, {0.0}, {0.1});
       }(),
-      Catch::Contains("at or before the last time"));
+      Catch::Matchers::ContainsSubstring("at or before the last time"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -225,7 +225,7 @@ void test_errors() {
         averager.update(0.5, {0.0}, {0.1});
         averager.update(0.3, {0.0}, {0.1});
       }(),
-      Catch::Contains("at or before the last time"));
+      Catch::Matchers::ContainsSubstring("at or before the last time"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -235,7 +235,8 @@ void test_errors() {
         Averager<deriv_order> averager(1.0, false);
         averager.update(t, {{0.2, 0.3}}, {0.1});
       }(),
-      Catch::Contains("The number of supplied timescales (1) does not match"));
+      Catch::Matchers::ContainsSubstring(
+          "The number of supplied timescales (1) does not match"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -247,25 +248,26 @@ void test_errors() {
         averager.update(t, {0.1}, {0.1});
         averager.update(t, {{0.2, 0.3}}, {0.1});
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The number of components in the raw_q provided (2) does"));
 
   CHECK_THROWS_WITH(Averager<2>(0.0, true),
-                    Catch::Contains("must be positive"));
+                    Catch::Matchers::ContainsSubstring("must be positive"));
 
   CHECK_THROWS_WITH(
       []() {
         Averager<2> averager(1.0, true);
         averager.last_time_updated();
       }(),
-      Catch::Contains("The time history has not been updated yet"));
+      Catch::Matchers::ContainsSubstring(
+          "The time history has not been updated yet"));
 
   CHECK_THROWS_WITH(
       []() {
         Averager<2> averager(1.0, true);
         averager.average_time(0.0);
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot return averaged values because the averager does not"));
 }
 

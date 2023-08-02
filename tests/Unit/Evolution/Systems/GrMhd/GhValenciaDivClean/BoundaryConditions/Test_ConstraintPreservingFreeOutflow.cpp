@@ -426,7 +426,7 @@ void test_fd(const U& boundary_condition) {
           make_not_null(&lorentz_factor_times_spatial_velocity),
           make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field), direction),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Not implemented because it's not trivial to figure out what the"));
 }
 }  // namespace

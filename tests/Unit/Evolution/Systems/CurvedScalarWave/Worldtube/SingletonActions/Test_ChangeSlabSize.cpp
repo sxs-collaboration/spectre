@@ -153,7 +153,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
         inbox_variables_type{};
     CHECK_THROWS_WITH(
         ActionTesting::next_action<worldtube_chare>(make_not_null(&runner), 0),
-        Catch::Contains("Received data from two different time step ids."));
+        Catch::Matchers::ContainsSubstring(
+            "Received data from two different time step ids."));
 #endif
   }
 #ifdef SPECTRE_DEBUG
@@ -172,7 +173,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
     worldtube_inbox[time_step_id_2][element_ids.at(0)] = inbox_variables_type{};
     CHECK_THROWS_WITH(
         ActionTesting::next_action<worldtube_chare>(make_not_null(&runner), 0),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "The new slab should start at the same time as the old one."));
   }
 #endif

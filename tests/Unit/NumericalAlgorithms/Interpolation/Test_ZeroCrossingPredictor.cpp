@@ -12,12 +12,15 @@
 namespace {
 
 void test_errors() {
-  CHECK_THROWS_WITH(intrp::ZeroCrossingPredictor(2, 3),
-                    Catch::Matchers::Contains("min_size must be >= 3,"));
-  CHECK_THROWS_WITH(intrp::ZeroCrossingPredictor(6, 5),
-                    Catch::Matchers::Contains("min_size must be <= max_size,"));
-  CHECK_THROWS_WITH(intrp::ZeroCrossingPredictor(4, 5).zero_crossing_time(0.0),
-                    Catch::Matchers::Contains("Invalid ZeroCrossingPredictor"));
+  CHECK_THROWS_WITH(
+      intrp::ZeroCrossingPredictor(2, 3),
+      Catch::Matchers::ContainsSubstring("min_size must be >= 3,"));
+  CHECK_THROWS_WITH(
+      intrp::ZeroCrossingPredictor(6, 5),
+      Catch::Matchers::ContainsSubstring("min_size must be <= max_size,"));
+  CHECK_THROWS_WITH(
+      intrp::ZeroCrossingPredictor(4, 5).zero_crossing_time(0.0),
+      Catch::Matchers::ContainsSubstring("Invalid ZeroCrossingPredictor"));
 }
 
 void test_zero_crossing_predictor() {

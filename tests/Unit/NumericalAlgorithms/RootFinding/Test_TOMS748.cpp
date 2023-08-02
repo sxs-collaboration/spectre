@@ -68,14 +68,14 @@ void test_bounds() {
   // Check that exception is thrown for various bad bracket possibilities
   CHECK_THROWS_WITH(
       RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) - abs_tol, abs_tol, rel_tol),
-      Catch::Matchers::Contains("Root not bracketed"));
+      Catch::Matchers::ContainsSubstring("Root not bracketed"));
 
   CHECK_THROWS_WITH(
       RootFinder::toms748(f_lambda, sqrt(2.0) + abs_tol, 2.0, abs_tol, rel_tol),
-      Catch::Matchers::Contains("Root not bracketed"));
+      Catch::Matchers::ContainsSubstring("Root not bracketed"));
 
   CHECK_THROWS_WITH(RootFinder::toms748(f_lambda, -1.0, 1.0, abs_tol, rel_tol),
-                    Catch::Matchers::Contains("Root not bracketed"));
+                    Catch::Matchers::ContainsSubstring("Root not bracketed"));
 }
 
 void test_datavector() {
@@ -173,7 +173,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
 
         RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
       }()),
-      Catch::Matchers::Contains("The relative tolerance is too small."));
+      Catch::Matchers::ContainsSubstring(
+          "The relative tolerance is too small."));
   CHECK_THROWS_WITH(
       ([]() {
         const double abs_tol = 1e-15;
@@ -185,7 +186,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
       }()),
-      Catch::Matchers::Contains("The relative tolerance is too small."));
+      Catch::Matchers::ContainsSubstring(
+          "The relative tolerance is too small."));
 #endif
 }
 }  // namespace

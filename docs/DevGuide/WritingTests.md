@@ -261,9 +261,9 @@ is either an expression or a lambda that is expected to trigger an
 exception (which now are thrown by `ASSERT` and `ERROR` (Note: You may
 need to add `()` wrapping the lambda in order for it to compile.); the
 second is a Catch Matcher (see
-[Catch2](https://github.com/catchorg/Catch2 for complete
-documentaion), usually a `Catch::Contains()` macro that matches
-a substring of the error message of the thrown exception.
+[Catch2](https://github.com/catchorg/Catch2) for complete
+documentation), usually a `Catch::Matchers::ContainsSubstring()` macro
+that matches a substring of the error message of the thrown exception.
 
 Note that a `OutputRegex` can also be specified in a test that is
 supposed to succeed with output that matches the regular expression.

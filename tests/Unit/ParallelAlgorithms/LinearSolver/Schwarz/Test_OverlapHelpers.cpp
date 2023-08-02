@@ -357,11 +357,12 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
   }
 
 #ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH((overlap_num_points(Index<1>{{{3}}}, 4, 0)),
+                    Catch::Matchers::ContainsSubstring(
+                        "Overlap extent '4' exceeds volume extents"));
   CHECK_THROWS_WITH(
-      (overlap_num_points(Index<1>{{{3}}}, 4, 0)),
-      Catch::Matchers::Contains("Overlap extent '4' exceeds volume extents"));
-  CHECK_THROWS_WITH((overlap_num_points(Index<1>{{{3}}}, 0, 1)),
-                    Catch::Matchers::Contains("Invalid dimension '1' in 1D"));
+      (overlap_num_points(Index<1>{{{3}}}, 0, 1)),
+      Catch::Matchers::ContainsSubstring("Invalid dimension '1' in 1D"));
 #endif
 }
 }  // namespace LinearSolver::Schwarz

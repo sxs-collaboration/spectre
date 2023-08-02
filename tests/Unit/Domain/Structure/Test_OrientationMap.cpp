@@ -323,7 +323,7 @@ void test_errors() {
   CHECK_THROWS_WITH(
       OrientationMap<2>(std::array<Direction<2>, 2>{
           {Direction<2>::upper_xi(), Direction<2>::lower_xi()}}),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "This OrientationMap fails to map Directions one-to-one."));
 
   CHECK_THROWS_WITH(
@@ -332,7 +332,7 @@ void test_errors() {
               {Direction<2>::upper_xi(), Direction<2>::lower_xi()}},
           std::array<Direction<2>, 2>{
               {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "This OrientationMap fails to map Directions one-to-one."));
 
   CHECK_THROWS_WITH(
@@ -343,7 +343,7 @@ void test_errors() {
           std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
                                        Direction<3>::upper_eta(),
                                        Direction<3>::lower_eta()}}),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "This OrientationMap fails to map Directions one-to-one."));
 #endif
 }

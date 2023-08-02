@@ -45,6 +45,7 @@ function(add_algorithm_test TEST_NAME DIM)
   target_link_libraries(
     ${EXECUTABLE_NAME}
     PRIVATE
+    Catch2::Catch2
     DataStructures
     DgSubcell
     Domain

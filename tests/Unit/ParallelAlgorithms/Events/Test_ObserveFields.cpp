@@ -465,7 +465,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "VariablesToObserve: [NotAVar]\n"
           "FloatingPointTypes: [Double]\n"
           "InterpolateToMesh: None\n"),
-      Catch::Matchers::Contains("NotAVar is not an available variable"));
+      Catch::Matchers::ContainsSubstring(
+          "NotAVar is not an available variable"));
 
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<
@@ -475,5 +476,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "VariablesToObserve: [Scalar, Scalar]\n"
           "FloatingPointTypes: [Double]\n"
           "InterpolateToMesh: None\n"),
-      Catch::Matchers::Contains("Scalar specified multiple times"));
+      Catch::Matchers::ContainsSubstring("Scalar specified multiple times"));
 }

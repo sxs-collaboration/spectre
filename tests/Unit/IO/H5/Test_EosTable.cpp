@@ -121,7 +121,7 @@ void test() {
                           expected_independent_variable_number_of_points,
                           expected_independent_variable_uses_log_spacing,
                           expected_beta_equilibrium, version_number),
-                      Catch::Matchers::Contains(
+                      Catch::Matchers::ContainsSubstring(
                           "Opening an equation of state table with the "
                           "constructor for writing a table, but the subfile "));
   }

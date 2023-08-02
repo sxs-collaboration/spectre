@@ -317,7 +317,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                                   {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
                                   {{{{1, 1, 1}}}}, {{true, false, false}},
                                   Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
   CHECK_THROWS_WITH(
       creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
@@ -326,7 +326,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                                   {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
                                   {{{{1, 1, 1}}}}, {{false, true, false}},
                                   Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
   CHECK_THROWS_WITH(
       creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
@@ -335,7 +335,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                                   {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
                                   {{{{1, 1, 1}}}}, {{true, false, true}},
                                   Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
   CHECK_THROWS_WITH(
       creators::AlignedLattice<3>(
@@ -346,7 +346,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
   CHECK_THROWS_WITH(
       creators::AlignedLattice<3>(
@@ -357,7 +357,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
 }

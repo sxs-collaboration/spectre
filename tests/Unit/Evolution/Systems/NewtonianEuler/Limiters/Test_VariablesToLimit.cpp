@@ -33,6 +33,6 @@ SPECTRE_TEST_CASE(
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<NewtonianEuler::Limiters::VariablesToLimit>(
           "BadVars")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"BadVars\" to VariablesToLimit"));
 }

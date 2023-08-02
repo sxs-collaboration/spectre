@@ -240,15 +240,15 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((Direction<1>(1, Side::Upper)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "dim = 1, for Direction<1> only dim = 0 is allowed."));
   CHECK_THROWS_WITH(
       (Direction<2>(2, Side::Upper)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "dim = 2, for Direction<2> only dim = 0 or dim = 1 are allowed."));
-  CHECK_THROWS_WITH(
-      (Direction<3>(3, Side::Upper)),
-      Catch::Matchers::Contains("dim = 3, for Direction<3> only dim = 0, dim = "
-                                "1, or dim = 2 are allowed."));
+  CHECK_THROWS_WITH((Direction<3>(3, Side::Upper)),
+                    Catch::Matchers::ContainsSubstring(
+                        "dim = 3, for Direction<3> only dim = 0, dim = "
+                        "1, or dim = 2 are allowed."));
 #endif
 }

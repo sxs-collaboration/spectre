@@ -291,8 +291,9 @@ SPECTRE_TEST_CASE("Unit.FiniteDifference.PositivityPreservingAdaptiveOrder",
       (fd::reconstruction::
            positivity_preserving_adaptive_order_function_pointers<1, false>(
                true, false, false, FallbackReconstructorType::None)),
-      Catch::Contains("Can't have None as the low-order reconstructor in "
-                      "positivity_preserving_adaptive_order."));
+      Catch::Matchers::ContainsSubstring(
+          "Can't have None as the low-order reconstructor in "
+          "positivity_preserving_adaptive_order."));
 }
 
 }  // namespace fd::reconstruction

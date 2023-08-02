@@ -202,7 +202,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
         add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0,
                           0);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "volume_vars has wrong number of grid points.  Expected 8, got 10"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -213,7 +213,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
         add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0,
                           0);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "vars_on_slice has wrong number of grid points.  Expected 2, got 5"));
 #endif
 }

@@ -1360,14 +1360,16 @@ void test_asserts() {
         auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
         tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
       }()),
-      Catch::Contains("Must move into same size, not 10 into 1"));
+      Catch::Matchers::ContainsSubstring(
+          "Must move into same size, not 10 into 1"));
   CHECK_THROWS_WITH(
       ([]() {
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
         get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
             Scalar<DataVector>{{{{0.}}}};
       }()),
-      Catch::Contains("Must move into same size, not 1 into 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Must move into same size, not 1 into 0"));
   CHECK_THROWS_WITH(
       ([]() {
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
@@ -1378,7 +1380,8 @@ void test_asserts() {
             Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(
             1.0 * source);
       }()),
-      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+      Catch::Matchers::ContainsSubstring(
+          "Invalid size 4 for a Variables with 3 components."));
   CHECK_THROWS_WITH(
       ([]() {
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
@@ -1389,7 +1392,8 @@ void test_asserts() {
         // Multiply by one to convert to an expression template.
         destination = 1.0 * source;
       }()),
-      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+      Catch::Matchers::ContainsSubstring(
+          "Invalid size 4 for a Variables with 3 components."));
 #endif // defined(SPECTRE_DEBUG)
 }
 

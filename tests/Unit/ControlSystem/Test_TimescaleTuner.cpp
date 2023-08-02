@@ -363,7 +363,8 @@ void test_errors() {
                                          increase_timescale_threshold,
                                          increase_factor, decrease_factor);
                     }()),
-                    Catch::Contains("Initial timescale must be > 0"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Initial timescale must be > 0"));
 
   CHECK_THROWS_WITH(([]() {
                       const double decrease_timescale_threshold = 1.0e-2;
@@ -379,7 +380,8 @@ void test_errors() {
                                          increase_timescale_threshold,
                                          increase_factor, decrease_factor);
                     }()),
-                    Catch::Contains("must satisfy 0 < decrease_factor <= 1"));
+                    Catch::Matchers::ContainsSubstring(
+                        "must satisfy 0 < decrease_factor <= 1"));
 
   CHECK_THROWS_WITH(([]() {
                       const double decrease_timescale_threshold = 1.0e-2;
@@ -395,7 +397,8 @@ void test_errors() {
                                          increase_timescale_threshold,
                                          increase_factor, decrease_factor);
                     }()),
-                    Catch::Contains("must satisfy 0 < decrease_factor <= 1"));
+                    Catch::Matchers::ContainsSubstring(
+                        "must satisfy 0 < decrease_factor <= 1"));
 
   CHECK_THROWS_WITH(([]() {
                       const double decrease_timescale_threshold = 1.0e-2;
@@ -411,7 +414,7 @@ void test_errors() {
                                          increase_timescale_threshold,
                                          increase_factor, decrease_factor);
                     }()),
-                    Catch::Contains("must be >= 1"));
+                    Catch::Matchers::ContainsSubstring("must be >= 1"));
 
   CHECK_THROWS_WITH(([]() {
                       const double decrease_timescale_threshold = 1.0e-2;
@@ -427,7 +430,7 @@ void test_errors() {
                                          increase_timescale_threshold,
                                          increase_factor, decrease_factor);
                     }()),
-                    Catch::Contains("must be > 0"));
+                    Catch::Matchers::ContainsSubstring("must be > 0"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -443,7 +446,8 @@ void test_errors() {
             {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
             increase_timescale_threshold, increase_factor, decrease_factor);
       }()),
-      Catch::Contains("must be > than the specified minimum timescale"));
+      Catch::Matchers::ContainsSubstring(
+          "must be > than the specified minimum timescale"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -459,7 +463,8 @@ void test_errors() {
             {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
             increase_timescale_threshold, increase_factor, decrease_factor);
       }()),
-      Catch::Contains("The specified increase-timescale threshold"));
+      Catch::Matchers::ContainsSubstring(
+          "The specified increase-timescale threshold"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -475,7 +480,7 @@ void test_errors() {
             {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
             increase_timescale_threshold, increase_factor, decrease_factor);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "must be > than the specified increase-timescale threshold"));
 
 #ifdef SPECTRE_DEBUG
@@ -497,7 +502,8 @@ void test_errors() {
         const std::array<DataVector, 2> qs{{{2.0}, {3.0}}};
         tst.update_timescale(qs);
       }()),
-      Catch::Contains("One or both of the number of components in q_and_dtq"));
+      Catch::Matchers::ContainsSubstring(
+          "One or both of the number of components in q_and_dtq"));
   CHECK_THROWS_WITH(
       ([]() {
         const double decrease_timescale_threshold = 1.0e-2;
@@ -514,7 +520,7 @@ void test_errors() {
         const std::array<DataVector, 2> qs{{{2.0}}};
         tst.update_timescale(qs);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Damping timescales in the TimescaleTuner have not been set yet."));
   CHECK_THROWS_WITH(
       ([]() {
@@ -531,7 +537,7 @@ void test_errors() {
 
         tst.current_timescale();
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Damping timescales in the TimescaleTuner have not been set yet."));
   CHECK_THROWS_WITH(
       ([]() {
@@ -550,7 +556,7 @@ void test_errors() {
 
         tst.resize_timescales(0);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Damping timescales must have a non-zero number of components."));
 #endif
 }

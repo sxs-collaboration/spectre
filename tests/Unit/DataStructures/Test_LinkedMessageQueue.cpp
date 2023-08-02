@@ -79,8 +79,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.LinkedMessageQueue",
         queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
         queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
       }()),
-      Catch::Matchers::Contains("Received duplicate messages at id 1 and "
-                                "previous id --."));
+      Catch::Matchers::ContainsSubstring(
+          "Received duplicate messages at id 1 and "
+          "previous id --."));
   CHECK_THROWS_WITH(
       ([]() {
         LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>>
@@ -88,8 +89,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.LinkedMessageQueue",
         queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
         queue.insert<MyQueue<Label2>>({2, {}}, std::make_unique<double>(1.1));
       }()),
-      Catch::Matchers::Contains("Received messages with different ids (1 and "
-                                "2) but the same previous id (--)."));
+      Catch::Matchers::ContainsSubstring(
+          "Received messages with different ids (1 and "
+          "2) but the same previous id (--)."));
   CHECK_THROWS_WITH(
       ([]() {
         LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>>
@@ -97,7 +99,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.LinkedMessageQueue",
         queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
         queue.extract();
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot extract before all messages have been received."));
 #endif
 }

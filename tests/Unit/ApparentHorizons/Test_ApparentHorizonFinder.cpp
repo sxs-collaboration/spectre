@@ -817,7 +817,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
           Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
                                         4, 1.0, {{0.0, 0.0, 0.0}})),
-      Catch::Contains("Cannot interpolate onto surface"));
+      Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
 
   test_schwarzschild_horizon_called = 0;
   CHECK_THROWS_WITH(
@@ -825,6 +825,6 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
           Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
                                         4, 1.0, {{0.0, 0.0, 0.0}}, 1)),
-      Catch::Contains("Cannot interpolate onto surface"));
+      Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
 }
 }  // namespace

@@ -202,10 +202,10 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   CHECK_THROWS_WITH(
       (make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; })(
           2)),
-      Catch::Matchers::Contains("Index out of range: 3 <= 2 < 5"));
+      Catch::Matchers::ContainsSubstring("Index out of range: 3 <= 2 < 5"));
   CHECK_THROWS_WITH(
       (make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; })(
           5)),
-      Catch::Matchers::Contains("Index out of range: 3 <= 5 < 5"));
+      Catch::Matchers::ContainsSubstring("Index out of range: 3 <= 5 < 5"));
 #endif
 }

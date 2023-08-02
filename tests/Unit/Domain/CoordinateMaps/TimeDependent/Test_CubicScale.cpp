@@ -270,14 +270,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.CubicScale",
 
   CHECK_THROWS_WITH(
       cubic_scale_non_invertible(0.96, 0.58, 20.0),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The map is invertible only if expansion_b >= expansion_a*2/3"));
-  CHECK_THROWS_WITH(
-      cubic_scale_non_invertible(-0.0001, 1.0, 20.0),
-      Catch::Contains("We require expansion_a > 0 for invertibility"));
+  CHECK_THROWS_WITH(cubic_scale_non_invertible(-0.0001, 1.0, 20.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "We require expansion_a > 0 for invertibility"));
   CHECK_THROWS_WITH(
       cubic_scale_non_invertible(0.96, 1.0, 0.0),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "For invertability, we require outer_boundary to be positive"));
 }
 }  // namespace domain

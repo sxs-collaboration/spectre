@@ -271,8 +271,9 @@ void test(const BoundaryConditionType& boundary_condition) {
                               make_not_null(&box), element,
                               ReconstructorForTest{});
                         })(),
-                        Catch::Contains("DemandOutgoingCharSpeeds boundary "
-                                        "condition (subcell) violated"));
+                        Catch::Matchers::ContainsSubstring(
+                            "DemandOutgoingCharSpeeds boundary "
+                            "condition (subcell) violated"));
 
       // Test when the volume mesh velocity has value, which will raise ERROR.
       db::mutate<domain::Tags::MeshVelocity<1>>(
@@ -290,7 +291,8 @@ void test(const BoundaryConditionType& boundary_condition) {
             Burgers::fd::BoundaryConditionGhostData::apply(
                 make_not_null(&box), element, ReconstructorForTest{});
           })(),
-          Catch::Contains("Subcell currently does not support moving mesh"));
+          Catch::Matchers::ContainsSubstring(
+              "Subcell currently does not support moving mesh"));
     }
   }
 }
@@ -312,7 +314,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.BCondGhostData",
                       test(domain::BoundaryConditions::Periodic<
                            Burgers::BoundaryConditions::BoundaryCondition>{});
                     })(),
-                    Catch::Contains("not on external boundaries"));
+                    Catch::Matchers::ContainsSubstring(
+                        "not on external boundaries"));
 #endif
 }
 }  // namespace

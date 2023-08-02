@@ -266,7 +266,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCoefficients",
 
   CHECK_THROWS_WITH(
       (cached_coefficients_metadata(detail::coefficients_maximum_l_max + 1)),
-      Catch::Matchers::Contains("Index out of range"));
+      Catch::Matchers::ContainsSubstring("Index out of range"));
 }
 }  // namespace
 }  // namespace Spectral::Swsh

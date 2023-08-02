@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.error", "[Unit][Options]") {
             "  NotOption: foo");
         opts.get<Cfo>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 2 column 3:\nOption 'NotOption' is not a valid option."));
 }
 
@@ -157,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.custom_error", "[Unit][Options]") {
             "  CfoOption: zoo");
         opts.get<Cfo>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 2 column 3:\nOption must start with an 'f' but is"));
 }
 
@@ -256,7 +256,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized.error",
         opts.parse("CfoAnimal: Mouse");
         opts.get<CfoAnimal>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option CfoAnimal:\nWhile creating a "
           "CreateFromOptionsAnimal:\nAt line 1 "
           "column 12:\nCreateFromOptionsAnimal must be 'Cat' or 'Dog'"));

@@ -10,7 +10,7 @@
 
 #include <blaze/math/typetraits/IsColumnMajorMatrix.h>
 #include <blaze/math/typetraits/IsDenseMatrix.h>
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <csignal>
 #include <cstddef>
 #include <iomanip>
@@ -73,6 +73,8 @@ void SPECTRE_TEST_REGISTER_FUNCTION() {}  // NOLINT
                                     << "\nFile: " << __FILE__ << "\n"); \
     }                                                                   \
   } while (false)
+
+using Approx = Catch::Approx;
 
 /*!
  * \ingroup TestingFrameworkGroup

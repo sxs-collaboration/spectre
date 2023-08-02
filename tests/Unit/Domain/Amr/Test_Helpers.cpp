@@ -602,34 +602,39 @@ void test_assertions() {
                                        amr::Flag::Join};
   CHECK_THROWS_WITH(
       amr::desired_refinement_levels(element_id_1d, flags_1d_undefined),
-      Catch::Contains("Undefined Flag in dimension"));
-  CHECK_THROWS_WITH(amr::desired_refinement_levels_of_neighbor(
-                        element_id_1d, flags_1d_undefined,
-                        OrientationMap<1>{{{Direction<1>::lower_xi()}}}),
-                    Catch::Contains("Undefined Flag in dimension"));
-  CHECK_THROWS_WITH(amr::id_of_parent(element_id_2d, flags_2d_no_join),
-                    Catch::Contains("is not joining given flags"));
+      Catch::Matchers::ContainsSubstring("Undefined Flag in dimension"));
   CHECK_THROWS_WITH(
-      amr::id_of_parent(element_id_3d, flags_3d_split_join),
-      Catch::Contains("Splitting and joining an Element is not supported"));
-  CHECK_THROWS_WITH(amr::ids_of_children(element_id_2d, flags_2d_no_split),
-                    Catch::Contains("has no children given flags"));
+      amr::desired_refinement_levels_of_neighbor(
+          element_id_1d, flags_1d_undefined,
+          OrientationMap<1>{{{Direction<1>::lower_xi()}}}),
+      Catch::Matchers::ContainsSubstring("Undefined Flag in dimension"));
   CHECK_THROWS_WITH(
-      amr::ids_of_children(element_id_3d, flags_3d_split_join),
-      Catch::Contains("Splitting and joining an Element is not supported"));
-  CHECK_THROWS_WITH(amr::ids_of_joining_neighbors(Element<2>{element_id_2d, {}},
-                                                  flags_2d_no_join),
-                    Catch::Contains("is not joining given flags"));
+      amr::id_of_parent(element_id_2d, flags_2d_no_join),
+      Catch::Matchers::ContainsSubstring("is not joining given flags"));
+  CHECK_THROWS_WITH(amr::id_of_parent(element_id_3d, flags_3d_split_join),
+                    Catch::Matchers::ContainsSubstring(
+                        "Splitting and joining an Element is not supported"));
   CHECK_THROWS_WITH(
-      amr::ids_of_joining_neighbors(Element<3>{element_id_3d, {}},
-                                    flags_3d_split_join),
-      Catch::Contains("Splitting and joining an Element is not supported"));
+      amr::ids_of_children(element_id_2d, flags_2d_no_split),
+      Catch::Matchers::ContainsSubstring("has no children given flags"));
+  CHECK_THROWS_WITH(amr::ids_of_children(element_id_3d, flags_3d_split_join),
+                    Catch::Matchers::ContainsSubstring(
+                        "Splitting and joining an Element is not supported"));
+  CHECK_THROWS_WITH(
+      amr::ids_of_joining_neighbors(Element<2>{element_id_2d, {}},
+                                    flags_2d_no_join),
+      Catch::Matchers::ContainsSubstring("is not joining given flags"));
+  CHECK_THROWS_WITH(amr::ids_of_joining_neighbors(Element<3>{element_id_3d, {}},
+                                                  flags_3d_split_join),
+                    Catch::Matchers::ContainsSubstring(
+                        "Splitting and joining an Element is not supported"));
   CHECK_THROWS_WITH(
       amr::is_child_that_creates_parent(element_id_2d, flags_2d_no_join),
-      Catch::Contains("is not joining given flags"));
+      Catch::Matchers::ContainsSubstring("is not joining given flags"));
   CHECK_THROWS_WITH(
       amr::is_child_that_creates_parent(element_id_3d, flags_3d_split_join),
-      Catch::Contains("Splitting and joining an Element is not supported"));
+      Catch::Matchers::ContainsSubstring(
+          "Splitting and joining an Element is not supported"));
 #endif
 }
 }  // namespace

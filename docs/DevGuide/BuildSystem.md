@@ -141,12 +141,12 @@ dev_guide_creating_executables "how to create executables".
 ## Adding External Dependencies {#adding_external_dependencies}
 
 To add an external dependency, first add a `SetupDEPENDENCY.cmake`
-file to the `cmake` directory. You should model this after one of the
-existing ones for `Catch` or `Brigand` if you're adding a header-only
+file to the `cmake` directory. You should model this after the
+existing one for `Brigand` if you're adding a header-only
 library and `yaml-cpp` if the library is not header-only. If CMake
 does not already support `find_package` for the library you're adding
-you can write your own. These should be modeled after `FindBrigand` or
-`FindCatch` for header-only libraries, and `FindYAMLCPP` for compiled
+you can write your own. These should be modeled after `FindBrigand`
+for header-only libraries, and `FindYAMLCPP` for compiled
 libraries. The `SetupDEPENDENCY.cmake` file must then be included in
 the root `spectre/CMakeLists.txt`. Be sure to test both that setting
 `LIBRARY_ROOT` works correctly for your library, and also that if the

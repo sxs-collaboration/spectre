@@ -98,7 +98,7 @@ void test(const size_t number_of_buffers) {
 void test_errors() {
   CHECK_THROWS_WITH(
       GhostData{0},
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The GhostData class must be constructed with at least one buffer."));
 }
 }  // namespace

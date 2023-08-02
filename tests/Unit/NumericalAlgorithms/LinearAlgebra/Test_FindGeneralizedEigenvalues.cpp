@@ -64,20 +64,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
   }
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(([]() {
-                      Matrix matrix_a{{1.0}, {-3.0}};
-                      Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
-                      test_find_generalized_eigenvalues(matrix_a, matrix_b, 2,
-                                                        2);
-                    }()),
-                    Catch::Matchers::Contains("Matrix A should be square"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Matrix matrix_a{{1.0}, {-3.0}};
+        Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
+        test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
+      }()),
+      Catch::Matchers::ContainsSubstring("Matrix A should be square"));
   CHECK_THROWS_WITH(([]() {
                       Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
                       Matrix matrix_b{{4.0}};
                       test_find_generalized_eigenvalues(matrix_a, matrix_b, 2,
                                                         2);
                     }()),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "Matrix A and matrix B should be the same size"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -85,7 +85,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
         Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
         test_find_generalized_eigenvalues(matrix_a, matrix_b, 1, 2);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Matrix A and matrix eigenvectors should have the same size"));
   CHECK_THROWS_WITH(
       ([]() {
@@ -93,7 +93,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
         Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
         test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 1);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "eigenvalues DataVector sizes should equal number of columns"));
 #endif
 }

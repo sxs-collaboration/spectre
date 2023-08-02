@@ -485,7 +485,7 @@ void test_event_construction() {
         Events::MonitorMemory<1> event{
             {misspelled_component}, Options::Context{}, metavars{}};
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot monitor memory usage of unknown parallel component"));
 
   CHECK_THROWS_WITH(
@@ -496,8 +496,9 @@ void test_event_construction() {
                                        Options::Context{},
                                        BadArrayChareMetavariables{}};
       }()),
-      Catch::Contains("Currently, the only Array parallel component allowed to "
-                      "be monitored is the DgElementArray."));
+      Catch::Matchers::ContainsSubstring(
+          "Currently, the only Array parallel component allowed to "
+          "be monitored is the DgElementArray."));
 }
 
 void test_monitor_memory_event() {

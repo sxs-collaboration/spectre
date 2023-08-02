@@ -23,5 +23,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
 
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<Limiters::MinmodType>("BadType")),
-      Catch::Matchers::Contains("Failed to convert \"BadType\" to MinmodType"));
+      Catch::Matchers::ContainsSubstring(
+          "Failed to convert \"BadType\" to MinmodType"));
 }

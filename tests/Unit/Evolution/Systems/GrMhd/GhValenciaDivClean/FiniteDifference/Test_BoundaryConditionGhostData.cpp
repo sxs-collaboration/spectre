@@ -333,14 +333,16 @@ SPECTRE_TEST_CASE(
   test(grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{});
   CHECK_THROWS_WITH(test(grmhd::GhValenciaDivClean::BoundaryConditions::
                              ConstraintPreservingFreeOutflow{}),
-                    Catch::Contains("Not implemented because it's not trivial "
-                                    "to figure out what the right way of"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Not implemented because it's not trivial "
+                        "to figure out what the right way of"));
 
 // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(test(domain::BoundaryConditions::Periodic<
-                         BoundaryConditions::BoundaryCondition>{}),
-                    Catch::Contains("not on external boundaries"));
+  CHECK_THROWS_WITH(
+      test(domain::BoundaryConditions::Periodic<
+           BoundaryConditions::BoundaryCondition>{}),
+      Catch::Matchers::ContainsSubstring("not on external boundaries"));
 #endif
 }
 }  // namespace

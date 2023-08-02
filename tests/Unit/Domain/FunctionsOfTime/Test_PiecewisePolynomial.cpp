@@ -323,10 +323,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.update(2.0, {6.0, 0.0}, 2.1);
         f_of_t.update(1.0, {6.0, 0.0}, 2.1);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "t must be increasing from call to call. Attempted to update "
           "at time 1") and
-          Catch::Contains(", which precedes the previous update time of 2"));
+          Catch::Matchers::ContainsSubstring(
+              ", which precedes the previous update time of 2"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -339,10 +340,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.update(1.0, {6.0, 0.0}, 2.1);
         f_of_t.update(2.0, {6.0, 0.0}, 1.1);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "expiration_time must be nondecreasing from call to call. "
           "Attempted to change expiration time to 1.1") and
-          Catch::Contains(
+          Catch::Matchers::ContainsSubstring(
               ", which precedes the previous expiration time of 2.1"));
 
   CHECK_THROWS_WITH(
@@ -355,8 +356,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.update(1.0, {6.0, 0.0}, 2.1);
       }()),
-      Catch::Contains("Attempt to update PiecewisePolynomial at a time 1") and
-          Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
+          "Attempt to update PiecewisePolynomial at a time 1") and
+          Catch::Matchers::ContainsSubstring(
               " that is earlier than the previous expiration time of 2"));
 
   CHECK_THROWS_WITH(
@@ -369,10 +371,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.update(2.5, {6.0, 0.0}, 2.2);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Attempt to set the expiration time of PiecewisePolynomial to "
           "a value 2.2") and
-          Catch::Contains(" that is earlier than the current time 2.5"));
+          Catch::Matchers::ContainsSubstring(
+              " that is earlier than the current time 2.5"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -385,8 +388,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.reset_expiration_time(1.5);
         f_of_t.update(2.5, {6.0, 0.0}, 2.2);
       }()),
-      Catch::Contains("Attempted to change expiration time to 1.5") and
-          Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
+          "Attempted to change expiration time to 1.5") and
+          Catch::Matchers::ContainsSubstring(
               ", which precedes the previous expiration time of 2"));
 
   CHECK_THROWS_WITH(
@@ -399,7 +403,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  0.1);
         f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "the number of components trying to be updated (3) does not match "
           "the number of components (2) in the PiecewisePolynomial."));
 
@@ -414,8 +418,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.update(2.0, {6.0, 0.0}, 2.1);
         f_of_t.func(0.5);
       }()),
-      Catch::Contains("requested time 5.0") and
-          Catch::Contains(" precedes earliest time 1"));
+      Catch::Matchers::ContainsSubstring("requested time 5.0") and
+          Catch::Matchers::ContainsSubstring(" precedes earliest time 1"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -427,8 +431,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.func(2.2);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Attempt to evaluate PiecewisePolynomial at a time 2.2") and
-          Catch::Contains(" that is after the expiration time 2"));
+          Catch::Matchers::ContainsSubstring(
+              " that is after the expiration time 2"));
 }
 }  // namespace domain

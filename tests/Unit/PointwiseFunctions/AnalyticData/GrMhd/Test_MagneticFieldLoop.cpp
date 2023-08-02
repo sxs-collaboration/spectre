@@ -161,6 +161,6 @@ SPECTRE_TEST_CASE(
                         3.0, 1.0, 1.66666666666666667,
                         std::array<double, 3>{{0.5, 0.04166666666666667, -0.9}},
                         0.001, 0.06, 0.3)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "MagneticFieldLoop: superluminal AdvectionVelocity"));
 }

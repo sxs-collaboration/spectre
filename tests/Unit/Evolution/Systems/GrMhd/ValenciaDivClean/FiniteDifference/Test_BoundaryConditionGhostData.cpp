@@ -581,7 +581,7 @@ void test(const BoundaryConditionType& boundary_condition,
             fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                                   ReconstructorForTest{});
           })(),
-          Catch::Contains(
+          Catch::Matchers::ContainsSubstring(
               "Subcell DemandOutgoingCharSpeeds boundary condition violated"));
 
       // Test when the volume mesh velocity has value, which will raise ERROR.
@@ -600,7 +600,8 @@ void test(const BoundaryConditionType& boundary_condition,
             fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                                   ReconstructorForTest{});
           })(),
-          Catch::Contains("Subcell currently does not support moving mesh"));
+          Catch::Matchers::ContainsSubstring(
+              "Subcell currently does not support moving mesh"));
     }
 
     if (typeid(BoundaryConditionType) ==
@@ -710,7 +711,8 @@ SPECTRE_TEST_CASE(
                                BoundaryConditions::BoundaryCondition>{},
                            false);
                     })(),
-                    Catch::Contains("not on external boundaries"));
+                    Catch::Matchers::ContainsSubstring(
+                        "not on external boundaries"));
 #endif
 }
 }  // namespace

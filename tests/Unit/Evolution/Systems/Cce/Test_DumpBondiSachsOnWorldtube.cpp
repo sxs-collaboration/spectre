@@ -167,7 +167,7 @@ void test(const std::string& filename_prefix,
 
         target::post_interpolation_callback::apply(box, local_cache, 0.1);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "To use the DumpBondiSachsOnWorldtube post interpolation callback, "
           "the angular ordering of the Spheres must be Cce"));
 

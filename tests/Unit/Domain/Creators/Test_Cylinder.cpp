@@ -350,7 +350,7 @@ void test_cylinder_no_refinement() {
               std::make_unique<PeriodicBc>(), refinement_level, grid_points,
               equiangular_map, {}, {}, radial_distribution, distribution_in_z,
               Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "A Cylinder can't have periodic boundary conditions in the "
               "radial direction."));
       CHECK_THROWS_WITH(
@@ -361,7 +361,7 @@ void test_cylinder_no_refinement() {
                              refinement_level, grid_points, equiangular_map, {},
                              {}, radial_distribution, distribution_in_z,
                              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "Either both lower and upper z-boundary condition must be "
               "periodic, or neither."));
       CHECK_THROWS_WITH(
@@ -372,7 +372,7 @@ void test_cylinder_no_refinement() {
                              refinement_level, grid_points, equiangular_map, {},
                              {}, radial_distribution, distribution_in_z,
                              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "Either both lower and upper z-boundary condition must be "
               "periodic, or neither."));
       CHECK_THROWS_WITH(
@@ -382,7 +382,7 @@ void test_cylinder_no_refinement() {
               create_mantle_boundary_condition(), refinement_level, grid_points,
               equiangular_map, {}, {}, radial_distribution, distribution_in_z,
               Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "None boundary condition is not supported. If you would like "
               "an outflow-type boundary condition, you must use that."));
       CHECK_THROWS_WITH(
@@ -392,7 +392,7 @@ void test_cylinder_no_refinement() {
               create_mantle_boundary_condition(), refinement_level, grid_points,
               equiangular_map, {}, {}, radial_distribution, distribution_in_z,
               Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "None boundary condition is not supported. If you would like "
               "an outflow-type boundary condition, you must use that."));
       CHECK_THROWS_WITH(
@@ -403,7 +403,7 @@ void test_cylinder_no_refinement() {
                              grid_points, equiangular_map, {}, {},
                              radial_distribution, distribution_in_z,
                              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "None boundary condition is not supported. If you would like "
               "an outflow-type boundary condition, you must use that."));
     }

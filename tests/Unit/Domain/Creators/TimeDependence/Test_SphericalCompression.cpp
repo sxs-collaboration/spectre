@@ -238,7 +238,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.SphericalCompression",
           "  InitialValue: 3.5\n"
           "  InitialVelocity: -4.6\n"
           "  InitialAcceleration: 5.7\n")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tried to create a SphericalCompression TimeDependence"));
 }
 }  // namespace

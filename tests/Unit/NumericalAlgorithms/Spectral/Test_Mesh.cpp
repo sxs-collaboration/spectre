@@ -284,39 +284,40 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
   CHECK_THROWS_WITH(
       (Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
            .slice_through(1)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Tried to slice through non-existing dimension"));
   CHECK_THROWS_WITH(
       (Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
            .slice_away(1)),
-      Catch::Matchers::Contains("Tried to slice away non-existing dimension"));
+      Catch::Matchers::ContainsSubstring(
+          "Tried to slice away non-existing dimension"));
   CHECK_THROWS_WITH(
       (Mesh<3>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}
            .slice_through(2, 1, 1)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Dimensions to slice through contain duplicates"));
   CHECK_THROWS_WITH((Mesh<1>{2, Spectral::Basis::SphericalHarmonic,
                              Spectral::Quadrature::GaussLobatto}),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "SphericalHarmonic is not a valid basis for the Mesh"));
   CHECK_THROWS_WITH(
       (Mesh<2>{
           {{2, 2}},
           {{Spectral::Basis::SphericalHarmonic, Spectral::Basis::Legendre}},
           {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "SphericalHarmonic is not a valid basis for the Mesh"));
 #endif
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<Mesh<3>>("Extents: 5\n"
                                            "Basis: invalidBasis\n"
                                            "Quadrature: Gauss")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"invalidBasis\" to Spectral::Basis."));
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<Mesh<3>>("Extents: 5\n"
                                            "Basis: Chebyshev\n"
                                            "Quadrature: invalidQuadrature")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"invalidQuadrature\" to Spectral::Quadrature."));
 }

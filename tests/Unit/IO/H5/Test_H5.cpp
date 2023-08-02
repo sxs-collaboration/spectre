@@ -200,7 +200,7 @@ void test_errors() {
         CHECK_H5(H5Fclose(file_id),
                  "Failed to close file: '" << file_name << "'");
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed HDF5 operation: Failed to open dataset 'no_dataset'"));
   if (file_system::check_if_file_exists("Unit.IO.H5.read_data_error.h5")) {
     file_system::rm("Unit.IO.H5.read_data_error.h5", true);

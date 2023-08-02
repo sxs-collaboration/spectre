@@ -259,7 +259,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
             number_of_swsh_collocation_points(5_st)};
         interp.interpolate(make_not_null(&interp_target), interp_source);
       }()),
-      Catch::Matchers::Contains("Attempting to perform interpolation"));
+      Catch::Matchers::ContainsSubstring(
+          "Attempting to perform interpolation"));
   CHECK_THROWS_WITH(([]() {
                       SwshInterpolator interp{};
                       SpinWeighted<ComplexDataVector, 1> interp_target{
@@ -267,7 +268,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
                       interp.direct_evaluation_swsh_at_l_min(
                           make_not_null(&interp_target), 1);
                     }()),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "Attempting to perform spin-weighted evaluation"));
 #endif
 }

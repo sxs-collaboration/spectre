@@ -469,7 +469,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning,
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Inner radius must be smaller than outer radius"));
 
   CHECK_THROWS_WITH(
@@ -478,7 +478,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning_unordered,
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Specify radial partitioning in ascending order."));
 
   CHECK_THROWS_WITH(
@@ -487,7 +487,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning_low,
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "First radial partition must be larger than inner"));
   CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
@@ -495,7 +495,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning_high,
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Last radial partition must be smaller than outer"));
   CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
@@ -503,7 +503,7 @@ void test_parse_errors() {
                        equatorial_compression, radial_partitioning,
                        radial_distribution_too_many, which_wedges, std::nullopt,
                        nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Specify a 'RadialDistribution' for every spherical shell. You"));
   CHECK_THROWS_WITH(
       creators::Sphere(
@@ -511,7 +511,7 @@ void test_parse_errors() {
           use_equiangular_map, equatorial_compression, radial_partitioning,
           radial_distribution_inner_log, which_wedges, std::nullopt, nullptr,
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The 'RadialDistribution' must be 'Linear' for the"));
 
   CHECK_THROWS_WITH(
@@ -522,7 +522,7 @@ void test_parse_errors() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions with a Sphere"));
   CHECK_THROWS_WITH(
       creators::Sphere(
@@ -532,7 +532,7 @@ void test_parse_errors() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
@@ -543,7 +543,7 @@ void test_parse_errors() {
                        domain::creators::sphere::TimeDependentMapOptions{
                            1.0, std::nullopt, 5, std::nullopt},
                        nullptr),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
           "cube. Use a TimeDependence instead."));
 }

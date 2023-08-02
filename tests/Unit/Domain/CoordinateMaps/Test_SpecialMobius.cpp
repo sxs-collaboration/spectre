@@ -128,12 +128,12 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius",
   test_is_identity();
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      CoordinateMaps::SpecialMobius(-2.3),
-      Catch::Matchers::Contains("The magnitude of mu must be less than 0.96."));
-  CHECK_THROWS_WITH(
-      CoordinateMaps::SpecialMobius(0.98),
-      Catch::Matchers::Contains("The magnitude of mu must be less than 0.96."));
+  CHECK_THROWS_WITH(CoordinateMaps::SpecialMobius(-2.3),
+                    Catch::Matchers::ContainsSubstring(
+                        "The magnitude of mu must be less than 0.96."));
+  CHECK_THROWS_WITH(CoordinateMaps::SpecialMobius(0.98),
+                    Catch::Matchers::ContainsSubstring(
+                        "The magnitude of mu must be less than 0.96."));
 #endif
 }
 }  // namespace domain

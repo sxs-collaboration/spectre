@@ -388,47 +388,48 @@ void test_parse_errors() {
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           1.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("OuterRadius is too small"));
+      Catch::Matchers::ContainsSubstring("OuterRadius is too small"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterA is expected to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterB is expected to be negative"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("RadiusA and RadiusB are expected "
-                                "to be positive"));
+      Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
+                                         "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("RadiusA and RadiusB are expected "
-                                "to be positive"));
+      Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
+                                         "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("RadiusA should not be smaller than RadiusB"));
+      Catch::Matchers::ContainsSubstring(
+          "RadiusA should not be smaller than RadiusB"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
+      Catch::Matchers::ContainsSubstring("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           TimeDepOptions{
@@ -438,7 +439,7 @@ void test_parse_errors() {
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "To use the CylindricalBBH domain with time-dependent maps"));
   // Boundary condition errors
   CHECK_THROWS_WITH(
@@ -448,8 +449,8 @@ void test_parse_errors() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Cannot have periodic boundary "
-                                "conditions with a binary domain"));
+      Catch::Matchers::ContainsSubstring("Cannot have periodic boundary "
+                                         "conditions with a binary domain"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
@@ -457,14 +458,14 @@ void test_parse_errors() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Cannot have periodic boundary "
-                                "conditions with a binary domain"));
+      Catch::Matchers::ContainsSubstring("Cannot have periodic boundary "
+                                         "conditions with a binary domain"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, nullptr, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
   CHECK_THROWS_WITH(
@@ -472,7 +473,7 @@ void test_parse_errors() {
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, false,
           25.0, false, 1_st, 3_st, create_inner_boundary_condition(), nullptr,
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
 }

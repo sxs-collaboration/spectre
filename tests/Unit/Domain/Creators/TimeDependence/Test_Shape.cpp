@@ -420,8 +420,9 @@ void test_errors() {
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 1.0\n"
           "  OuterRadius: 10.0\n"),
-      Catch::Contains("Tried to create a Shape TimeDependence, but the "
-                      "magnitude of the spin"));
+      Catch::Matchers::ContainsSubstring(
+          "Tried to create a Shape TimeDependence, but the "
+          "magnitude of the spin"));
 
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
@@ -433,7 +434,7 @@ void test_errors() {
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 10.0\n"
           "  OuterRadius: 1.0\n"),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The maximum radius must be greater than the minimum radius"));
 
   CHECK_THROWS_WITH(
@@ -446,7 +447,8 @@ void test_errors() {
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 1.0\n"
           "  OuterRadius: 10.0\n"),
-      Catch::Contains("Tried to create a Shape TimeDependence, but the mass"));
+      Catch::Matchers::ContainsSubstring(
+          "Tried to create a Shape TimeDependence, but the mass"));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.Shape",

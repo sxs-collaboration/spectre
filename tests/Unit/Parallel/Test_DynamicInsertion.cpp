@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// Need CATCH_CONFIG_RUNNER to avoid linking errors with Catch2
-#define CATCH_CONFIG_RUNNER
-
 #include "Framework/TestingFramework.hpp"
 
 #include <deque>

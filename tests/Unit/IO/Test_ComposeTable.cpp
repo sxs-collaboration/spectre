@@ -166,7 +166,7 @@ void test_error_messages() {
   file_system::copy(unit_test_src_path() + "/IO/eos.parameters", directory);
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("eos.quantities' does not exist."));
+      Catch::Matchers::ContainsSubstring("eos.quantities' does not exist."));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -175,7 +175,7 @@ void test_error_messages() {
                " # number of regular, additional and derivative ", "");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: "));
+      Catch::Matchers::ContainsSubstring("Read unexpected comment line: "));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -185,7 +185,7 @@ void test_error_messages() {
                "");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: "));
+      Catch::Matchers::ContainsSubstring("Read unexpected comment line: "));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -193,7 +193,8 @@ void test_error_messages() {
   replace_line("/eos.quantities", "1 2 3 4 5 7 12 1", "1 2 3 4 5 7000 12 1");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read in unknown quantity with number 7000"));
+      Catch::Matchers::ContainsSubstring(
+          "Read in unknown quantity with number 7000"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -201,7 +202,8 @@ void test_error_messages() {
   replace_line("/eos.quantities", "1 2 3 4 5 7 12 1", "1 2 3 4 5 7 12 10000");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read in unknown quantity with number 10000"));
+      Catch::Matchers::ContainsSubstring(
+          "Read in unknown quantity with number 10000"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -209,14 +211,15 @@ void test_error_messages() {
   replace_line("/eos.quantities", "1 2 3 4 5 7 12 1", "1 2 3 4 5 1 12 1");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Found quantity 'pressure' more than once."));
+      Catch::Matchers::ContainsSubstring(
+          "Found quantity 'pressure' more than once."));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
   file_system::copy(unit_test_src_path() + "/IO/eos.quantities", directory);
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("eos.parameters' does not exist."));
+      Catch::Matchers::ContainsSubstring("eos.parameters' does not exist."));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -227,7 +230,8 @@ void test_error_messages() {
                " # blah");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: ' # blah'"));
+      Catch::Matchers::ContainsSubstring(
+          "Read unexpected comment line: ' # blah'"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -239,7 +243,8 @@ void test_error_messages() {
                " # herp");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: ' # herp'"));
+      Catch::Matchers::ContainsSubstring(
+          "Read unexpected comment line: ' # herp'"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -251,7 +256,8 @@ void test_error_messages() {
       " # derp");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: ' # derp'"));
+      Catch::Matchers::ContainsSubstring(
+          "Read unexpected comment line: ' # derp'"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -263,7 +269,8 @@ void test_error_messages() {
                " # blee");
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("Read unexpected comment line: ' # blee'"));
+      Catch::Matchers::ContainsSubstring(
+          "Read unexpected comment line: ' # blee'"));
   file_system::rm(directory, true);
 
   file_system::create_directory(directory);
@@ -271,7 +278,7 @@ void test_error_messages() {
   file_system::copy(unit_test_src_path() + "/IO/eos.parameters", directory);
   CHECK_THROWS_WITH(
       ([&directory]() { const io::ComposeTable compose_table(directory); })(),
-      Catch::Contains("eos.table' does not exist."));
+      Catch::Matchers::ContainsSubstring("eos.table' does not exist."));
   file_system::rm(directory, true);
 }
 }  // namespace

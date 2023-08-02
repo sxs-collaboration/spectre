@@ -80,7 +80,7 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Number of elements determined from elements_per_core ("));
 
   elements_per_core[0] -= 1;
@@ -92,7 +92,7 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Number of grid points determined from grid_points_per_core ("));
 
   grid_points_per_core[0] -= 1;
@@ -106,7 +106,8 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains("Number of cores determined from elements_per_core ("));
+      Catch::Matchers::ContainsSubstring(
+          "Number of cores determined from elements_per_core ("));
 
   elements_per_core.pop_back();
   grid_points_per_core.push_back(0);
@@ -117,7 +118,7 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Number of cores determined from grid_points_per_core ("));
 
   grid_points_per_core.pop_back();
@@ -129,7 +130,8 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains("Number of nodes determined from elements_per_node ("));
+      Catch::Matchers::ContainsSubstring(
+          "Number of nodes determined from elements_per_node ("));
 
   elements_per_node.pop_back();
   grid_points_per_node.push_back(0);
@@ -140,7 +142,7 @@ void test_diagnostic_info() {
             diagnostic_info(domain, cache, elements_per_core, elements_per_node,
                             grid_points_per_core, grid_points_per_node);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Number of nodes determined from grid_points_per_node ("));
 #endif
 }

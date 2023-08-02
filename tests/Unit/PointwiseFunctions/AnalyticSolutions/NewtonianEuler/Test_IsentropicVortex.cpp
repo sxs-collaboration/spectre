@@ -139,36 +139,37 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
         NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
             1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 1.7, 1.e-12);
       }(),
-      Catch::Contains("A nonzero perturbation amplitude only "
-                      "makes sense in 3 dimensions."));
+      Catch::Matchers::ContainsSubstring(
+          "A nonzero perturbation amplitude only "
+          "makes sense in 3 dimensions."));
   CHECK_THROWS_WITH(
       []() {
         NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
             1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, -1.7);
       }(),
-      Catch::Contains("The strength must be non-negative."));
+      Catch::Matchers::ContainsSubstring("The strength must be non-negative."));
   CHECK_THROWS_WITH(
       []() {
         NewtonianEuler::Solutions::IsentropicVortex<3> test_vortex(
             1.65, {{-0.12, 1.542, 3.12}}, {{-0.04, -0.32, 0.003}}, -0.5, 4.2);
       }(),
-      Catch::Contains("The strength must be non-negative."));
+      Catch::Matchers::ContainsSubstring("The strength must be non-negative."));
 #endif
-  CHECK_THROWS_WITH(
-      TestHelpers::test_creation<
-          NewtonianEuler::Solutions::IsentropicVortex<2>>(
-          "AdiabaticIndex: 1.4\n"
-          "Center: [-3.9, 1.1]\n"
-          "MeanVelocity: [0.1, -0.032]\n"
-          "Strength: -0.2"),
-      Catch::Contains("Value -0.2 is below the lower bound of 0"));
-  CHECK_THROWS_WITH(
-      TestHelpers::test_creation<
-          NewtonianEuler::Solutions::IsentropicVortex<3>>(
-          "AdiabaticIndex: 1.12\n"
-          "Center: [0.3, -0.12, 4.2]\n"
-          "MeanVelocity: [-0.03, -0.1, 0.09]\n"
-          "Strength: -0.3\n"
-          "PerturbAmplitude: 0.42"),
-      Catch::Contains("Value -0.3 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<
+                        NewtonianEuler::Solutions::IsentropicVortex<2>>(
+                        "AdiabaticIndex: 1.4\n"
+                        "Center: [-3.9, 1.1]\n"
+                        "MeanVelocity: [0.1, -0.032]\n"
+                        "Strength: -0.2"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value -0.2 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<
+                        NewtonianEuler::Solutions::IsentropicVortex<3>>(
+                        "AdiabaticIndex: 1.12\n"
+                        "Center: [0.3, -0.12, 4.2]\n"
+                        "MeanVelocity: [-0.03, -0.1, 0.09]\n"
+                        "Strength: -0.3\n"
+                        "PerturbAmplitude: 0.42"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value -0.3 is below the lower bound of 0"));
 }

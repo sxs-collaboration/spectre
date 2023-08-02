@@ -95,5 +95,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Fd.PpaoPrim",
       grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
           4.5, std::nullopt, std::nullopt,
           fd::reconstruction::FallbackReconstructorType::None),
-      Catch::Contains("None is not an allowed low-order reconstructor."));
+      Catch::Matchers::ContainsSubstring(
+          "None is not an allowed low-order reconstructor."));
 }

@@ -101,17 +101,17 @@ void test_projection_matrix() {
         projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto},
                           5, 1, Side::Lower),
-        Catch::Matchers::Contains("ghost_zone_size must be"));
+        Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
         projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto},
                           5, 6, Side::Lower),
-        Catch::Matchers::Contains("ghost_zone_size must be"));
+        Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
         projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
                                   Spectral::Quadrature::GaussLobatto},
                           5, 1, Side::Lower),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "FD Subcell projection only supports Legendre basis"));
   }
 #endif

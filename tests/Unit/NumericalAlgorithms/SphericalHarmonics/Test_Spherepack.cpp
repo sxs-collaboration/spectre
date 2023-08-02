@@ -672,11 +672,13 @@ void test_memory_pool() {
 
   // Allocate more than the number of available temps
   CHECK_THROWS_WITH((pool.get(n_pts)),
-                    Catch::Contains("Attempt to allocate more than 9 temps."));
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempt to allocate more than 9 temps."));
 
   // Clear too early.
   CHECK_THROWS_WITH((pool.clear()),
-                    Catch::Contains("Attempt to clear element that is in use"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempt to clear element that is in use"));
 
   // Free all the temps (not necessarily in the same order as get).
   pool.free(tmp1);
@@ -711,24 +713,24 @@ void test_memory_pool() {
   pool.clear();
 
   std::vector<double> dum1(1, 0.0);
-  CHECK_THROWS_WITH(
-      (pool.free(dum1)),
-      Catch::Contains("Attempt to free temp that was never allocated."));
-  CHECK_THROWS_WITH(
-      (pool.free(make_not_null(dum1.data()))),
-      Catch::Contains("Attempt to free temp that was never allocated."));
+  CHECK_THROWS_WITH((pool.free(dum1)),
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempt to free temp that was never allocated."));
+  CHECK_THROWS_WITH((pool.free(make_not_null(dum1.data()))),
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempt to free temp that was never allocated."));
 
   std::vector<double> dum2;
-  CHECK_THROWS_WITH(
-      (pool.free(dum2)),
-      Catch::Contains("Attempt to free temp that was never allocated."));
+  CHECK_THROWS_WITH((pool.free(dum2)),
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempt to free temp that was never allocated."));
 }
 
 void test_ylm_errors() {
-  CHECK_THROWS_WITH((Spherepack(1, 1)),
-                    Catch::Contains("Must use l_max>=2, not l_max=1"));
-  CHECK_THROWS_WITH((Spherepack(2, 1)),
-                    Catch::Contains("Must use m_max>=2, not m_max=1"));
+  CHECK_THROWS_WITH((Spherepack(1, 1)), Catch::Matchers::ContainsSubstring(
+                                            "Must use l_max>=2, not l_max=1"));
+  CHECK_THROWS_WITH((Spherepack(2, 1)), Catch::Matchers::ContainsSubstring(
+                                            "Must use m_max>=2, not m_max=1"));
   CHECK_THROWS_WITH(
       ([]() {
         Spherepack ylm(4, 3);
@@ -742,8 +744,9 @@ void test_ylm_errors() {
         ylm_wrong_l_max.interpolate_from_coefs(make_not_null(&res),
                                                spectral_values, interp_info);
       }()),
-      Catch::Contains("Different l_max for InterpolationInfo (4) "
-                      "and Spherepack instance (5)"));
+      Catch::Matchers::ContainsSubstring(
+          "Different l_max for InterpolationInfo (4) "
+          "and Spherepack instance (5)"));
   CHECK_THROWS_WITH(
       ([]() {
         Spherepack ylm(4, 3);
@@ -757,8 +760,9 @@ void test_ylm_errors() {
         ylm_wrong_m_max.interpolate_from_coefs(make_not_null(&res),
                                                spectral_values, interp_info);
       }()),
-      Catch::Contains("Different m_max for InterpolationInfo (3) "
-                      "and Spherepack instance (4)"));
+      Catch::Matchers::ContainsSubstring(
+          "Different m_max for InterpolationInfo (3) "
+          "and Spherepack instance (4)"));
 }
 
 }  // namespace

@@ -581,7 +581,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   CHECK_THROWS_WITH(
       (test_zero_non_smooth_error(make_not_null(&box_to_initialize), l_max,
                                   number_of_radial_points)),
-      Catch::Matchers::Contains("Initial data iterative angular solve"));
+      Catch::Matchers::ContainsSubstring(
+          "Initial data iterative angular solve"));
   {
     INFO("Check no incoming radiation initial data generator");
     test_initialize_j_no_radiation(make_not_null(&box_to_initialize), l_max,

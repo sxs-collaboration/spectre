@@ -325,9 +325,10 @@ void test() {
           (db::get<
               domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>>(
               box)),
-          Catch::Contains("Should not request Grid to Inertial jacobian for a "
-                          "non-moving mesh "
-                          "because it is the identity."));
+          Catch::Matchers::ContainsSubstring(
+              "Should not request Grid to Inertial jacobian for a "
+              "non-moving mesh "
+              "because it is the identity."));
     }
   };
   check_helper(3.0);

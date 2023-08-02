@@ -145,7 +145,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
       SubcellOptions(TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
                          opts_no_blocks + "OnlyDgBlocksAndGroups: [blah]\n"),
                      cylinder),
-      Catch::Matchers::Contains("The block or group 'blah'"));
+      Catch::Matchers::ContainsSubstring("The block or group 'blah'"));
 
   CHECK(SubcellOptions{
             TestHelpers::test_option_tag<OptionTags::SubcellOptions>(

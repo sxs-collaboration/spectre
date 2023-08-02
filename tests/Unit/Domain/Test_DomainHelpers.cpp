@@ -220,8 +220,9 @@ void test_wedge_errors() {
             use_equiangular_map, use_half_wedges, {}, radial_distribution,
             which_wedges));
       }()),
-      Catch::Contains("If we are using half wedges we must also be using "
-                      "ShellWedges::All."));
+      Catch::Matchers::ContainsSubstring(
+          "If we are using half wedges we must also be using "
+          "ShellWedges::All."));
 #endif
 }
 
@@ -516,8 +517,9 @@ void test_frustrum_errors() {
             frustum_coordinate_maps(length_inner_cube, length_outer_cube,
                                     use_equiangular_map, origin_preimage));
       }()),
-      Catch::Contains("The outer cube is too small! The inner cubes will "
-                      "pierce the surface of the outer cube."));
+      Catch::Matchers::ContainsSubstring(
+          "The outer cube is too small! The inner cubes will "
+          "pierce the surface of the outer cube."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -529,8 +531,9 @@ void test_frustrum_errors() {
             frustum_coordinate_maps(length_inner_cube, length_outer_cube,
                                     use_equiangular_map, origin_preimage));
       }()),
-      Catch::Contains("The current choice for `origin_preimage` results in the "
-                      "inner cubes piercing the surface of the outer cube."));
+      Catch::Matchers::ContainsSubstring(
+          "The current choice for `origin_preimage` results in the "
+          "inner cubes piercing the surface of the outer cube."));
 #endif
 }
 

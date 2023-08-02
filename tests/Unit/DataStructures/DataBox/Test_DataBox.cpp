@@ -394,7 +394,7 @@ void trigger_get_databox_error() {
 void test_get_databox_error() {
   CHECK_THROWS_WITH(
       trigger_get_databox_error(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Unable to retrieve a (compute) item 'DataBox' from the DataBox from "
           "within a call to mutate. You must pass these either through the "
           "capture list of the lambda or the constructor of a class, this "
@@ -498,16 +498,17 @@ void trigger_mutate_locked_mutate() {
 void test_mutate_locked() {
   CHECK_THROWS_WITH(
       trigger_mutate_locked_get(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Unable to retrieve a (compute) item 'Tag4' from the DataBox from "
           "within a call to mutate. You must pass these either through the "
           "capture list of the lambda or the constructor of a class, this "
           "restriction exists to avoid complexity"));
   CHECK_THROWS_WITH(
       trigger_mutate_locked_mutate(),
-      Catch::Contains("Unable to mutate a DataBox that is already being "
-                      "mutated. This error occurs when mutating a DataBox from "
-                      "inside the invokable passed to the mutate function"));
+      Catch::Matchers::ContainsSubstring(
+          "Unable to mutate a DataBox that is already being "
+          "mutated. This error occurs when mutating a DataBox from "
+          "inside the invokable passed to the mutate function"));
 }
 
 struct NonCopyableFunctor {

@@ -58,8 +58,9 @@ void test_errors() {
         }
         { my_file.insert<h5::Dat>("/L2_errors//", legend, version_number); }
       }()),
-      Catch::Contains("Cannot insert an Object that already exists. Failed to "
-                      "add Object named: /L2_errors"));
+      Catch::Matchers::ContainsSubstring(
+          "Cannot insert an Object that already exists. Failed to "
+          "add Object named: /L2_errors"));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectAlreadyExists.h5")) {
     file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyExists.h5", true);
@@ -79,7 +80,7 @@ void test_errors() {
         (void)dat_file;
         (void)get_dat_file;
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Object /DummyPath already open. Cannot open object /DummyPath."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5")) {
@@ -100,7 +101,7 @@ void test_errors() {
         (void)dat_file;
         (void)dat_file2;
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Object /DummyPath already open. Cannot insert object /DummyPath2."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5")) {
@@ -121,8 +122,9 @@ void test_errors() {
         (void)dat_file;
         (void)dat_file2;
       }(),
-      Catch::Contains("Object /DummyPath already open. Cannot try to insert "
-                      "object /DummyPath2."));
+      Catch::Matchers::ContainsSubstring(
+          "Object /DummyPath already open. Cannot try to insert "
+          "object /DummyPath2."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5")) {
     file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5",
@@ -151,7 +153,7 @@ void test_errors() {
         (void)dat_file;
         (void)dat_file2;
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Object /Dummy/Path2 already open. Cannot open object /DummyPath."));
   if (file_system::check_if_file_exists(
           "./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5")) {

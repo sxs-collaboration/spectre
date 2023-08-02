@@ -300,99 +300,119 @@ void test_time_delta() {
 
 void test_assertions() {
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), -1),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 2),
-                    Catch::Contains("Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), -1), Catch::Matchers::ContainsSubstring(
+                                                "Out of range slab fraction"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 2), Catch::Matchers::ContainsSubstring(
+                                               "Out of range slab fraction"));
 
   CHECK_THROWS_WITH(
       Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(1., 2.)),
-      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
   CHECK_THROWS_WITH(
       Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(-1., 0.)),
-      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
   CHECK_THROWS_WITH(
       Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(0., 2.)),
-      Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.)),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.)),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.)),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.)),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
   CHECK_THROWS_WITH(
-      Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0),
-      Catch::Contains("Can't subtract times from different slabs"));
+      Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.)),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
   CHECK_THROWS_WITH(
-      Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0),
-      Catch::Contains("Can't subtract times from different slabs"));
+      Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.)),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
   CHECK_THROWS_WITH(
-      Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1),
-      Catch::Contains("Can't subtract times from different slabs"));
-
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
-  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+      Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.)),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.)),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
   CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
-  CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
-  CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
-  CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't check cross-slab TimeDelta inequalities"));
+      Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
 
-  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0),
-                    Catch::Contains("Out of range slab fraction"));
-  CHECK_THROWS_WITH(TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0),
-                    Catch::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't subtract times from different slabs"));
+  CHECK_THROWS_WITH(Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't subtract times from different slabs"));
+  CHECK_THROWS_WITH(Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't subtract times from different slabs"));
 
   CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't add TimeDeltas from different slabs"));
+      Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
   CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't add TimeDeltas from different slabs"));
+      Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
   CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't subtract TimeDeltas from different slabs"));
+      Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
   CHECK_THROWS_WITH(
-      TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
-      Catch::Contains("Can't subtract TimeDeltas from different slabs"));
+      Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't check cross-slab TimeDelta inequalities"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't check cross-slab TimeDelta inequalities"));
+
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0),
+      Catch::Matchers::ContainsSubstring("Out of range slab fraction"));
+  CHECK_THROWS_WITH(
+      TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0),
+      Catch::Matchers::Matches("(.|\\n)*Can't move .* to slab(.|\\n)*"));
+
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't add TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't add TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't subtract TimeDeltas from different slabs"));
+  CHECK_THROWS_WITH(TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can't subtract TimeDeltas from different slabs"));
 #endif  // SPECTRE_DEBUG
 }
 }  // namespace

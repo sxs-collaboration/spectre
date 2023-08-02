@@ -37,7 +37,7 @@ void test_options_empty() {
         Options::Parser<tmpl::list<>> opts("");
         opts.parse("Option:");
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 1 column 1:\nOption 'Option' is not a valid option."));
 
   CHECK_THROWS_WITH(
@@ -45,7 +45,7 @@ void test_options_empty() {
         Options::Parser<tmpl::list<>> opts("");
         opts.parse("4");
       }(),
-      Catch::Contains("\n'4' does not look like options"));
+      Catch::Matchers::ContainsSubstring("\n'4' does not look like options"));
 }
 
 void test_options_syntax_error() {
@@ -57,8 +57,9 @@ void test_options_syntax_error() {
             "DomainCreator: CreateInterval:\n"
             "  IsPeriodicIn: [false]");
       }(),
-      Catch::Contains("At line 1 column 30:\nUnable to correctly parse the "
-                      "input file because of a syntax error"));
+      Catch::Matchers::ContainsSubstring(
+          "At line 1 column 30:\nUnable to correctly parse the "
+          "input file because of a syntax error"));
 }
 
 struct Simple {
@@ -97,7 +98,8 @@ void test_options_simple() {
             "Simple: -4\n"
             "Simple: -3");
       }(),
-      Catch::Contains("At line 2 column 1:\nOption 'Simple' specified twice."));
+      Catch::Matchers::ContainsSubstring(
+          "At line 2 column 1:\nOption 'Simple' specified twice."));
 
   CHECK_THROWS_WITH(
       []() {
@@ -106,7 +108,7 @@ void test_options_simple() {
             "SomeName: -4\n"
             "SomeName: -3");
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 2 column 1:\nOption 'SomeName' specified twice."));
 
   CHECK_THROWS_WITH(
@@ -114,21 +116,23 @@ void test_options_simple() {
         Options::Parser<tmpl::list<Simple>> opts("");
         opts.parse("");
       }(),
-      Catch::Contains("In string:\nYou did not specify the option (Simple)"));
+      Catch::Matchers::ContainsSubstring(
+          "In string:\nYou did not specify the option (Simple)"));
 
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<NamedSimple>> opts("");
         opts.parse("");
       }(),
-      Catch::Contains("In string:\nYou did not specify the option (SomeName)"));
+      Catch::Matchers::ContainsSubstring(
+          "In string:\nYou did not specify the option (SomeName)"));
 
   CHECK_THROWS_WITH(
       ([]() {
         Options::Parser<tmpl::list<NamedSimple, Simple>> opts("");
         opts.parse("");
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "In string:\nYou did not specify the options (SomeName,Simple)"));
 
   CHECK_THROWS_WITH(
@@ -137,8 +141,9 @@ void test_options_simple() {
         opts.parse("Simple:");
         opts.get<Simple>();
       }(),
-      Catch::Contains("While parsing option Simple:\nAt line 1 column "
-                      "1:\nFailed to convert value to type int:"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Simple:\nAt line 1 column "
+          "1:\nFailed to convert value to type int:"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -146,8 +151,9 @@ void test_options_simple() {
         opts.parse("SomeName:");
         opts.get<NamedSimple>();
       }(),
-      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
-                      "1:\nFailed to convert value to type int:"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option SomeName:\nAt line 1 column "
+          "1:\nFailed to convert value to type int:"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -155,8 +161,9 @@ void test_options_simple() {
         opts.parse("Simple: 2.3");
         opts.get<Simple>();
       }(),
-      Catch::Contains("While parsing option Simple:\nAt line 1 column "
-                      "9:\nFailed to convert value to type int: 2.3"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Simple:\nAt line 1 column "
+          "9:\nFailed to convert value to type int: 2.3"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -164,8 +171,9 @@ void test_options_simple() {
         opts.parse("SomeName: 2.3");
         opts.get<NamedSimple>();
       }(),
-      Catch::Contains("While parsing option SomeName:\nAt line 1 column "
-                      "11:\nFailed to convert value to type int: 2.3"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option SomeName:\nAt line 1 column "
+          "11:\nFailed to convert value to type int: 2.3"));
 }
 
 void test_options_print_long_help() {
@@ -271,7 +279,7 @@ void test_options_grouped() {
         opts.parse("");
         opts.get<InnerGroupedTag>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "In string:\nYou did not specify the option (OuterGroup)"));
 
   CHECK_THROWS_WITH(
@@ -280,7 +288,7 @@ void test_options_grouped() {
         opts.parse("OuterGroup:");
         opts.get<InnerGroupedTag>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "In group OuterGroup:\nYou did not specify the option (InnerGroup)"));
 }
 
@@ -331,8 +339,9 @@ void test_options_suggested() {
         opts.parse("BadSuggestion: 5");
         opts.get<BadSuggestion>();
       }(),
-      Catch::Contains("Checking SUGGESTED value for BadSuggestion:\nValue 3 is "
-                      "below the lower bound of 4"));
+      Catch::Matchers::ContainsSubstring(
+          "Checking SUGGESTED value for BadSuggestion:\nValue 3 is "
+          "below the lower bound of 4"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -340,8 +349,9 @@ void test_options_suggested() {
         opts.parse("SomeName: 5");
         opts.get<NamedBadSuggestion>();
       }(),
-      Catch::Contains("Checking SUGGESTED value for SomeName:\nValue 3 is "
-                      "below the lower bound of 4"));
+      Catch::Matchers::ContainsSubstring(
+          "Checking SUGGESTED value for SomeName:\nValue 3 is "
+          "below the lower bound of 4"));
 }
 
 // [[OutputRegex, Bounded, line 1:.  Specified: 5.  Suggested: 3]]
@@ -359,8 +369,9 @@ void test_options_bounded() {
         opts.parse("Bounded: 1");
         opts.get<Bounded>();
       }(),
-      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
-                      "10:\nValue 1 is below the lower bound of 2"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Bounded:\nAt line 1 column "
+          "10:\nValue 1 is below the lower bound of 2"));
 
   {
     Options::Parser<tmpl::list<Bounded>> opts("");
@@ -380,8 +391,9 @@ void test_options_bounded() {
         opts.parse("Bounded: 11");
         opts.get<Bounded>();
       }(),
-      Catch::Contains("While parsing option Bounded:\nAt line 1 column "
-                      "10:\nValue 11 is above the upper bound of 10"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Bounded:\nAt line 1 column "
+          "10:\nValue 11 is above the upper bound of 10"));
 }
 
 // [options_example_vector_struct]
@@ -404,7 +416,7 @@ void test_options_bounded_vector() {
         opts.parse("Vector: [2]");
         opts.get<VectorOption>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option Vector:\nAt line 1 column 9:\nValue must have "
           "at least 2 entries, but 1 were given."));
 
@@ -426,7 +438,7 @@ void test_options_bounded_vector() {
         opts.parse("Vector: [2, 3, 3, 3, 5, 6]");
         opts.get<VectorOption>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option Vector:\nAt line 1 column 9:\nValue must have "
           "at most 5 entries, but 6 were given."));
 
@@ -436,7 +448,7 @@ void test_options_bounded_vector() {
         opts.parse("Vector:");
         opts.get<VectorOption>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option Vector:\nAt line 1 column 1:\nValue must have "
           "at least 2 entries, but 0 were given."));
 }
@@ -458,8 +470,9 @@ void test_options_array() {
         opts.parse("Array: [1, 2]");
         opts.get<Array>();
       }(),
-      Catch::Contains("While parsing option Array:\nAt line 1 column "
-                      "8:\nFailed to convert value to type [int x3]: [1, 2]"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Array:\nAt line 1 column "
+          "8:\nFailed to convert value to type [int x3]: [1, 2]"));
 
   {
     Options::Parser<tmpl::list<Array>> opts("");
@@ -473,7 +486,7 @@ void test_options_array() {
         opts.parse("Array: [1, 2, 3, 4]");
         opts.get<Array>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option Array:\nAt line 1 column 8:\nFailed to convert "
           "value to type [int x3]: [1, 2, 3, 4]"));
 
@@ -488,7 +501,7 @@ void test_options_array() {
             "  - 4");
         opts.get<Array>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "While parsing option Array:\nAt line 2 column 3:\nFailed to convert "
           "value to type [int x3]:\n  - 1\n  - 2\n  - 3\n  - 4"));
 
@@ -498,8 +511,9 @@ void test_options_array() {
         opts.parse("Array:");
         opts.get<Array>();
       }(),
-      Catch::Contains("While parsing option Array:\nAt line 1 column "
-                      "1:\nFailed to convert value to type [int x3]:"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Array:\nAt line 1 column "
+          "1:\nFailed to convert value to type [int x3]:"));
 
   {
     Options::Parser<tmpl::list<ZeroArray>> opts("");
@@ -538,8 +552,9 @@ void test_options_map() {
         opts.parse("Map: string");
         opts.get<Map>();
       }(),
-      Catch::Contains("While parsing option Map:\nAt line 1 column 6:\nFailed "
-                      "to convert value to type {string: int}: string"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Map:\nAt line 1 column 6:\nFailed "
+          "to convert value to type {string: int}: string"));
 
   CHECK_THROWS_WITH(
       []() {
@@ -549,8 +564,9 @@ void test_options_map() {
             "  A: string");
         opts.get<Map>();
       }(),
-      Catch::Contains("While parsing option Map:\nAt line 2 column 6:\nFailed "
-                      "to convert value to type {string: int}: A: string"));
+      Catch::Matchers::ContainsSubstring(
+          "While parsing option Map:\nAt line 2 column 6:\nFailed "
+          "to convert value to type {string: int}: A: string"));
 }
 
 struct UnorderedMap {
@@ -654,13 +670,16 @@ void test_options_variant() {
           opts.parse("VariantTag: []");
           opts.get<tag>();
         }(),
-        Catch::Contains("While creating a variant:\nAt line 1 column "
-                        "13:\nFailed to convert value to type int or string: "
-                        "[]") and
-            Catch::Contains("At line 1 column 13:\nFailed to convert value to "
-                            "type int: []") and
-            Catch::Contains("At line 1 column 13:\nFailed to convert value to "
-                            "type string: []"));
+        Catch::Matchers::ContainsSubstring(
+            "While creating a variant:\nAt line 1 column "
+            "13:\nFailed to convert value to type int or string: "
+            "[]") and
+            Catch::Matchers::ContainsSubstring(
+                "At line 1 column 13:\nFailed to convert value to "
+                "type int: []") and
+            Catch::Matchers::ContainsSubstring(
+                "At line 1 column 13:\nFailed to convert value to "
+                "type string: []"));
   }
 
   {
@@ -681,17 +700,18 @@ void test_options_variant() {
       CHECK(std::holds_alternative<VariantOption2>(
           parser.get<tag, VariantOption2Metavars>()));
     }
-    CHECK_THROWS_WITH(([]() {
-                        Options::Parser<tmpl::list<tag>> parser("halp");
-                        parser.parse(
-                            "VariantTag:\n"
-                            "  OptZ: 3");
-                        parser.get<tag, VariantOption2Metavars>();
-                      }()),
-                      Catch::Contains("VariantOption1 halp") and
-                          Catch::Contains("VariantOption2 halp") and
-                          Catch::Contains("EITHER") and
-                          not Catch::Contains("Possible errors"));
+    CHECK_THROWS_WITH(
+        ([]() {
+          Options::Parser<tmpl::list<tag>> parser("halp");
+          parser.parse(
+              "VariantTag:\n"
+              "  OptZ: 3");
+          parser.get<tag, VariantOption2Metavars>();
+        }()),
+        Catch::Matchers::ContainsSubstring("VariantOption1 halp") and
+            Catch::Matchers::ContainsSubstring("VariantOption2 halp") and
+            Catch::Matchers::ContainsSubstring("EITHER") and
+            not Catch::Matchers::ContainsSubstring("Possible errors"));
   }
   {
     using tag = VariantTag<VariantOption1, int>;
@@ -715,12 +735,13 @@ void test_options_variant() {
               "  OptZ: 3");
           parser.get<tag>();
         }()),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Failed to convert value to type VariantOption1 or int:") and
-            Catch::Contains("VariantOption1 halp") and
-            Catch::Contains("Failed to convert value to type int:") and
-            not Catch::Contains("EITHER") and
-            Catch::Contains("Possible errors"));
+            Catch::Matchers::ContainsSubstring("VariantOption1 halp") and
+            Catch::Matchers::ContainsSubstring(
+                "Failed to convert value to type int:") and
+            not Catch::Matchers::ContainsSubstring("EITHER") and
+            Catch::Matchers::ContainsSubstring("Possible errors"));
   }
   {
     using tag = VariantTag<VariantOption1, int, VariantOption2>;
@@ -754,12 +775,15 @@ void test_options_variant() {
               "  OptZ: 3");
           parser.get<tag, VariantOption2Metavars>();
         }()),
-        Catch::Contains("Failed to convert value to type VariantOption1 or int "
-                        "or VariantOption2:") and
-            Catch::Contains("VariantOption1 halp") and
-            Catch::Contains("VariantOption2 halp") and
-            Catch::Contains("Failed to convert value to type int:") and
-            Catch::Contains("EITHER") and Catch::Contains("Possible errors"));
+        Catch::Matchers::ContainsSubstring(
+            "Failed to convert value to type VariantOption1 or int "
+            "or VariantOption2:") and
+            Catch::Matchers::ContainsSubstring("VariantOption1 halp") and
+            Catch::Matchers::ContainsSubstring("VariantOption2 halp") and
+            Catch::Matchers::ContainsSubstring(
+                "Failed to convert value to type int:") and
+            Catch::Matchers::ContainsSubstring("EITHER") and
+            Catch::Matchers::ContainsSubstring("Possible errors"));
   }
   {
     using tag =
@@ -797,12 +821,15 @@ void test_options_variant() {
               "  OptZ: 3");
           parser.get<tag, VariantOption2Metavars>();
         }()),
-        Catch::Contains("Failed to convert value to type VariantOption1 or "
-                        "VariantOption2 or VariantOptionWithGroup:") and
-            Catch::Contains("VariantOption1 halp") and
-            Catch::Contains("VariantOption2 halp") and
-            Catch::Contains("VariantOptionWithGroup halp") and
-            Catch::Contains("EITHER") and Catch::Contains("Possible errors"));
+        Catch::Matchers::ContainsSubstring(
+            "Failed to convert value to type VariantOption1 or "
+            "VariantOption2 or VariantOptionWithGroup:") and
+            Catch::Matchers::ContainsSubstring("VariantOption1 halp") and
+            Catch::Matchers::ContainsSubstring("VariantOption2 halp") and
+            Catch::Matchers::ContainsSubstring(
+                "VariantOptionWithGroup halp") and
+            Catch::Matchers::ContainsSubstring("EITHER") and
+            Catch::Matchers::ContainsSubstring("Possible errors"));
   }
 }
 
@@ -932,29 +959,31 @@ void test_options_invalid_calls() {
         Options::Parser<tmpl::list<Duplicate, NamedDuplicate>> opts("");
         opts.parse("");
       }()),
-      Catch::Contains("Duplicate option name: Duplicate"));
+      Catch::Matchers::ContainsSubstring("Duplicate option name: Duplicate"));
 
   CHECK_THROWS_WITH(
       []() {
         Options::Parser<tmpl::list<short_alias_for_too_long>> opts("");
       }(),
-      Catch::Contains("The option name "
-                      "Tooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-                      "ooooooooooooooLong is too long for nice formatting"));
+      Catch::Matchers::ContainsSubstring(
+          "The option name "
+          "Tooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+          "ooooooooooooooLong is too long for nice formatting"));
   CHECK_THROWS_WITH(
       []() { Options::Parser<tmpl::list<NamedTooLong>> opts(""); }(),
-      Catch::Contains("The option name "
-                      "Tooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-                      "ooooooooooooooLong is too long for nice formatting"));
+      Catch::Matchers::ContainsSubstring(
+          "The option name "
+          "Tooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+          "ooooooooooooooLong is too long for nice formatting"));
 
   CHECK_THROWS_WITH(
       Options::Parser<tmpl::list<NoHelp>>(""),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "You must supply a help string of non-zero length for NoHelp"));
 
   CHECK_THROWS_WITH(
       Options::Parser<tmpl::list<NamedNoHelp>>(""),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "You must supply a help string of non-zero length for NoHelp"));
 #endif
 }
@@ -1103,7 +1132,7 @@ Options:
         opts.parse("FormatUnorderedMap: X");
         opts.get<FormatUnorderedMap>();
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert value to type {[int x0]: [double x0]}:"));
 
   {
@@ -1440,7 +1469,7 @@ void test_options_overlay() {
         parser.parse("Simple: 1");
         parser.overlay<tmpl::list<Simple>>("NotSimple: 2");
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 1 column 1:\nOption 'NotSimple' is not a valid option."));
 
   CHECK_THROWS_WITH(
@@ -1449,7 +1478,7 @@ void test_options_overlay() {
         parser.parse("Simple: 1");
         parser.overlay<tmpl::list<>>("Simple: 2");
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "At line 1 column 1:\nOption 'Simple' is not overlayable."));
 
   CHECK_THROWS_WITH(
@@ -1460,7 +1489,8 @@ void test_options_overlay() {
             "Simple: 2\n"
             "Simple: 2");
       }(),
-      Catch::Contains("At line 2 column 1:\nOption 'Simple' specified twice."));
+      Catch::Matchers::ContainsSubstring(
+          "At line 2 column 1:\nOption 'Simple' specified twice."));
 
   CHECK_THROWS_WITH(
       []() {
@@ -1473,8 +1503,9 @@ void test_options_overlay() {
             "  OuterGroupedTag: 2\n"
             "  OuterGroupedTag: 2");
       }(),
-      Catch::Contains("In group OuterGroup:\nAt line 3 column 3:\nOption "
-                      "'OuterGroupedTag' specified twice."));
+      Catch::Matchers::ContainsSubstring(
+          "In group OuterGroup:\nAt line 3 column 3:\nOption "
+          "'OuterGroupedTag' specified twice."));
 }
 
 void test_options_serialization() {
@@ -1588,7 +1619,7 @@ void test_load_and_check_yaml() {
   }
   CHECK_THROWS_WITH(
       []() { Options::detail::load_and_check_yaml("X: 1", true); }(),
-      Catch::Contains("Missing metadata"));
+      Catch::Matchers::ContainsSubstring("Missing metadata"));
   {
     const auto options = Options::detail::load_and_check_yaml(
         "---\n"
@@ -1613,7 +1644,7 @@ void test_load_and_check_yaml() {
             "X: 1\n",
             true);
       }(),
-      Catch::Contains("the running executable is"));
+      Catch::Matchers::ContainsSubstring("the running executable is"));
 }
 }  // namespace
 
