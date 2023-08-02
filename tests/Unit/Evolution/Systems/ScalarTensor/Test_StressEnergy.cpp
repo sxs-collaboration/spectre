@@ -14,7 +14,8 @@
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.ScalarTensor.StressEnergy", "[Unit][ScalarTensor]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.StressEnergy",
+                  "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ScalarTensor"};
 
