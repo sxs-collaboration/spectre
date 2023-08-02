@@ -12,6 +12,7 @@ spectre_target_sources(
   CheckH5PropertiesMatch.cpp
   Dat.cpp
   EosTable.cpp
+  ExtendConnectivityHelpers.cpp
   File.cpp
   Header.cpp
   Helpers.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   CheckH5PropertiesMatch.hpp
   Dat.hpp
   EosTable.hpp
+  ExtendConnectivityHelpers.hpp
   File.hpp
   Header.hpp
   Helpers.hpp
