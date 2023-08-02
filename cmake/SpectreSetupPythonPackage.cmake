@@ -173,6 +173,12 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       CXX__VISIBILITY_PRESET OFF
       VISIBLITY_INLINES_HIDDEN OFF
       )
+
+    if (TARGET SpectrePch)
+      target_precompile_headers(${ARG_LIBRARY_NAME} REUSE_FROM SpectrePch)
+      target_link_libraries(${ARG_LIBRARY_NAME} PRIVATE SpectrePchFlags)
+    endif()
+
     # In order to avoid runtime errors about missing compatibility functions
     # defined in the PythonBindings library, we need to link in the whole
     # archive. This is not needed on macOS.
