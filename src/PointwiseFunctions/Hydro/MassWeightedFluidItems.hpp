@@ -46,6 +46,16 @@ struct TildeDUnboundUtCriterion : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// Contains TildeD restricted to x>0 (if ObjectLabel = A)
+/// or x<0 (if ObjectLabel = B). This provides the
+/// normalization factor for integrals over the half plane
+/// weighted by tildeD
+template <typename DataType, ::domain::ObjectLabel Label>
+struct TildeDInHalfPlane : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() { return "TildeD" + domain::name(Label); }
+};
+
 /// Contains TildeD * (coordinates in frame Fr).
 /// Label allows us to restrict the data to the x>0 (A) or x<0 (B)
 /// plane in grid coordinates (useful for NSNS). Use ObjectLabel::None
@@ -85,6 +95,16 @@ void tilde_d_unbound_ut_criterion(
     const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
     const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
+
+/// Returns tilde_d in one half plane and zero in the other
+/// The output is set to 0 for x<0 if Label=::domain::ObjectLabel::A
+/// and for x>0 for label B, where x is the first component of the
+/// grid coordinates.
+template <domain::ObjectLabel Label, typename DataType, size_t Dim>
+void tilde_d_in_half_plane(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords);
 
 /// Returns tilde_d * compute_coords
 /// The output is set to 0 for x<0 if Label=::domain::ObjectLabel::A
@@ -161,6 +181,25 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
       const tnsr::ii<DataType, Dim, Fr>& spacial_metric,
       const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift)>(
       &tilde_d_unbound_ut_criterion<DataType, Dim, Fr>);
+};
+
+/// Compute tag for TildeD limited to the x>0 or x<0 half plane
+template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+          typename GridCoordsTag>
+struct TildeDInHalfPlaneCompute : TildeDInHalfPlane<DataType, Label>,
+                                  db::ComputeTag {
+  using argument_tags =
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD, GridCoordsTag>;
+
+  using return_type = Scalar<DataType>;
+
+  using base = TildeDInHalfPlane<DataType, Label>;
+
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<Scalar<DataType>*> result,
+      const Scalar<DataType>& tilde_d,
+      const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords)>(
+        &tilde_d_in_half_plane<Label, DataType, Dim>);
 };
 
 /// Compute item for TildeD * (coordinates in frame Fr).

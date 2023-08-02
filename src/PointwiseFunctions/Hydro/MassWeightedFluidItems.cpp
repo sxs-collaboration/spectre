@@ -50,6 +50,24 @@ void tilde_d_unbound_ut_criterion(
   result->get() = get(tilde_d) * step_function(-1.0 - result->get());
 }
 
+template <domain::ObjectLabel Label, typename DataType, size_t Dim>
+void tilde_d_in_half_plane(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords) {
+  get(*result) = get(tilde_d);
+  switch (Label) {
+    case ::domain::ObjectLabel::A:
+      get(*result) *= step_function(get<0>(grid_coords));
+      break;
+    case ::domain::ObjectLabel::B:
+      get(*result) *= step_function(get<0>(grid_coords) * (-1.0));
+      break;
+    default:
+      break;
+  }
+}
+
 template <domain::ObjectLabel Label, typename DataType, size_t Dim, typename Fr>
 void mass_weighted_coords(
     const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
@@ -99,6 +117,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #define OBJECT(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
+  template void tilde_d_in_half_plane<OBJECT(data)>(                        \
+      const gsl::not_null<Scalar<DataVector>*> result,                      \
+      const Scalar<DataVector>& tilde_d,                                    \
+      const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords);   \
   template void mass_weighted_coords<OBJECT(data)>(                         \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*> \
           result,                                                           \
