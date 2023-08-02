@@ -363,12 +363,6 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
-          # Test with Python 3.7 so that we retain backwards compatibility. We
-          # keep track of Python versions on supercomputers in this issue:
-          # https://github.com/sxs-collaboration/spectre/issues/442
-          - compiler: gcc-11
-            build_type: Debug
-            PYTHON_EXECUTABLE: /usr/bin/python3.7
           # Add a test without PCH to the build matrix, which only builds core
           # libraries. Building all the tests without the PCH takes very long
           # and the most we would catch is a missing include of something that's

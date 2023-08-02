@@ -58,7 +58,7 @@ spack:
   - libsharp -mpi -openmp
   - 'libxsmm@1.16.1:'
   - openblas
-  - 'python@3.7:'
+  - 'python@3.8:'
   - 'py-pybind11@2.6:'
   - yaml-cpp@0.6.3
   concretizer:
