@@ -9,13 +9,12 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace gh::AnalyticData {
+namespace gh::grmhd::AnalyticData {
 /// GRMHD analytic data wrapped for GH
-namespace grmhd {
+
 /// \brief List of all analytic data
 using all_analytic_data = tmpl::list<
     gh::Solutions::WrappedGr<::grmhd::AnalyticData::BondiHoyleAccretion>,
     gh::Solutions::WrappedGr<::grmhd::AnalyticData::MagnetizedFmDisk>,
     gh::Solutions::WrappedGr<::grmhd::AnalyticData::MagnetizedTovStar>>;
-}  // namespace grmhd
-}  // namespace gh::AnalyticData
+}  // namespace gh::grmhd::AnalyticData
