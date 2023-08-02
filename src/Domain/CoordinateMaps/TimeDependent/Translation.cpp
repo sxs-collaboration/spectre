@@ -13,13 +13,13 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "NumericalAlgorithms/RootFinding/RootBracketing.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -87,17 +87,7 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
              << ").");
   double radial_function_value = 1.0;
   if (f_of_r_ != nullptr) {
-    std::array<double, Dim> distance_to_center = target_coords;
-    double root_factor = 0.;
-    for (size_t i = 0; i < Dim; i++) {
-      // shifted center
-      gsl::at(distance_to_center, i) -= gsl::at(center_, i);
-      // root_factor needed for root_finder
-      root_factor +=
-          -2.0 * gsl::at(distance_to_center, i) * function_of_time[i];
-    }
-    const double root = root_finder(magnitude(distance_to_center),
-                                    sqrNorm(function_of_time), root_factor);
+    const double root = root_finder(target_coords - center_, function_of_time);
     radial_function_value = (*f_of_r_)(root);
   }
   for (size_t i = 0; i < Dim; i++) {
@@ -221,52 +211,36 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::coord_helper(
 }
 
 template <size_t Dim>
-double Translation<Dim>::root_finder(const double target_radius,
-                                     const double squared_function_of_time,
-                                     const double root_factor) const {
-  const double center_offset = sqrt(squared_function_of_time);
+double Translation<Dim>::root_finder(
+    const std::array<double, Dim>& distance_to_center,
+    const DataVector& function_of_time) const {
+  const double target_radius = magnitude(distance_to_center);
+  const double center_offset = norm(function_of_time);
   // These bounds come from the SpEC implementation
-  double lower_bound = (target_radius - center_offset) * (1.0 - 1.e-9);
-  double upper_bound = (target_radius + center_offset) * (1.0 + 1.e-9);
-  if (lower_bound < 0.) {
-    lower_bound = 0.;
+  double lower_bound_on_r = (target_radius - center_offset) * (1.0 - 1.e-9);
+  double upper_bound_on_r = (target_radius + center_offset) * (1.0 + 1.e-9);
+  if (lower_bound_on_r < 0.) {
+    lower_bound_on_r = 0.;
   }
-  // If the upper and lower bounds are < 0., then there's no need to find a root
-  // the root will be 0.
-  if (upper_bound <= 0.) {
-    return 0.;
-  }
-  double function_at_lower_bound = std::numeric_limits<double>::min();
-  double function_at_upper_bound = (*f_of_r_)(upper_bound);
-  // bracket function requires a function to return std::optionals
-  const auto radius_bracket_function =
-      [this, &target_radius, &squared_function_of_time,
-       &root_factor](const double x) -> std::optional<double> {
-    return square(target_radius) +
-           ((*f_of_r_)(x)) *
-               (root_factor + squared_function_of_time * (*f_of_r_)(x)) -
-           square(x);
-  };
-  if (radius_bracket_function(lower_bound).value() <=
-      std::numeric_limits<double>::min()) {
-    return lower_bound;
-  }
-  RootFinder::bracket_possibly_undefined_function_in_interval(
-      &lower_bound, &upper_bound, &function_at_lower_bound,
-      &function_at_upper_bound, radius_bracket_function);
   const double absolute_tol = std::numeric_limits<double>::epsilon() *
                               std::max(target_radius, center_offset);
   const double relative_tol = 2.0 * std::numeric_limits<double>::epsilon();
-  const auto wrapper = [this, &target_radius, &squared_function_of_time,
-                        &root_factor](const double x) {
-    return square(target_radius) +
-           ((*f_of_r_)(x)) *
-               (root_factor + squared_function_of_time * (*f_of_r_)(x)) -
-           square(x);
+  const auto wrapper = [this, &distance_to_center,
+                        &function_of_time](const double r_squared) {
+    // This form makes it clear that wrapper(0.0) <= 0.0, even with
+    // roundoff, so it is guaranteed that the lower end of the bracket
+    // is valid even when we have to correct for negative radii.
+    const double f_of_r = (*f_of_r_)(sqrt(r_squared));
+    double expression_to_zero = r_squared;
+    for (size_t i = 0; i < Dim; ++i) {
+      expression_to_zero -=
+          square(gsl::at(distance_to_center, i) - f_of_r * function_of_time[i]);
+    }
+    return expression_to_zero;
   };
-  return RootFinder::toms748(wrapper, lower_bound, upper_bound,
-                             function_at_lower_bound, function_at_upper_bound,
-                             absolute_tol, relative_tol);
+  return sqrt(RootFinder::toms748(wrapper, square(lower_bound_on_r),
+                                  square(upper_bound_on_r), absolute_tol,
+                                  relative_tol));
 }
 
 template <size_t Dim>
