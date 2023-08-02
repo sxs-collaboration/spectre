@@ -81,6 +81,8 @@ if (BUILD_DOCS AND DOCS_ONLY)
   return()
 endif()
 
+option(USE_PCH "Use precompiled headers" ON)
+
 include(SpectreInitializeVariables)
 
 include(CheckCompilerVersion)
@@ -142,7 +144,9 @@ include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
-include(SetupPch)
+if (USE_PCH)
+  include(SetupPch)
+endif()
 
 # All special targets and configs that need to be applied to *all*
 # executables must be added at once in the 'UpdateAddExecutables' file.

@@ -122,12 +122,15 @@ target_compile_definitions(Blaze
   )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  target_compile_options(Blaze
-    INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
   # CMake doesn't like function macros in target_compile_definitions, so we
   # have to define it separately. We also need to make sure csignal is
-  # included.
+  # included. It is included in the PCH (see tools/SpectrePch.hpp).
+  # If there's no PCH, we need to include it here.
+  if (NOT USE_PCH)
+    target_compile_options(Blaze
+      INTERFACE
+      "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
+  endif()
   target_compile_options(Blaze
     INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
