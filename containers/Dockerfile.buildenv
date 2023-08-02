@@ -309,16 +309,6 @@ RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update -y \
         -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
 
-# Also install our minimum required CMake version so we can test it on CI.
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
-    && tar -xzf cmake-3.18.2.tar.gz \
-    && cd cmake-3.18.2 \
-    && mkdir -p /opt/local/cmake/3.18.2 \
-    && ./bootstrap --prefix=/opt/local/cmake/3.18.2 \
-    && make $PARALLEL_MAKE_ARG\
-    && make install \
-    && cd .. && rm -rf cmake*
-
 # Install OpenMPI 4.0.3
 RUN apt-get install -y openmpi-bin
 
