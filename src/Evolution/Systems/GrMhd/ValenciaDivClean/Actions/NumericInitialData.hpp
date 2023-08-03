@@ -179,7 +179,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     });
   }
 
-  template <typename... AllTags>
+  template <typename... AllTags, size_t ThermodynamicDim>
   void set_initial_data(
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -192,8 +192,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
-      const EquationsOfState::EquationOfState<true, 1>& equation_of_state)
-      const {
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) const {
     // Rest mass density from dataset
     *rest_mass_density =
         std::move(get<hydro::Tags::RestMassDensity<DataVector>>(*numeric_data));
@@ -243,11 +243,27 @@ class NumericInitialData : public evolution::initial_data::InitialData {
         }
         get(*lorentz_factor)[i] = 1.;
       } else {
-        get(*specific_internal_energy)[i] =
-            get(equation_of_state.specific_internal_energy_from_density(
-                Scalar<double>(local_rest_mass_density)));
-        get(*pressure)[i] = get(equation_of_state.pressure_from_density(
-            Scalar<double>(local_rest_mass_density)));
+        if constexpr (ThermodynamicDim == 1) {
+          get(*specific_internal_energy)[i] =
+              get(equation_of_state.specific_internal_energy_from_density(
+                  Scalar<double>(local_rest_mass_density)));
+          get(*pressure)[i] = get(equation_of_state.pressure_from_density(
+              Scalar<double>(local_rest_mass_density)));
+        } else if constexpr (ThermodynamicDim == 2) {
+          get(*specific_internal_energy)[i] =
+              get(equation_of_state
+                      .specific_internal_energy_from_density_and_temperature(
+                          Scalar<double>(local_rest_mass_density),
+                          Scalar<double>(0.)));
+          get(*pressure)[i] =
+              get(equation_of_state.pressure_from_density_and_energy(
+                  Scalar<double>(local_rest_mass_density),
+                  Scalar<double>(get(*specific_internal_energy)[i])));
+        } else {
+          ERROR(
+              "Only 1d & 2d EOSes implemented for numerical initial data right "
+              "now");
+        }
         get(*specific_enthalpy)[i] = get(hydro::relativistic_specific_enthalpy(
             Scalar<double>(local_rest_mass_density),
             Scalar<double>(get(*specific_internal_energy)[i]),

@@ -19,14 +19,15 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-#include "Parallel/Printf.hpp"
-
 namespace grmhd::AnalyticData {
 
-SpecInitialData::SpecInitialData(
+template <size_t ThermodynamicDim>
+SpecInitialData<ThermodynamicDim>::SpecInitialData(
     std::string data_directory,
     std::unique_ptr<equation_of_state_type> equation_of_state,
     const double density_cutoff, const double electron_fraction)
@@ -38,12 +39,15 @@ SpecInitialData::SpecInitialData(
           sys::procs_on_node(sys::my_node()), data_directory_,
           vars_to_interpolate_)) {}
 
-SpecInitialData::SpecInitialData(const SpecInitialData& rhs)
+template <size_t ThermodynamicDim>
+SpecInitialData<ThermodynamicDim>::SpecInitialData(const SpecInitialData& rhs)
     : evolution::initial_data::InitialData(rhs) {
   *this = rhs;
 }
 
-SpecInitialData& SpecInitialData::operator=(const SpecInitialData& rhs) {
+template <size_t ThermodynamicDim>
+SpecInitialData<ThermodynamicDim>& SpecInitialData<ThermodynamicDim>::operator=(
+    const SpecInitialData& rhs) {
   data_directory_ = rhs.data_directory_;
   equation_of_state_ = rhs.equation_of_state_->get_clone();
   density_cutoff_ = rhs.density_cutoff_;
@@ -54,14 +58,18 @@ SpecInitialData& SpecInitialData::operator=(const SpecInitialData& rhs) {
   return *this;
 }
 
+template <size_t ThermodynamicDim>
 std::unique_ptr<evolution::initial_data::InitialData>
-SpecInitialData::get_clone() const {
+SpecInitialData<ThermodynamicDim>::get_clone() const {
   return std::make_unique<SpecInitialData>(*this);
 }
 
-SpecInitialData::SpecInitialData(CkMigrateMessage* msg) : InitialData(msg) {}
+template <size_t ThermodynamicDim>
+SpecInitialData<ThermodynamicDim>::SpecInitialData(CkMigrateMessage* msg)
+    : InitialData(msg) {}
 
-void SpecInitialData::pup(PUP::er& p) {
+template <size_t ThermodynamicDim>
+void SpecInitialData<ThermodynamicDim>::pup(PUP::er& p) {
   InitialData::pup(p);
   p | data_directory_;
   p | equation_of_state_;
@@ -74,19 +82,23 @@ void SpecInitialData::pup(PUP::er& p) {
   }
 }
 
-PUP::able::PUP_ID SpecInitialData::my_PUP_ID = 0;
+template <size_t ThermodynamicDim>
+PUP::able::PUP_ID SpecInitialData<ThermodynamicDim>::my_PUP_ID = 0;
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<
-    typename SpecInitialData::interpolated_tags<DataType>>
-SpecInitialData::interpolate_from_spec(const tnsr::I<DataType, 3>& x) const {
+tuples::tagged_tuple_from_typelist<typename SpecInitialData<
+    ThermodynamicDim>::template interpolated_tags<DataType>>
+SpecInitialData<ThermodynamicDim>::interpolate_from_spec(
+    const tnsr::I<DataType, 3>& x) const {
   return gr::AnalyticData::interpolate_from_spec<interpolated_tags<DataType>>(
       make_not_null(spec_exporter_.get()), x,
       static_cast<size_t>(sys::my_local_rank()));
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> specific_internal_energy,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::SpecificInternalEnergy<DataType> /*meta*/) const {
@@ -99,15 +111,24 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
     if (local_rest_mass_density <= density_cutoff) {
       get_element(get(*specific_internal_energy), i) = 0.;
     } else {
-      get_element(get(*specific_internal_energy), i) =
-          get(eos.specific_internal_energy_from_density(
-              Scalar<double>(local_rest_mass_density)));
+      if constexpr (ThermodynamicDim == 1) {
+        get_element(get(*specific_internal_energy), i) =
+            get(eos.specific_internal_energy_from_density(
+                Scalar<double>(local_rest_mass_density)));
+      } else if constexpr (ThermodynamicDim == 2) {
+        get_element(get(*specific_internal_energy), i) =
+            get(eos.specific_internal_energy_from_density_and_temperature(
+                Scalar<double>(local_rest_mass_density), Scalar<double>(0.)));
+      } else {
+        ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
+      }
     }
   }
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> pressure,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::Pressure<DataType> /*meta*/) const {
@@ -120,14 +141,27 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
     if (local_rest_mass_density <= density_cutoff) {
       get_element(get(*pressure), i) = 0.;
     } else {
-      get_element(get(*pressure), i) = get(
-          eos.pressure_from_density(Scalar<double>(local_rest_mass_density)));
+      if constexpr (ThermodynamicDim == 1) {
+        get_element(get(*pressure), i) = get(
+            eos.pressure_from_density(Scalar<double>(local_rest_mass_density)));
+      } else if constexpr (ThermodynamicDim == 2) {
+        get_element(get(*pressure), i) =
+            get(eos.pressure_from_density_and_energy(
+                Scalar<double>(local_rest_mass_density),
+                Scalar<double>(get(
+                    eos.specific_internal_energy_from_density_and_temperature(
+                        Scalar<double>(local_rest_mass_density),
+                        Scalar<double>(0.))))));
+      } else {
+        ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
+      }
     }
   }
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
     const gsl::not_null<Cache*> cache,
     hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const {
@@ -153,8 +187,9 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
   }
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3>*> inv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const {
@@ -165,8 +200,9 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
                           spatial_metric);
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*>
         lorentz_factor_times_spatial_velocity,
     const gsl::not_null<Cache*> cache,
@@ -180,8 +216,9 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
                        inv_spatial_metric);
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lorentz_factor,
     const gsl::not_null<Cache*> cache,
     hydro::Tags::LorentzFactor<DataType> /*meta*/) const {
@@ -193,8 +230,9 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
   get(*lorentz_factor) = sqrt(1.0+get(*lorentz_factor));
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
     const gsl::not_null<Cache*> cache,
     hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const {
@@ -207,8 +245,9 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
   }
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> electron_fraction,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::ElectronFraction<DataType> /*meta*/) const {
@@ -216,29 +255,42 @@ void SpecInitialData::VariablesComputer<DataType>::operator()(
             constant_electron_fraction);
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
   std::fill(magnetic_field->begin(), magnetic_field->end(), 0.);
 }
 
+template <size_t ThermodynamicDim>
 template <typename DataType>
-void SpecInitialData::VariablesComputer<DataType>::operator()(
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> div_cleaning_field,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::DivergenceCleaningField<DataType> /*meta*/) const {
   get(*div_cleaning_field) = 0.;
 }
 
-template tuples::tagged_tuple_from_typelist<
-    typename SpecInitialData::interpolated_tags<double>>
-SpecInitialData::interpolate_from_spec(const tnsr::I<double, 3>& x) const;
-template tuples::tagged_tuple_from_typelist<
-    typename SpecInitialData::interpolated_tags<DataVector>>
-SpecInitialData::interpolate_from_spec(const tnsr::I<DataVector, 3>& x) const;
-template class SpecInitialData::VariablesComputer<double>;
-template class SpecInitialData::VariablesComputer<DataVector>;
+#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
+#define INSTANTIATION(r, data)                                                \
+  template class SpecInitialData<THERMODIM(data)>;                            \
+  template tuples::tagged_tuple_from_typelist<typename SpecInitialData<       \
+      THERMODIM(data)>::template interpolated_tags<double>>                   \
+  SpecInitialData<THERMODIM(data)>::interpolate_from_spec(                    \
+      const tnsr::I<double, 3>& x) const;                                     \
+  template tuples::tagged_tuple_from_typelist<typename SpecInitialData<       \
+      THERMODIM(data)>::template interpolated_tags<DataVector>>               \
+  SpecInitialData<THERMODIM(data)>::interpolate_from_spec(                    \
+      const tnsr::I<DataVector, 3>& x) const;                                 \
+  template class SpecInitialData<THERMODIM(data)>::VariablesComputer<double>; \
+  template class SpecInitialData<THERMODIM(                                   \
+      data)>::VariablesComputer<DataVector>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+#undef THERMODIM
 }  // namespace grmhd::AnalyticData

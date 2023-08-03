@@ -234,8 +234,10 @@
 // Check if SpEC is linked and therefore we can load SpEC initial data
 #ifdef HAS_SPEC_EXPORTER
 #include "PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp"
-using SpecInitialData = grmhd::AnalyticData::SpecInitialData;
+template <size_t ThermodynamicDim>
+using SpecInitialData = grmhd::AnalyticData::SpecInitialData<ThermodynamicDim>;
 #else
+template <size_t ThermodynamicDim>
 using SpecInitialData = NoSuchType;
 #endif
 
@@ -261,11 +263,7 @@ struct get_thermodynamic_dim;
 
 template <typename InitialData>
 struct get_thermodynamic_dim<InitialData, true> {
-  // Use a relativistic 1D EOS for numeric initial data for now. This assumption
-  // can be removed once we have an EOS base class that's agnostic to the
-  // thermodynamic dimension (alternatively the thermodynamic dimension could be
-  // specified as a template parameter to the metavariables, but that's not
-  // great because we have to compile separate executables for 1D and 2D EOS).
+  // Controls the thermodynamic dim used for numeric initial data.
   static constexpr size_t value = 1;
 };
 
@@ -578,15 +576,17 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
-        tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::conditional_t<
-                       use_numeric_initial_data,
-                       tmpl::flatten<tmpl::list<
-                           grmhd::GhValenciaDivClean::NumericInitialData,
-                           tmpl::conditional_t<
-                               std::is_same_v<SpecInitialData, NoSuchType>,
-                               tmpl::list<>, SpecInitialData>>>,
-                       initial_data_list>>,
+        tmpl::pair<
+            evolution::initial_data::InitialData,
+            tmpl::conditional_t<
+                use_numeric_initial_data,
+                tmpl::flatten<tmpl::list<
+                    grmhd::GhValenciaDivClean::NumericInitialData,
+                    tmpl::conditional_t<
+                        std::is_same_v<SpecInitialData<thermodynamic_dim>,
+                                       NoSuchType>,
+                        tmpl::list<>, SpecInitialData<thermodynamic_dim>>>>,
+                initial_data_list>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,

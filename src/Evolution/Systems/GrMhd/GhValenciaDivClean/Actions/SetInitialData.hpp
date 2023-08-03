@@ -122,7 +122,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     hydro_numeric_id_.select_for_import(fields);
   }
 
-  template <typename... AllTags>
+  template <typename... AllTags, size_t ThermodynamicDim>
   void set_initial_data(
       const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
       const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
@@ -140,8 +140,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const EquationsOfState::EquationOfState<true, 1>& equation_of_state)
-      const {
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) const {
     gh_numeric_id_.set_initial_data(spacetime_metric, pi, phi, numeric_data,
                                     mesh, inv_jacobian);
     const auto spatial_metric = gr::spatial_metric(*spacetime_metric);
