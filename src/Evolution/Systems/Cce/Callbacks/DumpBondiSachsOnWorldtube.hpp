@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <iomanip>
 #include <iterator>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +21,8 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "IO/Observer/Actions/GetLockPointer.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -242,10 +245,24 @@ struct DumpBondiSachsOnWorldtube
                               << data_to_write_buffer.size() << ") for tag "
                               << db::tag_name<typename tag::tag>());
 
-            observers::ThreadedActions::ReductionActions_detail::write_data(
-                subfile_name, observers::input_source_from_cache(cache), legend,
-                std::make_tuple(data_to_write_buffer), filename,
-                std::index_sequence<0>{});
+            // Even though no other cores should be writing to this file, we
+            // still need to get the h5 file lock so the system hdf5 doesn't get
+            // upset
+            auto* hdf5_lock =
+                Parallel::local_branch(
+                    Parallel::get_parallel_component<
+                        observers::ObserverWriter<Metavariables>>(cache))
+                    ->template local_synchronous_action<
+                        observers::Actions::GetLockPointer<
+                            observers::Tags::H5FileLock>>();
+
+            {
+              const std::lock_guard lock(*hdf5_lock);
+              observers::ThreadedActions::ReductionActions_detail::write_data(
+                  subfile_name, observers::input_source_from_cache(cache),
+                  legend, std::make_tuple(data_to_write_buffer), filename,
+                  std::index_sequence<0>{});
+            }
           });
     }
   }
