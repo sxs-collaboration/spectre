@@ -53,7 +53,7 @@ include(SpectreSetSiteName)
 
 # We need Python in the build system and throughout the code. Setting it up
 # early so we can rely on a consistent Python version in the build system.
-find_package(Python 3.7 REQUIRED)
+find_package(Python 3.8 REQUIRED)
 
 # Define the location of Python code in the build directory. Unit tests etc. can
 # add this location to their `PYTHONPATH`.

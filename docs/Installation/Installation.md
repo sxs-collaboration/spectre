@@ -85,7 +85,7 @@ all of these dependencies.
   \cite Libxsmm
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 or later.
   Building with shared library support is also recommended. \cite Yamlcpp
-* [Python](https://www.python.org/) 3.7 or later.
+* [Python](https://www.python.org/) 3.8 or later.
 * Python dependencies listed in `support/Python/requirements.txt`.
   Install with `pip3 install -r support/Python/requirements.txt`.
   Make sure you are working in a [Python venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
