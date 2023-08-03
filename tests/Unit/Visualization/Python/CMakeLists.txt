@@ -52,6 +52,14 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None)
 
+if(${BUILD_PYTHON_BINDINGS})
+  set_tests_properties(
+    "Unit.Visualization.Python.Render1D"
+    PROPERTIES
+    TIMEOUT 10
+  )
+endif()
+
 spectre_add_python_bindings_test(
   "Unit.Visualization.Python.InterpolateToCoords"
   Test_InterpolateToCoords.py
