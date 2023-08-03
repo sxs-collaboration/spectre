@@ -298,8 +298,8 @@ void check_block_face_grid_points_align(
     // block.
     // There is also a sign flip if the mapped upper direction becomes a lower
     // direction
-    if (dth_upper_direction_in_neighbor_frame.side() == Side::Lower xor
-        d == direction.dimension()) {
+    if ((dth_upper_direction_in_neighbor_frame.side() == Side::Lower) xor
+        (d == direction.dimension())) {
       xi_neighbor[dth_upper_direction_in_neighbor_frame.dimension()] *= -1.0;
     }
   }
