@@ -52,8 +52,8 @@
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/GhostData.hpp"
-#include "Evolution/Systems/ScalarAdvection/Subcell/InitialDataTci.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/NeighborPackagedData.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnFdGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
@@ -316,20 +316,24 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
 
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<
-              evolution::dg::subcell::Actions::Initialize<
-                  volume_dim, system,
-                  ScalarAdvection::subcell::DgInitialDataTci<volume_dim>>,
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, false>,
               Initialization::Actions::AddSimpleTags<
                   ScalarAdvection::subcell::VelocityAtFace<volume_dim>>,
-              Actions::MutateApply<
-                  ScalarAdvection::subcell::SetInitialRdmpData<volume_dim>>>,
-          tmpl::list<>>,
+              evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+                  volume_dim,
+                  ScalarAdvection::subcell::SetInitialRdmpData<volume_dim>>,
+              evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+                  volume_dim, system,
+                  ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
+              evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+                  volume_dim, system>>,
+          tmpl::list<evolution::Initialization::Actions::SetVariables<
+              domain::Tags::Coordinates<Dim, Frame::ElementLogical>>>>,
 
       Initialization::Actions::AddComputeTags<
           tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,

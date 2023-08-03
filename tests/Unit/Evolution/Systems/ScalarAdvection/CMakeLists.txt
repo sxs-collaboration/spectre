@@ -11,8 +11,8 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_Tag.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_GhostData.cpp
-  Subcell/Test_InitialDataTci.cpp
   Subcell/Test_NeighborPackagedData.cpp
+  Subcell/Test_SetInitialRdmpData.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
   Subcell/Test_TciOptions.cpp

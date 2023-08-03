@@ -71,11 +71,11 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/SetVariablesNeededFixingToFalse.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/GrTagsForHydro.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/InitialDataTci.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/PrimitiveGhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/PrimsAfterRollback.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ResizeAndComputePrimitives.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SwapGrTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnFdGrid.hpp"
@@ -491,19 +491,12 @@ struct EvolutionMetavars {
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
       Initialization::Actions::ConservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<3, Frame::ElementLogical>>,
-      parameterized_deleptonization,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<volume_dim>>,
-      Actions::UpdateConservatives,
 
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<
-              evolution::dg::subcell::Actions::Initialize<
-                  volume_dim, system,
-                  grmhd::ValenciaDivClean::subcell::DgInitialDataTci>,
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, false>,
               Initialization::Actions::AddSimpleTags<
                   Initialization::subcell::GrTagsForHydro<system, volume_dim>,
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
@@ -513,9 +506,29 @@ struct EvolutionMetavars {
               VariableFixing::Actions::FixVariables<
                   VariableFixing::FixToAtmosphere<volume_dim>>,
               Actions::UpdateConservatives,
+              evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+                  volume_dim,
+                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>,
+              evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+                  volume_dim, system,
+                  grmhd::ValenciaDivClean::subcell::TciOnFdGrid>,
+              evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+                  volume_dim, system>,
               Actions::MutateApply<
-                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
-          tmpl::list<>>,
+                  grmhd::ValenciaDivClean::subcell::SwapGrTags>,
+              Actions::MutateApply<
+                  grmhd::ValenciaDivClean::subcell::ResizeAndComputePrims<
+                      ordered_list_of_primitive_recovery_schemes>>,
+              parameterized_deleptonization,
+              VariableFixing::Actions::FixVariables<
+                  VariableFixing::FixToAtmosphere<volume_dim>>,
+              Actions::UpdateConservatives>,
+          tmpl::list<evolution::Initialization::Actions::SetVariables<
+                         domain::Tags::Coordinates<3, Frame::ElementLogical>>,
+                     parameterized_deleptonization,
+                     VariableFixing::Actions::FixVariables<
+                         VariableFixing::FixToAtmosphere<volume_dim>>,
+                     Actions::UpdateConservatives>>,
 
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,

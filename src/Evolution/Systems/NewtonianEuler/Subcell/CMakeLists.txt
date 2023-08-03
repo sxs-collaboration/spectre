@@ -4,10 +4,10 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  InitialDataTci.cpp
   PrimitiveGhostData.cpp
   PrimsAfterRollback.cpp
   ResizeAndComputePrimitives.cpp
+  SetInitialRdmpData.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
@@ -17,11 +17,11 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ComputeFluxes.hpp
-  InitialDataTci.hpp
   NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
+  SetInitialRdmpData.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp

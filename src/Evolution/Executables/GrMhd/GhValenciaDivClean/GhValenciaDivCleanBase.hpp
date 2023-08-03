@@ -47,6 +47,7 @@
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DgSubcell/TwoMeshRdmpTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
@@ -58,6 +59,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
+#include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
@@ -84,7 +86,6 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiFromGauge.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/InitialDataTci.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/PrimitiveGhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/PrimsAfterRollback.hpp"
@@ -102,7 +103,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/SetVariablesNeededFixingToFalse.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Tags/Filter.hpp"
@@ -316,16 +317,24 @@ struct GhValenciaDivCleanDefaults {
       tmpl::conditional_t<
           UseDgSubcell,
           tmpl::list<
-              evolution::dg::subcell::Actions::Initialize<
-                  volume_dim, system,
-                  grmhd::GhValenciaDivClean::subcell::DgInitialDataTci>,
               Initialization::Actions::AddSimpleTags<
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
+
+              evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
+                  volume_dim,
+                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>,
+              evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
+                  volume_dim, system,
+                  grmhd::GhValenciaDivClean::subcell::TciOnFdGrid>,
+              evolution::dg::subcell::Actions::SetInitialGridFromTciData<
+                  volume_dim, system>,
+              Actions::MutateApply<
+                  grmhd::GhValenciaDivClean::subcell::ResizeAndComputePrims<
+                      ordered_list_of_primitive_recovery_schemes>>,
+
               VariableFixing::Actions::FixVariables<
                   VariableFixing::FixToAtmosphere<volume_dim>>,
-              Actions::UpdateConservatives,
-              Actions::MutateApply<
-                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
+              Actions::UpdateConservatives>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 
@@ -507,7 +516,9 @@ struct GhValenciaDivCleanTemplateBase<
                   volume_dim, Frame::ElementLogical, Frame::Inertial>,
               evolution::dg::subcell::Tags::
                   ObserverJacobianAndDetInvJacobianCompute<
-                      volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              evolution::dg::subcell::Tags::ObserverMeshVelocityCompute<
+                  volume_dim>>,
           tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                      ::Events::Tags::ObserverInverseJacobianCompute<
                          volume_dim, Frame::ElementLogical, Frame::Inertial>,
@@ -742,10 +753,14 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::dg::Initialization::Domain<3, use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
-      std::conditional_t<
-          use_numeric_initial_data, tmpl::list<>,
-          evolution::Initialization::Actions::SetVariables<
-              ::domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<evolution::dg::subcell::Actions::SetSubcellGrid<
+              volume_dim, system, use_numeric_initial_data>>,
+          tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
+                              evolution::Initialization::Actions::SetVariables<
+                                  ::domain::Tags::Coordinates<
+                                      volume_dim, Frame::ElementLogical>>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase, local_time_stepping>>,

@@ -24,23 +24,6 @@ class Variables;
 /// \endcond
 
 namespace Burgers::subcell {
-/*!
- * \brief The troubled-cell indicator run on DG initial data to see if we need
- * to switch to subcell.
- *
- * Uses the two-mesh relaxed discrete maximum principle as well as the Persson
- * TCI applied to \f$U\f$.
- */
-struct DgInitialDataTci {
-  using argument_tags =
-      tmpl::list<domain::Tags::Mesh<1>, evolution::dg::subcell::Tags::Mesh<1>>;
-
-  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
-      const Variables<tmpl::list<Burgers::Tags::U>>& dg_vars,
-      double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-      const Mesh<1>& dg_mesh, const Mesh<1>& subcell_mesh);
-};
-
 /// \brief Sets the initial RDMP data.
 ///
 /// Used on the subcells after the TCI marked the DG solution as inadmissible.
