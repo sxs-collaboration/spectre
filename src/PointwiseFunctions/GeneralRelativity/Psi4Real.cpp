@@ -7,9 +7,6 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/CoordinateMaps/Tags.hpp"
-#include "Domain/ElementMap.hpp"
-#include "Domain/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
