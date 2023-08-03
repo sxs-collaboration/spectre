@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Sources.cpp
   Test_StressEnergy.cpp
   Test_Tags.cpp
+  Test_TimeDerivative.cpp
   )
 
 add_test_library(

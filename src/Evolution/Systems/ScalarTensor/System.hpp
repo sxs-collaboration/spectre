@@ -9,6 +9,8 @@
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/ScalarTensor/Characteristics.hpp"
+#include "Evolution/Systems/ScalarTensor/Tags.hpp"
+#include "Evolution/Systems/ScalarTensor/TimeDerivative.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -81,6 +83,7 @@ struct System {
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed<>;
 
+  using compute_volume_time_derivative_terms = ScalarTensor::TimeDerivative;
   using inverse_spatial_metric_tag =
       typename gh_system::inverse_spatial_metric_tag;
 };

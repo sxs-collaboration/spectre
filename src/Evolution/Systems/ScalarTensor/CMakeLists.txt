@@ -9,6 +9,8 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   StressEnergy.cpp
+  TimeDerivative.cpp
+  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +21,7 @@ spectre_target_headers(
   StressEnergy.hpp
   System.hpp
   Tags.hpp
+  TimeDerivative.hpp
   )
 
 target_link_libraries(
