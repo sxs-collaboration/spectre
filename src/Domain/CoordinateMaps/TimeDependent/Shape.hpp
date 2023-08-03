@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_set>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
@@ -195,9 +196,14 @@ class Shape {
   static bool is_identity() { return false; }
   static constexpr size_t dim = 3;
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   std::string shape_f_of_t_name_;
   std::optional<std::string> size_f_of_t_name_;
+  std::unordered_set<std::string> f_of_t_names_;
   std::array<double, 3> center_{};
   size_t l_max_ = 2;
   size_t m_max_ = 2;

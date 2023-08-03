@@ -180,6 +180,10 @@ void test_single_coordinate_map() {
   CHECK_FALSE(affine1d_base->jacobian_is_time_dependent());
   CHECK_FALSE(affine1d_base->inv_jacobian_is_time_dependent());
 
+  CHECK(affine1d.function_of_time_names().empty());
+  CHECK(affine1d_base->function_of_time_names().empty());
+  CHECK(affine1d_base_from_inertial->function_of_time_names().empty());
+
   using rotate2d = CoordinateMaps::Rotation<2>;
 
   const auto first_rotated2d = rotate2d{M_PI_4};
@@ -242,6 +246,10 @@ void test_single_coordinate_map() {
   CHECK_FALSE(rotated2d.jacobian_is_time_dependent());
   CHECK_FALSE(rotated2d_base->jacobian_is_time_dependent());
   CHECK_FALSE(rotated2d_base->inv_jacobian_is_time_dependent());
+
+  CHECK(rotated2d.function_of_time_names().empty());
+  CHECK(rotated2d_base->function_of_time_names().empty());
+  CHECK(rotated2d_base_from_inertial->function_of_time_names().empty());
 
   using rotate3d = CoordinateMaps::Rotation<3>;
 
@@ -310,6 +318,10 @@ void test_single_coordinate_map() {
   CHECK_FALSE(rotated3d.jacobian_is_time_dependent());
   CHECK_FALSE(rotated3d_base->jacobian_is_time_dependent());
   CHECK_FALSE(rotated3d_base->inv_jacobian_is_time_dependent());
+
+  CHECK(rotated3d.function_of_time_names().empty());
+  CHECK(rotated3d_base->function_of_time_names().empty());
+  CHECK(rotated3d_base_from_inertial->function_of_time_names().empty());
 }
 
 void test_coordinate_map_with_affine_map() {
@@ -945,6 +957,9 @@ void test_coordinate_maps_are_identity() {
   CHECK_FALSE(giant_identity_map_base->inv_jacobian_is_time_dependent());
   CHECK_FALSE(giant_identity_map_base->jacobian_is_time_dependent());
 
+  CHECK(giant_identity_map.function_of_time_names().empty());
+  CHECK(giant_identity_map_base->function_of_time_names().empty());
+
   const auto wedge = make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
       CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true));
   const auto wedge_composed_with_giant_identity =
@@ -1102,6 +1117,11 @@ void test_time_dependent_map() {
   CHECK(time_dependent_map_first.jacobian_is_time_dependent());
   CHECK(time_dependent_map_second.inv_jacobian_is_time_dependent());
   CHECK(time_dependent_map_second.jacobian_is_time_dependent());
+
+  CHECK(time_dependent_map_first.function_of_time_names().count(
+            "Translation") == 1);
+  CHECK(time_dependent_map_second.function_of_time_names().count(
+            "Translation") == 1);
 
   const tnsr::I<double, 1, Frame::BlockLogical> tnsr_double_logical{{{3.2}}};
   const tnsr::I<DataVector, 1, Frame::BlockLogical> tnsr_datavector_logical{
@@ -1337,7 +1357,7 @@ void test_coords_frame_velocity_jacobians() {
   using trans_map_3d = CoordinateMaps::TimeDependent::Translation<3>;
 
   const double initial_time = 0.0;
-  const double final_time   = 2.0;
+  const double final_time = 2.0;
   const double time = 2.0;
   constexpr size_t deriv_order = 3;
 

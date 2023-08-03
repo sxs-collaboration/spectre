@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -214,12 +215,17 @@ class Rotation {
 
   static bool is_identity() { return false; }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const Rotation<LocalDim>& lhs,
                          const Rotation<LocalDim>& rhs);
   std::string f_of_t_name_;
+  std::unordered_set<std::string> f_of_t_names_;
 };
 
 template <size_t Dim>

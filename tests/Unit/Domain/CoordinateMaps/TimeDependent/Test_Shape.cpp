@@ -224,6 +224,13 @@ void generate_random_map_time_and_f_of_time(
       center, l_max, m_max,
       std::make_unique<TransitionFunction>(transition_func), shape_f_of_t_name,
       lambda_00_coef.has_value() ? size_f_of_t_name : std::nullopt);
+  const auto& function_of_time_names = map->function_of_time_names();
+  const size_t expected_size = lambda_00_coef.has_value() ? 2_st : 1_st;
+  CHECK(function_of_time_names.size() == expected_size);
+  CHECK(function_of_time_names.count("Shape") == 1);
+  if (lambda_00_coef.has_value()) {
+    CHECK(function_of_time_names.count("Size") == 1);
+  }
   // Choose a random time for evaluating the FunctionOfTime
   std::uniform_real_distribution<double> time_dist{-1.0, 1.0};
   *time = time_dist(*generator);

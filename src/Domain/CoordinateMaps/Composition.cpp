@@ -17,7 +17,9 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::Composition(
     std::unique_ptr<
         CoordinateMapBase<tmpl::at<frames, tmpl::size_t<Is>>,
                           tmpl::at<frames, tmpl::size_t<Is + 1>>, Dim>>... maps)
-    : maps_{std::move(maps)...} {}
+    : maps_{std::move(maps)...},
+      function_of_time_names_(CoordinateMap_detail::initialize_names(
+          maps_, std::index_sequence<Is...>{})) {}
 
 template <typename Frames, size_t Dim, size_t... Is>
 Composition<Frames, Dim, std::index_sequence<Is...>>&
@@ -166,6 +168,12 @@ void Composition<Frames, Dim, std::index_sequence<Is...>>::pup(PUP::er& p) {
   // whenever possible. See `Domain` docs for details.
   if (version >= 0) {
     p | maps_;
+  }
+
+  // No need to pup this because it is uniquely determined by the maps
+  if (p.isUnpacking()) {
+    function_of_time_names_ = CoordinateMap_detail::initialize_names(
+        maps_, std::index_sequence<Is...>{});
   }
 }
 
@@ -350,10 +358,8 @@ template <typename Frames, size_t Dim, size_t... Is>
 bool Composition<Frames, Dim, std::index_sequence<Is...>>::is_equal_to(
     const CoordinateMapBase<SourceFrame, TargetFrame, Dim>& other) const {
   const auto& cast_of_other = dynamic_cast<const Composition&>(other);
-  bool result = true;
-  EXPAND_PACK_LEFT_TO_RIGHT(
-      (result = result and (*get<Is>(maps_) == *get<Is>(cast_of_other.maps_))));
-  return result;
+
+  return (... and (*get<Is>(maps_) == *get<Is>(cast_of_other.maps_)));
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

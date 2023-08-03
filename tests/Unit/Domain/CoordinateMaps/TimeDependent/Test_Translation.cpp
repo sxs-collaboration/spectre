@@ -68,12 +68,20 @@ void test_translation() {
       std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
           amplitude, width, gauss_center),
       center};
+  const auto check_names = [](const auto& names) {
+    CHECK(names.size() == 1);
+    CHECK(names.count("translation") == 1);
+  };
+  check_names(translation_map.function_of_time_names());
+  check_names(radial_translation_map.function_of_time_names());
   // test serialized/deserialized map
   MathFunctions::register_derived_with_charm();
   const auto translation_map_deserialized =
       serialize_and_deserialize(translation_map);
   const auto radial_translation_map_deserialized =
       serialize_and_deserialize(radial_translation_map);
+  check_names(translation_map_deserialized.function_of_time_names());
+  check_names(radial_translation_map_deserialized.function_of_time_names());
 
   while (t < final_time) {
     std::array<double, Dim> translation{};

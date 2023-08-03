@@ -11,6 +11,7 @@
 #include <pup_stl.h>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -36,10 +37,6 @@ double lambda00_y00(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
   return functions_of_time.at(f_of_t_name)->func(time)[0][0] * 0.25 *
          M_2_SQRTPI;
 }
@@ -50,10 +47,6 @@ double dt_lambda00_y00(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
   return functions_of_time.at(f_of_t_name)->func_and_deriv(time)[1][0] * 0.25 *
          M_2_SQRTPI;
 }
@@ -136,6 +129,7 @@ SphericalCompression<InteriorMap>::SphericalCompression(
     std::string function_of_time_name, const double min_radius,
     const double max_radius, const std::array<double, 3>& center)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       min_radius_(min_radius),
       max_radius_(max_radius),
       center_(center) {
@@ -296,6 +290,12 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) {
     p | max_radius_;
     p | center_;
   }
+
+  // No need to pup this because it is uniquely determined by f_of_t_name_
+  if (p.isUnpacking()) {
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(f_of_t_name_);
+  }
 }
 
 #define INTERIOR_MAP(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -354,6 +354,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
 GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false))
 #undef INTERIOR_MAP
 #undef INSTANTIATE
-
 
 }  // namespace domain::CoordinateMaps::TimeDependent

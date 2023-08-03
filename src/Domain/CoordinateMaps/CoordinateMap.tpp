@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -25,25 +26,73 @@
 #include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 namespace domain {
+namespace CoordinateMap_detail {
+CREATE_IS_CALLABLE(function_of_time_names)
+CREATE_IS_CALLABLE_V(function_of_time_names)
+
+template <typename T>
+struct map_type {
+  using type = T;
+};
+
+template <typename T>
+struct map_type<std::unique_ptr<T>> {
+  using type = T;
+};
+
+template <typename T>
+using map_type_t = typename map_type<T>::type;
+
+template <typename... Maps, size_t... Is>
+std::unordered_set<std::string> initialize_names(
+    const std::tuple<Maps...>& maps, std::index_sequence<Is...> /*meta*/) {
+  std::unordered_set<std::string> function_of_time_names{};
+  const auto add_names = [&function_of_time_names, &maps](auto index) {
+    const auto& map = std::get<decltype(index)::value>(maps);
+    using TupleMap = std::decay_t<decltype(map)>;
+    constexpr bool map_is_unique_ptr = tt::is_a_v<std::unique_ptr, TupleMap>;
+    using Map = map_type_t<TupleMap>;
+    if constexpr (is_function_of_time_names_callable_v<Map>) {
+      if constexpr (map_is_unique_ptr) {
+        const auto& names = map->function_of_time_names();
+        function_of_time_names.insert(names.begin(), names.end());
+      } else {
+        const auto& names = map.function_of_time_names();
+        function_of_time_names.insert(names.begin(), names.end());
+      }
+    } else {
+      (void)function_of_time_names;
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(add_names(std::integral_constant<size_t, Is>{}));
+
+  return function_of_time_names;
+}
+}  // namespace CoordinateMap_detail
+
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(Maps... maps)
-    : maps_(std::move(maps)...) {}
+    : maps_(std::move(maps)...),
+      function_of_time_names_(CoordinateMap_detail::initialize_names(
+          maps_, std::make_index_sequence<sizeof...(Maps)>{})) {}
 
 namespace CoordinateMap_detail {
 template <typename... Maps, size_t... Is>
 bool is_identity_impl(const std::tuple<Maps...>& maps,
                       std::index_sequence<Is...> /*meta*/) {
   bool is_identity = true;
-  const auto check_map_is_identity = [&is_identity,
-                                      &maps](auto index) {
+  const auto check_map_is_identity = [&is_identity, &maps](auto index) {
     if (is_identity) {
       is_identity = std::get<decltype(index)::value>(maps).is_identity();
     }
@@ -56,8 +105,7 @@ bool is_identity_impl(const std::tuple<Maps...>& maps,
 }  // namespace CoordinateMap_detail
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-bool CoordinateMap<SourceFrame, TargetFrame, Maps...>::is_identity() const
-    {
+bool CoordinateMap<SourceFrame, TargetFrame, Maps...>::is_identity() const {
   return CoordinateMap_detail::is_identity_impl(
       maps_, std::make_index_sequence<sizeof...(Maps)>{});
 }
@@ -76,6 +124,24 @@ bool CoordinateMap<SourceFrame, TargetFrame,
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
+void CoordinateMap<SourceFrame, TargetFrame, Maps...>::check_functions_of_time(
+    [[maybe_unused]] const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) const {
+// Even though an assert is already in debug mode, we also want to avoid the
+// loop
+#ifdef SPECTRE_DEBUG
+  for (const std::string& name : function_of_time_names_) {
+    ASSERT(functions_of_time.count(name) == 1,
+           "The function of time '" << name
+                                    << "' is not one of the known functions of "
+                                       "time. The known functions of time are: "
+                                    << keys_of(functions_of_time));
+  }
+#endif
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
 tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
@@ -84,6 +150,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::index_sequence<Is...> /*meta*/) const {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   EXPAND_PACK_LEFT_TO_RIGHT(
@@ -116,6 +183,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::index_sequence<Is...> /*meta*/) const {
+  check_functions_of_time(functions_of_time);
   std::optional<std::array<T, dim>> mapped_point(
       make_array<T, dim>(std::move(target_point)));
 
@@ -250,46 +318,43 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const
     -> InverseJacobian<T, dim, SourceFrame, TargetFrame> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
 
-  tuple_transform(
-      maps_, [&inv_jac, &mapped_point, time, &functions_of_time](
-                 const auto& map, auto index) {
-        constexpr size_t count = decltype(index)::value;
-        using Map = std::decay_t<decltype(map)>;
+  tuple_transform(maps_, [&inv_jac, &mapped_point, time, &functions_of_time](
+                             const auto& map, auto index) {
+    constexpr size_t count = decltype(index)::value;
+    using Map = std::decay_t<decltype(map)>;
 
-        tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
+    tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
 
-        if (UNLIKELY(count == 0)) {
-          detail::get_inv_jacobian(
-              make_not_null(&noframe_inv_jac), map, mapped_point, time,
-              functions_of_time,
-              domain::is_jacobian_time_dependent_t<Map, T>{});
-          for (size_t source = 0; source < dim; ++source) {
-            for (size_t target = 0; target < dim; ++target) {
-              inv_jac.get(source, target) =
-                  std::move(noframe_inv_jac.get(source, target));
-            }
-          }
-        } else if (LIKELY(not map.is_identity())) {
-          detail::get_inv_jacobian(
-              make_not_null(&noframe_inv_jac), map, mapped_point, time,
-              functions_of_time,
-              domain::is_jacobian_time_dependent_t<Map, T>{});
-          detail::multiply_inv_jacobian(make_not_null(&inv_jac),
-                                        noframe_inv_jac);
+    if (UNLIKELY(count == 0)) {
+      detail::get_inv_jacobian(make_not_null(&noframe_inv_jac), map,
+                               mapped_point, time, functions_of_time,
+                               domain::is_jacobian_time_dependent_t<Map, T>{});
+      for (size_t source = 0; source < dim; ++source) {
+        for (size_t target = 0; target < dim; ++target) {
+          inv_jac.get(source, target) =
+              std::move(noframe_inv_jac.get(source, target));
         }
+      }
+    } else if (LIKELY(not map.is_identity())) {
+      detail::get_inv_jacobian(make_not_null(&noframe_inv_jac), map,
+                               mapped_point, time, functions_of_time,
+                               domain::is_jacobian_time_dependent_t<Map, T>{});
+      detail::multiply_inv_jacobian(make_not_null(&inv_jac), noframe_inv_jac);
+    }
 
-        // Compute the source coordinates for the next map, only if we are not
-        // the last map and the map is not the identity.
-        if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
-          CoordinateMap_detail::apply_map(
-              make_not_null(&mapped_point), map, time, functions_of_time,
-              domain::is_map_time_dependent_t<decltype(map)>{});
-        }
-      });
+    // Compute the source coordinates for the next map, only if we are not
+    // the last map and the map is not the identity.
+    if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
+      CoordinateMap_detail::apply_map(
+          make_not_null(&mapped_point), map, time, functions_of_time,
+          domain::is_map_time_dependent_t<decltype(map)>{});
+    }
+  });
   return inv_jac;
 }
 
@@ -299,44 +364,42 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
     tnsr::I<T, dim, SourceFrame>&& source_point, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const
-    -> Jacobian<T, dim, SourceFrame, TargetFrame> {
+        functions_of_time) const -> Jacobian<T, dim, SourceFrame, TargetFrame> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
 
-  tuple_transform(
-      maps_, [&jac, &mapped_point, time, &functions_of_time](
-                 const auto& map, auto index) {
-        constexpr size_t count = decltype(index)::value;
-        using Map = std::decay_t<decltype(map)>;
+  tuple_transform(maps_, [&jac, &mapped_point, time, &functions_of_time](
+                             const auto& map, auto index) {
+    constexpr size_t count = decltype(index)::value;
+    using Map = std::decay_t<decltype(map)>;
 
-        tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
+    tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
 
-        if (UNLIKELY(count == 0)) {
-          detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
-                               time, functions_of_time,
-                               domain::is_jacobian_time_dependent_t<Map, T>{});
-          for (size_t target = 0; target < dim; ++target) {
-            for (size_t source = 0; source < dim; ++source) {
-              jac.get(target, source) =
-                  std::move(noframe_jac.get(target, source));
-            }
-          }
-        } else if (LIKELY(not map.is_identity())) {
-          detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
-                               time, functions_of_time,
-                               domain::is_jacobian_time_dependent_t<Map, T>{});
-          detail::multiply_jacobian(make_not_null(&jac), noframe_jac);
+    if (UNLIKELY(count == 0)) {
+      detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point, time,
+                           functions_of_time,
+                           domain::is_jacobian_time_dependent_t<Map, T>{});
+      for (size_t target = 0; target < dim; ++target) {
+        for (size_t source = 0; source < dim; ++source) {
+          jac.get(target, source) = std::move(noframe_jac.get(target, source));
         }
+      }
+    } else if (LIKELY(not map.is_identity())) {
+      detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point, time,
+                           functions_of_time,
+                           domain::is_jacobian_time_dependent_t<Map, T>{});
+      detail::multiply_jacobian(make_not_null(&jac), noframe_jac);
+    }
 
-        // Compute the source coordinates for the next map, only if we are not
-        // the last map and the map is not the identity.
-        if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
-          CoordinateMap_detail::apply_map(
-              make_not_null(&mapped_point), map, time, functions_of_time,
-              domain::is_map_time_dependent_t<decltype(map)>{});
-        }
-      });
+    // Compute the source coordinates for the next map, only if we are not
+    // the last map and the map is not the identity.
+    if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
+      CoordinateMap_detail::apply_map(
+          make_not_null(&mapped_point), map, time, functions_of_time,
+          domain::is_map_time_dependent_t<decltype(map)>{});
+    }
+  });
   return jac;
 }
 
@@ -376,6 +439,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
                   InverseJacobian<T, dim, SourceFrame, TargetFrame>,
                   Jacobian<T, dim, SourceFrame, TargetFrame>,
                   tnsr::I<T, dim, TargetFrame>> {
+  check_functions_of_time(functions_of_time);
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
@@ -507,9 +571,8 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::get_to_grid_frame_impl(
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-bool operator!=(
-    const CoordinateMap<SourceFrame, TargetFrame, Maps...>& lhs,
-    const CoordinateMap<SourceFrame, TargetFrame, Maps...>& rhs) {
+bool operator!=(const CoordinateMap<SourceFrame, TargetFrame, Maps...>& lhs,
+                const CoordinateMap<SourceFrame, TargetFrame, Maps...>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -532,8 +595,7 @@ auto make_coordinate_map_base(Maps&&... maps)
 
 template <typename SourceFrame, typename TargetFrame, typename Arg0,
           typename... Args>
-auto make_vector_coordinate_map_base(Arg0&& arg_0,
-                                     Args&&... remaining_args)
+auto make_vector_coordinate_map_base(Arg0&& arg_0, Args&&... remaining_args)
     -> std::vector<std::unique_ptr<
         CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>> {
   std::vector<std::unique_ptr<
@@ -579,8 +641,7 @@ template <typename... NewMaps, typename SourceFrame, typename TargetFrame,
 CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMaps...> push_back_impl(
     CoordinateMap<SourceFrame, TargetFrame, Maps...>&& old_map,
     CoordinateMap<SourceFrame, TargetFrame, NewMaps...> new_map,
-    std::index_sequence<Is...> /*meta*/,
-    std::index_sequence<Js...> /*meta*/) {
+    std::index_sequence<Is...> /*meta*/, std::index_sequence<Js...> /*meta*/) {
   return CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMaps...>{
       std::move(std::get<Is>(old_map.maps_))...,
       std::move(std::get<Js>(new_map.maps_))...};
@@ -598,8 +659,7 @@ CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front_impl(
 template <typename SourceFrame, typename TargetFrame, typename... Maps,
           typename NewMap>
 CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back(
-    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
-    NewMap new_map) {
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map) {
   return push_back_impl(std::move(old_map), std::move(new_map),
                         std::make_index_sequence<sizeof...(Maps)>{});
 }
@@ -617,8 +677,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMaps...> push_back(
 template <typename SourceFrame, typename TargetFrame, typename... Maps,
           typename NewMap>
 CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
-    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
-    NewMap new_map) {
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map) {
   return push_front_impl(std::move(old_map), std::move(new_map),
                          std::make_index_sequence<sizeof...(Maps)>{});
 }

@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -15,7 +16,6 @@
 #include "Domain/CoordinateMaps/TimeDependent/RotationMatrixHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -24,7 +24,8 @@ namespace domain::CoordinateMaps::TimeDependent {
 
 template <size_t Dim>
 Rotation<Dim>::Rotation(std::string function_of_time_name)
-    : f_of_t_name_(std::move(function_of_time_name)) {}
+    : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}) {}
 
 template <size_t Dim>
 template <typename T>
@@ -33,11 +34,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -57,11 +53,6 @@ std::optional<std::array<double, Dim>> Rotation<Dim>::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -84,11 +75,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix_deriv =
       rotation_matrix_deriv<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -111,11 +97,6 @@ Rotation<Dim>::jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -141,11 +122,6 @@ Rotation<Dim>::inv_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
-         "Could not find function of time: '"
-             << f_of_t_name_ << "' in functions of time. Known functions are "
-             << keys_of(functions_of_time));
-
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
@@ -173,6 +149,12 @@ void Rotation<Dim>::pup(PUP::er& p) {
   // whenever possible. See `Domain` docs for details.
   if (version >= 0) {
     p | f_of_t_name_;
+  }
+
+  // No need to pup this because it is uniquely determined by f_of_t_name_
+  if (p.isUnpacking()) {
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(f_of_t_name_);
   }
 }
 

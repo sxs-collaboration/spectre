@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -30,6 +31,7 @@ namespace domain::CoordinateMaps::TimeDependent {
 template <size_t Dim>
 Translation<Dim>::Translation(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       f_of_r_(nullptr),
       center_(make_array<Dim, double>(0.0)) {}
 
@@ -39,12 +41,14 @@ Translation<Dim>::Translation(
     std::unique_ptr<MathFunction<1, Frame::Inertial>> radial_function,
     std::array<double, Dim>& center)
     : f_of_t_name_(std::move(function_of_time_name)),
+      f_of_t_names_({f_of_t_name_}),
       f_of_r_(std::move(radial_function)),
       center_(center) {}
 
 template <size_t Dim>
 Translation<Dim>::Translation(const Translation<Dim>& Translation_Map)
     : f_of_t_name_(Translation_Map.f_of_t_name_),
+      f_of_t_names_(Translation_Map.f_of_t_names_),
       center_(Translation_Map.center_) {
   if (Translation_Map.f_of_r_ == nullptr) {
     f_of_r_ = nullptr;
@@ -69,11 +73,6 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  ASSERT(functions_of_time.count(f_of_t_name_) == 1,
-         "The function of time '" << f_of_t_name_
-                                  << "' is not one of the known functions of "
-                                     "time. The known functions of time are: "
-                                  << keys_of(functions_of_time));
   std::array<double, Dim> result{};
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(target_coords, i);
@@ -175,11 +174,6 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::coord_helper(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const size_t function_or_deriv_index) const {
-  ASSERT(functions_of_time.count(f_of_t_name_) == 1,
-         "The function of time '" << f_of_t_name_
-                                  << "' is not one of the known functions of "
-                                     "time. The known functions of time are: "
-                                  << keys_of(functions_of_time));
   const auto func_or_deriv_of_time =
       gsl::at(functions_of_time.at(f_of_t_name_)->func_and_deriv(time),
               function_or_deriv_index);
@@ -259,6 +253,12 @@ void Translation<Dim>::pup(PUP::er& p) {
   } else if (p.isUnpacking()) {
     f_of_r_ = nullptr;
     center_ = make_array<Dim, double>(0.0);
+  }
+
+  // No need to pup this because it is uniquely determined by f_of_t_name_
+  if (p.isUnpacking()) {
+    f_of_t_names_.clear();
+    f_of_t_names_.insert(f_of_t_name_);
   }
 }
 

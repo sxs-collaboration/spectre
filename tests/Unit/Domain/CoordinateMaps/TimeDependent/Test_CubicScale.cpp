@@ -183,8 +183,17 @@ void test(const bool linear_expansion) {
         outer_boundary, "expansion_a",
         linear_expansion ? "expansion_a"s : "expansion_b"s);
 
+    const auto check_names = [&linear_expansion](const auto& names) {
+      CHECK(names.size() == (linear_expansion ? 1_st : 2_st));
+      CHECK(names.count("expansion_a") == 1);
+      if (not linear_expansion) {
+        CHECK(names.count("expansion_b") == 1);
+      }
+    };
+    check_names(scale_map.function_of_time_names());
     // test serialized/deserialized map
     const auto scale_map_deserialized = serialize_and_deserialize(scale_map);
+    check_names(scale_map_deserialized.function_of_time_names());
 
     while (t < final_time) {
       const double a = expansion_a_base->func_and_deriv(t)[0][0];

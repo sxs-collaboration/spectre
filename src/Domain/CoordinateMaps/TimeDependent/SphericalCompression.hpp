@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -314,6 +315,10 @@ class SphericalCompression {
 
   static bool is_identity() { return false; }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   friend bool operator==(const SphericalCompression& lhs,
                          const SphericalCompression& rhs) {
@@ -322,6 +327,7 @@ class SphericalCompression {
            lhs.max_radius_ == rhs.max_radius_ and lhs.center_ == rhs.center_;
   }
   std::string f_of_t_name_;
+  std::unordered_set<std::string> f_of_t_names_;
   double min_radius_ = std::numeric_limits<double>::signaling_NaN();
   double max_radius_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, 3> center_;

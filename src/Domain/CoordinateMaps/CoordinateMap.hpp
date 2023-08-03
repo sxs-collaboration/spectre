@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -36,6 +37,11 @@ namespace TimeDependent {}
 template <typename FirstMap, typename... Maps>
 constexpr size_t map_dim = FirstMap::dim;
 }  // namespace CoordinateMaps
+namespace CoordinateMap_detail {
+template <typename... Maps, size_t... Is>
+std::unordered_set<std::string> initialize_names(
+    const std::tuple<Maps...>& maps, std::index_sequence<Is...> /*meta*/);
+}
 
 /*!
  * \ingroup CoordinateMapsGroup
@@ -77,6 +83,10 @@ class CoordinateMapBase : public PUP::able {
 
   /// Returns `true` if the Jacobian depends on time.
   virtual bool jacobian_is_time_dependent() const = 0;
+
+  /// Get a set of all FunctionOfTime names used in this mapping
+  virtual const std::unordered_set<std::string>& function_of_time_names()
+      const = 0;
 
   /// @{
   /// Apply the `Maps` to the point(s) `source_point`
@@ -284,6 +294,12 @@ class CoordinateMap
   /// Returns `true` if the Jacobian depends on time.
   bool jacobian_is_time_dependent() const override;
 
+  /// Get a set of all FunctionOfTime names from `Maps`
+  const std::unordered_set<std::string>& function_of_time_names()
+      const override {
+    return function_of_time_names_;
+  }
+
   /// @{
   /// Apply the `Maps...` to the point(s) `source_point`
   constexpr tnsr::I<double, dim, TargetFrame> operator()(
@@ -445,6 +461,12 @@ class CoordinateMap
       CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
       p | maps_;
     }
+
+    // No need to pup this because it is uniquely determined by the maps
+    if (p.isUnpacking()) {
+      function_of_time_names_ = CoordinateMap_detail::initialize_names(
+          maps_, std::make_index_sequence<sizeof...(Maps)>{});
+    }
   }
 
  private:
@@ -488,6 +510,12 @@ class CoordinateMap
     const auto& cast_of_other = dynamic_cast<const CoordinateMap&>(other);
     return *this == cast_of_other;
   }
+
+  void check_functions_of_time(
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const;
 
   template <typename T, size_t... Is>
   tnsr::I<T, dim, TargetFrame> call_impl(
@@ -536,6 +564,7 @@ class CoordinateMap
           functions_of_time) const;
 
   std::tuple<Maps...> maps_;
+  std::unordered_set<std::string> function_of_time_names_;
 };
 
 /// \ingroup ComputationalDomainGroup

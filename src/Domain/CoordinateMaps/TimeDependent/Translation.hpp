@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
@@ -162,6 +163,10 @@ class Translation {
 
   static bool is_identity() { return false; }
 
+  const std::unordered_set<std::string>& function_of_time_names() const {
+    return f_of_t_names_;
+  }
+
  private:
   template <size_t LocalDim>
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
@@ -183,6 +188,7 @@ class Translation {
                      const DataVector& function_of_time) const;
 
   std::string f_of_t_name_{};
+  std::unordered_set<std::string> f_of_t_names_;
   std::unique_ptr<MathFunction<1, Frame::Inertial>> f_of_r_{};
   std::array<double, Dim> center_{};
 };
