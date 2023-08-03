@@ -113,9 +113,7 @@ RUN apt-get update -y \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
-
-# Install cmake.  We need version 3.18.2 so that fortran builds work
-# with ninja.
+# Install minimum required CMake version so that we test compatibility with it
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
     && tar -xzf cmake-3.18.2.tar.gz \
     && cd cmake-3.18.2 \
