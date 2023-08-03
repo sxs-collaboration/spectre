@@ -30,7 +30,6 @@ class er;
 
 namespace gh {
 namespace Solutions {
-
 /*!
  * \brief A wrapper for general-relativity analytic solutions that loads
  * the analytic solution and then adds a function that returns
@@ -146,36 +145,29 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
       gr::Tags::InverseSpatialMetric<DataVector, volume_dim>;
   using TagExCurvature = gr::Tags::ExtrinsicCurvature<DataVector, volume_dim>;
 
-  template <
-      typename Tag,
-      Requires<tmpl::list_contains_v<
-          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
-  tuples::TaggedTuple<Tag> variables(
-      const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
-      tmpl::list<Tag> /*meta*/,
-      const IntermediateVars& intermediate_vars) const {
-    return {get<Tag>(intermediate_vars)};
-  }
-
-  template <
-      typename Tag,
-      Requires<tmpl::list_contains_v<
-          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
-  tuples::TaggedTuple<Tag> variables(
-      const tnsr::I<DataVector, volume_dim>& /*x*/, tmpl::list<Tag> /*meta*/,
-      const IntermediateVars& intermediate_vars) const {
-    return {get<Tag>(intermediate_vars)};
-  }
-
-  template <
-      typename Tag,
-      Requires<not tmpl::list_contains_v<
-          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
+  template <typename Tag>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
-      tmpl::list<Tag> tag_list,
+      tmpl::list<Tag> /*meta*/,
       const IntermediateVars& intermediate_vars) const {
-    return variables(x, tag_list, intermediate_vars);
+    if constexpr (tmpl::list_contains_v<
+                      typename SolutionType::template tags<DataVector>, Tag>) {
+      return {get<Tag>(intermediate_vars)};
+    } else {
+      return variables(x, tmpl::list<Tag>{}, intermediate_vars);
+    }
+  }
+
+  template <typename Tag>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataVector, volume_dim>& x, tmpl::list<Tag> /*meta*/,
+      const IntermediateVars& intermediate_vars) const {
+    if constexpr (tmpl::list_contains_v<
+                      typename SolutionType::template tags<DataVector>, Tag>) {
+      return {get<Tag>(intermediate_vars)};
+    } else {
+      return variables(x, tmpl::list<Tag>{}, intermediate_vars);
+    }
   }
 
   tuples::TaggedTuple<gr::Tags::SpacetimeMetric<DataVector, volume_dim>>

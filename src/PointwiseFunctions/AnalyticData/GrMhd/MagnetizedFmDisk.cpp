@@ -32,9 +32,8 @@ MagnetizedFmDisk::MagnetizedFmDisk(
     const double polytropic_constant, const double polytropic_exponent,
     const double threshold_density, const double inverse_plasma_beta,
     const size_t normalization_grid_res)
-    : RelativisticEuler::Solutions::FishboneMoncriefDisk(
-          bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-          polytropic_constant, polytropic_exponent),
+    : fm_disk_(bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
+               polytropic_constant, polytropic_exponent),
       threshold_density_(threshold_density),
       inverse_plasma_beta_(inverse_plasma_beta),
       normalization_grid_res_(normalization_grid_res),
@@ -70,8 +69,8 @@ MagnetizedFmDisk::MagnetizedFmDisk(
   // x(r, theta) = r sin_theta,
   // y(r, theta) = a sin_theta,
   // z(r, theta) = r cos_theta.
-  const double r_init = inner_edge_radius_ * bh_mass_;
-  const double r_fin = max_pressure_radius_ * bh_mass_;
+  const double r_init = fm_disk_.inner_edge_radius_ * fm_disk_.bh_mass_;
+  const double r_fin = fm_disk_.max_pressure_radius_ * fm_disk_.bh_mass_;
   const double dr = (r_fin - r_init) / normalization_grid_res_;
   const double dtheta = M_PI / normalization_grid_res_;
   const double cartesian_n_pts = square(normalization_grid_res_);
@@ -84,7 +83,7 @@ MagnetizedFmDisk::MagnetizedFmDisk(
       double sin_theta_j = sin(static_cast<double>(j) * dtheta);
       auto index = collapsed_index(Index<2>{i, j}, extents);
       get<0>(grid)[index] = r_i * sin_theta_j;
-      get<1>(grid)[index] = bh_spin_a_ * sin_theta_j;
+      get<1>(grid)[index] = fm_disk_.bh_spin_a_ * sin_theta_j;
       get<2>(grid)[index] = r_i * cos(static_cast<double>(j) * dtheta);
     }
   }
@@ -97,7 +96,8 @@ MagnetizedFmDisk::MagnetizedFmDisk(
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<DataVector, 3>>(unmagnetized_vars);
 
-  const tnsr::I<double, 3> x_max{{{max_pressure_radius_, bh_spin_a_, 0.0}}};
+  const tnsr::I<double, 3> x_max{
+      {{fm_disk_.max_pressure_radius_, fm_disk_.bh_spin_a_, 0.0}}};
 
   const double b_squared_max = max(
       get(dot_product(b_field, b_field, spatial_metric)) /
@@ -120,11 +120,10 @@ MagnetizedFmDisk::get_clone() const {
   return std::make_unique<MagnetizedFmDisk>(*this);
 }
 
-MagnetizedFmDisk::MagnetizedFmDisk(CkMigrateMessage* msg)
-    : FishboneMoncriefDisk(msg) {}
+MagnetizedFmDisk::MagnetizedFmDisk(CkMigrateMessage* msg) : fm_disk_(msg) {}
 
 void MagnetizedFmDisk::pup(PUP::er& p) {
-  RelativisticEuler::Solutions::FishboneMoncriefDisk::pup(p);
+  p | fm_disk_;
   p | threshold_density_;
   p | inverse_plasma_beta_;
   p | b_field_normalization_;
@@ -141,14 +140,15 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
   // The maximum pressure (and hence the maximum rest mass density) is located
   // on the ring x^2 + y^2 = r_max^2 + a^2, z = 0.
   // Note that `x` may or may not include points on this ring.
-  const tnsr::I<double, 3> x_max{{{max_pressure_radius_, bh_spin_a_, 0.0}}};
+  const tnsr::I<double, 3> x_max{
+      {{fm_disk_.max_pressure_radius_, fm_disk_.bh_spin_a_, 0.0}}};
   const double threshold_rest_mass_density =
       threshold_density_ *
       get(get<hydro::Tags::RestMassDensity<double>>(variables(
           x_max, tmpl::list<hydro::Tags::RestMassDensity<double>>{})));
 
   const double inner_edge_potential =
-      fm_disk::potential(square(inner_edge_radius_), 1.0);
+      fm_disk_.potential(square(fm_disk_.inner_edge_radius_), 1.0);
 
   // A_phi \propto rho - rho_threshold. Normalization comes later.
   const auto mag_potential = [this, &threshold_rest_mass_density,
@@ -156,10 +156,10 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
                                  const double r,
                                  const double sin_theta_squared) {
     // enthalpy = exp(Win - W(r,theta)), as in the Fishbone-Moncrief disk
-    return get(equation_of_state_.rest_mass_density_from_enthalpy(
+    return get(equation_of_state().rest_mass_density_from_enthalpy(
                Scalar<double>{
                    exp(inner_edge_potential -
-                       fm_disk::potential(square(r), sin_theta_squared))})) -
+                       fm_disk_.potential(square(r), sin_theta_squared))})) -
            threshold_rest_mass_density;
   };
 
@@ -174,7 +174,7 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
       // (r, theta, phi) coordinates. We need to get B^r, B^theta, B^phi first,
       // then we transform to Cartesian coordinates.
       const double z_squared = square(get_element(get<2>(x), s));
-      const double a_squared = bh_spin_a_ * bh_spin_a_;
+      const double a_squared = fm_disk_.bh_spin_a_ * fm_disk_.bh_spin_a_;
 
       double sin_theta_squared =
           square(get_element(get<0>(x), s)) + square(get_element(get<1>(x), s));
@@ -190,13 +190,14 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
       // where sqrt(gamma) = sqrt( sigma (sigma + 2Mr) ) * sin\theta.
       const double radius = sqrt(r_squared);
       const double sin_theta = sqrt(sin_theta_squared);
-      double prefactor = r_squared + square(bh_spin_a_) * z_squared / r_squared;
-      prefactor *= (prefactor + 2.0 * bh_mass_ * radius);
+      double prefactor =
+          r_squared + square(fm_disk_.bh_spin_a_) * z_squared / r_squared;
+      prefactor *= (prefactor + 2.0 * fm_disk_.bh_mass_ * radius);
 
       // As done by SpEC and other groups, we approximate the derivatives
       // with a 2nd-order centered finite difference expression.
       // For simplicity, we set \delta r = \delta\theta = small number.
-      const double small = 0.0001 * bh_mass_;
+      const double small = 0.0001 * fm_disk_.bh_mass_;
       prefactor = 2.0 * small * sqrt(prefactor) * sin_theta;
       prefactor = 1.0 / prefactor;
 
@@ -226,7 +227,8 @@ tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 MagnetizedFmDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-    const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
+    const typename FmDisk::IntermediateVariables<DataType,
+                                                 NeedSpacetime>& /*vars*/,
     const size_t /*index*/) const {
   auto result = unnormalized_magnetic_field(x);
   for (size_t i = 0; i < 3; ++i) {
@@ -238,9 +240,7 @@ MagnetizedFmDisk::variables(
 PUP::able::PUP_ID MagnetizedFmDisk::my_PUP_ID = 0;
 
 bool operator==(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
-  using fm_disk = MagnetizedFmDisk::fm_disk;
-  return *static_cast<const fm_disk*>(&lhs) ==
-             *static_cast<const fm_disk*>(&rhs) and
+  return lhs.fm_disk_ == rhs.fm_disk_ and
          lhs.threshold_density_ == rhs.threshold_density_ and
          lhs.inverse_plasma_beta_ == rhs.inverse_plasma_beta_ and
          lhs.b_field_normalization_ == rhs.b_field_normalization_ and
@@ -259,7 +259,7 @@ bool operator!=(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   MagnetizedFmDisk::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& x,                                    \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,     \
-      const FishboneMoncriefDisk::IntermediateVariables<                   \
+      const typename FmDisk::FishboneMoncriefDisk::IntermediateVariables<  \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                        \
       const size_t) const;
 
