@@ -11,6 +11,7 @@
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/Interpolation/Events/GetComputeItemsOnSource.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -65,7 +66,9 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
 
   Interpolate() = default;
 
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box =
+      detail::get_compute_items_on_source_or_default_t<InterpolationTargetTag,
+                                                       tmpl::list<>>;
 
   using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
                                    ::Events::Tags::ObserverMesh<VolumeDim>,
