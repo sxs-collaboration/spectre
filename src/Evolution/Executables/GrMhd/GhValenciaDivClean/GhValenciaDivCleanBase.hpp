@@ -67,6 +67,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -160,8 +161,10 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
@@ -820,4 +823,19 @@ struct GhValenciaDivCleanTemplateBase<
       intrp::Interpolator<derived_metavars>,
       intrp::InterpolationTarget<derived_metavars, InterpolationTargetTags>...,
       dg_element_array_component>>;
+};
+
+struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  static std::string name() { return "BondiSachsInterpolation"; }
+  using temporal_id = ::Tags::Time;
+  using vars_to_interpolate_to_target =
+      typename gh::System<3>::variables_tag::tags_list;
+  using compute_target_points =
+      intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
+  using post_interpolation_callback =
+      intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>;
+  using compute_items_on_target = tmpl::list<>;
+  template <typename Metavariables>
+  using interpolating_component =
+      typename Metavariables::dg_element_array_component;
 };

@@ -22,6 +22,7 @@ function(add_ghmhd_with_horizon_executable INITIAL_DATA_NAME INITIAL_DATA LIBS_T
 endfunction(add_ghmhd_with_horizon_executable)
 
 set(LIBS_TO_LINK
+  Cce
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
@@ -60,13 +61,13 @@ set(LIBS_TO_LINK_WITH_CONTROL_SYSTEM
 
 add_ghmhd_executable(
   ""
-  "evolution::NumericInitialData,false"
+  "evolution::NumericInitialData,false,BondiSachs"
   "${LIBS_TO_LINK}"
   )
 
 add_ghmhd_executable(
   "Bns"
-  "evolution::NumericInitialData,true"
+  "evolution::NumericInitialData,true,BondiSachs"
   "${LIBS_TO_LINK_WITH_CONTROL_SYSTEM}"
   )
 
@@ -79,30 +80,30 @@ endif()
 
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
-  "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false"
+  "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false,BondiSachs"
   "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
-  "gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>,false"
+  "gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>,false,BondiSachs"
   "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   BondiMichel
-  "gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>,false"
+  "gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>,false,BondiSachs"
   "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   FishboneMoncriefDisk
-  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>,false"
+  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>,false,BondiSachs"
   "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
   )
 
 add_ghmhd_executable(
   TovStar
-  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>,false"
+  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>,false,BondiSachs"
   "${LIBS_TO_LINK}"
   )

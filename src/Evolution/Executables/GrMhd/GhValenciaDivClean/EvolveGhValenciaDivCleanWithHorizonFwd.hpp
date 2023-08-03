@@ -35,6 +35,7 @@ class MagnetizedFmDisk;
 }  // namespace grmhd
 
 struct KerrHorizon;
+struct BondiSachs;
 template <typename InitialData, bool UseControlSystems,
           typename... InterpolationTargetTags>
 struct EvolutionMetavars;

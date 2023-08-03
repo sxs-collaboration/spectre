@@ -108,7 +108,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
   };
 
-  using interpolation_target_tags = tmpl::list<AhA>;
+  using interpolation_target_tags = tmpl::list<InterpolationTargetTags..., AhA>;
   using interpolator_source_vars = tmpl::list<
       gr::Tags::SpacetimeMetric<DataVector, volume_dim, domain_frame>,
       gh::Tags::Pi<DataVector, volume_dim, domain_frame>,
