@@ -255,6 +255,7 @@ void delete_files(const std::string& filename_prefix,
   }
 }
 
+// [Timeout, 10]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.DumpBondiSachsOnWorldtube",
                   "[Unit][Cce]") {
   const std::string filename_prefix{"Shrek-the-Third"};
