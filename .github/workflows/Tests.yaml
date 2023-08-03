@@ -251,6 +251,7 @@ jobs:
   # artifact and deploy to gh-pages.
   doc_check:
     name: Documentation
+    needs: check_files_and_formatting
     runs-on: ubuntu-latest
     container:
       image: sxscollaboration/spectre:ci
@@ -265,6 +266,19 @@ jobs:
       - name: Install Python dependencies
         run: |
           python3 -m pip install -r support/Python/dev_requirements.txt
+      - name: Download release notes
+        uses: actions/download-artifact@v3
+        id: release-notes
+        with:
+          name: release-notes
+          path: /work
+      - name: Append release notes to changelog
+        # The sed command escapes @ symbols at beginning of words (GitHub
+        # usernames) so they aren't interpreted as Doxygen commands
+        run: |
+          echo "" >> docs/Changelog.md
+          cat /work/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
+            >> docs/Changelog.md
       - name: Configure with cmake
         working-directory: /work
         run: >
