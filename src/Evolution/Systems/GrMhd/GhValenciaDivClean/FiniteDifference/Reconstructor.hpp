@@ -18,6 +18,7 @@ class er;
 namespace grmhd::GhValenciaDivClean::fd {
 /// \cond
 class MonotonisedCentralPrim;
+class PositivityPreservingAdaptiveOrderPrim;
 /// \endcond
 
 /*!
@@ -37,11 +38,14 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<MonotonisedCentralPrim>;
+  using creatable_classes = tmpl::list<MonotonisedCentralPrim,
+                                       PositivityPreservingAdaptiveOrderPrim>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
   virtual size_t ghost_zone_size() const = 0;
+
+  virtual bool supports_adaptive_order() const { return false; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

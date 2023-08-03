@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
@@ -259,7 +260,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       neighbor_data{};
   using prims_to_reconstruct_tags = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
-  for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
+  for (const auto & [ direction, neighbors_in_direction ] :
+       element.neighbors()) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=
         2.0 * direction.sign();
@@ -425,25 +427,24 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
             face_coords.get(i) * expansion_velocity.value();
       }
 
-      tmpl::for_each<conserved_tags>(
-          [&prims_to_reconstruct, &face_mesh_velocity](auto tag_v) {
-            using tag = tmpl::type_from<decltype(tag_v)>;
-            using flux_tag =
-                ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
-            using FluxTensor = typename flux_tag::type;
-            const auto& var = get<tag>(prims_to_reconstruct);
-            auto& flux = get<flux_tag>(prims_to_reconstruct);
-            for (size_t storage_index = 0; storage_index < var.size();
-                 ++storage_index) {
-              const auto tensor_index = var.get_tensor_index(storage_index);
-              for (size_t j = 0; j < 3; j++) {
-                const auto flux_storage_index =
-                    FluxTensor::get_storage_index(prepend(tensor_index, j));
-                flux[flux_storage_index] -=
-                    face_mesh_velocity.value().get(j) * var[storage_index];
-              }
-            }
-          });
+      tmpl::for_each<conserved_tags>([&prims_to_reconstruct,
+                                      &face_mesh_velocity](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        using flux_tag = ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
+        using FluxTensor = typename flux_tag::type;
+        const auto& var = get<tag>(prims_to_reconstruct);
+        auto& flux = get<flux_tag>(prims_to_reconstruct);
+        for (size_t storage_index = 0; storage_index < var.size();
+             ++storage_index) {
+          const auto tensor_index = var.get_tensor_index(storage_index);
+          for (size_t j = 0; j < 3; j++) {
+            const auto flux_storage_index =
+                FluxTensor::get_storage_index(prepend(tensor_index, j));
+            flux[flux_storage_index] -=
+                face_mesh_velocity.value().get(j) * var[storage_index];
+          }
+        }
+      });
     }
 
     (*gamma1)(
@@ -598,6 +599,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       dummy_normal_covector_and_magnitude{};
   using DampingFunction =
       gh::ConstraintDamping::DampingFunction<3, Frame::Grid>;
+  typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type
+      dummy_reconstruction_order{};
 
   auto box = db::create<
       db::AddSimpleTags<
@@ -610,6 +613,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
+          evolution::dg::subcell::Tags::ReconstructionOrder<3>,
           ValenciaDivClean::Tags::ConstraintDampingParameter,
           evolution::dg::Tags::MortarData<3>,
           domain::Tags::ElementMap<3, Frame::Grid>,
@@ -671,7 +675,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       soln.equation_of_state().get_clone(), cell_centered_prim_vars,
       // Set incorrect size for dt variables because they should get resized.
       Variables<typename dt_variables_tag::tags_list>{}, initial_variables,
-      neighbor_data, 1.0, mortar_data, std::move(element_map),
+      neighbor_data, dummy_reconstruction_order, 1.0, mortar_data,
+      std::move(element_map),
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
       std::move(domain), std::move(external_boundary_conditions),
