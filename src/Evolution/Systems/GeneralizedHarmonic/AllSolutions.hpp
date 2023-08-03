@@ -22,9 +22,9 @@ using solutions_including_matter = tmpl::append<
     gh::Solutions::all_solutions<Dim>,
     tmpl::conditional_t<
         Dim == 3,
-        tmpl::append<gh::Solutions::RelativisticEuler::all_solutions,
-                     gh::Solutions::grmhd::all_solutions,
-                     gh::AnalyticData::grmhd::all_analytic_data,
+        tmpl::append<gh::RelativisticEuler::Solutions::all_solutions,
+                     gh::grmhd::Solutions::all_solutions,
+                     gh::grmhd::AnalyticData::all_analytic_data,
                      gh::ScalarTensor::AnalyticData::all_analytic_data>,
         tmpl::list<>>>;
 }  // namespace gh

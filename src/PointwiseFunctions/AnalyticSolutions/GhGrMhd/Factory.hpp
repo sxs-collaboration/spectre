@@ -7,11 +7,11 @@
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace gh::Solutions {
+namespace gh::grmhd::Solutions {
 /// GRMHD solutions wrapped for GH
-namespace grmhd {
+
 /// \brief List of all analytic solutions
 using all_solutions =
     tmpl::list<gh::Solutions::WrappedGr<::grmhd::Solutions::BondiMichel>>;
-}  // namespace grmhd
-}  // namespace gh::Solutions
+
+}  // namespace gh::grmhd::Solutions
