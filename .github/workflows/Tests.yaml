@@ -396,11 +396,9 @@ jobs:
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
             ccache_max_size: 650M
-          # Test compatibility with oldest supported CMake version and using an
-          # mpi version of charm
+          # Test with MPI version of charm
           - compiler: clang-13
             build_type: Debug
-            CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
