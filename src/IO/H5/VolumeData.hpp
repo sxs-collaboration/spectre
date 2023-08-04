@@ -10,7 +10,6 @@
 #include <ostream>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <vector>
 
 #include "IO/H5/Object.hpp"
