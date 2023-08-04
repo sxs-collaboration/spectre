@@ -7,13 +7,14 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/CoordinateMaps/Tags.hpp"
-#include "Domain/ElementMap.hpp"
-#include "Domain/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 /// \cond
+namespace domain::Tags {
+template <size_t Dim, typename Frame>
+struct Coordinates;
+}  // namespace domain::Tags
 namespace gsl {
 template <typename>
 struct not_null;
