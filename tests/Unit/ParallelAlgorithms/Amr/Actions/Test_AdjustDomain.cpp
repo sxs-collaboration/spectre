@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -117,7 +118,8 @@ struct Metavariables {
   void pup(PUP::er& /*p*/) {}
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors = tmpl::list<>;
+    using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
+        Parallel::Tags::GlobalCacheImpl<Metavariables>>>;
   };
 };
 

@@ -23,6 +23,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Tags/DistributedObjectTags.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
@@ -37,6 +38,17 @@ template <class Metavariables>
 struct Component;
 /// \endcond
 }  // namespace amr
+
+namespace detail {
+template <typename ListOfProjectors>
+struct GetMutatedTags;
+
+template <typename... Projectors>
+struct GetMutatedTags<tmpl::list<Projectors...>> {
+  using type = tmpl::remove_duplicates<
+      tmpl::flatten<tmpl::append<typename Projectors::return_tags...>>>;
+};
+}  // namespace detail
 
 namespace amr::Actions {
 /// \brief Adjusts the domain given the refinement criteria
@@ -62,6 +74,31 @@ struct AdjustDomain {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ElementId<Metavariables::volume_dim>& element_id) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
+
+    // To prevent bugs when new mutable items are added to a DataBox, we require
+    // that all mutable_item_creation_tags of box are either:
+    // - mutated by one of the projectors in Metavariables::amr::projectors
+    // - in the list of distributed_object_tags
+    // - or in the list of tags mutated by this action
+    using distributed_object_tags =
+        typename ::Parallel::Tags::distributed_object_tags<
+            Metavariables, ElementId<volume_dim>>;
+    using tags_mutated_by_this_action = tmpl::list<
+        ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
+        amr::Tags::Flags<volume_dim>, amr::Tags::NeighborFlags<volume_dim>>;
+    using mutated_tags =
+        tmpl::append<distributed_object_tags, tags_mutated_by_this_action,
+                     typename detail::GetMutatedTags<
+                         typename Metavariables::amr::projectors>::type>;
+    using mutable_tags =
+        typename db::DataBox<DbTagList>::mutable_item_creation_tags;
+    using mutable_tags_not_mutated =
+        tmpl::list_difference<mutable_tags, mutated_tags>;
+    static_assert(std::is_same_v<mutable_tags_not_mutated, tmpl::list<>>,
+                  "All mutable tags in the DataBox must be explicitly mutated "
+                  "by an amr::projector.  Default initialized objects can use "
+                  "amr::projector::DefaultInitialize.");
+
     const auto& my_amr_flags = db::get<amr::Tags::Flags<volume_dim>>(box);
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);
