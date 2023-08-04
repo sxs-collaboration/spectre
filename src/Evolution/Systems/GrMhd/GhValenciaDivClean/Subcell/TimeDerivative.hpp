@@ -549,6 +549,7 @@ struct TimeDerivative {
     // 4. Compute MHD time derivatives.
     //
     // Compute FD GH derivatives with neighbor data
+    // Use highest possible FD order for number of GZ, 2 * (ghost_zone_size)
     const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
     Variables<db::wrap_tags_in<::Tags::deriv, gradients_tags, tmpl::size_t<3>,
                                Frame::Inertial>>
@@ -557,7 +558,8 @@ struct TimeDerivative {
         make_not_null(&cell_centered_gh_derivs), evolved_vars,
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
-        subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+        recons.ghost_zone_size()*2, subcell_mesh,
+        cell_centered_logical_to_inertial_inv_jacobian);
 
     // Now package the data and compute the correction
     //

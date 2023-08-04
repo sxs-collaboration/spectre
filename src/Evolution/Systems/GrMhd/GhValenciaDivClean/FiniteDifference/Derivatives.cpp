@@ -38,7 +38,7 @@ void spacetime_derivatives(
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
         evolution::dg::subcell::GhostData,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& all_ghost_data,
-    const Mesh<3>& volume_mesh,
+    const size_t& deriv_order, const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
         cell_centered_logical_to_inertial_inv_jacobian) {
@@ -92,7 +92,7 @@ void spacetime_derivatives(
 
   ::fd::partial_derivatives<gradients_tags>(
       result, volume_gh_vars, ghost_cell_vars, volume_mesh,
-      number_of_gh_components, 4,
+      number_of_gh_components, deriv_order,
       cell_centered_logical_to_inertial_inv_jacobian);
 }
 }  // namespace grmhd::GhValenciaDivClean::fd

@@ -739,10 +739,12 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   Variables<db::wrap_tags_in<::Tags::deriv, gh_gradient_tags, tmpl::size_t<3>,
                              Frame::Inertial>>
       cell_centered_gh_derivs{subcell_mesh.number_of_grid_points()};
+  const size_t fd_deriv_order = 4;
   grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
       make_not_null(&cell_centered_gh_derivs), gh_evolved_vars,
       db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box),
-      subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+      fd_deriv_order, subcell_mesh,
+      cell_centered_logical_to_inertial_inv_jacobian);
 
   auto& temp = get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
       output_minus_expected_dt_vars);
