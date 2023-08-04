@@ -19,11 +19,14 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -35,6 +38,17 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+template <typename Metavariables>
+struct MockObserverWriter {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using array_index = int;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<>>,
+                 observers::Actions::InitializeWriter<Metavariables>>>>;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+};
 
 struct test_metavariables {
   struct Target : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -49,9 +63,13 @@ struct test_metavariables {
     using compute_items_on_target = tmpl::list<>;
   };
 
+  using observed_reduction_data_tags = tmpl::list<>;
+
+  void pup(PUP::er& /*p*/) {}
+
   using const_global_cache_tags =
       tmpl::list<intrp::Tags::Sphere<Target>, Cce::Tags::FilePrefix>;
-  using component_list = tmpl::list<>;
+  using component_list = tmpl::list<MockObserverWriter<test_metavariables>>;
 };
 
 std::string get_filename(const std::string& filename_prefix,
@@ -88,6 +106,7 @@ void test(const std::string& filename_prefix,
           const std::vector<double>& radii) {
   using metavars = test_metavariables;
   using target = typename metavars::Target;
+  using writer = MockObserverWriter<metavars>;
   using spacetime_tags = typename target::vars_to_interpolate_to_target;
   using cce_tags =
       typename target::post_interpolation_callback::cce_boundary_tags;
@@ -123,8 +142,14 @@ void test(const std::string& filename_prefix,
   intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
                                            angular_ordering);
 
-  Parallel::GlobalCache<metavars> cache{
-      {std::move(sphere_opts), filename_prefix}};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
+  MockRuntimeSystem runner{{std::move(sphere_opts), filename_prefix}};
+
+  ActionTesting::emplace_nodegroup_component_and_initialize<writer>(
+      make_not_null(&runner), {});
+
+  Parallel::GlobalCache<metavars>& cache =
+      ActionTesting::cache<writer>(runner, 0);
 
   // Only need variables in the box for this test
   using db_tags = tmpl::list<::Tags::Variables<spacetime_tags>>;
@@ -230,6 +255,7 @@ void delete_files(const std::string& filename_prefix,
   }
 }
 
+// [Timeout, 10]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.DumpBondiSachsOnWorldtube",
                   "[Unit][Cce]") {
   const std::string filename_prefix{"Shrek-the-Third"};
