@@ -19,6 +19,9 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -61,6 +64,12 @@ struct ExecutePhaseChange {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
+    if constexpr (db::tag_is_retrievable_v<::Tags::TimeStepId,
+                                           db::DataBox<DbTags>>) {
+      if (not db::get<::Tags::TimeStepId>(box).is_at_slab_boundary()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
+    }
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool should_halt = false;
