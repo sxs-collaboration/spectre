@@ -206,8 +206,8 @@ struct test_metavariables {
   using cce_boundary_component =
       Cce::AnalyticWorldtubeBoundary<test_metavariables>;
   using ccm_psi0 = tmpl::list<
-          Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
-          Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
+      Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+      Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 
   using component_list =
       tmpl::list<mock_characteristic_evolution<test_metavariables>,
@@ -264,7 +264,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   Solutions::TeukolskyWave analytic_solution{extraction_radius, amplitude,
                                              duration};
   const AnalyticBoundaryDataManager analytic_manager{
-    l_max, extraction_radius, analytic_solution.get_clone()};
+      l_max, extraction_radius, analytic_solution.get_clone()};
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, filename, l_max, l_max, number_of_radial_points,
