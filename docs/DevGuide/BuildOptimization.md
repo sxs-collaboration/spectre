@@ -130,12 +130,12 @@ the compilation time or memory usage.
 
 This is simultaneously the most reliable and most labor-intensive strategy for
 understanding build costs.
-The procedure is to identify a feature you'd like to profile, create a
-specialized test for that feature, and put that test in the
-`tests/Unit/RunSingleTest/CMakeLists.txt`.
+The procedure is to identify a feature you'd like to profile and create a
+specialized test for that feature.
 Then, you can easily include or exclude uses of functions or classes that you
-want to profile, and compare the relative total cost of building
-`RunSingleTest`.
+want to profile, and compare the relative total cost of building the test
+executable. You may want to temporarily remove all other source files from
+the test executable.
 
 There are a number of tools for profiling the cost of an individual process,
 but for compilation, the detailed tools like `perf` or hpctoolkit are unlikely

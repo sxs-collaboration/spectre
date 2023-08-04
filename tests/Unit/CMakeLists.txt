@@ -48,8 +48,6 @@ if(COVERAGE)
   )
 endif()
 
-add_subdirectory(RunSingleTest)
-
 option(
   UNIT_TESTS_IN_TEST_EXECUTABLES
   "Build unit-tests as part of test-executables"

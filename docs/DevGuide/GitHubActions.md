@@ -75,7 +75,6 @@ The following build jobs are launched:
     * does not list a `C++` file that is present in the directory
     * lists a `C++` file that is not present in the directory
   - A `c++` or `python` file contains a `TODO` (case-insensitive) comment
-  - The file `tests/Unit/RunSingleTest/CMakeLists.txt` wasn't modified
   In addition, the CHECK_FILES job tests Python formatting, the release
   workflow, and other tools in `tools/`.
 * "Check Python formatting" runs the `black` and `isort` formatters over the
