@@ -60,6 +60,7 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
@@ -325,11 +326,10 @@ struct EvolutionMetavars {
                          Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;
 
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type =
-        std::conditional_t<std::is_same_v<ParallelComponent, dg_element_array>,
-                           dg_registration_list, tmpl::list<>>;
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<dg_element_array, dg_registration_list>>;
   };
 
   using component_list = tmpl::flatten<tmpl::list<

@@ -44,9 +44,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
       typename base::observed_reduction_data_tags;
   using component_list = typename base::component_list;
   using factory_creation = typename base::factory_creation;
-  template <typename ParallelComponent>
-  using registration_list =
-      typename base::template registration_list<ParallelComponent>;
+  using registration = typename base::registration;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "

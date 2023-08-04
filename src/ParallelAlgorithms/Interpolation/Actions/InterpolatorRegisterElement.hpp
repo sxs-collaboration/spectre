@@ -10,8 +10,10 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Protocols/ElementRegistrar.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -102,7 +104,8 @@ struct DeregisterElement {
 /// eliminated from a core. The use of separate functions is necessary to
 /// provide an interface usable outside of iterable actions, e.g. in specialized
 /// `pup` functions.
-struct RegisterElementWithInterpolator {
+struct RegisterElementWithInterpolator
+    : tt::ConformsTo<Parallel::protocols::ElementRegistrar> {
  private:
   template <typename ParallelComponent, typename RegisterOrDeregisterAction,
             typename Metavariables, typename ArrayIndex>
@@ -115,11 +118,7 @@ struct RegisterElementWithInterpolator {
     Parallel::simple_action<RegisterOrDeregisterAction>(interpolator);
   }
 
- public:
-  // the registration functions do not use the DataBox argument, but need to
-  // keep it to conform to the interface used in the registration and
-  // deregistration procedure in Algorithm.hpp, which also supports registration
-  // and deregistration that does use the box.
+ public:  // ElementRegistrar protocol
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(const db::DataBox<DbTagList>& /*box*/,
@@ -139,6 +138,7 @@ struct RegisterElementWithInterpolator {
         cache, array_index);
   }
 
+ public:  // Iterable action
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

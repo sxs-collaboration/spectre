@@ -143,15 +143,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
 
-  using dg_registration_list = typename base::dg_registration_list;
-
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent,
-                       typename base::dg_element_array_component>,
-        dg_registration_list, tmpl::list<>>;
-  };
+  using registration = typename base::registration;
 
   using component_list =
       tmpl::push_back<typename base::component_list,

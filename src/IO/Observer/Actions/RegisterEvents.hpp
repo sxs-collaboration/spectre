@@ -17,9 +17,11 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Protocols/ElementRegistrar.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
@@ -113,7 +115,8 @@ namespace Actions {
  * core. The use of separate functions is necessary to provide an interface
  * usable outside of iterable actions, e.g. in specialized `pup` functions.
  */
-struct RegisterEventsWithObservers {
+struct RegisterEventsWithObservers
+    : tt::ConformsTo<Parallel::protocols::ElementRegistrar> {
  private:
   template <typename ParallelComponent, typename RegisterOrDeregisterAction,
             typename DbTagList, typename Metavariables, typename ArrayIndex>
@@ -174,7 +177,7 @@ struct RegisterEventsWithObservers {
     }
   }
 
- public:
+ public:  // ElementRegistrar protocol
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(const db::DataBox<DbTagList>& box,
@@ -196,6 +199,7 @@ struct RegisterEventsWithObservers {
                                                                    array_index);
   }
 
+ public:  // Iterable action
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

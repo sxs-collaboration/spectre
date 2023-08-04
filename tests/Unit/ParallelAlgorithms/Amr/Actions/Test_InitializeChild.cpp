@@ -26,9 +26,11 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Amr/Actions/InitializeChild.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -54,11 +56,11 @@ struct Metavariables {
   static constexpr size_t volume_dim = 2;
   using component_list = tmpl::list<Component<Metavariables>,
                                     TestHelpers::amr::Registrar<Metavariables>>;
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent, Component<Metavariables>>,
-        tmpl::list<TestHelpers::amr::RegisterElement>, tmpl::list<>>;
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<Component<Metavariables>,
+                             tmpl::list<TestHelpers::amr::RegisterElement>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
