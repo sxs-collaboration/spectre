@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Limiters)
+add_subdirectory(Messages)
 
 set(LIBRARY "Test_EvolutionDg")
 
@@ -12,11 +13,9 @@ set(LIBRARY_SOURCES
   Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
-  Messages/Test_BoundaryMessage.cpp
   Tags/Test_NeighborMesh.cpp
   Test_BackgroundGrVars.cpp
   Test_BoundaryCorrectionsHelper.cpp
-  Test_InboxTags.cpp
   Test_InterpolateFromBoundary.cpp
   Test_LiftFromBoundary.cpp
   Test_MortarData.cpp
