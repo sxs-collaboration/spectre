@@ -43,7 +43,7 @@ struct CreateParent {
       std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect) {
     auto child_proxy = element_proxy[child_id];
     element_proxy[parent_id].insert(
-        cache.thisProxy, Parallel::Phase::AdjustDomain,
+        cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
         std::make_unique<Parallel::SimpleActionCallback<
             CollectDataFromChildren, decltype(child_proxy),
             ElementId<Metavariables::volume_dim>,

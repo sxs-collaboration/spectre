@@ -54,14 +54,14 @@ struct CreateChild {
     if (index_of_child_id + 1 == children_ids.size()) {
       auto parent_proxy = element_proxy[parent_id];
       element_proxy[child_id].insert(
-          cache.thisProxy, Parallel::Phase::AdjustDomain,
+          cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
           std::make_unique<Parallel::SimpleActionCallback<
               SendDataToChildren, decltype(parent_proxy),
               std::vector<ElementId<Metavariables::volume_dim>>>>(
               parent_proxy, std::move(children_ids)));
     } else {
       element_proxy[child_id].insert(
-          cache.thisProxy, Parallel::Phase::AdjustDomain,
+          cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
           std::make_unique<Parallel::SimpleActionCallback<
               CreateChild, decltype(my_proxy), ElementProxy,
               ElementId<Metavariables::volume_dim>,
