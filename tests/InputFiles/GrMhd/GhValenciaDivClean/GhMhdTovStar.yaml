@@ -13,6 +13,7 @@ ExpectedOutput:
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -217,6 +218,16 @@ EventsAndTriggers:
           Values: [3]
     Events:
       - Completion
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [1]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
 
 Observers:
   VolumeFileName: "GhMhdTovStarVolume"

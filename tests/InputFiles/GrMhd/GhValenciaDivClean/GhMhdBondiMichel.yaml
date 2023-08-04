@@ -13,10 +13,7 @@ ExpectedOutput:
 
 ResourceInfo:
   AvoidGlobalProc0: false
-  Singletons:
-    AhA:
-      Proc: Auto
-      Exclusive: false
+  Singletons: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -225,6 +222,16 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [10]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
 
 Observers:
   VolumeFileName: "GhMhdBondiMichelVolume"

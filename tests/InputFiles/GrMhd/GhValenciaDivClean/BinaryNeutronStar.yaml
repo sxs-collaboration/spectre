@@ -160,6 +160,7 @@ EventsAndTriggers:
           Interval: 1
           Offset: 0
     Events:
+      - BondiSachsInterpolation
       - ObserveTimeStep:
             SubfileName: TimeSteps
             PrintTimeToTerminal: True
@@ -194,6 +195,16 @@ EventsAndTriggers:
         Value: 1.5
     Events:
       - Completion
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
 
 Observers:
   VolumeFileName: "GhMhdVolume"
