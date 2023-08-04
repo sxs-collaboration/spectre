@@ -29,6 +29,8 @@ set(LIBRARY_SOURCES
   Test_WorldtubeData.cpp
   )
 
+add_subdirectory(Events)
+
 add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/"
