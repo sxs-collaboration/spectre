@@ -7,13 +7,17 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/InitialDataTci.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
+#include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace ForceFree::subcell {
 namespace {
@@ -27,135 +31,71 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.InitialDataTci",
   using EvolvedVars = typename System::variables_tag::type;
   EvolvedVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};
 
-  const double delta0 = 1.0e-4;
-  const double epsilon = 1.0e-3;
-  const double exponent = 4.0;
+  // While the code is supposed to be used on the subcells, that doesn't
+  // actually matter.
 
-  const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
-                                               &subcell_mesh]() {
-    const auto dg_tilde_e_magnitude = magnitude(get<Tags::TildeE>(dg_vars));
-    const auto dg_tilde_b_magnitude = magnitude(get<Tags::TildeB>(dg_vars));
-    const auto& dg_tilde_q = get<Tags::TildeQ>(dg_vars);
+  const auto subcell_vars = evolution::dg::subcell::fd::project(
+      dg_vars, dg_mesh, subcell_mesh.extents());
 
-    const auto subcell_vars = evolution::dg::subcell::fd::project(
-        dg_vars, dg_mesh, subcell_mesh.extents());
-    const auto subcell_tilde_e_magnitude =
-        magnitude(get<Tags::TildeE>(subcell_vars));
-    const auto subcell_tilde_b_magnitude =
-        magnitude(get<Tags::TildeB>(subcell_vars));
-    const auto& subcell_tilde_q = get<Tags::TildeQ>(subcell_vars);
+  evolution::dg::subcell::RdmpTciData rdmp_data{};
+  ForceFree::subcell::SetInitialRdmpData::apply(
+      make_not_null(&rdmp_data), get<ForceFree::Tags::TildeE>(dg_vars),
+      get<ForceFree::Tags::TildeB>(dg_vars),
+      get<ForceFree::Tags::TildeQ>(dg_vars),
+      evolution::dg::subcell::ActiveGrid::Dg, dg_mesh, subcell_mesh);
 
-    using std::max;
-    using std::min;
-    evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
-    rdmp_tci_data.max_variables_values =
-        DataVector{max(max(get(dg_tilde_e_magnitude)),
-                       max(get(subcell_tilde_e_magnitude))),
-                   max(max(get(dg_tilde_b_magnitude)),
-                       max(get(subcell_tilde_b_magnitude))),
-                   max(max(get(dg_tilde_q)), max(get(subcell_tilde_q)))};
-    rdmp_tci_data.min_variables_values =
-        DataVector{min(min(get(dg_tilde_e_magnitude)),
-                       min(get(subcell_tilde_e_magnitude))),
-                   min(min(get(dg_tilde_b_magnitude)),
-                       min(get(subcell_tilde_b_magnitude))),
-                   min(min(get(dg_tilde_q)), min(get(subcell_tilde_q)))};
-    return rdmp_tci_data;
-  };
+  const auto& dg_tilde_e_magnitude =
+      magnitude(get<ForceFree::Tags::TildeE>(dg_vars));
+  const auto dg_tilde_b_magnitude =
+      magnitude(get<ForceFree::Tags::TildeB>(dg_vars));
+  const auto& dg_tilde_q = get<ForceFree::Tags::TildeQ>(dg_vars);
 
-  {
-    INFO("TCI is happy");
-    const auto result = DgInitialDataTci::apply(
-        dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh);
-    CHECK(std::get<0>(result) == 0);
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-  }
+  const auto projected_subcell_tilde_e_magnitude =
+      Scalar<DataVector>(evolution::dg::subcell::fd::project(
+          get(dg_tilde_e_magnitude), dg_mesh, subcell_mesh.extents()));
+  const auto projected_subcell_tilde_b_magnitude =
+      Scalar<DataVector>(evolution::dg::subcell::fd::project(
+          get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents()));
+  const auto& subcell_tilde_q = get<ForceFree::Tags::TildeQ>(subcell_vars);
 
-  {
-    INFO("Persson TCI fails for mag(TildeE)");
-    get<Tags::TildeE>(dg_vars).get(0)[dg_mesh.number_of_grid_points() / 2] +=
-        2.0;
-    const auto result = subcell::DgInitialDataTci::apply(
-        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh);
-    CHECK(std::get<0>(result) == -1);
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-    get<Tags::TildeE>(dg_vars).get(0)[dg_mesh.number_of_grid_points() / 2] =
-        1.0;
-  }
+  evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{};
+  using std::max;
+  using std::min;
+  expected_dg_rdmp_data.max_variables_values =
+      DataVector{max(max(get(dg_tilde_e_magnitude)),
+                     max(get(projected_subcell_tilde_e_magnitude))),
+                 max(max(get(dg_tilde_b_magnitude)),
+                     max(get(projected_subcell_tilde_b_magnitude))),
+                 max(max(get(dg_tilde_q)), max(get(subcell_tilde_q)))};
+  expected_dg_rdmp_data.min_variables_values =
+      DataVector{min(min(get(dg_tilde_e_magnitude)),
+                     min(get(projected_subcell_tilde_e_magnitude))),
+                 min(min(get(dg_tilde_b_magnitude)),
+                     min(get(projected_subcell_tilde_b_magnitude))),
+                 min(min(get(dg_tilde_q)), min(get(subcell_tilde_q)))};
 
-  {
-    INFO("Persson TCI fails for mag(TildeB)");
-    get<Tags::TildeB>(dg_vars).get(0)[dg_mesh.number_of_grid_points() / 2] +=
-        2.0;
-    const auto result = subcell::DgInitialDataTci::apply(
-        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh);
-    CHECK(std::get<0>(result) == -2);
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-    get<Tags::TildeB>(dg_vars).get(0)[dg_mesh.number_of_grid_points() / 2] =
-        1.0;
-  }
+  CHECK(rdmp_data == expected_dg_rdmp_data);
 
-  {
-    INFO("Persson TCI fails for TildeQ");
-    get(get<Tags::TildeQ>(dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0;
-    const auto result = subcell::DgInitialDataTci::apply(
-        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh);
-    CHECK(std::get<0>(result) == -3);
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-    get(get<Tags::TildeQ>(dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
-  }
+  ForceFree::subcell::SetInitialRdmpData::apply(
+      make_not_null(&rdmp_data), get<ForceFree::Tags::TildeE>(subcell_vars),
+      get<ForceFree::Tags::TildeB>(subcell_vars),
+      get<ForceFree::Tags::TildeQ>(subcell_vars),
+      evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
 
-  {
-    INFO("Two-mesh RDMP fails");
-    // Test that the 2-mesh RDMP fails by setting an absurdly small epsilon
-    // and delta_0 tolerance where Persson TCI is not triggered
-    get(get<Tags::TildeQ>(dg_vars))[dg_mesh.number_of_grid_points() / 2] *= 2.0;
-    const auto result = DgInitialDataTci::apply(dg_vars, 1.0e-100, 1.0e-100,
-                                                0.0, dg_mesh, subcell_mesh);
-    CHECK(std::get<0>(result) == -4);
-    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
-  }
+  const auto subcell_tilde_e_magnitude =
+      magnitude(get<ForceFree::Tags::TildeE>(subcell_vars));
+  const auto subcell_tilde_b_magnitude =
+      magnitude(get<ForceFree::Tags::TildeB>(subcell_vars));
 
-  {
-    INFO("Test SetInitialRdmpData");
-    // While the code is supposed to be used on the subcells, that doesn't
-    // actually matter.
-    const auto& dg_tilde_e = get<Tags::TildeE>(dg_vars);
-    const auto& dg_tilde_b = get<Tags::TildeB>(dg_vars);
-    const auto& dg_tilde_q = get<Tags::TildeQ>(dg_vars);
-    using std::max;
-    using std::min;
-    const auto dg_tilde_e_magnitude = magnitude(dg_tilde_e);
-    const auto dg_tilde_b_magnitude = magnitude(dg_tilde_b);
-    const auto subcell_tilde_e_magnitude = evolution::dg::subcell::fd::project(
-        get(dg_tilde_e_magnitude), dg_mesh, subcell_mesh.extents());
-    const auto subcell_tilde_b_magnitude = evolution::dg::subcell::fd::project(
-        get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents());
-    const auto subcell_tilde_q = evolution::dg::subcell::fd::project(
-        get(dg_tilde_q), dg_mesh, subcell_mesh.extents());
-    evolution::dg::subcell::RdmpTciData rdmp_data{};
-    ForceFree::subcell::SetInitialRdmpData::apply(
-        make_not_null(&rdmp_data), dg_tilde_e, dg_tilde_b, dg_tilde_q,
-        evolution::dg::subcell::ActiveGrid::Dg, dg_mesh, subcell_mesh);
-    const evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{
-        {max(max(get(dg_tilde_e_magnitude)), max(subcell_tilde_e_magnitude)),
-         max(max(get(dg_tilde_b_magnitude)), max(subcell_tilde_b_magnitude)),
-         max(max(get(dg_tilde_q)), max(subcell_tilde_q))},
-        {min(min(get(dg_tilde_e_magnitude)), min(subcell_tilde_e_magnitude)),
-         min(min(get(dg_tilde_b_magnitude)), min(subcell_tilde_b_magnitude)),
-         min(min(get(dg_tilde_q)), min(subcell_tilde_q))}};
-    CHECK(rdmp_data == expected_dg_rdmp_data);
+  evolution::dg::subcell::RdmpTciData expected_subcell_rdmp_data{};
+  expected_subcell_rdmp_data.max_variables_values = DataVector{
+      max(get(subcell_tilde_e_magnitude)), max(get(subcell_tilde_b_magnitude)),
+      max(get(subcell_tilde_q))};
+  expected_subcell_rdmp_data.min_variables_values = DataVector{
+      min(get(subcell_tilde_e_magnitude)), min(get(subcell_tilde_b_magnitude)),
+      min(get(subcell_tilde_q))};
 
-    ForceFree::subcell::SetInitialRdmpData::apply(
-        make_not_null(&rdmp_data), dg_tilde_e, dg_tilde_b, dg_tilde_q,
-        evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
-    const evolution::dg::subcell::RdmpTciData expected_subcell_rdmp_data{
-        {max(get(dg_tilde_e_magnitude)), max(get(dg_tilde_b_magnitude)),
-         max(get(dg_tilde_q))},
-        {min(get(dg_tilde_e_magnitude)), min(get(dg_tilde_b_magnitude)),
-         min(get(dg_tilde_q))}};
-    CHECK(rdmp_data == expected_subcell_rdmp_data);
-  }
+  CHECK(rdmp_data == expected_subcell_rdmp_data);
 }
 
 }  // namespace
