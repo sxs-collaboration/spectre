@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -2780,6 +2781,12 @@ void test_output() {
       "namespace)::test_databox_tags::Tag0, (anonymous "
       "namespace)::test_databox_tags::Tag0Reference, "
       "brigand::integral_constant<int, 1> > >;\n";
+  // Remove whitespace since it may vary between compilers
+  auto remove_whitespace = [](std::string& str) {
+    str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+  };
+  remove_whitespace(output_types);
+  remove_whitespace(expected_types);
   CHECK(output_types == expected_types);
 
   std::string output_items = box.print_items();
@@ -2814,6 +2821,8 @@ void test_output() {
   os << box;
   std::string output_stream = os.str();
   std::string expected_stream = expected_types + "\n" + expected_items+ "\n";
+  remove_whitespace(output_stream);
+  remove_whitespace(expected_stream);
   CHECK(output_stream == expected_stream);
 }
 
