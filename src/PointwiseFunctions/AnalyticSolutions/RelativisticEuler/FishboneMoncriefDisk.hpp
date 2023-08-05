@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
@@ -156,7 +157,8 @@ namespace Solutions {
 class FishboneMoncriefDisk
     : public virtual evolution::initial_data::InitialData,
       public MarkAsAnalyticSolution,
-      public AnalyticSolution<3> {
+      public AnalyticSolution<3>,
+      public hydro::TemperatureInitialization<FishboneMoncriefDisk> {
  protected:
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables;
@@ -351,6 +353,13 @@ class FishboneMoncriefDisk
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
                  size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
+                 size_t index) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(

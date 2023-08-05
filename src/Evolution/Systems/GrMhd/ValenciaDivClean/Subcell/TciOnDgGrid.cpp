@@ -136,6 +136,8 @@ TciOnDgGrid<RecoveryScheme>::apply(
           make_not_null(&get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims)),
           make_not_null(
               &get<hydro::Tags::SpecificEnthalpy<DataVector>>(pre_tci_prims)),
+          make_not_null(
+              &get<hydro::Tags::Temperature<DataVector>>(pre_tci_prims)),
           tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
           spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
           primitive_from_conservative_options);

@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -119,6 +120,8 @@ namespace grmhd::AnalyticData {
  *  - Final time: 0.55
  */
 class RiemannProblem : public evolution::initial_data::InitialData,
+                       public AnalyticDataBase,
+                       public hydro::TemperatureInitialization<RiemannProblem>,
                        public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
@@ -283,23 +286,32 @@ class RiemannProblem : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<gr::Tags::Shift<DataType, 3>> /*meta*/) const
       -> tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return TemperatureInitialization::variables(
+        x, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
-  template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const {
-    static_assert(sizeof...(Tags) > 1,
-                  "The generic template will recurse infinitely if only one "
-                  "tag is being retrieved.");
-    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+  template <typename DataType, typename Tag1, typename Tag2, typename... Tags>
+  tuples::TaggedTuple<Tag1, Tag2, Tags...> variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<Tag1, Tag2, Tags...> /*meta*/) const {
+    return {tuples::get<Tag1>(variables(x, tmpl::list<Tag1>{})),
+            tuples::get<Tag2>(variables(x, tmpl::list<Tag2>{})),
+            tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      tmpl::list<Tag> /*meta*/) const {
-    return background_spacetime_.variables(x, 0.0, tmpl::list<Tag>{});
+    constexpr double dummy_time = 0.0;
+    return background_spacetime_.variables(x, dummy_time, tmpl::list<Tag>{});
   }
 
   const EquationsOfState::IdealFluid<true>& equation_of_state() const {

@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
@@ -135,7 +136,8 @@ class ProgenitorProfile {
  */
 class CcsnCollapse : public virtual evolution::initial_data::InitialData,
                      public MarkAsAnalyticData,
-                     public AnalyticDataBase {
+                     public AnalyticDataBase,
+                     public hydro::TemperatureInitialization<CcsnCollapse> {
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(
@@ -348,6 +350,7 @@ class CcsnCollapse : public virtual evolution::initial_data::InitialData,
   auto make_metric_data(size_t num_points) const ->
       typename IntermediateVariables<DataType>::MetricData;
 
+ public:
   template <typename DataType>
   auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
                  const tnsr::I<DataType, 3>& x,
@@ -379,13 +382,14 @@ class CcsnCollapse : public virtual evolution::initial_data::InitialData,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
-  // Will be added once temperature is used in grmhd tags
-  // template <typename DataType>
-  // auto variables(
-  //     gsl::not_null<IntermediateVariables<DataType>*> vars,
-  //     const tnsr::I<DataType, 3>& x,
-  //     tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
-  //     -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>;
+  template <typename DataType>
+  auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
+                 const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return TemperatureInitialization::variables(
+        vars, x, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
 
   template <typename DataType>
   auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
@@ -489,6 +493,7 @@ class CcsnCollapse : public virtual evolution::initial_data::InitialData,
 
   friend bool operator==(const CcsnCollapse& lhs, const CcsnCollapse& rhs);
 
+ protected:
   std::string progenitor_filename_{};
   detail::ProgenitorProfile prog_data_{};
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();

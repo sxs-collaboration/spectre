@@ -7,6 +7,7 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 
 namespace grmhd {
 /// Base struct for properties common to all GRMHD analytic data classes
@@ -19,6 +20,7 @@ struct AnalyticDataBase {
                       hydro::Tags::RestMassDensity<DataType>,
                       hydro::Tags::ElectronFraction<DataType>,
                       hydro::Tags::SpecificInternalEnergy<DataType>,
+                      hydro::Tags::Temperature<DataType>,
                       hydro::Tags::Pressure<DataType>,
                       hydro::Tags::SpatialVelocity<DataType, 3>,
                       hydro::Tags::MagneticField<DataType, 3>,

@@ -312,6 +312,12 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
+                 const IntermediateVars<DataType>& vars) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
                  const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;

@@ -266,6 +266,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
              hydro::Tags::LorentzFactor<DataVector>,                          \
              hydro::Tags::Pressure<DataVector>,                               \
              hydro::Tags::SpecificEnthalpy<DataVector>,                       \
+             hydro::Tags::Temperature<DataVector>,                            \
              hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,   \
              ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,    \
                           Frame::Inertial>,                                   \
@@ -302,6 +303,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
              hydro::Tags::LorentzFactor<DataVector>,                          \
              hydro::Tags::Pressure<DataVector>,                               \
              hydro::Tags::SpecificEnthalpy<DataVector>,                       \
+             hydro::Tags::Temperature<DataVector>,                            \
              hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,   \
              ::Tags::Flux<ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,    \
                           Frame::Inertial>,                                   \

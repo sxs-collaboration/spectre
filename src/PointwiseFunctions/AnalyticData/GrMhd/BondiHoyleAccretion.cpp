@@ -154,6 +154,16 @@ BondiHoyleAccretion::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>
+BondiHoyleAccretion::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
+  return equation_of_state_.temperature_from_density(
+      get<hydro::Tags::RestMassDensity<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
@@ -242,7 +252,7 @@ GENERATE_INSTANTIATIONS(
     (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
      hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
      hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
-     hydro::Tags::SpecificEnthalpy))
+     hydro::Tags::SpecificEnthalpy, hydro::Tags::Temperature))
 
 #define INSTANTIATE_VECTORS(_, data)                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \

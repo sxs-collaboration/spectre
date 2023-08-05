@@ -66,6 +66,8 @@ template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
 struct SpecificInternalEnergy;
+template <typename DataType>
+struct Temperature;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct LowerSpatialFourVelocity;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
@@ -83,5 +85,6 @@ using grmhd_tags = tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                               hydro::Tags::DivergenceCleaningField<DataType>,
                               hydro::Tags::LorentzFactor<DataType>,
                               hydro::Tags::Pressure<DataType>,
-                              hydro::Tags::SpecificEnthalpy<DataType>>;
+                              hydro::Tags::SpecificEnthalpy<DataType>,
+                              hydro::Tags::Temperature<DataType> >;
 }  // namespace hydro

@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -57,6 +58,7 @@ template <size_t Dim>
 class SmoothFlow : public evolution::initial_data::InitialData,
                    virtual public MarkAsAnalyticSolution,
                    public AnalyticSolution<Dim>,
+                   public hydro::TemperatureInitialization<SmoothFlow<Dim>>,
                    private hydro::Solutions::SmoothFlow<Dim, true> {
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
 
@@ -91,6 +93,14 @@ class SmoothFlow : public evolution::initial_data::InitialData,
 
   // Overload the variables function from the base class.
   using smooth_flow::variables;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, Dim>& x, double t,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return hydro::TemperatureInitialization<SmoothFlow<Dim>>::variables(
+        x, t, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>

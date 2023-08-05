@@ -60,6 +60,7 @@ void test_primitive_from_conservative_random(
   const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
       generator, expected_lorentz_factor, spatial_metric);
   Scalar<DataVector> expected_specific_internal_energy{};
+  Scalar<DataVector> expected_temperature{};
   Scalar<DataVector> expected_pressure{};
   if constexpr (ThermodynamicDim == 1) {
     expected_specific_internal_energy =
@@ -67,6 +68,8 @@ void test_primitive_from_conservative_random(
             expected_rest_mass_density);
     expected_pressure =
         equation_of_state.pressure_from_density(expected_rest_mass_density);
+    expected_temperature =
+        equation_of_state.temperature_from_density(expected_rest_mass_density);
   } else if constexpr (ThermodynamicDim == 2) {
     // note this call assumes an ideal fluid
     expected_specific_internal_energy =
@@ -74,6 +77,9 @@ void test_primitive_from_conservative_random(
                                                             used_for_size);
     expected_pressure = equation_of_state.pressure_from_density_and_energy(
         expected_rest_mass_density, expected_specific_internal_energy);
+    expected_temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            expected_rest_mass_density, expected_specific_internal_energy);
   } else if constexpr (ThermodynamicDim == 3) {
     static_assert("3D EoS call not implemented");
   }
@@ -128,6 +134,7 @@ void test_primitive_from_conservative_random(
   // not nan
   Scalar<DataVector> pressure(number_of_points, 0.0);
   Scalar<DataVector> specific_enthalpy(number_of_points);
+  Scalar<DataVector> temperature(number_of_points);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
           make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
@@ -135,9 +142,10 @@ void test_primitive_from_conservative_random(
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
-          tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-          sqrt_det_spatial_metric, equation_of_state,
+          make_not_null(&specific_enthalpy), make_not_null(&temperature),
+          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
+          equation_of_state,
           primitive_from_conservative_options);
 
   Approx larger_approx =
@@ -153,6 +161,8 @@ void test_primitive_from_conservative_random(
   CHECK_ITERABLE_CUSTOM_APPROX(expected_specific_enthalpy, specific_enthalpy,
                                larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_pressure, pressure, larger_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_temperature, temperature,
+                               larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_spatial_velocity, spatial_velocity,
                                larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_magnetic_field, magnetic_field,
@@ -181,6 +191,8 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   get<2>(expected_spatial_velocity) = 9.0 / 65.0;
   const auto expected_specific_internal_energy =
       make_with_value<Scalar<DataVector>>(used_for_size, 3.0);
+  const auto expected_temperature =
+      make_with_value<Scalar<DataVector>>(used_for_size, 1.0);
   const auto expected_pressure =
       make_with_value<Scalar<DataVector>>(used_for_size, 2.0);
   const auto expected_specific_enthalpy =
@@ -225,6 +237,7 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   Scalar<DataVector> rest_mass_density(number_of_points);
   Scalar<DataVector> electron_fraction(number_of_points);
   Scalar<DataVector> specific_internal_energy(number_of_points);
+  Scalar<DataVector> temperature(number_of_points);
   tnsr::I<DataVector, 3> spatial_velocity(number_of_points);
   tnsr::I<DataVector, 3> magnetic_field(number_of_points);
   Scalar<DataVector> divergence_cleaning_field(number_of_points);
@@ -241,10 +254,10 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
-          tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-          sqrt_det_spatial_metric, ideal_fluid,
-          primitive_from_conservative_options);
+          make_not_null(&specific_enthalpy), make_not_null(&temperature),
+          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
+          ideal_fluid, primitive_from_conservative_options);
 
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_electron_fraction, electron_fraction);
@@ -252,6 +265,7 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
                         specific_internal_energy);
   CHECK_ITERABLE_APPROX(expected_lorentz_factor, lorentz_factor);
   CHECK_ITERABLE_APPROX(expected_specific_enthalpy, specific_enthalpy);
+  CHECK_ITERABLE_APPROX(expected_temperature, temperature);
   CHECK_ITERABLE_APPROX(expected_pressure, pressure);
   CHECK_ITERABLE_APPROX(expected_spatial_velocity, spatial_velocity);
   CHECK_ITERABLE_APPROX(expected_magnetic_field, magnetic_field);

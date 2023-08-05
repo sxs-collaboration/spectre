@@ -36,6 +36,7 @@ spectre_target_headers(
   StressEnergy.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  Temperature.hpp
   Units.hpp
   )
 

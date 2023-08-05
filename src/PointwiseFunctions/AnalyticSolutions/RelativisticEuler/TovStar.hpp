@@ -103,7 +103,8 @@ using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     ::Tags::deriv<hydro::Tags::Pressure<DataType>, tmpl::size_t<3>,
                   Frame::Inertial>,
     hydro::Tags::SpecificInternalEnergy<DataType>,
-    Tags::MetricTimePotential<DataType>, Tags::DrMetricTimePotential<DataType>,
+    hydro::Tags::Temperature<DataType>, Tags::MetricTimePotential<DataType>,
+    Tags::DrMetricTimePotential<DataType>,
     Tags::MetricRadialPotential<DataType>,
     Tags::DrMetricRadialPotential<DataType>,
     Tags::MetricAngularPotential<DataType>,
@@ -170,6 +171,9 @@ struct TovVariables {
   void operator()(gsl::not_null<Scalar<DataType>*> specific_enthalpy,
                   gsl::not_null<Cache*> cache,
                   hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> temperature,
+                  gsl::not_null<Cache*> cache,
+                  hydro::Tags::Temperature<DataType> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> rest_mass_density,
                   gsl::not_null<Cache*> cache,
                   hydro::Tags::RestMassDensity<DataType> /*meta*/) const;

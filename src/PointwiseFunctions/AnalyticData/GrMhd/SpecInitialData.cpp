@@ -190,6 +190,21 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
 template <size_t ThermodynamicDim>
 template <typename DataType>
 void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> temperature,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::Temperature<DataType> /*meta*/) const {
+  const auto& rest_mass_density =
+      get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
+  const size_t num_points = get_size(get(rest_mass_density));
+  // Consistent with the use of temperature above we set T=0
+  for (size_t i = 0; i < num_points; ++i) {
+      get_element(get(*temperature), i) = 0.;
+    }
+}
+
+template <size_t ThermodynamicDim>
+template <typename DataType>
+void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3>*> inv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const {

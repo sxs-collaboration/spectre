@@ -237,6 +237,27 @@ FishboneMoncriefDisk::variables(
   return {std::move(specific_internal_energy)};
 }
 
+template <typename DataType, bool NeedSpacetime>
+tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>
+FishboneMoncriefDisk::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
+    const IntermediateVariables<DataType, NeedSpacetime>& vars,
+    const size_t index) const {
+  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
+      variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars,
+                index));
+
+  auto temperature = make_with_value<Scalar<DataType>>(x, 0.0);
+  variables_impl(vars, [&temperature, &rest_mass_density, this](
+                           const size_t s, const double /*potential_at_s*/) {
+    get_element(get(temperature), s) =
+        get(equation_of_state_.temperature_from_density(
+            Scalar<double>{get_element(get(rest_mass_density), s)}));
+  });
+  return {std::move(temperature)};
+}
+
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 FishboneMoncriefDisk::variables(
@@ -385,6 +406,13 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
+      const FishboneMoncriefDisk::IntermediateVariables<                      \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
+      const size_t) const;                                                    \
+  template tuples::TaggedTuple<hydro::Tags::Temperature<DTYPE(data)>>         \
+  FishboneMoncriefDisk::variables(                                            \
+      const tnsr::I<DTYPE(data), 3>& x,                                       \
+      tmpl::list<hydro::Tags::Temperature<DTYPE(data)>> /*meta*/,             \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
       const size_t) const;                                                    \

@@ -94,6 +94,8 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
             make_not_null(&get<hydro::Tags::Pressure<DataVector>>(*prim_vars)),
             make_not_null(
                 &get<hydro::Tags::SpecificEnthalpy<DataVector>>(*prim_vars)),
+            make_not_null(
+                &get<hydro::Tags::Temperature<DataVector>>(*prim_vars)),
             tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
             spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric,
             eos, primitive_from_conservative_options);

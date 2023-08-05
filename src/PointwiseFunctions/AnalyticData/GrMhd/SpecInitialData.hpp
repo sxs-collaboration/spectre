@@ -203,6 +203,9 @@ class SpecInitialData : public evolution::initial_data::InitialData,
     void operator()(gsl::not_null<Scalar<DataType>*> specific_enthalpy,
                     gsl::not_null<Cache*> cache,
                     hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const;
+    void operator()(gsl::not_null<Scalar<DataType>*> temperature,
+                    gsl::not_null<Cache*> cache,
+                    hydro::Tags::Temperature<DataType> /*meta*/) const;
     void operator()(gsl::not_null<tnsr::II<DataType, 3>*> inv_spatial_metric,
                     gsl::not_null<Cache*> cache,
                     gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const;

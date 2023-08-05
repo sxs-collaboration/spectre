@@ -204,6 +204,14 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> BondiMichel::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> BondiMichel::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
+    const IntermediateVars<DataType>& /*vars*/) const {
+  return {make_with_value<Scalar<DataType>>(x, 0.0)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& /*x*/,
@@ -366,6 +374,11 @@ bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) {
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
+  template tuples::TaggedTuple<hydro::Tags::Temperature<DTYPE(data)>>         \
+  BondiMichel::variables(                                                     \
+      const tnsr::I<DTYPE(data), 3>& x,                                       \
+      tmpl::list<hydro::Tags::Temperature<DTYPE(data)>> /*meta*/,             \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>>       \
   BondiMichel::variables(                                                     \

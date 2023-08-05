@@ -7,6 +7,7 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 
 namespace RelativisticEuler {
 /// Base struct for properties common to all Relativistic Euler analytic
@@ -19,8 +20,9 @@ struct AnalyticSolution {
   using tags = tmpl::push_back<
       typename gr::AnalyticSolution<Dim>::template tags<DataType>,
       hydro::Tags::RestMassDensity<DataType>,
+      hydro::Tags::ElectronFraction<DataType>,
       hydro::Tags::SpecificInternalEnergy<DataType>,
-      hydro::Tags::Pressure<DataType>,
+      hydro::Tags::Temperature<DataType>, hydro::Tags::Pressure<DataType>,
       hydro::Tags::SpatialVelocity<DataType, Dim>,
       hydro::Tags::MagneticField<DataType, Dim>,
       hydro::Tags::DivergenceCleaningField<DataType>,
