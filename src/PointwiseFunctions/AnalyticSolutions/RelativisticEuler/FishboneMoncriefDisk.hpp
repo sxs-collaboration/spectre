@@ -24,6 +24,9 @@
 namespace PUP {
 class er;  // IWYU pragma: keep
 }  // namespace PUP
+namespace grmhd::AnalyticData {
+class MagnetizedFmDisk;
+}  // namespace grmhd::AnalyticData
 /// \endcond
 
 // IWYU pragma: no_include <pup.h>
@@ -257,9 +260,13 @@ class FishboneMoncriefDisk
     return std::numeric_limits<size_t>::max();
   }
   template <typename T>
-  SPECTRE_ALWAYS_INLINE size_t index_helper(T /*meta*/) const {
+  SPECTRE_ALWAYS_INLINE static size_t index_helper(T /*meta*/) {
     return T::value;
   }
+
+  template <typename DataType>
+  using tags = tmpl::append<hydro::grmhd_tags<DataType>,
+                            typename gr::Solutions::KerrSchild::tags<DataType>>;
 
   /// @{
   /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`
@@ -430,6 +437,7 @@ class FishboneMoncriefDisk
 
   friend bool operator==(const FishboneMoncriefDisk& lhs,
                          const FishboneMoncriefDisk& rhs);
+  friend class grmhd::AnalyticData::MagnetizedFmDisk;
 
   double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
   double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
