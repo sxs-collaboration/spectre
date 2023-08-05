@@ -12,7 +12,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
-#include "Evolution/Systems/ForceFree/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/ForceFree/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -22,7 +22,7 @@
 namespace ForceFree::subcell {
 namespace {
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.InitialDataTci",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
                   "[Unit][Evolution]") {
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};

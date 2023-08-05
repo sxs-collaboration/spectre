@@ -7,7 +7,7 @@ spectre_target_sources(
   PRIVATE
   ComputeFluxes.hpp
   GhostData.cpp
-  InitialDataTci.cpp
+  SetInitialRdmpData.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   )
@@ -17,7 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   GhostData.hpp
-  InitialDataTci.hpp
+  SetInitialRdmpData.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
