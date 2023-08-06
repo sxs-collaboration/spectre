@@ -82,6 +82,21 @@ double relative_truncation_error(const DataVector& power_monitor,
                                  const size_t num_modes_to_use);
 /// @}
 
+/*!
+ * \brief The relative truncation error in each logical direction of the grid
+ *
+ * This overload is intended for visualization purposes only. It takes a tensor
+ * component as input, so it can be used as a kernel to post-process volume data
+ * with Python bindings (see `TransformVolumeData.py`).
+ *
+ * This function returns the relative truncation error directly, as opposed to
+ * the other overload that returns the negative log10 of the relative truncation
+ * error.
+ */
+template <size_t Dim>
+std::array<double, Dim> relative_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh);
+
 /// @{
 /*!
  * \ingroup SpectralGroup
@@ -101,8 +116,7 @@ double relative_truncation_error(const DataVector& power_monitor,
  * \warning This estimate is intended for visualization purposes only.
  */
 template <size_t Dim>
-std::array<double, Dim> truncation_error(
-    const std::array<DataVector, Dim>& power_monitors_of_u,
-    const DataVector& u);
+std::array<double, Dim> absolute_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh);
 /// @}
 }  // namespace PowerMonitors

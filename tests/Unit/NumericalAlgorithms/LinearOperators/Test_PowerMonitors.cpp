@@ -142,8 +142,8 @@ void test_relative_truncation_error_impl() {
                         test_relative_truncation_error);
 
   // Test truncation error
-  const double test_truncation_error = gsl::at(
-      PowerMonitors::truncation_error<1_st>(power_monitors, u_nodal), 0_st);
+  const double test_truncation_error =
+      PowerMonitors::absolute_truncation_error(u_nodal, mesh)[0];
 
   // Compare with the result from the relative truncation error
   const double expected_truncation_error_x =
