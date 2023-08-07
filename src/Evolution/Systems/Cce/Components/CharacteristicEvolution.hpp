@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Actions/CalculateScriInputs.hpp"
 #include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
@@ -197,6 +198,8 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       ::Actions::Label<CceEvolutionLabelTag>,
+      tmpl::conditional_t<evolve_ccm, tmpl::list<>,
+                          evolution::Actions::RunEventsAndTriggers>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface<
           evolve_ccm, typename Metavariables::cce_boundary_component>,

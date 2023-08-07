@@ -15,6 +15,8 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
+#include "Evolution/Systems/Cce/Events/ObserveFields.hpp"
+#include "Evolution/Systems/Cce/Events/ObserveTimeStep.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
@@ -36,9 +38,15 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -68,10 +76,17 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
     using factory_classes = tmpl::map<
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, cce_step_choosers>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   StepChoosers::standard_slab_choosers<
+                       system, local_time_stepping, false>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
-                   TimeSequences::all_time_sequences<std::uint64_t>>>;
+                   TimeSequences::all_time_sequences<std::uint64_t>>,
+        tmpl::pair<Event, tmpl::list<Cce::Events::ObserveFields,
+                                     Cce::Events::ObserveTimeStep>>,
+        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
+                                         Triggers::time_triggers>>>;
   };
 
   using observed_reduction_data_tags = tmpl::list<>;
