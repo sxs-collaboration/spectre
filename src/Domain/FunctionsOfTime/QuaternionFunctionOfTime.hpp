@@ -20,39 +20,41 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain::FunctionsOfTime {
-/// \ingroup ComputationalDomainGroup
-/// \brief A FunctionOfTime that stores quaternions for the rotation map
-///
-/// \details This FunctionOfTime stores quaternions that will be used in the
-/// time-dependent rotation map as well as the orbital angular velocity that
-/// will be controlled by the rotation control sytem. To get the quaternion, an
-/// ODE is solved of the form \f$ \dot{q} = \frac{1}{2} q \times \omega \f$
-/// where \f$ \omega \f$ is the orbital angular velocity which is stored
-/// internally as the derivative of an angle `PiecewisePolynomial`, and
-/// \f$ \times \f$ here is quaternion multiplication.
-///
-/// Different from a `PiecewisePolynomial`, only the quaternion
-/// itself is stored, not any of the derivatives because the derivatives must be
-/// calculated from the solved ODE at every function call. Because
-/// derivatives of the quaternion are not stored, the template parameter
-/// `MaxDeriv` refers to both the max derivative of the stored angle
-/// PiecewisePolynomial and the max derivative returned by the
-/// QuaternionFunctionOfTime. The `update` function is then just a wrapper
-/// around the internal `PiecewisePolynomial::update` function with the addition
-/// that it then updates the stored quaternions as well.
-///
-/// The angle PiecewisePolynomial is accessible through the `angle_func`,
-/// `angle_func_and_deriv`, and `angle_func_and_2_derivs` functions which
-/// correspond to the function calls of a normal PiecewisePolynomial except
-/// without the `angle_` prefix.
-///
-/// It is encouraged to use `quat_func` and `angle_func` when you want the
-/// specific values of the functions to avoid ambiguity in what you are
-/// calling. However, the original three `func` functions inherited from the
-/// FunctionOfTime base class are necessary because the maps use the generic
-/// `func` functions, thus they return the quaternion and its derivatives (which
-/// are needed for the map). This is all to keep the symmetry of naming
-/// `angle_func` and `quat_func` so that function calls won't be ambiguous.
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief A FunctionOfTime that stores quaternions for the rotation map
+ *
+ * \details This FunctionOfTime stores quaternions that will be used in the
+ * time-dependent rotation map as well as the orbital angular velocity that
+ * will be controlled by the rotation control sytem. To get the quaternion, an
+ * ODE is solved of the form \f$ \dot{q} = \frac{1}{2} q \times \omega \f$
+ * where \f$ \omega \f$ is the orbital angular velocity which is stored
+ * internally as the derivative of an angle `PiecewisePolynomial`, and
+ * \f$ \times \f$ here is quaternion multiplication.
+ *
+ * Different from a `PiecewisePolynomial`, only the quaternion
+ * itself is stored, not any of the derivatives because the derivatives must be
+ * calculated from the solved ODE at every function call. Because
+ * derivatives of the quaternion are not stored, the template parameter
+ * `MaxDeriv` refers to both the max derivative of the stored angle
+ * PiecewisePolynomial and the max derivative returned by the
+ * QuaternionFunctionOfTime. The `update` function is then just a wrapper
+ * around the internal `PiecewisePolynomial::update` function with the addition
+ * that it then updates the stored quaternions as well.
+ *
+ * The angle PiecewisePolynomial is accessible through the `angle_func`,
+ * `angle_func_and_deriv`, and `angle_func_and_2_derivs` functions which
+ * correspond to the function calls of a normal PiecewisePolynomial except
+ * without the `angle_` prefix.
+ *
+ * It is encouraged to use `quat_func` and `angle_func` when you want the
+ * specific values of the functions to avoid ambiguity in what you are
+ * calling. However, the original three `func` functions inherited from the
+ * FunctionOfTime base class are necessary because the maps use the generic
+ * `func` functions, thus they return the quaternion and its derivatives (which
+ * are needed for the map). This is all to keep the symmetry of naming
+ * `angle_func` and `quat_func` so that function calls won't be ambiguous.
+ */
 template <size_t MaxDeriv>
 class QuaternionFunctionOfTime : public FunctionOfTime {
  public:
