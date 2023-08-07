@@ -74,11 +74,11 @@ struct SystemForTest {
 };
 
 // A free function returning a moving brick domain
-template <bool mesh_is_moving>
+template <bool MeshIsMoving>
 domain::creators::Brick create_a_brick(const size_t num_dg_pts,
                                        const double initial_time) {
   auto time_dependence_ptr = [&]() {
-    if constexpr (mesh_is_moving) {
+    if constexpr (MeshIsMoving) {
       const std::array<double, 3> mesh_velocity{1, 2, 3};
       return std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(
@@ -96,13 +96,13 @@ domain::creators::Brick create_a_brick(const size_t num_dg_pts,
                                  std::move(time_dependence_ptr));
 }
 
-// if `testing_runtime_initial_data` == false, test for the compile time types
+// if `TestRuntimeInitialData` == false, test for the compile time types
 // of initial data
-template <bool test_for_moving_mesh, bool testing_runtime_initial_data>
+template <bool TestMovingMesh, bool TestRuntimeInitialData>
 void test(const gsl::not_null<std::mt19937*> gen) {
   // The test is done as follows :
   //
-  // - Create a 3D element (brick) for the test. If `test_for_moving_mesh` ==
+  // - Create a 3D element (brick) for the test. If `TestMovingMesh` ==
   //    `true`, the coordinate map of the brick is set to be time-dependent.
   // - Use Kerr-Schild or TOV solution as the background metric, depending on
   //   the type (compile or runtime) of initial data to test.
@@ -121,7 +121,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
   // Create a 3D element [3.0, 5.0]^3  for the test
   const size_t num_dg_pts = 5;
   const auto brick = [&]() {
-    if constexpr (test_for_moving_mesh) {
+    if constexpr (TestMovingMesh) {
       return create_a_brick<true>(num_dg_pts, initial_time);
     } else {
       return create_a_brick<false>(num_dg_pts, initial_time);
@@ -167,7 +167,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
           tmpl::list<typename SystemForTest::inverse_spatial_metric_tag>>>>;
 
   const auto solution = []() {
-    if constexpr (testing_runtime_initial_data) {
+    if constexpr (TestRuntimeInitialData) {
       return RelativisticEuler::Solutions::TovStar{
           1.0e-3,
           EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
@@ -184,7 +184,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
   // creation.
   auto box = [&initial_time, &brick, &element, &mesh, &initial_inertial_coords,
               &solution]() {
-    if constexpr (testing_runtime_initial_data) {
+    if constexpr (TestRuntimeInitialData) {
       return db::create<db::AddSimpleTags<
           ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
           domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Inertial>,
@@ -206,7 +206,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
   // Apply the mutator for initialization phase, and check that it has put
   // correct values of GR variables in the box.
   db::mutate_apply<evolution::dg::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, testing_runtime_initial_data>>(
+      SystemForTest, MetavariablesForTest, TestRuntimeInitialData>>(
       make_not_null(&box));
 
   const auto expected_initial_gr_vars = solution.variables(
@@ -232,10 +232,10 @@ void test(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&box));
 
   db::mutate_apply<evolution::dg::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, testing_runtime_initial_data>>(
+      SystemForTest, MetavariablesForTest, TestRuntimeInitialData>>(
       make_not_null(&box));
 
-  if constexpr (test_for_moving_mesh) {
+  if constexpr (TestMovingMesh) {
     const auto expected_gr_vars = solution.variables(
         inertial_coords, random_time, gr_variables_tag::tags_list{});
     tmpl::for_each<gr_variables_tag::tags_list>(
