@@ -23,3 +23,4 @@ installation "installed SpECTRE" and built it successfully.
 | \subpage tutorial_minimal_parallel_executable "Minimal executable " | Metavariables, Main component |
 
 See also: \subpage ParallelInfoExecutablePage
+See also: \subpage RandomAmrExecutablePage

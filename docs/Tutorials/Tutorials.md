@@ -13,6 +13,7 @@ See LICENSE.txt for details.
 - \subpage tutorial_domain_creation - How to set up the initial domain
 - \subpage spectre_using_python - How to install and work with the Python
   bindings and other Python modules provided by SpECTRE.
+- \subpage tutorial_cli - How to use the command-line interface
 - \subpage tutorial_cce - How to get started running stand-alone CCE with
   externally produced data
 - \subpage tutorial_checkpoint_restart - How to set up a SpECTRE executable for
