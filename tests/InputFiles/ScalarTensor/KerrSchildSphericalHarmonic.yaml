@@ -1,0 +1,255 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveScalarTensorSingleBlackHole
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 20
+ExpectedOutput:
+  - KerrSchildSphericalHarmonicVolume0.h5
+  - KerrSchildSphericalHarmonicReductions.h5
+  - KerrSchildSphericalHarmonicSurfaces.h5
+OutputFileChecks:
+  - Label: "check_horizon_find"
+    Subfile: "/AhA.dat"
+    FileGlob: "KerrSchildSphericalHarmonicReductions.h5"
+    AbsoluteTolerance: 1e2
+
+---
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+  InitialSlabSize: 0.001
+  StepChoosers:
+    - Constant: 0.01
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+
+PhaseChangeAndTriggers:
+
+InitialData: &InitialData
+  KerrSphericalHarmonic:
+    Mass: 1.0
+    Spin: [0.0, 0.0, 0.0]
+    Amplitude: 0.001
+    Radius: 8.0
+    Width: 2.0
+    Mode: [0, 0]
+
+ScalarMass: 0.0
+
+DomainCreator:
+  Sphere:
+    InnerRadius: &InnerRadius 1.9
+    OuterRadius: 25.0
+    Interior:
+      ExciseWithBoundaryCondition:
+        ProductDirichletAnalyticAndAnalyticConstant:
+          GeneralizedHarmonicDirichletAnalytic:
+            AnalyticPrescription: *InitialData
+          ScalarAnalyticConstant:
+            Amplitude: 0.0
+    InitialRefinement: [0, 0, 1]
+    InitialGridPoints: [6, 6, 6]
+    UseEquiangularMap: true
+    EquatorialCompression: None
+    RadialPartitioning: []
+    RadialDistribution: [Logarithmic]
+    WhichWedges: All
+    TimeDependentMaps: None
+    OuterBoundaryCondition:
+      ProductDirichletAnalyticAndAnalyticConstant:
+        GeneralizedHarmonicDirichletAnalytic:
+          AnalyticPrescription: *InitialData
+        ScalarAnalyticConstant:
+          Amplitude: 0.0
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      AnalyticChristoffel:
+        AnalyticPrescription: *InitialData
+    # The parameter choices here come from our experience with the Spectral
+    # Einstein Code (SpEC). They should be suitable for evolutions of a
+    # perturbation of a Kerr-Schild black hole.
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 3.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 1.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 64
+    Enable: true
+    BlocksToFilter: All
+  ExpFilter1:
+    Alpha: 36.0
+    HalfPower: 64
+    Enable: true
+    BlocksToFilter: All
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    ProductUpwindPenaltyGHAndUpwindPenaltyScalar:
+      UpwindPenaltyGH:
+      UpwindPenaltyScalar:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+EventsAndTriggers:
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThan
+        Value: 0.1
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [2]
+    Events:
+      - Completion
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Csw(Pi)
+            - Lapse
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(TwoIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 2
+    Events:
+      - AhA
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 4
+          Offset: 0
+    Events:
+      - ExcisionBoundaryA
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - SphericalSurface
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "KerrSchildSphericalHarmonicVolume"
+  ReductionFileName: "KerrSchildSphericalHarmonicReductions"
+  SurfaceFileName: "KerrSchildSphericalHarmonicSurfaces"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
+ApparentHorizons:
+  AhA: &AhA
+    InitialGuess:
+      LMax: &LMax 4
+      Radius: 2.2
+      Center: [0.0, 0.0, 0.0]
+    FastFlow:
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+  ControlSystemSingleAh: *AhA
+
+InterpolationTargets:
+  ExcisionBoundaryA:
+    LMax: *LMax
+    Center: [0.0, 0.0, 0.0]
+    Radius: *InnerRadius
+    AngularOrdering: "Strahlkorper"
+  SphericalSurface:
+    LMax: 10
+    Center: [0., 0., 0.]
+    Radius: 12.0
+    AngularOrdering: Strahlkorper
+
+ControlSystems:
+  WriteDataToDisk: false
+  MeasurementsPerUpdate: 4
+  Verbosity: Silent
+  Shape:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+
+
