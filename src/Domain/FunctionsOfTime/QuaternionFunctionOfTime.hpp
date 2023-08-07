@@ -54,6 +54,9 @@ namespace domain::FunctionsOfTime {
  * `func` functions, thus they return the quaternion and its derivatives (which
  * are needed for the map). This is all to keep the symmetry of naming
  * `angle_func` and `quat_func` so that function calls won't be ambiguous.
+ *
+ * \note This class conforms to the requirements of the
+ * `Parallel::GlobalCache` for objects held by mutable global cache tags.
  */
 template <size_t MaxDeriv>
 class QuaternionFunctionOfTime : public FunctionOfTime {
@@ -154,6 +157,9 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       std::ostream& os,
       const QuaternionFunctionOfTime<LocalMaxDeriv>& quaternion_f_of_t);
 
+  // In order for this class to be used in the mutable part of the global cache,
+  // stored_quaternions_and_times_ must be a data type that preserves references
+  // to elements upon insertion or resizing. A deque fits this requirement
   std::deque<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
   alignas(64) std::atomic_uint64_t stored_quaternion_size_{};

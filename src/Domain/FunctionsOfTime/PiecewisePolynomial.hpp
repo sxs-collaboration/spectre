@@ -19,8 +19,13 @@
 
 namespace domain {
 namespace FunctionsOfTime {
-/// \ingroup ComputationalDomainGroup
-/// \brief A function that has a piecewise-constant `MaxDeriv`th derivative.
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief A function that has a piecewise-constant `MaxDeriv`th derivative.
+ *
+ * \note This class conforms to the requirements of the
+ * `Parallel::GlobalCache` for objects held by mutable global cache tags.
+ */
 template <size_t MaxDeriv>
 class PiecewisePolynomial : public FunctionOfTime {
  public:
@@ -109,6 +114,9 @@ class PiecewisePolynomial : public FunctionOfTime {
   // the values of that deriv order for all components.
   using value_type = std::array<DataVector, MaxDeriv + 1>;
 
+  // In order for this class to be used in the mutable part of the global cache,
+  // deriv_info_at_update_times_ must be a data type that preserves references
+  // to elements upon insertion or resizing. A deque fits this requirement
   std::deque<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
       deriv_info_at_update_times_;
   double expiration_time_{std::numeric_limits<double>::lowest()};
