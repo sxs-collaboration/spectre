@@ -178,6 +178,8 @@ if (USE_PCH)
     ${SPECTRE_PCH_LIB}
     PUBLIC
     Blaze
+    Boost::boost
+    Boost::program_options
     Brigand
     Charmxx::charmxx
     Charmxx::pup
