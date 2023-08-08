@@ -32,14 +32,15 @@ bool types_equal(hid_t dtype1, hid_t dtype2);
 template <typename T>
 void write_data(hid_t group_id, const std::vector<T>& data,
                 const std::vector<size_t>& extents,
-                const std::string& name = "scalar");
+                const std::string& name = "scalar",
+                const bool overwrite_existing = false);
 
 /*!
  * \ingroup HDF5Group
  * \brief Write a DataVector named `name` to the group `group_id`
  */
-void write_data(hid_t group_id, const DataVector& data,
-                const std::string& name);
+void write_data(hid_t group_id, const DataVector& data, const std::string& name,
+                const bool overwrite_existing = false);
 
 /*!
  * \ingroup HDF5Group

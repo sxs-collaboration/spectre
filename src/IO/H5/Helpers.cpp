@@ -130,7 +130,8 @@ bool types_equal(const hid_t dtype1, const hid_t dtype2) {
 
 template <typename T>
 void write_data(const hid_t group_id, const std::vector<T>& data,
-                const std::vector<size_t>& extents, const std::string& name) {
+                const std::vector<size_t>& extents, const std::string& name,
+                const bool overwrite_existing) {
   std::vector<hsize_t> chunk_size(extents.size());
   for (size_t i = 0; i < chunk_size.size(); ++i) {
     // Setting the target number of bytes per chunk to a power of 2 is important
@@ -188,6 +189,15 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
                  << name);
   }
 
+  if (H5Lexists(group_id, name.c_str(), h5::h5p_default()) != 0) {
+    if (not overwrite_existing) {
+      ERROR("Dataset already exists with name '" << name << "'.");
+    }
+    // Possible optimization: resize existing dataset if it has the same
+    // dimensions.
+    CHECK_H5(H5Ldelete(group_id, name.c_str(), h5::h5p_default()),
+             "Failed to delete existing dataset");
+  }
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
                  h5::h5p_default(), property_list, h5::h5p_default());
@@ -200,11 +210,20 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
 }
 
 void write_data(const hid_t group_id, const DataVector& data,
-                const std::string& name) {
+                const std::string& name, const bool overwrite_existing) {
   const auto number_of_points = static_cast<hsize_t>(data.size());
   const hid_t space_id = H5Screate_simple(1, &number_of_points, nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
   const hid_t contained_type = h5::h5_type<double>();
+  if (H5Lexists(group_id, name.c_str(), h5::h5p_default()) != 0) {
+    if (not overwrite_existing) {
+      ERROR("Dataset already exists with name '" << name << "'.");
+    }
+    // Possible optimization: resize existing dataset if it has the same
+    // dimensions.
+    CHECK_H5(H5Ldelete(group_id, name.c_str(), h5::h5p_default()),
+             "Failed to delete existing dataset");
+  }
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
                  h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
@@ -686,10 +705,11 @@ template Index<3> read_extents<3>(const hid_t group_id,
 #define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define RANK(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_WRITE_DATA(_, DATA)                          \
-  template void write_data<TYPE(DATA)>(                          \
-      const hid_t group_id, const std::vector<TYPE(DATA)>& data, \
-      const std::vector<size_t>& extents, const std::string& name);
+#define INSTANTIATE_WRITE_DATA(_, DATA)                            \
+  template void write_data<TYPE(DATA)>(                            \
+      const hid_t group_id, const std::vector<TYPE(DATA)>& data,   \
+      const std::vector<size_t>& extents, const std::string& name, \
+      bool overwrite_existing);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
                         (float, double, int, unsigned int, long, unsigned long,

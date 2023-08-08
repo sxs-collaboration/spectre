@@ -216,7 +216,12 @@ void test() {
           serialize(domain_creator.functions_of_time()));
       // Write another tensor component separately
       volume_file.write_tensor_component(observation_id, "U",
-                                         extra_tensor_component);
+                                         DataType{1., 2., 3.});
+      CHECK_THROWS_WITH(volume_file.write_tensor_component(
+                            observation_id, "U", extra_tensor_component),
+                        Catch::Matchers::ContainsSubstring("already exists"));
+      volume_file.write_tensor_component(observation_id, "U",
+                                         extra_tensor_component, true);
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
