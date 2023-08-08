@@ -82,7 +82,7 @@ void test_variable_fixer(
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
   grmhd::ValenciaDivClean::FixConservatives variable_fixer{
-      1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0};
+      1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.e-12, 0.0};
   test_variable_fixer(variable_fixer);
   test_serialization(variable_fixer);
 
@@ -93,6 +93,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
           "MinimumValueOfYe: 1.0e-10\n"
           "CutoffYe: 1.0e-9\n"
           "SafetyFactorForB: 0.0\n"
-          "SafetyFactorForS: 0.0\n");
+          "SafetyFactorForS: 0.0\n"
+          "SafetyFactorForSCutoffD: 1.0e-12\n"
+          "SafetyFactorForSSlope: 0.0\n");
   test_variable_fixer(fixer_from_options);
 }

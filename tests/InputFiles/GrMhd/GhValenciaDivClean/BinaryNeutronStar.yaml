@@ -70,6 +70,8 @@ VariableFixing:
     MinimumValueOfYe: 0.0
     SafetyFactorForB: 1.0e-12
     SafetyFactorForS: 1.0e-12
+    SafetyFactorForSCutoffD: 1.0e-8
+    SafetyFactorForSSlope: 0.0001
   FixToAtmosphere:
     DensityOfAtmosphere: 1.0e-12
     DensityCutoff: &density_cutoff 1.0e-12

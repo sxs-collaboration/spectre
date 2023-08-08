@@ -103,6 +103,8 @@ FixConservatives::FixConservatives(
     double minimum_electron_fraction, double electron_fraction_cutoff,
     const double safety_factor_for_magnetic_field,
     const double safety_factor_for_momentum_density,
+    const double safety_factor_for_momentum_density_cutoff_d,
+    const double safety_factor_for_momentum_density_slope,
     const Options::Context& context)
     : minimum_rest_mass_density_times_lorentz_factor_(
           minimum_rest_mass_density_times_lorentz_factor),
@@ -113,7 +115,11 @@ FixConservatives::FixConservatives(
       one_minus_safety_factor_for_magnetic_field_(
           1.0 - safety_factor_for_magnetic_field),
       one_minus_safety_factor_for_momentum_density_(
-          1.0 - safety_factor_for_momentum_density) {
+          1.0 - safety_factor_for_momentum_density),
+      safety_factor_for_momentum_density_cutoff_d_(
+          safety_factor_for_momentum_density_cutoff_d),
+      safety_factor_for_momentum_density_slope_(
+          safety_factor_for_momentum_density_slope) {
   if (minimum_rest_mass_density_times_lorentz_factor_ >
       rest_mass_density_times_lorentz_factor_cutoff_) {
     PARSE_ERROR(context,
@@ -130,6 +136,19 @@ FixConservatives::FixConservatives(
                     << ") must be less than or equal to the cutoff value ("
                     << electron_fraction_cutoff_ << ')');
   }
+  if (safety_factor_for_momentum_density_slope_ < 0.0) {
+    PARSE_ERROR(context,
+                "The option SafetyFactorForSSlope cannot be negative.");
+  }
+  if (safety_factor_for_momentum_density +
+          safety_factor_for_momentum_density_slope_ *
+              log10(safety_factor_for_momentum_density_cutoff_d /
+                    minimum_rest_mass_density_times_lorentz_factor_) >=
+      1.0) {
+    PARSE_ERROR(context,
+                "SafetyFactorForSSlope too large, will lead to unphysical "
+                "cutoff at low density");
+  }
 }
 
 // NOLINTNEXTLINE(google-runtime-references)
@@ -140,6 +159,8 @@ void FixConservatives::pup(PUP::er& p) {
   p | electron_fraction_cutoff_;
   p | one_minus_safety_factor_for_magnetic_field_;
   p | one_minus_safety_factor_for_momentum_density_;
+  p | safety_factor_for_momentum_density_cutoff_d_;
+  p | safety_factor_for_momentum_density_slope_;
 }
 
 // WARNING!
@@ -205,6 +226,8 @@ bool FixConservatives::operator()(
       needed_fixing = true;
       d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
       ye_tilde = d_tilde * local_ye[s];
+      rest_mass_density_times_lorentz_factor[s] =
+          minimum_rest_mass_density_times_lorentz_factor_;
     }
 
     // Increase internal energy if necessary
@@ -257,8 +280,17 @@ bool FixConservatives::operator()(
 
     // If s_tilde_squared is small enough, no fix is needed. Otherwise, we need
     // to do some real work.
-    if (s_tilde_squared > one_minus_safety_factor_for_momentum_density_ *
-                              simple_upper_bound_for_s_tilde_squared) {
+    const double one_minus_safety_factor_for_momentum_density_at_density =
+        rest_mass_density_times_lorentz_factor[s] >
+                safety_factor_for_momentum_density_cutoff_d_
+            ? one_minus_safety_factor_for_momentum_density_
+            : one_minus_safety_factor_for_momentum_density_ +
+                  safety_factor_for_momentum_density_slope_ *
+                      log10(rest_mass_density_times_lorentz_factor[s] /
+                            safety_factor_for_momentum_density_cutoff_d_);
+    if (s_tilde_squared >
+        one_minus_safety_factor_for_momentum_density_at_density *
+            simple_upper_bound_for_s_tilde_squared) {
       // Find root of Equation B.34 of Foucart
       // NOTE:
       // - This assumes minimum specific enthalpy is 1.
@@ -337,7 +369,7 @@ bool FixConservatives::operator()(
       }
 
       const double rescaling_factor =
-          sqrt(one_minus_safety_factor_for_momentum_density_ *
+          sqrt(one_minus_safety_factor_for_momentum_density_at_density *
                upper_bound_for_s_tilde_squared(excess_lorentz_factor) /
                (s_tilde_squared + 1.e-16 * square(d_tilde)));
       if (rescaling_factor < 1.) {
@@ -359,7 +391,11 @@ bool operator==(const FixConservatives& lhs, const FixConservatives& rhs) {
          lhs.one_minus_safety_factor_for_magnetic_field_ ==
              rhs.one_minus_safety_factor_for_magnetic_field_ and
          lhs.one_minus_safety_factor_for_momentum_density_ ==
-             rhs.one_minus_safety_factor_for_momentum_density_;
+             rhs.one_minus_safety_factor_for_momentum_density_ and
+         lhs.safety_factor_for_momentum_density_cutoff_d_ ==
+             rhs.safety_factor_for_momentum_density_cutoff_d_ and
+         lhs.safety_factor_for_momentum_density_slope_ ==
+             rhs.safety_factor_for_momentum_density_slope_;
 }
 
 bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs) {
