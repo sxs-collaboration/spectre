@@ -4,6 +4,7 @@
 #include "NumericalAlgorithms/Spectral/Python/Spectral.hpp"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -29,6 +30,18 @@ void bind_spectral(py::module& m) {
             &Spectral::collocation_points),
         py::arg("mesh"), py::return_value_policy::reference,
         "Collocation points for a one-dimensional mesh.");
+  m.def("quadrature_weights",
+        static_cast<const DataVector& (*)(const Mesh<1>&)>(
+            &Spectral::quadrature_weights),
+        py::arg("mesh"), py::return_value_policy::reference);
+  m.def("differentiation_matrix",
+        static_cast<const Matrix& (*)(const Mesh<1>&)>(
+            &Spectral::differentiation_matrix),
+        py::arg("mesh"), py::return_value_policy::reference);
+  m.def("interpolation_matrix",
+        static_cast<Matrix (*)(const Mesh<1>&, const std::vector<double>&)>(
+            &Spectral::interpolation_matrix),
+        py::arg("mesh"), py::arg("target_points"));
   m.def("modal_to_nodal_matrix",
         static_cast<const Matrix& (*)(const Mesh<1>&)>(
             &Spectral::modal_to_nodal_matrix),
