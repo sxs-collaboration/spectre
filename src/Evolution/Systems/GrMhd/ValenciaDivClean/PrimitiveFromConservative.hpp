@@ -97,6 +97,10 @@ struct PrimitiveFromConservative {
           equation_of_state,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
+
+ private:
+  // Use Kastaun hydro inversion if B is dynamically unimportant
+  static constexpr bool use_hydro_optimization = true;
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
