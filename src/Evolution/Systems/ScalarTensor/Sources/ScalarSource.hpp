@@ -59,7 +59,7 @@ void add_scalar_source_to_dt_pi_scalar(
  *
  * where the source is given by
  * \f[
- *   \mathcal{S} \equiv m^2_\Psi ~.
+ *   \mathcal{S} \equiv m^2_\Psi \Psi~.
  * \f]
  *
  * Here the mass parameter value is an option that needs to be specified in the

@@ -5,6 +5,7 @@ set(LIBRARY "Test_ScalarTensor")
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_ProductOfConditions.cpp
+  BoundaryCorrections/Test_ProductOfCorrections.cpp
   Test_Characteristics.cpp
   Test_Sources.cpp
   Test_StressEnergy.cpp
