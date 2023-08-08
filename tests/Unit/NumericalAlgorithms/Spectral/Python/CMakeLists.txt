@@ -2,12 +2,6 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
-        "Unit.Spectral.Python.CollocationPoints"
-        Test_CollocationPoints.py
-        "Unit;Spectral;Python"
-        PySpectral)
-
-spectre_add_python_bindings_test(
         "Unit.Spectral.Python.LogicalCoordinates"
         Test_LogicalCoordinates.py
         "Unit;Spectral;Python"
@@ -20,7 +14,7 @@ spectre_add_python_bindings_test(
         PySpectral)
 
 spectre_add_python_bindings_test(
-        "Unit.Spectral.Python.ModalNodal"
-        Test_ModalNodal.py
+        "Unit.Spectral.Python.Spectral"
+        Test_Spectral.py
         "Unit;Spectral;Python"
         PySpectral)
