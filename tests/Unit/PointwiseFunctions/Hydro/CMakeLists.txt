@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
   Test_MassWeightedFluidItems.cpp
+  Test_QuadrupoleFormula.cpp
   Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp
   Test_StressEnergy.cpp
@@ -29,6 +30,7 @@ target_link_libraries(
   PRIVATE
   DataStructures
   DataStructuresHelpers
+  Domain
   GeneralRelativity
   GeneralRelativityHelpers
   Hydro
