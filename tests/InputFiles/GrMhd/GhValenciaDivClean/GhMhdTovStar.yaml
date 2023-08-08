@@ -69,6 +69,9 @@ VariableFixing:
     DensityCutoff: 1.0e-12
     TransitionDensityCutoff: 1.0e-11
     MaxVelocityMagnitude: 1.0e-4
+  LimitLorentzFactor:
+    MaxDensityCutoff: 1.0e-12
+    LorentzFactorCap: 1.0
 
 EvolutionSystem:
   ValenciaDivClean:

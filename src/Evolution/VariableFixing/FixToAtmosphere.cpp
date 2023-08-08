@@ -19,11 +19,10 @@
 namespace VariableFixing {
 
 template <size_t Dim>
-FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
-                                      const double density_cutoff,
-                                      const double transition_density_cutoff,
-                                      const double max_velocity_magnitude,
-                                      const Options::Context& context)
+FixToAtmosphere<Dim>::FixToAtmosphere(
+    const double density_of_atmosphere, const double density_cutoff,
+    const double transition_density_cutoff, const double max_velocity_magnitude,
+    const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
       density_cutoff_(density_cutoff),
       transition_density_cutoff_(transition_density_cutoff),
@@ -80,11 +79,41 @@ void FixToAtmosphere<Dim>::operator()(
       for (size_t d = 0; d < Dim; ++d) {
         spatial_velocity->get(d)[i] = 0.0;
       }
-      lorentz_factor->get()[i] = 1.0;
+      get(*lorentz_factor)[i] = 1.0;
     } else if (UNLIKELY(rest_mass_density->get()[i] <
                         transition_density_cutoff_)) {
       set_to_magnetic_free_transition(rest_mass_density, spatial_velocity,
                                       lorentz_factor, spatial_metric, i);
+    }
+
+    // For 2D EoS, we also need to limit the temperature / energy
+    if constexpr (ThermodynamicDim == 2) {
+      // Currently, 2D equations of state do not explicitly implement a minimum
+      // temperature, but negative values are unphysical.
+      const double min_temperature = 0.0;
+      double temperature =
+          get(equation_of_state.temperature_from_density_and_energy(
+              Scalar<double>{rest_mass_density->get()[i]},
+              Scalar<double>{specific_internal_energy->get()[i]}));
+
+      if (temperature < min_temperature) {
+        temperature = min_temperature;
+        specific_internal_energy->get()[i] =
+            get(equation_of_state
+                    .specific_internal_energy_from_density_and_temperature(
+                        Scalar<double>{rest_mass_density->get()[i]},
+                        Scalar<double>{temperature}));
+        pressure->get()[i] =
+            get(equation_of_state.pressure_from_density_and_energy(
+                Scalar<double>{rest_mass_density->get()[i]},
+                Scalar<double>{specific_internal_energy->get()[i]}));
+        specific_enthalpy->get()[i] = get(hydro::relativistic_specific_enthalpy(
+            Scalar<double>{rest_mass_density->get()[i]},
+            Scalar<double>{specific_internal_energy->get()[i]},
+            Scalar<double>{pressure->get()[i]}));
+      }
+      // We probably need a maximum temperature as well, but this is not as
+      // well defined. To be discussed once implementation becomes necessary.
     }
   }
 }
@@ -108,15 +137,18 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
         get(equation_of_state.specific_internal_energy_from_density(
             atmosphere_density));
   } else if constexpr (ThermodynamicDim == 2) {
-    Scalar<double> atmosphere_energy{0.0};
+    Scalar<double> atmosphere_temperature{0.0};
+    specific_internal_energy->get()[grid_index] = get(
+        equation_of_state.specific_internal_energy_from_density_and_temperature(
+            atmosphere_density, atmosphere_temperature));
     pressure->get()[grid_index] =
         get(equation_of_state.pressure_from_density_and_energy(
-            atmosphere_density, atmosphere_energy));
-    specific_internal_energy->get()[grid_index] = get(atmosphere_energy);
+            atmosphere_density,
+            Scalar<double>{specific_internal_energy->get()[grid_index]}));
   }
   specific_enthalpy->get()[grid_index] =
       get(hydro::relativistic_specific_enthalpy(
-          Scalar<double>{atmosphere_density},
+          atmosphere_density,
           Scalar<double>{specific_internal_energy->get()[grid_index]},
           Scalar<double>{pressure->get()[grid_index]}));
 }

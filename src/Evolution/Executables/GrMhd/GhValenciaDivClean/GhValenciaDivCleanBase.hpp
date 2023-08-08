@@ -111,6 +111,7 @@
 #include "Evolution/TypeTraits.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/LimitLorentzFactor.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -314,6 +315,8 @@ struct GhValenciaDivCleanDefaults {
               DataVector, volume_dim, domain_frame>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
       tmpl::conditional_t<
           UseDgSubcell,
@@ -335,6 +338,8 @@ struct GhValenciaDivCleanDefaults {
 
               VariableFixing::Actions::FixVariables<
                   VariableFixing::FixToAtmosphere<volume_dim>>,
+              VariableFixing::Actions::FixVariables<
+                  VariableFixing::LimitLorentzFactor>,
               Actions::UpdateConservatives>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
@@ -712,6 +717,8 @@ struct GhValenciaDivCleanTemplateBase<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
@@ -742,6 +749,8 @@ struct GhValenciaDivCleanTemplateBase<
               ordered_list_of_primitive_recovery_schemes>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
@@ -811,6 +820,8 @@ struct GhValenciaDivCleanTemplateBase<
               tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
                          VariableFixing::Actions::FixVariables<
                              VariableFixing::FixToAtmosphere<volume_dim>>,
+                         VariableFixing::Actions::FixVariables<
+                             VariableFixing::LimitLorentzFactor>,
                          Actions::UpdateConservatives,
                          evolution::Actions::RunEventsAndTriggers,
                          Actions::ChangeSlabSize, step_actions,
