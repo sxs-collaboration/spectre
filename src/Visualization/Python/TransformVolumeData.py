@@ -781,10 +781,14 @@ def transform_volume_data_command(
 
     # Print available subfile names and exit
     if not subfile_name:
-        import rich.columns
+        available_subfile_names = open_h5_files[0].all_vol_files()
+        if len(available_subfile_names) == 1:
+            subfile_name = available_subfile_names[0]
+        else:
+            import rich.columns
 
-        rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
-        return
+            rich.print(rich.columns.Columns())
+            return
 
     if subfile_name.endswith(".vol"):
         subfile_name = subfile_name[:-4]
