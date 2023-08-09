@@ -132,19 +132,43 @@ class FixConservatives {
     using type = double;
     static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
-        "Safety factor for momentum density bound."};
+        "Safety factor for momentum density bound above density cutoff."};
   };
+  /// \brief Cutoff in \f$\rho_0 W\f$ below which we use a stricter safety
+  /// factor for the magnitude of S.
+  struct SafetyFactorForSCutoffD {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "Below this value of rest mass density time Lorentz factor, limit S "
+        "more agressively."};
+  };
+
+  /// \brief Below SafetyFactorForSCutoffD, reduce \f$\epsilon_S\f$ by
+  /// SafetyFactorForSSlope times
+  /// \f$\log_{10}(\rho_0 W / SafetyFactorForSCutoffD)\f$
+  struct SafetyFactorForSSlope {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "Slope of safety factor for momentum density bound below "
+        "SafetyFactorForSCutoffD, express as a function of log10(rho*W)."};
+  };
+
   using options = tmpl::list<MinimumValueOfD, CutoffD, MinimumValueOfYe,
-                             CutoffYe, SafetyFactorForB, SafetyFactorForS>;
+                             CutoffYe, SafetyFactorForB, SafetyFactorForS,
+                             SafetyFactorForSCutoffD, SafetyFactorForSSlope>;
   static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
-  FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
-                   double rest_mass_density_times_lorentz_factor_cutoff,
-                   double minimum_electron_fraction,
-                   double electron_fraction_cutoff,
-                   double safety_factor_for_magnetic_field,
-                   double safety_factor_for_momentum_density,
+  FixConservatives(const double minimum_rest_mass_density_times_lorentz_factor,
+                   const double rest_mass_density_times_lorentz_factor_cutoff,
+                   const double minimum_electron_fraction,
+                   const double electron_fraction_cutoff,
+                   const double safety_factor_for_magnetic_field,
+                   const double safety_factor_for_momentum_density,
+                   const double safety_factor_for_momentum_density_cutoff_d,
+                   const double safety_factor_for_momentum_density_slope,
                    const Options::Context& context = {});
 
   FixConservatives() = default;
@@ -193,6 +217,10 @@ class FixConservatives {
   double one_minus_safety_factor_for_magnetic_field_{
       std::numeric_limits<double>::signaling_NaN()};
   double one_minus_safety_factor_for_momentum_density_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double safety_factor_for_momentum_density_cutoff_d_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double safety_factor_for_momentum_density_slope_{
       std::numeric_limits<double>::signaling_NaN()};
 };
 
