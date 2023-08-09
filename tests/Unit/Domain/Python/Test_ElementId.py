@@ -3,7 +3,7 @@
 
 import unittest
 
-from spectre.Domain import ElementId, SegmentId
+from spectre.Domain import ElementId, SegmentId, Side
 
 
 class TestElementId(unittest.TestCase):
@@ -35,6 +35,19 @@ class TestElementId(unittest.TestCase):
             ),
             "[B1,(L1I0,L0I0,L1I1)]",
         )
+
+    def test_members(self):
+        parent = ElementId[1](0, [SegmentId(1, 0)])
+        child_lower = ElementId[1](0, [SegmentId(2, 0)])
+        child_upper = ElementId[1](0, [SegmentId(2, 1)])
+        self.assertEqual(
+            parent.id_of_child(dim=0, side=Side.Lower), child_lower
+        )
+        self.assertEqual(
+            parent.id_of_child(dim=0, side=Side.Upper), child_upper
+        )
+        self.assertEqual(child_lower.id_of_parent(dim=0), parent)
+        self.assertEqual(child_upper.id_of_parent(dim=0), parent)
 
     def test_equality(self):
         self.assertEqual(
