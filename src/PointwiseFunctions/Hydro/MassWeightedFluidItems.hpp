@@ -7,7 +7,6 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -21,6 +20,11 @@ struct not_null;
 /// \endcond
 
 namespace hydro {
+
+
+enum class HalfPlaneIntegralMask {None, PositiveXOnly, NegativeXOnly};
+
+std::string name(const HalfPlaneIntegralMask mask);
 
 /// Tag containing TildeD * SpecificInternalEnergy
 /// Useful as a diagnostics tool, as input to volume
@@ -46,26 +50,24 @@ struct TildeDUnboundUtCriterion : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/// Contains TildeD restricted to x>0 (if ObjectLabel = A)
-/// or x<0 (if ObjectLabel = B). This provides the
+/// Contains TildeD restricted to x>0 or x<0. This provides the
 /// normalization factor for integrals over the half plane
 /// weighted by tildeD
-template <typename DataType, ::domain::ObjectLabel Label>
+template <typename DataType, HalfPlaneIntegralMask IntegralMask>
 struct TildeDInHalfPlane : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() { return "TildeD" + domain::name(Label); }
+  static std::string name() { return "TildeD" + ::hydro::name(IntegralMask); }
 };
 
 /// Contains TildeD * (coordinates in frame Fr).
-/// Label allows us to restrict the data to the x>0 (A) or x<0 (B)
-/// plane in grid coordinates (useful for NSNS). Use ObjectLabel::None
-/// to use the entire volume data.
-template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+/// IntegralMask allows us to restrict the data to the x>0 or x<0
+/// plane in grid coordinates (useful for NSNS).
+template <typename DataType, size_t Dim, HalfPlaneIntegralMask IntegralMask,
           typename Fr = Frame::Inertial>
 struct MassWeightedCoords : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
   static std::string name() {
-    return "MassWeightedCoords" + domain::name(Label);
+    return "MassWeightedCoords" + ::hydro::name(IntegralMask);
   }
 };
 }  // namespace Tags
@@ -97,20 +99,18 @@ void tilde_d_unbound_ut_criterion(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
 
 /// Returns tilde_d in one half plane and zero in the other
-/// The output is set to 0 for x<0 if Label=::domain::ObjectLabel::A
-/// and for x>0 for label B, where x is the first component of the
-/// grid coordinates.
-template <domain::ObjectLabel Label, typename DataType, size_t Dim>
+/// IntegralMask allows us to restrict the data to the x>0 or x<0
+/// plane in grid coordinates (useful for NSNS).
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
 void tilde_d_in_half_plane(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& tilde_d,
     const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords);
 
 /// Returns tilde_d * compute_coords
-/// The output is set to 0 for x<0 if Label=::domain::ObjectLabel::A
-/// and for x>0 for label B, where x is the first component of the
-/// grid coordinates.
-template <domain::ObjectLabel Label, typename DataType, size_t Dim,
+/// IntegralMask allows us to restrict the data to the x>0 or x<0
+/// plane in grid coordinates (useful for NSNS).
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
           typename Fr = Frame::Inertial>
 void mass_weighted_coords(
     const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
@@ -184,47 +184,47 @@ struct TildeDUnboundUtCriterionCompute : TildeDUnboundUtCriterion<DataType>,
 };
 
 /// Compute tag for TildeD limited to the x>0 or x<0 half plane
-template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+template <typename DataType, size_t Dim, HalfPlaneIntegralMask IntegralMask,
           typename GridCoordsTag>
-struct TildeDInHalfPlaneCompute : TildeDInHalfPlane<DataType, Label>,
+struct TildeDInHalfPlaneCompute : TildeDInHalfPlane<DataType, IntegralMask>,
                                   db::ComputeTag {
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD, GridCoordsTag>;
 
   using return_type = Scalar<DataType>;
 
-  using base = TildeDInHalfPlane<DataType, Label>;
+  using base = TildeDInHalfPlane<DataType, IntegralMask>;
 
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<Scalar<DataType>*> result,
       const Scalar<DataType>& tilde_d,
       const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords)>(
-        &tilde_d_in_half_plane<Label, DataType, Dim>);
+        &tilde_d_in_half_plane<IntegralMask, DataType, Dim>);
 };
 
 /// Compute item for TildeD * (coordinates in frame Fr).
-/// Label allows us to restrict the data to the
-/// x>0 (A) or x<0 (B) plane in grid coordinates. Use ObjectLabel::None
-/// for unrestricted data.
+/// IntegralMask allows us to restrict the data to the x>0 or x<0
+/// plane in grid coordinates (useful for NSNS).
+///
 /// Can be retrieved using `hydro::Tags::MassWeightedCoords'
-template <typename DataType, size_t Dim, ::domain::ObjectLabel Label,
+template <typename DataType, size_t Dim, HalfPlaneIntegralMask IntegralMask,
           typename GridCoordsTag, typename OutputCoordsTag,
           typename Fr = Frame::Inertial>
-struct MassWeightedCoordsCompute : MassWeightedCoords<DataType, Dim, Label>,
-                                   db::ComputeTag {
+struct MassWeightedCoordsCompute : MassWeightedCoords<DataType, Dim,
+                                   IntegralMask>, db::ComputeTag {
   using argument_tags = tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                                    GridCoordsTag, OutputCoordsTag>;
 
   using return_type = tnsr::I<DataType, Dim, Fr>;
 
-  using base = MassWeightedCoords<DataType, Dim, Label, Fr>;
+  using base = MassWeightedCoords<DataType, Dim, IntegralMask, Fr>;
 
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
       const Scalar<DataType>& tilde_d,
       const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
       const tnsr::I<DataType, Dim, Fr>& compute_coords)>(
-      &mass_weighted_coords<Label, DataType, Dim, Fr>);
+      &mass_weighted_coords<IntegralMask, DataType, Dim, Fr>);
 };
 }  // namespace Tags
 }  // namespace hydro

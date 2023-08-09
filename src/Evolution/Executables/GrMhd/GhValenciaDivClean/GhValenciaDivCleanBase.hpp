@@ -446,18 +446,22 @@ struct GhValenciaDivCleanTemplateBase<
               use_control_systems,
               tmpl::list<
                   hydro::Tags::TildeDInHalfPlaneCompute<
-                      DataVector, volume_dim, ::domain::ObjectLabel::A,
+                      DataVector, volume_dim,
+                      ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
                       Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
                   hydro::Tags::TildeDInHalfPlaneCompute<
-                      DataVector, volume_dim, ::domain::ObjectLabel::B,
+                      DataVector, volume_dim,
+                      ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
                       Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
                   hydro::Tags::MassWeightedCoordsCompute<
-                      DataVector, volume_dim, ::domain::ObjectLabel::A,
+                      DataVector, volume_dim,
+                      ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
                       Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                       Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                       Frame::Inertial>,
                   hydro::Tags::MassWeightedCoordsCompute<
-                      DataVector, volume_dim, ::domain::ObjectLabel::B,
+                      DataVector, volume_dim,
+                      ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
                       Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                       Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                       Frame::Inertial>>,
@@ -469,7 +473,8 @@ struct GhValenciaDivCleanTemplateBase<
                   DataVector, volume_dim, domain_frame>,
               hydro::Tags::LowerSpatialFourVelocityCompute,
               hydro::Tags::MassWeightedCoordsCompute<
-                  DataVector, volume_dim, ::domain::ObjectLabel::None,
+                  DataVector, volume_dim,
+                  ::hydro::HalfPlaneIntegralMask::None,
                   Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                   Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                   Frame::Inertial>,
@@ -512,18 +517,22 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           use_control_systems,
           tmpl::list<hydro::Tags::TildeDInHalfPlaneCompute<
-                         DataVector, volume_dim, ::domain::ObjectLabel::A,
+                         DataVector, volume_dim,
+                         ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
                          Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
                      hydro::Tags::TildeDInHalfPlaneCompute<
-                         DataVector, volume_dim, ::domain::ObjectLabel::B,
+                         DataVector, volume_dim,
+                         ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
                          Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
                      hydro::Tags::MassWeightedCoordsCompute<
-                         DataVector, volume_dim, ::domain::ObjectLabel::A,
+                         DataVector, volume_dim,
+                         ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
                          Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                          Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                          Frame::Inertial>,
                      hydro::Tags::MassWeightedCoordsCompute<
-                         DataVector, volume_dim, ::domain::ObjectLabel::B,
+                         DataVector, volume_dim,
+                         ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
                          Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                          Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                          Frame::Inertial>>,
@@ -533,7 +542,8 @@ struct GhValenciaDivCleanTemplateBase<
                  hydro::Tags::TildeDUnboundUtCriterionCompute<
                      DataVector, volume_dim, domain_frame>,
                  hydro::Tags::MassWeightedCoordsCompute<
-                     DataVector, volume_dim, ::domain::ObjectLabel::None,
+                     DataVector, volume_dim,
+                     ::hydro::HalfPlaneIntegralMask::None,
                      Events::Tags::ObserverCoordinates<3, Frame::Grid>,
                      Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                      Frame::Inertial>>>;
