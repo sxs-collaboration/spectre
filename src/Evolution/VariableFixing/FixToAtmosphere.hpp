@@ -104,8 +104,9 @@ class FixToAtmosphere {
         "below TransitionDensityCutoff."};
   };
 
-  using options = tmpl::list<DensityOfAtmosphere, DensityCutoff,
-                             TransitionDensityCutoff, MaxVelocityMagnitude>;
+  using options =
+      tmpl::list<DensityOfAtmosphere, DensityCutoff, TransitionDensityCutoff,
+                 MaxVelocityMagnitude>;
   static constexpr Options::String help = {
       "If the rest mass density is below DensityCutoff, it is set\n"
       "to DensityOfAtmosphere, and the pressure, specific internal energy\n"

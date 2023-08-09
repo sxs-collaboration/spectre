@@ -37,10 +37,10 @@ void test_variable_fixer(
       density, specific_internal_energy, pressure);
 
   Scalar<DataVector> lorentz_factor{
-      DataVector{5.0 / 3.0, 1.25, 1.8898223650461359}};
+      DataVector{5.0 / 3.0, 7.0710678118654752, 1.8898223650461359}};
   auto spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
-  spatial_velocity.get(0) = DataVector{0.8, 0.6, 0.6};
+  spatial_velocity.get(0) = DataVector{0.8, 0.7, 0.6};
   auto spatial_metric =
       make_with_value<tnsr::ii<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
@@ -58,10 +58,10 @@ void test_variable_fixer(
   auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
       expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{
-      DataVector{1.0, 1.25, 1.0000000001020408}};
+      DataVector{1.0, 7.0710678118654752, 1.0000000001020408}};
   auto expected_spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
-  expected_spatial_velocity.get(0)[1] = 0.6;
+  expected_spatial_velocity.get(0)[1] = 0.7;
   // The [2] component of the expected velocity is:
   //     velocity *= max_velocity_magnitude_ * (rho - rho_cut) /
   //                 (trans_rho - rho_cut) / |v^i|
@@ -90,10 +90,10 @@ void test_variable_fixer(
       density, specific_internal_energy, pressure);
 
   Scalar<DataVector> lorentz_factor{
-      DataVector{5.0 / 3.0, 1.25, 1.8898223650461359}};
+      DataVector{5.0 / 3.0, 7.0710678118654752, 1.8898223650461359}};
   auto spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
-  spatial_velocity.get(0) = DataVector{0.8, 0.6, 0.6};
+  spatial_velocity.get(0) = DataVector{0.8, 0.7, 0.6};
   auto spatial_metric =
       make_with_value<tnsr::ii<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
@@ -111,10 +111,10 @@ void test_variable_fixer(
   auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
       expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{
-      DataVector{1.0, 1.25, 1.0000000001020408}};
+      DataVector{1.0, 7.0710678118654752, 1.0000000001020408}};
   auto expected_spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
-  expected_spatial_velocity.get(0)[1] = 0.6;
+  expected_spatial_velocity.get(0)[1] = 0.7;
   // The [2] component of the expected velocity is:
   //     velocity *= max_velocity_magnitude_ * (rho - rho_cut) /
   //                 (trans_rho - rho_cut) / |v^i|
