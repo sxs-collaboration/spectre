@@ -7,9 +7,9 @@ import numpy as np
 
 from spectre.DataStructures import DataVector
 from spectre.NumericalAlgorithms.LinearOperators import (
+    absolute_truncation_error,
     power_monitors,
     relative_truncation_error,
-    truncation_error,
 )
 from spectre.Spectral import (
     Basis,
@@ -48,29 +48,13 @@ class TestPowerMonitors(unittest.TestCase):
 
     # Check that the truncation error for a straight line is consistent with the
     # analytic expectation
-    def test_relative_truncation_error(self):
-        num_points_per_dimension = 2
-
-        extent = num_points_per_dimension
-        basis = Basis.Legendre
-        quadrature = Quadrature.GaussLobatto
-        mesh = Mesh1D(extent, basis, quadrature)
+    def test_truncation_error(self):
+        mesh = Mesh1D(2, Basis.Legendre, Quadrature.GaussLobatto)
         logical_coords = np.array(logical_coordinates(mesh))[0]
 
         # Define the test function
         slope, offset = 0.1, 1.0
-        test_vec = slope * logical_coords + offset
-
-        modes_all_dim = power_monitors(test_vec, mesh)
-        modes = modes_all_dim[0]
-
-        test_relative_truncation_error_exponent = relative_truncation_error(
-            modes, extent
-        )
-
-        test_relative_truncation_error = np.power(
-            10.0, -1.0 * test_relative_truncation_error_exponent
-        )
+        test_data = slope * logical_coords + offset
 
         # For a linear function the slope and offset correspond to the power
         # monitor values
@@ -80,25 +64,20 @@ class TestPowerMonitors(unittest.TestCase):
         ) * np.exp(-0.25)
         avg = avg / (np.exp(-0.25) + np.exp(-0.25))
         expected_relative_truncation_error = np.power(10.0, avg)
+        expected_absolute_truncation_error = (
+            np.max(np.abs(test_data)) * expected_relative_truncation_error
+        )
 
+        # Test relative truncation_error
+        rel_error = relative_truncation_error(test_data, mesh)
         np.testing.assert_allclose(
-            test_relative_truncation_error,
-            expected_relative_truncation_error,
-            1e-12,
-            1e-12,
+            rel_error, expected_relative_truncation_error, 1e-12, 1e-12
         )
 
         # Test absolute truncation_error
-        test_truncation_error = np.asarray(
-            truncation_error(modes_all_dim, test_vec)
-        )
-
-        expected_truncation_error = (
-            np.max(np.abs(test_vec)) * expected_relative_truncation_error
-        )
-
+        abs_error = absolute_truncation_error(test_data, mesh)
         np.testing.assert_allclose(
-            test_truncation_error, expected_truncation_error, 1e-12, 1e-12
+            abs_error, expected_absolute_truncation_error, 1e-12, 1e-12
         )
 
 

@@ -70,6 +70,8 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
  * average with larger weights toward the highest modes. This number should
  * correspond to the number of digits resolved by the spectral expansion.
  *
+ * \note Modes that are identically zero are ignored in the weighted average.
+ *
  * \details The number of modes (`num_modes_to_use`) argument needs to be less
  * or equal than the total number of power monitors (`power_monitor.size()`).
  * In contrast with Ref. \cite Szilagyi2014fna, here we index the modes starting
@@ -79,6 +81,21 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
 double relative_truncation_error(const DataVector& power_monitor,
                                  const size_t num_modes_to_use);
 /// @}
+
+/*!
+ * \brief The relative truncation error in each logical direction of the grid
+ *
+ * This overload is intended for visualization purposes only. It takes a tensor
+ * component as input, so it can be used as a kernel to post-process volume data
+ * with Python bindings (see `TransformVolumeData.py`).
+ *
+ * This function returns the relative truncation error directly, as opposed to
+ * the other overload that returns the negative log10 of the relative truncation
+ * error.
+ */
+template <size_t Dim>
+std::array<double, Dim> relative_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh);
 
 /// @{
 /*!
@@ -99,8 +116,7 @@ double relative_truncation_error(const DataVector& power_monitor,
  * \warning This estimate is intended for visualization purposes only.
  */
 template <size_t Dim>
-std::array<double, Dim> truncation_error(
-    const std::array<DataVector, Dim>& power_monitors_of_u,
-    const DataVector& u);
+std::array<double, Dim> absolute_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh);
 /// @}
 }  // namespace PowerMonitors

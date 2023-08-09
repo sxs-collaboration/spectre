@@ -69,15 +69,14 @@ double relative_truncation_error(const DataVector& power_monitor,
   double weight_value = 0.0;
   const size_t last_index = num_modes_to_use - 1;
   for (size_t index = 0; index <= last_index; ++index) {
+    const double mode = power_monitor[index];
+    if (mode == 0.) {
+      continue;
+    }
     // Compute current weight
     weight_value =
         exp(-square(index - static_cast<double>(last_index) + 0.5));
     // Add weighted power monitor
-    const double mode = power_monitor[index];
-    ASSERT(not(mode == 0.0),
-           "A power monitor is zero bitwise. If this is one of "
-           "the highest modes, reduce the number of power monitors used to "
-           "estimate the relative truncation error.");
     weighted_average += weight_value * log10(mode);
     // Add term to weighted sum
     weight_sum += weight_value;
@@ -96,18 +95,31 @@ double relative_truncation_error(const DataVector& power_monitor,
 }
 
 template <size_t Dim>
-std::array<double, Dim> truncation_error(
-    const std::array<DataVector, Dim>& power_monitors_of_u,
-    const DataVector& u) {
+std::array<double, Dim> relative_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh) {
   std::array<double, Dim> result{};
+  const auto modes = power_monitors(tensor_component, mesh);
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto& modes_d = gsl::at(modes, d);
+    gsl::at(result, d) =
+        pow(10.0, -relative_truncation_error(modes_d, modes_d.size()));
+  }
+  return result;
+}
+
+template <size_t Dim>
+std::array<double, Dim> absolute_truncation_error(
+    const DataVector& tensor_component, const Mesh<Dim>& mesh) {
+  std::array<double, Dim> result{};
+  const auto modes = power_monitors(tensor_component, mesh);
   // Use infinity norm to estimate the order of magnitude of the variable
-  const double umax = max(abs(u));
+  const double umax = max(abs(tensor_component));
   double relative_truncation_error_in_d = 0.0;
   for (size_t d = 0; d < Dim; ++d) {
-    const auto& modes = gsl::at(power_monitors_of_u, d);
+    const auto& modes_d = gsl::at(modes, d);
     // Compute relative truncation error
     relative_truncation_error_in_d =
-        relative_truncation_error(modes, modes.size());
+        relative_truncation_error(modes_d, modes_d.size());
     // Compute absolute truncation error estimate
     gsl::at(result, d) =
         umax * pow(10.0, -1.0 * relative_truncation_error_in_d);
@@ -115,22 +127,22 @@ std::array<double, Dim> truncation_error(
   return result;
 }
 
-}  // namespace PowerMonitors
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<DataVector, DIM(data)>                                   \
-  PowerMonitors::power_monitors(const DataVector& u,                           \
-                                     const Mesh<DIM(data)>& mesh);             \
-  template void PowerMonitors::power_monitors(                                 \
-    const gsl::not_null<std::array<DataVector, DIM(data)>*> result,            \
-    const DataVector& u, const Mesh<DIM(data)>& mesh);                         \
-  template std::array<double, DIM(data)> PowerMonitors::truncation_error(      \
-    const std::array<DataVector, DIM(data)>& power_monitors_of_u,              \
-    const DataVector& u);
+#define INSTANTIATE(_, data)                                            \
+  template std::array<DataVector, DIM(data)> power_monitors(            \
+      const DataVector& u, const Mesh<DIM(data)>& mesh);                \
+  template void power_monitors(                                         \
+      const gsl::not_null<std::array<DataVector, DIM(data)>*> result,   \
+      const DataVector& u, const Mesh<DIM(data)>& mesh);                \
+  template std::array<double, DIM(data)> relative_truncation_error(     \
+      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh); \
+  template std::array<double, DIM(data)> absolute_truncation_error(     \
+      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
+
+}  // namespace PowerMonitors

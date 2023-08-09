@@ -749,9 +749,15 @@ def transform_volume_data_command(
     'parse_kernel_arg' function for all supported argument types, and
     'parse_kernel_output' for all supported return types.
 
-    The kernels can be loaded from any available Python module, such as
-    'spectre.PointwiseFunctions'. You can also execute a Python file that
-    defines kernels with the '--exec' / '-e' option.
+    The kernels can be loaded from any available Python module. Examples of
+    useful kernels:
+
+    - Anything in 'spectre.PointwiseFunctions'
+    - 'spectre.NumericalAlgorithms.LinearOperators.relative_truncation_error'
+      and 'absolute_truncation_error'
+
+    You can also execute a Python file that defines kernels with the '--exec' /
+    '-e' option.
 
     By default, the data for the input arguments are read from datasets in the
     volume files with the same names, transformed to CamelCase. For example, the
