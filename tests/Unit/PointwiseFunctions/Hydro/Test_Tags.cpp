@@ -34,6 +34,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<hydro::Tags::LorentzFactor<DataVector>>(
       "LorentzFactor");
   TestHelpers::db::test_simple_tag<
+      hydro::Tags::InversePlasmaBeta<DataVector>>("InversePlasmaBeta");
+  TestHelpers::db::test_simple_tag<
       hydro::Tags::LorentzFactorSquared<DataVector>>("LorentzFactorSquared");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::MagneticField<DataVector, 3, Frame::Distorted>>(

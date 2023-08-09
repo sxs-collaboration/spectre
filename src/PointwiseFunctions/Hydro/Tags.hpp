@@ -97,6 +97,14 @@ struct EquationOfState : EquationOfStateBase, db::SimpleTag {
   }
 };
 
+/// The inverse plasma beta \f$\beta^{-1} = b^2 / (2 p)\f$, where
+///// \f$b^2\f$ is the square of the comoving magnetic field amplitude
+///// and \f$p\f$ is the fluid pressure.
+template <typename DataType>
+struct InversePlasmaBeta : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The equation of state constructed from options in the input file
 template <bool IsRelativistic, size_t ThermodynamicDim>
 struct EquationOfStateFromOptions : EquationOfStateBase, db::SimpleTag {

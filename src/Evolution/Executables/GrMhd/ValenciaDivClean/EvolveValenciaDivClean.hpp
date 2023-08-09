@@ -161,6 +161,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
+#include "PointwiseFunctions/Hydro/InversePlasmaBeta.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -297,7 +298,8 @@ struct EvolutionMetavars {
              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
              DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>>;
+             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+      hydro::Tags::InversePlasmaBetaCompute<DataVector>>;
   using non_tensor_compute_tags = tmpl::list<
       tmpl::conditional_t<
           use_dg_subcell,
