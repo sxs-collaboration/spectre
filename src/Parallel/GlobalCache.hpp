@@ -108,6 +108,22 @@ auto get_component_if_mocked_impl() {
 template <typename ComponentList, typename ParallelComponent>
 using get_component_if_mocked =
     decltype(get_component_if_mocked_impl<ParallelComponent, ComponentList>());
+
+/// This class replaces the Charm++ base class of the GlobalCache in unit tests
+/// that don't have a Charm++ main function.
+struct MockGlobalCache {
+  MockGlobalCache() = default;
+  explicit MockGlobalCache(CkMigrateMessage* /*msg*/) {}
+  virtual ~MockGlobalCache() = default;
+  virtual void pup(PUP::er& /*p*/) {}
+};
+
+#ifdef SPECTRE_CHARM_HAS_MAIN
+static constexpr bool mock_global_cache = false;
+#else
+static constexpr bool mock_global_cache = true;
+#endif  // SPECTRE_CHARM_HAS_MAIN
+
 }  // namespace GlobalCache_detail
 
 /// \cond
@@ -179,7 +195,13 @@ auto get_parallel_component(const GlobalCache<Metavariables>& cache)
  * multiple threads (single producer).
  */
 template <typename Metavariables>
-class GlobalCache : public CBase_GlobalCache<Metavariables> {
+class GlobalCache
+    : public std::conditional_t<GlobalCache_detail::mock_global_cache,
+                                GlobalCache_detail::MockGlobalCache,
+                                CBase_GlobalCache<Metavariables>> {
+  using Base = std::conditional_t<GlobalCache_detail::mock_global_cache,
+                                  GlobalCache_detail::MockGlobalCache,
+                                  CBase_GlobalCache<Metavariables>>;
   using parallel_component_tag_list = tmpl::transform<
       typename Metavariables::component_list,
       tmpl::bind<
@@ -189,6 +211,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
       tuples::tagged_tuple_from_typelist<parallel_component_tag_list>;
 
  public:
+  static constexpr bool is_mocked = GlobalCache_detail::mock_global_cache;
   using proxy_type = CProxy_GlobalCache<Metavariables>;
   using main_proxy_type = CProxy_Main<Metavariables>;
   /// Access to the Metavariables template parameter
@@ -219,8 +242,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
               MutableTagsTuple mutable_global_cache,
               std::optional<main_proxy_type> main_proxy);
 
-  explicit GlobalCache(CkMigrateMessage* msg)
-      : CBase_GlobalCache<Metavariables>(msg) {}
+  explicit GlobalCache(CkMigrateMessage* msg) : Base(msg) {}
 
   ~GlobalCache() override {
     (void)Parallel::charmxx::RegisterChare<
@@ -585,7 +607,12 @@ void GlobalCache<Metavariables>::set_resource_info(
 template <typename Metavariables>
 typename Parallel::GlobalCache<Metavariables>::proxy_type
 GlobalCache<Metavariables>::get_this_proxy() {
-  return this->thisProxy;
+  if constexpr (is_mocked) {
+    // The proxy is not used in the testing framework
+    return Parallel::GlobalCache<Metavariables>::proxy_type{};
+  } else {
+    return this->thisProxy;
+  }
 }
 
 template <typename Metavariables>
@@ -787,8 +814,14 @@ template <typename GlobalCacheTag, typename Function, typename Metavariables,
           typename... Args>
 void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
   if (cache.get_main_proxy().has_value()) {
-    cache.thisProxy.template mutate<GlobalCacheTag, Function>(
-        std::make_tuple<Args...>(std::forward<Args>(args)...));
+    if constexpr (not GlobalCache<Metavariables>::is_mocked) {
+      cache.thisProxy.template mutate<GlobalCacheTag, Function>(
+          std::make_tuple<Args...>(std::forward<Args>(args)...));
+    } else {
+      ERROR(
+          "Main proxy is set but global cache is being mocked. This is "
+          "currently not implemented.");
+    }
   } else {
     cache.template mutate<GlobalCacheTag, Function>(
         std::make_tuple<Args...>(std::forward<Args>(args)...));

@@ -385,6 +385,15 @@ target_link_libraries(
   ${CHARM_LIB_ckmain}
   ${CHARM_LIB_conv-static}
   )
+# Add a preprocessing definition to indicate that a Charm++ main module is
+# available. This is used to conditionally compile Charm++-specific code
+# that assumes it is running in a Charm++ environment, such as the
+# `Parallel/CharmRegistration.hpp` code.
+target_compile_definitions(
+  Charmxx::main
+  INTERFACE
+  SPECTRE_CHARM_HAS_MAIN
+  )
 
 # Find and link MPI if necessary
 #
