@@ -34,5 +34,6 @@ target_link_libraries(
   RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers
+  Time
   Utilities
   )

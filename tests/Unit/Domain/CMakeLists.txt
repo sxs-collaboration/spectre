@@ -59,6 +59,7 @@ target_link_libraries(
   DomainCreators
   DomainHelpers
   GeneralRelativitySolutions
+  H5
   LinearOperators
   SphericalHarmonics
   Utilities

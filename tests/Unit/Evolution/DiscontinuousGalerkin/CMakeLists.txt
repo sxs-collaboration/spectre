@@ -37,14 +37,20 @@ target_link_libraries(
   PRIVATE
   Boost::boost
   CoordinateMaps
+  DataStructures
+  DataStructuresHelpers
   DiscontinuousGalerkin
   Domain
+  DomainCreators
   DomainStructure
+  DomainTimeDependence
   Evolution
   EvolutionDgActionsHelpers
   GeneralRelativitySolutions
   Hydro
+  Options
   RelativisticEulerSolutions
   Spectral
   Time
+  Utilities
   )

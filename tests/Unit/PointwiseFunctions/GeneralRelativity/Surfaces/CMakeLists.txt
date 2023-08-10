@@ -26,5 +26,6 @@ target_link_libraries(
   StrahlkorperGr
   StrahlkorperGrHelpers
   SphericalHarmonics
+  SphericalHarmonicsHelpers
   Utilities
 )

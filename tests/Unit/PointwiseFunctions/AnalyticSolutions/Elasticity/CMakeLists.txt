@@ -24,6 +24,7 @@ target_link_libraries(
   DataStructures
   Domain
   Elasticity
+  ElasticityPointwiseFunctions
   ElasticitySolutions
   LinearOperators
   Spectral

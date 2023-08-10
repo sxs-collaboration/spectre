@@ -33,7 +33,22 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  AnalyticData
+  AnalyticSolutions
   Boost::boost
+  CoordinateMaps
+  DataStructures
+  DataStructuresHelpers
+  DataBoxTestHelpers
+  DgSubcell
+  DomainCreators
+  Domain
   Evolution
+  FunctionsOfTime
+  InitialDataUtilities
+  LinearOperators
+  Options
+  Spectral
+  Time
   Utilities
   )
