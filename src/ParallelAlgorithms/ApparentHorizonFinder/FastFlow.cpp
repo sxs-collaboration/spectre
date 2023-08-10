@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ApparentHorizons/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 
 #include <algorithm>
 #include <array>

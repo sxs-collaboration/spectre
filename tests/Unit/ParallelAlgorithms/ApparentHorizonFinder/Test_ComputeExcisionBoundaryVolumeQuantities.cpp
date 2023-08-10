@@ -7,8 +7,6 @@
 #include <cstddef>
 #include <memory>
 
-#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
-#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/Creators/Brick.hpp"
@@ -21,6 +19,8 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"

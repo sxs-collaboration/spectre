@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -19,6 +18,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"

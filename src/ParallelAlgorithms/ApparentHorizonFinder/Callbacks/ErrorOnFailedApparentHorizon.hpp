@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ApparentHorizons/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/PrettyType.hpp"
 

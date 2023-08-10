@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ApparentHorizons/FastFlow.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/PrettyType.hpp"
 
 /// \cond
