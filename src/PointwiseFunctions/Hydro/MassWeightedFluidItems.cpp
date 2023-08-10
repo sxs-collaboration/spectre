@@ -7,10 +7,21 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace hydro {
+
+std::string name(const HalfPlaneIntegralMask mask){
+  switch(mask){
+    case HalfPlaneIntegralMask::None: return "None"; break;
+    case HalfPlaneIntegralMask::PositiveXOnly: return "PositiveXOnly"; break;
+    case HalfPlaneIntegralMask::NegativeXOnly: return "NegativeXOnly"; break;
+    default:
+      ERROR("Unknown HalfPlaneIntegralMask!");
+  }
+}
 
 template <typename DataType, size_t Dim, typename Frame>
 void u_lower_t(const gsl::not_null<Scalar<DataType>*> result,
@@ -50,7 +61,26 @@ void tilde_d_unbound_ut_criterion(
   result->get() = get(tilde_d) * step_function(-1.0 - result->get());
 }
 
-template <domain::ObjectLabel Label, typename DataType, size_t Dim, typename Fr>
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
+void tilde_d_in_half_plane(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords) {
+  get(*result) = get(tilde_d);
+  switch (IntegralMask) {
+    case HalfPlaneIntegralMask::PositiveXOnly:
+      get(*result) *= step_function(get<0>(grid_coords));
+      break;
+    case HalfPlaneIntegralMask::NegativeXOnly:
+      get(*result) *= step_function(get<0>(grid_coords) * (-1.0));
+      break;
+    default:
+      break;
+  }
+}
+
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
+          typename Fr>
 void mass_weighted_coords(
     const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
     const Scalar<DataType>& tilde_d,
@@ -58,11 +88,11 @@ void mass_weighted_coords(
     const tnsr::I<DataType, Dim, Fr>& compute_coords) {
   for (size_t i = 0; i < Dim; i++) {
     result->get(i) = get(tilde_d) * (compute_coords.get(i));
-    switch (Label) {
-      case ::domain::ObjectLabel::A:
+    switch (IntegralMask) {
+      case HalfPlaneIntegralMask::PositiveXOnly:
         result->get(i) *= step_function(get<0>(grid_coords));
         break;
-      case ::domain::ObjectLabel::B:
+      case HalfPlaneIntegralMask::NegativeXOnly:
         result->get(i) *= step_function(get<0>(grid_coords) * (-1.0));
         break;
       default:
@@ -96,10 +126,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define OBJECT(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define HALFPLANE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
-  template void mass_weighted_coords<OBJECT(data)>(                         \
+  template void mass_weighted_coords<HALFPLANE(data)>(                      \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*> \
           result,                                                           \
       const Scalar<DataVector>& tilde_d,                                    \
@@ -107,8 +137,28 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& dg_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (::domain::ObjectLabel::None, ::domain::ObjectLabel::A,
-                         ::domain::ObjectLabel::B))
+                        (HalfPlaneIntegralMask::None,
+                         HalfPlaneIntegralMask::PositiveXOnly,
+                         HalfPlaneIntegralMask::NegativeXOnly))
+
+#undef DIM
+#undef OBJECT
+#undef INSTANTIATE
+
+// For tilde_d_in_half_plane, we require limiting the integrand to a half
+// plane -> Do not instantiate the function for None
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define HALFPLANE(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE(_, data)                                                \
+  template void tilde_d_in_half_plane<HALFPLANE(data)>(                     \
+      const gsl::not_null<Scalar<DataVector>*> result,                      \
+      const Scalar<DataVector>& tilde_d,                                    \
+      const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        (HalfPlaneIntegralMask::PositiveXOnly,
+                         HalfPlaneIntegralMask::NegativeXOnly))
 
 #undef DIM
 #undef OBJECT
