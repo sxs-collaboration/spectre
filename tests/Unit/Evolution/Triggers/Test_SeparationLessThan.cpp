@@ -109,15 +109,17 @@ void test_errors() {
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
   CHECK_THROWS_WITH(trigger(0.0, Domain<3>{{}, excision_spheres}, {}, {}, {}),
-                    Catch::Contains("SeparationLessThan trigger expects an "
-                                    "excision sphere named 'ExcisionSphere"));
+                    Catch::Matchers::ContainsSubstring(
+                        "SeparationLessThan trigger expects an "
+                        "excision sphere named 'ExcisionSphere"));
 
   ExcisionSphere<3> excision_sphere_a{};
   excision_spheres["ExcisionSphere" + get_output(domain::ObjectLabel::A)] =
       std::move(excision_sphere_a);
 
   CHECK_THROWS_WITH(trigger(0.0, Domain<3>{{}, excision_spheres}, {}, {}, {}),
-                    Catch::Contains("to be time dependent, but it is not."));
+                    Catch::Matchers::ContainsSubstring(
+                        "to be time dependent, but it is not."));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Triggers.SeparationLessThan",

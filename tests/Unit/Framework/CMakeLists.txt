@@ -24,6 +24,7 @@ target_link_libraries(
   Informer
 
   PUBLIC
+  Catch2::Catch2
   Charmxx::charmxx
   DataStructures
   ErrorHandling

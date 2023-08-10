@@ -153,7 +153,8 @@ void test_errors() {
         test(f_of_t, initial_function_value, initial_time, velocity,
              decay_timescale);
       }()),
-      Catch::Contains("FixedSpeedCubic denominator should not be zero"));
+      Catch::Matchers::ContainsSubstring(
+          "FixedSpeedCubic denominator should not be zero"));
 #endif
 
   CHECK_THROWS_WITH(
@@ -172,7 +173,7 @@ void test_errors() {
         const double next_expr_time = 2.0;
         f_of_t->update(update_time, updated_deriv, next_expr_time);
       }()),
-      Catch::Contains("Cannot update this FunctionOfTime"));
+      Catch::Matchers::ContainsSubstring("Cannot update this FunctionOfTime"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -188,7 +189,8 @@ void test_errors() {
         const double next_expr_time = 2.0;
         f_of_t->reset_expiration_time(next_expr_time);
       }()),
-      Catch::Contains("Cannot reset expiration time of this FunctionOfTime"));
+      Catch::Matchers::ContainsSubstring(
+          "Cannot reset expiration time of this FunctionOfTime"));
 }
 }  // namespace
 

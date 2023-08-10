@@ -110,7 +110,7 @@ void test_connectivity() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions with a frustal cloak"));
   CHECK_THROWS_WITH(
       domain::creators::FrustalCloak(
@@ -119,7 +119,7 @@ void test_connectivity() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
 }

@@ -17,22 +17,27 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericalTorus",
   // check parse errors first
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(-1.0, 2.0, 0.1, 0.5); })(),
-      Catch::Contains("Minimum radius must be positive."));
+      Catch::Matchers::ContainsSubstring("Minimum radius must be positive."));
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(3.0, 2.0, 0.1, 0.5); })(),
-      Catch::Contains("Maximum radius must be greater than minimum radius."));
+      Catch::Matchers::ContainsSubstring(
+          "Maximum radius must be greater than minimum radius."));
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(1.0, 2.0, 10.0, 0.5); })(),
-      Catch::Contains("Minimum polar angle should be less than pi/2."));
+      Catch::Matchers::ContainsSubstring(
+          "Minimum polar angle should be less than pi/2."));
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(1.0, 2.0, -0.1, 0.5); })(),
-      Catch::Contains("Minimum polar angle should be positive"));
+      Catch::Matchers::ContainsSubstring(
+          "Minimum polar angle should be positive"));
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(1.0, 2.0, 0.1, -0.5); })(),
-      Catch::Contains("Fraction of torus included must be positive."));
+      Catch::Matchers::ContainsSubstring(
+          "Fraction of torus included must be positive."));
   CHECK_THROWS_WITH(
       ([]() { domain::CoordinateMaps::SphericalTorus(1.0, 2.0, 0.1, 2.0); })(),
-      Catch::Contains("Fraction of torus included must be at most 1."));
+      Catch::Matchers::ContainsSubstring(
+          "Fraction of torus included must be at most 1."));
 
   // check constructor
   CHECK(domain::CoordinateMaps::SphericalTorus(std::array<double, 2>{1.0, 2.0},

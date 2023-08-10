@@ -56,7 +56,7 @@ void test_excision_sphere_tag() {
   CHECK_THROWS_WITH(
       Tags::ExcisionSphere<3>::create_from_options(shell,
                                                    "OtherExcisionSphere"),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Specified excision sphere 'OtherExcisionSphere' not available. "
           "Available excision spheres are: (ExcisionSphere)"));
 }
@@ -386,7 +386,7 @@ void test_check_input_file() {
         (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
              create_from_options(bbh_incorrect, "ExcisionSphereA",
                                  kerr_schild_correct)),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Only circular orbits are implemented at the moment so the "
             "angular velocity should be [0., 0., orbital_radius^(-3/2)] = "));
   }
@@ -398,7 +398,7 @@ void test_check_input_file() {
     CHECK_THROWS_WITH(
         (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
              create_from_options(shell, "ExcisionSphere", kerr_schild_correct)),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Expected functions of time to contain 'Rotation'."));
   }
   {
@@ -408,18 +408,18 @@ void test_check_input_file() {
         (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
              create_from_options(bbh_correct, "ExcisionSphere",
                                  kerr_schild_off_center)),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "The central black hole must be centered at [0., 0., 0.]."));
   }
   {
     const gr::Solutions::KerrSchild kerr_schild_spinning(
         1., make_array(0.1, 0., 0.), make_array(0., 0., 0.));
-    CHECK_THROWS_WITH(
-        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
-             create_from_options(bbh_correct, "ExcisionSphere",
-                                 kerr_schild_spinning)),
-        Catch::Matchers::Contains("Black hole spin is not implemented yet but "
-                                  "you requested non-zero spin."));
+    CHECK_THROWS_WITH((Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
+                           create_from_options(bbh_correct, "ExcisionSphere",
+                                               kerr_schild_spinning)),
+                      Catch::Matchers::ContainsSubstring(
+                          "Black hole spin is not implemented yet but "
+                          "you requested non-zero spin."));
   }
   {
     const gr::Solutions::KerrSchild kerr_schild_2M(2., make_array(0., 0., 0.),
@@ -429,7 +429,8 @@ void test_check_input_file() {
             3, gr::Solutions::KerrSchild>::create_from_options(bbh_correct,
                                                                "ExcisionSphere",
                                                                kerr_schild_2M)),
-        Catch::Matchers::Contains("The central black hole must have mass 1."));
+        Catch::Matchers::ContainsSubstring(
+            "The central black hole must have mass 1."));
   }
 }
 

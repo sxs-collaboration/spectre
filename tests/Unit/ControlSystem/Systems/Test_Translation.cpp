@@ -210,7 +210,7 @@ void test_names() {
         const std::string component_name = *translation::component_name(1, 4);
         (void)component_name;
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Translation control expects 3 components but there are 4 instead."));
 #endif  // SPECTRE_DEBUG
 }

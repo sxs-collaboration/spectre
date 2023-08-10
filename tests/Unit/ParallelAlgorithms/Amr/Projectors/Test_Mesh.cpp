@@ -67,16 +67,17 @@ void test_mesh_2d() {
                               std::array{gauss_lobatto, gauss_lobatto}};
   CHECK_THROWS_WITH(
       amr::projectors::parent_mesh(std::vector{mesh_3_5, mesh_mismatch_basis}),
-      Catch::Contains("AMR does not currently support joining elements with "
-                      "different quadratures or bases"));
+      Catch::Matchers::ContainsSubstring(
+          "AMR does not currently support joining elements with "
+          "different quadratures or bases"));
   Mesh<2> mesh_mismatch_quadrature{
       std::array{2_st, 4_st}, std::array{legendre, legendre},
       std::array{Spectral::Quadrature::Gauss, gauss_lobatto}};
-  CHECK_THROWS_WITH(
-      amr::projectors::parent_mesh(
-          std::vector{mesh_3_5, mesh_mismatch_quadrature}),
-      Catch::Contains("AMR does not currently support joining elements with "
-                      "different quadratures or bases"));
+  CHECK_THROWS_WITH(amr::projectors::parent_mesh(
+                        std::vector{mesh_3_5, mesh_mismatch_quadrature}),
+                    Catch::Matchers::ContainsSubstring(
+                        "AMR does not currently support joining elements with "
+                        "different quadratures or bases"));
 #endif
 }
 
@@ -151,19 +152,19 @@ void test_mesh_3d() {
       std::array{2_st, 4_st, 3_st},
       std::array{legendre, Spectral::Basis::Chebyshev, legendre},
       std::array{gauss_lobatto, gauss_lobatto, gauss_lobatto}};
-  CHECK_THROWS_WITH(
-      amr::projectors::parent_mesh(
-          std::vector{mesh_3_5_7, mesh_mismatch_basis}),
-      Catch::Contains("AMR does not currently support joining elements with "
-                      "different quadratures or bases"));
+  CHECK_THROWS_WITH(amr::projectors::parent_mesh(
+                        std::vector{mesh_3_5_7, mesh_mismatch_basis}),
+                    Catch::Matchers::ContainsSubstring(
+                        "AMR does not currently support joining elements with "
+                        "different quadratures or bases"));
   Mesh<3> mesh_mismatch_quadrature{
       std::array{2_st, 4_st, 3_st}, std::array{legendre, legendre, legendre},
       std::array{Spectral::Quadrature::Gauss, gauss_lobatto, gauss_lobatto}};
-  CHECK_THROWS_WITH(
-      amr::projectors::parent_mesh(
-          std::vector{mesh_3_5_7, mesh_mismatch_quadrature}),
-      Catch::Contains("AMR does not currently support joining elements with "
-                      "different quadratures or bases"));
+  CHECK_THROWS_WITH(amr::projectors::parent_mesh(
+                        std::vector{mesh_3_5_7, mesh_mismatch_quadrature}),
+                    Catch::Matchers::ContainsSubstring(
+                        "AMR does not currently support joining elements with "
+                        "different quadratures or bases"));
 #endif
 }
 

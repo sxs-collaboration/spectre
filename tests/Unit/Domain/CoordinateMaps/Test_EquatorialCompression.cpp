@@ -104,9 +104,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
   test_is_identity();
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      (CoordinateMaps::EquatorialCompression(-0.2)),
-      Catch::Matchers::Contains("The aspect_ratio must be greater than zero."));
+  CHECK_THROWS_WITH((CoordinateMaps::EquatorialCompression(-0.2)),
+                    Catch::Matchers::ContainsSubstring(
+                        "The aspect_ratio must be greater than zero."));
 #endif
 }
 }  // namespace domain

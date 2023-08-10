@@ -105,7 +105,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
             Convergence::Criteria{2, 0., 0.5}, 1, 1., 1.};
         has_not_converged.reason();
       }()),
-      Catch::Matchers::Contains("Tried to retrieve the convergence reason, but "
-                                "has not yet converged."));
+      Catch::Matchers::ContainsSubstring(
+          "Tried to retrieve the convergence reason, but "
+          "has not yet converged."));
 #endif
 }

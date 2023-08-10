@@ -17,6 +17,12 @@ function(add_standalone_test_executable EXECUTABLE_NAME)
     ${EXECUTABLE_NAME}.cpp
     )
 
+  target_link_libraries(
+    ${EXECUTABLE_NAME}
+    PRIVATE
+    Catch2::Catch2
+    )
+
   add_dependencies(
     ${EXECUTABLE_NAME}
     module_GlobalCache

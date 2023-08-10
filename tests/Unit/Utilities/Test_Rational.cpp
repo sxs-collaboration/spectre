@@ -83,22 +83,27 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
 
   // Check assertions
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(Rational(1, 0), Catch::Contains("Division by zero"));
-  CHECK_THROWS_WITH(Rational(0).inverse(), Catch::Contains("Division by zero"));
-  CHECK_THROWS_WITH(Rational(1) / 0, Catch::Contains("Division by zero"));
+  CHECK_THROWS_WITH(Rational(1, 0),
+                    Catch::Matchers::ContainsSubstring("Division by zero"));
+  CHECK_THROWS_WITH(Rational(0).inverse(),
+                    Catch::Matchers::ContainsSubstring("Division by zero"));
+  CHECK_THROWS_WITH(Rational(1) / 0,
+                    Catch::Matchers::ContainsSubstring("Division by zero"));
   CHECK_THROWS_WITH(
       []() {
         Rational r(1);
         r /= 0;
       }(),
-      Catch::Contains("Division by zero"));
-  CHECK_THROWS_WITH(Rational(1000000) * Rational(1000000),
-                    Catch::Contains("Rational overflow: 1000000000000/1"));
-  CHECK_THROWS_WITH(Rational(1, 1000000) * Rational(1, 1000000),
-                    Catch::Contains("Rational overflow: 1/1000000000000"));
+      Catch::Matchers::ContainsSubstring("Division by zero"));
+  CHECK_THROWS_WITH(
+      Rational(1000000) * Rational(1000000),
+      Catch::Matchers::ContainsSubstring("Rational overflow: 1000000000000/1"));
+  CHECK_THROWS_WITH(
+      Rational(1, 1000000) * Rational(1, 1000000),
+      Catch::Matchers::ContainsSubstring("Rational overflow: 1/1000000000000"));
   CHECK_THROWS_WITH(
       make_with_value<Rational>(1, 1.5),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Only integer-valued Rationals can be created with MakeWithValue"));
 #endif
 }

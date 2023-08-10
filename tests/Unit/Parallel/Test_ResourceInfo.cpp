@@ -83,7 +83,8 @@ void test_singleton_info() {
                           "Exclusive: true\n");
                       (void)info_holder_error;
                     })(),
-                    Catch::Contains("Proc must be a non-negative integer."));
+                    Catch::Matchers::ContainsSubstring(
+                        "Proc must be a non-negative integer."));
 }
 
 void test_singleton_pack() {
@@ -246,7 +247,8 @@ void test_errors() {
                 "    Proc: -2\n"
                 "    Exclusive: false\n");
       })(),
-      Catch::Contains("Proc must be a non-negative integer."));
+      Catch::Matchers::ContainsSubstring(
+          "Proc must be a non-negative integer."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -258,8 +260,9 @@ void test_errors() {
                 "    Proc: 0\n"
                 "    Exclusive: true\n");
       })(),
-      Catch::Contains("A singleton has requested to be exclusively on proc 0, "
-                      "but the AvoidGlobalProc0 option is also set to true."));
+      Catch::Matchers::ContainsSubstring(
+          "A singleton has requested to be exclusively on proc 0, "
+          "but the AvoidGlobalProc0 option is also set to true."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -274,7 +277,7 @@ void test_errors() {
             "    Proc: 0\n"
             "    Exclusive: true\n");
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Two singletons have requested to be on proc 0, but at least one of "
           "them has requested to be exclusively on this proc."));
 
@@ -289,7 +292,7 @@ void test_errors() {
                 "    Exclusive: false\n");
         resource_info.build_singleton_map(cache);
       })(),
-      Catch::Contains("is beyond the last proc"));
+      Catch::Matchers::ContainsSubstring("is beyond the last proc"));
 
   CHECK_THROWS_WITH(
       ([&cache]() {
@@ -302,7 +305,7 @@ void test_errors() {
                 "    Exclusive: true\n");
         resource_info.build_singleton_map(cache);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The total number of cores requested is less than or equal to the "
           "number of cores that requested to be exclusive, i.e. without"));
 
@@ -318,8 +321,9 @@ void test_errors() {
         [[maybe_unused]] const size_t proc =
             resource_info.template proc_for<FakeSingleton<metavars, 0>>();
       })(),
-      Catch::Contains("The singleton map has not been built yet. You must call "
-                      "build_singleton_map() before you call this function."));
+      Catch::Matchers::ContainsSubstring(
+          "The singleton map has not been built yet. You must call "
+          "build_singleton_map() before you call this function."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -333,8 +337,9 @@ void test_errors() {
         [[maybe_unused]] const auto& procs_to_ignore =
             resource_info.procs_to_ignore();
       })(),
-      Catch::Contains("The singleton map has not been built yet. You must call "
-                      "build_singleton_map() before you call this function."));
+      Catch::Matchers::ContainsSubstring(
+          "The singleton map has not been built yet. You must call "
+          "build_singleton_map() before you call this function."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -348,8 +353,9 @@ void test_errors() {
         [[maybe_unused]] const auto& procs_to_ignore =
             resource_info.procs_available_for_elements();
       })(),
-      Catch::Contains("The singleton map has not been built yet. You must call "
-                      "build_singleton_map() before you call this function."));
+      Catch::Matchers::ContainsSubstring(
+          "The singleton map has not been built yet. You must call "
+          "build_singleton_map() before you call this function."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -363,8 +369,9 @@ void test_errors() {
         [[maybe_unused]] const auto singleton_info =
             resource_info.get_singleton_info<FakeSingleton<metavars, 0>>();
       })(),
-      Catch::Contains("The singleton map has not been built yet. You must call "
-                      "build_singleton_map() before you call this function."));
+      Catch::Matchers::ContainsSubstring(
+          "The singleton map has not been built yet. You must call "
+          "build_singleton_map() before you call this function."));
 }
 
 template <typename Metavariables>

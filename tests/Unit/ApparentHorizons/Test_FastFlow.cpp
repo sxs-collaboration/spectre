@@ -317,7 +317,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
                                            "DivergenceTol: 0.5\n"
                                            "DivergenceIter: 6\n"
                                            "MaxIts: 200"),
-      Catch::Matchers::Contains("Value 0.5 is below the lower bound of 1."));
+      Catch::Matchers::ContainsSubstring(
+          "Value 0.5 is below the lower bound of 1."));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<FastFlow>("Flow: Crud\n"
                                            "Alpha: 1.1\n"
@@ -327,6 +328,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
                                            "DivergenceTol: 1.1\n"
                                            "DivergenceIter: 6\n"
                                            "MaxIts: 200"),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"Crud\" to FastFlow::FlowType"));
 }

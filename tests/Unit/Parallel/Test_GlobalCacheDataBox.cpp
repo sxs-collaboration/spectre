@@ -48,7 +48,7 @@ void test_mem_monitor_entry_method_error() {
 
         empty_cache.compute_size_for_memory_monitor(0.0);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "GlobalCache::compute_size_for_memory_monitor can only be called if "
           "the MemoryMonitor is in the component list in the "
           "metavariables.\n"));
@@ -63,7 +63,8 @@ void test_resource_info_error() {
         empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
         empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
       })(),
-      Catch::Contains("Can only set the resource info once"));
+      Catch::Matchers::ContainsSubstring(
+          "Can only set the resource info once"));
 #endif
 }
 

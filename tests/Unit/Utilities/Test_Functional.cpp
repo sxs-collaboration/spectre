@@ -493,12 +493,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((AssertEqual<>{}(7, 8)),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "Values are not equal in funcl::AssertEqual 7 and 8"));
   CHECK_THROWS_WITH(
       (funcl::ElementWise<funcl::Plus<>>{}(std::vector<double>{2.0},
                                            std::vector<double>{0.4, -19.90})),
-      Catch::Matchers::Contains("Sizes must be the same but got"));
+      Catch::Matchers::ContainsSubstring("Sizes must be the same but got"));
 #endif
 }
 

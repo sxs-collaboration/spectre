@@ -39,18 +39,18 @@ void test() {
 
   CHECK_THROWS_WITH(
       (time_dep->block_maps_grid_to_inertial(5)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The 'block_maps_grid_to_inertial' function of the 'None'"));
   CHECK_THROWS_WITH(
       (time_dep->block_maps_grid_to_distorted(5)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The 'block_maps_grid_to_distorted' function of the 'None'"));
   CHECK_THROWS_WITH(
       (time_dep->block_maps_distorted_to_inertial(5)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The 'block_maps_distorted_to_inertial' function of the"));
   CHECK_THROWS_WITH((time_dep->functions_of_time()),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The 'functions_of_time' function of the 'None'"));
 }
 

@@ -238,5 +238,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWave",
           1.2, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
           std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333,
           grmhd::AnalyticData::BlastWave::Geometry::Cylindrical)),
-      Catch::Matchers::Contains("BlastWave expects InnerRadius < OuterRadius"));
+      Catch::Matchers::ContainsSubstring(
+          "BlastWave expects InnerRadius < OuterRadius"));
 }

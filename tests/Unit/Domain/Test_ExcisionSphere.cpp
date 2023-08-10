@@ -151,7 +151,7 @@ void test_error() {
   CHECK_THROWS_WITH(
       ExcisionSphere<3>(-2.0, tnsr::I<double, 3, Frame::Grid>{{3.4, 1.2, -0.9}},
                         {}),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The ExcisionSphere must have a radius greater than zero."));
 #endif
 }
@@ -171,9 +171,10 @@ void test_time_dependent_maps() {
   CHECK_FALSE(excision_sphere.is_time_dependent());
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(excision_sphere.moving_mesh_grid_to_inertial_map(),
-                    Catch::Contains("Trying to access grid to inertial map "
-                                    "from ExcisionSphere, but it has "
-                                    "not been set."));
+                    Catch::Matchers::ContainsSubstring(
+                        "Trying to access grid to inertial map "
+                        "from ExcisionSphere, but it has "
+                        "not been set."));
 #endif
 
   excision_sphere.inject_time_dependent_maps(time_dep_map->get_clone());

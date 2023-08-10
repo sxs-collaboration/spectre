@@ -182,12 +182,13 @@ void test_element_id() {
   CHECK(ElementId<2>{"[B52,(L12I133,L6I38)]"} ==
         ElementId<2>{52, {{{12, 133}, {6, 38}}}});
   CHECK_THROWS_WITH(ElementId<1>("somegrid"),
-                    Catch::Contains("Invalid grid name"));
+                    Catch::Matchers::ContainsSubstring("Invalid grid name"));
   CHECK_THROWS_WITH(ElementId<2>("[B0,(L1I0)]"),
-                    Catch::Contains("Invalid grid name"));
-  CHECK_THROWS_WITH(ElementId<2>("[B0]"), Catch::Contains("Invalid grid name"));
+                    Catch::Matchers::ContainsSubstring("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<2>("[B0]"),
+                    Catch::Matchers::ContainsSubstring("Invalid grid name"));
   CHECK_THROWS_WITH(ElementId<3>("L1I0,L2I1,L2I0"),
-                    Catch::Contains("Invalid grid name"));
+                    Catch::Matchers::ContainsSubstring("Invalid grid name"));
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(ElementId<3>::block_id_bits) - 1);
@@ -295,10 +296,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   test_serialization<2>();
   test_serialization<3>();
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(ElementId<1>(two_to_the(ElementId<1>::block_id_bits)),
-                    Catch::Contains("Block id out of bounds"));
+  CHECK_THROWS_WITH(
+      ElementId<1>(two_to_the(ElementId<1>::block_id_bits)),
+      Catch::Matchers::ContainsSubstring("Block id out of bounds"));
   CHECK_THROWS_WITH(
       ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits)),
-      Catch::Contains("Grid index out of bounds"));
+      Catch::Matchers::ContainsSubstring("Grid index out of bounds"));
 #endif
 }

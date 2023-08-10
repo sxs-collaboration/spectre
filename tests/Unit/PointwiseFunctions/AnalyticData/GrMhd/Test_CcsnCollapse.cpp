@@ -46,7 +46,7 @@ void test_equality(std::string progenitor_filename, double polytropic_constant,
       CcsnCollapse(progenitor_filename + "bad_name", polytropic_constant,
                    adiabatic_index, central_angular_velocity,
                    diff_rot_parameter, max_dens_ratio),
-      Catch::Matchers::Contains("Data file not found"));
+      Catch::Matchers::ContainsSubstring("Data file not found"));
 
   const auto ccsn_progenitor =
       serialize_and_deserialize(ccsn_progenitor_original);
@@ -184,14 +184,14 @@ void test_ccsn_collapse(std::string progenitor_filename,
   CHECK_THROWS_WITH(
       ccsn_progenitor_v_grtr_than_c.variables(
           in_coords, tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>>{}),
-      Catch::Matchers::Contains("Spatial velocity"));
+      Catch::Matchers::ContainsSubstring("Spatial velocity"));
 #endif
 
   // Check radius too large check
   CHECK_THROWS_WITH(ccsn_progenitor.variables(
                         in_coords_large_radius,
                         tmpl::list<hydro::Tags::RestMassDensity<DataVector>>{}),
-                    Catch::Matchers::Contains("Requested radius "));
+                    Catch::Matchers::ContainsSubstring("Requested radius "));
 
   // Ensure density is positive
   const auto& rest_mass_density =

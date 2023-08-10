@@ -27,6 +27,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.Phase", "[Parallel][Unit]") {
       ([]() {
         TestHelpers::test_creation<Parallel::Phase>("Bad phase name");
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"Bad phase name\" to Parallel::Phase."));
 }

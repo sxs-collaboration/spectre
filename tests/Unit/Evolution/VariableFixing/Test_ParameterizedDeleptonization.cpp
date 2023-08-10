@@ -117,7 +117,8 @@ void test_variable_fixer() {
                               10.0 * lo_dens_cutoff, ye_at_hi_dens,
                               ye_at_lo_dens,         ye_magnitude_scale};
                     })(),
-                    Catch::Contains("The high density scale"));
+                    Catch::Matchers::ContainsSubstring(
+                        "The high density scale"));
 
   CHECK_THROWS_WITH(([&hi_dens_cutoff, &lo_dens_cutoff, &ye_at_lo_dens,
                       &ye_magnitude_scale]() {
@@ -127,7 +128,8 @@ void test_variable_fixer() {
                               lo_dens_cutoff,     10.0 * ye_at_lo_dens,
                               ye_at_lo_dens,      ye_magnitude_scale};
                     })(),
-                    Catch::Contains("The Ye at high density("));
+                    Catch::Matchers::ContainsSubstring(
+                        "The Ye at high density("));
 
   // check expected values
   test_variable_fixer(variable_fixer, polytrope);

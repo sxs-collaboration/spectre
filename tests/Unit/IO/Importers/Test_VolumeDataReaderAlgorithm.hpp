@@ -12,8 +12,6 @@
 
 #pragma once
 
-#define CATCH_CONFIG_RUNNER
-
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>

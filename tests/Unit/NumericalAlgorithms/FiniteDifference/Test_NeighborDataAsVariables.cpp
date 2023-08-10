@@ -77,11 +77,11 @@ void test() {
     ++extents[0];
     Mesh<Dim> non_istropic_mesh{extents, subcell_mesh.basis(),
                                 subcell_mesh.quadrature()};
-    CHECK_THROWS_WITH(
-        fd::neighbor_data_as_variables(make_not_null(&neighbor_data_as_vars),
-                                       neighbor_data, ghost_zone_size,
-                                       non_istropic_mesh),
-        Catch::Matchers::Contains("subcell_mesh must be isotropic but got"));
+    CHECK_THROWS_WITH(fd::neighbor_data_as_variables(
+                          make_not_null(&neighbor_data_as_vars), neighbor_data,
+                          ghost_zone_size, non_istropic_mesh),
+                      Catch::Matchers::ContainsSubstring(
+                          "subcell_mesh must be isotropic but got"));
   }
 #endif  // SPECTRE_DEBUG
 }

@@ -213,23 +213,23 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       Wedge2D(-0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
   CHECK_THROWS_WITH(
       Wedge2D(0.2, 4.0, -0.2, 1.0, OrientationMap<2>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Sphericity of the inner surface must be between 0 and 1"));
   CHECK_THROWS_WITH(
       Wedge2D(0.2, 4.0, 0.0, -0.2, OrientationMap<2>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Sphericity of the outer surface must be between 0 and 1"));
-  CHECK_THROWS_WITH(
-      Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true),
-      Catch::Contains("The radius of the outer surface must be greater than "
-                      "the radius of the inner surface."));
+  CHECK_THROWS_WITH(Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true),
+                    Catch::Matchers::ContainsSubstring(
+                        "The radius of the outer surface must be greater than "
+                        "the radius of the inner surface."));
   CHECK_THROWS_WITH(
       Wedge2D(3.0, 4.0, 1.0, 0.0, OrientationMap<2>{}, true),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The arguments passed into the constructor for Wedge result in an "
           "object where the outer surface is pierced by the inner surface."));
 #endif

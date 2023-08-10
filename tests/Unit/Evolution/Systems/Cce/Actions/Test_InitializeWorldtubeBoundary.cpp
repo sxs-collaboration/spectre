@@ -235,7 +235,7 @@ SPECTRE_TEST_CASE(
   test_analytic_initialization<Solutions::RotatingSchwarzschild>();
   CHECK_THROWS_WITH(
       (test_analytic_initialization<Solutions::RobinsonTrautman>()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Do not use RobinsonTrautman analytic solution with"));
 }
 }  // namespace Cce

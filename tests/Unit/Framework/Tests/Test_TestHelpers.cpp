@@ -158,9 +158,9 @@ void test_random_sample(const gsl::not_null<std::mt19937*> generator) {
     CHECK((rnd == 1. or rnd == 2. or rnd == 3.5));
   }
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      random_sample<5>(vec, generator),
-      Catch::Contains("Cannot take 5 samples from container of size 3"));
+  CHECK_THROWS_WITH(random_sample<5>(vec, generator),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot take 5 samples from container of size 3"));
 #endif
   const std::unordered_set ints{1, 4, 2, 3};
   const std::vector<int> two_samples = random_sample(2, ints, generator);

@@ -141,7 +141,7 @@ void test(const bool include_expansion, const bool include_rotation,
     CHECK_THROWS_WITH(
         (TimeDependentMapOptions{initial_time, exp_map_options, rot_map_options,
                                  shape_map_a_options, shape_map_b_options}),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "Time dependent map options were specified, but all options "
             "were 'None'. If you don't want time dependent maps, specify "
             "'None' for the TimeDependentMapOptions. If you want time "
@@ -321,31 +321,31 @@ void test(const bool include_expansion, const bool include_rotation,
     // If we have excision info, but didn't specify shape map options, we should
     // hit an error.
     if (excise_A and not include_shape_a) {
-      CHECK_THROWS_WITH(
-          build_maps(),
-          Catch::Contains("Trying to build the shape map for object"));
+      CHECK_THROWS_WITH(build_maps(),
+                        Catch::Matchers::ContainsSubstring(
+                            "Trying to build the shape map for object"));
       continue;
     }
     // If we have shape map options, but didn't specify excisions, we should hit
     // an error.
     if (include_shape_a and not excise_A) {
-      CHECK_THROWS_WITH(
-          build_maps(),
-          Catch::Contains("No excision was specified for object"));
+      CHECK_THROWS_WITH(build_maps(),
+                        Catch::Matchers::ContainsSubstring(
+                            "No excision was specified for object"));
       continue;
     }
 
     // Same for B
     if (excise_B and not include_shape_b) {
-      CHECK_THROWS_WITH(
-          build_maps(),
-          Catch::Contains("Trying to build the shape map for object"));
+      CHECK_THROWS_WITH(build_maps(),
+                        Catch::Matchers::ContainsSubstring(
+                            "Trying to build the shape map for object"));
       continue;
     }
     if (include_shape_b and not excise_B) {
-      CHECK_THROWS_WITH(
-          build_maps(),
-          Catch::Contains("No excision was specified for object"));
+      CHECK_THROWS_WITH(build_maps(),
+                        Catch::Matchers::ContainsSubstring(
+                            "No excision was specified for object"));
       continue;
     }
 
@@ -358,7 +358,7 @@ void test(const bool include_expansion, const bool include_rotation,
       CHECK_THROWS_WITH(
           time_dep_options.grid_to_inertial_map<domain::ObjectLabel::A>(
               excise_A),
-          Catch::Contains(
+          Catch::Matchers::ContainsSubstring(
               "Requesting grid to inertial map without a distorted frame and "
               "without a Rotation or Expansion map for object"));
       continue;
@@ -367,7 +367,7 @@ void test(const bool include_expansion, const bool include_rotation,
       CHECK_THROWS_WITH(
           time_dep_options.grid_to_inertial_map<domain::ObjectLabel::B>(
               excise_B),
-          Catch::Contains(
+          Catch::Matchers::ContainsSubstring(
               "Requesting grid to inertial map without a distorted frame and "
               "without a Rotation or Expansion map for object"));
       continue;
@@ -432,18 +432,21 @@ void check_names() {
 
 void test_errors() {
   INFO("Test errors");
-  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, std::nullopt, std::nullopt,
-                                             ShapeMapAOptions{1, {}},
-                                             ShapeMapBOptions{8, {}}}),
-                    Catch::Contains("Initial LMax for object"));
-  CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, std::nullopt, std::nullopt,
-                                             ShapeMapAOptions{6, {}},
-                                             ShapeMapBOptions{0, {}}}),
-                    Catch::Contains("Initial LMax for object"));
+  CHECK_THROWS_WITH(
+      (TimeDependentMapOptions{1.0, std::nullopt, std::nullopt,
+                               ShapeMapAOptions{1, {}},
+                               ShapeMapBOptions{8, {}}}),
+      Catch::Matchers::ContainsSubstring("Initial LMax for object"));
+  CHECK_THROWS_WITH(
+      (TimeDependentMapOptions{1.0, std::nullopt, std::nullopt,
+                               ShapeMapAOptions{6, {}},
+                               ShapeMapBOptions{0, {}}}),
+      Catch::Matchers::ContainsSubstring("Initial LMax for object"));
   CHECK_THROWS_WITH((TimeDependentMapOptions{1.0, std::nullopt, std::nullopt,
                                              std::nullopt, std::nullopt}),
-                    Catch::Contains("Time dependent map options were "
-                                    "specified, but all options were 'None'."));
+                    Catch::Matchers::ContainsSubstring(
+                        "Time dependent map options were "
+                        "specified, but all options were 'None'."));
   CHECK_THROWS_WITH(
       ([]() {
         TimeDependentMapOptions time_dep_opts{
@@ -454,8 +457,9 @@ void test_errors() {
             std::optional<std::pair<double, double>>{std::make_pair(0.1, 1.0)},
             std::nullopt, 100.0);
       }()),
-      Catch::Contains("Trying to build the shape map for object " +
-                      get_output(domain::ObjectLabel::A)));
+      Catch::Matchers::ContainsSubstring(
+          "Trying to build the shape map for object " +
+          get_output(domain::ObjectLabel::A)));
   CHECK_THROWS_WITH(
       ([]() {
         TimeDependentMapOptions time_dep_opts{
@@ -467,33 +471,38 @@ void test_errors() {
             std::optional<std::pair<double, double>>{std::make_pair(0.1, 1.0)},
             100.0);
       }()),
-      Catch::Contains("Trying to build the shape map for object " +
-                      get_output(domain::ObjectLabel::B)));
+      Catch::Matchers::ContainsSubstring(
+          "Trying to build the shape map for object " +
+          get_output(domain::ObjectLabel::B)));
   CHECK_THROWS_WITH(
       TimeDependentMapOptions{}.grid_to_distorted_map<domain::ObjectLabel::A>(
           true),
-      Catch::Contains("Requesting grid to distorted map with distorted frame "
-                      "but shape map options were not specified."));
+      Catch::Matchers::ContainsSubstring(
+          "Requesting grid to distorted map with distorted frame "
+          "but shape map options were not specified."));
   CHECK_THROWS_WITH(
       TimeDependentMapOptions{}.grid_to_distorted_map<domain::ObjectLabel::B>(
           true),
-      Catch::Contains("Requesting grid to distorted map with distorted frame "
-                      "but shape map options were not specified."));
+      Catch::Matchers::ContainsSubstring(
+          "Requesting grid to distorted map with distorted frame "
+          "but shape map options were not specified."));
   CHECK_THROWS_WITH(
       TimeDependentMapOptions{}.grid_to_inertial_map<domain::ObjectLabel::A>(
           true),
-      Catch::Contains("Requesting grid to inertial map with distorted frame "
-                      "but shape map options were not specified."));
+      Catch::Matchers::ContainsSubstring(
+          "Requesting grid to inertial map with distorted frame "
+          "but shape map options were not specified."));
   CHECK_THROWS_WITH(
       TimeDependentMapOptions{}.grid_to_inertial_map<domain::ObjectLabel::B>(
           true),
-      Catch::Contains("Requesting grid to inertial map with distorted frame "
-                      "but shape map options were not specified."));
+      Catch::Matchers::ContainsSubstring(
+          "Requesting grid to inertial map with distorted frame "
+          "but shape map options were not specified."));
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       TimeDependentMapOptions{}.has_distorted_frame_options(
           domain::ObjectLabel::None),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "object label for TimeDependentMapOptions must be either A or B"));
 #endif
 }

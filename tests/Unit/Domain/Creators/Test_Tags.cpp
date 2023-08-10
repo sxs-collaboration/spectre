@@ -62,7 +62,7 @@ void test_center_tags() {
   CHECK_THROWS_WITH(
       Tags::ObjectCenter<ObjectLabel::B>::create_from_options(
           creator_no_excision),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           " is not in the domain creators grid anchors but is needed "
           "to generate the ObjectCenter"));
 }

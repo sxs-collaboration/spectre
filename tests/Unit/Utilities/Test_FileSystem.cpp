@@ -141,26 +141,31 @@ void trigger_rm_error_not_empty() {
 }
 
 void test_errors() {
+  CHECK_THROWS_WITH(file_system::get_file_name("/"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Failed to find a file in the given path: '/'"));
   CHECK_THROWS_WITH(
-      file_system::get_file_name("/"),
-      Catch::Contains("Failed to find a file in the given path: '/'"));
-  CHECK_THROWS_WITH(file_system::get_file_name(""),
-                    Catch::Contains("Received an empty path"));
-  CHECK_THROWS_WITH(trigger_nonexistent_absolute_path(),
-                    Catch::Contains("No such file or directory"));
+      file_system::get_file_name(""),
+      Catch::Matchers::ContainsSubstring("Received an empty path"));
+  CHECK_THROWS_WITH(
+      trigger_nonexistent_absolute_path(),
+      Catch::Matchers::ContainsSubstring("No such file or directory"));
   CHECK_THROWS_WITH(
       file_system::file_size("./file_size_error.txt"),
-      Catch::Contains("Cannot get size of file './file_size_error.txt' because "
-                      "it cannot be accessed. Either it does not exist or you "
-                      "do not have the appropriate permissions."));
-  CHECK_THROWS_WITH(trigger_rm_error_not_empty(),
-                    Catch::Contains("remove: Directory not empty"));
-  CHECK_THROWS_WITH(file_system::is_file("./is_file_error"),
-                    Catch::Contains("Failed to check if path points to a file "
-                                    "because the path is invalid"));
+      Catch::Matchers::ContainsSubstring(
+          "Cannot get size of file './file_size_error.txt' because "
+          "it cannot be accessed. Either it does not exist or you "
+          "do not have the appropriate permissions."));
   CHECK_THROWS_WITH(
-      file_system::create_directory(""s),
-      Catch::Contains("Cannot create a directory that has no name"));
+      trigger_rm_error_not_empty(),
+      Catch::Matchers::ContainsSubstring("remove: Directory not empty"));
+  CHECK_THROWS_WITH(file_system::is_file("./is_file_error"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Failed to check if path points to a file "
+                        "because the path is invalid"));
+  CHECK_THROWS_WITH(file_system::create_directory(""s),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot create a directory that has no name"));
 }
 }  // namespace
 

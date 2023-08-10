@@ -73,7 +73,7 @@ following the instructions on the [homebrew](https://brew.sh) homepage. Then,
 run the following to install a fortran compiler and other dependencies:
 ```
 brew install gcc
-brew install boost gsl cmake doxygen
+brew install boost gsl cmake doxygen catch2
 brew install ccache autoconf automake jemalloc hdf5 pybind11 yaml-cpp
 ```
 
@@ -131,16 +131,6 @@ git checkout v7.0.0
 ./build LIBS multicore-darwin-arm8 --with-production -g3 -j
 popd
 ```
-Lastly, install Catch2. Note that catch2 v2.13.7 is required, and homebrew
-can only install v3. Catch2 is a header only package, so no need to build
-separately.
-
-```
-git clone https://github.com/catchorg/Catch2.git
-pushd Catch2
-git checkout v2.13.7
-popd
-```
 
 #### Install with Spack
 
@@ -160,7 +150,6 @@ spack external find python
 spack install \
   blaze@3.8.2 \
   brigand@master \
-  catch2@2.8:2 \
   charmpp@7.0.0: backend=multicore \
   libxsmm@main \
   libsharp~mpi~openmp
@@ -193,7 +182,6 @@ cmake \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
 -D BRIGAND_ROOT=${SPECTRE_DEPS_ROOT}/brigand/ \
 -D LIBSHARP_ROOT=${SPECTRE_DEPS_ROOT}/libsharp/ \
--D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/single_include/catch2/ \
 ..
 ```
 

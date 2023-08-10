@@ -605,8 +605,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains("The lower bound for a coordinate must be numerically "
-                      "less than the upper bound for that coordinate."));
+      Catch::Matchers::ContainsSubstring(
+          "The lower bound for a coordinate must be numerically "
+          "less than the upper bound for that coordinate."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -619,8 +620,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains("The lower bound for a coordinate must be numerically "
-                      "less than the upper bound for that coordinate."));
+      Catch::Matchers::ContainsSubstring(
+          "The lower bound for a coordinate must be numerically "
+          "less than the upper bound for that coordinate."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -633,8 +635,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains("The lower bound for a coordinate must be numerically "
-                      "less than the upper bound for that coordinate."));
+      Catch::Matchers::ContainsSubstring(
+          "The lower bound for a coordinate must be numerically "
+          "less than the upper bound for that coordinate."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -647,8 +650,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains("The lower bound for a coordinate must be numerically "
-                      "less than the upper bound for that coordinate."));
+      Catch::Matchers::ContainsSubstring(
+          "The lower bound for a coordinate must be numerically "
+          "less than the upper bound for that coordinate."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -661,8 +665,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains("The lower bound for a coordinate must be numerically "
-                      "less than the upper bound for that coordinate."));
+      Catch::Matchers::ContainsSubstring(
+          "The lower bound for a coordinate must be numerically "
+          "less than the upper bound for that coordinate."));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -680,7 +685,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
             with_equiangular_map, zeta_distribution, std::nullopt, sphericity);
         static_cast<void>(failed_frustum);
       }()),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The sphericity must be set between 0.0, corresponding to a flat "
           "surface, and 1.0, corresponding to a spherical surface, inclusive. "
           "It is currently set to 1.3"));

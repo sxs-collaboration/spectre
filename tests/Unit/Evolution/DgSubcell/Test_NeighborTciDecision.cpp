@@ -54,7 +54,7 @@ void test() {
   // check ASSERT for neighbors works
   CHECK_THROWS_WITH(
       neighbor_tci_decision(make_not_null(&box), neighbor_data),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The NeighborTciDecisions tag does not contain the neighbor"));
 #endif
   db::mutate<tag>(

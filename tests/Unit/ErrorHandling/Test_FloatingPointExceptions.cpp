@@ -96,13 +96,13 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.ScopedFpeState",
         ScopedFpeState s{ScopedFpeState::DoNotSave{}};
         s.set_exceptions(true);
       }(),
-      Catch::Contains("FPE state not saved"));
+      Catch::Matchers::ContainsSubstring("FPE state not saved"));
   CHECK_THROWS_WITH(
       []() {
         ScopedFpeState s{true};
         s.save_exceptions();
       }(),
-      Catch::Contains("FPE state already saved"));
+      Catch::Matchers::ContainsSubstring("FPE state already saved"));
 #endif  // SPECTRE_DEBUG
 
 #ifdef __APPLE__
@@ -213,6 +213,7 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.ScopedFpeState",
   // Test that ERROR preserves the state.  This primarily matters for
   // tests.
   enable_floating_point_exceptions();
-  CHECK_THROWS_WITH([]() { ERROR("BOOM"); }(), Catch::Contains("BOOM"));
+  CHECK_THROWS_WITH([]() { ERROR("BOOM"); }(),
+                    Catch::Matchers::ContainsSubstring("BOOM"));
   CHECK(exceptions_enabled());
 }

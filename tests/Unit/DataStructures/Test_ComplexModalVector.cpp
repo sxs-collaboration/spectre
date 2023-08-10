@@ -97,14 +97,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ComplexModalVector",
   CHECK_THROWS_WITH(
       TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
           TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign),
-      Catch::Matchers::Contains("Must assign into same size"));
+      Catch::Matchers::ContainsSubstring("Must assign into same size"));
   CHECK_THROWS_WITH(
       TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
           TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy),
-      Catch::Matchers::Contains("Must copy into same size"));
+      Catch::Matchers::ContainsSubstring("Must copy into same size"));
   CHECK_THROWS_WITH(
       TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexModalVector>(
           TestHelpers::VectorImpl::RefSizeErrorTestKind::Move),
-      Catch::Matchers::Contains("Must copy into same size"));
+      Catch::Matchers::ContainsSubstring("Must copy into same size"));
 #endif
 }

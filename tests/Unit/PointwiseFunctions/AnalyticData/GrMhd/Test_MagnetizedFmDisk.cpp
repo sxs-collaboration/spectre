@@ -205,32 +205,36 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
         grmhd::AnalyticData::MagnetizedFmDisk disk(
             0.7, 0.61, 5.4, 9.182, 11.123, 1.44, -0.2, 0.023, 4);
       }(),
-      Catch::Contains("The threshold density must be in the range (0, 1)"));
+      Catch::Matchers::ContainsSubstring(
+          "The threshold density must be in the range (0, 1)"));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(
             0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 1.45, 0.023, 4);
       }(),
-      Catch::Contains("The threshold density must be in the range (0, 1)"));
+      Catch::Matchers::ContainsSubstring(
+          "The threshold density must be in the range (0, 1)"));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(
             0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.2, -0.153, 4);
       }(),
-      Catch::Contains("The inverse plasma beta must be non-negative."));
+      Catch::Matchers::ContainsSubstring(
+          "The inverse plasma beta must be non-negative."));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(0.7, 0.61, 5.4, 9.182,
                                                    11.123, 1.44, 0.2, 0.153, 2);
       }(),
-      Catch::Contains("The grid resolution used in the magnetic field "
-                      "normalization must be at least 4 points."));
+      Catch::Matchers::ContainsSubstring(
+          "The grid resolution used in the magnetic field "
+          "normalization must be at least 4 points."));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(0.7, 0.61, 5.4, 9.182,
                                                    11.123, 1.44, 0.2, 0.023, 5);
       }(),
-      Catch::Contains("Max b squared is zero."));
+      Catch::Matchers::ContainsSubstring("Max b squared is zero."));
 #endif
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
@@ -243,7 +247,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "ThresholdDensity: -0.01\n"
           "InversePlasmaBeta: 0.016\n"
           "BFieldNormGridRes: 4"),
-      Catch::Contains("Value -0.01 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -0.01 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
           "BhMass: 1.5\n"
@@ -255,7 +260,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "ThresholdDensity: 4.1\n"
           "InversePlasmaBeta: 0.03\n"
           "BFieldNormGridRes: 4"),
-      Catch::Contains("Value 4.1 is above the upper bound of 1"));
+      Catch::Matchers::ContainsSubstring(
+          "Value 4.1 is above the upper bound of 1"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
           "BhMass: 1.4\n"
@@ -267,7 +273,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "ThresholdDensity: 0.22\n"
           "InversePlasmaBeta: -0.03\n"
           "BFieldNormGridRes: 4"),
-      Catch::Contains("Value -0.03 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring(
+          "Value -0.03 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
           "BhMass: 1.4\n"
@@ -279,5 +286,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "ThresholdDensity: 0.22\n"
           "InversePlasmaBeta: 0.03\n"
           "BFieldNormGridRes: 2"),
-      Catch::Contains("Value 2 is below the lower bound of 4"));
+      Catch::Matchers::ContainsSubstring(
+          "Value 2 is below the lower bound of 4"));
 }

@@ -77,16 +77,17 @@ void test_analytic_data(const DataVector& used_for_size) {
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},
       {{{0.0, 1.0}}}, members, used_for_size);
 
-  CHECK_THROWS_WITH(NewtonianEuler::AnalyticData::SodExplosion<Dim>(
-                        initial_radius, inner_mass_density, inner_pressure,
-                        outer_mass_density + 100.0, outer_pressure,
-                        Options::Context{false, {}, 1, 1}),
-                    Catch::Matchers::Contains("The inner mass density ("));
+  CHECK_THROWS_WITH(
+      NewtonianEuler::AnalyticData::SodExplosion<Dim>(
+          initial_radius, inner_mass_density, inner_pressure,
+          outer_mass_density + 100.0, outer_pressure,
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("The inner mass density ("));
   CHECK_THROWS_WITH(NewtonianEuler::AnalyticData::SodExplosion<Dim>(
                         initial_radius, inner_mass_density, inner_pressure,
                         outer_mass_density, outer_pressure + 100.0,
                         Options::Context{false, {}, 1, 1}),
-                    Catch::Matchers::Contains("The inner pressure ("));
+                    Catch::Matchers::ContainsSubstring("The inner pressure ("));
 }
 
 }  // namespace

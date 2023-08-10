@@ -1202,6 +1202,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance",
                                         strahlkorper_a,
                                         strahlkorper_off_center);
       }()),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Currently computing the radial distance between"));
 }

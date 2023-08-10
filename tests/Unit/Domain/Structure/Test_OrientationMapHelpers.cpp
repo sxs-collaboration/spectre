@@ -105,16 +105,17 @@ void test_1d_orient_variables() {
     const OrientationMap<1> orientation_map(
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
     DataVector oriented_vars_datavector{};
-    CHECK_THROWS_WITH(orient_variables(make_not_null(&oriented_vars_datavector),
-                                       vars_datavector, extents, {}),
-                      Catch::Matchers::Contains("Result should have size"));
+    CHECK_THROWS_WITH(
+        orient_variables(make_not_null(&oriented_vars_datavector),
+                         vars_datavector, extents, {}),
+        Catch::Matchers::ContainsSubstring("Result should have size"));
 
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
     oriented_vars_datavector = DataVector{vars.size() - 1};
     CHECK_THROWS_WITH(orient_variables(make_not_null(&oriented_vars_datavector),
                                        vars_datavector_bad_size, extents, {}),
-                      Catch::Matchers::Contains(
+                      Catch::Matchers::ContainsSubstring(
                           "The size of the variables must be divisible by the "
                           "number of grid points. Number of grid points: "));
   }
@@ -210,7 +211,7 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
     CHECK_THROWS_WITH(
         orient_variables(make_not_null(&oriented_vars_datavector),
                          vars_datavector, extents, orientation_map),
-        Catch::Matchers::Contains("Result should have size"));
+        Catch::Matchers::ContainsSubstring("Result should have size"));
 
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
@@ -218,7 +219,7 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
     CHECK_THROWS_WITH(
         orient_variables(make_not_null(&oriented_vars_datavector),
                          vars_datavector_bad_size, extents, orientation_map),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "The size of the variables must be divisible by the "
             "number of grid points. Number of grid points: "));
   }
@@ -328,7 +329,7 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
     CHECK_THROWS_WITH(
         orient_variables(make_not_null(&oriented_vars_datavector),
                          vars_datavector, extents, orientation_map),
-        Catch::Matchers::Contains("Result should have size"));
+        Catch::Matchers::ContainsSubstring("Result should have size"));
 
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
@@ -336,7 +337,7 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
     CHECK_THROWS_WITH(
         orient_variables(make_not_null(&oriented_vars_datavector),
                          vars_datavector_bad_size, extents, orientation_map),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "The size of the variables must be divisible by the "
             "number of grid points. Number of grid points: "));
   }
@@ -460,7 +461,7 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
           orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
                                     vars_datavector, slice_extents, sliced_dim,
                                     orientation_map),
-          Catch::Matchers::Contains("Result should have size"));
+          Catch::Matchers::ContainsSubstring("Result should have size"));
 
       const DataVector vars_datavector_bad_size(
           const_cast<double*>(vars.data()), vars.size() - 1);
@@ -469,7 +470,7 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
           orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
                                     vars_datavector_bad_size, slice_extents,
                                     sliced_dim, orientation_map),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "The size of the variables must be divisible by the "
               "number of grid points. Number of grid points: "));
     }
@@ -575,7 +576,7 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
           orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
                                     vars_datavector, slice_extents, sliced_dim,
                                     orientation_map),
-          Catch::Matchers::Contains("Result should have size"));
+          Catch::Matchers::ContainsSubstring("Result should have size"));
 
       const DataVector vars_datavector_bad_size(
           const_cast<double*>(vars.data()), vars.size() - 1);
@@ -584,7 +585,7 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
           orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
                                     vars_datavector_bad_size, slice_extents,
                                     sliced_dim, orientation_map),
-          Catch::Matchers::Contains(
+          Catch::Matchers::ContainsSubstring(
               "The size of the variables must be divisible by the "
               "number of grid points. Number of grid points: "));
     }

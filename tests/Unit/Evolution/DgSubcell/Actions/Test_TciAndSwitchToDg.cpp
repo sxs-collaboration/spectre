@@ -338,7 +338,8 @@ void test_impl(
   if (test_block_id_assert) {
     CHECK_THROWS_WITH(
         ActionTesting::next_action<comp>(make_not_null(&runner), 0),
-        Catch::Matchers::Contains("Should never use subcell on element "));
+        Catch::Matchers::ContainsSubstring(
+            "Should never use subcell on element "));
     return;
   }
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);

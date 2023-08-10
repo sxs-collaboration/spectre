@@ -56,8 +56,9 @@ void test_errors() {
   std::deque<double> times{};
   times.emplace_front(1.0);
 
-  CHECK_THROWS_WITH(fd::non_uniform_1d_weights<StencilSize>(times),
-                    Catch::Contains("The size of the times passed in"));
+  CHECK_THROWS_WITH(
+      fd::non_uniform_1d_weights<StencilSize>(times),
+      Catch::Matchers::ContainsSubstring("The size of the times passed in"));
 
   times.emplace_back(2.0);
   if constexpr (StencilSize > 2) {
@@ -68,7 +69,8 @@ void test_errors() {
   }
 
   CHECK_THROWS_WITH(fd::non_uniform_1d_weights<StencilSize>(times),
-                    Catch::Contains("Times must be monotonically decreasing"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Times must be monotonically decreasing"));
 #endif
 }
 

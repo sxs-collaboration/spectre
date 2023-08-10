@@ -137,8 +137,15 @@ RUN git clone https://github.com/edouarda/brigand.git \
     && mv brigand/include/brigand /usr/local/include \
     && rm -rf brigand
 # - Catch2
-RUN wget https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp -O catch.hpp \
-    && mv catch.hpp /usr/local/include
+RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O catch.tar.gz \
+    && tar -xzf catch.tar.gz && rm catch.tar.gz \
+    && mv Catch2-* Catch2 \
+    && cd Catch2 \
+    && cmake -B build -D BUILD_TESTING=OFF \
+        -D CMAKE_POSITION_INDEPENDENT_CODE=ON \
+    && cd build \
+    && make $PARALLEL_MAKE_ARG install \
+    && cd ../.. && rm -rf Catch2
 # - Doxygen
 RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
     && tar -xzf doxygen.tar.gz \

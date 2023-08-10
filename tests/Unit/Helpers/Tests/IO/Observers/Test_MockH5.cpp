@@ -30,30 +30,31 @@ void test_mock_dat() {
         const std::vector<double> bad_data(1, 0.0);
         my_dat.append(legend, bad_data);
       })(),
-      Catch::Contains("Size of supplied data does not match number of columns "
-                      "in the existing matrix."));
+      Catch::Matchers::ContainsSubstring(
+          "Size of supplied data does not match number of columns "
+          "in the existing matrix."));
   CHECK_THROWS_WITH(
       ([&my_dat, &data]() {
         const std::vector<std::string> bad_legend{"Bad"};
         my_dat.append(bad_legend, data);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Supplied legend is not the same as the existing legend."));
 
-  CHECK_THROWS_WITH(
-      ([]() {
-        MockDat dat{};
-        auto& error_data = dat.get_data();
-        (void)error_data;
-      })(),
-      Catch::Contains("Cannot get data. Append some data first."));
-  CHECK_THROWS_WITH(
-      ([]() {
-        MockDat dat{};
-        auto& error_legend = dat.get_legend();
-        (void)error_legend;
-      })(),
-      Catch::Contains("Cannot get legend. Append some data first."));
+  CHECK_THROWS_WITH(([]() {
+                      MockDat dat{};
+                      auto& error_data = dat.get_data();
+                      (void)error_data;
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot get data. Append some data first."));
+  CHECK_THROWS_WITH(([]() {
+                      MockDat dat{};
+                      auto& error_legend = dat.get_legend();
+                      (void)error_legend;
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot get legend. Append some data first."));
 }
 
 void test_mock_h5() {
@@ -76,14 +77,14 @@ void test_mock_h5() {
         auto& nonexistent_dat = file.get_dat("/bad/path");
         (void)nonexistent_dat;
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot get /bad/path from MockH5File. Path does not exist."));
   CHECK_THROWS_WITH(
       ([&file]() {
         const auto& nonexistent_dat = file.get_dat("/bad/path");
         (void)nonexistent_dat;
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Cannot get /bad/path from MockH5File. Path does not exist."));
 }
 

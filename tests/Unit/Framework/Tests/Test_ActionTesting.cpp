@@ -1098,10 +1098,10 @@ void test_sizing() {
   const size_t size = size_of_object_in_bytes(local_branch);
   (void)size;
 
-  CHECK_THROWS_WITH(
-      ([&local_branch]() { serialize(local_branch); }()),
-      Catch::Contains("MockDistributedObject is not serializable. This pup "
-                      "member can only be used for sizing."));
+  CHECK_THROWS_WITH(([&local_branch]() { serialize(local_branch); }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "MockDistributedObject is not serializable. This pup "
+                        "member can only be used for sizing."));
 }
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {

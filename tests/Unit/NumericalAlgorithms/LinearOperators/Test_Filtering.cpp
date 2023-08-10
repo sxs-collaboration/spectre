@@ -401,13 +401,13 @@ void test_exponential_filter_creation() {
     CHECK_THROWS_WITH(
         (error_options
              .template get<OptionTags::Filter<AnotherFilter>, Metavars<Dim>>()),
-        Catch::Contains("Duplicate block name"));
+        Catch::Matchers::ContainsSubstring("Duplicate block name"));
 
     CHECK_THROWS_WITH(
         (Filters::Tags::Filter<AnotherFilter>::create_from_options<
             Metavars<Dim>>(another_filter,
                            std::make_unique<TestCreator<Dim>>())),
-        Catch::Contains(
+        Catch::Matchers::ContainsSubstring(
             "is not a block name or a block group. Existing blocks are"));
 
     // These two are to check that we can pass just a block name or just a block
@@ -425,7 +425,8 @@ void test_exponential_filter_creation() {
         (Filters::Tags::Filter<AnotherFilter>::create_from_options<
             Metavars<Dim>>(another_filter,
                            std::make_unique<TestCreator<Dim>>(false))),
-        Catch::Contains("The domain chosen doesn't use block names"));
+        Catch::Matchers::ContainsSubstring(
+            "The domain chosen doesn't use block names"));
   }
 }
 }  // namespace

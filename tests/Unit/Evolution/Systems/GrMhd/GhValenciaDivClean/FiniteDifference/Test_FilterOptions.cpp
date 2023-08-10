@@ -25,12 +25,12 @@ SPECTRE_TEST_CASE(
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::GhValenciaDivClean::fd::FilterOptions>(
           "SpacetimeDissipation: 0.0"),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Spacetime dissipation must be between 0 and 1, but got"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<grmhd::GhValenciaDivClean::fd::FilterOptions>(
           "SpacetimeDissipation: 1.0"),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Spacetime dissipation must be between 0 and 1, but got"));
 
   CHECK(serialize_and_deserialize(

@@ -110,8 +110,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   }
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      (collapsed_index(Index<3>{4, 4, 4}, Index<3>{2, 3, 4})),
-      Catch::Matchers::Contains("The requested index in the dimension"));
+  CHECK_THROWS_WITH((collapsed_index(Index<3>{4, 4, 4}, Index<3>{2, 3, 4})),
+                    Catch::Matchers::ContainsSubstring(
+                        "The requested index in the dimension"));
 #endif
 }

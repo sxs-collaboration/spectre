@@ -8,6 +8,7 @@
 #include "Utilities/MemoryHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.allocation_failure", "[Unit][Time]") {
-  CHECK_THROWS_WITH((std::vector<int>(1000000000000000)),
-                    Catch::Matchers::Contains("Failed to allocate memory"));
+  CHECK_THROWS_WITH(
+      (std::vector<int>(1000000000000000)),
+      Catch::Matchers::ContainsSubstring("Failed to allocate memory"));
 }

@@ -204,5 +204,5 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
             slab.start() + slab.duration() / 4, slab_length / 5.,
             slab.duration() / 8, true);
       })(),
-      Catch::Contains("is not registered"));
+      Catch::Matchers::ContainsSubstring("is not registered"));
 }

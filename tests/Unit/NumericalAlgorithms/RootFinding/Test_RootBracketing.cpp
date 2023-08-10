@@ -155,9 +155,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.Bracketing",
   test_bracketing_simple();
   test_bracketing_datavector();
 
-  CHECK_THROWS_WITH(
-      (test_bracketing_simple_one_function(f_root_near_bounds, {{0.1, 1.1}},
-                                           std::nullopt)),
-      Catch::Contains("bracket_by_contracting: Cannot bracket root between"));
+  CHECK_THROWS_WITH((test_bracketing_simple_one_function(
+                        f_root_near_bounds, {{0.1, 1.1}}, std::nullopt)),
+                    Catch::Matchers::ContainsSubstring(
+                        "bracket_by_contracting: Cannot bracket root between"));
 }
 }  // namespace

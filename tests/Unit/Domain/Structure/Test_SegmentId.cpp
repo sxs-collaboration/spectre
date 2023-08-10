@@ -18,21 +18,22 @@
 namespace {
 void test_errors() {
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(SegmentId(3, 8), Catch::Matchers::Contains(
+  CHECK_THROWS_WITH(SegmentId(3, 8), Catch::Matchers::ContainsSubstring(
                                          "index = 8, refinement_level = 3"));
-  CHECK_THROWS_WITH(SegmentId(0, 0).id_of_parent(),
-                    Catch::Matchers::Contains("on root refinement level!"));
+  CHECK_THROWS_WITH(
+      SegmentId(0, 0).id_of_parent(),
+      Catch::Matchers::ContainsSubstring("on root refinement level!"));
   CHECK_THROWS_WITH(
       SegmentId(0, 0).id_of_sibling(),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The segment on the root refinement level has no sibling"));
   CHECK_THROWS_WITH(
       SegmentId(0, 0).id_of_abutting_nibling(),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The segment on the root refinement level has no abutting nibling"));
   CHECK_THROWS_WITH(
       SegmentId(0, 0).side_of_sibling(),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The segment on the root refinement level has no sibling"));
 #endif
 }

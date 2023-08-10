@@ -30,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.FiniteDifference.FallbackReconstructorType",
       ([]() {
         TestHelpers::test_creation<FallbackReconstructorType>("BadType");
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"BadType\" to FallbackReconstructorType"));
 }
 

@@ -85,8 +85,9 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       ([&iter]() { iter.set(100); })(),
-      Catch::Contains("Trying to set the current compact index to 100 which is "
-                      "beyond the size of the offset array 19"));
+      Catch::Matchers::ContainsSubstring(
+          "Trying to set the current compact index to 100 which is "
+          "beyond the size of the offset array 19"));
 #endif  // SPECTRE_DEBUG
 
   // Test coefficient_arrya stream operator (assumes output of last 'set').

@@ -528,7 +528,7 @@ void test_errors() {
             make_not_null(&spec_functions_of_time), test_filename,
             test_name_map);
       }()),
-      Catch::Contains("Non-monotonic time found"));
+      Catch::Matchers::ContainsSubstring("Non-monotonic time found"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -553,7 +553,7 @@ void test_errors() {
             make_not_null(&spec_functions_of_time), test_filename,
             test_name_map);
       }()),
-      Catch::Contains("Values in column 2"));
+      Catch::Matchers::ContainsSubstring("Values in column 2"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -570,7 +570,7 @@ void test_errors() {
         domain::FunctionsOfTime::override_functions_of_time(
             make_not_null(&functions_of_time), test_filename, test_name_map);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           " in FunctionsOfTime, but FunctionsOfTime does not contain that key. "
           "This might happen if the option FunctionOfTimeNameMap is not "
           "specified correctly. Keys contained in FunctionsOfTime: "));
@@ -593,7 +593,7 @@ void test_errors() {
         domain::FunctionsOfTime::override_functions_of_time(
             make_not_null(&functions_of_time), test_filename, test_name_map);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "is not a PiecewisePolynomial<2>, PiecewisePolynomial<3>, or "
           "QuaternionFunctionOfTime<3> and so cannot be set using "
           "read_spec_piecewise_polynomial"));

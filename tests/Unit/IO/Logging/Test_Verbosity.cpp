@@ -31,7 +31,7 @@ void test_construct_from_options_fail() {
       "");
   opts.parse("TestGroup:\n  Verbosity: Braggadocious\n");  // Meant to fail.
   CHECK_THROWS_WITH((opts.get<logging::OptionTags::Verbosity<TestGroup>>()),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "Failed to convert \"Braggadocious\" to Verbosity"));
 }
 

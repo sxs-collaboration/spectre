@@ -156,6 +156,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagneticRotor",
       (grmhd::AnalyticData::MagneticRotor(
           0.2, 10.0, 1.0, 1.0, -9.95,
           std::array<double, 3>{{3.5449077018, 0.0, 0.0}}, 1.6666666666666666)),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "MagneticRotor expects RotorRadius * | AngularVelocity | < 1"));
 }

@@ -492,16 +492,17 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericalCompression",
                                         make_not_null(&functions_of_time),
                                         make_not_null(&gen), true, false);
       }()),
-      Catch::Matchers::Contains("max_radius must be greater"));
+      Catch::Matchers::ContainsSubstring("max_radius must be greater"));
 #endif
 
-  CHECK_THROWS_WITH(([&gen]() {
-                      if (random_bool(make_not_null(&gen))) {
-                        test_out_of_bounds<true>(make_not_null(&gen));
-                      } else {
-                        test_out_of_bounds<false>(make_not_null(&gen));
-                      }
-                    }()),
-                    Catch::Matchers::Contains("not in expected range"));
+  CHECK_THROWS_WITH(
+      ([&gen]() {
+        if (random_bool(make_not_null(&gen))) {
+          test_out_of_bounds<true>(make_not_null(&gen));
+        } else {
+          test_out_of_bounds<false>(make_not_null(&gen));
+        }
+      }()),
+      Catch::Matchers::ContainsSubstring("not in expected range"));
 }
 }  // namespace domain

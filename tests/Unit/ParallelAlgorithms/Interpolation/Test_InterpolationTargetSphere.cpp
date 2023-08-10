@@ -195,8 +195,9 @@ void test_sphere_errors() {
                 "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
-      Catch::Contains("into radii for Sphere interpolation target. It already "
-                      "exists. Existing radii are"));
+      Catch::Matchers::ContainsSubstring(
+          "into radii for Sphere interpolation target. It already "
+          "exists. Existing radii are"));
   CHECK_THROWS_WITH(
       ([]() {
         const auto created_opts =
@@ -206,7 +207,7 @@ void test_sphere_errors() {
                 "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
-      Catch::Contains("Radius must be positive"));
+      Catch::Matchers::ContainsSubstring("Radius must be positive"));
   CHECK_THROWS_WITH(
       ([]() {
         const auto created_opts =
@@ -216,7 +217,7 @@ void test_sphere_errors() {
                 "LMax: 18\n"
                 "AngularOrdering: Cce");
       })(),
-      Catch::Contains("Radius must be positive"));
+      Catch::Matchers::ContainsSubstring("Radius must be positive"));
 }
 }  // namespace
 

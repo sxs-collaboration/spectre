@@ -21,7 +21,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditionType", "[Unit][Elliptic]") {
 
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<elliptic::BoundaryConditionType>("nil")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"nil\" to elliptic::BoundaryConditionType."));
 }
 

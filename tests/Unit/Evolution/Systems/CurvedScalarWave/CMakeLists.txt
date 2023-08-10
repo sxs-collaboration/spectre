@@ -53,6 +53,7 @@ target_link_libraries(
   MathFunctions
   ObserverHelpers
   ScalarWaveWorldtube
+  Time
   Utilities
   WaveEquationSolutions
 )

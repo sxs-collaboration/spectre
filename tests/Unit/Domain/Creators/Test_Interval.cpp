@@ -209,24 +209,27 @@ void test_parse_errors() {
                          nullptr, CoordinateMaps::Distribution::Linear,
                          std::nullopt, nullptr,
                          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both upper and lower boundary conditions "
-                                "must be specified, or neither."));
+      Catch::Matchers::ContainsSubstring(
+          "Both upper and lower boundary conditions "
+          "must be specified, or neither."));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0], nullptr,
                          upper_boundary_condition->get_clone(),
                          CoordinateMaps::Distribution::Linear, std::nullopt,
                          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both upper and lower boundary conditions "
-                                "must be specified, or neither."));
+      Catch::Matchers::ContainsSubstring(
+          "Both upper and lower boundary conditions "
+          "must be specified, or neither."));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0], lower_boundary_condition->get_clone(),
                          periodic_boundary_condition->get_clone(),
                          CoordinateMaps::Distribution::Linear, std::nullopt,
                          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                "must be set to periodic if"));
+      Catch::Matchers::ContainsSubstring(
+          "Both the upper and lower boundary condition "
+          "must be set to periodic if"));
   CHECK_THROWS_WITH(
       creators::Interval(lower_bound, upper_bound, refinement_level[0],
                          grid_points[0],
@@ -234,8 +237,9 @@ void test_parse_errors() {
                          lower_boundary_condition->get_clone(),
                          CoordinateMaps::Distribution::Linear, std::nullopt,
                          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                "must be set to periodic if"));
+      Catch::Matchers::ContainsSubstring(
+          "Both the upper and lower boundary condition "
+          "must be set to periodic if"));
   CHECK_THROWS_WITH(
       creators::Interval(
           lower_bound, upper_bound, refinement_level[0], grid_points[0],
@@ -244,7 +248,7 @@ void test_parse_errors() {
                                TestNoneBoundaryCondition<3>>(),
           CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
@@ -255,7 +259,7 @@ void test_parse_errors() {
           lower_boundary_condition->get_clone(),
           CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
 }

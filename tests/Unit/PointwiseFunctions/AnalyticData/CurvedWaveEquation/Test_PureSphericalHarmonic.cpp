@@ -72,18 +72,18 @@ void test_errors() {
   INFO("Testing configuration errors");
   CHECK_THROWS_WITH(CurvedScalarWave::AnalyticData::PureSphericalHarmonic(
                         -0.1, 1., {1, 1}, Options::Context{false, {}, 1, 1}),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The radius must be greater than 0 but is -0.1"));
 
   CHECK_THROWS_WITH(CurvedScalarWave::AnalyticData::PureSphericalHarmonic(
                         1., -0.1, {1, 1}, Options::Context{false, {}, 1, 1}),
-                    Catch::Matchers::Contains(
+                    Catch::Matchers::ContainsSubstring(
                         "The width must be greater than 0 but is -0.1"));
 
   CHECK_THROWS_WITH(
       CurvedScalarWave::AnalyticData::PureSphericalHarmonic(
           1., 1., {7, 8}, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The absolute value of the m_mode must be less than or equal to the "
           "l-mode but the m-mode is 8 and the l-mode is 7"));
 }

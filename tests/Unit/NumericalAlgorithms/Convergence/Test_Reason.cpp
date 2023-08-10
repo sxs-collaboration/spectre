@@ -35,6 +35,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Reason",
 
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<Convergence::Reason>("Miracle")),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Failed to convert \"Miracle\" to Convergence::Reason"));
 }

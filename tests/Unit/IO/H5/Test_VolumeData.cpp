@@ -543,8 +543,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
               {Spectral::Basis::Legendre},
               {Spectral::Quadrature::Gauss}}});
       }(),
-      Catch::Contains("The expected format of the tensor component names is "
-                      "'COMPONENT_NAME' but found a '/' in"));
+      Catch::Matchers::ContainsSubstring(
+          "The expected format of the tensor component names is "
+          "'COMPONENT_NAME' but found a '/' in"));
   CHECK_THROWS_WITH(
       []() {
         const std::string h5_file_name("Unit.IO.H5.VolumeData.WriteTwice.h5");
@@ -564,7 +565,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
               {Spectral::Basis::Legendre},
               {Spectral::Quadrature::Gauss}}});
       }(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Trying to write tensor component 'S' which already exists in HDF5 "
           "file in group 'element_data.vol/ObservationId100'"));
 #endif
@@ -589,5 +590,5 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
               {Spectral::Quadrature::Gauss}}});
         volume_file.find_observation_id(11.0);
       }(),
-      Catch::Contains("No observation with value"));
+      Catch::Matchers::ContainsSubstring("No observation with value"));
 }

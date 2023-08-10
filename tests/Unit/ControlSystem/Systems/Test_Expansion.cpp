@@ -199,7 +199,7 @@ void test_names() {
         const std::string component_name = *expansion::component_name(1, 2);
         (void)component_name;
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Expansion control expects 1 component but there are 2 instead."));
 #endif  // SPECTRE_DEBUG
 }

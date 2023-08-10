@@ -181,5 +181,5 @@ SPECTRE_TEST_CASE("Unit.Parallel.NodeLock", "[Unit][Parallel]") {
         lock.destroy();
         lock.lock();
       }()),
-      Catch::Matchers::Contains("Trying to lock a destroyed lock"));
+      Catch::Matchers::ContainsSubstring("Trying to lock a destroyed lock"));
 }

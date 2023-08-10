@@ -196,15 +196,17 @@ void test_rotated_intervals() {
           lower_bound, midpoint, upper_bound, refinement_level[0],
           {{{{grid_points[0][0], grid_points[1][0]}}}}, lower_bc->get_clone(),
           periodic->get_clone(), nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                "must be set to periodic if"));
+      Catch::Matchers::ContainsSubstring(
+          "Both the upper and lower boundary condition "
+          "must be set to periodic if"));
   CHECK_THROWS_WITH(
       creators::RotatedIntervals(
           lower_bound, midpoint, upper_bound, refinement_level[0],
           {{{{grid_points[0][0], grid_points[1][0]}}}}, periodic->get_clone(),
           lower_bc->get_clone(), nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Both the upper and lower boundary condition "
-                                "must be set to periodic if"));
+      Catch::Matchers::ContainsSubstring(
+          "Both the upper and lower boundary condition "
+          "must be set to periodic if"));
   CHECK_THROWS_WITH(
       creators::RotatedIntervals(
           lower_bound, midpoint, upper_bound, refinement_level[0],
@@ -212,7 +214,7 @@ void test_rotated_intervals() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           lower_bc->get_clone(), nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
@@ -222,7 +224,7 @@ void test_rotated_intervals() {
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
 }

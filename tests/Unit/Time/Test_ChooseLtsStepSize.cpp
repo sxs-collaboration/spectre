@@ -26,6 +26,7 @@ SPECTRE_TEST_CASE("Unit.Time.ChooseLtsStepSize", "[Unit][Time]") {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       choose_lts_step_size(slab.start() + slab.duration() / 3, 1.),
-      Catch::Contains("Not at a binary-fraction time within slab"));
+      Catch::Matchers::ContainsSubstring(
+          "Not at a binary-fraction time within slab"));
 #endif  // SPECTRE_DEBUG
 }

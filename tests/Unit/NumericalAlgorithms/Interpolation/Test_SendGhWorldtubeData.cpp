@@ -192,7 +192,7 @@ void test_callback_function(const gsl::not_null<Generator*> gen) {
             dispatch_to_send_gh_worldtube_data<target, LocalTimeStepping>>(
             make_not_null(&runner2), 0_st);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "SendGhWorldtubeData expects a single worldtube radius, not"));
 }
 

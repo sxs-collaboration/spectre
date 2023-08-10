@@ -279,8 +279,9 @@ void test_connectivity() {
               radial_distribution_outer_shell, opening_angle,
               std::make_unique<PeriodicBc>(),
               Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::Contains("Cannot have periodic boundary "
-                                    "conditions with a binary domain"));
+          Catch::Matchers::ContainsSubstring(
+              "Cannot have periodic boundary "
+              "conditions with a binary domain"));
       if (excise_interiorA or excise_interiorB) {
         CHECK_THROWS_WITH(
             domain::creators::BinaryCompactObject(
@@ -301,8 +302,9 @@ void test_connectivity() {
                 radial_distribution_outer_shell, opening_angle,
                 create_outer_boundary_condition(),
                 Options::Context{false, {}, 1, 1}),
-            Catch::Matchers::Contains("Cannot have periodic boundary "
-                                      "conditions with a binary domain"));
+            Catch::Matchers::ContainsSubstring(
+                "Cannot have periodic boundary "
+                "conditions with a binary domain"));
         CHECK_THROWS_WITH(
             domain::creators::BinaryCompactObject(
                 Object{
@@ -321,7 +323,7 @@ void test_connectivity() {
                 use_equiangular_map, radial_distribution_envelope,
                 radial_distribution_outer_shell, opening_angle, nullptr,
                 Options::Context{false, {}, 1, 1}),
-            Catch::Matchers::Contains(
+            Catch::Matchers::ContainsSubstring(
                 "Must specify either both inner and outer boundary "
                 "conditions or neither."));
         CHECK_THROWS_WITH(
@@ -341,7 +343,7 @@ void test_connectivity() {
                 radial_distribution_outer_shell, opening_angle,
                 create_outer_boundary_condition(),
                 Options::Context{false, {}, 1, 1}),
-            Catch::Matchers::Contains(
+            Catch::Matchers::ContainsSubstring(
                 "Must specify either both inner and outer boundary "
                 "conditions or neither."));
       }
@@ -617,7 +619,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The x-coordinate of ObjectA's center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -626,7 +628,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The x-coordinate of ObjectB's center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -635,8 +637,9 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("The radius for the enveloping cube is too "
-                                "small! The Frustums will be malformed."));
+      Catch::Matchers::ContainsSubstring(
+          "The radius for the enveloping cube is too "
+          "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -644,7 +647,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "ObjectB's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -653,7 +656,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "ObjectA's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -661,7 +664,7 @@ void test_parse_errors() {
           Object{0.5, 1.0, -1.0, std::nullopt, true}, 25.5, 32.4, 2_st, 6_st,
           true, Distribution::Projective, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object B requires excising the interior "
           "of Object B"));
@@ -672,7 +675,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, 6_st, true, Distribution::Projective,
           Distribution::Linear, 120.0, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object A requires excising the interior "
           "of Object A"));
@@ -683,7 +686,7 @@ void test_parse_errors() {
           25.5, 32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Invalid 'InitialRefinement'"));
+      Catch::Matchers::ContainsSubstring("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -691,7 +694,7 @@ void test_parse_errors() {
           25.5, 32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true,
           Distribution::Projective, Distribution::Linear, 120.0,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("Invalid 'InitialGridPoints'"));
+      Catch::Matchers::ContainsSubstring("Invalid 'InitialGridPoints'"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }

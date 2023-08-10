@@ -68,5 +68,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
       (TestHelpers::test_creation<
           std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables>(
           "Constant: -5.4")),
-      Catch::Matchers::Contains("Requested step magnitude should be positive"));
+      Catch::Matchers::ContainsSubstring(
+          "Requested step magnitude should be positive"));
 }

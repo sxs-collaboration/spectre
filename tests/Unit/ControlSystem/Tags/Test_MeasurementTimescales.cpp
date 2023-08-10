@@ -239,7 +239,7 @@ void test_measurement_tag() {
 
             option_holder3);
       })(),
-      Catch::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Control systems can only be used in forward-in-time evolutions."));
 }
 }  // namespace

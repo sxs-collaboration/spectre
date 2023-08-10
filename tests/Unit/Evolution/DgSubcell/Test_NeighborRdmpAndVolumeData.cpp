@@ -321,7 +321,7 @@ void test() {
           DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "received_neighbor_subcell_data must be non-empty"));
 
   CHECK_THROWS_WITH(
@@ -329,13 +329,15 @@ void test() {
           make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains("neighbor_subcell_data must be non-empty"));
+      Catch::Matchers::ContainsSubstring(
+          "neighbor_subcell_data must be non-empty"));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains("neighbor_subcell_data must be non-empty"));
+      Catch::Matchers::ContainsSubstring(
+          "neighbor_subcell_data must be non-empty"));
 
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
@@ -344,7 +346,7 @@ void test() {
           Mesh<Dim>{5, Spectral::Basis::FiniteDifference,
                     Spectral::Quadrature::CellCentered},
           element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "must be the same if we are both doing subcell."));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
@@ -353,7 +355,7 @@ void test() {
           Mesh<Dim>{5, Spectral::Basis::FiniteDifference,
                     Spectral::Quadrature::CellCentered},
           element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "must be the same if we are both doing subcell."));
 
   CHECK_THROWS_WITH(
@@ -363,7 +365,7 @@ void test() {
           Mesh<Dim>{4, Spectral::Basis::Legendre,
                     Spectral::Quadrature::GaussLobatto},
           number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Neighbor subcell mesh computed from the neighbor DG mesh "));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
@@ -372,7 +374,7 @@ void test() {
           Mesh<Dim>{4, Spectral::Basis::Legendre,
                     Spectral::Quadrature::GaussLobatto},
           number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "Neighbor subcell mesh computed from the neighbor DG mesh "));
 
   CHECK_THROWS_WITH(
@@ -380,14 +382,14 @@ void test() {
           make_not_null(&neighbor_data),
           DataVector{2 * number_of_rdmp_vars + 1, 0.0}, number_of_rdmp_vars,
           lower_xi_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The number of DG volume grid points times the number of variables"));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data),
           DataVector{2 * number_of_rdmp_vars + 1, 0.0}, number_of_rdmp_vars,
           lower_xi_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones),
-      Catch::Matchers::Contains(
+      Catch::Matchers::ContainsSubstring(
           "The number of DG volume grid points times the number of variables"));
 
   if constexpr (Dim > 1) {
@@ -407,14 +409,16 @@ void test() {
             number_of_rdmp_vars,
             std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones),
-        Catch::Matchers::Contains("The neighbor mesh must be uniform but is"));
+        Catch::Matchers::ContainsSubstring(
+            "The neighbor mesh must be uniform but is"));
     CHECK_THROWS_WITH(
         evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
             make_not_null(&neighbor_data), received_fd_data,
             number_of_rdmp_vars,
             std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones),
-        Catch::Matchers::Contains("The neighbor mesh must be uniform but is"));
+        Catch::Matchers::ContainsSubstring(
+            "The neighbor mesh must be uniform but is"));
   }
 #endif
 }

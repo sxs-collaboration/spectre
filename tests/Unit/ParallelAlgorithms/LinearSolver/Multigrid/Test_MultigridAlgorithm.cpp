@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#define CATCH_CONFIG_RUNNER
-
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"

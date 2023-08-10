@@ -226,7 +226,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
           // this line should fail the size assert
           vector_view_1 = vector_view_2;
         }()),
-        Catch::Matchers::Contains("Assignment must be to the same size"));
+        Catch::Matchers::ContainsSubstring(
+            "Assignment must be to the same size"));
     CHECK_THROWS_WITH(
         ([]() {
           MAKE_GENERATOR(gen);
@@ -242,7 +243,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
           // this line should fail the size assert
           vector_view_1.assign_real(real(source_vec));
         }()),
-        Catch::Matchers::Contains("Assignment must be to the same size"));
+        Catch::Matchers::ContainsSubstring(
+            "Assignment must be to the same size"));
 #endif
 }
 

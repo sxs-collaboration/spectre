@@ -268,18 +268,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWave",
 
   CHECK_THROWS_WITH(
       []() { const gr::Solutions::GaugeWave<3> solution(-1.25, 1.0); }(),
-      Catch::Contains("Amplitude must be less than one"));
+      Catch::Matchers::ContainsSubstring("Amplitude must be less than one"));
   CHECK_THROWS_WITH(
       []() { const gr::Solutions::GaugeWave<3> solution(0.0, -0.25); }(),
-      Catch::Contains("Wavelength must be non-negative"));
-  CHECK_THROWS_WITH(
-      TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
-          "Amplitude: -1.25\n"
-          "Wavelength: 1.0"),
-      Catch::Contains("Value -1.25 is below the lower bound of -1"));
-  CHECK_THROWS_WITH(
-      TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
-          "Amplitude: 1.0\n"
-          "Wavelength: -0.25\n"),
-      Catch::Contains("Value -0.25 is below the lower bound of 0"));
+      Catch::Matchers::ContainsSubstring("Wavelength must be non-negative"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+                        "Amplitude: -1.25\n"
+                        "Wavelength: 1.0"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value -1.25 is below the lower bound of -1"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+                        "Amplitude: 1.0\n"
+                        "Wavelength: -0.25\n"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value -0.25 is below the lower bound of 0"));
 }

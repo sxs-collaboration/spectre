@@ -285,7 +285,7 @@ void test(const fd::DerivativeOrder correction_order) {
             make_not_null(&high_order_corrections_assert), volume_vars,
             second_order_corrections, correction_order,
             reconstruction_ghost_data, mesh, number_of_ghost_points),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "The high_order_corrections must all have size"));
   }
   if constexpr (Dim > 1) {
@@ -297,7 +297,7 @@ void test(const fd::DerivativeOrder correction_order) {
             make_not_null(&high_order_corrections), volume_vars,
             second_order_corrections_copy, correction_order,
             reconstruction_ghost_data, mesh, number_of_ghost_points),
-        Catch::Matchers::Contains(
+        Catch::Matchers::ContainsSubstring(
             "All second-order boundary corrections must be of the same size"));
   }
 #endif  // SPECTRE_DEBUG
