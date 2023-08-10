@@ -10,7 +10,7 @@ There are several different types of executables that can be built:
 - An executable that uses Charm++ to run in parallel,
   e.g. `Executables/ParallelInfo`
 - An executable that does not use Charm++, does not run in parallel, and
-  supplies its own `main`, e.g. `Executables/Benchmark`
+  supplies its own `main`, e.g. `Executables/Examples/HelloWorldNoCharm`
 - An executable that uses Charm++ to run in parallel but supplies its own `main`
 - An executable that uses custom compilation or linking flags,
   e.g. `DebugPreprocessor`
