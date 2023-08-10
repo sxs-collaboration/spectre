@@ -46,6 +46,8 @@ TciOnDgGrid<RecoveryScheme>::apply(
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options,
     const double persson_exponent, const bool element_stays_on_dg) {
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
 
@@ -135,7 +137,8 @@ TciOnDgGrid<RecoveryScheme>::apply(
           make_not_null(
               &get<hydro::Tags::SpecificEnthalpy<DataVector>>(pre_tci_prims)),
           tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos);
+          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
+          primitive_from_conservative_options);
 
   // This lambda is called before every TCI failure
   // in order to allow primitives to be updated, rather
@@ -293,6 +296,8 @@ GENERATE_INSTANTIATIONS(
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,         \
       const TciOptions& tci_options,                                         \
       const evolution::dg::subcell::SubcellOptions& subcell_options,         \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options,                               \
       const double persson_exponent, const bool element_stays_on_dg);
 
 GENERATE_INSTANTIATIONS(

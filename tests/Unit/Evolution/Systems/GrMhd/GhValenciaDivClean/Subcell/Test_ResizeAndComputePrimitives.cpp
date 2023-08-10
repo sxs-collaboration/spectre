@@ -27,6 +27,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -145,14 +146,21 @@ void test(const gsl::not_null<std::mt19937*> gen,
     compute_cons(prim_vars);
   }
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::ActiveGrid, cons_tag, prim_tag,
       gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>>>(
+          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       active_grid, cons_vars, prim_vars, spacetime_metric, dg_mesh,
-      subcell_mesh, std::move(eos));
+      subcell_mesh, std::move(eos), primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
@@ -188,7 +196,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildePhi>(cons_vars), spatial_metric,
         inv_spatial_metric, sqrt_det_spatial_metric,
-        db::get<hydro::Tags::EquationOfStateBase>(box));
+        db::get<hydro::Tags::EquationOfStateBase>(box),
+        primitive_from_conservative_options);
   }
   CHECK_VARIABLES_APPROX(db::get<prim_tag>(box), prim_vars);
 }

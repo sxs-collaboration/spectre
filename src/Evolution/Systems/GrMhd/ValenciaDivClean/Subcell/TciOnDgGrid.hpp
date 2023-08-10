@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -134,20 +135,21 @@ class TciOnDgGrid {
  public:
   using return_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
-  using argument_tags =
-      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                 grmhd::ValenciaDivClean::Tags::TildeYe,
-                 grmhd::ValenciaDivClean::Tags::TildeTau,
-                 grmhd::ValenciaDivClean::Tags::TildeS<>,
-                 grmhd::ValenciaDivClean::Tags::TildeB<>,
-                 grmhd::ValenciaDivClean::Tags::TildePhi,
-                 gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<3>,
-                 evolution::dg::subcell::Tags::Mesh<3>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
-                 evolution::dg::subcell::Tags::SubcellOptions<3>>;
+  using argument_tags = tmpl::list<
+      grmhd::ValenciaDivClean::Tags::TildeD,
+      grmhd::ValenciaDivClean::Tags::TildeYe,
+      grmhd::ValenciaDivClean::Tags::TildeTau,
+      grmhd::ValenciaDivClean::Tags::TildeS<>,
+      grmhd::ValenciaDivClean::Tags::TildeB<>,
+      grmhd::ValenciaDivClean::Tags::TildePhi,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<3>,
+      evolution::dg::subcell::Tags::Mesh<3>,
+      evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
+      evolution::dg::subcell::Tags::SubcellOptions<3>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
   template <size_t ThermodynamicDim>
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
@@ -165,6 +167,8 @@ class TciOnDgGrid {
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const TciOptions& tci_options,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+          primitive_from_conservative_options,
       double persson_exponent, bool element_stays_on_dg);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

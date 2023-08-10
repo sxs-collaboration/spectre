@@ -37,7 +37,9 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
     const size_t num_grid_points = dg_mesh.number_of_grid_points();
     // Reconstruct a copy of the pressure from the FD grid to the DG grid to
@@ -77,7 +79,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
             make_not_null(
                 &get<hydro::Tags::SpecificEnthalpy<DataVector>>(*prim_vars)),
             tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-            spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos);
+            spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
+            primitive_from_conservative_options);
   }
 }
 
@@ -108,7 +111,9 @@ using KastaunThenNewmanThenPalenzuela =
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos);
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,  \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,
                          tmpl::list<PrimitiveRecoverySchemes::NewmanHamlin>,

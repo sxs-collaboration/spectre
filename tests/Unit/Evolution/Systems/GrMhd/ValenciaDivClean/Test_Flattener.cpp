@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Flattener.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -74,6 +75,12 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
             grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
             true, true, false, false});
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   {
     INFO("Case: NoOp");
     Scalar<DataVector> tilde_d(
@@ -99,7 +106,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              primitive_from_conservative_options);
 
     CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
     CHECK_ITERABLE_APPROX(tilde_ye, expected_tilde_ye);
@@ -160,7 +168,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              primitive_from_conservative_options);
 
     // check 1) action, 2) positive tilde_d, 3) all fields changed
     CHECK(min(get(tilde_d)) > 0.);
@@ -238,7 +247,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              primitive_from_conservative_options);
 
     CHECK(definite_integral(
               get(det_logical_to_inertial_jacobian) * get(tilde_d), mesh) /

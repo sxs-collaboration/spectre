@@ -35,7 +35,9 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   if (did_rollback) {
     const size_t num_grid_points = subcell_mesh.number_of_grid_points();
     ASSERT(prim_vars->number_of_grid_points() != num_grid_points,
@@ -94,7 +96,7 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
                 &get<hydro::Tags::SpecificEnthalpy<DataVector>>(*prim_vars)),
             tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
             spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric,
-            eos);
+            eos, primitive_from_conservative_options);
   }
 }
 
@@ -121,7 +123,9 @@ using KastaunThenNewmanThenPalenzuela =
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                 \
       const Scalar<DataVector>& tilde_phi,                                    \
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,       \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos);
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&        \
+          primitive_from_conservative_options);
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,

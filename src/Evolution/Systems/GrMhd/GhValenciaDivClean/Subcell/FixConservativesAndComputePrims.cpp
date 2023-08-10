@@ -32,7 +32,9 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
         primitive_vars_ptr,
     const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
   // metric}}. Storing the allocation or the result in the DataBox might
   // actually be useful here, but unclear. We will need to profile.
@@ -91,7 +93,8 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
           get<ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(
               *conserved_vars_ptr),
           get<ValenciaDivClean::Tags::TildePhi>(*conserved_vars_ptr),
-          spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric, eos);
+          spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric, eos,
+          primitive_from_conservative_options);
 }
 
 namespace {
@@ -116,7 +119,9 @@ using KastaunThenNewmanThenPalenzuela =
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>        \
           primitive_vars_ptr,                                               \
       const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos);
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,

@@ -593,6 +593,7 @@ struct EvolutionMetavars {
           tmpl::list<
               grmhd::ValenciaDivClean::fd::Tags::Reconstructor,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
+              grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
       initial_data_tag, equation_of_state_tag,

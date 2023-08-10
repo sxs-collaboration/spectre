@@ -21,6 +21,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -122,6 +123,12 @@ void test(const TestThis test_this, const int expected_tci_status,
       std::nullopt,
       fd::DerivativeOrder::Two};
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<typename ConsVars::tags_list>,
       ::Tags::Variables<typename PrimVars::tags_list>, ::domain::Tags::Mesh<3>,
@@ -133,12 +140,14 @@ void test(const TestThis test_this, const int expected_tci_status,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
       evolution::dg::subcell::Tags::SubcellOptions<3>,
-      evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      evolution::dg::subcell::Tags::DataForRdmpTci,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       ConsVars{mesh.number_of_grid_points()}, prim_vars, mesh, subcell_mesh,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
       sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, tci_options,
-      subcell_options, evolution::dg::subcell::RdmpTciData{});
+      subcell_options, evolution::dg::subcell::RdmpTciData{},
+      primitive_from_conservative_options);
 
   db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
@@ -344,7 +353,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       // the updated box values and the original primvars.
       CHECK(db::get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
                 box) !=
-            get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
+           get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
                 prim_vars));
     }
   }

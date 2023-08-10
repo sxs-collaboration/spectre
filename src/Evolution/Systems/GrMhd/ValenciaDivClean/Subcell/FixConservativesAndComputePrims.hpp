@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
@@ -44,7 +45,8 @@ struct FixConservativesAndComputePrims {
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
       hydro::Tags::EquationOfStateBase, gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
   template <size_t ThermodynamicDim>
   static void apply(
@@ -56,6 +58,8 @@ struct FixConservativesAndComputePrims {
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& sqrt_det_spatial_metric);
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

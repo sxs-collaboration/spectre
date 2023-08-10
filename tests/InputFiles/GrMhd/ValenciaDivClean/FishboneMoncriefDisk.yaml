@@ -98,8 +98,8 @@ EvolutionSystem:
 
 VariableFixing:
   FixConservatives:
-    CutoffD: 1.0e-12
-    MinimumValueOfD: 1.0e-12
+    CutoffD: &CutoffD 1.0e-12
+    MinimumValueOfD: &MinimumD 1.0e-12
     CutoffYe: 0.0
     MinimumValueOfYe: 0.0
     SafetyFactorForB: 1.0e-12
@@ -111,6 +111,10 @@ VariableFixing:
     DensityCutoff: 1.0e-12
     TransitionDensityCutoff: 1.0e-11
     MaxVelocityMagnitude: 1.0e-4
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
 
 EventsAndTriggers:
   - Trigger:

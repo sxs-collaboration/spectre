@@ -16,6 +16,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
@@ -110,6 +111,12 @@ void test_primitive_from_conservative_random(
       expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
       expected_divergence_cleaning_field);
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   Scalar<DataVector> rest_mass_density(number_of_points);
   Scalar<DataVector> electron_fraction(number_of_points);
   Scalar<DataVector> specific_internal_energy(number_of_points);
@@ -130,7 +137,8 @@ void test_primitive_from_conservative_random(
           make_not_null(&lorentz_factor), make_not_null(&pressure),
           make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
           tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-          sqrt_det_spatial_metric, equation_of_state);
+          sqrt_det_spatial_metric, equation_of_state,
+          primitive_from_conservative_options);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
@@ -198,6 +206,12 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_ye),
       make_not_null(&tilde_tau), make_not_null(&tilde_s),
@@ -229,7 +243,8 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
           make_not_null(&lorentz_factor), make_not_null(&pressure),
           make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
           tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-          sqrt_det_spatial_metric, ideal_fluid);
+          sqrt_det_spatial_metric, ideal_fluid,
+          primitive_from_conservative_options);
 
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_electron_fraction, electron_fraction);

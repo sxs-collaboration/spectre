@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -57,18 +58,18 @@ struct PrimitiveFromConservative {
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>>;
-
-  using argument_tags =
-      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                 grmhd::ValenciaDivClean::Tags::TildeYe,
-                 grmhd::ValenciaDivClean::Tags::TildeTau,
-                 grmhd::ValenciaDivClean::Tags::TildeS<>,
-                 grmhd::ValenciaDivClean::Tags::TildeB<>,
-                 grmhd::ValenciaDivClean::Tags::TildePhi,
-                 gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                 gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                 hydro::Tags::EquationOfStateBase>;
+  using argument_tags = tmpl::list<
+      grmhd::ValenciaDivClean::Tags::TildeD,
+      grmhd::ValenciaDivClean::Tags::TildeYe,
+      grmhd::ValenciaDivClean::Tags::TildeTau,
+      grmhd::ValenciaDivClean::Tags::TildeS<>,
+      grmhd::ValenciaDivClean::Tags::TildeB<>,
+      grmhd::ValenciaDivClean::Tags::TildePhi,
+      gr::Tags::SpatialMetric<DataVector, 3>,
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      hydro::Tags::EquationOfStateBase,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
   template <size_t ThermodynamicDim>
   static bool apply(
@@ -90,7 +91,9 @@ struct PrimitiveFromConservative {
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state);
+          equation_of_state,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+          primitive_from_conservative_options);
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

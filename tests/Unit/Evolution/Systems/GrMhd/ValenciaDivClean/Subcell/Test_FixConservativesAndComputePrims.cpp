@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -41,6 +42,12 @@ SPECTRE_TEST_CASE(
 
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   auto box = db::create<db::AddSimpleTags<
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag, typename System::primitive_variables_tag,
@@ -49,13 +56,15 @@ SPECTRE_TEST_CASE(
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>>>(
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       false, cons_vars,
       typename System::primitive_variables_tag::type{num_pts, 1.0e-4},
       variable_fixer,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
-      spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric);
+      spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric,
+      primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>;
@@ -96,7 +105,8 @@ SPECTRE_TEST_CASE(
           db::get<grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(box),
           db::get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(box),
           db::get<grmhd::ValenciaDivClean::Tags::TildePhi>(box), spatial_metric,
-          inverse_spatial_metric, sqrt_det_spatial_metric, eos);
+          inverse_spatial_metric, sqrt_det_spatial_metric, eos,
+          primitive_from_conservative_options);
   CHECK_VARIABLES_APPROX(db::get<typename System::primitive_variables_tag>(box),
                          expected_prims);
 }

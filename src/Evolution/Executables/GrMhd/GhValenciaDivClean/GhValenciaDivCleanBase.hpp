@@ -625,6 +625,7 @@ struct GhValenciaDivCleanTemplateBase<
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
       gh::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                           initial_data_tag>,
