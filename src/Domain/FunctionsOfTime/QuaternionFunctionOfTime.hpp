@@ -7,8 +7,8 @@
 #include <atomic>
 #include <boost/math/quaternion.hpp>
 #include <cmath>
-#include <deque>
 #include <limits>
+#include <list>
 #include <pup.h>
 #include <string>
 
@@ -159,8 +159,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
 
   // In order for this class to be used in the mutable part of the global cache,
   // stored_quaternions_and_times_ must be a data type that preserves references
-  // to elements upon insertion or resizing. A deque fits this requirement
-  std::deque<FunctionOfTimeHelpers::StoredInfo<1, false>>
+  // to elements upon insertion or resizing. A list fits this requirement
+  std::list<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
   alignas(64) std::atomic_uint64_t stored_quaternion_size_{};
   // Pad memory to avoid false-sharing when accessing stored_quaternion_size_
@@ -175,7 +175,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       gsl::not_null<boost::math::quaternion<double>*> quaternion_to_integrate,
       double t0, double t) const;
 
-  /// Updates the `std::deque<StoredInfo>` to have the same number of stored
+  /// Updates the `std::list<StoredInfo>` to have the same number of stored
   /// quaternions as the `angle_f_of_t_ptr` has stored angles. This is necessary
   /// to ensure we can solve the ODE at any time `t`
   void update_stored_info();

@@ -6,8 +6,8 @@
 #include <array>
 #include <atomic>
 #include <cstddef>
-#include <deque>
 #include <limits>
+#include <list>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -79,13 +79,13 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const override {
-    return {{deriv_info_at_update_times_[0].time, expiration_time_}};
+    return {{deriv_info_at_update_times_.front().time, expiration_time_}};
   }
 
   /// Return a const reference to the stored deriv info so external classes can
   /// read the stored times and derivatives (mostly for
   /// QuaternionFunctionOfTime).
-  const std::deque<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>&
+  const std::list<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>&
   get_deriv_info() const {
     return deriv_info_at_update_times_;
   }
@@ -116,8 +116,8 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   // In order for this class to be used in the mutable part of the global cache,
   // deriv_info_at_update_times_ must be a data type that preserves references
-  // to elements upon insertion or resizing. A deque fits this requirement
-  std::deque<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+  // to elements upon insertion or resizing. A std::list fits this requirement
+  std::list<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
       deriv_info_at_update_times_;
   double expiration_time_{std::numeric_limits<double>::lowest()};
   alignas(64) std::atomic_uint64_t deriv_info_size_{};

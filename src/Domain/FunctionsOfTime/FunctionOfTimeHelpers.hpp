@@ -7,8 +7,8 @@
 #pragma once
 
 #include <array>
-#include <deque>
 #include <limits>
+#include <list>
 #include <ostream>
 #include <pup.h>
 
@@ -75,7 +75,7 @@ void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
     const double t,
-    const std::deque<StoredInfo<MaxDerivPlusOne, StoreCoefs>>& all_stored_infos,
+    const std::list<StoredInfo<MaxDerivPlusOne, StoreCoefs>>& all_stored_infos,
     const size_t all_info_size);
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
