@@ -24,12 +24,16 @@ struct ComovingMagneticField;
 template <typename DataType>
 struct ComovingMagneticFieldSquared;
 template <typename DataType>
+struct ComovingMagneticFieldMagnitude;
+template <typename DataType>
 struct DivergenceCleaningField;
 template <typename DataType>
 struct ElectronFraction;
 struct EquationOfStateBase;
 template <typename EquationOfStateType>
 struct EquationOfState;
+template <typename DataType>
+struct InversePlasmaBeta;
 template <typename DataType>
 struct LorentzFactor;
 template <typename DataType>
