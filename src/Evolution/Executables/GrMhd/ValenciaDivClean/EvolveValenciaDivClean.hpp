@@ -23,6 +23,7 @@
 #include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
+#include "Evolution/DgSubcell/BackgroundGrVars.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -71,7 +72,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/QuadrupoleFormula.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/SetVariablesNeededFixingToFalse.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/GrTagsForHydro.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/PrimitiveGhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/PrimsAfterRollback.hpp"
@@ -450,6 +450,8 @@ struct EvolutionMetavars {
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
+      Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
+          system, EvolutionMetavars, false, false>>,
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, false>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -458,6 +460,8 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
+      Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
+          system, EvolutionMetavars, false, true>>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::SwapGrTags>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::PrimsAfterRollback<
           ordered_list_of_primitive_recovery_schemes>>,
@@ -508,7 +512,8 @@ struct EvolutionMetavars {
               evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
                                                               system, false>,
               Initialization::Actions::AddSimpleTags<
-                  Initialization::subcell::GrTagsForHydro<system, volume_dim>,
+                  evolution::dg::subcell::BackgroundGrVars<
+                      system, EvolutionMetavars, false, false>,
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SwapGrTags>,

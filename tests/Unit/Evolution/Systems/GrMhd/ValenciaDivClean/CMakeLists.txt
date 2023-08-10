@@ -19,7 +19,6 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
-  Subcell/Test_GrTagsForHydro.cpp
   Subcell/Test_NeighborPackagedData.cpp
   Subcell/Test_PrimitiveGhostData.cpp
   Subcell/Test_PrimsAfterRollback.cpp

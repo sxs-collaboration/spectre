@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Actions/Test_TciAndRollback.cpp
   Actions/Test_TciAndSwitchToDg.cpp
   Test_ActiveGrid.cpp
+  Test_BackgroundGrVars.cpp
   Test_CartesianFluxDivergence.cpp
   Test_CellCenteredFlux.cpp
   Test_ComputeBoundaryTerms.cpp
