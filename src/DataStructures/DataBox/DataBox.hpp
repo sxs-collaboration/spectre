@@ -1250,45 +1250,51 @@ SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
 /// @}
 
 namespace detail {
+template <typename Tag, typename BoxTags>
+using tag_return_type =
+    tmpl::conditional_t<std::is_same_v<Tag, ::Tags::DataBox>,
+                        db::DataBox<BoxTags>, typename Tag::type>;
+
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) {
-  static_assert(
-      not tmpl2::flat_any_v<std::is_same_v<ArgumentTags, Tags::DataBox>...> and
-          not tmpl2::flat_any_v<std::is_same_v<ReturnTags, Tags::DataBox>...>,
-      "Cannot pass a DataBox to mutate_apply since the db::get won't work "
-      "inside mutate_apply.");
-  if constexpr (is_apply_callable_v<
-                    F, const gsl::not_null<typename ReturnTags::type*>...,
-                    const_item_type<ArgumentTags, BoxTags>..., Args...>) {
-    return ::db::mutate<ReturnTags...>(
-        [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
-           const_item_type<ArgumentTags, BoxTags>... args_items,
-           decltype(std::forward<Args>(args))... l_args) {
-          return std::decay_t<F>::apply(mutated_items..., args_items...,
-                                        std::forward<Args>(l_args)...);
-        },
-        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
-  } else if constexpr (::tt::is_callable_v<
-                           F,
-                           const gsl::not_null<typename ReturnTags::type*>...,
-                           const_item_type<ArgumentTags, BoxTags>...,
-                           Args...>) {
-    return ::db::mutate<ReturnTags...>(
-        [&f](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
+  if constexpr (sizeof...(ReturnTags) == 0) {
+    return apply<tmpl::list<ArgumentTags...>>(std::forward<F>(f), *box,
+                                              std::forward<Args>(args)...);
+  } else {
+    detail::check_tags_are_in_databox(BoxTags{}, tmpl::list<ReturnTags...>{});
+    detail::check_tags_are_in_databox(BoxTags{}, tmpl::list<ArgumentTags...>{});
+    static_assert(not(... or std::is_same_v<ArgumentTags, Tags::DataBox>),
+                  "Cannot pass Tags::DataBox to mutate_apply when mutating "
+                  "since the db::get won't work inside mutate_apply.");
+    if constexpr (is_apply_callable_v<
+                      F,
+                      const gsl::not_null<
+                          tag_return_type<ReturnTags, BoxTags>*>...,
+                      const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+      return ::db::mutate<ReturnTags...>(
+          [](const gsl::not_null<
+                 tag_return_type<ReturnTags, BoxTags>*>... mutated_items,
              const_item_type<ArgumentTags, BoxTags>... args_items,
              decltype(std::forward<Args>(args))... l_args) {
-          return f(mutated_items..., args_items...,
-                   std::forward<Args>(l_args)...);
-        },
-        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
-  } else {
-    error_function_not_callable<F, gsl::not_null<typename ReturnTags::type*>...,
-                                const_item_type<ArgumentTags, BoxTags>...,
-                                Args...>();
+            return std::decay_t<F>::apply(mutated_items..., args_items...,
+                                          std::forward<Args>(l_args)...);
+          },
+          box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
+    } else if constexpr (
+        ::tt::is_callable_v<
+            F, const gsl::not_null<tag_return_type<ReturnTags, BoxTags>*>...,
+            const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+      return ::db::mutate<ReturnTags...>(f, box, db::get<ArgumentTags>(*box)...,
+                                         std::forward<Args>(args)...);
+    } else {
+      error_function_not_callable<
+          F, gsl::not_null<tag_return_type<ReturnTags, BoxTags>*>...,
+          const_item_type<ArgumentTags, BoxTags>..., Args...>();
+    }
   }
 }
 }  // namespace detail
@@ -1311,6 +1317,11 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
  *
  * Any return values of the invokable `f` are forwarded as returns to the
  * `mutate_apply` call.
+ *
+ * \note If `MutateTags` is empty this will forward to `db::apply`, so
+ * `::Tags::DataBox` will be available.  Otherwise it will call
+ * `db::mutate`.  See those functions for more details on retrieving
+ * the entire box.
  *
  * \example
  * An example of using `mutate_apply` with a lambda:
@@ -1336,8 +1347,6 @@ template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) {
-  detail::check_tags_are_in_databox(BoxTags{}, MutateTags{});
-  detail::check_tags_are_in_databox(BoxTags{}, ArgumentTags{});
   return detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
                               ArgumentTags{}, std::forward<Args>(args)...);
 }

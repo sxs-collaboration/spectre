@@ -1397,6 +1397,45 @@ void test_mutate_apply() {
     db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
     CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
   }
+
+  {
+    INFO("Tags::DataBox");
+    db::mutate_apply<tmpl::list<>,
+                     tmpl::list<::Tags::DataBox, test_databox_tags::Tag0>>(
+        [](const decltype(box)& /*box*/, const double& /*tag0*/) {},
+        make_not_null(&box));
+    db::mutate_apply<tmpl::list<::Tags::DataBox>,
+                     tmpl::list<test_databox_tags::Tag0>>(
+        [](const gsl::not_null<decltype(box)*> /*box*/,
+           const double& /*tag0*/) {},
+        make_not_null(&box));
+
+    struct ReadApply {
+      using return_tags = tmpl::list<>;
+      using argument_tags = tmpl::list<::Tags::DataBox>;
+      static void apply(const decltype(box)& /*box*/) {}
+    };
+    struct ReadCall {
+      using return_tags = tmpl::list<>;
+      using argument_tags = tmpl::list<::Tags::DataBox>;
+      void operator()(const decltype(box)& /*box*/) const {}
+    };
+    struct WriteApply {
+      using return_tags = tmpl::list<::Tags::DataBox>;
+      using argument_tags = tmpl::list<>;
+      static void apply(const gsl::not_null<decltype(box)*> /*box*/) {}
+    };
+    struct WriteCall {
+      using return_tags = tmpl::list<::Tags::DataBox>;
+      using argument_tags = tmpl::list<>;
+      void operator()(const gsl::not_null<decltype(box)*> /*box*/) const {}
+    };
+
+    db::mutate_apply<ReadApply>(make_not_null(&box));
+    db::mutate_apply<ReadCall>(make_not_null(&box));
+    db::mutate_apply<WriteApply>(make_not_null(&box));
+    db::mutate_apply<WriteCall>(make_not_null(&box));
+  }
 }
 
 static_assert(
