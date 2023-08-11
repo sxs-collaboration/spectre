@@ -155,6 +155,7 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -180,6 +181,30 @@ namespace Parallel {
 template <typename Metavariables>
 class CProxy_GlobalCache;
 }  // namespace Parallel
+
+// We need separate time tags for all horizon finders because of complicated
+// Interpolator internal details. So we just make a simple compute tag that
+// takes the actual time out of the box since we still want the actual time to
+// be the same, just a different tag.
+namespace Tags {
+template <size_t Index>
+struct AhObservationTime {
+  static std::string name() { return "AhObservationTime" + get_output(Index); }
+  using type = double;
+};
+
+template <size_t Index>
+struct AhObservationTimeCompute : AhObservationTime<Index>, db::ComputeTag {
+  using argument_tags = tmpl::list<::Tags::Time>;
+  using base = AhObservationTime<Index>;
+  using return_type = double;
+
+  static void function(const gsl::not_null<double*> ah_time,
+                       const double time) {
+    *ah_time = time;
+  }
+};
+}  // namespace Tags
 /// \endcond
 
 // Note: this executable does not use GeneralizedHarmonicBase.hpp, because
@@ -214,14 +239,15 @@ struct EvolutionMetavars {
 
   template <::domain::ObjectLabel Horizon, typename Frame>
   struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    // Offset index by 10 to avoid clashes with control system horizon finds
-    using temporal_id =
-        ::Tags::TimeAndPrevious<static_cast<size_t>(Horizon) + 10>;
+    static constexpr size_t index = static_cast<size_t>(Horizon);
+    using temporal_id = ::Tags::AhObservationTime<index>;
     using vars_to_interpolate_to_target =
         ::ah::vars_to_interpolate_to_target<volume_dim, Frame>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using tags_to_observe = ::ah::tags_for_observing<Frame>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
+    using compute_items_on_source =
+        tmpl::list<::Tags::AhObservationTimeCompute<index>>;
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
@@ -502,17 +528,11 @@ struct EvolutionMetavars {
                                                 use_control_systems>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<::Tags::DerivCompute<typename system::variables_tag,
-                                          ::domain::Tags::InverseJacobian<
-                                              volume_dim, Frame::ElementLogical,
-                                              Frame::Inertial>,
-                                          typename system::gradient_variables>,
-                     // For observation horizon finds. The index member is
-                     // specific to TimeAndPrevious
-                     ::Tags::TimeAndPreviousCompute<AhA::temporal_id::index>,
-                     ::Tags::TimeAndPreviousCompute<AhB::temporal_id::index>,
-                     ::Tags::TimeAndPreviousCompute<AhC::temporal_id::index>>>,
+      Initialization::Actions::AddComputeTags<tmpl::list<::Tags::DerivCompute<
+          typename system::variables_tag,
+          ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
+                                          Frame::Inertial>,
+          typename system::gradient_variables>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
