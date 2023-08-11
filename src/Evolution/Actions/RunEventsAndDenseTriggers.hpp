@@ -237,7 +237,7 @@ struct RunEventsAndDenseTriggers {
       }
 
       const auto triggered = events_and_dense_triggers.is_ready(
-          box, cache, array_index, component);
+          make_not_null(&box), cache, array_index, component);
       using TriggeringState = std::decay_t<decltype(triggered)>;
       switch (triggered) {
         case TriggeringState::NotReady:
@@ -288,8 +288,8 @@ struct RunEventsAndDenseTriggers {
       }
 
       events_and_dense_triggers.run_events(box, cache, array_index, component);
-      if (not events_and_dense_triggers.reschedule(box, cache, array_index,
-                                                   component)) {
+      if (not events_and_dense_triggers.reschedule(make_not_null(&box), cache,
+                                                   array_index, component)) {
         return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }
     }

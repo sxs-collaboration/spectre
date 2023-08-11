@@ -16,6 +16,7 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -50,14 +51,15 @@ class Or : public DenseTrigger {
 
   explicit Or(std::vector<std::unique_ptr<DenseTrigger>> triggers);
 
-  using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
+  using is_triggered_return_tags = tmpl::list<Tags::DataBox>;
+  using is_triggered_argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
-  std::optional<bool> is_triggered(Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index,
-                                   const Component* component,
-                                   const db::DataBox<DbTags>& box) const {
+  std::optional<bool> is_triggered(
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component,
+      const gsl::not_null<db::DataBox<DbTags>*> box) const {
     bool is_ready = true;
     for (const auto& trigger : triggers_) {
       const auto sub_result =
@@ -74,15 +76,16 @@ class Or : public DenseTrigger {
     return is_ready ? std::optional{false} : std::nullopt;
   }
 
-  using next_check_time_argument_tags =
-      tmpl::list<Tags::TimeStepId, Tags::DataBox>;
+  using next_check_time_return_tags = tmpl::list<Tags::DataBox>;
+  using next_check_time_argument_tags = tmpl::list<Tags::TimeStepId>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
   std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component,
-      const TimeStepId& time_step_id, const db::DataBox<DbTags>& box) const {
+      const gsl::not_null<db::DataBox<DbTags>*>& box,
+      const TimeStepId& time_step_id) const {
     const evolution_less<double> before{time_step_id.time_runs_forward()};
     double result = before.infinity();
     for (const auto& trigger : triggers_) {

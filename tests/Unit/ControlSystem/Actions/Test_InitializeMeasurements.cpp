@@ -232,7 +232,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   // This call initializes events_and_dense_triggers internals
   events_and_dense_triggers.next_trigger(box);
   CAPTURE(db::get<Tags::Time>(box));
-  CHECK(events_and_dense_triggers.is_ready(box, cache, 0, component_p) ==
+  CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache, 0,
+                                           component_p) ==
         evolution::EventsAndDenseTriggers::TriggeringState::
             NeedsEvolvedVariables);
   events_and_dense_triggers.run_events(box, cache, 0, component_p);

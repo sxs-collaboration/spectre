@@ -18,6 +18,7 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 namespace PUP {
@@ -112,7 +113,7 @@ class EventsAndDenseTriggers {
   /// reschedule.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
-  TriggeringState is_ready(const db::DataBox<DbTags>& box,
+  TriggeringState is_ready(gsl::not_null<db::DataBox<DbTags>*> box,
                            Parallel::GlobalCache<Metavariables>& cache,
                            const ArrayIndex& array_index,
                            const ComponentPointer component);
@@ -134,7 +135,7 @@ class EventsAndDenseTriggers {
   /// later.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
-  bool reschedule(const db::DataBox<DbTags>& box,
+  bool reschedule(gsl::not_null<db::DataBox<DbTags>*> box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ComponentPointer component);
@@ -177,8 +178,9 @@ double EventsAndDenseTriggers::next_trigger(const db::DataBox<DbTags>& box) {
 template <typename DbTags, typename Metavariables, typename ArrayIndex,
           typename ComponentPointer>
 EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
-    const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ComponentPointer component) {
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const ComponentPointer component) {
   ASSERT(initialized(), "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling is_ready with no triggers");
@@ -204,7 +206,7 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
     for (; trigger_entry.num_events_ready < trigger_entry.events.size();
          ++trigger_entry.num_events_ready) {
       if (not trigger_entry.events[trigger_entry.num_events_ready]->is_ready(
-              box, cache, array_index, component)) {
+              *box, cache, array_index, component)) {
         return TriggeringState::NotReady;
       }
     }
@@ -272,8 +274,9 @@ void EventsAndDenseTriggers::run_events(
 template <typename DbTags, typename Metavariables, typename ArrayIndex,
           typename ComponentPointer>
 bool EventsAndDenseTriggers::reschedule(
-    const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ComponentPointer component) {
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const ComponentPointer component) {
   ASSERT(initialized(), "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling run_events with no triggers");

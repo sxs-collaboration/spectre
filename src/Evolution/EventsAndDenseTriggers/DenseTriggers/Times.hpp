@@ -44,6 +44,7 @@ class Times : public DenseTrigger {
 
   explicit Times(std::unique_ptr<TimeSequence<double>> times);
 
+  using is_triggered_return_tags = tmpl::list<>;
   using is_triggered_argument_tags = tmpl::list<Tags::Time>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
@@ -54,6 +55,7 @@ class Times : public DenseTrigger {
     return is_triggered_impl(time);
   }
 
+  using next_check_time_return_tags = tmpl::list<>;
   using next_check_time_argument_tags =
       tmpl::list<Tags::TimeStepId, Tags::Time>;
 

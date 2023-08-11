@@ -81,6 +81,7 @@ class Trigger : public DenseTrigger {
   static constexpr bool factory_creatable = false;
   Trigger() = default;
 
+  using is_triggered_return_tags = tmpl::list<>;
   using is_triggered_argument_tags =
       tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
 
@@ -122,6 +123,7 @@ class Trigger : public DenseTrigger {
     return time == *next_trigger_;
   }
 
+  using next_check_time_return_tags = tmpl::list<>;
   using next_check_time_argument_tags =
       tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
 
