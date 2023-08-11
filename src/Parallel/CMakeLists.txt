@@ -42,6 +42,7 @@ spectre_target_headers(
   Main.hpp
   MaxInlineMethodsReached.hpp
   NodeLock.hpp
+  OutputInbox.hpp
   ParallelComponentHelpers.hpp
   Phase.hpp
   PhaseControlReductionHelpers.hpp
