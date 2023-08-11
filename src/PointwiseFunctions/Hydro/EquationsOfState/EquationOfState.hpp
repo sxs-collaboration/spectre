@@ -19,8 +19,12 @@
 
 /// \cond
 namespace EquationsOfState {
+template <typename ColdEquilEos>
+class Barotropic3D;
 template <bool IsRelativistic>
 class DarkEnergyFluid;
+template <typename EquilEos>
+class Equilibrium3D;
 template <typename ColdEquationOfState>
 class HybridEos;
 template <bool IsRelativistic>
@@ -61,7 +65,8 @@ struct DerivedClasses<false, 1> {
 template <>
 struct DerivedClasses<true, 2> {
   using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>,
-                          HybridEos<PolytropicFluid<true>>>;
+                          HybridEos<PolytropicFluid<true>>, HybridEos<Spectral>,
+                          HybridEos<Enthalpy<Spectral>>>;
 };
 
 template <>
@@ -71,7 +76,12 @@ struct DerivedClasses<false, 2> {
 
 template <>
 struct DerivedClasses<true, 3> {
-  using type = tmpl::list<Tabulated3D<true>>;
+  using type =
+      tmpl::list<Tabulated3D<true>, Barotropic3D<PolytropicFluid<true>>,
+                 Barotropic3D<Spectral>, Barotropic3D<Enthalpy<Spectral>>,
+                 Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
+                 Equilibrium3D<HybridEos<Spectral>>,
+                 Equilibrium3D<HybridEos<Enthalpy<Spectral>>>>;
 };
 
 template <>
@@ -255,7 +265,7 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   virtual double electron_fraction_lower_bound() const { return 0.0; }
 
   /// The upper bound of the electron fraction that is valid for this EOS
-  virtual double electron_fraction_upper_bound() const { return 0.5; }
+  virtual double electron_fraction_upper_bound() const { return 1.0; }
 
   /// The lower bound of the rest mass density that is valid for this EOS
   virtual double rest_mass_density_lower_bound() const = 0;
@@ -402,9 +412,9 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   /// @{
   /*!
-   * Computes \f$\chi=\partial p / \partial \rho\f$ from the \f$\rho\f$ and
-   * \f$\epsilon\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
-   * density, and \f$\epsilon\f$ is the specific internal energy.
+   * Computes \f$\chi=\partial p / \partial \rho |_{\epsilon}\f$ from the
+   * \f$\rho\f$ and \f$\epsilon\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is
+   * the rest mass density, and \f$\epsilon\f$ is the specific internal energy.
    */
   virtual Scalar<double> chi_from_density_and_energy(
       const Scalar<double>& /*rest_mass_density*/,
@@ -416,10 +426,10 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   /// @{
   /*!
-   * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
-   * from \f$\rho\f$ and \f$\epsilon\f$, where \f$p\f$ is the pressure,
-   * \f$\rho\f$ is the rest mass density, and \f$\epsilon\f$ is the specific
-   * internal energy.
+   * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon
+   * |_{\rho}\f$ from \f$\rho\f$ and \f$\epsilon\f$, where \f$p\f$ is the
+   * pressure, \f$\rho\f$ is the rest mass density, and \f$\epsilon\f$ is the
+   * specific internal energy.
    *
    * The reason for not returning just
    * \f$\kappa=\partial p / \partial \epsilon\f$ is to avoid division by zero
@@ -439,7 +449,7 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   virtual double electron_fraction_lower_bound() const { return 0.0; }
 
   /// The upper bound of the electron fraction that is valid for this EOS
-  virtual double electron_fraction_upper_bound() const { return 0.5; }
+  virtual double electron_fraction_upper_bound() const { return 1.0; }
 
   /// The lower bound of the rest mass density that is valid for this EOS
   virtual double rest_mass_density_lower_bound() const = 0;
@@ -456,6 +466,14 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_upper_bound(
       const double rest_mass_density) const = 0;
+
+  /// The lower bound of the temperature that is valid for this EOS
+  virtual double temperature_lower_bound() const { return 0.0; };
+
+  /// The upper bound of the temperature that is valid for this EOS
+  virtual double temperature_upper_bound() const {
+    return std::numeric_limits<double>::max();
+  };
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
@@ -565,10 +583,17 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   /// @{
   /*!
-   * Computes sound speed squared \f$ c_s^2 \f$.
-   *
-   * Interpolate as a function of temperature, rest-mass density and electron
-   * fraction. Note that this will break thermodynamic consistency with the
+   * Computes adiabatic sound speed squared
+   * \f[
+   * c_s^2  \equiv \frac{\partial p}{\partial e} |_{s, Y_e} =
+   * \frac{\rho}{h}\frac{\partial p}{\rho} |_{e, Y_e} +
+   * \frac{\partial p}{\partial e}|_{\rho, Y_e}
+   * \f].
+   * With \f$p, e\f$ the pressure and energy density respectively,
+   * \f$s\f$ the entropy density, \f$Y_e\f$ the electron fraction
+   * and \f$\rho\f$ the rest-mass density.
+   * Computed as a function of temperature, rest-mass density and electron
+   * fraction. Note that this will break thermodynamic consistency if the
    * pressure and internal energy interpolated separately. The precise impact of
    * this will depend on the EoS and numerical scheme used for the evolution.
    */

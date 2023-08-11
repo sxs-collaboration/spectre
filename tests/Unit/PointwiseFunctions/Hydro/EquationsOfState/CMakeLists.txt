@@ -4,8 +4,10 @@
 set(LIBRARY "Test_EquationsOfState")
 
 set(LIBRARY_SOURCES
+  Test_Barotropic3D.cpp
   Test_DarkEnergyFluid.cpp
   Test_Enthalpy.cpp
+  Test_Equilibrium3D.cpp
   Test_HybridEos.cpp
   Test_IdealFluid.cpp
   Test_PiecewisePolytropicFluid.cpp

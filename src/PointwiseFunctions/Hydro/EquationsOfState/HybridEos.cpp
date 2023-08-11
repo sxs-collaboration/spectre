@@ -7,6 +7,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions//Hydro/EquationsOfState/Enthalpy.hpp"
+#include "PointwiseFunctions//Hydro/EquationsOfState/Spectral.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
@@ -176,3 +178,6 @@ template class EquationsOfState::HybridEos<
     EquationsOfState::PolytropicFluid<true>>;
 template class EquationsOfState::HybridEos<
     EquationsOfState::PolytropicFluid<false>>;
+template class EquationsOfState::HybridEos<EquationsOfState::Spectral>;
+template class EquationsOfState::HybridEos<
+    EquationsOfState::Enthalpy<EquationsOfState::Spectral>>;

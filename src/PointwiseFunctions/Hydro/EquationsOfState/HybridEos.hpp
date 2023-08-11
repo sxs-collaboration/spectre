@@ -60,6 +60,9 @@ class HybridEos
   struct ColdEos {
     using type = ColdEquationOfState;
     static constexpr Options::String help = {"Cold equation of state"};
+    static std::string name() {
+      return pretty_type::short_name<ColdEquationOfState>();
+    }
   };
 
   struct ThermalAdiabaticIndex {
@@ -101,6 +104,10 @@ class HybridEos
   bool operator!=(const HybridEos<ColdEquationOfState>& rhs) const;
 
   bool is_equal(const EquationOfState<is_relativistic, 2>& rhs) const override;
+
+  static std::string name() {
+    return "HybridEos(" + pretty_type::name<ColdEquationOfState>() + ")";
+  }
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override {
