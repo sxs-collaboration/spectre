@@ -2983,6 +2983,10 @@ static_assert(
     not db::tag_is_retrievable_v<
         tags_types::DummyTag, db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
     "Failed testing tag_is_retrievable_v");
+static_assert(
+    db::tag_is_retrievable_v<::Tags::DataBox,
+                             db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+    "Failed testing tag_is_retrievable_v");
 
 namespace test_creation_tag {
 struct Base : db::BaseTag {};

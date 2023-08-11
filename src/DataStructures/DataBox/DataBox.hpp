@@ -58,8 +58,10 @@ class DataBox;
 /// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
 /// `DataBoxType`.
 template <typename Tag, typename DataBoxType>
-using tag_is_retrievable = tmpl::any<typename DataBoxType::tags_list,
-                                     std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>;
+using tag_is_retrievable =
+    tmpl::or_<std::is_same<Tag, ::Tags::DataBox>,
+              tmpl::any<typename DataBoxType::tags_list,
+                        std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
 
 template <typename Tag, typename DataBoxType>
 constexpr bool tag_is_retrievable_v =
