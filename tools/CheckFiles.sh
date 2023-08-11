@@ -79,7 +79,7 @@ check_cmakelists_for_missing_cxx() {
       && whitelist "$1" \
                    'src/Informer/InfoAtCompile.cpp$' \
                    'src/Informer/InfoAtLink.cpp$' \
-                   'src/PointwiseFunctions/AnalyticData/GeneralRelativity/InterpolateFromSpec.hpp$' \
+                   'src/IO/External/InterpolateFromSpec.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.cpp$' \
                    'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp$' \

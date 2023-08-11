@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/AnalyticData/GeneralRelativity/InterpolateFromSpec.hpp"
+#include "IO/External/InterpolateFromSpec.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
@@ -91,7 +91,7 @@ tuples::tagged_tuple_from_typelist<typename SpecInitialData<
     ThermodynamicDim>::template interpolated_tags<DataType>>
 SpecInitialData<ThermodynamicDim>::interpolate_from_spec(
     const tnsr::I<DataType, 3>& x) const {
-  return gr::AnalyticData::interpolate_from_spec<interpolated_tags<DataType>>(
+  return io::interpolate_from_spec<interpolated_tags<DataType>>(
       make_not_null(spec_exporter_.get()), x,
       static_cast<size_t>(sys::my_local_rank()));
 }

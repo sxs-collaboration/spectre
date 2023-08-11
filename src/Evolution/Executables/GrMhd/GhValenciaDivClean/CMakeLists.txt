@@ -71,13 +71,6 @@ add_ghmhd_executable(
   "${LIBS_TO_LINK_WITH_CONTROL_SYSTEM}"
   )
 
-if (TARGET SpEC::Exporter)
-  target_compile_definitions(
-    EvolveGhValenciaDivClean PRIVATE HAS_SPEC_EXPORTER)
-  target_compile_definitions(
-    EvolveGhValenciaDivCleanBns PRIVATE HAS_SPEC_EXPORTER)
-endif()
-
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
   "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false,BondiSachs"

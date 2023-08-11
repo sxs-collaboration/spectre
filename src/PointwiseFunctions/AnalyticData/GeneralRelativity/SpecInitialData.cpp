@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/AnalyticData/GeneralRelativity/InterpolateFromSpec.hpp"
+#include "IO/External/InterpolateFromSpec.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -57,7 +57,7 @@ template <typename DataType>
 tuples::tagged_tuple_from_typelist<
     typename SpecInitialData::interpolated_tags<DataType>>
 SpecInitialData::interpolate_from_spec(const tnsr::I<DataType, 3>& x) const {
-  return gr::AnalyticData::interpolate_from_spec<interpolated_tags<DataType>>(
+  return io::interpolate_from_spec<interpolated_tags<DataType>>(
       make_not_null(spec_exporter_.get()), x,
       static_cast<size_t>(sys::my_local_rank()));
 }
