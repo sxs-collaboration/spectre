@@ -30,6 +30,7 @@ spectre_load_modules() {
     module load envs/spectre-python
     module load yaml-cpp/0.6.2
     module load charm/7.0.0
+    module load libbacktrace/1.0
     module load spec-exporter/2023-07
 }
 
@@ -52,6 +53,7 @@ spectre_unload_modules() {
     module unload envs/spectre-python
     module unload yaml-cpp/0.6.2
     module unload charm/7.0.0
+    module unload libbacktrace/1.0
     module unload spec-exporter/2023-07
 }
 
