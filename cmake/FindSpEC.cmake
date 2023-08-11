@@ -45,33 +45,6 @@ find_package(MPI COMPONENTS C)
 
 if (SPEC_PACKAGED_EXPORTER_LIB AND SPEC_EXPORTER_FACTORY_OBJECTS AND
     SPEC_EXPORTER_INCLUDE_DIR AND MPI_C_FOUND)
-
-  # Deal with FFTW3
-  #
-  # If it was dynamically linked into SpEC then we need to dynamically link it
-  # into SpECTRE.
-  set(_MACHINE_DEF_FILE
-    ${SPEC_ROOT}/MakefileRules/this_machine.def)
-  set(_FFTW3_LINK_FLAGS "")
-  if (EXISTS ${_MACHINE_DEF_FILE})
-    file(STRINGS ${_MACHINE_DEF_FILE} _MACHINE_DEF)
-    # Filter starting comments
-    list(FILTER _MACHINE_DEF EXCLUDE REGEX "^[ ]*#")
-    # Remove inline comments
-    list(TRANSFORM _MACHINE_DEF REPLACE "[ ]*#.*" "")
-    string(REGEX MATCH "FFTW_LIB[^;]+"
-      _FFTW3_DEF "${_MACHINE_DEF}")
-    string(REGEX REPLACE
-      "FFTW_LIB[ +]+=[ ]" ""
-      _FFTW3_LINK_FLAGS
-      ${_FFTW3_DEF})
-    string(FIND ${_FFTW3_DEF} "-lfftw3" _FOUND_FFTW3_SHARED)
-    # If we did not find a shared lib, do not add linking flags.
-    if(${_FOUND_FFTW3_SHARED} STREQUAL -1)
-      set(_FFTW3_LINK_FLAGS "")
-    endif()
-  endif()
-
   add_library(SpEC::Exporter INTERFACE IMPORTED)
   target_include_directories(
     SpEC::Exporter INTERFACE ${SPEC_EXPORTER_INCLUDE_DIR})
@@ -87,8 +60,29 @@ if (SPEC_PACKAGED_EXPORTER_LIB AND SPEC_EXPORTER_FACTORY_OBJECTS AND
     # The order of these next two lines is important
     ${SPEC_EXPORTER_FACTORY_OBJECTS}
     ${SPEC_PACKAGED_EXPORTER_LIB}
-    ${_FFTW3_LINK_FLAGS}
   )
+
+  # Deal with FFTW3
+  #
+  # If it was dynamically linked into SpEC then we need to dynamically link it
+  # into SpECTRE.
+  set(_MACHINE_DEF_FILE
+    ${SPEC_ROOT}/MakefileRules/this_machine.def)
+  if (EXISTS ${_MACHINE_DEF_FILE})
+    file(STRINGS ${_MACHINE_DEF_FILE} _MACHINE_DEF)
+    # Filter starting comments
+    list(FILTER _MACHINE_DEF EXCLUDE REGEX "^[ ]*#")
+    # Remove inline comments
+    list(TRANSFORM _MACHINE_DEF REPLACE "[ ]*#.*" "")
+    string(REGEX MATCH "FFTW_LIB[^;]+"
+      _FFTW3_DEF "${_MACHINE_DEF}")
+    string(FIND ${_FFTW3_DEF} "-lfftw3" _FOUND_FFTW3_SHARED)
+    # If we found a shared FFTW lib in SpEC, find and link FFTW here
+    if(NOT ${_FOUND_FFTW3_SHARED} STREQUAL "-1")
+      find_package(FFTW REQUIRED)
+      target_link_libraries(SpEC::Exporter INTERFACE FFTW::FFTW)
+    endif()
+  endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
