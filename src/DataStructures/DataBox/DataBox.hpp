@@ -1135,7 +1135,12 @@ static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                             tmpl::list<ArgumentTags...> /*meta*/,
                             Args&&... args) {
   if constexpr (is_apply_callable_v<
-                    F, const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+                    F,
+                    tmpl::conditional_t<
+                        std::is_same_v<ArgumentTags, ::Tags::DataBox>,
+                        const DataBox<BoxTags>&,
+                        const_item_type<ArgumentTags, BoxTags>>...,
+                    Args...>) {
     return F::apply(::db::get<ArgumentTags>(box)...,
                     std::forward<Args>(args)...);
   } else if constexpr (::tt::is_callable_v<

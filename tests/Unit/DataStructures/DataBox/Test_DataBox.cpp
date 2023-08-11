@@ -367,12 +367,19 @@ void test_get_databox() {
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   // [databox_self_tag_example]
-  auto check_result_no_args = [](const auto& box) {
+  auto check_result_no_args = [](const decltype(original_box)& box) {
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
   };
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   // [databox_self_tag_example]
+  struct CheckResultNoArgsApply {
+    static void apply(const decltype(original_box)& box) {
+      CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+      CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
+    }
+  };
+  db::apply<tmpl::list<Tags::DataBox>>(CheckResultNoArgsApply{}, original_box);
 }
 
 void trigger_get_databox_error() {
