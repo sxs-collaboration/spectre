@@ -131,6 +131,7 @@ include(SetupLIBXSMM)
 
 include(SetupBlaze)
 include(SetupBrigand)
+include(SetupFuka)
 include(SetupGsl)
 include(SetupHdf5)
 include(SetupAllocator)
