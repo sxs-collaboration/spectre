@@ -249,6 +249,14 @@ template <size_t ThermodynamicDim>
 using SpecInitialData = NoSuchType;
 #endif
 
+// Check if FUKA is linked and therefore we can load FUKA initial data
+#ifdef HAS_FUKA_EXPORTER
+#include "PointwiseFunctions/AnalyticData/GrMhd/FukaInitialData.hpp"
+using FukaInitialData = grmhd::AnalyticData::FukaInitialData;
+#else
+using FukaInitialData = NoSuchType;
+#endif
+
 /// \cond
 namespace Frame {
 // IWYU pragma: no_forward_declare MathFunction
@@ -697,7 +705,10 @@ struct GhValenciaDivCleanTemplateBase<
                     tmpl::conditional_t<
                         std::is_same_v<SpecInitialData<thermodynamic_dim>,
                                        NoSuchType>,
-                        tmpl::list<>, SpecInitialData<thermodynamic_dim>>>>,
+                        tmpl::list<>, SpecInitialData<thermodynamic_dim>>,
+                    tmpl::conditional_t<
+                        std::is_same_v<FukaInitialData, NoSuchType>,
+                        tmpl::list<>, FukaInitialData>>>,
                 initial_data_list>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,

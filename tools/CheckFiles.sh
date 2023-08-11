@@ -84,6 +84,8 @@ check_cmakelists_for_missing_cxx() {
                    'src/IO/External/InterpolateFromFuka.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.cpp$' \
+                   'src/PointwiseFunctions/AnalyticData/GrMhd/FukaInitialData.hpp$' \
+                   'src/PointwiseFunctions/AnalyticData/GrMhd/FukaInitialData.cpp$' \
                    'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.cpp$' \
       && [ -f $cmakelists ] \
