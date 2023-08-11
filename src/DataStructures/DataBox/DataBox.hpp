@@ -709,6 +709,12 @@ db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
  * The `invokable` may have function return values, and any returns are
  * forwarded as returns to the `db::mutate` call.
  *
+ * For convenience in generic programming, if `::Tags::DataBox` is
+ * passed as the sole `MutateTags` parameter, this function will
+ * simply call its first argument with its remaining arguments.
+ * Except for this case, `::Tags::DataBox` is not usable with this
+ * function.
+ *
  * \warning Using `db::mutate` returns to obtain non-const references or
  * pointers to box items is potentially very dangerous. The \ref DataBoxGroup
  * "DataBox" cannot track any subsequent changes to quantities that have been
@@ -720,60 +726,70 @@ template <typename... MutateTags, typename TagList, typename Invokable,
 decltype(auto) mutate(Invokable&& invokable,
                       const gsl::not_null<DataBox<TagList>*> box,
                       Args&&... args) {
-  static_assert(
-      tmpl2::flat_all_v<
-          detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
-      "One of the tags being mutated could not be found in the DataBox or "
-      "is a base tag identifying more than one tag.");
-  static_assert(tmpl2::flat_all_v<tmpl::list_contains_v<
-                    typename DataBox<TagList>::mutable_item_tags,
-                    detail::first_matching_tag<TagList, MutateTags>>...>,
-                "Can only mutate mutable items");
-  if (UNLIKELY(box->mutate_locked_box_)) {
-    ERROR(
-        "Unable to mutate a DataBox that is already being mutated. This "
-        "error occurs when mutating a DataBox from inside the invokable "
-        "passed to the mutate function.");
+  if constexpr ((... or std::is_same_v<MutateTags, Tags::DataBox>)) {
+    // This branch doesn't directly access the box, so no locking or
+    // resetting is necessary.
+    static_assert(
+        std::is_same_v<tmpl::list<MutateTags...>, tmpl::list<Tags::DataBox>>,
+        "Cannot mutate other tags when obtaining the mutable DataBox.");
+    return invokable(box, std::forward<Args>(args)...);
+  } else {
+    static_assert(
+        tmpl2::flat_all_v<
+            detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
+        "One of the tags being mutated could not be found in the DataBox or "
+        "is a base tag identifying more than one tag.");
+    static_assert(tmpl2::flat_all_v<tmpl::list_contains_v<
+                      typename DataBox<TagList>::mutable_item_tags,
+                      detail::first_matching_tag<TagList, MutateTags>>...>,
+                  "Can only mutate mutable items");
+    if (UNLIKELY(box->mutate_locked_box_)) {
+      ERROR(
+          "Unable to mutate a DataBox that is already being mutated. This "
+          "error occurs when mutating a DataBox from inside the invokable "
+          "passed to the mutate function.");
+    }
+    using mutate_tags_list =
+        tmpl::list<detail::first_matching_tag<TagList, MutateTags>...>;
+    // For all the tags in the DataBox, check if one of their subtags is
+    // being mutated and if so add the parent to the list of tags
+    // being mutated. Then, remove any tags that would be passed
+    // multiple times.
+    using extra_mutated_tags = tmpl::list_difference<
+        tmpl::filter<TagList,
+                     tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
+                                tmpl::pin<tmpl::bind<
+                                    tmpl::list_contains,
+                                    tmpl::pin<mutate_tags_list>, tmpl::_1>>>>,
+        mutate_tags_list>;
+    // Extract the subtags inside the MutateTags and reset compute items
+    // depending on those too.
+    using full_mutated_items =
+        tmpl::append<detail::expand_subitems<mutate_tags_list>,
+                     extra_mutated_tags>;
+
+    using first_compute_items_to_reset = tmpl::remove_duplicates<
+        tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
+                                     tmpl::bind<tmpl::list_contains,
+                                                tmpl::pin<full_mutated_items>,
+                                                tmpl::get_source<tmpl::_1>>>,
+                        tmpl::get_destination<tmpl::_1>>>;
+
+    const CleanupRoutine unlock_box = [&box]() {
+      box->mutate_locked_box_ = false;
+      EXPAND_PACK_LEFT_TO_RIGHT(
+          box->template mutate_mutable_subitems<MutateTags>(
+              typename Subitems<MutateTags>::type{}));
+      box->template reset_compute_items_after_mutate(
+          first_compute_items_to_reset{});
+    };
+    box->mutate_locked_box_ = true;
+    return invokable(
+        make_not_null(&box->template get_item<
+                              detail::first_matching_tag<TagList, MutateTags>>()
+                           .mutate())...,
+        std::forward<Args>(args)...);
   }
-  using mutate_tags_list =
-      tmpl::list<detail::first_matching_tag<TagList, MutateTags>...>;
-  // For all the tags in the DataBox, check if one of their subtags is
-  // being mutated and if so add the parent to the list of tags
-  // being mutated. Then, remove any tags that would be passed
-  // multiple times.
-  using extra_mutated_tags = tmpl::list_difference<
-      tmpl::filter<TagList,
-                   tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
-                              tmpl::pin<tmpl::bind<tmpl::list_contains,
-                                                   tmpl::pin<mutate_tags_list>,
-                                                   tmpl::_1>>>>,
-      mutate_tags_list>;
-  // Extract the subtags inside the MutateTags and reset compute items
-  // depending on those too.
-  using full_mutated_items =
-      tmpl::append<detail::expand_subitems<mutate_tags_list>,
-                   extra_mutated_tags>;
-
-  using first_compute_items_to_reset = tmpl::remove_duplicates<
-      tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
-                                   tmpl::bind<tmpl::list_contains,
-                                              tmpl::pin<full_mutated_items>,
-                                              tmpl::get_source<tmpl::_1>>>,
-                      tmpl::get_destination<tmpl::_1>>>;
-
-  const CleanupRoutine unlock_box = [&box]() {
-    box->mutate_locked_box_ = false;
-    EXPAND_PACK_LEFT_TO_RIGHT(box->template mutate_mutable_subitems<MutateTags>(
-        typename Subitems<MutateTags>::type{}));
-    box->template reset_compute_items_after_mutate(
-        first_compute_items_to_reset{});
-  };
-  box->mutate_locked_box_ = true;
-  return invokable(
-      make_not_null(&box->template get_item<
-                            detail::first_matching_tag<TagList, MutateTags>>()
-                         .mutate())...,
-      std::forward<Args>(args)...);
 }
 
 ////////////////////////////////////////////////////////////////

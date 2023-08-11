@@ -518,6 +518,20 @@ void test_mutate_locked() {
           "inside the invokable passed to the mutate function"));
 }
 
+void test_mutate_box() {
+  INFO("test mutate entire box");
+  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0>>(3.14);
+  db::mutate<Tags::DataBox>(
+      [&box](const gsl::not_null<decltype(box)*> mutate_box) {
+        CHECK(&box == &*mutate_box);
+        // Verify that the box is not locked
+        db::mutate<test_databox_tags::Tag0>(
+            [](const gsl::not_null<double*> x) { CHECK(*x == 3.14); },
+            mutate_box);
+      },
+      make_not_null(&box));
+}
+
 struct NonCopyableFunctor {
   NonCopyableFunctor() = default;
   NonCopyableFunctor(const NonCopyableFunctor&) = delete;
@@ -2938,6 +2952,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_get_databox_error();
   test_mutate();
   test_mutate_locked();
+  test_mutate_box();
   test_apply();
   test_variables();
   test_variables2();
