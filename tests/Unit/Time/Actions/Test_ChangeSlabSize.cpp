@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -152,6 +153,19 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
       get<NewSize>(inboxes)[3].insert(1.0);
+
+      std::string inbox_output =
+          ExpectedMessages::output_inbox(get<ExpectedMessages>(inboxes), 1_st);
+      std::string expected_inbox_output =
+          " SlabSizeNumberOfExpectedMessagesInbox:\n"
+          "  Number of messages: 3\n";
+      CHECK(inbox_output == expected_inbox_output);
+      inbox_output = NewSize::output_inbox(get<NewSize>(inboxes), 1_st);
+      expected_inbox_output =
+          " NewSlabSizeInbox:\n"
+          "  Slab number: 3, slab sizes: (1)\n";
+      CHECK(inbox_output == expected_inbox_output);
+
       runner.next_action<Component>(0);
       resize_slab(1.0);
       check_box(TimeStepId(time_runs_forward, 3, start_time), 1);

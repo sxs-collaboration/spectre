@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <optional>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -103,6 +104,19 @@ struct IntReceiveTag {
                                 const temporal_id& temporal_id_v,
                                 ReceiveDataType&& data) {
     (*inbox)[temporal_id_v].insert(std::forward<ReceiveDataType>(data));
+  }
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+
+    ss << pad << "IntReceiveTagInbox:\n";
+    for (const auto& [time, set_of_ints] : inbox) {
+      ss << pad << " Time: " << time << ", All ints: " << set_of_ints << "\n";
+    }
+
+    return ss.str();
   }
 };
 // [int_receive_tag]

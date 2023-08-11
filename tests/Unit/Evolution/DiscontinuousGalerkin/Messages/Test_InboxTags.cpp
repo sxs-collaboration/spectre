@@ -19,6 +19,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg {
@@ -127,6 +128,18 @@ void test_no_ghost_cells() {
                             std::make_pair(nhbr_key, send_data_b));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox),
                             boundary_message_b_compare);
+
+  const std::string inbox_output = bc_tag::output_inbox(bc_inbox, 1_st);
+  const std::string expected_inbox_output =
+      MakeString{} << std::scientific << std::setprecision(16)
+                   << " BoundaryCorrectionAndGhostCellInbox:\n"
+                   << "  Current time: " << time_step_id_a << "\n"
+                   << "   Key: " << nhbr_key
+                   << ", next time: " << time_step_id_a << "\n"
+                   << "  Current time: " << time_step_id_b << "\n"
+                   << "   Key: " << nhbr_key
+                   << ", next time: " << time_step_id_c << "\n";
+  CHECK(inbox_output == expected_inbox_output);
 
   CHECK((bc_inbox.at(time_step_id_a).at(nhbr_key) == send_data_a));
   CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_data_b));

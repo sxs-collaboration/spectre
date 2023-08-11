@@ -34,6 +34,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.tpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -221,11 +222,11 @@ void test_set_initial_data(
         make_not_null(&runner), 0);
 
     // Insert KerrSchild data into the inbox
-    auto& inbox = ActionTesting::get_inbox_tag<
-        element_array,
-        importers::Tags::VolumeData<NumericInitialData::all_vars>,
-        Metavariables>(make_not_null(&runner),
-                       element_id)[numeric_id.volume_data_id()];
+    using inbox_tag = importers::Tags::VolumeData<NumericInitialData::all_vars>;
+    auto& inboxes =
+        ActionTesting::get_inbox_tag<element_array, inbox_tag, Metavariables>(
+            make_not_null(&runner), element_id);
+    auto& inbox = inboxes[numeric_id.volume_data_id()];
     const auto& selected_vars = numeric_id.selected_variables();
     if (std::holds_alternative<NumericInitialData::GhVars>(selected_vars)) {
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
@@ -251,6 +252,12 @@ void test_set_initial_data(
     } else {
       REQUIRE(false);
     }
+
+    const std::string inbox_output = inbox_tag::output_inbox(inboxes, 1_st);
+    const std::string expected_inbox_output =
+        MakeString{} << " VolumeDataInbox:\n"
+                     << "  Index: " << numeric_id.volume_data_id() << "\n";
+    CHECK(inbox_output == expected_inbox_output);
 
     // ReceiveNumericInitialData
     ActionTesting::next_action<element_array>(make_not_null(&runner),

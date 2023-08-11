@@ -4,7 +4,9 @@
 #pragma once
 
 #include <cstddef>
+#include <iomanip>
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -127,6 +129,22 @@ struct VolumeData : Parallel::InboxInserters::Value<VolumeData<FieldTagsList>> {
   using temporal_id = size_t;
   using type =
       std::map<temporal_id, tuples::tagged_tuple_from_typelist<FieldTagsList>>;
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "VolumeDataInbox:\n";
+    // We don't really care about the variables, just the times
+    for (const auto& [index, variables] : inbox) {
+      (void)variables;
+      ss << pad << " Index: " << index << "\n";
+    }
+
+    return ss.str();
+  }
 };
 }  // namespace Tags
 

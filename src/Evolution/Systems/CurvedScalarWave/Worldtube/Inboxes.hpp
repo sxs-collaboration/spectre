@@ -4,7 +4,10 @@
 #pragma once
 
 #include <cstddef>
+#include <iomanip>
 #include <map>
+#include <sstream>
+#include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -41,6 +44,25 @@ struct SphericalHarmonicsInbox
   using type =
       std::map<temporal_id,
                std::unordered_map<ElementId<Dim>, Variables<tags_list>>>;
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "SphericalHarmonicsInbox:\n";
+    for (const auto& [current_time_step_id, element_id_and_vars] : inbox) {
+      ss << pad << " Time: " << current_time_step_id << "\n";
+      // We don't really care about the variables, just the elements
+      for (const auto& [element_id, variables] : element_id_and_vars) {
+        (void)variables;
+        ss << pad << "  ElementId: " << element_id << "\n";
+      }
+    }
+
+    return ss.str();
+  }
 };
 
 /*!
@@ -58,5 +80,21 @@ struct RegularFieldInbox
                                Frame::Grid>>;
   using temporal_id = TimeStepId;
   using type = std::map<temporal_id, Variables<tags_to_send>>;
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "RegularFieldInbox:\n";
+    // We don't really care about the variables, just the times
+    for (const auto& [current_time_step_id, variables] : inbox) {
+      (void)variables;
+      ss << pad << " Time: " << current_time_step_id << "\n";
+    }
+
+    return ss.str();
+  }
 };
 }  // namespace CurvedScalarWave::Worldtube::Tags
