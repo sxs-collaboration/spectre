@@ -32,6 +32,14 @@ unset(${SPECTRE_NAME}_VERSION_PATCH)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   cmake_policy(SET CMP0110 NEW)
 endif ()
+# - We allow both uppercase and case-preserved hints in `find_package` calls, so
+#   `PACKAGENAME_ROOT` and `PackageName_ROOT` are both searched in
+#   `FindPackageName.cmake` (NEW behavior). The OLD behavior was to search only
+#   `PackageName_ROOT` (before CMake v3.27). We have backported the NEW behavior
+#   by adding the uppercase name explicitly to the list of hints.
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
+  cmake_policy(SET CMP0144 NEW)
+endif()
 
 # Define standard installation directories
 include(GNUInstallDirs)
