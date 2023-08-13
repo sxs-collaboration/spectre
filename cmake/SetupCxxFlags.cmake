@@ -122,8 +122,14 @@ set_property(TARGET SpectreFlags
   $<$<COMPILE_LANGUAGE:CXX>:-freciprocal-math>
   $<$<COMPILE_LANGUAGE:Fortran>:-freciprocal-math>)
 
-# By default, the LLVM optimizer assumes floating point exceptions are ignored.
-create_cxx_flag_target("-ffp-exception-behavior=maytrap" SpectreFpExceptions)
+# -ffp-exception-behavior=maytrap - By default, the LLVM optimizer assumes
+#     floating point exceptions are ignored.
+# -fnon-call-exceptions - By default, GCC does not allow signal handlers to
+#     throw exceptions.
+create_cxx_flags_target(
+  "-ffp-exception-behavior=maytrap;-fnon-call-exceptions"
+  SpectreFpExceptions
+  )
 target_link_libraries(
   SpectreFlags
   INTERFACE
