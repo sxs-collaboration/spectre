@@ -12,10 +12,10 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 
 namespace py = pybind11;
+namespace{
 
-namespace py_bindings {
 template <typename DataType>
-void bind_specificEnthalpy_impl(py::module& m) {
+void bind_specific_enthalpy_impl(py::module& m) {
   m.def("relativistic_specific_enthalpy",
         static_cast<Scalar<DataType> (*)(const Scalar<DataType>&,
                                          const Scalar<DataType>&,
@@ -24,8 +24,10 @@ void bind_specificEnthalpy_impl(py::module& m) {
         py::arg("rest_mass_density"), py::arg("specific_internal_energy"),
         py::arg("pressure"));
 }
-void bind_specificEnthalpy(py::module& m) {
-    bind_specificEnthalpy_impl<double>(m);
-    bind_specificEnthalpy_impl<DataVector>(m);
+}
+namespace py_bindings {
+void bind_specific_enthalpy(py::module& m) {
+    bind_specific_enthalpy_impl<double>(m);
+    bind_specific_enthalpy_impl<DataVector>(m);
 }
 }  // namespace py_bindings

@@ -7,5 +7,5 @@
 
 namespace py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_lowerVel(pybind11::module& m);
+void bind_lower_spatial_four_velocity(pybind11::module& m);
 }  // namespace py_bindings

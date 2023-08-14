@@ -7,5 +7,5 @@
 
 namespace py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_massWeighted(pybind11::module& m);
+void bind_mass_weighted(pybind11::module& m);
 }  // namespace py_bindings

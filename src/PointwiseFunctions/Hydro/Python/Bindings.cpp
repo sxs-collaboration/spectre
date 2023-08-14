@@ -22,16 +22,13 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   enable_segfault_handler();
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.Spectral");
-  py_bindings::bind_comovingMF(m);
+  py_bindings::bind_comoving_magnetic_field(m);
   py_bindings::bind_lorentz(m);
   py_bindings::bind_lorentz_factor(m);
-  py_bindings::bind_lowerVel(m);
-  py_bindings::bind_massFlux(m);
-  py_bindings::bind_massWeighted(m);
-  py_bindings::bind_soundSpeed<double, 1>(m);
-  py_bindings::bind_soundSpeed<double, 2>(m);
-  py_bindings::bind_soundSpeed<DataVector, 1>(m);
-  py_bindings::bind_soundSpeed<DataVector, 2>(m);
-  py_bindings::bind_specificEnthalpy(m);
-  py_bindings::bind_stressEnergy(m);
+  py_bindings::bind_lower_spatial_four_velocity(m);
+  py_bindings::bind_mass_flux(m);
+  py_bindings::bind_mass_weighted(m);
+  py_bindings::bind_sound_speed(m);
+  py_bindings::bind_specific_enthalpy(m);
+  py_bindings::bind_stress_energy(m);
 }

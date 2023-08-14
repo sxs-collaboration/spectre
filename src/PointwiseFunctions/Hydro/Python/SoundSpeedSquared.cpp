@@ -9,13 +9,14 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
 
 namespace py = pybind11;
+namespace{
 
-namespace py_bindings {
 template <typename DataType, size_t ThermodynamicDim>
-void bind_soundSpeed(py::module& m) {
+void bind_sound_speed_impl(py::module& m) {
   m.def("sound_speed_squared",
         static_cast<Scalar<DataType> (*)(
             const Scalar<DataType>&, const Scalar<DataType>&,
@@ -25,4 +26,13 @@ void bind_soundSpeed(py::module& m) {
         py::arg("rest_mass_density"), py::arg("specific_internal_energy"),
         py::arg("specific_enthalpy"), py::arg("equation_of_state"));
 }
+}
+namespace py_bindings {
+void bind_sound_speed(py::module& m) {
+  bind_sound_speed_impl<double, 1>(m);
+  bind_sound_speed_impl<double, 2>(m);
+  bind_sound_speed_impl<DataVector, 1>(m);
+  bind_sound_speed_impl<DataVector, 2>(m);
+}
+
 }  // namespace py_bindings

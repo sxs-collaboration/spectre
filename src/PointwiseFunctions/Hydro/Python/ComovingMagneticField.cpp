@@ -13,9 +13,10 @@
 
 namespace py = pybind11;
 
-namespace py_bindings {
+namespace{
+
 template <typename DataType>
-void bind_comovingMF_impl(py::module& m) {
+void bind_comoving_magnetic_field_impl(py::module& m) {
   // Wrapper for calculating Co-moving magnetic fields
   m.def("comoving_magnetic_field_one_form",
         static_cast<tnsr::a<DataType, 3> (*)(
@@ -36,9 +37,11 @@ void bind_comovingMF_impl(py::module& m) {
         py::arg("magnetic_field_dot_spatial_velocity"),
         py::arg("lorentz_factor"));
 }
-void bind_comovingMF(py::module& m) {
-  bind_comovingMF_impl<double>(m);
-  bind_comovingMF_impl<DataVector>(m);
+}
+namespace py_bindings {
+void bind_comoving_magnetic_field(py::module& m) {
+  bind_comoving_magnetic_field_impl<double>(m);
+  bind_comoving_magnetic_field_impl<DataVector>(m);
 }
 
 }  // namespace py_bindings

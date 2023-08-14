@@ -18,6 +18,7 @@ spectre_python_add_module(
   StressEnergy.cpp
   PYTHON_FILES
   __init__.py
+  MODULE_PATH "PointwiseFunctions"
   )
 
 spectre_python_headers(

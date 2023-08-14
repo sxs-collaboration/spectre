@@ -12,7 +12,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_lowerVel(py::module& m) {
+void bind_lower_spatial_four_velocity(py::module& m) {
   m.def("LowerSpatialFourVelocityCompute",
         &hydro::Tags::LowerSpatialFourVelocityCompute::function,
         py::arg("result"), py::arg("spatial_velocity"),

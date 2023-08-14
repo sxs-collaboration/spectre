@@ -55,8 +55,9 @@ def comoving_magnetic_field_one_form(
     )
     b_0 = (
         -lapse * lorentz_factor * magnetic_field_dot_spatial_velocity
-        + np.dot(shift, b_i)
+        + np.einsum("i...,i...", shift, b_i)
     )
+
     return np.concatenate([[b_0], b_i])
 
 
@@ -74,7 +75,7 @@ def comoving_magnetic_field_squared(
 
 def lorentz_factor(spatial_velocity, spatial_velocity_one_form):
     return 1.0 / np.sqrt(
-        1.0 - np.dot(spatial_velocity, spatial_velocity_one_form)
+        1.0 - np.dot(spatial_velocity.T, spatial_velocity_one_form)
     )
 
 

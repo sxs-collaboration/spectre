@@ -14,7 +14,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_massWeighted(py::module& m) {
+void bind_mass_weighted(py::module& m) {
   m.def("u_lower_t", &hydro::u_lower_t<DataVector, 1, Frame::Inertial>,
         py::arg("result"), py::arg("lorentz_factor"),
         py::arg("spatial_velocity"), py::arg("spatial_metric"),

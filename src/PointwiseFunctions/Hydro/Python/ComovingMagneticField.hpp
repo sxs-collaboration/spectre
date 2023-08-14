@@ -9,5 +9,5 @@
 
 namespace py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_comovingMF(pybind11::module& m);
+void bind_comoving_magnetic_field(pybind11::module& m);
 }  // namespace py_bindings

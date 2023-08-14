@@ -7,5 +7,5 @@
 
 namespace py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_stressEnergy(pybind11::module& m);
+void bind_stress_energy(pybind11::module& m);
 }  // namespace py_bindings

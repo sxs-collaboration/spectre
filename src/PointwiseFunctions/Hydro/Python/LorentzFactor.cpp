@@ -12,8 +12,8 @@
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
 
 namespace py = pybind11;
+namespace {
 
-namespace py_bindings {
 template <typename DataType>
 void bind_lorentz_impl(py::module& m) {
   m.def("lorentz_factor",
@@ -29,6 +29,8 @@ void bind_lorentz_factor_impl(py::module& m) {
             &hydro::lorentz_factor<DataType, Dim, Frame>),
         py::arg("spatial_velocity"), py::arg("spatial_velocity_form"));
 }
+}
+namespace py_bindings {
 void bind_lorentz(py::module& m) {
   bind_lorentz_impl<double>(m);
   bind_lorentz_impl<DataVector>(m);

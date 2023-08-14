@@ -14,7 +14,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_stressEnergy(py::module& m) {
+void bind_stress_energy(py::module& m) {
   m.def("energy_density", &hydro::energy_density<double>, py::arg("result"),
         py::arg("rest_mass_density"), py::arg("specific_enthalpy"),
         py::arg("pressure"), py::arg("lorentz_factor"),

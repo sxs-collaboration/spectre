@@ -12,10 +12,10 @@
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 
 namespace py = pybind11;
+namespace {
 
-namespace py_bindings {
 template <typename DataType, size_t Dim, typename Frame>
-void bind_massFlux_impl(py::module& m) {
+void bind_mass_flux_impl(py::module& m) {
   m.def("mass_flux",
         static_cast<tnsr::I<DataType, Dim, Frame> (*)(
             const Scalar<DataType>&, const tnsr::I<DataType, Dim, Frame>&,
@@ -26,18 +26,20 @@ void bind_massFlux_impl(py::module& m) {
         py::arg("lorentz_factor"), py::arg("lapse"), py::arg("shift"),
         py::arg("sqrt_det_spatial_metric"));
 }
-void bind_massFlux(py::module& m) {
-  bind_massFlux_impl<double, 1, Frame::Grid>(m);
-  bind_massFlux_impl<double, 2, Frame::Grid>(m);
-  bind_massFlux_impl<double, 3, Frame::Grid>(m);
-  bind_massFlux_impl<DataVector, 1, Frame::Grid>(m);
-  bind_massFlux_impl<DataVector, 2, Frame::Grid>(m);
-  bind_massFlux_impl<DataVector, 3, Frame::Grid>(m);
-  bind_massFlux_impl<double, 1, Frame::Inertial>(m);
-  bind_massFlux_impl<double, 2, Frame::Inertial>(m);
-  bind_massFlux_impl<double, 3, Frame::Inertial>(m);
-  bind_massFlux_impl<DataVector, 1, Frame::Inertial>(m);
-  bind_massFlux_impl<DataVector, 2, Frame::Inertial>(m);
-  bind_massFlux_impl<DataVector, 3, Frame::Inertial>(m);
+}
+namespace py_bindings {
+void bind_mass_flux(py::module& m) {
+  bind_mass_flux_impl<double, 1, Frame::Grid>(m);
+  bind_mass_flux_impl<double, 2, Frame::Grid>(m);
+  bind_mass_flux_impl<double, 3, Frame::Grid>(m);
+  bind_mass_flux_impl<DataVector, 1, Frame::Grid>(m);
+  bind_mass_flux_impl<DataVector, 2, Frame::Grid>(m);
+  bind_mass_flux_impl<DataVector, 3, Frame::Grid>(m);
+  bind_mass_flux_impl<double, 1, Frame::Inertial>(m);
+  bind_mass_flux_impl<double, 2, Frame::Inertial>(m);
+  bind_mass_flux_impl<double, 3, Frame::Inertial>(m);
+  bind_mass_flux_impl<DataVector, 1, Frame::Inertial>(m);
+  bind_mass_flux_impl<DataVector, 2, Frame::Inertial>(m);
+  bind_mass_flux_impl<DataVector, 3, Frame::Inertial>(m);
 }
 }  // namespace py_bindings
