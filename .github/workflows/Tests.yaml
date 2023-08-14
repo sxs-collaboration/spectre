@@ -381,10 +381,14 @@ jobs:
           # libraries. Building all the tests without the PCH takes very long
           # and the most we would catch is a missing include of something that's
           # in the PCH.
+          # Use this test also to build and test all input files with "normal"
+          # or higher priority. The other configurations only test input files
+          # with "high" priority to reduce the total build time.
           - compiler: clang-10
             build_type: Debug
             use_pch: OFF
             unit_tests: OFF
+            input_file_tests_min_priority: "normal"
             ccache_max_size: 600M
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
@@ -516,6 +520,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           USE_XSIMD=${{ matrix.use_xsimd }}
           COVERAGE=${{ matrix.COVERAGE }}
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
+          INPUT_FILE_MIN_PRIO=${{ matrix.input_file_tests_min_priority }}
 
           ${CMAKE_EXECUTABLE:-'cmake'}
           -D CMAKE_C_COMPILER=${CC}
@@ -527,6 +532,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY=${INPUT_FILE_MIN_PRIO:-'high'}
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON

@@ -315,3 +315,6 @@ following properties are available:
 - `ExpectedExitCode` (optional): The expected exit code of the executable.
   Default: `0`. See `Parallel::ExitCode` for possible exit codes.
 - `Timeout` (optional): Timeout for the test. Default: 2 seconds.
+- `Priority` (optional): Priority of running this test on CI. Possible values
+  are: `low` (not usually run on CI), `normal` (run at least once on CI), `high`
+  (run always on CI). Default: `normal`.
