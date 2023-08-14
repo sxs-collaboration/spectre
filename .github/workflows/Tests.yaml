@@ -384,6 +384,7 @@ jobs:
           - compiler: clang-10
             build_type: Debug
             use_pch: OFF
+            unit_tests: OFF
             ccache_max_size: 600M
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
@@ -552,12 +553,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         run: |
           ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
       - name: Build unit tests
-        if: matrix.use_pch != 'OFF'
+        if: matrix.unit_tests != 'OFF'
         working-directory: /work/build
         run: |
           make -j2 unit-tests
       - name: Run unit tests
-        if: matrix.use_pch != 'OFF' && matrix.COVERAGE != 'ON'
+        if: matrix.unit_tests != 'OFF' && matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
