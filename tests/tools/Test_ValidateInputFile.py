@@ -21,16 +21,16 @@ class TestValidateInputFile(unittest.TestCase):
         self.test_dir = Path(unit_test_build_path(), "tools/ValidateInputFile")
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.executable = Path(
-            unit_test_build_path(), "../../bin/SolvePoisson1D"
+            unit_test_build_path(), "../../bin/SolvePoisson3D"
         )
         self.valid_input_file_path = Path(
             unit_test_src_path(),
-            "../InputFiles/Poisson/ProductOfSinusoids1D.yaml",
+            "../InputFiles/Poisson/ProductOfSinusoids3D.yaml",
         )
         self.invalid_input_file_path = self.test_dir / "InvalidInputFile.yaml"
         with open(self.valid_input_file_path, "r") as open_input_file:
             metadata, input_file = yaml.safe_load_all(open_input_file)
-        del input_file["DomainCreator"]["Interval"]["LowerBound"]
+        del input_file["DomainCreator"]["Brick"]["LowerBound"]
         with open(self.invalid_input_file_path, "w") as open_input_file:
             yaml.safe_dump_all([metadata, input_file], open_input_file)
 
@@ -53,12 +53,13 @@ class TestValidateInputFile(unittest.TestCase):
             [str(self.valid_input_file_path), "-e", str(self.executable)],
         )
         self.assertEqual(result.exit_code, 0)
-        result = runner.invoke(
-            validate_input_file_command,
-            [str(self.invalid_input_file_path), "-e", str(self.executable)],
-        )
-        self.assertEqual(result.exit_code, 1)
-        self.assertIn("LowerBound", result.output)
+        with self.assertRaisesRegex(InvalidInputFileError, "LowerBound"):
+            result = runner.invoke(
+                validate_input_file_command,
+                [str(self.invalid_input_file_path), "-e", str(self.executable)],
+                catch_exceptions=False,
+            )
+            self.assertEqual(result.exit_code, 1)
 
 
 if __name__ == "__main__":

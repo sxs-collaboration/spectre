@@ -4,6 +4,7 @@
 Executable: EvolveValenciaDivCleanBlastWave
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---
 

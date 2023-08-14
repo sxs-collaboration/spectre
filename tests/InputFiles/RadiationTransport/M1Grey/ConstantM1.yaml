@@ -4,6 +4,7 @@
 Executable: EvolveM1GreyConstantM1
 Testing:
   Check: parse;execute
+  Priority: High
 ExpectedOutput:
   - M1GreyReductions.h5
 

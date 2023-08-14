@@ -5,6 +5,7 @@ Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
   Timeout: 40
+  Priority: High
 ExpectedOutput:
   - KerrSchildReductions.h5
   - KerrSchildVolume0.h5

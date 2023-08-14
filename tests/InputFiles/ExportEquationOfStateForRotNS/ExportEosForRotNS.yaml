@@ -4,6 +4,7 @@
 Executable: ExportEquationOfStateForRotNS
 Testing:
   Check: parse;execute
+  Priority: High
 ExpectedOutput:
   - EOS.GN
 

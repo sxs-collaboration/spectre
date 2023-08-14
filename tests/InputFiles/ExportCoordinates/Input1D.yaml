@@ -4,6 +4,7 @@
 Executable: ExportCoordinates1D
 Testing:
   Check: parse;execute
+  Priority: High
 ExpectedOutput:
   - ExportCoordinates1DVolume0.h5
   - ExportCoordinates1DReductions.h5

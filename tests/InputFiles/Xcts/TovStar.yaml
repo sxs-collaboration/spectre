@@ -5,6 +5,7 @@ Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
   Timeout: 40
+  Priority: High
 ExpectedOutput:
   - TovStarReductions.h5
   - TovStarVolume0.h5

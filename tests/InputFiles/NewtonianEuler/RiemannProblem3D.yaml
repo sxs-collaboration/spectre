@@ -4,6 +4,7 @@
 Executable: EvolveNewtonianEulerRiemannProblem3D
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---
 

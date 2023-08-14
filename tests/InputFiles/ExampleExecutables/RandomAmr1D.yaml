@@ -6,6 +6,7 @@ Testing:
   Check: parse;execute
   Timeout: 10
   ExpectedExitCode: 2
+  Priority: High
 ExpectedOutput:
   - Checkpoints/Checkpoint_0000
 

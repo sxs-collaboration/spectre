@@ -4,6 +4,7 @@
 Executable: CharacteristicExtract
 Testing:
   Check: parse
+  Priority: High
 
 ---
 

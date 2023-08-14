@@ -4,6 +4,7 @@
 Executable: EvolveScalarAdvection2D
 Testing:
   Check: parse;execute
+  Priority: High
 ExpectedOutput:
   - ScalarAdvectionKuzmin2DVolume0.h5
 

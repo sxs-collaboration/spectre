@@ -4,6 +4,7 @@
 Executable: FindHorizons3D
 Testing:
   Check: parse
+  Priority: High
 
 ---
 

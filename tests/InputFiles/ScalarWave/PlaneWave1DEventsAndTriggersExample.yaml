@@ -4,6 +4,7 @@
 Executable: EvolveScalarWave1D
 Testing:
   Check: parse
+  Priority: High
 ExpectedOutput:
   - ScalarWavePlaneWave1DEventsAndTriggersExampleVolume.h5
 

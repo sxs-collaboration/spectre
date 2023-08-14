@@ -5,6 +5,7 @@ Executable: EvolveGhNoBlackHole3D
 Testing:
   Check: parse;execute
   Timeout: 8
+  Priority: High
 ExpectedOutput:
   - GhGaugeWave3DVolume0.h5
   - GhGaugeWave3DReductions.h5

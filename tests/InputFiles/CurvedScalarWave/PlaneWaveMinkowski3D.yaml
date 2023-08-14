@@ -5,6 +5,7 @@ Executable: EvolveCurvedScalarWavePlaneWaveMinkowski3D
 Testing:
   Check: parse;execute_check_output
   Timeout: 15
+  Priority: High
 ExpectedOutput:
   - PlaneWaveMinkowski3DVolume0.h5
   - PlaneWaveMinkowski3DReductions.h5

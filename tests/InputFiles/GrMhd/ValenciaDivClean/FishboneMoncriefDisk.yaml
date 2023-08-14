@@ -5,6 +5,7 @@ Executable: EvolveValenciaDivCleanFishboneMoncriefDisk
 Testing:
   Check: parse;execute
   Timeout: 20
+  Priority: High
 
 ---
 
