@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <optional>
 #include <pup.h>
+#include <string>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -185,6 +186,8 @@ class MortarData {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
+
+  std::string pretty_print_current_buffer_no_data(size_t padding_size) const;
 
  private:
   template <size_t LocalDim>

@@ -7,6 +7,8 @@
 #include <optional>
 #include <ostream>
 #include <pup.h>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -259,6 +261,17 @@ void MortarData<Dim>::pup(PUP::er& p) {
   p | local_geometric_quantities_;
   p | using_volume_and_face_jacobians_;
   p | using_only_face_normal_magnitude_;
+}
+
+template <size_t Dim>
+std::string MortarData<Dim>::pretty_print_current_buffer_no_data(
+    size_t padding_size) const {
+  std::stringstream ss{};
+  ss << std::scientific << std::setprecision(16);
+  const std::string pad(padding_size, ' ');
+  ss << pad << "Current buffer: " << mortar_index_
+     << ", time = " << time_step_id_[mortar_index_] << "\n";
+  return ss.str();
 }
 
 template <size_t Dim>

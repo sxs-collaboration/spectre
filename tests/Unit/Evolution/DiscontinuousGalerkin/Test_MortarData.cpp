@@ -139,6 +139,12 @@ void test_global_time_stepping_usage() {
 
   check_serialization(make_not_null(&mortar_data));
 
+  std::string expected_pretty_output =
+      MakeString{} << " Current buffer: 0, time = " << std::scientific
+                   << std::setprecision(16) << time_step_id << "\n";
+  CHECK(mortar_data.pretty_print_current_buffer_no_data(1_st) ==
+        expected_pretty_output);
+
   CHECK(mortar_data.current_buffer_index() == 0);
   mortar_data.next_buffer();
   CHECK(mortar_data.current_buffer_index() == 1);
@@ -148,6 +154,12 @@ void test_global_time_stepping_usage() {
   assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
                         std::optional{local_data}, neighbor_mesh,
                         std::optional{neighbor_data}, expected_output);
+
+  expected_pretty_output = MakeString{}
+                           << "  Current buffer: 1, time = " << std::scientific
+                           << std::setprecision(16) << time_step_id << "\n";
+  CHECK(mortar_data.pretty_print_current_buffer_no_data(2_st) ==
+        expected_pretty_output);
 
   check_serialization(make_not_null(&mortar_data));
 
