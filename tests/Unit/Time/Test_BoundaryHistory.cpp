@@ -220,30 +220,52 @@ void test_boundary_history() {
 
   CHECK(check_boundary_state<EvaluatorOwnsCoupling>(history) == 2);
 
-  std::string expected_output = MakeString{} << "Integration order: 2\n"
-                                             << "Local Data:\n"
-                                             << "Time: Slab[-1,-0.5]:0/1\n"
-                                             << "Data: -1\n"
-                                             << "Time: Slab[0,0.5]:0/1\n"
-                                             << "Data: 0\n"
-                                             << "Time: Slab[1,1.5]:0/1\n"
-                                             << "Data: 1\n"
-                                             << "Time: Slab[2,2.5]:0/1\n"
-                                             << "Data: 2\n"
-                                             << "Remote Data:\n"
-                                             << "Time: Slab[-2,-1.5]:0/1\n"
-                                             << "Data: (-2)\n"
-                                             << "Time: Slab[-1,-0.5]:0/1\n"
-                                             << "Data: (-1)\n"
-                                             << "Time: Slab[0,0.5]:0/1\n"
-                                             << "Data: (0)\n"
-                                             << "Time: Slab[1,1.5]:0/1\n"
-                                             << "Data: (1)\n"
-                                             << "Time: Slab[2,2.5]:0/1\n"
-                                             << "Data: (2)\n"
-                                             << "Time: Slab[3,3.5]:0/1\n"
-                                             << "Data: (3)\n";
+  std::string expected_output = MakeString{}
+                                << std::scientific << std::setprecision(16)
+                                << "Integration order: 2\n"
+                                << " Local Data:\n"
+                                << "  Time: " << make_time(-1.) << "\n"
+                                << "   Data: " << -1 << "\n"
+                                << "  Time: " << make_time(0.) << "\n"
+                                << "   Data: " << 0 << "\n"
+                                << "  Time: " << make_time(1.) << "\n"
+                                << "   Data: " << 1 << "\n"
+                                << "  Time: " << make_time(2) << "\n"
+                                << "   Data: " << 2 << "\n"
+                                << " Remote Data:\n"
+                                << "  Time: " << make_time(-2.) << "\n"
+                                << "   Data: " << std::vector<int>{-2} << "\n"
+                                << "  Time: " << make_time(-1.) << "\n"
+                                << "   Data: " << std::vector<int>{-1} << "\n"
+                                << "  Time: " << make_time(0.) << "\n"
+                                << "   Data: " << std::vector<int>{0} << "\n"
+                                << "  Time: " << make_time(1.) << "\n"
+                                << "   Data: " << std::vector<int>{1} << "\n"
+                                << "  Time: " << make_time(2.) << "\n"
+                                << "   Data: " << std::vector<int>{2} << "\n"
+                                << "  Time: " << make_time(3.) << "\n"
+                                << "   Data: " << std::vector<int>{3} << "\n";
   CHECK(get_output(history) == expected_output);
+
+  std::string expected_pretty_output =
+      MakeString{} << std::scientific << std::setprecision(16)
+                   << " Integration order: 2\n"
+                   << "  Local Data:\n"
+                   << "   Time: " << make_time(-1.) << "\n"
+                   << "   Time: " << make_time(0.) << "\n"
+                   << "   Time: " << make_time(1.) << "\n"
+                   << "   Time: " << make_time(2.) << "\n"
+                   << "  Remote Data:\n"
+                   << "   Time: " << make_time(-2.) << "\n"
+                   << "   Time: " << make_time(-1.) << "\n"
+                   << "   Time: " << make_time(0.) << "\n"
+                   << "   Time: " << make_time(1.) << "\n"
+                   << "   Time: " << make_time(2.) << "\n"
+                   << "   Time: " << make_time(3.) << "\n";
+  std::stringstream ss{};
+  history.print<false>(ss, 1_st);
+  const std::string pretty_output = ss.str();
+  CHECK(pretty_output == expected_pretty_output);
 
   // We check this later, to make sure we don't somehow depend on the
   // original object.
