@@ -744,13 +744,10 @@
  * Several tests fail intentionally at the executable level to test error
  * handling like ASSERT statements in the code. CTest is aware of which
  * should fail and passes them. If you want to debug an individual test
- * in a debugger you need to run a single test
- * using the %RunTests executable (in dg-charm-build/bin/RunTests) you
- * must specify the name of the test as the first argument. For example, if you
- * want to run just the "Unit.Gradient" test you can run
- * `./bin/RunTests Unit.Gradient`. If you are using a debugger launch the
- * debugger, for example if you're using LLDB then run `lldb ./bin/RunTests`
- * and then to run the executable inside the debugger use `run Unit.Gradient`
+ * in a debugger you must specify the name of the test as the first argument to
+ * the test executable. For example, if you want to debug the "Unit.Gradient"
+ * test: Launch the debugger, for example if you're using LLDB then run `lldb
+ * ./bin/Test_LinearOperators`. Then run the test with `run Unit.Gradient`
  * inside the debugger.
  */
 

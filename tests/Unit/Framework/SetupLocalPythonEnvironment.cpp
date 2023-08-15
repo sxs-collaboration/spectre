@@ -24,10 +24,9 @@
 namespace pypp {
 SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
     const std::string &cur_dir_relative_to_unit_test_path) {
-  // In the case where we run all the non-failure tests at once we must ensure
-  // that we only initialize and finalize the python env once. Initialization is
-  // done in the constructor of SetupLocalPythonEnvironment, while finalization
-  // is done in the constructor of RunTests.
+  // We have to clean up the Python environment only after all tests have
+  // finished running, since there could be multiple tests run in a single
+  // executable launch. This is done in TestMain(Charm).cpp.
   if (not initialized) {
     // Don't produce the __pycache__ dir (python 3.2 and newer) or the .pyc
     // files (python 2.7) in the tests directory to avoid cluttering the source

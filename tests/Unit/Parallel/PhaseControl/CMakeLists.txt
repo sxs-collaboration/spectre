@@ -16,6 +16,7 @@ add_test_library(
   "Parallel/PhaseControl"
   "${LIBRARY_SOURCES}"
   ""
+  WITH_CHARM
   )
 
 target_link_libraries(

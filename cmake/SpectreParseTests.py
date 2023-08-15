@@ -183,6 +183,4 @@ if __name__ == "__main__":
 
     source_files = sys.argv[1:]
     for filename in source_files:
-        if "RunTests.cpp" in filename:
-            continue
         parse_source_file(filename)

@@ -13,6 +13,7 @@ add_test_library(
   "Evolution/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
   ""
+  WITH_CHARM
   )
 
 target_link_libraries(

@@ -175,6 +175,7 @@ add_test_library(
   "Parallel"
   "${LIBRARY_SOURCES}"
   ""
+  WITH_CHARM
   )
 
 target_link_libraries(

@@ -1,12 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(executable RunTests)
-
-set(SPECTRE_TESTS)
-
-set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
-set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
+# Unit test executables can use this module if they want to run in a Charm++
+# environment. They just have to add `WITH_CHARM` when calling
+# `add_test_library`.
+add_charm_module(TestMainCharm)
 
 add_subdirectory(ControlSystem)
 add_subdirectory(DataStructures)
@@ -28,54 +26,6 @@ add_subdirectory(ArchitectureVectorization)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
 add_subdirectory(Visualization)
-
-add_charm_module(${executable})
-
-write_test_registration_function(
-  "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
-  "register_run_tests_libs"
-  )
-
-get_property(
-  SPECTRE_TESTS_LIBRARIES
-  GLOBAL
-  PROPERTY
-  SPECTRE_TESTS_LIBS_PROPERTY)
-
-add_spectre_executable(
-  ${executable}
-  ${executable}.cpp
-  ${executable}.decl.h
-  ${executable}.def.h
-  ${SPECTRE_TESTS}
-  )
-
-target_link_libraries(
-  ${executable}
-  PRIVATE
-  ${SPECTRE_TESTS_LIBRARIES}
-  Boost::boost
-  # Link against Boost::program_options for now until we have proper
-  # dependency handling for header-only libs
-  Boost::program_options
-  Charmxx::main
-  ErrorHandling
-  Framework
-  Informer
-  Options
-  SystemUtilities
-  Utilities
-  )
-
-add_dependencies(
-  ${executable}
-  module_GlobalCache
-  module_Main
-  )
-
-add_dependencies(unit-tests ${executable})
-
-spectre_add_catch_tests(${executable} "${SPECTRE_TESTS_LIBRARIES}")
 
 # Setup code coverage for unit tests
 if(COVERAGE)
