@@ -14,11 +14,13 @@ from spectre.Spectral import (
     Quadrature,
     collocation_points,
     differentiation_matrix,
+    exponential_filter,
     interpolation_matrix,
     logical_coordinates,
     modal_to_nodal_matrix,
     nodal_to_modal_matrix,
     quadrature_weights,
+    zero_lowest_modes,
 )
 
 
@@ -122,6 +124,20 @@ class TestSpectral(unittest.TestCase):
                     1e-12,
                     1e-12,
                 )
+
+    def test_exponential_filter(self):
+        mesh = Mesh1D(4, Basis.Legendre, Quadrature.GaussLobatto)
+        filter_matrix = exponential_filter(mesh, alpha=10.0, half_power=2)
+        self.assertEqual(filter_matrix.shape, (4, 4))
+
+    def test_zero_lowest_modes(self):
+        mesh = Mesh1D(4, Basis.Legendre, Quadrature.GaussLobatto)
+        x = np.asarray(logical_coordinates(mesh)[0])
+        u = np.exp(x)
+        filter_matrix = zero_lowest_modes(mesh, 2)
+        u_filtered = filter_matrix @ u
+        filtered_modes = nodal_to_modal_matrix(mesh) @ u_filtered
+        npt.assert_allclose(filtered_modes[:2], 0.0, 1e-12, 1e-12)
 
 
 if __name__ == "__main__":
