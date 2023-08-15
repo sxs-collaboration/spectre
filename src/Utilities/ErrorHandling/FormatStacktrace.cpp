@@ -101,8 +101,14 @@ std::ostream& operator<<(std::ostream& os,
       // Boost was unable to get the symbol name (probably because dladdr
       // can't find it either). Fall back to printing the default stack
       // frame.
-      // NOLINTNEXTLINE
-      os << get_stack_frame(const_cast<void*>(frame.address()));
+      const std::string stack_frame =
+          get_stack_frame(const_cast<void*>(frame.address()));  // NOLINT
+      if (stack_frame.find("ErrorHandling") != std::string::npos or
+          stack_frame.find("segfault_signal_handler") != std::string::npos) {
+        os << "[error handling]\n";
+        continue;
+      }
+      os << stack_frame;
     } else {
       // Print symbol name. Abbreviate if necessary to avoid filling the
       // screen with templates.
