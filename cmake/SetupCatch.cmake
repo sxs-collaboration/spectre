@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Catch2 3.0.0 REQUIRED)
+find_package(Catch2 3.0.1 REQUIRED)
 
 message(STATUS "Catch version: ${Catch2_VERSION}")
 

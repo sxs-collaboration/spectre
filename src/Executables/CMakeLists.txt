@@ -1,7 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(Benchmark)
 add_subdirectory(CombineH5)
 add_subdirectory(ConvertComposeTable)
 add_subdirectory(DebugPreprocessor)

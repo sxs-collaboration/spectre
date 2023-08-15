@@ -70,7 +70,7 @@ all of these dependencies.
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand) at commit
   1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
-* [Catch2](https://github.com/catchorg/Catch2) 3.0.0 or later. Install from your
+* [Catch2](https://github.com/catchorg/Catch2) 3.0.1 or later. Install from your
   package manager or do a standard CMake build and installation (as detailed
   in the [Catch2 docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
   Compile with `CMAKE_POSITION_INDEPENDENT_CODE=ON`.
@@ -111,8 +111,6 @@ all of these dependencies.
   <details>
   \include support/Python/dev_requirements.txt
   </details>
-* [Google Benchmark](https://github.com/google/benchmark) - to do
-  microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
   [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
   coverage

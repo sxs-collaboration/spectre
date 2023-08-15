@@ -547,6 +547,25 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   TestHelpers::db::test_prefix_tag<
       Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>(
       "spacetime_deriv(Var1)");
+
+  BENCHMARK_ADVANCED("Partial derivatives")
+  (Catch::Benchmark::Chronometer meter) {
+    const Mesh<3> mesh{4,
+                       Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const Affine map1d(-1.0, 1.0, -1.0, 1.0);
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid, Affine3D>
+        map(Affine3D{map1d, map1d, map1d});
+    const auto inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    const Variables<tmpl::list<Var1<3>, Var2>> u{
+        mesh.number_of_grid_points(), 0.0};
+    Variables<tmpl::list<::Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>,
+                         ::Tags::deriv<Var2, tmpl::size_t<3>, Frame::Grid>>>
+        du{mesh.number_of_grid_points()};
+    meter.measure([&du, &u, &mesh, &inv_jacobian]() {
+      partial_derivatives(make_not_null(&du), u, mesh, inv_jacobian);
+    });
+  };
 }
 
 namespace {

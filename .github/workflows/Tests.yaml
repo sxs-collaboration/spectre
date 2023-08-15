@@ -591,11 +591,6 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         working-directory: /work/build
         run: |
           make test-executables
-      - name: Build Benchmark executable
-        if: matrix.build_type == 'Release'
-        working-directory: /work/build
-        run: |
-          make -j2 Benchmark
       - name: Print size of build directory
         working-directory: /work/build
         run: |

@@ -211,10 +211,12 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     spectre_test_timeout(TIMEOUT UNIT ${TIMEOUT})
 
     # Add the test and set its properties
+    # - Skip benchmarks during unit testing
     add_test(NAME ${CTEST_NAME}
       COMMAND ${SPECTRE_TEST_RUNNER} $<TARGET_FILE:${TEST_TARGET}>
       \"${NAME}\" --durations yes
       --warn NoAssertions
+      --skip-benchmarks
       --name "\"$<CONFIGURATION>.${CTEST_NAME}\"")
 
     # Check if the test is supposed to fail. If so then let ctest know

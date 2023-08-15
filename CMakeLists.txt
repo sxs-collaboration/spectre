@@ -128,7 +128,6 @@ include(SetupLIBXSMM)
 
 include(SetupBlaze)
 include(SetupBrigand)
-include(SetupGoogleBenchmark)
 include(SetupGsl)
 include(SetupHdf5)
 include(SetupAllocator)
