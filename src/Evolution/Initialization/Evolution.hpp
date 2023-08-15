@@ -83,8 +83,10 @@ struct TimeStepping {
 
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
-  using const_global_cache_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepperType>>;
+  using const_global_cache_tags = tmpl::conditional_t<
+      UsingLts,
+      tmpl::list<::Tags::TimeStepper<TimeStepperType>, ::Tags::StepChoosers>,
+      tmpl::list<::Tags::TimeStepper<TimeStepperType>>>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
@@ -96,10 +98,9 @@ struct TimeStepping {
                                    ::Tags::TimeStepper<TimeStepperType>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
-  using simple_tags_from_options = tmpl::flatten<tmpl::list<
-      ::Tags::Time, Tags::InitialTimeDelta, Tags::InitialSlabSize<UsingLts>,
-      tmpl::conditional_t<UsingLts, tmpl::list<::Tags::StepChoosers>,
-                          tmpl::list<>>>>;
+  using simple_tags_from_options =
+      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
+                 Tags::InitialSlabSize<UsingLts>>;
 
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags = tmpl::push_back<
