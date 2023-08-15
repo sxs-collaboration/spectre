@@ -465,8 +465,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "VariablesToObserve: [NotAVar]\n"
           "FloatingPointTypes: [Double]\n"
           "InterpolateToMesh: None\n"),
-      Catch::Matchers::ContainsSubstring(
-          "NotAVar is not an available variable"));
+      Catch::Matchers::ContainsSubstring("Invalid selection: NotAVar"));
 
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<
