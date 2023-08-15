@@ -1185,9 +1185,13 @@ void DistributedObject<ParallelComponent,
         "an issue.");
     sys::abort("");
   }
-  const std::string message = MakeString{}
-                              << "Message: " << exception.what() << "\nType: "
-                              << pretty_type::get_runtime_type_name(exception);
+  const std::string message =
+      MakeString{} << "Component: " << pretty_type::name<parallel_component>()
+                   << "\nArray Index: " << array_index_ << "\n"
+                   << "Phase: " << phase_ << "\n"
+                   << "Algorithm Step: " << algorithm_step_ << "\n"
+                   << "Message: " << exception.what() << "\nType: "
+                   << pretty_type::get_runtime_type_name(exception);
   main_proxy.value().add_exception_message(message);
   set_terminate(true);
 }
