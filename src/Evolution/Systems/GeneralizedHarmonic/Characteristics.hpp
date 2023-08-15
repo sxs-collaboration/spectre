@@ -6,13 +6,13 @@
 #include <cstddef>
 #include <optional>
 
-#include "ApparentHorizons/HorizonAliases.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 

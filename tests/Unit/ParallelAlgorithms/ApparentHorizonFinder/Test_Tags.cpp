@@ -10,7 +10,6 @@
 #include <random>
 #include <string>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -25,6 +24,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

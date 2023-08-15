@@ -6,8 +6,6 @@
 #include <cstddef>
 #include <vector>
 
-#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
-#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/Factory1D.hpp"
@@ -70,6 +68,8 @@
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"

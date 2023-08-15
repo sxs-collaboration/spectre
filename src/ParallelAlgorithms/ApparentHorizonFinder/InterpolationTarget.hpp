@@ -6,8 +6,6 @@
 #include <cstddef>
 #include <utility>
 
-#include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -18,6 +16,8 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"

@@ -9,8 +9,6 @@
 #include <cstddef>
 #include <vector>
 
-#include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
@@ -24,6 +22,8 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"

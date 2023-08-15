@@ -6,12 +6,6 @@
 #include <cstddef>
 #include <string>
 
-#include "ApparentHorizons/Callbacks/ErrorOnFailedApparentHorizon.hpp"
-#include "ApparentHorizons/Callbacks/FindApparentHorizon.hpp"
-#include "ApparentHorizons/ComputeExcisionBoundaryVolumeQuantities.hpp"
-#include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
-#include "ApparentHorizons/HorizonAliases.hpp"
-#include "ApparentHorizons/InterpolationTarget.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
@@ -22,6 +16,12 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"

@@ -15,7 +15,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "ApparentHorizons"
+  "ParallelAlgorithms/ApparentHorizonFinder"
   "${LIBRARY_SOURCES}"
   ""
   )

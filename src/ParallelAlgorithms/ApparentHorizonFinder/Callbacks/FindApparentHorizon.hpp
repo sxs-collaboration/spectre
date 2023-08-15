@@ -7,8 +7,6 @@
 #include <deque>
 #include <utility>
 
-#include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -23,6 +21,8 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
@@ -66,14 +66,16 @@ namespace callbacks {
 /// type alias called `post_horizon_find_callbacks`, which is a list of
 /// structs, each of which has a function
 ///
-/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp
+/// \snippet
+/// ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp
 /// post_horizon_find_callback_example
 ///
 /// that is called if the FastFlow iteration has converged.
 /// InterpolationTargetTag also is assumed to contain an additional
 /// struct called `horizon_find_failure_callback`, which has a function
 ///
-/// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp
+/// \snippet
+/// ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp
 /// horizon_find_failure_callback_example
 ///
 /// that is called if the FastFlow iteration or the interpolation has
