@@ -173,6 +173,12 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       CXX__VISIBILITY_PRESET OFF
       VISIBLITY_INLINES_HIDDEN OFF
       )
+
+    if (TARGET SpectrePch)
+      target_precompile_headers(${ARG_LIBRARY_NAME} REUSE_FROM SpectrePch)
+      target_link_libraries(${ARG_LIBRARY_NAME} PRIVATE SpectrePchFlags)
+    endif()
+
     # In order to avoid runtime errors about missing compatibility functions
     # defined in the PythonBindings library, we need to link in the whole
     # archive. This is not needed on macOS.
@@ -196,16 +202,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       CharmModuleInit
       SpectreFlags
       )
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-      # Clang doesn't by default enable sized deallocation so we need to
-      # enable it explicitly. This can potentially cause problems if the
-      # standard library being used is too old, but GCC doesn't have any
-      # safeguards against that either.
-      #
-      # See https://github.com/pybind/pybind11/issues/1604
-      target_compile_options(${ARG_LIBRARY_NAME}
-        PRIVATE -fsized-deallocation)
-    endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # We don't want the 'lib' prefix for python modules, so we set the output
     # name
     set_target_properties(

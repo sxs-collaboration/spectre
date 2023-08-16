@@ -7,6 +7,7 @@
 // Include STL headers
 #include <algorithm>
 #include <array>
+#include <csignal>  // For Blaze error handling (see SetupBlaze.cmake)
 #include <cstddef>
 #include <limits>
 #include <memory>

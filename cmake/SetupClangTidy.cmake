@@ -26,8 +26,8 @@ if (CLANG_TIDY_BIN)
   set(MODULES_TO_DEPEND_ON
     module_All
     )
-  if (TARGET ${SPECTRE_PCH_DEP})
-    list(APPEND MODULES_TO_DEPEND_ON ${SPECTRE_PCH_DEP})
+  if (TARGET SpectrePch)
+    list(APPEND MODULES_TO_DEPEND_ON SpectrePch)
   endif()
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh
