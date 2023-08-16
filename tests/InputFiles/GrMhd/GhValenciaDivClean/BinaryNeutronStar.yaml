@@ -4,6 +4,7 @@
 Executable: EvolveGhValenciaDivCleanBns
 Testing:
   Check: parse
+  Priority: High
 
 ---
 

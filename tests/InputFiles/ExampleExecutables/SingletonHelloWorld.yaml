@@ -4,6 +4,7 @@
 Executable: SingletonHelloWorld
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---
 

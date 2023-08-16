@@ -5,6 +5,7 @@ Executable: ExportTimeDependentCoordinates3D
 Testing:
   Check: parse;execute
   Timeout: 10
+  Priority: High
 ExpectedOutput:
   - ExportTimeDependentCoordinates3DVolume0.h5
   - ExportTimeDependentCoordinates3DReductions.h5

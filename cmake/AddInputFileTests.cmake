@@ -3,6 +3,30 @@
 
 spectre_define_test_timeout_factor_option(INPUT_FILE "input file")
 
+option(SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY "Minimum priority of input file \
+tests to run. Possible values are: low (not usually run on CI), normal \
+(run at least once on CI), high (run always on CI)." "normal")
+
+# Convert priority string to a number.
+if (NOT SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY)
+  set(SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY "normal")
+endif()
+string(TOLOWER "${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY}"
+  SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY)
+message("${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY}")
+if (${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY} STREQUAL "high")
+  set(SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY 1)
+elseif (${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY} STREQUAL "normal")
+  set(SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY 0)
+elseif (${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY} STREQUAL "low")
+  set(SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY -1)
+else()
+  message(FATAL_ERROR "Unknown priority in option "
+    "SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY: "
+    "${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY}. "
+    "Possible values are: high, normal, low")
+endif()
+
 # Environment variables for test
 set(_TEST_ENV_VARS "")
 # - Disable ASAN's leak sanitizer because Charm++ has false positives
@@ -94,6 +118,37 @@ function(add_input_file_tests INPUT_FILE_DIR)
 
   foreach(INPUT_FILE ${INPUT_FILE_LIST})
     file(READ ${INPUT_FILE} INPUT_FILE_CONTENTS)
+
+    # Read the priority of the test specified in input file, empty is accepted.
+    string(REGEX MATCH "Priority:[^\n]+"
+      INPUT_FILE_PRIORITY "${INPUT_FILE_CONTENTS}")
+    if("${INPUT_FILE_PRIORITY}" STREQUAL "")
+      set(INPUT_FILE_PRIORITY "normal")
+    else()
+      string(REGEX REPLACE "Priority:[ ]*" ""
+        INPUT_FILE_PRIORITY "${INPUT_FILE_PRIORITY}")
+      string(STRIP "${INPUT_FILE_PRIORITY}" INPUT_FILE_PRIORITY)
+    endif()
+    # Translate strings to numbers
+    string(TOLOWER "${INPUT_FILE_PRIORITY}" INPUT_FILE_PRIORITY)
+    if (${INPUT_FILE_PRIORITY} STREQUAL "high")
+      set(INPUT_FILE_PRIORITY 1)
+    elseif (${INPUT_FILE_PRIORITY} STREQUAL "normal")
+      set(INPUT_FILE_PRIORITY 0)
+    elseif (${INPUT_FILE_PRIORITY} STREQUAL "low")
+      set(INPUT_FILE_PRIORITY -1)
+    else()
+      message(FATAL_ERROR "Unknown priority in input file ${INPUT_FILE}: "
+        "${INPUT_FILE_PRIORITY}. Possible values are: high, normal, low")
+    endif()
+
+    # Only add tests with at least the priority specified in
+    # `SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY`
+    if (${INPUT_FILE_PRIORITY} LESS
+        ${SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY})
+      continue()
+    endif()
+
     # Check if the executable name is present
     string(REGEX MATCH "Executable:[^\n]+"
       INPUT_FILE_EXECUTABLE "${INPUT_FILE_CONTENTS}")

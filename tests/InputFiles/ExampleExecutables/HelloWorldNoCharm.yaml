@@ -4,5 +4,6 @@
 Executable: HelloWorldNoCharm
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---

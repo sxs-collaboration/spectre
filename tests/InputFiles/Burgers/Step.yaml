@@ -6,6 +6,7 @@ Testing:
   CommandLineArgs: +balancer RandCentLB +p2
   Timeout: 5
   Check: parse;execute
+  Priority: High
 
 ---
 

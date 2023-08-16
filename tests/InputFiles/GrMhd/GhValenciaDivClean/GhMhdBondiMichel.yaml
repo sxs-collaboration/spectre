@@ -5,6 +5,7 @@ Executable: EvolveGhValenciaDivCleanBondiMichel
 Testing:
   Check: parse;execute
   Timeout: 8
+  Priority: High
 ExpectedOutput:
   - GhMhdBondiMichelVolume0.h5
   - GhMhdBondiMichelReductions.h5

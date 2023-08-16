@@ -5,6 +5,7 @@ Executable: SolveXcts
 Testing:
   Check: parse
   Timeout: 30
+  Priority: High
 
 ---
 

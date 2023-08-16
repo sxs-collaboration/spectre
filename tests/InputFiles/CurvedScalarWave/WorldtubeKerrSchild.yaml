@@ -4,6 +4,7 @@
 Executable: EvolveWorldtubeCurvedScalarWaveKerrSchild3D
 Testing:
   Check: parse
+  Priority: High
 
 ---
 

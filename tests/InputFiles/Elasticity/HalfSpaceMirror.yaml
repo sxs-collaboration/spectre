@@ -5,6 +5,7 @@ Executable: SolveElasticity3D
 Testing:
   Check: parse;execute_check_output
   Timeout: 45
+  Priority: High
 ExpectedOutput:
   - ElasticHalfSpaceMirrorReductions.h5
   - ElasticHalfSpaceMirrorVolume0.h5

@@ -4,6 +4,7 @@
 Executable: EvolveValenciaSmoothFlow3D
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---
 

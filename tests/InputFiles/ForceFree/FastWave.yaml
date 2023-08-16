@@ -4,6 +4,7 @@
 Executable: EvolveForceFree
 Testing:
   Check: parse;execute
+  Priority: High
 
 ---
 
