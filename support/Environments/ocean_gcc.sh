@@ -32,7 +32,7 @@ spectre_unload_modules() {
     module unload blaze-3.8-gcc-11.3.0-y7sgzzc
     module unload brigand-master-gcc-11.3.0-nsmmsxm
     module unload libsharp-1.0.0-gcc-11.3.0-w7e7n5z
-    module unload catch2-2.13.8-gcc-11.3.0-k2l7yjm
+    module unload catch2-3.0.1-gcc-11.3.0-xu7unwl
     module unload gsl-2.7.1-gcc-11.3.0-sey3z3o
     module unload jemalloc-5.2.1-gcc-11.3.0-r63hemp
     module unload yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
@@ -43,6 +43,7 @@ spectre_unload_modules() {
     module unload charm-7.0.0-gnu11-clang-smp-patch
     module unload git/2.19.6
     module unload doxygen/1.9.5
+    module unload fftw-3.3.10-gcc-11.3.0-g2odatg
 }
 
 spectre_load_modules() {
@@ -62,7 +63,7 @@ spectre_load_modules() {
     module load blaze-3.8-gcc-11.3.0-y7sgzzc
     module load brigand-master-gcc-11.3.0-nsmmsxm
     module load libsharp-1.0.0-gcc-11.3.0-w7e7n5z
-    module load catch2-2.13.8-gcc-11.3.0-k2l7yjm
+    module load catch2-3.0.1-gcc-11.3.0-xu7unwl
     module load gsl-2.7.1-gcc-11.3.0-sey3z3o
     module load jemalloc-5.2.1-gcc-11.3.0-r63hemp
     module load yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
@@ -73,6 +74,7 @@ spectre_load_modules() {
     module load charm-7.0.0-gnu11-clang-smp-patch
     module load git/2.19.6
     module load doxygen/1.9.5
+    module load fftw-3.3.10-gcc-11.3.0-g2odatg
 }
 
 spectre_run_cmake() {
@@ -84,8 +86,8 @@ spectre_run_cmake() {
     export GCC_HOME=/opt/ohpc/pub/compiler/gcc/11.3.0/bin
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_CXX_COMPILER=clang++ \
+          -D CMAKE_C_COMPILER=gcc \
+          -D CMAKE_CXX_COMPILER=g++ \
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           -D USE_PCH=ON \
           -D BUILD_PYTHON_BINDINGS=ON \
