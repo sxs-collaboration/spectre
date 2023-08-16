@@ -455,28 +455,23 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      # Assign a unique cache key for every run. Restoring the cache for this
-      # exact key will always fail, ensuring that the cache gets updated when
-      # the run succeeds. The partially-matched 'restore-keys' ensure that the
-      # cache from previous runs gets used even though it has a different
-      # suffix. By including the branch name in the key we make sure to only use
-      # caches from the 'develop' branch. Caches on other branches are cleared
-      # in a later step to avoid filling up the storage space (see below).
-      - name: Determine unique cache key
-        run: |
-          CACHE_KEY_SUFFIX=$(date +%s)
-          echo "CACHE_KEY_SUFFIX=$CACHE_KEY_SUFFIX" >> $GITHUB_ENV
+      # Assign a unique cache key for every run.
+      # - We will save the cache using this unique key, but only on the develop
+      #   branch. This way we regularly update the cache without filling up the
+      #   storage space with caches from other branches.
+      # - To restore the most recent cache we provide a partially-matched
+      #   "restore key".
       - name: Restore ccache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
+        id: restore-ccache
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
 ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         with:
           path: /work/ccache
-          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.ref }}-\
-${{ env.CACHE_KEY_SUFFIX }}"
+          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
-            ${{ env.CACHE_KEY_PREFIX }}-refs/heads/develop-
+            ${{ env.CACHE_KEY_PREFIX }}-
       - name: Configure ccache
         # Print the ccache configuration and reset statistics
         run: |
@@ -598,6 +593,15 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         working-directory: /work/build
         run: |
           make test-executables
+      # Save the cache after everything has been built. Also save on failure or
+      # on cancellation (`always()`) because a partial cache is better than no
+      # cache.
+      - name: Save ccache
+        if: always() && github.ref == 'refs/heads/develop'
+        uses: actions/cache/save@v3
+        with:
+          path: /work/ccache
+          key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
       - name: Print size of build directory
         working-directory: /work/build
         run: |
@@ -699,24 +703,9 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make EvolveBurgers -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml --output-on-failure
-
-          make clean
       - name: Diagnose ccache
         run: |
           ccache -s
-      # Retain the cache only on the 'develop' branch. We discard caches on
-      # other branches so they don't fill up the available storage space. This
-      # means that all jobs share the caches from 'develop'.
-      - name: Clear ccache
-        if: github.ref != 'refs/heads/develop'
-        run: |
-          rm -rf $CCACHE_DIR
-      # Delete the built objects to ensure there is enough disk space for
-      # creating a tarball of the cache.
-      - name: Cleanup install
-        working-directory: /work/build
-        run: |
-          make clean
 
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
@@ -751,19 +740,14 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           brew install $SPECTRE_BREW_DEPS
       # We install the remaining dependencies with Spack and cache them.
       # See the `unit_tests` job above for details on the cache configuration.
-      - name: Determine unique cache key
-        run: |
-          CACHE_KEY_SUFFIX=$(date +%s)
-          echo "CACHE_KEY_SUFFIX=$CACHE_KEY_SUFFIX" >> $GITHUB_ENV
       - name: Restore dependency cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         id: restore-dependencies
         with:
           path: ~/dependencies
-          key: "dependencies-macos-${{ github.ref }}-\
-${{ env.CACHE_KEY_SUFFIX }}"
+          key: "dependencies-macos-${{ github.run_id }}"
           restore-keys: |
-            dependencies-macos-refs/heads/develop-
+            dependencies-macos-
       - name: Install Spack
         run: |
           cd $HOME
@@ -793,6 +777,23 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           spack concretize --reuse
           spack install --no-check-signature
           spack find -v
+      - name: Update dependency cache
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          source $HOME/spack/share/spack/setup-env.sh
+          # Clear existing buildcache so we don't accumulate old versions of
+          # packages in the cache
+          rm -rf $HOME/dependencies
+          spack buildcache create -ufa -m dependencies $SPECTRE_SPACK_DEPS
+        # Allow the buildcache creation to fail without failing the job, since
+        # it sometimes runs out of memory
+        continue-on-error: true
+      - name: Save dependency cache
+        if: github.ref == 'refs/heads/develop'
+        uses: actions/cache/save@v3
+        with:
+          path: ~/dependencies
+          key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
       # Install remaining pure Python dependencies with pip because the Spack
       # package index can be incomplete (it can't mirror all of pip)
       - name: Install Python dependencies
@@ -808,12 +809,13 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           rm -rf $CCACHE_DIR
           mkdir -p $CCACHE_DIR
       - name: Restore ccache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
+        id: restore-ccache
         with:
           path: ~/ccache
-          key: "ccache-macos-${{ github.ref }}-${{ env.CACHE_KEY_SUFFIX }}"
+          key: "ccache-macos-${{ github.run_id }}"
           restore-keys: |
-            ccache-macos-refs/heads/develop-
+            ccache-macos-
       - name: Configure ccache
         run: |
           ccache -pz
@@ -865,6 +867,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         working-directory: build
         run: |
           make test-executables
+      - name: Save ccache
+        if: always() && github.ref == 'refs/heads/develop'
+        uses: actions/cache/save@v3
+        with:
+          path: ~/ccache
+          key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
       - name: Print size of build directory
         working-directory: build
         run: |
@@ -887,30 +895,6 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           ls | xargs du -sh
           du -sh .
           rm -r ./*
-      # Retain caches only on the 'develop' branch (see unit_tests job)
-      - name: Clear caches
-        if: github.ref != 'refs/heads/develop'
-        run: |
-          rm -rf $HOME/dependencies
-          ccache --clear
-          rm -rf $CCACHE_DIR
-      - name: Update dependency cache
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          source $HOME/spack/share/spack/setup-env.sh
-          # Clear existing buildcache so we don't accumulate old versions of
-          # packages in the cache
-          rm -rf $HOME/dependencies
-          spack buildcache create -ufa -m dependencies $SPECTRE_SPACK_DEPS
-        # Allow the buildcache creation to fail without failing the job, since
-        # it sometimes runs out of memory
-        continue-on-error: true
-      # Delete the built objects to ensure there is enough disk space for
-      # creating a tarball of the cache.
-      - name: Cleanup install
-        working-directory: build
-        run: |
-          make clean
 
   # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
