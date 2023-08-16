@@ -81,10 +81,6 @@ RUN apt-get update -y \
     && apt-get update -y \
     && apt-get install -y libjemalloc2 libjemalloc-dev
 
-# Install ccache to cache compilations for reduced compile time
-RUN apt-get update -y \
-    && apt-get install -y ccache
-
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
 # Python bindings or build documentation) or used by Python code that is
@@ -145,6 +141,15 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O c
     && cd build \
     && make $PARALLEL_MAKE_ARG install \
     && cd ../.. && rm -rf Catch2
+# - Ccache
+RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
+    && tar -xzf ccache.tar.gz \
+    && cd ccache-* \
+    && mkdir build && cd build \
+    && cmake -D CMAKE_BUILD_TYPE=Release .. \
+    && make $PARALLEL_MAKE_ARG \
+    && make install \
+    && cd .. && rm -rf ccache*
 # - Doxygen
 RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
     && tar -xzf doxygen.tar.gz \
