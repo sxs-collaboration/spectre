@@ -17,21 +17,27 @@
 # - Sharing caches between runs on CI works.
 
 option(USE_CCACHE "Use CCache if available to speed up builds" ON)
-if(USE_CCACHE)
-  find_program(CCACHE_FOUND ccache)
-  if(CCACHE_FOUND)
-    string(CONCAT CCACHE_COMMAND
-      "CCACHE_SLOPPINESS=pch_defines,time_macros,"
-      "include_file_mtime,include_file_ctime "
-      "ccache "
-    )
-    # CCache offers no benefit for linking
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_COMMAND})
-    message(STATUS "Using ccache for compilation. It is invoked as: ${CCACHE_COMMAND}")
-  else()
-    message(STATUS "Could not find ccache")
-  endif(CCACHE_FOUND)
-endif(USE_CCACHE)
+
+if(NOT USE_CCACHE)
+  return()
+endif()
+
+find_program(CCACHE_EXEC ccache)
+
+if (NOT CCACHE_EXEC)
+  message(STATUS "Could not find ccache")
+  return()
+endif()
+
+# Invoke compiler through ccache
+set(CMAKE_CXX_COMPILER_LAUNCHER
+  "CCACHE_SLOPPINESS=pch_defines,time_macros,include_file_mtime,\
+include_file_ctime"
+  ${CCACHE_EXEC}
+)
+set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_CXX_COMPILER_LAUNCHER})
+message(STATUS "Using ccache for compilation. It is invoked as: "
+  "${CMAKE_CXX_COMPILER_LAUNCHER}")
 
 # Add `-fno-pch-timestamp` flag to Clang to support precompiled headers
 # (see https://ccache.dev/manual/4.8.2.html#_precompiled_headers)
