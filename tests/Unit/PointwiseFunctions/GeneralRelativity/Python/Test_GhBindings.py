@@ -142,6 +142,20 @@ class TestBindings(unittest.TestCase):
             inverse_spatial_metric,
         )
 
+    def test_time_deriv_of_laspe(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        gh.time_deriv_of_lapse(
+            lapse,
+            shift,
+            spacetime_unit_normal,
+            phi,
+            pi,
+        )
+
     def test_time_deriv_of_shift(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
@@ -154,6 +168,18 @@ class TestBindings(unittest.TestCase):
             shift,
             inverse_spatial_metric,
             spacetime_unit_normal,
+            phi,
+            pi,
+        )
+
+    def test_time_derive_of_spatial_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        gh.time_deriv_of_spatial_metric(
+            lapse,
+            shift,
             phi,
             pi,
         )
