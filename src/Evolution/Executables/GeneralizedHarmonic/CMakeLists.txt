@@ -67,7 +67,7 @@ add_spectre_parallel_executable(
   EvolveGhBinaryBlackHole
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars"
-  "${LIBS_TO_LINK};ApparentHorizons;Cce;ControlSystem;EvolutionTriggers"
+  "${LIBS_TO_LINK};ApparentHorizons;Cce;ControlSystem;Deadlock;EvolutionTriggers"
 )
 
 if (TARGET SpEC::Exporter)
