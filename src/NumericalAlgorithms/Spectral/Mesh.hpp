@@ -254,6 +254,15 @@ class Mesh {
   std::array<Spectral::Quadrature, Dim> quadratures_{};
 };
 
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Returns `true` if the mesh is isotropic, `false` otherwise.
+ *
+ * If `Dim` is zero, then `true` is always returned.
+ */
+template <size_t Dim>
+bool is_isotropic(const Mesh<Dim>& mesh);
+
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
 bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);

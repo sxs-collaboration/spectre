@@ -59,11 +59,13 @@ void test_extents_basis_and_quadrature(
 
 void test_uniform_lgl_mesh() {
   INFO("Uniform LGL mesh");
+  CHECK(is_isotropic(Mesh<0>{}));
   const Mesh<1> mesh1d_lgl{3, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   test_extents_basis_and_quadrature(mesh1d_lgl, {{3}},
                                     {{Spectral::Basis::Legendre}},
                                     {{Spectral::Quadrature::GaussLobatto}});
+  CHECK(is_isotropic(mesh1d_lgl));
   const Mesh<2> mesh2d_lgl{3, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   test_extents_basis_and_quadrature(
@@ -71,6 +73,7 @@ void test_uniform_lgl_mesh() {
       {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
       {{Spectral::Quadrature::GaussLobatto,
         Spectral::Quadrature::GaussLobatto}});
+  CHECK(is_isotropic(mesh2d_lgl));
   const Mesh<3> mesh3d_lgl{3, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   test_extents_basis_and_quadrature(
@@ -79,6 +82,7 @@ void test_uniform_lgl_mesh() {
         Spectral::Basis::Legendre}},
       {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
         Spectral::Quadrature::GaussLobatto}});
+  CHECK(is_isotropic(mesh3d_lgl));
 }
 
 void test_explicit_choices_per_dimension() {
@@ -268,6 +272,35 @@ void test_option_parsing() {
     }
   }
 }
+
+void test_is_isotropic() {
+  // Test non-isotropic meshes.
+  CHECK_FALSE(is_isotropic(
+      Mesh<2>{{{3, 2}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}}}));
+  CHECK_FALSE(is_isotropic(
+      Mesh<2>{{{3, 3}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
+              {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}}}));
+  CHECK_FALSE(is_isotropic(Mesh<2>{
+      {{3, 3}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}}));
+
+  CHECK_FALSE(is_isotropic(
+      Mesh<3>{{{3, 2}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}}}));
+  CHECK_FALSE(is_isotropic(
+      Mesh<3>{{{3, 3}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
+              {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}}}));
+  CHECK_FALSE(is_isotropic(Mesh<3>{
+      {{3, 3}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
@@ -279,6 +312,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
   test_option_parsing<1>();
   test_option_parsing<2>();
   test_option_parsing<3>();
+  test_is_isotropic();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(

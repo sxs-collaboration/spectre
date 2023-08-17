@@ -74,6 +74,17 @@ void Mesh<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
+bool is_isotropic(const Mesh<Dim>& mesh) {
+  if constexpr (Dim == 0 or Dim == 1) {
+    return true;
+  } else {
+    return mesh.extents() == Index<Dim>(mesh.extents(0)) and
+           mesh.basis() == make_array<Dim>(mesh.basis(0)) and
+           mesh.quadrature() == make_array<Dim>(mesh.quadrature(0));
+  }
+}
+
+template <size_t Dim>
 bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
   return lhs.extents() == rhs.extents() and lhs.basis() == rhs.basis() and
          lhs.quadrature() == rhs.quadrature();
@@ -94,12 +105,13 @@ std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GEN_OP(op, dim) \
   template bool operator op(const Mesh<dim>& lhs, const Mesh<dim>& rhs);
-#define INSTANTIATE_MESH(_, data)                     \
-  template class Mesh<DIM(data)>;                     \
-  GEN_OP(==, DIM(data))                               \
-  GEN_OP(!=, DIM(data))                               \
-  template std::ostream& operator<<(std::ostream& os, \
-                                    const Mesh<DIM(data)>& mesh);
+#define INSTANTIATE_MESH(_, data)                                 \
+  template class Mesh<DIM(data)>;                                 \
+  GEN_OP(==, DIM(data))                                           \
+  GEN_OP(!=, DIM(data))                                           \
+  template std::ostream& operator<<(std::ostream& os,             \
+                                    const Mesh<DIM(data)>& mesh); \
+  template bool is_isotropic(const Mesh<DIM(data)>& mesh);
 
 #define INSTANTIATE_SLICE_AWAY(_, data) \
   template Mesh<DIM(data) - 1> Mesh<DIM(data)>::slice_away(const size_t) const;
