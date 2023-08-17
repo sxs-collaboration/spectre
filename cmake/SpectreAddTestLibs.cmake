@@ -1,212 +1,61 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# The functions in this file are used to set up test libraries.
-# The way to use these functions is to first set the global properties:
-#   set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
-#   set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
+# Add an executable with Catch2 unit tests and register them with CTest.
 #
-# Then have various add_subdirectory commands, normally one per library.
-# Each library must compile a list of source files, which is then passed to
-# add_test_library. After all the test libraries have called add_test_library
-# the function "write_test_registration_function" can be called
-# to write the C++ header needed for registering the tests inside all the
-# libraries. Finally, the test libraries that need to be linked into the test
-# runner executable can be retrieved from the global property using:
-#   get_property(SPECTRE_TESTS_LIBRARIES GLOBAL PROPERTY
-#                SPECTRE_TESTS_LIBS_PROPERTY)
+# This function is named `add_test_library` although it adds an executable for
+# historical reasons. For the same reasons it takes two unused arguments. We can
+# refactor this in the future.
 #
-# and then adding ${SPECTRE_TESTS_LIBRARIES} as a lib to target_link_libraries.
-#
-# Note: Both add_test_library and write_test_registration_function
-# are documented below.
+# Parameters:
+# - TEST_EXEC_NAME The name of the test executable to add
+# - SOURCE_FILES The source files to compile into the executable
+function(add_test_library TEST_EXEC_NAME UNUSED SOURCE_FILES UNUSED2)
+  cmake_parse_arguments(ARG WITH_CHARM "" "" ${ARGN})
 
-# We want a global variable without having to worry about scope at all since
-# we provide an easy-to-use user function for adding test libraries
-set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
-set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
+  add_spectre_executable(
+    ${TEST_EXEC_NAME}
+    ${SOURCE_FILES}
+    )
+  add_dependencies(unit-tests ${TEST_EXEC_NAME})
+  target_link_libraries(
+    ${TEST_EXEC_NAME}
+    PRIVATE
+    Catch2::Catch2
+    Framework
+    )
 
-# Shared test libs are currently unsupported on macOS, since the
-# `SPECTRE_TEST_REGISTER_FUNCTION` mechanism (documented below) doesn't work.
+  # Use either the Charm++ or the non-Charm++ TestMain
+  if (ARG_WITH_CHARM)
+    target_sources(
+      ${TEST_EXEC_NAME}
+      PRIVATE
+      ${CMAKE_SOURCE_DIR}/tests/Unit/TestMainCharm.cpp
+    )
+    add_dependencies(
+      ${TEST_EXEC_NAME}
+      module_TestMainCharm
+      )
+  else()
+    target_sources(
+      ${TEST_EXEC_NAME}
+      PRIVATE
+      ${CMAKE_SOURCE_DIR}/tests/Unit/TestMain.cpp
+    )
+  endif()
+
+  # Register the tests with CTest.
+  # We may want to switch to `catch_discover_tests` and remove our own test
+  # parsing code in the future. Before we do, we should check if it supports all
+  # the features we use.
+  # catch_discover_tests(${TEST_EXEC_NAME})
+  spectre_add_catch_tests(${TEST_EXEC_NAME})
+endfunction()
+
+# Shared test libs are currently unsupported on macOS because Catch2 static
+# variables are not properly initialized. This is only needed for test helper
+# libraries with Catch2 assertions in them.
 set(SPECTRE_TEST_LIBS_TYPE "")
 if(APPLE)
   set(SPECTRE_TEST_LIBS_TYPE STATIC)
 endif()
-
-# Adds the library LIBRARY as testing library. The FOLDER should be the
-# subdirectories of ${CMAKE_SOURCE_DIR}/tests/Unit, e.g. DataStructures
-# for the DataStructures library, or Evolution/Systems/ScalarWave for
-# a ScalarWave library. The source files to the library must be passed
-# as the third argument. The last argument (LINK_LIBS) is deprecated. Use
-# 'target_link_libraries' instead.
-function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
-  foreach (SOURCE_FILE ${LIBRARY_SOURCES})
-    # We only add source files that actually call SPECTRE_TEST_CASE
-    file(READ
-      "${SOURCE_FILE}"
-      SOURCE_FILE_CONTENTS
-      )
-    # Note: The result of find is -1 if not found
-    string(FIND
-      "${SOURCE_FILE_CONTENTS}"
-      "SPECTRE_TEST_CASE("
-      FOUND_SPECTRE_TEST_CASE
-      )
-    if(NOT ${FOUND_SPECTRE_TEST_CASE} EQUAL -1)
-      # Get the name of the file without path and without extension
-      string(REGEX REPLACE
-        [^a-zA-Z0-9]
-        _
-        SOURCE_IDENTIFIER
-        ${SOURCE_FILE}
-        )
-      # We specify the macro SPECTRE_TEST_REGISTER_FUNCTION for each
-      # source file in the library which is used by the TestingFramework.hpp
-      # file to create a function that can be called from the main test
-      # executable to get static variables to be initialized in the source
-      # file.
-      set(UNIQUE_IDENTIFIER "LIB_${LIBRARY}_FILE_${SOURCE_IDENTIFIER}")
-      set_source_files_properties(
-        ${SOURCE_FILE}
-        PROPERTIES
-        COMPILE_FLAGS
-        "-D SPECTRE_TEST_REGISTER_FUNCTION=${UNIQUE_IDENTIFIER}"
-        )
-      # We use the global "variable" (CMake doesn't really have global
-      # variables but global properties are effectively the same)
-      # SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY to keep track of all the
-      # functions in all the libraries that have been added.
-      # If more than one test executable exists each should add their
-      # own libraries independently so that the property can be reset to
-      # an empty string after the first executable's libraries were added.
-      get_property(
-        SPECTRE_TESTS_LIB_FUNCTIONS
-        GLOBAL
-        PROPERTY
-        SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY)
-      set(SPECTRE_TESTS_LIB_FUNCTIONS
-        "${SPECTRE_TESTS_LIB_FUNCTIONS};${UNIQUE_IDENTIFIER}")
-      set_property(GLOBAL
-        PROPERTY
-        SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY
-        ${SPECTRE_TESTS_LIB_FUNCTIONS})
-    endif()
-  endforeach()
-
-  # We do not use `add_spectre_library` since that adds libraries
-  # to the `libs` target, which should not include tests.
-  add_library(
-    ${LIBRARY}
-    ${SPECTRE_TEST_LIBS_TYPE}
-    ${LIBRARY_SOURCES}
-    )
-
-  # We need to link custom allocators before we link anything else so that
-  # any third-party libraries, which generally should all be built as shared
-  # libraries, use the allocator that we use. Unfortunately, how exactly
-  # CMake decides on the linking order is not clear when using
-  # INTERFACE_LINK_LIBRARIES and targets. To this end, we set a global
-  # property SPECTRE_ALLOCATOR_LIBRARY that contains the link flag to link
-  # to the memory allocator. By linking to the allocator library first
-  # explicitly in target_link_libraries CMake correctly places the allocator
-  # library as the first entry in the link libraries. We also link to the
-  # SpectreAllocator target to pull in any additional allocator-related
-  # flags, such as include directories.
-  get_property(
-    SPECTRE_ALLOCATOR_LIBRARY
-    GLOBAL
-    PROPERTY SPECTRE_ALLOCATOR_LIBRARY
-    )
-  target_link_libraries(${LIBRARY}
-    PUBLIC
-    ${SPECTRE_ALLOCATOR_LIBRARY}
-    SpectreAllocator
-    )
-
-  set_target_properties(
-    ${LIBRARY}
-    PROPERTIES
-    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
-    LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
-    )
-
-  # Add PCH to test libs
-  if(TARGET SpectrePch)
-    target_precompile_headers(${LIBRARY} REUSE_FROM SpectrePch)
-    target_link_libraries(${LIBRARY} PRIVATE SpectrePchFlags)
-  endif(TARGET SpectrePch)
-
-  # Add link dependencies
-  if (NOT LINK_LIBS STREQUAL "")
-    message(WARNING "The LINK_LIBS argument to add_test_library is "
-      "deprecated. Please use target_link_libraries instead.")
-  endif()
-  target_link_libraries(
-    ${LIBRARY}
-    PRIVATE
-    ${LINK_LIBS}
-    Framework
-    SpectreFlags
-    )
-
-  set_target_properties(
-    ${LIBRARY}
-    PROPERTIES
-    FOLDER "${FOLDER}/"
-    )
-
-  # We use a global variable to also make a list of all the
-  # libraries added so far. Again, this is easier for users
-  # than needing to propagate the libraries back up using
-  # PARENT_SCOPE in various calls to set().
-  get_property(
-    SPECTRE_TESTS_LIBS
-    GLOBAL
-    PROPERTY
-    SPECTRE_TESTS_LIBS_PROPERTY)
-  set(SPECTRE_TESTS_LIBS
-    "${SPECTRE_TESTS_LIBS};${LIBRARY}")
-  set_property(GLOBAL
-    PROPERTY
-    SPECTRE_TESTS_LIBS_PROPERTY
-    ${SPECTRE_TESTS_LIBS})
-endfunction()
-
-# Writes a header file with a function named FUNCTION_NAME that in turn
-# calls all the functions in the registered source files so that tests
-# in those source files are registered with Catch. The FILENAME should be
-# the absolute path to where the hpp file should be written. For example,
-# "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
-function(write_test_registration_function
-    FILENAME FUNCTION_NAME)
-  get_property(
-    TEST_FUNCTIONS
-    GLOBAL
-    PROPERTY
-    SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY)
-  set(REGISTERING_FUNCTIONS_DECL "")
-  set(REGISTERING_FUNCTIONS_CALL "")
-  foreach(TEST_FUNCTION ${TEST_FUNCTIONS})
-    set(
-      REGISTERING_FUNCTIONS_DECL
-      "${REGISTERING_FUNCTIONS_DECL}void ${TEST_FUNCTION}();\n")
-    set(
-      REGISTERING_FUNCTIONS_CALL
-      "${REGISTERING_FUNCTIONS_CALL}  ${TEST_FUNCTION}();\n")
-  endforeach()
-  # We write the file into a tmp and then configure it so we don't
-  # rebuild the tests in the case where CMake is re-run but nothing changed.
-  file(WRITE
-    "${FILENAME}.tmp"
-    "#pragma once\n"
-    "${REGISTERING_FUNCTIONS_DECL}\n"
-    "inline void ${FUNCTION_NAME}() {\n"
-    "${REGISTERING_FUNCTIONS_CALL}"
-    "}\n"
-    )
-  configure_file(
-    "${FILENAME}.tmp"
-    "${FILENAME}"
-    COPYONLY
-    )
-endfunction()

@@ -7,10 +7,9 @@ See LICENSE.txt for details.
 \tableofcontents
 
 Unit tests are placed in the appropriate subdirectory of `tests/Unit`, which
-mirrors the directory hierarchy of `src`. The tests are all compiled into
-individual libraries to keep link time of testing executables low. Typically
-there should be one test library for each production code library. For example,
-we have a `DataStructures` library and a `Test_DataStructures` library. When
+mirrors the directory hierarchy of `src`. Typically there should be one test
+executable for each production code library. For example,
+we have a `DataStructures` library and a `Test_DataStructures` executable. When
 adding a new test there are several scenarios that can occur, which are outlined
 below.
 
@@ -62,17 +61,11 @@ below.
   i.e. the `CMakeLists.txt` that called `add_subdirectory`.<br>
   Finally, in the `CMakeLists.txt` of your new library you must call
   `add_test_library`. Again, see `tests/Unit/DataStructures/CMakeLists.txt` for
-  an example. The `add_test_library` function adds a test library with the name
-  of the first argument and the source files of the third argument. The second
-  argument is the path of the library's directory relative to `tests/Unit`. For
-  example, for `Test_DataStructures` it is simply `DataStructures`. The fourth
-  and final argument to `add_test_library` are the libraries that must be
-  linked. Typically this should only be the production library you're
-  testing. For example, `Test_DataStructures` should specify only
-  `DataStructures` as the library to link. If you are testing a header-only
-  "library" then you do not link any libraries (they must be linked in by the
-  libraries actually testing your dependencies). In this case the last argument
-  should be `"" # Header-only, link dependencies included from testing lib`
+  an example. The `add_test_library` function adds a test executable with the
+  name of the first argument and the source files of the third argument. The
+  second and fourth arguments are unused for historical reasons and will be
+  removed in the future. Remember to use `target_link_libraries` to link any
+  libraries your test executable uses (see \ref spectre_build_system).
 
 All tests must start with
 ```cpp
@@ -274,23 +267,6 @@ In this case, the first line of the test should call the macro
 
 The action testing framework is documented as part of the `ActionTesting`
 namespace.
-
-### Building and Running A Single Test File
-
-In cases where low-level header files are frequently being altered and the
-changes need to be tested, building `RunTests` becomes extremely time
-consuming. The `RunSingleTest` executable in `tests/Unit/RunSingleTest` allows
-one to compile only a select few of the test source files and only link in the
-necessary libraries. To set which test file and libraries are linked into
-`RunSingleTest` edit the `tests/Unit/RunSingleTest/CMakeLists.txt`
-file. However, do not commit your changes to that file since it is meant to
-serve as an example. To compile `RunSingleTest` use `make RunSingleTest`, and to
-run it use `BUILD_DIR/bin/RunSingleTest Unit.Test.Name`.
-
-\warning
-`Parallel::abort` does not work correctly in the `RunSingleTest` executable
-because a segfault occurs inside Charm++ code after the abort message is
-printed.
 
 ## Input file tests
 

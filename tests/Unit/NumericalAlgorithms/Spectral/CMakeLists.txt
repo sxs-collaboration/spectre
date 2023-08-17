@@ -44,6 +44,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   Domain
   ErrorHandling
+  LinearOperators
   Spectral
   SpectralHelpers
   Utilities

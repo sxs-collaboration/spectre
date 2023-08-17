@@ -54,17 +54,23 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
+  CoordinateMaps
   DataStructures
   DataStructuresHelpers
   DiscontinuousGalerkin
   Domain
+  DomainCreators
   DomainStructure
+  DomainTimeDependence
   DgSubcell
   DgSubcellHelpers
   ErrorHandling
   Evolution
   FiniteDifference
+  GeneralRelativitySolutions
+  Hydro
   Parallel
+  RelativisticEulerSolutions
   Spectral
   Time
   Utilities

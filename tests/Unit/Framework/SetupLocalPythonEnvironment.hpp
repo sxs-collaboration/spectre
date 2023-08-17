@@ -26,10 +26,9 @@ struct SetupLocalPythonEnvironment {
       delete;
 
   /// \cond
-  // In the case where we run all the non-failure tests at once we must ensure
-  // that we only initialize and finalize the python env once. Initialization is
-  // done in the constructor of SetupLocalPythonEnvironment, while finalization
-  // is done in the constructor of RunTests.
+  // We have to clean up the Python environment only after all tests have
+  // finished running, since there could be multiple tests run in a single
+  // executable launch. This is done in TestMain(Charm).cpp.
   static void finalize_env();
   /// \endcond
 

@@ -229,13 +229,10 @@ If you have not written a test yet, this is a great time to do it. Refer to the
 \ref writing_unit_tests "Writing Unit Tests" dev guide to learn how to write
 tests.
 
-Now configure the `RunSingleTest` executable to run your particular test so you
-don't have to repeatedly compile the extensive `RunTests` executable. Also refer
-to the \ref writing_unit_tests "Writing Unit Tests" dev guide for this.
-
 To launch the interactive debugger, hit `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P`
 (Linux or Windows) to open the command palette, run the command `CMake: Set
-Debug Target` and select `RunSingleTest`. Then run the command `CMake: Debug`.
+Debug Target` and select your test executable (e.g. `Test_LinearOperators`)
+Then run the command `CMake: Debug`.
 The test executable will compile, run and stop on any breakpoints. Follow the
 Visual Studio Code documentation to learn how to set breakpoints in your code
 and inspect the state of your variables:

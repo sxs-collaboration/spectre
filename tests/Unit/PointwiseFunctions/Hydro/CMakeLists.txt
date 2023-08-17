@@ -29,6 +29,7 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  CoordinateMaps
   DataStructures
   DataStructuresHelpers
   Domain
@@ -36,5 +37,7 @@ target_link_libraries(
   GeneralRelativityHelpers
   Hydro
   HydroHelpers
+  LinearOperators
+  Spectral
   Utilities
 )

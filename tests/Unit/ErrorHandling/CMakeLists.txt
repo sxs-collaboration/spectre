@@ -16,6 +16,9 @@ add_test_library(
   "ErrorHandling"
   "${LIBRARY_SOURCES}"
   ""
+  # Run in Charm++ environment to avoid issues with the segfault handler test
+  # on some systems (macOS).
+  WITH_CHARM
   )
 
 target_link_libraries(

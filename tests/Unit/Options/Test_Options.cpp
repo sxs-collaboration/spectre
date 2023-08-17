@@ -1630,7 +1630,7 @@ void test_load_and_check_yaml() {
   }
   {
     const auto options = Options::detail::load_and_check_yaml(
-        "Executable: RunTests\n"
+        "Executable: Test_Options\n"
         "---\n"
         "X: 1\n",
         true);

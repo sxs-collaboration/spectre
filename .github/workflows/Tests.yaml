@@ -713,12 +713,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake ccache cmake pkg-config
+        autoconf automake catch2 ccache cmake pkg-config
       # We install these packages with Spack and cache them. The full specs are
       # listed in support/DevEnvironments/spack.yaml. This list is only needed
       # to create the cache.
       SPECTRE_SPACK_DEPS: >-
-        blaze boost brigand catch2 charmpp gsl hdf5 libsharp libxsmm openblas
+        blaze boost brigand charmpp gsl hdf5 libsharp libxsmm openblas
         py-pybind11 yaml-cpp
       CCACHE_DIR: $HOME/ccache
       CCACHE_MAXSIZE: "2G"
@@ -775,7 +775,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack env create spectre support/DevEnvironments/spack.yaml
           spack env activate spectre
-          spack remove doxygen jemalloc
+          spack remove catch2 doxygen jemalloc
           spack concretize --reuse
           spack install --no-check-signature
           spack find -v

@@ -28,13 +28,7 @@
 # due to poor performance.
 set(EXECUTABLE "TestArchitectureVectorization")
 
-add_spectre_executable(
-  ${EXECUTABLE}
-  EXCLUDE_FROM_ALL
-  ${EXECUTABLE}.cpp
-
-  # The following lines list the source files with tests in them to be
-  # compiled into the executable.
+set(SOURCES
   ../DataStructures/Test_BlazeInteroperability.cpp
   ../DataStructures/Test_DataVector.cpp
   ../DataStructures/Test_DataVectorBinaryOperations.cpp
@@ -42,23 +36,16 @@ add_spectre_executable(
   ../DataStructures/Test_ComplexDataVectorBinaryOperations.cpp
   )
 
+add_test_library(
+  ${EXECUTABLE}
+  "ArchitectureVectorization"
+  "${SOURCES}"
+  ""
+  )
+
 target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
-  Boost::program_options
-  Charmxx::charmxx
-  Charmxx::main
   DataStructures
-  ErrorHandling
-  Framework
-  Informer
-  Parallel
-  SystemUtilities
-  )
-
-add_dependencies(
-  ${EXECUTABLE}
-  module_GlobalCache
-  module_Main
-  module_RunTests
+  Utilities
   )
