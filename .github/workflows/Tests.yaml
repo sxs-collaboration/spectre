@@ -692,7 +692,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH:-'ON'}
-          -D USE_CCACHE=OFF
+          -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=OFF
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
