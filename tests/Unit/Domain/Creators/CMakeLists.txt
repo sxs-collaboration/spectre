@@ -26,12 +26,7 @@ set(LIBRARY_SOURCES
   Test_SphereTimeDependentMaps.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Domain/Creators"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

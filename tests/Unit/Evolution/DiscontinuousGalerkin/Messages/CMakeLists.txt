@@ -8,13 +8,7 @@ set(LIBRARY_SOURCES
   Test_InboxTags.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Evolution/DiscontinuousGalerkin/"
-  "${LIBRARY_SOURCES}"
-  ""
-  WITH_CHARM
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES} WITH_CHARM)
 
 target_link_libraries(
   ${LIBRARY}

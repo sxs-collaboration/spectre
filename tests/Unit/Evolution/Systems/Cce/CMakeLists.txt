@@ -31,12 +31,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Events)
 
-add_test_library(
-  ${LIBRARY}
-  "Evolution/Systems/Cce/"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

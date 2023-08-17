@@ -110,7 +110,7 @@ the library name is `DataStructuresHelpers`, and `RandomUnitNormal.cpp` is in
 the list of sources for the library. Thus, linking
 `Test_GeneralizedHarmonic` against `DataStructuresHelpers` will resolve our
 error. To link against a library, you must add it to the
-`target_link_libraries`, or the last argument passed to `add_test_library`.
+`target_link_libraries`.
 
 If `random_unit_normal` had been defined in the header file, then the error
 would've indicated that we did not include the header (or `tpp`) file into

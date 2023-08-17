@@ -16,12 +16,7 @@ set(LIBRARY_SOURCES
   # Test_SemidiscretizedDg.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "PointwiseFunctions/AnalyticSolutions/WaveEquation/"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

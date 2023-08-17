@@ -44,12 +44,7 @@ set(LIBRARY_SOURCES
   Test_ValenciaDivClean.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Evolution/Systems/GrMhd/ValenciaDivClean"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -26,10 +26,5 @@ set(LIBRARY_SOURCES
   Test_RemoveReferenceWrapper.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Utilities/TypeTraits"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 

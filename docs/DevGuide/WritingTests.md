@@ -62,10 +62,9 @@ below.
   Finally, in the `CMakeLists.txt` of your new library you must call
   `add_test_library`. Again, see `tests/Unit/DataStructures/CMakeLists.txt` for
   an example. The `add_test_library` function adds a test executable with the
-  name of the first argument and the source files of the third argument. The
-  second and fourth arguments are unused for historical reasons and will be
-  removed in the future. Remember to use `target_link_libraries` to link any
-  libraries your test executable uses (see \ref spectre_build_system).
+  name of the first argument and the source files of the third argument.
+  Remember to use `target_link_libraries` to link any libraries your test
+  executable uses (see \ref spectre_build_system).
 
 All tests must start with
 ```cpp

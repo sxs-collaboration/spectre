@@ -7,12 +7,7 @@ set(LIBRARY_SOURCES
   Test_ApplyAt.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Elliptic/Utilities/"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -170,13 +170,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Tags)
 
-add_test_library(
-  ${LIBRARY}
-  "Parallel"
-  "${LIBRARY_SOURCES}"
-  ""
-  WITH_CHARM
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES} WITH_CHARM)
 
 target_link_libraries(
   ${LIBRARY}
