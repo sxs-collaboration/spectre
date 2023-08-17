@@ -24,6 +24,7 @@ spectre_load_modules() {
     module load boost/1.82.0
     module load brigand/master
     module load catch/3.4.0
+    module load ccache/4.8.2
     module load gsl/2.4
     module load libsharp/1.0.0
     module load libxsmm/1.16.1
@@ -47,6 +48,7 @@ spectre_unload_modules() {
     module unload boost/1.82.0
     module unload brigand/master
     module unload catch/3.4.0
+    module unload ccache/4.8.2
     module unload gsl/2.4
     module unload libsharp/1.0.0
     module unload libxsmm/1.16.1
