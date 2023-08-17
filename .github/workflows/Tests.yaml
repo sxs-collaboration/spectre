@@ -355,23 +355,12 @@ jobs:
           - gcc-11
         build_type: [Debug, Release]
         include:
-          # Configure ccache sizes. The cache becomes ineffective if it can't
-          # hold at least one full build. The sizes for the build configurations
-          # are determined empirically by running the workflow with no cache
-          # size limit. Note that the cache is automatically cleaned up to
-          # remain below 80% of the size configured here. Configurations further
-          # down in the `include` list can override these default settings.
-          - build_type: Debug
-            ccache_max_size: 1.3G
-          - build_type: Release
-            ccache_max_size: 500M
           # Generate code coverage report for a single build
           # Note: currently disabled because it exceeds the available disk space
           # - compiler: gcc-9
           #   build_type: Debug
           #   COVERAGE: ON
           #   TEST_TIMEOUT_FACTOR: 3
-          #   ccache_max_size: 2G
           # This configuration seems to run consistently slower than newer gcc
           # or clang builds, so we increase the test timeout a bit
           - compiler: gcc-10
@@ -389,11 +378,9 @@ jobs:
             use_pch: OFF
             unit_tests: OFF
             input_file_tests_min_priority: "normal"
-            ccache_max_size: 600M
           # Full clang-10 build to catch any incompatibilities.
           - compiler: clang-10
             build_type: Release
-            ccache_max_size: 700M
           # Test with ASAN
           - compiler: clang-11
             build_type: Debug
@@ -405,7 +392,6 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-            ccache_max_size: 2G
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -414,14 +400,12 @@ jobs:
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-            ccache_max_size: 650M
           # Test with MPI version of charm
           - compiler: clang-13
             build_type: Debug
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
-            ccache_max_size: 1.4G
 
     container:
       image: sxscollaboration/spectre:ci
@@ -434,10 +418,13 @@ jobs:
         CXXFLAGS: "-Werror"
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
-        # Control the cache size
-        CCACHE_MAXSIZE: ${{ matrix.ccache_max_size }}
+        # Control the max cache size. We evict unused entries in a step below to
+        # make sure that each build only uses what it need of this max size.
+        CCACHE_MAXSIZE: "2G"
+        # Control the compression level. The ccache docs recommend at most level
+        # 5 to avoid slowing down compilation.
         CCACHE_COMPRESS: 1
-        CCACHE_COMPRESSLEVEL: 6
+        CCACHE_COMPRESSLEVEL: 5
         # We hash the content of the compiler rather than the location and mtime
         # to make sure the cache works across the different machines
         CCACHE_COMPILERCHECK: content
@@ -449,6 +436,10 @@ jobs:
       # for why we need this
       options: --privileged
     steps:
+      - name: Record start time
+        id: start
+        run: |
+          echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
         uses: actions/checkout@v3
       # Work around https://github.com/actions/checkout/issues/760
@@ -593,6 +584,13 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: /work/build
         run: |
           make test-executables
+      # Delete unused cache entries before uploading the cache
+      - name: Clean up ccache
+        if: always() && github.ref == 'refs/heads/develop'
+        run: |
+          now=$(date +%s)
+          job_duration=$((now - ${{ steps.start.outputs.time }}))
+          ccache --evict-older-than "${job_duration}s"
       # Save the cache after everything has been built. Also save on failure or
       # on cancellation (`always()`) because a partial cache is better than no
       # cache.
@@ -723,13 +721,17 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         blaze boost brigand catch2 charmpp gsl hdf5 libsharp libxsmm openblas
         py-pybind11 yaml-cpp
       CCACHE_DIR: $HOME/ccache
-      CCACHE_MAXSIZE: 700M
+      CCACHE_MAXSIZE: "2G"
       CCACHE_COMPRESS: 1
-      CCACHE_COMPRESSLEVEL: 6
+      CCACHE_COMPRESSLEVEL: 5
       CCACHE_COMPILERCHECK: content
       SPACK_SKIP_MODULES: true
       SPACK_COLOR: always
     steps:
+      - name: Record start time
+        id: start
+        run: |
+          echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -867,6 +869,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: build
         run: |
           make test-executables
+      - name: Clean up ccache
+        if: always() && github.ref == 'refs/heads/develop'
+        run: |
+          now=$(date +%s)
+          job_duration=$((now - ${{ steps.start.outputs.time }}))
+          ccache --evict-older-than "${job_duration}s"
       - name: Save ccache
         if: always() && github.ref == 'refs/heads/develop'
         uses: actions/cache/save@v3
