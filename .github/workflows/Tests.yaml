@@ -586,7 +586,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           make test-executables
       # Delete unused cache entries before uploading the cache
       - name: Clean up ccache
-        if: always() && github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop'
         run: |
           now=$(date +%s)
           job_duration=$((now - ${{ steps.start.outputs.time }}))
@@ -870,7 +870,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           make test-executables
       - name: Clean up ccache
-        if: always() && github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop'
         run: |
           now=$(date +%s)
           job_duration=$((now - ${{ steps.start.outputs.time }}))
