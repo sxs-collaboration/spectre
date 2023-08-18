@@ -69,23 +69,8 @@ struct Metavariables {
       control_system::control_components<Metavariables, control_systems>;
 };
 
-struct MetavariablesReplace : Metavariables {
-  static constexpr size_t volume_dim = 1;
-  static constexpr bool override_functions_of_time = true;
-  using control_systems = tmpl::list<FakeControlSystem<1>, FakeControlSystem<2>,
-                                     FakeControlSystem<3>>;
-  using component_list =
-      control_system::control_components<Metavariables, control_systems>;
-};
-
 struct MetavariablesNoControlSystems {
   static constexpr size_t volume_dim = 1;
-  using component_list = tmpl::list<>;
-};
-
-struct MetavariablesNoControlSystemsReplace {
-  static constexpr size_t volume_dim = 1;
-  static constexpr bool override_functions_of_time = true;
   using component_list = tmpl::list<>;
 };
 
@@ -238,10 +223,9 @@ void test_functions_of_time_tag() {
   OptionHolder<3> option_holder3(true, averager, controller, tuner2,
                                  control_error);
 
-  // First test construction with only control systems and no
-  // override_functions_of_time
+  // First test construction with only control systems
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      measurements_per_update, creator, initial_time, option_holder1,
+      creator, measurements_per_update, initial_time, option_holder1,
       option_holder2, option_holder3);
 
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
@@ -257,161 +241,28 @@ void test_functions_of_time_tag() {
       std::is_same_v<
           fot_tag::option_tags<Metavariables>,
           tmpl::list<
-              control_system::OptionTags::MeasurementsPerUpdate,
               domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
+              control_system::OptionTags::MeasurementsPerUpdate,
               ::OptionTags::InitialTime, ControlSysInputs<FakeControlSystem<1>>,
               ControlSysInputs<FakeControlSystem<2>>,
               ControlSysInputs<FakeControlSystem<3>>>>);
 
   {
-    // Create a temporary file with test data to read in
-    // First, check if the file exists, and delete it if so
-    const std::string test_filename{"TestReplaceFoTInTag.h5"};
-    std::map<std::string, std::string> test_name_map{
-        {{"FakeSpecName", "Controlled2"}}};
-
-    if (file_system::check_if_file_exists(test_filename)) {
-      file_system::rm(test_filename, true);
-    }
-
-    h5::H5File<h5::AccessType::ReadWrite> test_file(test_filename);
-
-    constexpr size_t number_of_times = 3;
-    constexpr uint32_t version_number = 0;
-    const std::string expected_name{"FakeSpecName"};
-    const std::array<double, number_of_times> expected_times{{0.0, 20.0, 40.0}};
-
-    const std::array<DataVector, 3> initial_func{
-        {{{2.0}}, {{-0.1}}, {{-0.02}}}};
-    const std::array<DataVector, number_of_times - 1>
-        next_replaced_second_deriv{{{{-0.5}}, {{-0.75}}}};
-    domain::FunctionsOfTime::PiecewisePolynomial<2> replaced(
-        expected_times[0], initial_func, expected_times[1]);
-    replaced.update(expected_times[1], next_replaced_second_deriv[0],
-                    expected_times[2]);
-    replaced.update(expected_times[2], next_replaced_second_deriv[1],
-                    expected_times[2] + 10.0);
-    const std::array<std::array<DataVector, 3>, number_of_times - 1>&
-        replaced_func_and_2_derivs_next{
-            {replaced.func_and_2_derivs(expected_times[1]),
-             replaced.func_and_2_derivs(expected_times[2])}};
-
-    const std::vector<std::vector<double>> test_replaced{
-        {expected_times[0], expected_times[0], 1.0, 2.0, 1.0,
-         initial_func[0][0], initial_func[1][0], initial_func[2][0]},
-        {expected_times[1], expected_times[1], 1.0, 2.0, 1.0,
-         replaced_func_and_2_derivs_next[0][0][0],
-         replaced_func_and_2_derivs_next[0][1][0],
-         next_replaced_second_deriv[0][0]},
-        {expected_times[2], expected_times[2], 1.0, 2.0, 1.0,
-         replaced_func_and_2_derivs_next[1][0][0],
-         replaced_func_and_2_derivs_next[1][1][0],
-         next_replaced_second_deriv[1][0]}};
-    const std::vector<std::string> replaced_legend{
-        "Time",    "TLastUpdate", "Nc",   "DerivOrder",
-        "Version", "Phi",         "dPhi", "d2Phi"};
-    auto& replaced_file = test_file.insert<h5::Dat>(
-        "/" + expected_name, replaced_legend, version_number);
-    replaced_file.append(test_replaced);
-
-    // Next test construction with control systems and
-    // override_functions_of_time
-    static_assert(
-        std::is_same_v<
-            fot_tag::option_tags<MetavariablesReplace>,
-            tmpl::list<
-                control_system::OptionTags::MeasurementsPerUpdate,
-                domain::OptionTags::DomainCreator<
-                    MetavariablesReplace::volume_dim>,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap,
-                ::OptionTags::InitialTime,
-                ControlSysInputs<FakeControlSystem<1>>,
-                ControlSysInputs<FakeControlSystem<2>>,
-                ControlSysInputs<FakeControlSystem<3>>>>);
-    auto replace_functions_of_time =
-        fot_tag::create_from_options<MetavariablesReplace>(
-            measurements_per_update, creator, {test_filename}, test_name_map,
-            initial_time, option_holder1, option_holder2, option_holder3);
-
-    const double final_time = expected_times[number_of_times - 1];
-    CHECK(replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
-          final_time);
-    CHECK(replace_functions_of_time.at("Controlled2")
-              ->func_and_2_derivs(final_time)[2][0] ==
-          next_replaced_second_deriv[0][0]);
-
-    // Next test construction with control systems and
-    // override_functions_of_time, but file is nullopt. Do same checks as if we
-    // had control systems but not override_functions_of_time
-    auto no_replace_functions_of_time =
-        fot_tag::create_from_options<MetavariablesReplace>(
-            measurements_per_update, creator, std::nullopt, test_name_map,
-            initial_time, option_holder1, option_holder2, option_holder3);
-    CHECK(no_replace_functions_of_time.at("Controlled1")->time_bounds()[1] ==
-          std::numeric_limits<double>::infinity());
-    CHECK(no_replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
-          initial_time + update_fraction * timescale);
-    CHECK(no_replace_functions_of_time.at("Controlled3")->time_bounds()[1] ==
-          initial_time + update_fraction * timescale2);
-    CHECK(no_replace_functions_of_time.at("Uncontrolled")->time_bounds()[1] ==
-          std::numeric_limits<double>::infinity());
-
-    const std::string new_filename{"FakeSpecName2"};
-    test_name_map.clear();
-    test_name_map[new_filename] = "Uncontrolled";
-    const double highest_deriv = -1.1;
-    const std::vector<std::vector<double>> test_new{
-        {initial_time, initial_time, 1.0, 2.0, 1.0, 0.0, 0.0, highest_deriv}};
-    test_file.close_current_object();
-    auto& new_file = test_file.insert<h5::Dat>("/" + new_filename,
-                                               replaced_legend, version_number);
-    new_file.append(test_new);
-
-    const Creator not_controlled_creator = std::make_unique<TestCreator>(false);
-    // Next test construction without control systems but with
-    // override_functions_of_time
-    static_assert(
-        std::is_same_v<
-            fot_tag::option_tags<MetavariablesNoControlSystemsReplace>,
-            tmpl::list<
-                control_system::OptionTags::MeasurementsPerUpdate,
-                domain::OptionTags::DomainCreator<
-                    MetavariablesNoControlSystemsReplace::volume_dim>,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>>);
-    auto no_control_sys_replaced_fot =
-        fot_tag::create_from_options<MetavariablesNoControlSystemsReplace>(
-            measurements_per_update, not_controlled_creator, {test_filename},
-            test_name_map);
-
-    CHECK(no_control_sys_replaced_fot.size() == 1);
-    CHECK(no_control_sys_replaced_fot.count("Uncontrolled") == 1);
-    CHECK(no_control_sys_replaced_fot.at("Uncontrolled")
-              ->func_and_2_derivs(initial_time)[2][0] == highest_deriv);
-    CHECK(no_control_sys_replaced_fot.count("Controlled2") == 0);
-
-    // Last test construction without control systems and without
-    // override_functions_of_time
+    // Next test construction without control systems
     static_assert(std::is_same_v<
                   fot_tag::option_tags<MetavariablesNoControlSystems>,
-                  tmpl::list<control_system::OptionTags::MeasurementsPerUpdate,
-                             domain::OptionTags::DomainCreator<
+                  tmpl::list<domain::OptionTags::DomainCreator<
                                  MetavariablesNoControlSystems::volume_dim>>>);
+    const Creator not_controlled_creator = std::make_unique<TestCreator>(false);
     auto no_control_sys_fot =
         fot_tag::create_from_options<MetavariablesNoControlSystems>(
-            measurements_per_update, not_controlled_creator);
+            not_controlled_creator);
     CHECK(no_control_sys_fot.size() == 1);
     CHECK(no_control_sys_fot.count("Uncontrolled") == 1);
     // -3.0 comes from the TestCreator above
     CHECK(no_control_sys_fot.at("Uncontrolled")
               ->func_and_2_derivs(initial_time)[2][0] == -3.0);
     CHECK(no_control_sys_fot.count("Controlled2") == 0);
-
-    // Clean up
-    if (file_system::check_if_file_exists(test_filename)) {
-      file_system::rm(test_filename, true);
-    }
   }
 }
 
@@ -439,7 +290,7 @@ void not_controlling(const bool is_active) {
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          measurements_per_update, creator, initial_time, option_holder1,
+          creator, measurements_per_update, initial_time, option_holder1,
           option_holder2, option_holder3, option_holder4);
 }
 
@@ -462,7 +313,7 @@ void incompatible(const bool is_active) {
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          measurements_per_update, creator, initial_time, option_holder1,
+          creator, measurements_per_update, initial_time, option_holder1,
           option_holder2, option_holder3);
 }
 

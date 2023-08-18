@@ -10,7 +10,6 @@ set(LIBRARY_SOURCES
   Test_PiecewisePolynomial.cpp
   Test_QuaternionFunctionOfTime.cpp
   Test_QuaternionHelpers.cpp
-  Test_ReadSpecPiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
   Test_Tags.cpp
   )

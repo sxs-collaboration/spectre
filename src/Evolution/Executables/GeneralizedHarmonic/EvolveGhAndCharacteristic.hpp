@@ -139,8 +139,6 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, cce_step_choosers>>;
   };
 
-  static constexpr bool override_functions_of_time = false;
-
   // initialization actions are the same as the default, with the single
   // addition of initializing the interpolation points (second-to-last action).
   using initialization_actions = tmpl::list<
