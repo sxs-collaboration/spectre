@@ -16,7 +16,7 @@ namespace control_system {
 /// \ingroup ControlSystemGroup
 /// Updates a FunctionOfTime in the global cache. Intended to be used in
 /// Parallel::mutate.
-struct UpdateFunctionOfTime {
+struct UpdateSingleFunctionOfTime {
   static void apply(
       const gsl::not_null<std::unordered_map<
           std::string,

@@ -269,11 +269,12 @@ struct UpdateControlSystem {
           new_fot_expiration_time);
     }
 
-    Parallel::mutate<::domain::Tags::FunctionsOfTime, UpdateFunctionOfTime>(
+    Parallel::mutate<::domain::Tags::FunctionsOfTime,
+                     UpdateSingleFunctionOfTime>(
         cache, function_of_time_name, current_fot_expiration_time,
         control_signal, new_fot_expiration_time);
 
-    Parallel::mutate<Tags::MeasurementTimescales, UpdateFunctionOfTime>(
+    Parallel::mutate<Tags::MeasurementTimescales, UpdateSingleFunctionOfTime>(
         cache, function_of_time_name, current_measurement_expiration_time,
         new_measurement_timescale, new_measurement_expiration_time);
   }

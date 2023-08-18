@@ -89,7 +89,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
 
   for (auto& name : {pp_name, quatfot_name}) {
     Parallel::mutate<domain::Tags::FunctionsOfTime,
-                     control_system::UpdateFunctionOfTime>(
+                     control_system::UpdateSingleFunctionOfTime>(
         cache, name, update_time, updated_deriv, new_expiration_time);
   }
 
