@@ -149,7 +149,8 @@ see the following sections in the [SpECTRE
 documentation](https://spectre-code.org/):
 
 * [Installing SpECTRE](installation.html)
-* [Running Status Checks Locally](github_actions_guide.html#perform-checks-locally)
+* [Running Status Checks
+  Locally](github_actions_guide.html#perform-checks-locally)
 
 ## Pull Requests {#pull-requests}
 
@@ -208,6 +209,13 @@ with the number of lines changed.  Therefore if your pull request is
 too large, we may ask you to break it up into several smaller pull
 requests.
 
+If you would like feedback on a pull request prior to it being ready
+for formal review, please open it
+[in draft mode](https://github.blog/2019-02-14-introducing-draft-pull-requests/)
+and [request reviews][request-reviews] from whomever you wish to get feedback
+from. As long as the PR is in draft mode it will not be reviewed, aside from the
+feedback requested.
+
 > Below, days mean business days, so if the time period includes the
 > weekend, add two days, and for major holidays add a day.
 > Furthermore, most of us are academics, and we occasionally go to
@@ -216,24 +224,18 @@ requests.
 
 Most pull requests submitted to SpECTRE will be reviewed in the
 following manner:
-- When creating the pull request, the author should add the
-  appropriate labels.  If the pull request is not a `new design` or
-  `in progress` (discussed below), the author may either assign two
-  reviewers (if GitHub suggested any) or add the `reviewers wanted`
-  label.
-- Within two days, assigned reviewers should either confirm that they
-  are able to review, or remove themselves while adding the `reviewers
-  wanted` label.
-- Anyone is welcome to self-assign themselves as a reviewer; when
-  there are at least two reviewers, the `reviewers wanted` label
-  should be removed.
-- If there are not two reviewers after two days, a [SpECTRE core
-  developer](#core-developers) will assign reviewers, removing the
-  `reviewers wanted` label.  If for some reason, no reviewers have
-  been assigned after three days, the author of the pull request
-  should feel free to [ping the core
-  developers](https://github.blog/2011-03-23-mention-somebody-they-re-notified/)
-  (e.g `@sxs-collaboration/spectre-core-devs please assign reviewers`)
+
+- Within two days, one of the [SpECTRE core developers](#core-developers) will
+  either review the PR or assign reviewers. If this has not happened after two
+  days, please [request a review][request-reviews]
+  and select the `@sxs-collaboration/spectre-core-devs` team. Also feel free to
+  [ping the core developers][github-ping] (e.g
+  `@sxs-collaboration/spectre-core-devs please assign reviewers`) if they fail
+  to respond in a timely manner.
+- Assigned reviewers should either confirm that they are able to review (by
+  reviewing or providing a reasonable timeframe for their review) or decline
+  within two days so another reviewer can be assigned.
+- Anyone is welcome to self-assign themselves as a reviewer.
 - Assigned reviewers should submit their review in as timely a manner
   as possible.
 - Anyone can request changes within either the first two days of the
@@ -249,9 +251,8 @@ following manner:
   the reviewer and ask for clarification.  Authors and reviewers are
   encouraged to talk to one another (in person, via Google hangout, or
   some other verbal method if possible) to resolve any issues.
-- Reviewers are encouraged to [ping others
-  \@GITHUB_USERNAME](https://github.blog/2011-03-23-mention-somebody-they-re-notified/)
-  to get opinions on code they are unsure about.
+- Reviewers are encouraged to [ping others \@GITHUB_USERNAME][github-ping] to
+  get opinions on code they are unsure about.
 - It is permissible to have a group code review led by one of the
   reviewers. The reviewer should comment on who was present at the
   group review.
@@ -259,19 +260,20 @@ following manner:
   weekly SpECTRE meetings.
 - If changes are requested, the author should fix all of them in one
   or more fixup commits (where the first line of the commit message
-  should begin with `fixup`), and then ping the reviewers that the
-  pull request is updated.  In addition the `updated` label can be
-  added.
-- Once a pull request is updated, the reviewers should either request
-  further changes (removing the `updated` label) or tell the pull
-  request author to squash their commits.
-- Once all reviewers give the okay to squash, the author should
-  [rebase on develop and then squash their
+  should begin with `fixup`) and push them to the PR branch.
+  Fixup commits make reviews significantly faster because the reviewers don't
+  have to review the full PR again, but only the parts that changed.
+- After pushing fixup commits, the author should
+  [re-request reviews from the reviewers][request-reviews].
+  They can also ping the reviewers that the pull request is updated.
+- Once a pull request is updated, the reviewers should either request further
+  changes or approve the PR.
+- Once all reviewers have approved the PR or given the okay to squash, the
+  author should [rebase on develop and then squash their
   commits](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History)
   into one or more self-contained commits (such that the code will
   compile and pass all tests after each commit).  The squashed commits
   will need to be force pushed.
-- Once the commits are squashed, the author should ping the reviewers.
 - Once all reviewers have approved the pull request, someone should
   ping the `@sxs-collaboration/spectre-core-devs`.  If one of the
   original reviewers is a core developer, this is not necessary and
@@ -290,20 +292,34 @@ following manner:
   adding a missing include, the core developer may merge the PR without waiting
   for all reviewers to re-approve the PR.
 
-Critical bug fixes (i.e. the code is broken) can be merged after two
-expedited reviews by SpECTRE core developers.  If necessary, an issue
-can be created if further changes are desired.
+In addition to the guidelines above, we apply the following exceptions based on
+the type of change:
 
-Pull requests that are designated `new design` are expected to have a
-longer review period, including discussions during weekly SpECTRE
-meetings.  SpECTRE core developers will provide reasonable review
-deadlines once the new design is finalized.
+- Critical bug fixes (i.e. the code is broken) can be merged after two expedited
+  reviews by SpECTRE core developers. If necessary, an issue can be created if
+  further changes are desired.
+- PRs that add documentation don't need to be perfect, since having some
+  docs is better than having none. Reviewers should approve after one or at most
+  two rounds of review and allow further minor changes to be done in follow-ups.
+- "Small" or "trivial" PRs can be merged immediately by core developers.
+  Examples for such PRs are:
 
-If you would like feedback on a pull request prior to it being ready
-for formal review, please label it with `in progress` and ping
-whomever you wish to get feedback from.  As long as the `in progress`
-label remains, no one should review the pull request.
+  - Fixing typos in documentation or adding (small amounts of) documentation
+  - Fixing missing includes or missing linked libraries
+  - Adding Python bindings
+  - Formatting code
+  - Refactoring, renaming or moving files with no change in functionality
+    (unless potentially controversial)
 
+  It is the reviewing core developer's responsibility to decide if the PR is
+  "small" or "trivial" enough to merge immediately. If they are unsure, they
+  should fall back to the usual procedure of giving people two days to assign
+  themselves as reviewers and/or reach out to whoever they think might want to
+  review the PR.
+- Pull requests that are designated `new design` are expected to have a longer
+  review period, including discussions during weekly SpECTRE meetings. SpECTRE
+  core developers will provide reasonable review deadlines once the new design
+  is finalized.
 
 ### Git Commit Message Guidelines {#git-commit-messages}
 
@@ -326,4 +342,5 @@ additional people will be added to the list of core developers.
 
 [good-first-issue]:https://github.com/sxs-collaboration/spectre/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+sort%3Acomments-desc
 [help-wanted]:https://github.com/sxs-collaboration/spectre/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22+sort%3Acomments-desc
-
+[github-ping]:https://github.blog/2011-03-23-mention-somebody-they-re-notified/
+[request-reviews]:https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review
