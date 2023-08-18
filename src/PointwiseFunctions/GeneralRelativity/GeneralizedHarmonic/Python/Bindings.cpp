@@ -15,7 +15,9 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfSpatialMetric.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -105,6 +107,14 @@ void bind_impl(py::module& m) {  // NOLINT
           const tnsr::II<DataVector, Dim>&)>(&::gh::spatial_ricci_tensor),
       py::arg("phi"), py::arg("deriv_phi"), py::arg("inverse_spatial_metric"));
 
+  m.def("time_deriv_of_lapse",
+        static_cast<Scalar<DataVector> (*)(
+            const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+            const tnsr::A<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&,
+            const tnsr::aa<DataVector, Dim>&)>(&::gh::time_deriv_of_lapse),
+        py::arg("lapse"), py::arg("shift"), py::arg("spacetime_unit_normal"),
+        py::arg("phi"), py::arg("pi"));
+
   m.def(
       "time_deriv_of_shift",
       static_cast<tnsr::I<DataVector, Dim> (*)(
@@ -114,6 +124,14 @@ void bind_impl(py::module& m) {  // NOLINT
           &::gh::time_deriv_of_shift),
       py::arg("lapse"), py::arg("shift"), py::arg("inverse_spatial_metric"),
       py::arg("spacetime_unit_normal"), py::arg("phi"), py::arg("pi"));
+
+  m.def(
+      "time_deriv_of_spatial_metric",
+      static_cast<tnsr::ii<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::iaa<DataVector, Dim>&, const tnsr::aa<DataVector, Dim>&)>(
+          &::gh::time_deriv_of_spatial_metric),
+      py::arg("lapse"), py::arg("shift"), py::arg("phi"), py::arg("pi"));
 
   m.def(
       "trace_christoffel",
