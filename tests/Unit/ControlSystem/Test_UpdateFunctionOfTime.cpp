@@ -46,8 +46,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
   constexpr size_t deriv_order = 2;
   const double t0 = 0.0;
   const double expr_time = 1.0;
-  const double update_time = 1.5;
-  const double new_expiration_time = 2.0;
+  double update_time = 1.5;
+  double expiration_time = 2.0;
   domain::FunctionsOfTime::register_derived_with_charm();
 
   // Construct unordered map
@@ -90,12 +90,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
   for (auto& name : {pp_name, quatfot_name}) {
     Parallel::mutate<domain::Tags::FunctionsOfTime,
                      control_system::UpdateSingleFunctionOfTime>(
-        cache, name, update_time, updated_deriv, new_expiration_time);
+        cache, name, update_time, updated_deriv, expiration_time);
   }
 
   // Update expected function of time
-  expected_pp.update(update_time, updated_deriv, new_expiration_time);
-  expected_quatfot.update(update_time, updated_deriv, new_expiration_time);
+  expected_pp.update(update_time, updated_deriv, expiration_time);
+  expected_quatfot.update(update_time, updated_deriv, expiration_time);
 
   // Check that the FunctionsOfTime are what we expected
   const auto& cache_f_of_t_map = get<domain::Tags::FunctionsOfTime>(cache);
@@ -111,16 +111,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
     CHECK(cache_quatfot == expected_quatfot);
   }
   // Update functions of time in global cache with new expiration time
-  const double newer_expiration_time = new_expiration_time + 1.0;
+  expiration_time += 1.0;
   for (auto& name : {pp_name, quatfot_name}) {
     Parallel::mutate<domain::Tags::FunctionsOfTime,
                      control_system::ResetFunctionOfTimeExpirationTime>(
-        cache, name, newer_expiration_time);
+        cache, name, expiration_time);
   }
 
   // Update expected function of time
-  expected_pp.reset_expiration_time(newer_expiration_time);
-  expected_quatfot.reset_expiration_time(newer_expiration_time);
+  expected_pp.reset_expiration_time(expiration_time);
+  expected_quatfot.reset_expiration_time(expiration_time);
   {
     const auto& cache_pp = dynamic_cast<
         const domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
@@ -132,8 +132,35 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
     // Check that the FunctionsOfTime and expiration times are what we expected
     CHECK(cache_pp == expected_pp);
     CHECK(cache_quatfot == expected_quatfot);
-    CHECK(cache_pp.time_bounds()[1] == newer_expiration_time);
-    CHECK(cache_quatfot.time_bounds()[1] == newer_expiration_time);
+    CHECK(cache_pp.time_bounds()[1] == expiration_time);
+    CHECK(cache_quatfot.time_bounds()[1] == expiration_time);
+  }
+
+  // Check updating both at the same time
+  update_time = expiration_time;
+  expiration_time += 1.0;
+  std::unordered_map<std::string, std::pair<DataVector, double>> update_args{};
+  for (const auto& name : {pp_name, quatfot_name}) {
+    update_args[name] = std::make_pair(updated_deriv, expiration_time);
+  }
+
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::UpdateMultipleFunctionsOfTime>(
+      cache, update_time, std::move(update_args));
+
+  expected_pp.update(update_time, updated_deriv, expiration_time);
+  expected_quatfot.update(update_time, updated_deriv, expiration_time);
+
+  {
+    const auto& cache_pp = dynamic_cast<
+        const domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
+        *(cache_f_of_t_map.at(pp_name)));
+    const auto& cache_quatfot = dynamic_cast<
+        const domain::FunctionsOfTime::QuaternionFunctionOfTime<deriv_order>&>(
+        *(cache_f_of_t_map.at(quatfot_name)));
+
+    CHECK(cache_pp == expected_pp);
+    CHECK(cache_quatfot == expected_quatfot);
   }
 }
 }  // namespace
