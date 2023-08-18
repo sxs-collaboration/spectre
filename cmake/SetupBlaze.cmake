@@ -34,15 +34,19 @@ file(APPEND
   "Blaze version: ${BLAZE_VERSION}\n"
   )
 
+find_package(BLAS REQUIRED)
+find_package(GSL REQUIRED)
+find_package(LAPACK REQUIRED)
+
 add_library(Blaze INTERFACE IMPORTED)
 set_property(TARGET Blaze PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
 target_link_libraries(
   Blaze
   INTERFACE
-  Blas
+  BLAS::BLAS
   GSL::gsl # for BLAS header
-  Lapack
+  LAPACK::LAPACK
   )
 set(_BLAZE_USE_SLEEF 0)
 

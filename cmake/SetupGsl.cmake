@@ -13,10 +13,11 @@ file(APPEND
   )
 
 # Link external BLAS library. We don't need the GSL::gslcblas target.
+find_package(BLAS REQUIRED)
 target_link_libraries(
   GSL::gsl
   INTERFACE
-  Blas
+  BLAS::BLAS
   )
 
 set_property(

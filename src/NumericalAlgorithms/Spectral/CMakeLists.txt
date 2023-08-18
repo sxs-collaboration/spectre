@@ -55,9 +55,9 @@ target_link_libraries(
   Libsharp
   Options
   PRIVATE
-  Blas
+  BLAS::BLAS
   Boost::boost
-  Lapack
+  LAPACK::LAPACK
   )
 
 add_subdirectory(Python)
