@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <deque>
+#include <list>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
@@ -64,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
   {
     INFO("StoredInfo From Upper Bound");
     constexpr size_t mdp1 = 1;
-    std::deque<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
+    std::list<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
         FunctionOfTimeHelpers::StoredInfo<mdp1>{
             0.0, std::array<DataVector, mdp1>{DataVector{1, 0.0}}}};
     for (int t = 1; t < 10; t++) {
@@ -80,25 +80,26 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
       const auto& upper_bound_stored_info1 =
           FunctionOfTimeHelpers::stored_info_from_upper_bound(
               4.5, all_stored_info, size);
-      CHECK(upper_bound_stored_info1 == gsl::at(all_stored_info, 4));
+      CHECK(upper_bound_stored_info1 == *std::next(all_stored_info.begin(), 4));
 
       // Test at a time
       const auto& upper_bound_stored_info2 =
           FunctionOfTimeHelpers::stored_info_from_upper_bound(
               4.0, all_stored_info, size);
-      CHECK(upper_bound_stored_info2 == gsl::at(all_stored_info, 3));
+      CHECK(upper_bound_stored_info2 == *std::next(all_stored_info.begin(), 3));
 
       // Test slightly before first time
       const auto& upper_bound_stored_info3 =
           FunctionOfTimeHelpers::stored_info_from_upper_bound(
               -1.e-15, all_stored_info, size);
-      CHECK(upper_bound_stored_info3 == gsl::at(all_stored_info, 0));
+      CHECK(upper_bound_stored_info3 == *std::next(all_stored_info.begin(), 0));
 
       // Test after all times
       const auto& upper_bound_stored_info4 =
           FunctionOfTimeHelpers::stored_info_from_upper_bound(
               12.5, all_stored_info, size);
-      CHECK(upper_bound_stored_info4 == gsl::at(all_stored_info, size - 1));
+      CHECK(upper_bound_stored_info4 ==
+            *std::next(all_stored_info.begin(), static_cast<long>(size - 1)));
     };
 
     test();
@@ -124,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
   CHECK_THROWS_WITH(
       ([]() {
         constexpr size_t mdp1 = 1;
-        std::deque<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
+        std::list<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
             FunctionOfTimeHelpers::StoredInfo<mdp1>{
                 0.0, std::array<DataVector, mdp1>{DataVector{1, 0.0}}}};
         for (int t = 1; t < 10; t++) {
@@ -143,13 +144,13 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
   CHECK_THROWS_WITH(
       []() {
         constexpr size_t mdp1 = 3;
-        std::deque<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info;
+        std::list<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info;
 
         (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(
             1.0, all_stored_info, 0);
       }(),
       Catch::Matchers::ContainsSubstring(
-          "Deque of StoredInfos you are trying to access is empty. Was "
+          "List of StoredInfos you are trying to access is empty. Was "
           "it constructed properly?"));
 #endif
 }

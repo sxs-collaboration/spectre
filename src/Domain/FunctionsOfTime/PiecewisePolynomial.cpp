@@ -7,6 +7,7 @@
 #include <atomic>
 #include <deque>
 #include <iterator>
+#include <list>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -103,10 +104,9 @@ void PiecewisePolynomial<MaxDeriv>::update(
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     const double time_of_update, DataVector updated_max_deriv,
     const double next_expiration_time) {
-  if (time_of_update <=
-      deriv_info_at_update_times_
-          [deriv_info_size_.load(std::memory_order_relaxed) - 1]
-              .time) {
+  // We can use `.back()` here because we only allow one thread to call update
+  // at once
+  if (time_of_update <= deriv_info_at_update_times_.back().time) {
     ERROR("t must be increasing from call to call. "
           << "Attempted to update at time " << time_of_update
           << ", which precedes the previous update time of "
@@ -171,28 +171,70 @@ void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 1;
+  size_t version = 2;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
   // whenever possible. See `Domain` docs for details.
-  if (version == 0 and p.isUnpacking()) {
-    // An old version had a std::vector rather than a std::deque
-    std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>> pupped_info{};
-    p | pupped_info;
-    for (auto& pupped_deriv_info : pupped_info) {
-      deriv_info_at_update_times_.emplace_back(std::move(pupped_deriv_info));
+
+  // Here is where we must retain support for older versions
+  if (p.isUnpacking()) {
+    // For versions 0 and 1, we stored the data first, then expiration time,
+    // then possibly the size
+    if (version <= 1) {
+      if (version == 0) {
+        // Version 0 had a std::vector rather than a std::list
+        std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+            pupped_info{};
+        p | pupped_info;
+        for (auto& pupped_deriv_info : pupped_info) {
+          deriv_info_at_update_times_.emplace_back(
+              std::move(pupped_deriv_info));
+        }
+      } else {
+        // Version 1 had a std::deque rather than a std::list
+        std::deque<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+            pupped_info{};
+        p | pupped_info;
+        for (auto& pupped_deriv_info : pupped_info) {
+          deriv_info_at_update_times_.emplace_back(
+              std::move(pupped_deriv_info));
+        }
+      }
+
+      // Same for v0 and v1
+      p | expiration_time_;
+
+      if (version == 0) {
+        deriv_info_size_.store(deriv_info_at_update_times_.size());
+      } else {
+        p | deriv_info_size_;
+      }
+    } else if (version >= 2) {
+      // However, for v2+, we store expiration time, size, then data for
+      // thread-safety reasons
+      p | expiration_time_;
+      size_t size = 0;
+      p | size;
+      deriv_info_size_.store(size);
+      deriv_info_at_update_times_.clear();
+      deriv_info_at_update_times_.resize(
+          deriv_info_size_.load(std::memory_order_relaxed));
+      // Using range-based loop here is ok because we won't be updating while
+      // packing/unpacking
+      for (auto& deriv_info : deriv_info_at_update_times_) {
+        p | deriv_info;
+      }
     }
   } else {
-    p | deriv_info_at_update_times_;
-  }
-  if (version >= 0) {
     p | expiration_time_;
-  }
-  if (version >= 1) {
-    p | deriv_info_size_;
-  } else if (p.isUnpacking()) {
-    deriv_info_size_.store(deriv_info_at_update_times_.size());
+    // This is guaranteed to be thread-safe for both packing and sizing
+    size_t size = deriv_info_size_.load(std::memory_order_relaxed);
+    p | size;
+    auto it = deriv_info_at_update_times_.begin();
+    for (size_t i = 0; i < size; i++, it++) {
+      p | *it;
+    }
   }
 }
 
@@ -214,13 +256,20 @@ template <size_t MaxDeriv>
 std::ostream& operator<<(
     std::ostream& os,
     const PiecewisePolynomial<MaxDeriv>& piecewise_polynomial) {
-  const auto size = piecewise_polynomial.deriv_info_at_update_times_.size();
-
-  for (size_t i = 0; i < size - 1; ++i) {
-    os << piecewise_polynomial.deriv_info_at_update_times_[i];
-    os << "\n";
+  const size_t writable_size =
+      piecewise_polynomial.deriv_info_size_.load(std::memory_order_relaxed);
+  auto it = piecewise_polynomial.deriv_info_at_update_times_.begin();
+  // Can't use .end() because of thread-safety and don't want to do expensive
+  // std::next() call, so we just loop over allowed size while incrementing an
+  // iterator
+  for (size_t i = 0; i < writable_size; i++, it++) {
+    os << *it;
+    // writable_size guaranteed to be >= 1. No need to worry about negative
+    // size_t
+    if (i != writable_size - 1) {
+      os << "\n";
+    }
   }
-  os << piecewise_polynomial.deriv_info_at_update_times_[size - 1];
   return os;
 }
 
