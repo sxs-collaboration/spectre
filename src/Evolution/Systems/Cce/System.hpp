@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 /*!
  * \ingroup EvolutionSystemsGroup
  * \brief The set of utilities for performing Cauchy characteristic evolution
@@ -118,6 +120,7 @@ namespace Cce {
 
 template <bool EvolveCcm>
 struct System {
+  static constexpr size_t volume_dim = 3;
   using variables_tag =
       tmpl::list<::Tags::Variables<tmpl::list<Tags::BondiJ>>,
                  ::Tags::Variables<std::conditional_t<

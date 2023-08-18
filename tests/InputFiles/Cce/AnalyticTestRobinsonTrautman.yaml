@@ -35,6 +35,17 @@ Observers:
   VolumeFileName: "CharacteristicExtractUnusedVolume"
   ReductionFileName: "CharacteristicExtractReduction"
 
+EventsAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Offset: 0
+          Interval: 1
+    Events:
+      - ObserveTimeStep:
+          SubfileName: CceTimeStep
+          PrintTimeToTerminal: false
+
 Cce:
   Evolution:
     TimeStepper:

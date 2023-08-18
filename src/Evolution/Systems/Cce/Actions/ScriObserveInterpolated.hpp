@@ -152,23 +152,23 @@ struct ScriObserveInterpolated {
             .first_time_is_ready_to_interpolate()) {
       // first get the weyl scalars and correct them
       double interpolation_time = 0.0;
-      tmpl::for_each<detail::weyl_correction_list>([&interpolation_time,
-                                                    &corrected_scri_plus_weyl,
-                                                    &box](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        std::pair<double, ComplexDataVector> interpolation;
-        db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
-            [&interpolation](
-                const gsl::not_null<
-                    ScriPlusInterpolationManager<ComplexDataVector, tag>*>
-                    interpolation_manager) {
-              interpolation =
-                  interpolation_manager->interpolate_and_pop_first_time();
-            },
-            make_not_null(&box));
-        interpolation_time = interpolation.first;
-        get(get<tag>(corrected_scri_plus_weyl)).data() = interpolation.second;
-      });
+      tmpl::for_each<detail::weyl_correction_list>(
+          [&interpolation_time, &corrected_scri_plus_weyl, &box](auto tag_v) {
+            using tag = typename decltype(tag_v)::type;
+            std::pair<double, ComplexDataVector> interpolation;
+            db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
+                [&interpolation](
+                    const gsl::not_null<
+                        ScriPlusInterpolationManager<ComplexDataVector, tag>*>
+                        interpolation_manager) {
+                  interpolation =
+                      interpolation_manager->interpolate_and_pop_first_time();
+                },
+                make_not_null(&box));
+            interpolation_time = interpolation.first;
+            get(get<tag>(corrected_scri_plus_weyl)).data() =
+                interpolation.second;
+          });
 
       detail::correct_weyl_scalars_for_inertial_time(
           make_not_null(&corrected_scri_plus_weyl));

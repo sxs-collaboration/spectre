@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Actions/CalculateScriInputs.hpp"
 #include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
@@ -99,7 +100,8 @@ template <class Metavariables>
 struct CharacteristicEvolution {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using cce_system = Cce::System<Metavariables::evolve_ccm>;
+  static constexpr bool evolve_ccm = Metavariables::evolve_ccm;
+  using cce_system = Cce::System<evolve_ccm>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
@@ -136,7 +138,7 @@ struct CharacteristicEvolution {
                   tt::is_a_v<AnalyticWorldtubeBoundary,
                              typename Metavariables::cce_boundary_component>,
                   tmpl::list<>,
-                  tmpl::conditional_t<Metavariables::evolve_ccm,
+                  tmpl::conditional_t<evolve_ccm,
                                       ::Actions::MutateApply<
                                           GaugeUpdateInertialTimeDerivatives>,
                                       tmpl::list<>>>,
@@ -170,15 +172,13 @@ struct CharacteristicEvolution {
       // note that the initialization will only actually happen on the
       // iterations immediately following restarts
       Actions::InitializeFirstHypersurface<
-          Metavariables::evolve_ccm,
-          typename Metavariables::cce_boundary_component>,
+          evolve_ccm, typename Metavariables::cce_boundary_component>,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
-          Actions::UpdateGauge<false>,
-          Actions::UpdateGauge<Metavariables::evolve_ccm>>,
+          Actions::UpdateGauge<false>, Actions::UpdateGauge<evolve_ccm>>,
       Actions::PrecomputeGlobalCceDependencies,
-      tmpl::conditional_t<Metavariables::evolve_ccm,
+      tmpl::conditional_t<evolve_ccm,
                           Actions::CalculatePsi0AndDerivAtInnerBoundary,
                           tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
@@ -198,17 +198,17 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       ::Actions::Label<CceEvolutionLabelTag>,
+      tmpl::conditional_t<evolve_ccm, tmpl::list<>,
+                          evolution::Actions::RunEventsAndTriggers>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface<
-          Metavariables::evolve_ccm,
-          typename Metavariables::cce_boundary_component>,
+          evolve_ccm, typename Metavariables::cce_boundary_component>,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
-          Actions::UpdateGauge<false>,
-          Actions::UpdateGauge<Metavariables::evolve_ccm>>,
+          Actions::UpdateGauge<false>, Actions::UpdateGauge<evolve_ccm>>,
       Actions::PrecomputeGlobalCceDependencies,
-      tmpl::conditional_t<Metavariables::evolve_ccm,
+      tmpl::conditional_t<evolve_ccm,
                           Actions::CalculatePsi0AndDerivAtInnerBoundary,
                           tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
