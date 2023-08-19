@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Actions/Test_UpdateAmrDecision.cpp
   Criteria/Test_Criterion.cpp
   Criteria/Test_DriveToTarget.cpp
+  Criteria/Test_Loehner.cpp
   Criteria/Test_Random.cpp
   Criteria/Test_TruncationError.cpp
   Projectors/Test_Mesh.cpp

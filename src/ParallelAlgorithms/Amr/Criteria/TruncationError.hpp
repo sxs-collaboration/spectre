@@ -170,7 +170,7 @@ std::array<Flag, Dim> TruncationError<Dim, TensorTags>::operator()(
         using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
         const std::string tag_name = db::tag_name<tag>();
         // Skip if this tensor is not being monitored
-        if (alg::find(vars_to_monitor_, tag_name) == vars_to_monitor_.end()) {
+        if (not alg::found(vars_to_monitor_, tag_name)) {
           return;
         }
         const auto& tensor = db::get<tag>(box);
