@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/DataBox/ValidateSelection.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FloatingPointType.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -377,26 +378,12 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         return result;
       }()),
       interpolation_mesh_(interpolation_mesh) {
-  using ::operator<<;
-  const std::unordered_set<std::string> valid_tensors{
-      db::tag_name<Tensors>()...};
   ASSERT(
-      valid_tensors.count("InertialCoordinates") == 1,
+      (... or (db::tag_name<Tensors>() == "InertialCoordinates")),
       "There is no tag with name 'InertialCoordinates' specified "
       "for the observer. Please make sure you specify a tag in the 'Tensors' "
       "list that has the 'db::tag_name()' 'InertialCoordinates'.");
-  for (const auto& [name, floating_point_type] : variables_to_observe_) {
-    (void)floating_point_type;
-    if (valid_tensors.count(name) != 1) {
-      PARSE_ERROR(
-          context,
-          name << " is not an available variable.  Available variables:\n"
-               << valid_tensors);
-    }
-    if (alg::count(variables_to_observe, name) != 1) {
-      PARSE_ERROR(context, name << " specified multiple times");
-    }
-  }
+  db::validate_selection<tmpl::list<Tensors...>>(variables_to_observe, context);
   variables_to_observe_["InertialCoordinates"] =
       coordinates_floating_point_type;
 }

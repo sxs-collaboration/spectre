@@ -17,6 +17,7 @@ spectre_target_headers(
   Tag.hpp
   TagName.hpp
   TagTraits.hpp
+  ValidateSelection.hpp
   )
 
 add_subdirectory(Protocols)

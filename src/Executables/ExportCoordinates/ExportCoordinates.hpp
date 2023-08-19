@@ -65,6 +65,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -296,9 +297,13 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<amr::Criterion,
-                   tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
-                              amr::Criteria::Random>>,
+        tmpl::pair<
+            amr::Criterion,
+            tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+                       amr::Criteria::Random,
+                       amr::Criteria::TruncationError<
+                           volume_dim, tmpl::list<::domain::Tags::Coordinates<
+                                           volume_dim, Frame::Inertial>>>>>,
         tmpl::pair<
             PhaseChange,
             tmpl::list<

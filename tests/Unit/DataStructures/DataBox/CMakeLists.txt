@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_TagName.cpp
   Test_TagTraits.cpp
   Test_TestHelpers.cpp
+  Test_ValidateSelection.cpp
   )
 
 add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
@@ -23,5 +24,6 @@ target_link_libraries(
   PRIVATE
   DataStructures
   ErrorHandling
+  Options
   Utilities
 )
