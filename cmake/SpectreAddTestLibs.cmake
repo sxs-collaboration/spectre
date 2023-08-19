@@ -4,13 +4,16 @@
 # Add an executable with Catch2 unit tests and register them with CTest.
 #
 # This function is named `add_test_library` although it adds an executable for
-# historical reasons. For the same reasons it takes two unused arguments. We can
-# refactor this in the future.
+# historical reasons. We can refactor this in the future. We can also switch to
+# `catch_discover_tests` instead of our own test parsing code in the future.
+# At that point we can remove the `SOURCE_FILES` argument of this function and
+# instead use the standard `target_sources` to add the source files (currently
+# the `SOURCE_FILES` are needed to parse the tests).
 #
 # Parameters:
 # - TEST_EXEC_NAME The name of the test executable to add
 # - SOURCE_FILES The source files to compile into the executable
-function(add_test_library TEST_EXEC_NAME UNUSED SOURCE_FILES UNUSED2)
+function(add_test_library TEST_EXEC_NAME SOURCE_FILES)
   cmake_parse_arguments(ARG WITH_CHARM "" "" ${ARGN})
 
   add_spectre_executable(

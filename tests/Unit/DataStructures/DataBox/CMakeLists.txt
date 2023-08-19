@@ -16,12 +16,7 @@ set(LIBRARY_SOURCES
   Test_TestHelpers.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "DataStructures/DataBox"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -25,12 +25,7 @@ add_subdirectory(Tags)
 add_subdirectory(TimeSteppers)
 add_subdirectory(Triggers)
 
-add_test_library(
-  ${LIBRARY}
-  "Time"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

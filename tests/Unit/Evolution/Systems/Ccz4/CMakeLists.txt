@@ -17,12 +17,7 @@ set(LIBRARY_SOURCES
   Test_Z4Constraint.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Evolution/Systems/Ccz4/"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -11,13 +11,7 @@ set(LIBRARY_SOURCES
   Test_VisitAndReturn.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Parallel/PhaseControl"
-  "${LIBRARY_SOURCES}"
-  ""
-  WITH_CHARM
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES} WITH_CHARM)
 
 target_link_libraries(
   ${LIBRARY}

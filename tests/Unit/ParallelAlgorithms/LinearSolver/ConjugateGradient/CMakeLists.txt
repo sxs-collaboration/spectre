@@ -8,12 +8,7 @@ set(LIBRARY_SOURCES
   Test_ResidualMonitorActions.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "ParallelAlgorithms/LinearSolver/ConjugateGradient"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -7,12 +7,7 @@ set(LIBRARY_SOURCES
   Test_Type.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Evolution/BoundaryConditions"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

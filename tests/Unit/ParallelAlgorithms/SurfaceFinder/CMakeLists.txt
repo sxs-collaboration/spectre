@@ -6,12 +6,7 @@ set(LIBRARY_SOURCES
   Test_SurfaceFinder.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "ParallelAlgorithms/SurfaceFinder"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -55,12 +55,7 @@ add_subdirectory(TypeTraits)
 add_subdirectory(Serialization)
 add_subdirectory(System)
 
-add_test_library(
-  ${LIBRARY}
-  "Utilities"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

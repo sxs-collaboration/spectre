@@ -15,12 +15,7 @@ set(LIBRARY_SOURCES
   Test_UpdateMessageQueue.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "ParallelAlgorithms/Actions/"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

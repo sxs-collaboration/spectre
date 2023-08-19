@@ -33,12 +33,7 @@ set(LIBRARY_SOURCES
   Test_Wedge3D.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Domain/CoordinateMaps"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

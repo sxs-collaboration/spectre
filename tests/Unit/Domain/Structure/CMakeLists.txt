@@ -24,12 +24,7 @@ set(LIBRARY_SOURCES
   Test_ZCurve.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "Domain/Structure"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}

@@ -21,12 +21,7 @@ set(LIBRARY_SOURCES
   Test_Protocols.cpp
   )
 
-add_test_library(
-  ${LIBRARY}
-  "ParallelAlgorithms/Amr"
-  "${LIBRARY_SOURCES}"
-  ""
-  )
+add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
