@@ -43,7 +43,7 @@ add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
 add_subdirectory(Structure)
 
-add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
   ${LIBRARY}

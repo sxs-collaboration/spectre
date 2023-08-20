@@ -36,7 +36,7 @@ set(SOURCES
   ../DataStructures/Test_ComplexDataVectorBinaryOperations.cpp
   )
 
-add_test_library(${EXECUTABLE} ${SOURCES})
+add_test_library(${EXECUTABLE} "${SOURCES}")
 
 target_link_libraries(
   ${EXECUTABLE}

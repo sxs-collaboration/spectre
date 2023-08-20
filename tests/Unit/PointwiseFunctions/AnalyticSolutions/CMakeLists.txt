@@ -25,7 +25,7 @@ add_subdirectory(ScalarAdvection)
 add_subdirectory(WaveEquation)
 add_subdirectory(Xcts)
 
-add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
   ${LIBRARY}

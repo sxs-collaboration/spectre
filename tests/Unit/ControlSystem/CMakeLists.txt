@@ -26,7 +26,7 @@ add_subdirectory(Protocols)
 add_subdirectory(Systems)
 add_subdirectory(Tags)
 
-add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
   ${LIBRARY}
