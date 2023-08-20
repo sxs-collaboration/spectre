@@ -10,7 +10,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(DenseTriggers)
 
-add_test_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
   ${LIBRARY}
