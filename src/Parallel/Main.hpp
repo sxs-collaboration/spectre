@@ -897,7 +897,7 @@ void Main<Metavariables>::did_all_elements_terminate(
             "No deadlock analysis function found in metavariables. To enable "
             "deadlock analysis via simple actions add a function:\n"
             "  static void run_deadlock_analysis_simple_actions(\n"
-            "        Parallel::GlobalCache<TestMetavariables>& cache,\n"
+            "        Parallel::GlobalCache<metavariables>& cache,\n"
             "        const std::vector<std::string>& deadlocked_components);\n"
             "to your metavariables.\n");
       }

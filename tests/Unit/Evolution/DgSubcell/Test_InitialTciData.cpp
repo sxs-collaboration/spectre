@@ -5,14 +5,17 @@
 
 #include <cstddef>
 #include <optional>
+#include <string>
 #include <utility>
 
 #include "Evolution/DgSubcell/InitialTciData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/InitialTciData.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/MakeString.hpp"
 
 namespace evolution::dg::subcell {
+namespace {
 template <size_t Dim>
 void test() {
   using Tag = Tags::InitialTciData<Dim>;
@@ -35,6 +38,22 @@ void test() {
   CHECK(inbox.at(1).at(id1).tci_status.value() == 200);
   CHECK(inbox.at(1).at(id1).initial_rdmp_data.value() ==
         RdmpTciData{{2.0}, {-2.0}});
+
+  const std::string inbox_output = Tag::output_inbox(inbox, 1_st);
+  const std::string expected_inbox_output_v1 =
+      MakeString{} << " InitialTciDataInbox:\n"
+                   << "  Action number: 1\n"
+                   << "   Key: " << id0 << ", TCI: 100\n"
+                   << "   Key: " << id1 << ", TCI: 200\n";
+  const std::string expected_inbox_output_v2 =
+      MakeString{} << " InitialTciDataInbox:\n"
+                   << "  Action number: 1\n"
+                   << "   Key: " << id1 << ", TCI: 200\n"
+                   << "   Key: " << id0 << ", TCI: 100\n";
+  // The inner map between key and TCI is unordered so we have to check both
+  // possibilities
+  CHECK((inbox_output == expected_inbox_output_v1 or
+         inbox_output == expected_inbox_output_v2));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.InitialTciStatus",
@@ -68,4 +87,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.InitialTciStatus",
   test<2>();
   test<3>();
 }
+}  // namespace
 }  // namespace evolution::dg::subcell

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -43,6 +44,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -330,6 +332,22 @@ SPECTRE_TEST_CASE(
       db::get<::Tags::Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>(
           boundary_box));
+  {
+    using tag = Cce::ReceiveTags::BoundaryData<
+        typename metavariables::cce_boundary_communication_tags>;
+    const auto& inbox = ActionTesting::get_inbox_tag<component, tag>(runner, 0);
+
+    const std::string inbox_output = tag::output_inbox(inbox, 1_st);
+    const std::string expected_inbox_output =
+        MakeString{}
+        << std::scientific << std::setprecision(16)
+        << " CceBoundaryDataInbox:\n"
+        << "  Time: "
+        << ActionTesting::get_databox_tag<component, ::Tags::TimeStepId>(runner,
+                                                                         0)
+        << "\n";
+    CHECK(inbox_output == expected_inbox_output);
+  }
 
   // the rest of the initialization routine
   for (size_t i = 0; i < 8; ++i) {

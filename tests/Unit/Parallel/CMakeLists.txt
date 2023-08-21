@@ -161,6 +161,7 @@ set(LIBRARY_SOURCES
   Test_InboxInserters.cpp
   Test_MemoryMonitor.cpp
   Test_NodeLock.cpp
+  Test_OutputInbox.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
   Test_Phase.cpp

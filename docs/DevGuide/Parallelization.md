@@ -601,6 +601,13 @@ The `inbox_tags` type alias for the action is:
 
 \snippet Test_AlgorithmParallel.cpp int_receive_tag_list
 
+An inbox tag can also optionally specify a static function called `output_inbox`
+that returns a `std::string`. This function can be used for printing the
+contents of the inbox in a nice way as the types can sometimes get complicated.
+You can also use the `Parallel::output_inbox` function to output a specific
+inbox from all the inboxes. See an above example for the signature of the
+`output_inbox` function.
+
 \warning
 It is the responsibility of the iterable action to remove data from the inboxes
 that will no longer be needed.

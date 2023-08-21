@@ -294,7 +294,8 @@ class BoundaryHistory {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  std::ostream& print(std::ostream& os) const;
+  template <bool IncludeData>
+  std::ostream& print(std::ostream& os, const size_t padding_size = 0) const;
 
  private:
   template <size_t Side>
@@ -450,25 +451,32 @@ BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::
 }
 
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+template <bool IncludeData>
 std::ostream& BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::print(
-    std::ostream& os) const {
+    std::ostream& os, const size_t padding_size) const {
+  os << std::scientific << std::setprecision(16);
+  const std::string pad(padding_size, ' ');
   using ::operator<<;
-  os << "Integration order: " << integration_order_ << "\n";
-  os << "Local Data:\n";
+  os << pad << "Integration order: " << integration_order_ << "\n";
+  os << pad << " Local Data:\n";
   auto local_value_it = local_data_.second.begin();
   for (auto local_time_it = local_data_.first.begin();
        local_time_it != local_data_.first.end();
        ++local_time_it, ++local_value_it) {
-    os << "Time: " << *local_time_it << "\n";
-    os << "Data: " << *local_value_it << "\n";
+    os << pad << "  Time: " << *local_time_it << "\n";
+    if constexpr (IncludeData) {
+      os << pad << "   Data: " << *local_value_it << "\n";
+    }
   }
-  os << "Remote Data:\n";
+  os << pad << " Remote Data:\n";
   auto remote_value_it = remote_data_.second.begin();
   for (auto remote_time_it = remote_data_.first.begin();
        remote_time_it != remote_data_.first.end();
        ++remote_time_it, ++remote_value_it) {
-    os << "Time: " << *remote_time_it << "\n";
-    os << "Data: " << *remote_value_it << "\n";
+    os << pad << "  Time: " << *remote_time_it << "\n";
+    if constexpr (IncludeData) {
+      os << pad << "   Data: " << *remote_value_it << "\n";
+    }
   }
   return os;
 }
@@ -477,6 +485,6 @@ template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 std::ostream& operator<<(
     std::ostream& os,
     const BoundaryHistory<LocalVars, RemoteVars, CouplingResult>& history) {
-  return history.print(os);
+  return history.template print<true>(os);
 }
 }  // namespace TimeSteppers

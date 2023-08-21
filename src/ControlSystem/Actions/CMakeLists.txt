@@ -7,4 +7,5 @@ spectre_target_headers(
   HEADERS
   Initialization.hpp
   InitializeMeasurements.hpp
+  PrintCurrentMeasurement.hpp
   )

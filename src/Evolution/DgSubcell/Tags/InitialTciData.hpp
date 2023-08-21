@@ -5,7 +5,10 @@
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <iomanip>
 #include <map>
+#include <sstream>
+#include <string>
 #include <utility>
 
 #include "DataStructures/FixedHashMap.hpp"
@@ -43,6 +46,25 @@ struct InitialTciData {
                << direction_and_element_id.first << " and element ID "
                << direction_and_element_id.second << " more than once");
     current_inbox.emplace(std::forward<ReceiveDataType>(data));
+  }
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "InitialTciDataInbox:\n";
+    for (const auto& [action_number, hash_map] : inbox) {
+      ss << pad << " Action number: " << action_number << "\n";
+      for (const auto& [key, initial_tci_data] : hash_map) {
+        using ::operator<<;
+        ss << pad << "  Key: " << key
+           << ", TCI: " << initial_tci_data.tci_status << "\n";
+      }
+    }
+
+    return ss.str();
   }
 };
 }  // namespace evolution::dg::subcell::Tags

@@ -5,9 +5,12 @@
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <iomanip>
 #include <map>
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -175,6 +178,26 @@ struct BoundaryCorrectionAndGhostCellsInbox {
               << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
       }
     }
+  }
+
+  static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
+
+    for (const auto& [current_time_step_id, hash_map] : inbox) {
+      ss << pad << " Current time: " << current_time_step_id << "\n";
+      // We only care about the next time because that's important for deadlock
+      // detection. The data itself isn't super important
+      for (const auto& [key, tuple_data] : hash_map) {
+        ss << pad << "  Key: " << key
+           << ", next time: " << std::get<4>(tuple_data) << "\n";
+      }
+    }
+
+    return ss.str();
   }
 };
 

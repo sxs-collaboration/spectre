@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <random>
+#include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -32,6 +33,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -146,6 +148,24 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
     check_time_tags(runner, time_step_id_1,
                     time_stepper.next_time_id(time_step_id_1, step_1), step_1,
                     step_1);
+
+    const std::string inbox_output =
+        Tags::SphericalHarmonicsInbox<Dim>::output_inbox(worldtube_inbox, 2);
+    const std::string expected_inbox_output_v1 =
+        MakeString{} << std::scientific << std::setprecision(16)
+                     << "  SphericalHarmonicsInbox:\n"
+                     << "   Time: " << time_step_id_1 << "\n"
+                     << "    ElementId: " << element_ids.at(1) << "\n"
+                     << "    ElementId: " << element_ids.at(0) << "\n";
+    const std::string expected_inbox_output_v2 =
+        MakeString{} << std::scientific << std::setprecision(16)
+                     << "  SphericalHarmonicsInbox:\n"
+                     << "   Time: " << time_step_id_1 << "\n"
+                     << "    ElementId: " << element_ids.at(0) << "\n"
+                     << "    ElementId: " << element_ids.at(1) << "\n";
+    CHECK((inbox_output == expected_inbox_output_v1 or
+           inbox_output == expected_inbox_output_v2));
+
 #ifdef SPECTRE_DEBUG
     const TimeStepId time_step_id_new_slab_number(true, 2, start_time_1);
     // sending a second time step id, should fail
