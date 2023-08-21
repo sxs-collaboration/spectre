@@ -106,6 +106,20 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
 }
 
 template <size_t VolumeDim>
+void Domain<VolumeDim>::inject_time_dependent_map_for_excision_sphere(
+    const std::string& excision_sphere_name,
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
+        moving_mesh_grid_to_inertial_map) {
+  ASSERT(excision_spheres_.count(excision_sphere_name) == 1,
+         "Cannot inject time dependent maps into excision sphere '"
+             << excision_sphere_name << "' because it does not exist.");
+
+  excision_spheres_.at(excision_sphere_name)
+      .inject_time_dependent_maps(std::move(moving_mesh_grid_to_inertial_map));
+}
+
+template <size_t VolumeDim>
 bool Domain<VolumeDim>::is_time_dependent() const {
   return alg::any_of(blocks_, [](const Block<VolumeDim>& block) {
     return block.is_time_dependent();

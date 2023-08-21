@@ -581,6 +581,20 @@ Domain<3> BinaryCompactObject::create_domain() const {
         time_dependent_options_
             ->grid_to_inertial_map<domain::ObjectLabel::None>(false);
 
+    // Inside the excision sphere we add the grid to inertial map from the outer
+    // shell. This allows the center of the excisions/horizons to be mapped
+    // properly to the inertial frame.
+    if (is_excised_a_) {
+      domain.inject_time_dependent_map_for_excision_sphere(
+          "ExcisionSphereA",
+          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone());
+    }
+    if (is_excised_b_) {
+      domain.inject_time_dependent_map_for_excision_sphere(
+          "ExcisionSphereB",
+          grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone());
+    }
+
     // Initialize the first block of the layer 1 blocks for each object
     // If excising interior A or B, the block maps for the corrsponding layer 1
     // blocks (first 6 blocks) should also include a size map from the Grid to

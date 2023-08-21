@@ -565,6 +565,71 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   const std::vector<double> times_to_check{{1., 2.3}};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       *binary_compact_object, with_boundary_conditions, false, times_to_check);
+
+  const auto& blocks = domain.blocks();
+  const auto& final_block = blocks[blocks.size() - 1];
+
+  std::unordered_map<std::string, ExcisionSphere<3>>
+      expected_excision_spheres{};
+  expected_excision_spheres.emplace(
+      "ExcisionSphereA",
+      ExcisionSphere<3>{1.0,
+                        tnsr::I<double, 3, Frame::Grid>{{3.0, 0.0, 0.0}},
+                        {{0, Direction<3>::lower_zeta()},
+                         {1, Direction<3>::lower_zeta()},
+                         {2, Direction<3>::lower_zeta()},
+                         {3, Direction<3>::lower_zeta()},
+                         {4, Direction<3>::lower_zeta()},
+                         {5, Direction<3>::lower_zeta()}}});
+  if (with_time_dependence) {
+    expected_excision_spheres.at("ExcisionSphereA")
+        .inject_time_dependent_maps(
+            final_block.moving_mesh_grid_to_inertial_map().get_clone());
+  }
+  if (excise_B) {
+    expected_excision_spheres.emplace(
+        "ExcisionSphereB",
+        ExcisionSphere<3>{0.2,
+                          tnsr::I<double, 3, Frame::Grid>{{-2.0, 0.0, 0.0}},
+                          {{12, Direction<3>::lower_zeta()},
+                           {13, Direction<3>::lower_zeta()},
+                           {14, Direction<3>::lower_zeta()},
+                           {15, Direction<3>::lower_zeta()},
+                           {16, Direction<3>::lower_zeta()},
+                           {17, Direction<3>::lower_zeta()}}});
+    if (with_time_dependence) {
+      expected_excision_spheres.at("ExcisionSphereB")
+          .inject_time_dependent_maps(
+              final_block.moving_mesh_grid_to_inertial_map().get_clone());
+    }
+  }
+
+  const auto& excision_spheres = domain.excision_spheres();
+  CHECK(excision_spheres == expected_excision_spheres);
+
+  const auto check_excision_sphere_map =
+      [&binary_compact_object](const ExcisionSphere<3>& excision_sphere) {
+        const double time = 1.0;
+        // Taken from option string above
+        const auto functions_of_time =
+            binary_compact_object->functions_of_time();
+        const auto& center = excision_sphere.center();
+        const auto& map = excision_sphere.moving_mesh_grid_to_inertial_map();
+
+        const auto mapped_point = map(center, time, functions_of_time);
+
+        // Should be same point
+        for (size_t i = 0; i < 3; i++) {
+          CHECK(center.get(i) == approx(mapped_point.get(i)));
+        }
+      };
+
+  if (with_time_dependence) {
+    check_excision_sphere_map(excision_spheres.at("ExcisionSphereA"));
+    if (excise_B) {
+      check_excision_sphere_map(excision_spheres.at("ExcisionSphereB"));
+    }
+  }
 }
 
 void test_binary_factory() {

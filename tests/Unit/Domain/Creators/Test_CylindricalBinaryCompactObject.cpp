@@ -346,6 +346,37 @@ void test_construction(const CylBCO& creator,
     CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
     CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
   }
+  const auto& block = domain.blocks()[0];
+  CHECK(block.is_time_dependent() == excision_sphere_a.is_time_dependent());
+  CHECK(block.is_time_dependent() == excision_sphere_b.is_time_dependent());
+
+  if (block.is_time_dependent()) {
+    // Taken from option string above
+    const double initial_time = 1.0;
+    const double time = 2.0;
+    const double z_angle = (time - initial_time) * -0.2;
+    const auto functions_of_time = creator.functions_of_time();
+    const auto& center_a = excision_sphere_a.center();
+    const auto& center_b = excision_sphere_b.center();
+    const auto& map_a = excision_sphere_a.moving_mesh_grid_to_inertial_map();
+    const auto& map_b = excision_sphere_b.moving_mesh_grid_to_inertial_map();
+
+    const auto mapped_point_a = map_a(center_a, time, functions_of_time);
+    const auto mapped_point_b = map_b(center_b, time, functions_of_time);
+
+    // Just a rotation
+    const tnsr::I<double, 3> expected_mapped_point_a{
+        {get<0>(center_a) * cos(z_angle) - get<1>(center_a) * sin(z_angle),
+         get<0>(center_a) * sin(z_angle) + get<1>(center_a) * cos(z_angle),
+         get<2>(center_a)}};
+    const tnsr::I<double, 3> expected_mapped_point_b{
+        {get<0>(center_b) * cos(z_angle) - get<1>(center_b) * sin(z_angle),
+         get<0>(center_b) * sin(z_angle) + get<1>(center_b) * cos(z_angle),
+         get<2>(center_b)}};
+
+    CHECK_ITERABLE_APPROX(expected_mapped_point_a, mapped_point_a);
+    CHECK_ITERABLE_APPROX(expected_mapped_point_b, mapped_point_b);
+  }
 }
 
 TimeDepOptions construct_time_dependent_options() {

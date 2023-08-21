@@ -19,12 +19,21 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
+#include "Domain/CoordinateMaps/Equiangular.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -109,7 +118,9 @@ void test_1d_domains() {
                                            CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 2., 0.}))),
-        {}, {"Left", "Right"}, {{"All", {"Left", "Right"}}});
+        {{"ExcisionSphere",
+          ExcisionSphere<1>{1.0, tnsr::I<double, 1, Frame::Grid>{0.0}, {}}}},
+        {"Left", "Right"}, {{"All", {"Left", "Right"}}});
     CHECK_FALSE(domain_no_corners.is_time_dependent());
     CHECK(domain_no_corners.blocks()[0].name() == "Left");
     CHECK(domain_no_corners.blocks()[1].name() == "Right");
@@ -193,7 +204,31 @@ void test_1d_domains() {
             Translation{"Translation1"}),
         translation_grid_to_distorted_map.get_clone(),
         translation_distorted_to_inertial_map.get_clone());
+    domain_no_corners.inject_time_dependent_map_for_excision_sphere(
+        "ExcisionSphere",
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation0"}));
+#ifdef SPECTRE_DEBUG
+    CHECK_THROWS_WITH(
+        domain_no_corners.inject_time_dependent_map_for_excision_sphere(
+            "NonExistentExcisionSphere",
+            make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+                Translation{"Translation0"})),
+        Catch::Matchers::ContainsSubstring(
+            "Cannot inject time dependent maps into excision "
+            "sphere 'NonExistentExcisionSphere'"));
+#endif
     CHECK(domain_no_corners.is_time_dependent());
+
+    // Excision spheres
+    const auto& excision_spheres_corners =
+        domain_from_corners.excision_spheres();
+    CHECK(excision_spheres_corners.empty());
+    const auto& excision_spheres_no_corners =
+        domain_no_corners.excision_spheres();
+    CHECK(excision_spheres_no_corners.size() == 1);
+    CHECK(excision_spheres_no_corners.count("ExcisionSphere") == 1);
+    CHECK(excision_spheres_no_corners.at("ExcisionSphere").is_time_dependent());
 
     const auto expected_logical_to_grid_maps =
         make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -268,10 +303,10 @@ void test_1d_domains() {
 
     CHECK(get_output(domain_no_corners) ==
           "Domain with 2 blocks:\n" +
-              get_output(domain_from_corners.blocks()[0]) + "\n" +
-              get_output(domain_from_corners.blocks()[1]) + "\n" +
+              get_output(domain_no_corners.blocks()[0]) + "\n" +
+              get_output(domain_no_corners.blocks()[1]) + "\n" +
               "Excision spheres:\n" +
-              get_output(domain_from_corners.excision_spheres()) + "\n");
+              get_output(domain_no_corners.excision_spheres()) + "\n");
   }
 
   {
@@ -429,6 +464,291 @@ void test_3d_rectilinear_domains() {
   }
 }
 
+// We can't call the DomainCreator because they aren't serialized and can change
+// at any time. What we actually want to test is that we can deserialize a
+// domain and have it be exactly what we expect. Not whatever the latest version
+// of the DomainCreator makes. For this, we copy a lot of code from
+// BinaryCompactObject because the binary domain is complicated (which is a good
+// test of versioning because of so many moving parts)
+Domain<3> create_serialized_domain() {
+  std::vector<std::string> block_names{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups{};
+
+  static std::array<std::string, 6> wedge_directions{
+      "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
+  const auto add_object_region = [&block_names, &block_groups](
+                                     const std::string& object_name,
+                                     const std::string& region_name) {
+    for (const std::string& wedge_direction : wedge_directions) {
+      const std::string block_name =
+          // NOLINTNEXTLINE(performance-inefficient-string-concatenation)
+          object_name + region_name + wedge_direction;
+      block_names.push_back(block_name);
+      block_groups[object_name + region_name].insert(block_name);
+    }
+  };
+  const auto add_outer_region =
+      [&block_names, &block_groups](const std::string& region_name) {
+        for (const std::string& wedge_direction : wedge_directions) {
+          for (const std::string& leftright : {"Left"s, "Right"s}) {
+            if ((wedge_direction == "UpperX" and leftright == "Left") or
+                (wedge_direction == "LowerX" and leftright == "Right")) {
+              // The outer regions are divided in half perpendicular to the
+              // x-axis at x=0. Therefore, the left side only has a block in
+              // negative x-direction, and the right side only has one in
+              // positive x-direction.
+              continue;
+            }
+            // NOLINTNEXTLINE(performance-inefficient-string-concatenation)
+            const std::string block_name =
+                region_name + wedge_direction +
+                (wedge_direction == "UpperX" or wedge_direction == "LowerX"
+                     ? ""
+                     : leftright);
+            block_names.push_back(block_name);
+            block_groups[region_name].insert(block_name);
+          }
+        }
+      };
+  add_object_region("ObjectA", "Shell");  // 6 blocks
+  add_object_region("ObjectA", "Cube");   // 6 blocks
+  add_object_region("ObjectB", "Shell");  // 6 blocks
+  add_object_region("ObjectB", "Cube");   // 6 blocks
+  add_outer_region("Envelope");           // 10 blocks
+  add_outer_region("OuterShell");         // 10 blocks
+
+  // Expand initial refinement and number of grid points over all blocks
+  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
+                                                       block_groups};
+
+  using BCO = domain::creators::BinaryCompactObject;
+
+  const BCO::InitialRefinement::type initial_refinement_variant{1_st};
+  const BCO::InitialGridPoints::type initial_grid_points_variant{3_st};
+  std::vector<std::array<size_t, 3>> initial_refinement =
+      std::visit(expand_over_blocks, initial_refinement_variant);
+  std::vector<std::array<size_t, 3>> initial_grid_points =
+      std::visit(expand_over_blocks, initial_grid_points_variant);
+
+  const std::vector<domain::CoordinateMaps::Distribution>
+      object_A_radial_distribution{
+          domain::CoordinateMaps::Distribution::Logarithmic};
+  const std::vector<domain::CoordinateMaps::Distribution>
+      object_B_radial_distribution = object_A_radial_distribution;
+  const domain::CoordinateMaps::Distribution radial_distribution_envelope =
+      domain::CoordinateMaps::Distribution::Linear;
+  const domain::CoordinateMaps::Distribution radial_distribution_outer_shell =
+      domain::CoordinateMaps::Distribution::Linear;
+
+  using Maps = std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>;
+  using Affine = CoordinateMaps::Affine;
+  using Identity2D = CoordinateMaps::Identity<2>;
+  using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
+
+  domain::creators::BinaryCompactObject::Object object_A{0.45825, 6., 7.683,
+                                                         true, true};
+  domain::creators::BinaryCompactObject::Object object_B{0.45825, 6., -7.683,
+                                                         true, true};
+
+  const double x_coord_a = object_A.x_coord;
+  const double x_coord_b = object_B.x_coord;
+  const double envelope_radius = 100.0;
+  const double outer_radius = 300.0;
+  const double inner_sphericity_A = 1.0;
+  const double inner_sphericity_B = 1.0;
+  const bool use_equiangular_map = true;
+  const double translation = 0.5 * (x_coord_a + x_coord_b);
+  const double length_inner_cube = abs(x_coord_a - x_coord_b);
+  const double opening_angle = M_PI / 2.0;
+  const double tan_half_opening_angle = tan(0.5 * opening_angle);
+  const double length_outer_cube =
+      2.0 * envelope_radius / sqrt(2.0 + square(tan_half_opening_angle));
+
+  Maps maps{};
+
+  const Translation translation_A{
+      Affine{-1.0, 1.0, -1.0 + x_coord_a, 1.0 + x_coord_a}, Identity2D{}};
+  const Translation translation_B{
+      Affine{-1.0, 1.0, -1.0 + x_coord_b, 1.0 + x_coord_b}, Identity2D{}};
+
+  Maps maps_center_A =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_A.inner_radius,
+                                    object_A.outer_radius, inner_sphericity_A,
+                                    1.0, use_equiangular_map, false, {},
+                                    object_A_radial_distribution),
+          translation_A);
+  Maps maps_cube_A =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_A.outer_radius,
+                                    sqrt(3.0) * 0.5 * length_inner_cube, 1.0,
+                                    0.0, use_equiangular_map),
+          translation_A);
+  std::move(maps_center_A.begin(), maps_center_A.end(),
+            std::back_inserter(maps));
+  std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
+
+  Maps maps_center_B =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_B.inner_radius,
+                                    object_B.outer_radius, inner_sphericity_B,
+                                    1.0, use_equiangular_map, false, {},
+                                    object_B_radial_distribution),
+          translation_B);
+  Maps maps_cube_B =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_B.outer_radius,
+                                    sqrt(3.0) * 0.5 * length_inner_cube, 1.0,
+                                    0.0, use_equiangular_map),
+          translation_B);
+  std::move(maps_center_B.begin(), maps_center_B.end(),
+            std::back_inserter(maps));
+  std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
+
+  Maps maps_frustums = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
+      length_inner_cube, length_outer_cube, use_equiangular_map,
+      {{-translation, 0.0, 0.0}}, radial_distribution_envelope,
+      radial_distribution_envelope ==
+              domain::CoordinateMaps::Distribution::Projective
+          ? std::optional<double>(length_inner_cube / length_outer_cube)
+          : std::nullopt,
+      1.0, opening_angle));
+  std::move(maps_frustums.begin(), maps_frustums.end(),
+            std::back_inserter(maps));
+
+  Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
+      envelope_radius, outer_radius, 1.0, 1.0, use_equiangular_map, true, {},
+      {radial_distribution_outer_shell}, ShellWedges::All, opening_angle));
+  std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
+            std::back_inserter(maps));
+
+  std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
+  excision_spheres.emplace(
+      "ExcisionSphereA",
+      ExcisionSphere<3>{object_A.inner_radius,
+                        tnsr::I<double, 3, Frame::Grid>{{x_coord_a, 0.0, 0.0}},
+                        {{0, Direction<3>::lower_zeta()},
+                         {1, Direction<3>::lower_zeta()},
+                         {2, Direction<3>::lower_zeta()},
+                         {3, Direction<3>::lower_zeta()},
+                         {4, Direction<3>::lower_zeta()},
+                         {5, Direction<3>::lower_zeta()}}});
+  excision_spheres.emplace(
+      "ExcisionSphereB",
+      ExcisionSphere<3>{object_B.inner_radius,
+                        tnsr::I<double, 3, Frame::Grid>{{x_coord_b, 0.0, 0.0}},
+                        {{12, Direction<3>::lower_zeta()},
+                         {13, Direction<3>::lower_zeta()},
+                         {14, Direction<3>::lower_zeta()},
+                         {15, Direction<3>::lower_zeta()},
+                         {16, Direction<3>::lower_zeta()},
+                         {17, Direction<3>::lower_zeta()}}});
+
+  Domain<3> domain{std::move(maps), std::move(excision_spheres), block_names,
+                   block_groups};
+
+  using TimeDepOps = domain::creators::bco::TimeDependentMapOptions;
+  TimeDepOps time_dependent_options{
+      0.,
+      TimeDepOps::ExpansionMapOptions{
+          {{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
+      TimeDepOps::RotationMapOptions{{0.0, 0.0, 1.5264577062000000e-02}},
+      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
+      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}};
+
+  const std::optional<std::pair<double, double>> inner_outer_radii_A =
+      std::make_pair(object_A.inner_radius, object_A.outer_radius);
+  const std::optional<std::pair<double, double>> inner_outer_radii_B =
+      std::make_pair(object_B.inner_radius, object_B.outer_radius);
+  const std::array<std::array<double, 3>, 2> centers{
+      std::array{x_coord_a, 0.0, 0.0}, std::array{x_coord_b, 0.0, 0.0}};
+
+  time_dependent_options.build_maps(centers, inner_outer_radii_A,
+                                    inner_outer_radii_B, outer_radius);
+
+  const size_t number_of_blocks = 44;
+
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
+      grid_to_inertial_block_maps{number_of_blocks};
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, 3>>>
+      grid_to_distorted_block_maps{number_of_blocks};
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, 3>>>
+      distorted_to_inertial_block_maps{number_of_blocks};
+
+  grid_to_inertial_block_maps[number_of_blocks - 1] =
+      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::None>(
+          false);
+
+  grid_to_inertial_block_maps[0] =
+      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::A>(true);
+  grid_to_distorted_block_maps[0] =
+      time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::A>(
+          true);
+  distorted_to_inertial_block_maps[0] =
+      time_dependent_options.distorted_to_inertial_map(true);
+
+  const size_t first_block_object_B = 12;
+  grid_to_inertial_block_maps[first_block_object_B] =
+      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::B>(true);
+  grid_to_distorted_block_maps[first_block_object_B] =
+      time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::B>(
+          true);
+  distorted_to_inertial_block_maps[first_block_object_B] =
+      time_dependent_options.distorted_to_inertial_map(true);
+
+  for (size_t block = 1; block < number_of_blocks - 1; ++block) {
+    if (block < 6) {
+      // We always have a grid to inertial map. We may or may not have maps to
+      // the distorted frame.
+      grid_to_inertial_block_maps[block] =
+          grid_to_inertial_block_maps[0]->get_clone();
+      if (grid_to_distorted_block_maps[0] != nullptr) {
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[0]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[0]->get_clone();
+      }
+    } else if (block == first_block_object_B) {
+      continue;  // already initialized
+    } else if (block > first_block_object_B and
+               block < first_block_object_B + 6) {
+      // We always have a grid to inertial map. We may or may not have maps to
+      // the distorted frame.
+      grid_to_inertial_block_maps[block] =
+          grid_to_inertial_block_maps[first_block_object_B]->get_clone();
+      if (grid_to_distorted_block_maps[first_block_object_B] != nullptr) {
+        grid_to_distorted_block_maps[block] =
+            grid_to_distorted_block_maps[first_block_object_B]->get_clone();
+        distorted_to_inertial_block_maps[block] =
+            distorted_to_inertial_block_maps[first_block_object_B]->get_clone();
+      }
+    } else {
+      grid_to_inertial_block_maps[block] =
+          grid_to_inertial_block_maps[number_of_blocks - 1]->get_clone();
+    }
+  }
+
+  for (size_t block = 0; block < number_of_blocks; ++block) {
+    domain.inject_time_dependent_map_for_block(
+        block, std::move(grid_to_inertial_block_maps[block]),
+        std::move(grid_to_distorted_block_maps[block]),
+        std::move(distorted_to_inertial_block_maps[block]));
+  }
+
+  return domain;
+}
+
 void test_versioning() {
   // Check that we can deserialize the domain stored in this old file
   domain::creators::register_derived_with_charm();
@@ -439,24 +759,8 @@ void test_versioning() {
   const size_t obs_id = volfile.list_observation_ids().front();
   const auto serialized_domain = *volfile.get_domain(obs_id);
   const auto domain = deserialize<Domain<3>>(serialized_domain.data());
-  using TimeDepOps = domain::creators::bco::TimeDependentMapOptions;
-  const auto expected_domain_creator = domain::creators::BinaryCompactObject{
-      TimeDepOps{
-          0.,
-          TimeDepOps::ExpansionMapOptions{
-              {{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
-          TimeDepOps::RotationMapOptions{{0.0, 0.0, 1.5264577062000000e-02}},
-          TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
-          TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}},
-      domain::creators::BinaryCompactObject::Object{0.45825, 6., 7.683, true,
-                                                    true},
-      domain::creators::BinaryCompactObject::Object{0.45825, 6., -7.683, true,
-                                                    true},
-      100., 300.,
-      // Initial refinement and num points don't matter
-      1_st, 3_st, true, CoordinateMaps::Distribution::Linear,
-      CoordinateMaps::Distribution::Linear, 90.};
-  CHECK(domain == expected_domain_creator.create_domain());
+  const Domain<3> expected_domain = create_serialized_domain();
+  CHECK(domain == expected_domain);
   // Also check that we can deserialize the functions of time.
   const auto serialized_fot = *volfile.get_functions_of_time(obs_id);
   const auto functions_of_time = deserialize<std::unordered_map<

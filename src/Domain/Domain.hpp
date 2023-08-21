@@ -185,6 +185,12 @@ class Domain {
                                                 Frame::Inertial, VolumeDim>>
           moving_mesh_distorted_to_inertial_map = nullptr);
 
+  void inject_time_dependent_map_for_excision_sphere(
+      const std::string& excision_sphere_name,
+      std::unique_ptr<
+          domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
+          moving_mesh_grid_to_inertial_map);
+
   const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
 
   bool is_time_dependent() const;

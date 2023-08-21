@@ -915,6 +915,14 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         time_dependent_options_
             ->grid_to_inertial_map<domain::ObjectLabel::None>(false);
 
+    // Inside the excision sphere we add the grid to inertial map from the outer
+    // shell. This allows the center of the excisions/horizons to be mapped
+    // properly to the inertial frame.
+    domain.inject_time_dependent_map_for_excision_sphere(
+        "ExcisionSphereA", grid_to_inertial_block_maps[0]->get_clone());
+    domain.inject_time_dependent_map_for_excision_sphere(
+        "ExcisionSphereB", grid_to_inertial_block_maps[0]->get_clone());
+
     // Because we require that both objects have inner shells, object A
     // corresponds to blocks 46-59 and object B corresponds to blocks 60-73. If
     // we have extra outer shells, those will have the same maps as
