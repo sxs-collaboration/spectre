@@ -72,20 +72,8 @@ void test_all_tags() {
   const control_system::OptionHolder<system> active_holder{};
   const control_system::OptionHolder<system> inactive_holder{
       false, {}, {}, {}, {}};
-  CHECK(active_tag::create_from_options<MetavarsEmpty>(active_holder));
-  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(inactive_holder));
-  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
-      active_holder, {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
-  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
-      inactive_holder, {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
-  CHECK(active_tag::create_from_options<MetavarsEmpty>(active_holder,
-                                                       {"/fake/path"}, {}));
-  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
-      inactive_holder, {"/fake/path"}, {}));
-  CHECK(active_tag::create_from_options<MetavarsEmpty>(
-      active_holder, std::nullopt, {{"FakeSpecName", "LabelA"}}));
-  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
-      inactive_holder, std::nullopt, {{"FakeSpecName", "LabelA"}}));
+  CHECK(active_tag::create_from_options(active_holder));
+  CHECK_FALSE(active_tag::create_from_options(inactive_holder));
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");

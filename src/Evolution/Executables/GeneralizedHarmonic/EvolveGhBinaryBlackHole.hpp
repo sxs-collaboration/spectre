@@ -230,10 +230,6 @@ struct EvolutionMetavars {
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
-  // Set override_functions_of_time to true to override the
-  // 2nd or 3rd order piecewise polynomial functions of time using
-  // `read_spec_piecewise_polynomial()`
-  static constexpr bool override_functions_of_time = false;
 
   using initialize_initial_data_dependent_quantities_actions =
       tmpl::list<Actions::MutateApply<gh::gauges::SetPiFromGauge<volume_dim>>,

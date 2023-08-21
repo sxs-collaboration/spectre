@@ -67,10 +67,8 @@ void test_center_tags() {
           "to generate the ObjectCenter"));
 }
 
-template <bool Override>
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
-  static constexpr bool override_functions_of_time = Override;
 };
 
 void test_functions_of_time() {
@@ -78,16 +76,9 @@ void test_functions_of_time() {
       "FunctionsOfTime");
 
   CHECK(std::is_same_v<
-        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<true>>,
+        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables>,
         tmpl::list<
-            domain::OptionTags::DomainCreator<Metavariables<true>::volume_dim>,
-            domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
-            domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>>);
-
-  CHECK(std::is_same_v<
-        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<false>>,
-        tmpl::list<domain::OptionTags::DomainCreator<
-            Metavariables<false>::volume_dim>>>);
+            domain::OptionTags::DomainCreator<Metavariables::volume_dim>>>);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Tags", "[Unit][Domain]") {

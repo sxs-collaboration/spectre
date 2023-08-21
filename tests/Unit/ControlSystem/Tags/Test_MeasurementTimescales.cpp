@@ -61,15 +61,6 @@ struct Metavariables {
       control_system::control_components<Metavariables, control_systems>;
 };
 
-struct MetavariablesReplace : Metavariables {
-  static constexpr bool override_functions_of_time = true;
-};
-
-struct MetavariablesNoControlSystems {
-  static constexpr size_t volume_dim = 3;
-  using component_list = tmpl::list<>;
-};
-
 template <size_t DerivOrder>
 void test_calculate_measurement_timescales() {
   INFO("Test calculate measurement timescales");
@@ -97,10 +88,6 @@ using OptionHolder = control_system::OptionHolder<FakeControlSystem<Index>>;
 void test_measurement_tag() {
   INFO("Test measurement tag");
   using measurement_tag = control_system::Tags::MeasurementTimescales;
-  static_assert(
-      tmpl::size<
-          measurement_tag::option_tags<MetavariablesNoControlSystems>>::value ==
-      2);
   static_assert(
       tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 7);
 
@@ -180,34 +167,6 @@ void test_measurement_tag() {
           std::array{initial_time, expr_time2});
     CHECK(timescales.at("Controlled3")->func(1.0)[0] ==
           DataVector{measure_time2, measure_time2});
-
-    // Replace Controlled2 with something read in from an h5 file. This means
-    // the measurement timescale and expiration time for Controlled2 is
-    // infinity still, but for a different reason.
-    static_assert(
-        std::is_same_v<
-            measurement_tag::option_tags<MetavariablesReplace>,
-            tmpl::list<
-                control_system::OptionTags::MeasurementsPerUpdate,
-                domain::OptionTags::DomainCreator<3>,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
-                domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap,
-                ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
-                control_system::OptionTags::ControlSystemInputs<
-                    FakeControlSystem<1>>,
-                control_system::OptionTags::ControlSystemInputs<
-                    FakeControlSystem<2>>,
-                control_system::OptionTags::ControlSystemInputs<
-                    FakeControlSystem<3>>>>);
-    const auto replaced_timescales =
-        measurement_tag::create_from_options<MetavariablesReplace>(
-            4, creator, {"FakeFileName"}, {{"FakeSpecName", "Controlled2"}},
-            initial_time, time_step, option_holder1, option_holder2,
-            option_holder3);
-    CHECK(replaced_timescales.at("Controlled2")->time_bounds() ==
-          std::array{initial_time, std::numeric_limits<double>::infinity()});
-    CHECK(replaced_timescales.at("Controlled2")->func(2.0)[0][0] ==
-          std::numeric_limits<double>::infinity());
   }
 
   CHECK_THROWS_WITH(
