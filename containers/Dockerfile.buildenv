@@ -3,17 +3,20 @@
 
 # If you change this file please push a new image to DockerHub so that the
 # new image is used. Docker must be run as root on your machine. There are 3
-# different images in this Dockerfile. Here is how to build them:
+# different images in this Dockerfile. Here is how to build them for x86_64
+# (for Apple Silicon, replace linux/amd64 with linux/arm64):
 # 1. `dev`
 #
 #   cd $SPECTRE_HOME
 #   docker build --target dev -t sxscollaboration/spectre:dev \
+#                 --platform linux/amd64 \
 #                 -f ./containers/Dockerfile.buildenv .
 #
 # 2. `ci` (this should use the `dev` image you just built for most of it)
 #
 #   cd $SPECTRE_HOME
 #   docker build --target ci -t sxscollaboration/spectre:ci \
+#                 --platform linux/amd64 \
 #                 -f ./containers/Dockerfile.buildenv .
 #
 # 3. `demo` To build this, it is recommended to first push the `dev` and `ci`
@@ -29,6 +32,7 @@
 #   cd $SPECTRE_HOME
 #   rm -rf build/
 #   docker build --target demo -t sxscollaboration/spectre:demo \
+#                 --platform linux/amd64 \
 #                 -f ./containers/Dockerfile.buildenv .
 #
 #    and then to push the `demo` image to DockerHub:
@@ -38,8 +42,24 @@
 # If you do not have permission to push to DockerHub please coordinate with
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
+#
+FROM ubuntu:20.04 AS base
 
-FROM ubuntu:20.04 AS dev
+# See
+# https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+# for how TARGETARCH is defined.
+ARG TARGETARCH
+
+FROM base AS base-amd64
+ENV CHARM_ARCH=x86_64
+ENV TEX_ARCH=x86_64
+
+FROM base AS base-arm64
+ENV CHARM_ARCH=arm8
+ENV TEX_ARCH=aarch64
+
+FROM base-${TARGETARCH} AS dev
+ARG TARGETARCH
 
 ARG PARALLEL_MAKE_ARG=-j2
 ARG DEBIAN_FRONTEND=noninteractive
@@ -175,7 +195,8 @@ RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.
     && tar -xzf libsharp.tar.gz \
     && mv libsharp-* libsharp_build \
     && cd libsharp_build \
-    && sed -i 's/march=native/march=x86-64/' configure.ac \
+    && { if [ "$TARGETARCH" != "arm64" ]; \
+        then sed -i 's/march=native/march=x86-64/' configure.ac; fi } \
     && autoconf \
     && ./configure --prefix=/usr/local --enable-pic --disable-openmp \
     && make $PARALLEL_MAKE_ARG \
@@ -185,14 +206,25 @@ RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.
     && cd ../ \
     && rm -r libsharp*
 # - LibXSMM
-RUN wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz \
-    && tar -xzf libxsmm.tar.gz \
-    && mv libxsmm-* libxsmm \
-    && cd libxsmm \
-    && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
-        FC=gfortran-9 install \
-    && cd .. \
-    && rm -rf libxsmm libxsmm.tar.gz
+RUN if [ "$TARGETARCH" = "arm64" ] ; then \
+        git clone --single-branch --branch main --depth 1 \
+            https://github.com/libxsmm/libxsmm.git libxsmm \
+        && cd libxsmm \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
+            FC=gfortran-9 PLATFORM=1 install \
+        && cd .. \
+        && rm -rf libxsmm; \
+    else \
+        wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz \
+            -O libxsmm.tar.gz \
+        && tar -xzf libxsmm.tar.gz \
+        && mv libxsmm-* libxsmm \
+        && cd libxsmm \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
+            FC=gfortran-9 install \
+        && cd .. \
+        && rm -rf libxsmm libxsmm.tar.gz; \
+    fi
 # - Yaml-cpp
 RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yaml-cpp.tar.gz \
     && tar -xzf yaml-cpp.tar.gz \
@@ -249,7 +281,7 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
     && cd /work/charm_7_0_0 \
     && git checkout v7.0.0 \
     && git apply /work/v7.0.0.patch \
-    && ./build LIBS multicore-linux-x86_64 gcc \
+    && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
       ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 
@@ -260,7 +292,7 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
 # - Symlink gfortran-9 to gfortran so it we can just specify gfortran in CMake
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
-ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-x86_64-gcc"
+ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
 RUN ln -s $(which gfortran-9) /usr/local/bin/gfortran
 RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
@@ -281,8 +313,8 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
     && install-tl-*/install-tl -profile=texlive.profile \
     && rm -r install-tl-* texlive.profile install-tl.log \
-    && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
-ENV PATH="${PATH}:/work/texlive/bin/x86_64-linux"
+    && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex
+ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
@@ -318,7 +350,7 @@ WORKDIR /work/charm_7_0_0
 # 4.0.3 which ships with Ubuntu 20.04. For more details see this issue:
 # https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
 ENV LDFLAGS="-lopen-pal"
-RUN ./build LIBS mpi-linux-x86_64-smp clang \
+RUN ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
       ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
     && rm -rf /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 
@@ -345,6 +377,7 @@ WORKDIR /work
 # FROM dev AS demo
 # Either way works, we just chose to build from remote instead.
 FROM sxscollaboration/spectre:dev AS demo
+ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
@@ -357,11 +390,17 @@ RUN apt-get update -y \
     && apt-get install -y vim emacs-nox ffmpeg curl
 
 # Install headless paraview so we can run pvserver in the container
+# Note: there is no arm64 linux binary of paraview available, so don't
+# install paraview when building for Apple Silicon. Apple Silicon users
+# should install a binary of ParaView for Mac and move data to be
+# visualized outside of the container.
 WORKDIR /work
-RUN wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
-  && tar -xzf paraview.tar.gz \
-  && rm paraview.tar.gz \
-  && mv ParaView-* /opt/paraview
+RUN if [ "$TARGETARCH" != "arm64" ] ; then \
+    wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+    && tar -xzf paraview.tar.gz \
+    && rm paraview.tar.gz \
+    && mv ParaView-* /opt/paraview; \
+  fi
 
 ENV PATH "/opt/paraview/bin:$PATH"
 
@@ -380,8 +419,7 @@ RUN mkdir spectre/build && cd spectre/build \
     -D CMAKE_C_COMPILER=clang-10 \
     -D CMAKE_CXX_COMPILER=clang++-10 \
     -D CMAKE_Fortran_COMPILER=gfortran-9 \
-    -D OVERRIDE_ARCH=x86-64 \
-    -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-gcc \
+    -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc \
     -D CMAKE_BUILD_TYPE=Release \
     -D DEBUG_SYMBOLS=OFF \
     -D BUILD_PYTHON_BINDINGS=ON \
