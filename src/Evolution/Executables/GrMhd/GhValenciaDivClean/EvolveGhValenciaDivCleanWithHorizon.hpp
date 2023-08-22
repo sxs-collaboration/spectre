@@ -128,6 +128,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
   using initial_data_tag = typename base::initial_data_tag;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
       gh::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,

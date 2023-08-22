@@ -32,7 +32,9 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) {
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   *needed_fixing = fix_conservatives(
       make_not_null(&get<Tags::TildeD>(*conserved_vars_ptr)),
       make_not_null(&get<Tags::TildeYe>(*conserved_vars_ptr)),
@@ -66,7 +68,8 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
           get<Tags::TildeS<Frame::Inertial>>(*conserved_vars_ptr),
           get<Tags::TildeB<Frame::Inertial>>(*conserved_vars_ptr),
           get<Tags::TildePhi>(*conserved_vars_ptr), spatial_metric,
-          inv_spatial_metric, sqrt_det_spatial_metric, eos);
+          inv_spatial_metric, sqrt_det_spatial_metric, eos,
+          primitive_from_conservative_options);
 }
 
 namespace {
@@ -94,7 +97,9 @@ using KastaunThenNewmanThenPalenzuela =
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,   \
-      const Scalar<DataVector>& sqrt_det_spatial_metric);
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                    \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,

@@ -65,8 +65,8 @@ DomainCreator:
 
 VariableFixing:
   FixConservatives:
-    CutoffD: 1.0e-12
-    MinimumValueOfD: 1.0e-12
+    CutoffD: &CutoffD 2.0e-12
+    MinimumValueOfD: &MinimumD 1.0e-12
     CutoffYe: 0.0
     MinimumValueOfYe: 0.0
     SafetyFactorForB: 1.0e-12
@@ -81,6 +81,10 @@ VariableFixing:
   LimitLorentzFactor:
     MaxDensityCutoff: 1.0e-08
     LorentzFactorCap: 10.0
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
 
 EvolutionSystem:
   ValenciaDivClean:

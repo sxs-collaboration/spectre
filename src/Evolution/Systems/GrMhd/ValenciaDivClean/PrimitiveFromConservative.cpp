@@ -59,7 +59,9 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
           const Scalar<DataVector>& sqrt_det_spatial_metric,
           const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-              equation_of_state) {
+              equation_of_state,
+          const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+              primitive_from_conservative_options) {
   get(*divergence_cleaning_field) =
       get(tilde_phi) / get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
@@ -103,32 +105,71 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   rest_mass_density_times_lorentz_factor =
       get(tilde_d) / get(sqrt_det_spatial_metric);
 
+  // Parameters for quick exit from inversion
+  const double cutoffD =
+      primitive_from_conservative_options.cutoff_d_for_inversion();
+  const double floorD =
+      primitive_from_conservative_options.density_when_skipping_inversion();
+
   // This may need bounds
   // limit Ye to table bounds once that is implemented
-
   for (size_t s = 0; s < total_energy_density.size(); ++s) {
     get(*electron_fraction)[s] =
         std::min(0.5, std::max(get(tilde_ye)[s] / get(tilde_d)[s], 0.));
 
     std::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
         primitive_data = std::nullopt;
-    tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(
-        [&pressure, &primitive_data, &total_energy_density,
-         &momentum_density_squared, &momentum_density_dot_magnetic_field,
-         &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
-         &equation_of_state, &s, &electron_fraction](auto scheme) {
-          using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
-          if (not primitive_data.has_value()) {
-            primitive_data =
-                primitive_recovery_scheme::template apply<ThermodynamicDim>(
-                    get(*pressure)[s], total_energy_density[s],
-                    get(momentum_density_squared)[s],
-                    get(momentum_density_dot_magnetic_field)[s],
-                    get(magnetic_field_squared)[s],
-                    rest_mass_density_times_lorentz_factor[s],
-                    get(*electron_fraction)[s], equation_of_state);
-          }
-        });
+    // Quick exit from inversion in low-density regions where we will
+    // apply atmosphere corrections anyways.
+    if (rest_mass_density_times_lorentz_factor[s] < cutoffD) {
+      if constexpr (ThermodynamicDim == 2) {
+        const double specific_energy_at_point =
+            get(equation_of_state
+                    .specific_internal_energy_from_density_and_temperature(
+                        Scalar<double>{floorD}, Scalar<double>{0.0}));
+        const double pressure_at_point =
+            get(equation_of_state.pressure_from_density_and_energy(
+                Scalar<double>{floorD},
+                Scalar<double>{specific_energy_at_point}));
+        const double specific_enthalpy_at_point =
+            1.0 + specific_energy_at_point + pressure_at_point / floorD;
+        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
+            floorD, 1.0, pressure_at_point, floorD * specific_enthalpy_at_point,
+            get(*electron_fraction)[s]};
+      }
+      else if constexpr (ThermodynamicDim == 1) {
+        const double specific_energy_at_point =
+            get(equation_of_state
+                    .specific_internal_energy_from_density(
+                        Scalar<double>{floorD}));
+        const double pressure_at_point =
+            get(equation_of_state.pressure_from_density(
+                Scalar<double>{floorD}));
+        const double specific_enthalpy_at_point =
+            1.0 + specific_energy_at_point + pressure_at_point / floorD;
+        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
+            floorD, 1.0, pressure_at_point, floorD * specific_enthalpy_at_point,
+            get(*electron_fraction)[s]};
+      }
+    } else {
+      tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(
+          [&pressure, &primitive_data, &total_energy_density,
+           &momentum_density_squared, &momentum_density_dot_magnetic_field,
+           &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
+           &equation_of_state, &s, &electron_fraction](auto scheme) {
+            using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
+            if (not primitive_data.has_value()) {
+              primitive_data =
+                  primitive_recovery_scheme::template apply<ThermodynamicDim>(
+                      get(*pressure)[s], total_energy_density[s],
+                      get(momentum_density_squared)[s],
+                      get(momentum_density_dot_magnetic_field)[s],
+                      get(magnetic_field_squared)[s],
+                      rest_mass_density_times_lorentz_factor[s],
+                      get(*electron_fraction)[s], equation_of_state);
+            }
+          });
+    }
 
     if (primitive_data.has_value()) {
       get(*rest_mass_density)[s] = primitive_data.value().rest_mass_density;
@@ -242,7 +283,9 @@ GENERATE_INSTANTIATIONS(
           const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric, \
           const Scalar<DataVector>& sqrt_det_spatial_metric,                  \
           const EquationsOfState::EquationOfState<true, THERMODIM(data)>&     \
-              equation_of_state);
+              equation_of_state,                                              \
+          const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&    \
+              primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,

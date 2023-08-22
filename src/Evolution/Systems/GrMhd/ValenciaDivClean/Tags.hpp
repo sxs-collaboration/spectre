@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/String.hpp"
@@ -87,6 +88,15 @@ struct DampingParameter {
       "Constraint damping parameter for divergence cleaning"};
   using group = ValenciaDivCleanGroup;
 };
+
+struct PrimitiveFromConservativeOptions {
+  static std::string name() { return "PrimitiveFromConservative"; }
+  using type = grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions;
+  static constexpr Options::String help{
+      "Value of density times Lorentz factor below which we skip conservative "
+      "to primitive inversion."};
+};
+
 }  // namespace OptionTags
 
 namespace Tags {
@@ -100,6 +110,15 @@ struct ConstraintDampingParameter : db::SimpleTag {
     return constraint_damping_parameter;
   }
 };
+
+struct PrimitiveFromConservativeOptions : db::SimpleTag {
+  using type = grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions;
+  using option_tags = tmpl::list<OptionTags::PrimitiveFromConservativeOptions>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& options) { return options; }
+};
+
 }  // namespace Tags
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

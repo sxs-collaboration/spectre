@@ -59,7 +59,9 @@ void Flattener<RecoverySchemesList>::operator()(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Mesh<3>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_inv_jacobian,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos)
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options)
     const {
   // Create a temporary variable for each field's cell average.
   // These temporaries live on the stack and should have minimal cost.
@@ -214,7 +216,7 @@ void Flattener<RecoverySchemesList>::operator()(
                   &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
               *tilde_d, *tilde_ye, *tilde_tau, *tilde_s, tilde_b, tilde_phi,
               spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-              eos)) {
+              eos, primitive_from_conservative_options)) {
     compute_means();
 
     get(*tilde_d) = mean_tilde_d;
@@ -248,7 +250,8 @@ void Flattener<RecoverySchemesList>::operator()(
               make_not_null(
                   &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
               *tilde_d, *tilde_ye, *tilde_tau, *tilde_s, tilde_b, tilde_phi,
-              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos);
+              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
+              primitive_from_conservative_options);
     }
   }
   if (recover_primitives_) {
@@ -314,8 +317,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, ORDERED_RECOVERY_LIST)
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,   \
       const Mesh<3>& mesh,                                                  \
       const Scalar<DataVector>& det_logical_to_inertial_inv_jacobian,       \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos) \
-      const;
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
+        primitive_from_conservative_options) const;
 GENERATE_INSTANTIATIONS(INSTANTIATION, ORDERED_RECOVERY_LIST, (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

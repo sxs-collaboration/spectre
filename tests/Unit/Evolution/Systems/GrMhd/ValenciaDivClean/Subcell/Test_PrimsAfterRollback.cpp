@@ -25,6 +25,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/PrimsAfterRollback.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -119,6 +120,12 @@ void test(const gsl::not_null<std::mt19937*> gen,
         evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
   }
 
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+    primitive_from_conservative_options(cutoff_d_for_inversion,
+                                        density_when_skipping_inversion);
+
   // The DG prims are used as an initial guess so we need to provide them
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::DidRollback, cons_tag, prim_tag,
@@ -127,9 +134,11 @@ void test(const gsl::not_null<std::mt19937*> gen,
       gr::Tags::SqrtDetSpatialMetric<DataVector>, ::domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>>>(
+          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       did_rollback, subcell_cons, dg_prims, spatial_metric, inv_spatial_metric,
-      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, std::move(eos));
+      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, std::move(eos),
+      primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
@@ -171,7 +180,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(box),
         get<grmhd::ValenciaDivClean::Tags::TildePhi>(box), spatial_metric,
         inv_spatial_metric, sqrt_det_spatial_metric,
-        db::get<hydro::Tags::EquationOfStateBase>(box));
+        db::get<hydro::Tags::EquationOfStateBase>(box),
+        primitive_from_conservative_options);
     CHECK_VARIABLES_APPROX(db::get<prim_tag>(box), expected_subcell_prims);
   } else {
     CHECK(db::get<prim_tag>(box).number_of_grid_points() == 0);
