@@ -15,6 +15,7 @@ spectre_target_headers(
   GhostDataForReconstruction.hpp
   Inactive.hpp
   InitialTciData.hpp
+  Interpolators.hpp
   Jacobians.hpp
   Mesh.hpp
   MethodOrder.hpp

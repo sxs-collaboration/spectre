@@ -29,6 +29,7 @@
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
@@ -105,6 +106,15 @@ void test(const bool moving_mesh) {
       "ReconstructionOrder");
   TestHelpers::db::test_simple_tag<subcell::Tags::MethodOrder<Dim>>(
       "MethodOrder");
+  TestHelpers::db::test_simple_tag<
+      subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>>(
+      "InterpolatorsFromFdToNeighborFd");
+  TestHelpers::db::test_simple_tag<
+      subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>(
+      "InterpolatorsFromDgToNeighborFd");
+  TestHelpers::db::test_simple_tag<
+      subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
+      "InterpolatorsFromNeighborDgToFd");
 
   TestHelpers::db::test_compute_tag<
       subcell::Tags::LogicalCoordinatesCompute<Dim>>(
