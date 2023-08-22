@@ -23,6 +23,7 @@ spectre_target_headers(
   HEADERS
   Averager.hpp
   CalculateMeasurementTimescales.hpp
+  CombinedName.hpp
   Component.hpp
   Controller.hpp
   DataVectorHelpers.hpp
