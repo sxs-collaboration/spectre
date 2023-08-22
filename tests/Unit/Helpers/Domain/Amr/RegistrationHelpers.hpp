@@ -15,7 +15,9 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/ElementRegistrar.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::amr {
@@ -72,7 +74,8 @@ struct RegisterWithRegistrant {
   }
 };
 
-struct RegisterElement {
+// [element_registrar_example]
+struct RegisterElement : tt::ConformsTo<Parallel::protocols::ElementRegistrar> {
  private:
   template <typename ParallelComponent, typename RegisterOrDeregisterAction,
             typename DbTagList, typename Metavariables, typename ArrayIndex>
@@ -104,4 +107,6 @@ struct RegisterElement {
         box, cache, array_index);
   }
 };
+// [element_registrar_example]
+
 }  // namespace TestHelpers::amr

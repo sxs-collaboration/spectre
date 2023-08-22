@@ -18,6 +18,8 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Protocols/ElementRegistrar.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 /// \cond
 template <class... Tags>
@@ -47,7 +49,8 @@ namespace observers::Actions {
  * usable outside of iterable actions, e.g. in specialized `pup` functions.
  */
 template <typename RegisterHelper>
-struct RegisterWithObservers {
+struct RegisterWithObservers
+    : tt::ConformsTo<Parallel::protocols::ElementRegistrar> {
  private:
   template <typename ParallelComponent, typename RegisterOrDeregisterAction,
             typename DbTagList, typename Metavariables, typename ArrayIndex>
@@ -69,7 +72,7 @@ struct RegisterWithObservers {
         type_of_observation);
   }
 
- public:
+ public:  // ElementRegistrar protocol
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(db::DataBox<DbTagList>& box,
@@ -90,6 +93,7 @@ struct RegisterWithObservers {
                                                                    array_index);
   }
 
+ public:  // Iterable action
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

@@ -5,8 +5,12 @@
 
 #include <type_traits>
 
+#include "Parallel/Protocols/ElementRegistrar.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace db {
@@ -21,23 +25,8 @@ class GlobalCache;
 
 namespace Parallel {
 namespace detail {
-template <typename Metavariables, typename ParallelComponent,
-          typename = std::void_t<>>
-struct has_registration_list : std::false_type {};
-
-template <typename Metavariables, typename ParallelComponent>
-struct has_registration_list<
-    Metavariables, ParallelComponent,
-    std::void_t<typename Metavariables::template registration_list<
-        ParallelComponent>::type>> : std::true_type {};
-
-template <typename Metavariables, typename ParallelComponent>
-constexpr bool has_registration_list_v =
-    has_registration_list<Metavariables, ParallelComponent>::value;
-
-template <typename Metavariables, typename ParallelComponent>
-using registration_list =
-    typename Metavariables::template registration_list<ParallelComponent>::type;
+CREATE_HAS_TYPE_ALIAS(registration)
+CREATE_HAS_TYPE_ALIAS_V(registration)
 }  // namespace detail
 
 /// @{
@@ -49,23 +38,31 @@ using registration_list =
 /// or are created/destroyed (e.g. during adaptive mesh refinement), these
 /// functions must be called in order to (un)register (old) new elements.
 /// The list of registration actions is obtained from
-/// `Metavariables::registration_list::type`.
+/// `Metavariables::registration::element_registrars`.
+///
+/// \see Parallel::protocols::RegistrationMetavariables
+/// \see Parallel::protocols::ElementRegistrar
 template <typename ParallelComponent, typename DbTagList,
           typename Metavariables, typename ArrayIndex>
 void deregister_element(db::DataBox<DbTagList>& box,
                         Parallel::GlobalCache<Metavariables>& cache,
                         const ArrayIndex& array_index) {
-  if constexpr (detail::has_registration_list_v<Metavariables,
-                                                ParallelComponent>) {
-    using registration_list =
-        typename Metavariables::template registration_list<
-            ParallelComponent>::type;
-    tmpl::for_each<registration_list>(
-        [&box, &cache, &array_index](auto registration_v) {
-          using registration = typename decltype(registration_v)::type;
-          registration::template perform_deregistration<ParallelComponent>(
-              box, cache, array_index);
-        });
+  if constexpr (detail::has_registration_v<Metavariables>) {
+    static_assert(tt::assert_conforms_to_v<
+                  typename Metavariables::registration,
+                  Parallel::protocols::RegistrationMetavariables>);
+    using element_registrars =
+        typename Metavariables::registration::element_registrars;
+    if constexpr (tmpl::has_key<element_registrars, ParallelComponent>::value) {
+      tmpl::for_each<tmpl::at<element_registrars, ParallelComponent>>(
+          [&box, &cache, &array_index](auto registration_v) {
+            using registration = typename decltype(registration_v)::type;
+            static_assert(tt::assert_conforms_to_v<
+                          registration, Parallel::protocols::ElementRegistrar>);
+            registration::template perform_deregistration<ParallelComponent>(
+                box, cache, array_index);
+          });
+    }
   }
 }
 
@@ -74,17 +71,22 @@ template <typename ParallelComponent, typename DbTagList,
 void register_element(db::DataBox<DbTagList>& box,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const ArrayIndex& array_index) {
-  if constexpr (detail::has_registration_list_v<Metavariables,
-                                                ParallelComponent>) {
-    using registration_list =
-        typename Metavariables::template registration_list<
-            ParallelComponent>::type;
-    tmpl::for_each<registration_list>(
-        [&box, &cache, &array_index](auto registration_v) {
-          using registration = typename decltype(registration_v)::type;
-          registration::template perform_registration<ParallelComponent>(
-              box, cache, array_index);
-        });
+  if constexpr (detail::has_registration_v<Metavariables>) {
+    static_assert(tt::assert_conforms_to_v<
+                  typename Metavariables::registration,
+                  Parallel::protocols::RegistrationMetavariables>);
+    using element_registrars =
+        typename Metavariables::registration::element_registrars;
+    if constexpr (tmpl::has_key<element_registrars, ParallelComponent>::value) {
+      tmpl::for_each<tmpl::at<element_registrars, ParallelComponent>>(
+          [&box, &cache, &array_index](auto registration_v) {
+            using registration = typename decltype(registration_v)::type;
+            static_assert(tt::assert_conforms_to_v<
+                          registration, Parallel::protocols::ElementRegistrar>);
+            registration::template perform_registration<ParallelComponent>(
+                box, cache, array_index);
+          });
+    }
   }
 }
 /// @}

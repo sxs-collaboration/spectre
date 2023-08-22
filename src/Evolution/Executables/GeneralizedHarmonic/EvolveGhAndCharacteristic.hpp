@@ -42,6 +42,7 @@
 #include "Options/String.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -62,6 +63,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 /// \cond
@@ -215,11 +217,10 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
   using interpolation_target_tags =
       tmpl::list<CceWorldtubeTarget<false>, CceWorldtubeTarget<true>>;
 
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent, gh_dg_element_array>,
-        dg_registration_list, tmpl::list<>>;
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<gh_dg_element_array, dg_registration_list>>;
   };
 
   using component_list = tmpl::flatten<tmpl::list<
