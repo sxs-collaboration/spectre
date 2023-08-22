@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <string>
@@ -34,9 +33,11 @@
 #include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
+#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -433,6 +434,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
       "TciGridHistory");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciStatus>("TciStatus");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciDecision>("TciDecision");
+  TestHelpers::db::test_base_tag<subcell::Tags::Reconstructor>("Reconstructor");
 
   for (const bool moving_mesh : {false, true}) {
     test<1>(moving_mesh);
