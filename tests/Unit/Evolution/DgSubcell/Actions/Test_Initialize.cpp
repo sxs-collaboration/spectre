@@ -526,6 +526,18 @@ void test(const bool always_use_subcell, const bool interior_element,
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::ReconstructionOrder<Dim>>(runner,
                                                                       self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp,
+        evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>>(
+      runner, self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp,
+        evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>(
+      runner, self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp,
+        evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
+      runner, self_id));
 
   // Check things have correct values.
   CHECK(ActionTesting::get_databox_tag<
