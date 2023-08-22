@@ -28,11 +28,17 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
   // finished running, since there could be multiple tests run in a single
   // executable launch. This is done in TestMain(Charm).cpp.
   if (not initialized) {
+    PyStatus status;
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    // Populate the Python config with the standard values
+    status = PyConfig_Read(&config);
     // Don't produce the __pycache__ dir (python 3.2 and newer) or the .pyc
     // files (python 2.7) in the tests directory to avoid cluttering the source
     // tree. The overhead of not having the compile files is <= 0.01s
-    Py_DontWriteBytecodeFlag = 1;
-    Py_Initialize();
+    config.write_bytecode = 0;
+    status = Py_InitializeFromConfig(&config);
+    PyConfig_Clear(&config);
 
     // clang-tidy: Do not use const-cast
     PyObject* pyob_old_paths =
