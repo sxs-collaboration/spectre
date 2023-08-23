@@ -8,13 +8,17 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "ControlSystem/Averager.hpp"
+#include "ControlSystem/CombinedName.hpp"
 #include "ControlSystem/Controller.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
@@ -24,9 +28,12 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 /// \cond
+template <class Metavariables, typename ControlSystem>
+struct ControlComponent;
 namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
@@ -204,5 +211,48 @@ struct Verbosity : db::SimpleTag {
   static type create_from_options(const ::Verbosity verbosity) {
     return verbosity;
   }
+};
+
+/*!
+ * \brief Tag meant to be stored in the GlobalCache that stores a map between
+ * names of control systems and the "combined" name that that control system is
+ * part of.
+ *
+ * \details The "combined" name for each control system is computed using
+ * `control_system::system_to_combined_names` where the list of control systems
+ * is taken from the `component_list` type alias of the metavariables. Each
+ * "combined" name corresponds to a different
+ * `control_system::protocols::Measurement`.
+ */
+struct SystemToCombinedNames : db::SimpleTag {
+  using type = std::unordered_map<std::string, std::string>;
+
+  template <typename Metavariables>
+  using option_tags = tmpl::list<>;
+  static constexpr bool pass_metavariables = true;
+
+ private:
+  template <typename Component>
+  using system = typename Component::control_system;
+
+ public:
+  template <typename Metavariables>
+  static type create_from_options() {
+    using all_control_components =
+        metafunctions::all_control_components<Metavariables>;
+    using all_control_systems =
+        tmpl::transform<all_control_components, tmpl::bind<system, tmpl::_1>>;
+
+    return system_to_combined_names<all_control_systems>();
+  }
+};
+
+/*!
+ * \brief Map between "combined" names and the
+ * `control_system::UpdateAggregator`s that go with each.
+ */
+struct UpdateAggregators : db::SimpleTag {
+  using type =
+      std::unordered_map<std::string, control_system::UpdateAggregator>;
 };
 }  // namespace control_system::Tags
