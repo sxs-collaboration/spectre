@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   DriveToTarget.cpp
+  Loehner.cpp
   Random.cpp
   TruncationError.cpp
   )
@@ -20,6 +21,7 @@ spectre_target_headers(
   Criteria.hpp
   Criterion.hpp
   DriveToTarget.hpp
+  Loehner.hpp
   Random.hpp
   TruncationError.hpp
   )
