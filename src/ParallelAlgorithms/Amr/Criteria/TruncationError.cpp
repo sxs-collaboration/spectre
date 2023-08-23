@@ -29,6 +29,7 @@ void max_over_components(
   // still satisfy the target with the highest mode removed will the element
   // decrease p refinement in that dimension.
   PowerMonitors::power_monitors(power_monitors_buffer, tensor_component, mesh);
+  const double umax = max(abs(tensor_component));
   for (size_t d = 0; d < Dim; ++d) {
     // Skip this dimension if we have already decided to refine it
     if (gsl::at(*result, d) == Flag::IncreaseResolution) {
@@ -38,7 +39,6 @@ void max_over_components(
     // Increase p refinement if the truncation error exceeds the target
     const double rel_truncation_error =
         pow(10, -PowerMonitors::relative_truncation_error(modes, modes.size()));
-    const double umax = max(abs(tensor_component));
     const double abs_truncation_error = umax * rel_truncation_error;
     if ((target_rel_truncation_error.has_value() and
          rel_truncation_error > target_rel_truncation_error.value()) or
