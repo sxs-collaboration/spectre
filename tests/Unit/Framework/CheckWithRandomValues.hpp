@@ -163,20 +163,18 @@ void check_with_random_values_impl(
     using Tag = tmpl::type_from<decltype(tag)>;
     const auto result =
         tuples::get<Tag>((klass.*f)(std::get<ArgumentIs>(args)...));
-    INFO("function: " << function_names[count]);
-    try {
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          result,
-          (pypp::call<std::decay_t<decltype(result)>>(
-              module_name, function_names[count], std::get<ArgumentIs>(args)...,
-              forward_to_pypp<std::decay_t<decltype(result)>>(
-                  std::get<MemberArgsIs>(member_args), used_for_size)...)),
-          Approx::custom().epsilon(epsilon).scale(1.0));
-      count++;
-    } catch (const std::exception& e) {
-      INFO("Python call failed: " << e.what());
-      CHECK(false);
-    }
+    const auto& function_name = function_names[count];
+    CAPTURE(module_name);
+    CAPTURE(function_name);
+    CAPTURE(args);
+    CAPTURE(member_args);
+    const auto python_result = pypp::call<std::decay_t<decltype(result)>>(
+        module_name, function_name, std::get<ArgumentIs>(args)...,
+        forward_to_pypp<std::decay_t<decltype(result)>>(
+            std::get<MemberArgsIs>(member_args), used_for_size)...);
+    CHECK_ITERABLE_CUSTOM_APPROX(result, python_result,
+                                 Approx::custom().epsilon(epsilon).scale(1.0));
+    ++count;
   });
 }
 
@@ -209,19 +207,16 @@ void check_with_random_values_impl(
       return (klass.*f)(std::get<ArgumentIs>(args)...);
     }
   }();
-  INFO("function: " << function_name);
-  try {
-    CHECK_ITERABLE_CUSTOM_APPROX(
-        result,
-        pypp::call<ResultType>(
-            module_name, function_name, std::get<ArgumentIs>(args)...,
-            forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
-                                        used_for_size)...),
-        Approx::custom().epsilon(epsilon).scale(1.0));
-    } catch (const std::exception& e) {
-      INFO("Python call failed: " << e.what());
-      CHECK(false);
-    }
+  CAPTURE(module_name);
+  CAPTURE(function_name);
+  CAPTURE(args);
+  CAPTURE(member_args);
+  const auto python_result = pypp::call<ResultType>(
+      module_name, function_name, std::get<ArgumentIs>(args)...,
+      forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
+                                  used_for_size)...);
+  CHECK_ITERABLE_CUSTOM_APPROX(result, python_result,
+                               Approx::custom().epsilon(epsilon).scale(1.0));
 }
 
 template <class F, class T, class Klass, class... ReturnTypes,
@@ -265,20 +260,18 @@ void check_with_random_values_impl(
     (void)member_args;    // avoid compiler warning
     (void)used_for_size;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
-    INFO("function: " << function_names[iter]);
-    try {
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          std::get<iter>(results),
-          (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
-              module_name, function_names[iter], std::get<ArgumentIs>(args)...,
-              forward_to_pypp<
-                  std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
-                  std::get<MemberArgsIs>(member_args), used_for_size)...)),
-          Approx::custom().epsilon(epsilon).scale(1.0));
-    } catch (const std::exception& e) {
-      INFO("Python call failed: " << e.what());
-      CHECK(false);
-    }
+    const auto& function_name = function_names[iter];
+    CAPTURE(module_name);
+    CAPTURE(function_name);
+    CAPTURE(args);
+    CAPTURE(member_args);
+    const auto python_result = pypp::call<
+        std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
+        module_name, function_name, std::get<ArgumentIs>(args)...,
+        forward_to_pypp<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
+            std::get<MemberArgsIs>(member_args), used_for_size)...);
+    CHECK_ITERABLE_CUSTOM_APPROX(std::get<iter>(results), python_result,
+                                 Approx::custom().epsilon(epsilon).scale(1.0));
   };
   EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, ResultIs>{}));
 }
