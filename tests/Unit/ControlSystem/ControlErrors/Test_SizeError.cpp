@@ -55,6 +55,23 @@ struct Metavars {
   void pup(PUP::er& /*p*/) {}
 };
 
+void test_control_error_delta_r() {
+  const double horizon_00 = 2.0;
+  const double dt_horizon_00 = 1.0;
+  const double lambda_00 = 3.0;
+  const double dt_lambda_00 = 4.0;
+  // This is 0 so we avoid the term with Y00 so we can get an (easy) exact
+  // calculation
+  const double grid_frame_excision_radius = 0.0;
+
+  const double control_error_delta_r =
+      control_system::size::control_error_delta_r(horizon_00, dt_horizon_00,
+                                                  lambda_00, dt_lambda_00,
+                                                  grid_frame_excision_radius);
+
+  CHECK(control_error_delta_r == approx(-2.5));
+}
+
 template <typename InitialState, typename FinalState>
 void test_size_error_one_step(
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
@@ -141,11 +158,19 @@ void test_size_error_one_step(
                            cartesian_coords.get(i) /
                            distorted_excision_boundary_radius_initial;
   }
+
+  const auto lambda_dt_lambda = function_of_time->func_and_deriv(time);
+  const double control_error_delta_r =
+      control_system::size::control_error_delta_r(
+          horizon.coefficients()[0], time_deriv_horizon.coefficients()[0],
+          lambda_dt_lambda[0][0], lambda_dt_lambda[1][0],
+          grid_excision_boundary_radius);
+
   auto error = control_system::size::control_error(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
-      predictor_delta_radius, time, horizon, excision_boundary,
-      grid_excision_boundary_radius, time_deriv_horizon, lapse, shifty_quantity,
-      spatial_metric, inverse_spatial_metric, function_of_time);
+      predictor_delta_radius, time, control_error_delta_r,
+      time_deriv_horizon.coefficients()[0], horizon, excision_boundary, lapse,
+      shifty_quantity, spatial_metric, inverse_spatial_metric);
 
   // Check error and parts of info.
   //
@@ -169,7 +194,16 @@ void test_size_error_one_step(
                                  control_system::protocols::ControlError>);
 
     auto error_class = TestHelpers::test_creation<size_error>(
-        "MaxNumTimesForZeroCrossingPredictor: 4");
+        "MaxNumTimesForZeroCrossingPredictor: 4\n"
+        "SmoothAvgTimescaleFraction: 0.25\n"
+        "SmootherTuner:\n"
+        "  InitialTimescales: 0.2\n"
+        "  MinTimescale: 1.0e-4\n"
+        "  MaxTimescale: 20.0\n"
+        "  IncreaseThreshold: 2.5e-4\n"
+        "  DecreaseThreshold: 1.0e-3\n"
+        "  IncreaseFactor: 1.01\n"
+        "  DecreaseFactor: 0.98\n");
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
@@ -203,7 +237,11 @@ void test_size_error_one_step(
     const auto control_error_history = error_class.control_error_history();
 
     // These should be identical because the control error class calls the
-    // control_error function
+    // control_error function. The horizon smoothing averager would normally
+    // make this slightly different, but it needs a few times before it can do
+    // anything. Therefore, the smoothing aspect of the control error from class
+    // is not tested yet. So in the meantime, the initial values for the horizon
+    // coef and its derivatives are the ones specified above
     CHECK(control_error_from_class == error.control_error);
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
@@ -292,6 +330,7 @@ void test_size_error(const double grid_excision_boundary_radius,
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
+  test_control_error_delta_r();
   // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
   test_size_error<control_system::size::States::Initial,

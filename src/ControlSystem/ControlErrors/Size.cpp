@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ControlSystem/Averager.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -16,10 +17,33 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 
-namespace control_system::ControlErrors {
+namespace control_system {
+namespace size {
+double control_error_delta_r(const double horizon_00,
+                             const double dt_horizon_00, const double lambda_00,
+                             const double dt_lambda_00,
+                             const double grid_frame_excision_sphere_radius) {
+  const double Y00 = 0.25 * M_2_SQRTPI;
+
+  // This corresponds to 'DeltaRPolicy=Relative' in SpEC.
+  return dt_horizon_00 * (lambda_00 - grid_frame_excision_sphere_radius / Y00) /
+             horizon_00 -
+         dt_lambda_00;
+}
+}  // namespace size
+
+namespace ControlErrors {
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
-Size<DerivOrder, Horizon>::Size(const int max_times) {
+Size<DerivOrder, Horizon>::Size(const int max_times,
+                                const double smooth_avg_timescale_frac,
+                                TimescaleTuner smoother_tuner)
+    : smoother_tuner_(std::move(smoother_tuner)) {
+  if (not smoother_tuner_.timescales_have_been_set()) {
+    smoother_tuner_.resize_timescales(1);
+  }
   const auto max_times_size_t = static_cast<size_t>(max_times);
+  horizon_coef_averager_ =
+      Averager<DerivOrder>{smooth_avg_timescale_frac, true};
   info_.state = std::make_unique<size::States::Initial>();
   char_speed_predictor_ = intrp::ZeroCrossingPredictor{3, max_times_size_t};
   comoving_char_speed_predictor_ =
@@ -31,11 +55,14 @@ Size<DerivOrder, Horizon>::Size(const int max_times) {
                                      "StateNumber",
                                      "DiscontinuousChangeHasOccurred",
                                      "FunctionOfTime",
-                                     "dtFunctionOfTime",
+                                     "DtFunctionOfTime",
                                      "HorizonCoef00",
-                                     "dtHorizonCoef00",
+                                     "AveragedDtHorizonCoef00",
+                                     "RawDtHorizonCoef00",
                                      "MinDeltaR",
                                      "MinRelativeDeltaR",
+                                     "AvgDeltaR",
+                                     "AvgRelativeDeltaR",
                                      "ControlErrorDeltaR",
                                      "TargetCharSpeed",
                                      "MinCharSpeed",
@@ -77,6 +104,8 @@ Size<DerivOrder, Horizon>::control_error_history() const {
 
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 void Size<DerivOrder, Horizon>::pup(PUP::er& p) {
+  p | smoother_tuner_;
+  p | horizon_coef_averager_;
   p | info_;
   p | char_speed_predictor_;
   p | comoving_char_speed_predictor_;
@@ -99,4 +128,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
 #undef INSTANTIATE
 #undef HORIZON
 #undef DERIV_ORDER
-}  // namespace control_system::ControlErrors
+}  // namespace ControlErrors
+}  // namespace control_system

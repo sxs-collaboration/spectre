@@ -32,9 +32,6 @@ namespace control_system::size {
 struct ErrorDiagnostics {
   double control_error;
   size_t state_number;
-  double lambda_00;
-  double horizon_00;
-  double dt_horizon_00;
   double min_delta_r;
   double min_relative_delta_r;
   double min_comoving_char_speed;
@@ -63,17 +60,13 @@ struct ErrorDiagnostics {
  * \param predictor_delta_radius ZeroCrossingPredictor for the difference
  *        in radius between the horizon and the excision boundary.
  * \param time the current time.
+ * \param control_error_delta_r the control error for the DeltaR state. This is
+ *        used in other states as well.
+ * \param dt_lambda_00 the time derivative of the map parameter lambda_00
  * \param apparent_horizon the current horizon in frame Frame.
  * \param excision_boundary a Strahlkorper representing the excision
  *        boundary in frame Frame.  Note that the excision boundary is assumed
  *        to be a sphere in the grid frame.
- * \param grid_frame_excision_boundary_radius the radius of the (assumed
- *        spherical) excision boundary in the grid frame.
- * \param time_deriv_apparent_horizon Time derivative of apparent_horizon,
- *        where the time derivative is taken in frame Frame.  That is, this
- *        should simply be lim dt->0
- *        (apparent_horizon(t+dt)-apparent_horizon(t))/dt with no advective
- *        terms.
  * \param lapse_on_excision_boundary Lapse on the excision boundary.
  * \param frame_components_of_grid_shift The quantity
  *        \f$\beta^i \frac{\partial x^\hat{i}}{\partial x_i}\f$ (see below)
@@ -81,8 +74,6 @@ struct ErrorDiagnostics {
  *        Frame.
  * \param spatial_metric_on_excision_boundary metric in frame Frame.
  * \param inverse_spatial_metric_on_excision_boundary metric in frame Frame.
- * \param function_of_time FunctionOfTime that is being controlled.
- *        This function_of_time contains DataVectors of size 1.
  * \return Returns an `ErrorDiagnostics` object which, in addition to the actual
  *         control error, holds a lot of diagnostic information about how the
  *         control error was calculated. This information could be used to print
@@ -142,16 +133,13 @@ ErrorDiagnostics control_error(
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
-    double time, const Strahlkorper<Frame>& apparent_horizon,
+    double time, double control_error_delta_r, double dt_lambda_00,
+    const Strahlkorper<Frame>& apparent_horizon,
     const Strahlkorper<Frame>& excision_boundary,
-    double grid_frame_excision_boundary_radius,
-    const Strahlkorper<Frame>& time_deriv_apparent_horizon,
     const Scalar<DataVector>& lapse_on_excision_boundary,
     const tnsr::I<DataVector, 3, Frame>& frame_components_of_grid_shift,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric_on_excision_boundary,
     const tnsr::II<DataVector, 3, Frame>&
-        inverse_spatial_metric_on_excision_boundary,
-    const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&
-        function_of_time);
+        inverse_spatial_metric_on_excision_boundary);
 
 }  // namespace control_system::size
