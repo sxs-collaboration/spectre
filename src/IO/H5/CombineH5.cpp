@@ -1,0 +1,151 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "IO/H5/CombineH5.hpp"
+
+#include <boost/program_options.hpp>
+#include <cstddef>
+#include <cstdlib>
+#include <iterator>
+#include <string>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/CheckH5PropertiesMatch.hpp"
+#include "IO/H5/File.hpp"
+#include "IO/H5/SourceArchive.hpp"
+#include "IO/H5/VolumeData.hpp"
+#include "Parallel/Printf.hpp"
+#include "Utilities/FileSystem.hpp"
+#include "Utilities/MakeString.hpp"
+#include "Utilities/StdHelpers.hpp"
+
+namespace {
+// Returns all the observation_ids stored in the volume files. Assumes all
+// volume files have the same observation ids
+std::vector<size_t> get_observation_ids(const std::string& file_prefix,
+                                        const std::string& subfile_name) {
+  const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_prefix + "0.h5",
+                                                          false);
+  const auto& initial_volume_file =
+      initial_file.get<h5::VolumeData>("/" + subfile_name);
+  return initial_volume_file.list_observation_ids();
+}
+
+// Returns total number of elements for an observation id across all volume data
+// files
+size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
+                              const std::string& subfile_name,
+                              const size_t& observation_id) {
+  size_t total_elements = 0;
+  for (const auto& input_filename : input_filenames) {
+    const h5::H5File<h5::AccessType::ReadOnly> original_file(input_filename,
+                                                             false);
+    const auto& original_volume_file =
+        original_file.get<h5::VolumeData>("/" + subfile_name);
+    total_elements += original_volume_file.get_extents(observation_id).size();
+  }
+  return total_elements;
+}
+} //namespace
+namespace h5 {
+
+void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
+                const std::string& output, const bool check_src) {
+  // Parses for and stores all input files to be looped over
+  const std::vector<std::string>& file_names =
+      file_system::glob(file_prefix + "[0-9]*.h5");
+  Parallel::printf("Processing files:\n%s\n",
+                   std::string{MakeString{} << file_names}.c_str());
+
+  // Checks that volume data was generated with identical versions of SpECTRE
+  if (check_src){
+    if (!h5::check_src_files_match(file_names)) {
+    ERROR(
+        "One or more of your files were found to have differing src.tar.gz "
+        "files, meaning that they may be from differing versions of SpECTRE.");
+  }
+  }
+
+  // Checks that volume data files contain the same observation ids
+  if (!h5::check_observation_ids_match(file_names, subfile_name)) {
+    ERROR(
+        "One or more of your files were found to have differing observation "
+        "ids, meaning they may be from different runs of your SpECTRE "
+        "executable or were corrupted.");
+  }
+
+  // Braces to specify scope for H5 file
+  {
+    // Instantiates the output file and the .vol subfile to be filled with the
+    // combined data later
+    Parallel::printf("Creating output file: %s0.h5\n", output.c_str());
+    h5::H5File<h5::AccessType::ReadWrite> new_file(output + "0.h5", true);
+    new_file.insert<h5::VolumeData>("/" + subfile_name + ".vol");
+    new_file.close_current_object();
+  }  // End of scope for H5 file
+
+  // Obtains list of observation ids to loop over
+  const std::vector<size_t> observation_ids =
+      get_observation_ids(file_prefix, subfile_name);
+
+  // Loops over observation ids to write volume data by observation id
+  for (size_t obs_index = 0; obs_index < observation_ids.size(); ++obs_index) {
+    const size_t obs_id = observation_ids[obs_index];
+    // Pre-calculates size of vector to store element data and allocates
+    // corresponding memory
+    const size_t vector_dim =
+        get_number_of_elements(file_names, subfile_name, obs_id);
+    std::vector<ElementVolumeData> element_data;
+    element_data.reserve(vector_dim);
+
+    double obs_val = 0.0;
+    std::optional<std::vector<char>> serialized_domain{};
+    std::optional<std::vector<char>> serialized_functions_of_time{};
+
+    // Loops over input files to append element data into a single vector to be
+    // stored in a single H5
+    bool printed = false;
+    for (auto const& file_name : file_names) {
+      const h5::H5File<h5::AccessType::ReadOnly> original_file(file_name,
+                                                               false);
+      const auto& original_volume_file =
+          original_file.get<h5::VolumeData>("/" + subfile_name);
+      obs_val = original_volume_file.get_observation_value(obs_id);
+      if (not printed) {
+        Parallel::printf(
+            "Processing obsevation ID %lo (%lo/%lo) with value %1.14e\n",
+            obs_id, obs_index, observation_ids.size(), obs_val);
+        printed = true;
+      }
+      Parallel::printf("  Processing file: %s\n", file_name.c_str());
+
+      serialized_domain = original_volume_file.get_domain(obs_id);
+      serialized_functions_of_time =
+          original_volume_file.get_functions_of_time(obs_id);
+
+      // Get vector of element data for this `obs_id` and `file_name`
+      std::vector<ElementVolumeData> data_by_element =
+          std::move(std::get<2>(original_volume_file.get_data_by_element(
+              obs_val * (1.0 - 4.0 * std::numeric_limits<double>::epsilon()),
+              obs_val * (1.0 + 4.0 * std::numeric_limits<double>::epsilon()),
+              std::nullopt)[0]));
+
+      // Append vector to total vector of element data for this `obs_id`
+      element_data.insert(element_data.end(),
+                          std::make_move_iterator(data_by_element.begin()),
+                          std::make_move_iterator(data_by_element.end()));
+      data_by_element.clear();
+      original_file.close_current_object();
+    }
+
+    h5::H5File<h5::AccessType::ReadWrite> new_file(output + "0.h5", true);
+    auto& new_volume_file = new_file.get<h5::VolumeData>("/" + subfile_name);
+    new_volume_file.write_volume_data(obs_id, obs_val, element_data,
+                                      serialized_domain,
+                                      serialized_functions_of_time);
+    new_file.close_current_object();
+  }
+}
+}  // namespace h5

@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "IO/H5/Python/CombineH5.hpp"
 #include "IO/H5/Python/Dat.hpp"
 #include "IO/H5/Python/File.hpp"
 #include "IO/H5/Python/TensorData.hpp"
@@ -19,4 +20,5 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py_bindings::bind_h5dat(m);
   py_bindings::bind_h5vol(m);
   py_bindings::bind_tensordata(m);
+  py_bindings::bind_h5combine(m);
 }

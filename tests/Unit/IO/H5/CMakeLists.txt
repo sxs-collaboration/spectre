@@ -35,6 +35,21 @@ target_link_libraries(
   )
 
 spectre_add_python_bindings_test(
+  "Unit.IO.H5.CombineH5.Python"
+  "Test_CombineH5.py"
+  "unit;IO;H5;Python"
+  PyH5
+  )
+
+if(${BUILD_PYTHON_BINDINGS})
+  set_tests_properties(
+    "Unit.IO.H5.CombineH5.Python"
+    PROPERTIES
+    TIMEOUT 10
+    )
+endif()
+
+spectre_add_python_bindings_test(
   "Unit.IO.H5.Python"
   "Test_H5.py"
   "unit;IO;H5;python"
