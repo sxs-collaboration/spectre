@@ -18,8 +18,9 @@ set_property(TARGET Libxsmm
 set_property(TARGET Libxsmm
   APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBXSMM_LIBRARIES})
 # LIBXSMM falls back to blas, so we need to link against Blas with it as well.
+find_package(BLAS REQUIRED)
 set_property(TARGET Libxsmm
-  APPEND PROPERTY INTERFACE_LINK_LIBRARIES Blas)
+  APPEND PROPERTY INTERFACE_LINK_LIBRARIES BLAS::BLAS)
 
 add_interface_lib_headers(
   TARGET Libxsmm

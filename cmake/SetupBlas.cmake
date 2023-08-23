@@ -8,13 +8,9 @@ file(APPEND
   "BLAS_LIBRARIES: ${BLAS_LIBRARIES}\n"
   )
 
-add_library(Blas INTERFACE IMPORTED)
-set_property(TARGET Blas
-  APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${BLAS_LIBRARIES})
-
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
-  Blas
+  BLAS::BLAS
   )
 
 # Check if we have found OpenBLAS and can disable its multithreading, since it

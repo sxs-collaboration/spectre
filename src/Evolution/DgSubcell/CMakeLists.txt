@@ -77,7 +77,7 @@ target_link_libraries(
   Time
 
   PRIVATE
-  Blas
+  BLAS::BLAS
   ErrorHandling
   Serialization
   Utilities
