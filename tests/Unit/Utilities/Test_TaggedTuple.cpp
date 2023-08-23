@@ -87,9 +87,31 @@ void test_general() {
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
+    const std::string expected_output =
+      "TaggedTuple:\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::name\n"
+      "Type:  std::string\n"
+      "Value: bla\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::age\n"
+      "Type:  int\n"
+      "Value: 17\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::email\n"
+      "Type:  std::string\n"
+      "Value: bla@bla.bla\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::parents\n"
+      "Type:  std::vector<std::string>\n"
+      "Value: (Mom,Dad)\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::not_streamable_tag\n"
+      "Type:  (anonymous namespace)::not_streamable\n"
+      "Value: UNSTREAMABLE\n";
     std::stringstream ss;
     ss << test;
-    CHECK(ss.str() == "(bla, 17, bla@bla.bla, (Mom,Dad), NOT STREAMABLE)");
+    CHECK(ss.str() == expected_output);
   }
   CHECK(test.size() == 5);
   // [get_example]
@@ -110,9 +132,10 @@ void test_general() {
   CHECK(17 == tuples::get<age>(test2));
 
   {
+    const std::string expected_output = "TaggedTuple:\n";
     std::stringstream ss;
     ss << tuples::TaggedTuple<>{};
-    CHECK(ss.str() == "()");
+    CHECK(ss.str() == expected_output);
   }
 
   test_serialization(test2);

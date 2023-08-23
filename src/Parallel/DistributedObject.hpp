@@ -40,6 +40,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "Parallel/Tags/DistributedObjectTags.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -181,9 +182,10 @@ class DistributedObject<ParallelComponent,
 
   using inbox_type = tuples::tagged_tuple_from_typelist<inbox_tags_list>;
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
+  using distributed_object_tags =
+      typename Tags::distributed_object_tags<metavariables, array_index>;
   using databox_type = db::compute_databox_type<tmpl::flatten<tmpl::list<
-      Tags::MetavariablesImpl<metavariables>, Tags::ArrayIndexImpl<array_index>,
-      Tags::GlobalCacheProxy<metavariables>,
+      distributed_object_tags,
       typename parallel_component::simple_tags_from_options,
       Tags::GlobalCacheImplCompute<metavariables>,
       Tags::ResourceInfoReference<metavariables>,
@@ -509,9 +511,9 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     }
     global_cache_proxy_ = global_cache_proxy;
     ::Initialization::mutate_assign<
-        tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<metavariables>,
-                   InitializationTags...>>(
-        make_not_null(&box_), array_index_, global_cache_proxy_,
+        tmpl::push_back<distributed_object_tags, InitializationTags...>>(
+        make_not_null(&box_), metavariables{}, array_index_,
+        global_cache_proxy_,
         std::move(get<InitializationTags>(initialization_items))...);
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
@@ -538,9 +540,9 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     this->setMigratable(true);
     global_cache_proxy_ = global_cache_proxy;
     phase_ = current_phase;
-    ::Initialization::mutate_assign<
-        tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<metavariables>>>(
-        make_not_null(&box_), array_index_, global_cache_proxy_);
+    ::Initialization::mutate_assign<distributed_object_tags>(
+        make_not_null(&box_), metavariables{}, array_index_,
+        global_cache_proxy_);
     callback->invoke();
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);

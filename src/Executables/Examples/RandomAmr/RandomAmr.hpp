@@ -13,7 +13,9 @@
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/TagsDomain.hpp"
 #include "Executables/Examples/RandomAmr/InitializeDomain.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -34,6 +36,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -110,7 +113,10 @@ struct RandomAmrMetavars {
   void pup(PUP::er& /*p*/) {}
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors = tmpl::list<>;
+    using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
+        domain::Tags::InitialExtents<Dim>,
+        domain::Tags::InitialRefinementLevels<Dim>,
+        evolution::dg::Tags::Quadrature>>;
   };
 };
 

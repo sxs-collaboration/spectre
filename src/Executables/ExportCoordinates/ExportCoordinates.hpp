@@ -28,6 +28,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/Tags.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -67,6 +68,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -328,9 +330,16 @@ struct Metavariables {
                      Actions::FindGlobalMinimumGridSpacing>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors =
-        tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
-                   evolution::dg::Initialization::ProjectDomain<volume_dim>>;
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<Dim>,
+            ::domain::Tags::InitialRefinementLevels<Dim>,
+            evolution::dg::Tags::Quadrature,
+            evolution::dg::Tags::NeighborMesh<Dim>>>;
   };
 
   using dg_element_array = DgElementArray<

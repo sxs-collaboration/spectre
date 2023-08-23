@@ -275,6 +275,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   std::string print_types() const;
 
   /// Print the items
+  template <bool PrintImmutableItems = true>
   std::string print_items() const;
 
   /// Retrieve the tag `Tag`, should be called by the free function db::get
@@ -431,6 +432,7 @@ std::string DataBox<tmpl::list<Tags...>>::print_types() const {
 }
 
 template <typename... Tags>
+template <bool PrintImmutableItems>
 std::string DataBox<tmpl::list<Tags...>>::print_items() const {
   std::ostringstream os;
   os << "Items:\n";
@@ -448,7 +450,9 @@ std::string DataBox<tmpl::list<Tags...>>::print_items() const {
     }
   };
   tmpl::for_each<mutable_item_creation_tags>(print_item);
-  tmpl::for_each<immutable_item_creation_tags>(print_item);
+  if constexpr (PrintImmutableItems) {
+    tmpl::for_each<immutable_item_creation_tags>(print_item);
+  }
   return os.str();
 }
 
