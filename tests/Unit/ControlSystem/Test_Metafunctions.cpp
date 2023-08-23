@@ -82,6 +82,41 @@ static_assert(
                    ControlComponent<Metavariables, SystemA0>>>);
 }  // namespace Measurements
 
+namespace Components {
+template <typename Metavars, typename ControlSystem>
+struct MockControlComponent {
+  using component_being_mocked = ControlComponent<Metavars, ControlSystem>;
+};
+
+template <typename Metavars>
+using ComponentA0 = ControlComponent<Metavars, Measurements::SystemA0>;
+template <typename Metavars>
+using ComponentB0 = ControlComponent<Metavars, Measurements::SystemB0>;
+template <typename Metavars>
+using ComponentA1 = ControlComponent<Metavars, Measurements::SystemA1>;
+template <typename Metavars>
+using MockComponentA1 = MockControlComponent<Metavars, Measurements::SystemA1>;
+
+struct Metavars {
+  using component_list =
+      tmpl::list<ComponentA0<Metavars>, ComponentB0<Metavars>,
+                 MockComponentA1<Metavars>>;
+};
+
+using expected_all_control_components =
+    tmpl::list<ComponentA0<Metavars>, ComponentB0<Metavars>,
+               ComponentA1<Metavars>>;
+
+using all_control_components = metafunctions::all_control_components<Metavars>;
+static_assert(
+    tmpl::size<tmpl::list_difference<all_control_components,
+                                     expected_all_control_components>>::value ==
+    0);
+static_assert(
+    tmpl::size<tmpl::list_difference<expected_all_control_components,
+                                     all_control_components>>::value == 0);
+}  // namespace Components
+
 namespace InterpolationTargetTags {
 template <typename Systems>
 struct Target;
