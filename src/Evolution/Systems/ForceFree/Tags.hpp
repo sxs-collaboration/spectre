@@ -117,6 +117,47 @@ struct LargestCharacteristicSpeed : db::SimpleTag {
   using type = double;
 };
 
+/// Some temporary quantities frequently called or used : TildeE^2, TildeB^2,
+/// TildeE.TildeB
+
+/*!
+ * \brief The product $\tilde{E}^2 = \tilde{E}_i \tilde{E}^i$.
+ */
+struct TildeESquared : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/*!
+ * \brief The product $\tilde{B}^2 = \tilde{B}_i \tilde{B}^i$.
+ */
+struct TildeBSquared : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/*!
+ * \brief The product $\tilde{E}_i \tilde{B}^i$.
+ */
+struct TildeEDotTildeB : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// Tags for FFE condition violations : E.B, max(E^2-B^2, 0)
+
+/*!
+ * \brief The product of electric and magnetic field \f$E^iB_i\f$.
+ */
+struct ElectricFieldDotMagneticField : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/*!
+ * \brief The quantity $\max (E^2-B^2, 0)$ which monitors the violation of the
+ * magnetic dominance condition.
+ */
+struct MagneticDominanceViolation : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 /*!
  * \brief An optional scalar variable used for masking the interior of neutron
  * star(s) when running neutron star magnetosphere simulations.
@@ -204,8 +245,8 @@ struct ParallelConductivity {
   static std::string name() { return "ParallelConductivity"; }
   using type = double;
   static constexpr Options::String help{
-      "Damping parameter for J^i to impose the force-free conditions, which is "
-      "physically the conductivity parallel to B field"};
+      "Damping parameter for J^i to impose the force-free conditions, which "
+      "is physically the conductivity parallel to B field"};
   using group = ForceFreeCurrentGroup;
 };
 
