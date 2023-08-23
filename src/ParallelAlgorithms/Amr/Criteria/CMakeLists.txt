@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Constraints.cpp
   DriveToTarget.cpp
   Loehner.cpp
   Persson.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Constraints.hpp
   Criteria.hpp
   Criterion.hpp
   DriveToTarget.hpp
@@ -38,6 +40,7 @@ target_link_libraries(
   PUBLIC
   Amr
   DomainStructure
+  Events
   Options
   Parallel
   Spectral
