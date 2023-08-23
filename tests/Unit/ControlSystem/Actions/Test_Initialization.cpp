@@ -14,6 +14,7 @@
 #include "ControlSystem/Actions/Initialization.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -21,6 +22,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -30,6 +32,8 @@
 
 namespace {
 struct LabelA {};
+struct LabelB {};
+struct LabelC {};
 
 constexpr size_t order = 2;
 
@@ -47,13 +51,41 @@ struct MockControlSystem
   using simple_tags = tmpl::list<>;
 };
 
-using mock_control_sys =
+using mock_control_sys_1 =
     MockControlSystem<LabelA, control_system::TestHelpers::Measurement<LabelA>>;
+using mock_control_sys_2 =
+    MockControlSystem<LabelB, control_system::TestHelpers::Measurement<LabelA>>;
+using mock_control_sys_3 =
+    MockControlSystem<LabelC, control_system::TestHelpers::Measurement<LabelC>>;
+
+template <typename Metavariables, typename ControlSystem>
+struct MockControlComponent {
+  using array_index = int;
+  using component_being_mocked = ControlComponent<Metavariables, ControlSystem>;
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockSingletonChare;
+
+  using system = ControlSystem;
+
+  using simple_tags = tmpl::list<>;
+
+  using const_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags = tmpl::list<>;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+};
 
 struct MockMetavars {
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
-  using component_list = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<control_system::Tags::SystemToCombinedNames,
+                 control_system::Tags::IsActiveMap>;
+  using component_list = tmpl::transform<
+      tmpl::list<mock_control_sys_1, mock_control_sys_2, mock_control_sys_3>,
+      tmpl::bind<MockControlComponent, tmpl::pin<MockMetavars>, tmpl::_1>>;
 };
 }  // namespace
 
@@ -82,19 +114,44 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
 
   expected_averager.assign_time_between_measurements(min(timescale));
 
-  measurement_timescales[mock_control_sys::name()] =
+  measurement_timescales["LabelALabelB"] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+          initial_time, std::array<DataVector, 1>{{timescale}}, expr_time);
+  measurement_timescales["LabelC"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           initial_time, std::array<DataVector, 1>{{timescale}}, expr_time);
 
+  std::unordered_map<std::string, std::string> system_to_combined_names{};
+  system_to_combined_names["LabelA"] = "LabelALabelB";
+  system_to_combined_names["LabelB"] = "LabelALabelB";
+  system_to_combined_names["LabelC"] = "LabelC";
+  std::unordered_map<std::string, bool> is_active_map{};
+  is_active_map["LabelA"] = true;
+  is_active_map["LabelB"] = false;
+  is_active_map["LabelC"] = true;
+
+  std::unordered_map<std::string, control_system::UpdateAggregator>
+      aggregators{};
+
   Parallel::GlobalCache<MockMetavars> cache{
-      {}, {std::move(measurement_timescales)}};
+      {std::move(system_to_combined_names), std::move(is_active_map)},
+      {std::move(measurement_timescales)}};
 
   const Parallel::GlobalCache<MockMetavars>& cache_reference = cache;
 
-  control_system::Actions::Initialize<MockMetavars, mock_control_sys>::apply(
+  control_system::Actions::Initialize<MockMetavars, mock_control_sys_1>::apply(
       make_not_null(&averager), make_not_null(&current_measurement),
-      &cache_reference);
+      make_not_null(&aggregators), &cache_reference);
 
   CHECK(expected_averager == averager);
   CHECK(current_measurement == 0);
+
+  CHECK(aggregators.count("LabelALabelB") == 1);
+  CHECK(aggregators.count("LabelC") == 1);
+
+  CHECK(aggregators.at("LabelALabelB").combined_name() == "LabelALabelB");
+  CHECK(aggregators.at("LabelC").combined_name() == "LabelC");
+
+  CHECK_FALSE(aggregators.at("LabelALabelB").is_ready());
+  CHECK_FALSE(aggregators.at("LabelC").is_ready());
 }

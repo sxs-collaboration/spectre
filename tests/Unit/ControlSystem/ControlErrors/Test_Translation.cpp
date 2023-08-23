@@ -81,6 +81,7 @@ void test_translation_control_error() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
+  auto system_to_combined_names = system_helper.system_to_combined_names();
   const std::string translation_name =
       system_helper.template name<translation_system>();
 
@@ -90,11 +91,12 @@ void test_translation_control_error() {
   // Setup runner and element component because it's the easiest way to get the
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
-                            ::Verbosity::Silent, std::move(is_active_map),
-                            std::move(grid_center_A), std::move(grid_center_B)},
-                           {std::move(initial_functions_of_time),
-                            std::move(initial_measurement_timescales)}};
+  MockRuntimeSystem runner{
+      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+       std::move(is_active_map), std::move(grid_center_A),
+       std::move(grid_center_B), std::move(system_to_combined_names)},
+      {std::move(initial_functions_of_time),
+       std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);

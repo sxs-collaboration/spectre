@@ -8,8 +8,11 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ControlSystem/CalculateMeasurementTimescales.hpp"
+#include "ControlSystem/CombinedName.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -93,16 +96,30 @@ double measurement_expiration_time(const double time,
  *
  * The expiration times are constructed using inputs from control system
  * OptionHolders as an unordered map from the name of the function of time being
- * controlled to the expiration time. The expiration time is computed as
- * \f$\tau_\mathrm{exp} = \alpha_\mathrm{update} \tau_\mathrm{damp}\f$ where
- * \f$\alpha_\mathrm{update}\f$ is the update fraction supplied as input to the
- * Controller and \f$\tau_\mathrm{damp}\f$ is/are the damping timescales
- * supplied from the TimescaleTuner (\f$\tau_\mathrm{damp}\f$ is a DataVector
+ * controlled to the expiration time.
+ *
+ * The expiration time for each individual function of time is computed as
+ * $\tau_\mathrm{exp} = \alpha_\mathrm{update} \tau_\mathrm{damp}$ where
+ * $\alpha_\mathrm{update}$ is the update fraction supplied as input to the
+ * Controller and $\tau_\mathrm{damp}$ is/are the damping timescales
+ * supplied from the TimescaleTuner ($\tau_\mathrm{damp}$ is a DataVector
  * with as many components as the corresponding function of time, thus
- * \f$\tau_\mathrm{exp}\f$ will also be a DataVector of the same length).
+ * $\tau_\mathrm{exp}$ will also be a DataVector of the same length).
+ *
+ * However, this expiration time calculated above is not necessarily the
+ * expiration that is returned by this function. We group functions of time by
+ * the `control_system::protocols::Measurement` that their corresponding control
+ * systems use. This is because one measurement may be used to update many
+ * functions of time. So the actual expiration time that is used for all the
+ * functions of time in this group is the *minimum* of the $\tau_\mathrm{exp}$
+ * of each function of time in the group.
+ *
+ * These groups are calculated using `control_system::system_to_combined_names`
+ * where the list of control systems comes from the passed in `OptionHolder`s.
  *
  * If the control system isn't active then expiration time is
- * `std::numeric_limits<double>::infinity()`.
+ * `std::numeric_limits<double>::infinity()`, regardless of what the groups'
+ * expiration time is.
  */
 template <size_t Dim, typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(
@@ -111,31 +128,67 @@ std::unordered_map<std::string, double> initial_expiration_times(
     const OptionHolders&... option_holders) {
   std::unordered_map<std::string, double> initial_expiration_times{};
 
-  [[maybe_unused]] const auto gather_initial_expiration_times =
-      [&initial_time, &measurements_per_update, &domain_creator,
-       &initial_expiration_times](const auto& option_holder) {
-        const auto& controller = option_holder.controller;
-        const std::string& name =
+  using control_systems = tmpl::list<typename OptionHolders::control_system...>;
+
+  // First string is name of each control system. Second string is combination
+  // of control systems with same measurement
+  std::unordered_map<std::string, std::string> map_of_names =
+      system_to_combined_names<control_systems>();
+
+  std::unordered_map<std::string, double> combined_expiration_times{};
+  std::unordered_set<std::string> infinite_expiration_times{};
+  for (const auto& [control_system_name, combined_name] : map_of_names) {
+    (void)control_system_name;
+    if (combined_expiration_times.count(combined_name) != 1) {
+      combined_expiration_times[combined_name] =
+          std::numeric_limits<double>::infinity();
+    }
+  }
+
+  [[maybe_unused]] const auto combine_expiration_times =
+      [&initial_time, &measurements_per_update, &domain_creator, &map_of_names,
+       &combined_expiration_times,
+       &infinite_expiration_times](const auto& option_holder) {
+        const std::string& control_system_name =
             std::decay_t<decltype(option_holder)>::control_system::name();
+        const std::string& combined_name = map_of_names[control_system_name];
+
         auto tuner = option_holder.tuner;
         Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
-                                       initial_time, name);
+                                       initial_time, control_system_name);
 
+        const auto& controller = option_holder.controller;
         const DataVector measurement_timescales =
             calculate_measurement_timescales(controller, tuner,
                                              measurements_per_update);
+        const double min_measurement_timescale = min(measurement_timescales);
 
-        const double initial_expiration_time = function_of_time_expiration_time(
-            initial_time, DataVector{measurement_timescales.size(), 0.0},
-            measurement_timescales, measurements_per_update);
-        // Don't have to worry about if functions of time are being overridden
-        // because that will be taken care of elsewhere.
-        initial_expiration_times[name] =
-            option_holder.is_active ? initial_expiration_time
-                                    : std::numeric_limits<double>::infinity();
+        double initial_expiration_time = function_of_time_expiration_time(
+            initial_time, DataVector{1, 0.0},
+            DataVector{1, min_measurement_timescale}, measurements_per_update);
+        initial_expiration_time = option_holder.is_active
+                                      ? initial_expiration_time
+                                      : std::numeric_limits<double>::infinity();
+
+        if (initial_expiration_time ==
+            std::numeric_limits<double>::infinity()) {
+          infinite_expiration_times.insert(control_system_name);
+        }
+
+        combined_expiration_times[combined_name] = std::min(
+            combined_expiration_times[combined_name], initial_expiration_time);
       };
 
-  EXPAND_PACK_LEFT_TO_RIGHT(gather_initial_expiration_times(option_holders));
+  EXPAND_PACK_LEFT_TO_RIGHT(combine_expiration_times(option_holders));
+
+  // Set all functions of time for a given measurement to the same expiration
+  // time
+  for (const auto& [control_system_name, combined_name] : map_of_names) {
+    initial_expiration_times[control_system_name] =
+        infinite_expiration_times.count(control_system_name) == 1
+            ? std::numeric_limits<double>::infinity()
+            : combined_expiration_times[combined_name];
+  }
 
   return initial_expiration_times;
 }

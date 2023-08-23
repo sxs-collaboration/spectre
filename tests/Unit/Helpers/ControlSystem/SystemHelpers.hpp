@@ -35,6 +35,7 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateControlSystem.hpp"
+#include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
@@ -90,6 +91,7 @@ using init_simple_tags =
                control_system::Tags::Controller<ControlSystem>,
                control_system::Tags::ControlError<ControlSystem>,
                control_system::Tags::CurrentNumberOfMeasurements,
+               control_system::Tags::UpdateAggregators,
                typename ControlSystem::MeasurementQueue>;
 
 class FakeCreator : public DomainCreator<3> {
@@ -210,7 +212,8 @@ struct MockControlComponent {
                  control_system::Tags::Verbosity,
                  control_system::Tags::IsActiveMap,
                  domain::Tags::ObjectCenter<domain::ObjectLabel::A>,
-                 domain::Tags::ObjectCenter<domain::ObjectLabel::B>>;
+                 domain::Tags::ObjectCenter<domain::ObjectLabel::B>,
+                 control_system::Tags::SystemToCombinedNames>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -535,6 +538,7 @@ struct SystemHelper {
   std::string name() {
     return System::name();
   }
+  const auto& system_to_combined_names() { return system_to_combined_names_; }
 
   void reset() {
     domain_ = Domain<3>{{}, stored_excision_spheres_};
@@ -572,9 +576,11 @@ struct SystemHelper {
     // Initial parameters needed. Expiration times would normally be set during
     // option parsing, and measurement timescales during initialization so we
     // have to do them manually here instead.
+    std::unordered_map<std::string, std::pair<double, double>>
+        individual_minimums{};
     std::unordered_map<std::string, double> initial_expiration_times{};
     tmpl::for_each<control_systems>([this,
-                                     &initial_expiration_times](auto system_v) {
+                                     &individual_minimums](auto system_v) {
       using system = tmpl::type_from<decltype(system_v)>;
 
       auto& init_tuple = get<LocalTag<system>>(all_init_tags_);
@@ -586,23 +592,44 @@ struct SystemHelper {
       const DataVector measurement_timescale =
           control_system::calculate_measurement_timescales(
               controller, tuner, measurements_per_update_);
-      const std::array<DataVector, 1> init_measurement_timescale{
-          {measurement_timescale}};
-      averager.assign_time_between_measurements(min(measurement_timescale));
+      const double min_measurement_timescale = min(measurement_timescale);
+      averager.assign_time_between_measurements(min_measurement_timescale);
 
       const double measurement_expr_time = measurement_expiration_time(
-          initial_time_, DataVector{measurement_timescale.size(), 0.0},
-          measurement_timescale, measurements_per_update_);
+          initial_time_, DataVector{0.0}, DataVector{min_measurement_timescale},
+          measurements_per_update_);
 
-      initial_measurement_timescales_[name<system>()] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, init_measurement_timescale, measurement_expr_time);
-
-      initial_expiration_times[name<system>()] =
-          function_of_time_expiration_time(
-              initial_time_, DataVector{measurement_timescale.size(), 0.0},
-              measurement_timescale, measurements_per_update_);
+      individual_minimums[name<system>()] =
+          std::make_pair(min_measurement_timescale, measurement_expr_time);
     });
+
+    double overall_min_measurement_timescale =
+        std::numeric_limits<double>::infinity();
+    double overall_min_expiration_time =
+        std::numeric_limits<double>::infinity();
+    for (const auto& [system_name, min_measure_expr_time] :
+         individual_minimums) {
+      (void)system_name;
+      overall_min_measurement_timescale = std::min(
+          overall_min_measurement_timescale, min_measure_expr_time.first);
+      overall_min_expiration_time =
+          std::min(overall_min_expiration_time, min_measure_expr_time.second);
+    }
+
+    initial_measurement_timescales_[combined_name_] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            initial_time_,
+            std::array{DataVector{overall_min_measurement_timescale}},
+            overall_min_expiration_time);
+
+    for (const auto& [system_name, min_measure_expr_time] :
+         individual_minimums) {
+      (void)min_measure_expr_time;
+      initial_expiration_times[system_name] = function_of_time_expiration_time(
+          initial_time_, DataVector{0.0},
+          DataVector{overall_min_measurement_timescale},
+          measurements_per_update_);
+    }
 
     const double excision_radius =
         initialize_functions_of_time(make_not_null(&initial_functions_of_time_),
@@ -672,21 +699,16 @@ struct SystemHelper {
 
     double time = initial_time_;
     std::optional<double> prev_time{};
+    int current_measurement = 0;
     const auto calculate_dt =
-        [&measurement_timescales](const double local_time) -> double {
-      double tmp_dt = std::numeric_limits<double>::infinity();
-      for (const auto& [name, measurement_timescale] : measurement_timescales) {
-        (void)name;
-        tmp_dt =
-            std::min(tmp_dt, min(measurement_timescale->func(local_time)[0]));
-      }
-
-      return tmp_dt;
+        [this, &measurement_timescales](const double local_time) -> double {
+      return measurement_timescales.at(combined_name_)->func(local_time)[0][0];
     };
     double dt = calculate_dt(time);
 
     // Start loop
     while (time < final_time) {
+      ++current_measurement;
       // Setup the measurement Id. This would normally be created in the control
       // system event.
       const LinkedMessageId<double> measurement_id{time, prev_time};
@@ -696,10 +718,12 @@ struct SystemHelper {
 
       // Apply measurements
       tmpl::for_each<control_components>([this, &runner, &generator,
-                                          &measurement_id,
+                                          &measurement_id, &current_measurement,
                                           &cache](auto control_component) {
         using component = tmpl::type_from<decltype(control_component)>;
+        using first_component = tmpl::front<control_components>;
         using system = typename component::system;
+        INFO("Applying measurements for " + system::name());
         constexpr bool is_shape =
             std::is_same_v<system, typename Metavars::shape_system>;
         // Depending on the measurement, apply the submeasurements
@@ -718,6 +742,8 @@ struct SystemHelper {
                   ::domain::ObjectLabel::B>{},
               horizon_b_, cache, measurement_id);
         }
+        // First, there are the UpdateMessageQueue actions on the actual
+        // component.
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
                   runner, 0) == (is_shape ? 1 : 2));
 
@@ -732,6 +758,17 @@ struct SystemHelper {
         }
         ActionTesting::invoke_queued_simple_action<component>(
             make_not_null(&runner), 0);
+
+        // If this was an update, there should be a single simple action on the
+        // first component. Otherwise, no action
+        CHECK(ActionTesting::number_of_queued_simple_actions<first_component>(
+                  runner, 0) ==
+              (current_measurement == measurements_per_update_ ? 1 : 0));
+
+        if (current_measurement == measurements_per_update_) {
+          ActionTesting::invoke_queued_simple_action<first_component>(
+              make_not_null(&runner), 0);
+        }
       });
 
       // At this point, the control systems for each transformation should have
@@ -742,6 +779,9 @@ struct SystemHelper {
       // updates these timescales when it updates the functions of time
       prev_time = time;
       dt = calculate_dt(time);
+      if (current_measurement == measurements_per_update_) {
+        current_measurement = 0;
+      }
       double min_expr_time = std::numeric_limits<double>::infinity();
       for (const auto& [name, fot] : functions_of_time) {
         (void)name;
@@ -773,6 +813,7 @@ struct SystemHelper {
       init_simple_tags<System>,
       tmpl::list<typename System::MeasurementQueue,
                  control_system::Tags::CurrentNumberOfMeasurements,
+                 control_system::Tags::UpdateAggregators,
                  control_system::Tags::MeasurementsPerUpdate>>;
 
   void parse_options(const std::string& option_string) {
@@ -791,7 +832,21 @@ struct SystemHelper {
     measurements_per_update_ = get<control_system::Tags::MeasurementsPerUpdate>(
         created_measurements_per_update);
 
-    tmpl::for_each<control_systems>([this, &options](auto system_v) {
+    std::unordered_map<std::string, control_system::UpdateAggregator>
+        update_aggregators{};
+    std::unordered_set<std::string> control_system_names{};
+
+    tmpl::for_each<control_systems>(
+        [&control_system_names](auto control_system_v) {
+          using system = tmpl::type_from<decltype(control_system_v)>;
+          control_system_names.insert(system::name());
+        });
+
+    update_aggregators[combined_name_] = control_system::UpdateAggregator{
+        combined_name_, std::move(control_system_names)};
+
+    tmpl::for_each<control_systems>([this, &options,
+                                     &update_aggregators](auto system_v) {
       using system = tmpl::type_from<decltype(system_v)>;
 
       tuples::tagged_tuple_from_typelist<creatable_tags<system>> created_tags =
@@ -804,6 +859,7 @@ struct SystemHelper {
               get<control_system::Tags::TimescaleTuner<system>>(created_tags),
               get<control_system::Tags::Controller<system>>(created_tags),
               get<control_system::Tags::ControlError<system>>(created_tags), 0,
+              update_aggregators,
               // Just need an empty queue. It will get filled in as the control
               // system is updated
               LinkedMessageQueue<
@@ -844,6 +900,10 @@ struct SystemHelper {
   ylm::Strahlkorper<Frame::Distorted> horizon_b_{};
   int measurements_per_update_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::unordered_map<std::string, std::string> system_to_combined_names_{
+      control_system::system_to_combined_names<control_systems>()};
+  // Only one because all systems use the same measurement
+  std::string combined_name_{control_system::combined_name<control_systems>()};
 
   // Initialization members. These are the values that will be used when the
   // reset() function is called. We don't need the horizons because those are

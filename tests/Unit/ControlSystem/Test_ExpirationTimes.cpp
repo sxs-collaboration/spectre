@@ -23,6 +23,9 @@
 
 namespace {
 template <size_t Index>
+struct Label {};
+
+template <size_t Index>
 struct FakeControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static constexpr size_t deriv_order = 2;
@@ -31,8 +34,8 @@ struct FakeControlSystem
       const size_t i, const size_t /*num_components*/) {
     return get_output(i);
   }
-  using measurement = control_system::TestHelpers::Measurement<
-      control_system::TestHelpers::TestStructs_detail::LabelA>;
+  using measurement =
+      control_system::TestHelpers::Measurement<Label<(Index < 3 ? 0 : 1)>>;
   using simple_tags = tmpl::list<>;
   using control_error = control_system::TestHelpers::ControlError<1>;
   struct process_measurement {
@@ -73,9 +76,9 @@ void test_expiration_time_construction() {
 
   OptionHolder<1> option_holder1(true, averager, controller, tuner1,
                                  control_error);
-  OptionHolder<2> option_holder2(false, averager, controller, tuner1,
+  OptionHolder<2> option_holder2(true, averager, controller, tuner2,
                                  control_error);
-  OptionHolder<3> option_holder3(true, averager, controller, tuner2,
+  OptionHolder<3> option_holder3(false, averager, controller, tuner1,
                                  control_error);
 
   using FakeCreator = control_system::TestHelpers::FakeCreator;
@@ -88,8 +91,8 @@ void test_expiration_time_construction() {
   const std::unique_ptr<DomainCreator<3>> creator3 =
       std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
           {FakeControlSystem<1>::name(), 1},
-          {FakeControlSystem<2>::name(), 1},
-          {FakeControlSystem<3>::name(), 2}});
+          {FakeControlSystem<2>::name(), 2},
+          {FakeControlSystem<3>::name(), 1}});
 
   {
     INFO("No control systems");
@@ -100,8 +103,8 @@ void test_expiration_time_construction() {
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{};
 
-    check_expiration_times(expected_initial_expiration_times,
-                           initial_expiration_times);
+    check_expiration_times(initial_expiration_times,
+                           expected_initial_expiration_times);
   }
   {
     INFO("One control system");
@@ -119,8 +122,8 @@ void test_expiration_time_construction() {
                      controller, tuner1, measurements_per_update),
                  measurements_per_update)}};
 
-    check_expiration_times(expected_initial_expiration_times,
-                           initial_expiration_times);
+    check_expiration_times(initial_expiration_times,
+                           expected_initial_expiration_times);
   }
   {
     INFO("Three control system");
@@ -129,25 +132,25 @@ void test_expiration_time_construction() {
             initial_time, measurements_per_update, creator3, option_holder1,
             option_holder2, option_holder3);
 
+    const double min_measurement_timescale =
+        std::min(min(control_system::calculate_measurement_timescales(
+                     controller, tuner1, measurements_per_update)),
+                 min(control_system::calculate_measurement_timescales(
+                     controller, tuner2, measurements_per_update)));
+    const double min_expiration_time =
+        control_system::function_of_time_expiration_time(
+            initial_time, DataVector{0.0},
+            DataVector{min_measurement_timescale}, measurements_per_update);
+
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{
-            {FakeControlSystem<1>::name(),
-             control_system::function_of_time_expiration_time(
-                 initial_time, DataVector{0.0},
-                 control_system::calculate_measurement_timescales(
-                     controller, tuner1, measurements_per_update),
-                 measurements_per_update)},
-            {FakeControlSystem<2>::name(),
-             std::numeric_limits<double>::infinity()},
+            {FakeControlSystem<1>::name(), min_expiration_time},
+            {FakeControlSystem<2>::name(), min_expiration_time},
             {FakeControlSystem<3>::name(),
-             control_system::function_of_time_expiration_time(
-                 initial_time, DataVector{0.0},
-                 control_system::calculate_measurement_timescales(
-                     controller, tuner2, measurements_per_update),
-                 measurements_per_update)}};
+             std::numeric_limits<double>::infinity()}};
 
-    check_expiration_times(expected_initial_expiration_times,
-                           initial_expiration_times);
+    check_expiration_times(initial_expiration_times,
+                           expected_initial_expiration_times);
   }
 }
 

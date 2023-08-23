@@ -201,8 +201,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       timescales;
-  timescales.emplace("A", timescale->get_clone());
-  timescales.emplace("B", timescale->get_clone());
+  timescales.emplace("AB", timescale->get_clone());
   timescales.emplace("C", timescale->get_clone());
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>

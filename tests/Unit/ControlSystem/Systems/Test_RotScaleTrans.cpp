@@ -156,6 +156,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       system_helper.template init_tuple<rotation_system>();
   const auto& init_exp_tuple =
       system_helper.template init_tuple<expansion_system>();
+  auto system_to_combined_names = system_helper.system_to_combined_names();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -163,7 +164,8 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
        std::move(is_active_map),
        tnsr::I<double, 3, Frame::Grid>{{0.5 * initial_separation, 0.0, 0.0}},
-       tnsr::I<double, 3, Frame::Grid>{{-0.5 * initial_separation, 0.0, 0.0}}},
+       tnsr::I<double, 3, Frame::Grid>{{-0.5 * initial_separation, 0.0, 0.0}},
+       std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),
        std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<
@@ -216,8 +218,8 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
                                         horizon_function);
 
   // Grab results
-  std::array<double, 3> grid_position_of_a;
-  std::array<double, 3> grid_position_of_b;
+  std::array<double, 3> grid_position_of_a{};
+  std::array<double, 3> grid_position_of_b{};
   std::tie(grid_position_of_a, grid_position_of_b) =
       TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
           element_component>(final_time, runner, position_function, coord_map);

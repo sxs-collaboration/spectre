@@ -106,6 +106,7 @@ void test_translation_control_system() {
       system_helper.initial_measurement_timescales();
   const auto& init_trans_tuple =
       system_helper.template init_tuple<translation_system>();
+  auto system_to_combined_names = system_helper.system_to_combined_names();
   const std::string translation_name =
       system_helper.template name<translation_system>();
 
@@ -114,11 +115,12 @@ void test_translation_control_system() {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
-                            ::Verbosity::Silent, std::move(is_active_map),
-                            std::move(grid_center_A), std::move(grid_center_B)},
-                           {std::move(initial_functions_of_time),
-                            std::move(initial_measurement_timescales)}};
+  MockRuntimeSystem runner{
+      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+       std::move(is_active_map), std::move(grid_center_A),
+       std::move(grid_center_B), std::move(system_to_combined_names)},
+      {std::move(initial_functions_of_time),
+       std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<
       translation_component>(make_not_null(&runner), ActionTesting::NodeId{0},
                              ActionTesting::LocalCoreId{0}, init_trans_tuple);
@@ -159,8 +161,8 @@ void test_translation_control_system() {
                                         horizon_function);
 
   // Grab results
-  std::array<double, 3> grid_position_of_a;
-  std::array<double, 3> grid_position_of_b;
+  std::array<double, 3> grid_position_of_a{};
+  std::array<double, 3> grid_position_of_b{};
   std::tie(grid_position_of_a, grid_position_of_b) =
       TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
           element_component>(final_time, runner, position_function, coord_map);

@@ -7,10 +7,12 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/CalculateMeasurementTimescales.hpp"
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size/Update.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/IsSize.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
@@ -87,10 +89,10 @@ namespace control_system {
  *    timescales and the number of measurements per update.
  * 8. Determine the new expiration times for the
  *    `::domain::Tags::FunctionsOfTime` and
- *    `control_system::Tags::MeasurementTimescales`. Update the MaxDeriv of the
- *    functions of time with the control signal and update the measurement
- *    timescales with the new measurement timescale (both of these are
- *    `Parallel::mutate` calls).
+ *    `control_system::Tags::MeasurementTimescales`. Call the
+ *    `control_system::AggregateUpdate` simple action on the first control
+ *    system in the `component_list` of the metavariables. This simple action
+ *    will mutate the global cache tags when it has enough data.
  */
 template <typename ControlSystem>
 struct UpdateControlSystem {
@@ -230,8 +232,10 @@ struct UpdateControlSystem {
 
     const auto& measurement_timescales =
         Parallel::get<Tags::MeasurementTimescales>(cache);
-    const auto& measurement_timescale =
-        measurement_timescales.at(function_of_time_name);
+    const auto& system_to_combined_names =
+        Parallel::get<Tags::SystemToCombinedNames>(cache);
+    const auto& measurement_timescale = measurement_timescales.at(
+        system_to_combined_names.at(function_of_time_name));
     const double current_fot_expiration_time =
         function_of_time->time_bounds()[1];
     const double current_measurement_expiration_time =
@@ -271,14 +275,16 @@ struct UpdateControlSystem {
           new_fot_expiration_time);
     }
 
-    Parallel::mutate<::domain::Tags::FunctionsOfTime,
-                     UpdateSingleFunctionOfTime>(
-        cache, function_of_time_name, current_fot_expiration_time,
-        control_signal, new_fot_expiration_time);
+    using first_control_component =
+        tmpl::front<metafunctions::all_control_components<Metavariables>>;
 
-    Parallel::mutate<Tags::MeasurementTimescales, UpdateSingleFunctionOfTime>(
-        cache, function_of_time_name, current_measurement_expiration_time,
-        new_measurement_timescale, new_measurement_expiration_time);
+    auto& first_control_system_proxy =
+        Parallel::get_parallel_component<first_control_component>(cache);
+
+    Parallel::simple_action<AggregateUpdate<ControlSystem>>(
+        first_control_system_proxy, new_measurement_timescale,
+        current_measurement_expiration_time, new_measurement_expiration_time,
+        control_signal, current_fot_expiration_time, new_fot_expiration_time);
   }
 };
 }  // namespace control_system
