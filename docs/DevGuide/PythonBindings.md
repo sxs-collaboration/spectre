@@ -110,6 +110,11 @@ The `DataVector` bindings serve as an example with code comments on how to write
 bindings for a class. There is also extensive documentation available directly
 from [pybind11](https://pybind11.readthedocs.io/).
 
+If you are binding a library full of similarly structured free functions, such
+as libraries in `src/PointwiseFunctions/`, you can bind all functions directly
+in the `Bindings.cpp` file to avoid unnecessary boilerplate code. See
+`src/PointwiseFunctions/GeneralRelativity/Python/Bindings.cpp` for an example.
+
 \note Exceptions should be allowed to propagate through the bindings so that
 error handling via exceptions is possible from python rather than having the
 python interpreter being killed with a call to `abort`.
