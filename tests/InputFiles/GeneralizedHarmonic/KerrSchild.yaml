@@ -206,13 +206,15 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Verbose
   ControlSystemSingleAh: *Ah
+  ControlSystemCharSpeedAh: *Ah
 
 InterpolationTargets:
-  ExcisionBoundary:
+  ExcisionBoundary: &ExBdry
     LMax: *LMax
     Center: *Center
     Radius: *InnerRadius
     AngularOrdering: "Strahlkorper"
+  ControlSystemCharSpeedExcision: *ExBdry
 
 ControlSystems:
   WriteDataToDisk: false
@@ -234,3 +236,29 @@ ControlSystems:
       IncreaseFactor: 1.01
       DecreaseFactor: 0.98
     ControlError:
+  Size:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: true
+    Controller:
+      UpdateFraction: 0.06
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-4
+      MaxTimescale: 20.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 1.0
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      SmootherTuner:
+        InitialTimescales: [0.2]
+        MinTimescale: 1.0e-4
+        MaxTimescale: 20.0
+        IncreaseThreshold: 2.5e-4
+        DecreaseThreshold: 1.0e-3
+        IncreaseFactor: 1.01
+        DecreaseFactor: 0.9

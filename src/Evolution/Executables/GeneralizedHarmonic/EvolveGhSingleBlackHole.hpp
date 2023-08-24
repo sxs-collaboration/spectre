@@ -8,9 +8,11 @@
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
+#include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
 #include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
+#include "ControlSystem/Systems/Size.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -135,10 +137,12 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
     using interpolating_component = typename metavariables::gh_dg_element_array;
   };
 
-  using control_systems = tmpl::list<control_system::Systems::Shape<
-      ::domain::ObjectLabel::None, 2,
-      control_system::measurements::SingleHorizon<
-          ::domain::ObjectLabel::None>>>;
+  using control_systems =
+      tmpl::list<control_system::Systems::Shape<
+                     ::domain::ObjectLabel::None, 2,
+                     control_system::measurements::SingleHorizon<
+                         ::domain::ObjectLabel::None>>,
+                 control_system::Systems::Size<::domain::ObjectLabel::None, 2>>;
 
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;
@@ -248,6 +252,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &gh::BoundaryCorrections::register_derived_with_charm,
+    &control_system::size::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
     &gh::ConstraintDamping::register_derived_with_charm,
     &register_factory_classes_with_charm<metavariables>};
