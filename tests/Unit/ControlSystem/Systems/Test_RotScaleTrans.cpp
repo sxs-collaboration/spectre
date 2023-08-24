@@ -146,6 +146,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   // domain and two functions of time are not const references because they need
   // to be moved into the runner
   auto& domain = system_helper.domain();
+  auto& is_active_map = system_helper.is_active_map();
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
@@ -160,6 +161,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
       {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+       std::move(is_active_map),
        tnsr::I<double, 3, Frame::Grid>{{0.5 * initial_separation, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{{-0.5 * initial_separation, 0.0, 0.0}}},
       {std::move(initial_functions_of_time),

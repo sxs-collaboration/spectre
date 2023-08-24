@@ -114,6 +114,7 @@ void test_size_process_measurement() {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   MockRuntimeSystem runner{
       {creator->create_domain(), ::Verbosity::Silent, 4, false,
+       std::unordered_map<std::string, bool>{},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}}},
       {creator->functions_of_time(),

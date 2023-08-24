@@ -29,7 +29,7 @@
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
-#include "ControlSystem/Tags/IsActive.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
@@ -89,7 +89,6 @@ using init_simple_tags =
                control_system::Tags::TimescaleTuner<ControlSystem>,
                control_system::Tags::Controller<ControlSystem>,
                control_system::Tags::ControlError<ControlSystem>,
-               control_system::Tags::IsActive<ControlSystem>,
                control_system::Tags::CurrentNumberOfMeasurements,
                typename ControlSystem::MeasurementQueue>;
 
@@ -209,6 +208,7 @@ struct MockControlComponent {
       tmpl::list<control_system::Tags::MeasurementsPerUpdate,
                  control_system::Tags::WriteDataToDisk,
                  control_system::Tags::Verbosity,
+                 control_system::Tags::IsActiveMap,
                  domain::Tags::ObjectCenter<domain::ObjectLabel::A>,
                  domain::Tags::ObjectCenter<domain::ObjectLabel::B>>;
 
@@ -517,6 +517,7 @@ struct SystemHelper {
   // Members that may be moved out of this struct once they are
   // constructed
   auto& domain() { return domain_; }
+  auto& is_active_map() { return is_active_map_; }
   auto& initial_functions_of_time() { return initial_functions_of_time_; }
   auto& initial_measurement_timescales() {
     return initial_measurement_timescales_;
@@ -536,6 +537,7 @@ struct SystemHelper {
 
   void reset() {
     domain_ = Domain<3>{{}, stored_excision_spheres_};
+    is_active_map_ = create_is_active_map();
     initial_functions_of_time_ =
         clone_unique_ptrs(stored_initial_functions_of_time_);
     initial_measurement_timescales_ =
@@ -800,8 +802,7 @@ struct SystemHelper {
               get<control_system::Tags::Averager<system>>(created_tags),
               get<control_system::Tags::TimescaleTuner<system>>(created_tags),
               get<control_system::Tags::Controller<system>>(created_tags),
-              get<control_system::Tags::ControlError<system>>(created_tags),
-              true, 0,
+              get<control_system::Tags::ControlError<system>>(created_tags), 0,
               // Just need an empty queue. It will get filled in as the control
               // system is updated
               LinkedMessageQueue<
@@ -815,9 +816,20 @@ struct SystemHelper {
     });
   }
 
+  static std::unordered_map<std::string, bool> create_is_active_map() {
+    std::unordered_map<std::string, bool> result{};
+    tmpl::for_each<control_systems>([&result](auto control_system_v) {
+      using system = tmpl::type_from<decltype(control_system_v)>;
+      // For this test, control systems are always active
+      result[system::name()] = true;
+    });
+    return result;
+  }
+
   // Members that may be moved out of this struct once they are
   // constructed
   Domain<3> domain_;
+  std::unordered_map<std::string, bool> is_active_map_{create_is_active_map()};
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       initial_functions_of_time_{};

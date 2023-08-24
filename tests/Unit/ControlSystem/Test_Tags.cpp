@@ -17,7 +17,7 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
-#include "ControlSystem/Tags/IsActive.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
@@ -30,11 +30,12 @@
 
 namespace {
 struct LabelA {};
+struct LabelB {};
 struct Rotation {};
 using system = control_system::TestHelpers::System<
     2, LabelA, control_system::TestHelpers::Measurement<LabelA>, 1>;
 using system2 = control_system::TestHelpers::System<
-    2, LabelA, control_system::TestHelpers::Measurement<LabelA>, 2>;
+    2, LabelB, control_system::TestHelpers::Measurement<LabelA>, 2>;
 using quat_system = control_system::TestHelpers::System<
     2, Rotation, control_system::TestHelpers::Measurement<Rotation>>;
 
@@ -64,16 +65,8 @@ void test_all_tags() {
   using control_error_tag = control_system::Tags::ControlError<system>;
   TestHelpers::db::test_simple_tag<control_error_tag>("ControlError");
 
-  using active_tag = control_system::Tags::IsActive<system>;
-  TestHelpers::db::test_simple_tag<active_tag>("IsActive");
-  // The create_from_options function doesn't actually use the metavars, only
-  // the option_list type alias uses the metavars, so we pass an empty struct
-  // here.
-  const control_system::OptionHolder<system> active_holder{};
-  const control_system::OptionHolder<system> inactive_holder{
-      false, {}, {}, {}, {}};
-  CHECK(active_tag::create_from_options(active_holder));
-  CHECK_FALSE(active_tag::create_from_options(inactive_holder));
+  using active_tag = control_system::Tags::IsActiveMap;
+  TestHelpers::db::test_simple_tag<active_tag>("IsActiveMap");
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
@@ -231,6 +224,14 @@ void test_individual_tags() {
       controller_tag::create_from_options<MetavarsEmpty>(holder, creator, 0.0);
 
   CHECK(created_controller == expected_controller);
+
+  using active_map_tag = control_system::Tags::IsActiveMap;
+
+  const auto active_map = active_map_tag::create_from_options<MetavarsEmpty>(
+      quat_holder, holder2, inactive_holder);
+  CHECK(active_map == std::unordered_map<std::string, bool>{{"Rotation", true},
+                                                            {"LabelB", true},
+                                                            {"LabelA", false}});
 }
 }  // namespace
 
