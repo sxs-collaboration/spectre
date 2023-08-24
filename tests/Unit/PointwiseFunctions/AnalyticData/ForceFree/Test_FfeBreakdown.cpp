@@ -34,7 +34,7 @@ struct FfeBreakdownProxy : FfeBreakdown {
 };
 
 SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.ForceFree.FfeBreakdown",
+    "Unit.PointwiseFunctions.AnalyticData.ForceFree.FfeBreakdown",
     "[Unit][PointwiseFunctions]") {
   // test creation
   const auto solution = TestHelpers::test_creation<FfeBreakdown>("");
