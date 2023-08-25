@@ -37,6 +37,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
+
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Variables
 
@@ -165,26 +166,26 @@ void test_partial_derivative_per_tensor(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
-  tmpl::for_each<GradientTags>([&du, &mesh, &u,
-                                &inverse_jacobian](auto gradient_tag_v) {
-    using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
-    using var_tag = typename gradient_tag::tag;
+  tmpl::for_each<GradientTags>(
+      [&du, &mesh, &u, &inverse_jacobian](auto gradient_tag_v) {
+        using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
+        using var_tag = typename gradient_tag::tag;
 
-    const auto single_du =
-        partial_derivative(get<var_tag>(u), mesh, inverse_jacobian);
+        const auto single_du =
+            partial_derivative(get<var_tag>(u), mesh, inverse_jacobian);
 
-    Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
-    CHECK_ITERABLE_CUSTOM_APPROX(single_du, get<gradient_tag>(du),
-                                 local_approx);
+        Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
+        CHECK_ITERABLE_CUSTOM_APPROX(single_du, get<gradient_tag>(du),
+                                     local_approx);
 
-    // Check we can do derivatives when the components of `u` aren't contiguous
-    // in memory.
-    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
-    const auto non_contiguous_u = get<var_tag>(u);
-    const auto non_contiguous_single_du =
-        partial_derivative(non_contiguous_u, mesh, inverse_jacobian);
-    CHECK_ITERABLE_APPROX(non_contiguous_single_du, single_du);
-  });
+        // Check we can do derivatives when the components of `u` aren't
+        // contiguous in memory.
+        // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+        const auto non_contiguous_u = get<var_tag>(u);
+        const auto non_contiguous_single_du =
+            partial_derivative(non_contiguous_u, mesh, inverse_jacobian);
+        CHECK_ITERABLE_APPROX(non_contiguous_single_du, single_du);
+      });
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
@@ -338,8 +339,8 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
       inverse_jacobian(number_of_grid_points, 2.0);
 
   Variables<VariableTags> u(number_of_grid_points);
-  Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>,
-                             Frame::Grid>>
+  Variables<
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     tmpl::for_each<VariableTags>([&a, &x, &u](auto tag) {
@@ -354,7 +355,7 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
 
     const auto helper = [&](const auto& du) {
       for (size_t n = 0; n < du.size(); ++n) {
-        CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
+        CHECK(du.data()[n] == approx(expected_du.data()[n]));  // NOLINT
       }
     };
     helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
@@ -389,8 +390,8 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   inverse_jacobian.get(1, 1) = 8.0;
 
   Variables<VariableTags> u(number_of_grid_points);
-  Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>,
-                             Frame::Grid>>
+  Variables<
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t b = 0; b < mesh.extents(1); ++b) {
@@ -406,13 +407,13 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
 
       const auto helper = [&](const auto& du) {
         for (size_t n = 0; n < du.size(); ++n) {
-          CHECK(du.data()[n] ==                                   // NOLINT
-                approx(expected_du.data()[n]).epsilon(1.e-13));   // NOLINT
+          CHECK(du.data()[n] ==                                  // NOLINT
+                approx(expected_du.data()[n]).epsilon(1.e-13));  // NOLINT
         }
       };
       helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
-      using vars_type = decltype(
-          partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+      using vars_type = decltype(partial_derivatives<GradientTags>(
+          u, mesh, inverse_jacobian));
       vars_type du{};
       partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
       helper(du);
@@ -445,8 +446,8 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   inverse_jacobian.get(2, 2) = 4.0;
 
   Variables<VariableTags> u(number_of_grid_points);
-  Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>,
-                             Frame::Grid>>
+  Variables<
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
@@ -457,20 +458,19 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
         });
         tmpl::for_each<GradientTags>([&a, &b, &c, &x, &expected_du](auto tag) {
           using Tag = typename decltype(tag)::type;
-          using DerivativeTag =
-              Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
+          using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
         const auto helper = [&](const auto& du) {
           for (size_t n = 0; n < du.size(); ++n) {
-            CHECK(du.data()[n] ==                                   // NOLINT
+            CHECK(du.data()[n] ==  // NOLINT
                   approx(expected_du.data()[n]).epsilon(1.e-11));
           }
         };
         helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
-        using vars_type = decltype(
-            partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+        using vars_type = decltype(partial_derivatives<GradientTags>(
+            u, mesh, inverse_jacobian));
         vars_type du{};
         partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
         helper(du);
@@ -550,15 +550,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
 
   BENCHMARK_ADVANCED("Partial derivatives")
   (Catch::Benchmark::Chronometer meter) {
-    const Mesh<3> mesh{4,
-                       Spectral::Basis::Legendre,
+    const Mesh<3> mesh{4, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
     const Affine map1d(-1.0, 1.0, -1.0, 1.0);
     const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid, Affine3D>
         map(Affine3D{map1d, map1d, map1d});
     const auto inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
-    const Variables<tmpl::list<Var1<3>, Var2>> u{
-        mesh.number_of_grid_points(), 0.0};
+    const Variables<tmpl::list<Var1<3>, Var2>> u{mesh.number_of_grid_points(),
+                                                 0.0};
     Variables<tmpl::list<::Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>,
                          ::Tags::deriv<Var2, tmpl::size_t<3>, Frame::Grid>>>
         du{mesh.number_of_grid_points()};
@@ -594,12 +593,13 @@ void test_partial_derivatives_compute_item(
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
       map_tag, domain::Tags::LogicalCoordinates<Dim>>;
-  using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>, inv_jac_tag>;
+  using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>,
+                                       domain::Tags::Mesh<Dim>, inv_jac_tag>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
   using deriv_prefixed_tag =
-      Tags::DerivCompute<prefixed_variables_tag, inv_jac_tag,
-                         tmpl::list<SomePrefix<Var1<Dim>>>>;
+      Tags::DerivCompute<prefixed_variables_tag, domain::Tags::Mesh<Dim>,
+                         inv_jac_tag, tmpl::list<SomePrefix<Var1<Dim>>>>;
 
   TestHelpers::db::test_compute_tag<deriv_tag>(
       "Variables(deriv(Var1),deriv(Var2))");
@@ -639,7 +639,7 @@ void test_partial_derivatives_compute_item(
 
   for (size_t n = 0; n < du.size(); ++n) {
     // clang-tidy: pointer arithmetic
-    CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
+    CHECK(du.data()[n] == approx(expected_du.data()[n]));  // NOLINT
   }
 
   // Test prefixes are handled correctly
@@ -690,7 +690,6 @@ void test_partial_derivatives_tensor_compute_item(
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-
   Index<3> max_extents{10, 10, 5};
 
   for (size_t a = 1; a < max_extents[0]; ++a) {

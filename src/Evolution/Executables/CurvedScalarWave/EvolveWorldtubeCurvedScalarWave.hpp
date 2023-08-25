@@ -151,7 +151,7 @@ struct EvolutionMetavars {
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
-      typename system::variables_tag,
+      typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       typename system::gradient_variables>;
@@ -160,8 +160,8 @@ struct EvolutionMetavars {
       tmpl::flatten<tmpl::list<
           tmpl::append<typename system::variables_tag::tags_list,
                        typename deriv_compute::type::tags_list>,
-          ::Events::Tags::ObserverDetInvJacobianCompute<
-            Frame::ElementLogical, Frame::Inertial>,
+          ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
+                                                        Frame::Inertial>,
           CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
           CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>>>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,

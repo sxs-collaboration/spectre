@@ -131,6 +131,7 @@ struct EvolutionMetavars {
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag,
+      domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       typename system::gradient_variables>;
