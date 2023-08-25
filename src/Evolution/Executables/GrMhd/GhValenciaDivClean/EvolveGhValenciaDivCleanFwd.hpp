@@ -36,6 +36,7 @@ class SmoothFlow;
 }  // namespace Solutions
 namespace AnalyticData {
 class BlastWave;
+class CcsnCollapse;
 class MagneticFieldLoop;
 class MagneticRotor;
 class OrszagTangVortex;

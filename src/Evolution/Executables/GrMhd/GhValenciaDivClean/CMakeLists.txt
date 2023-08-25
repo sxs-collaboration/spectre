@@ -103,6 +103,12 @@ add_ghmhd_with_horizon_executable(
   )
 
 add_ghmhd_executable(
+  CcsnCollapse
+  "gh::Solutions::WrappedGr<grmhd::AnalyticData::CcsnCollapse>,false,BondiSachs"
+  "${LIBS_TO_LINK}"
+  )
+
+add_ghmhd_executable(
   TovStar
   "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>,false,BondiSachs"
   "${LIBS_TO_LINK}"

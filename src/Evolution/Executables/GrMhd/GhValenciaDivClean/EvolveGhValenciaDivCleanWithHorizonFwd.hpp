@@ -30,6 +30,7 @@ class BondiMichel;
 }  // namespace Solutions
 namespace AnalyticData {
 class BondiHoyleAccretion;
+class CcsnCollapse;
 class MagnetizedFmDisk;
 }  // namespace AnalyticData
 }  // namespace grmhd
