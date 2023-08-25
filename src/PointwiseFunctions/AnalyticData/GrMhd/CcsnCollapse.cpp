@@ -806,6 +806,36 @@ auto CcsnCollapse::variables(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
 }
 
+// lapse time derivative
+template <typename DataType>
+auto CcsnCollapse::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DataType>>> {
+  return {make_with_value<Scalar<DataType>>(x, 0.0)};
+}
+
+// shift time derivative
+template <typename DataType>
+auto CcsnCollapse::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, 3>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, 3>>> {
+  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0)};
+}
+
+// spatial metric time derivative
+template <typename DataType>
+auto CcsnCollapse::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>>> {
+  return {make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0)};
+}
+
 PUP::able::PUP_ID CcsnCollapse::my_PUP_ID = 0;
 
 bool operator==(const CcsnCollapse& lhs, const CcsnCollapse& rhs) {
@@ -894,6 +924,32 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TENSORS, (double, DataVector),
                          gr::Tags::ExtrinsicCurvature))
 
 #undef INSTANTIATE_METRIC_TENSORS
+
+#define INSTANTIATE_METRIC_DT_TENSORS(_, data)                                 \
+  template tuples::TaggedTuple < ::Tags::dt < TAG(data) < DTYPE(data),         \
+      3 >>> CcsnCollapse::variables(                                           \
+                const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
+                const tnsr::I<DTYPE(data), 3>& x,                              \
+                tmpl::list < ::Tags::dt < TAG(data) < DTYPE(data), 3 >>>       \
+                /*meta*/) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_DT_TENSORS, (double, DataVector),
+                        (gr::Tags::Shift, gr::Tags::SpatialMetric))
+
+#undef INSTANTIATE_METRIC_DT_TENSORS
+
+#define INSTANTIATE_SCALAR_DT(_, data)                                    \
+  template tuples::TaggedTuple < ::Tags::dt < TAG(data) < DTYPE(data) >>> \
+      CcsnCollapse::variables(                                            \
+          const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,  \
+          const tnsr::I<DTYPE(data), 3>& x,                               \
+          tmpl::list < ::Tags::dt < TAG(data) < DTYPE(data) >>>           \
+          /*meta*/) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_DT, (double, DataVector),
+                        (gr::Tags::Lapse))
+
+#undef INSTANTIATE_SCALAR_DT
 
 #define INSTANTIATE_METRIC_DERIVS(_, data)                              \
   template auto CcsnCollapse::variables(                                \
