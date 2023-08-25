@@ -35,7 +35,7 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
   if (direction.has_value()) {
     ASSERT(
         mesh.quadrature(direction.value().dimension()) ==
-            Spectral::Quadrature::GaussLobatto,
+            SpatialDiscretization::Quadrature::GaussLobatto,
         "Expected GaussLobatto quadrature. Other quadratures are disabled "
         "because interpolating the coordinates incurs an unnecessary error.");
     const size_t grid_size =
@@ -76,7 +76,7 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
   if (direction.has_value()) {
     ASSERT(
         mesh.quadrature(direction.value().dimension()) ==
-            Spectral::Quadrature::GaussLobatto,
+            SpatialDiscretization::Quadrature::GaussLobatto,
         "Expected GaussLobatto quadrature. Other quadratures are disabled "
         "because interpolating the coordinates incurs an unnecessary error.");
     const size_t grid_size =

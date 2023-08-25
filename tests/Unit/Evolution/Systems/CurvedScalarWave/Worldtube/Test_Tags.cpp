@@ -76,7 +76,7 @@ void test_compute_face_coordinates_grid() {
 
   for (const auto& initial_refinement : std::array<size_t, 2>{{0, 1}}) {
     CAPTURE(initial_refinement);
-    const auto quadrature = Spectral::Quadrature::GaussLobatto;
+    const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
     // we create two shells with different resolutions
     const size_t extents_1 = 5;
     const size_t extents_2 = 7;
@@ -182,7 +182,7 @@ void test_compute_face_coordinates() {
   const auto initial_extents = domain_creator->initial_extents();
   const auto initial_refinements = domain_creator->initial_refinement_levels();
   const auto element_ids = initial_element_ids(initial_refinements);
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
   std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
       all_faces_grid_coords{};
   Initialization::InitializeElementFacesGridCoordinates<Dim>::apply(

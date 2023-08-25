@@ -29,8 +29,8 @@ struct DefaultTagDouble : db::SimpleTag {
 void test_p_refinement() {
   const ElementId<1> element_id{0};
   Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{}};
-  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh{2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   auto box =
       db::create<db::AddSimpleTags<DefaultTagInt, DefaultTagDouble>>(3, 4.2);
   db::mutate_apply<

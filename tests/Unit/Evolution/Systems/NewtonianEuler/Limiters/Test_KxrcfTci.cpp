@@ -133,8 +133,8 @@ void test_kxrcf_work(
 
 void test_kxrcf_1d() {
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const Mesh<1> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(3, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map{-1., 1., 3., 4.2};
   const auto coordmap =
@@ -207,8 +207,8 @@ void test_kxrcf_1d() {
 
 void test_kxrcf_2d() {
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh(3, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   const Affine xi_map{-1., 1., 3., 4.2};
@@ -292,8 +292,8 @@ void test_kxrcf_2d() {
 
 void test_kxrcf_3d() {
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const Mesh<3> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(3, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;

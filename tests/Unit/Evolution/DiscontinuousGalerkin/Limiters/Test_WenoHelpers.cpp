@@ -23,10 +23,11 @@
 
 namespace {
 
-void test_reconstruction_1d_impl(const Spectral::Quadrature quadrature) {
+void test_reconstruction_1d_impl(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.005;
-  const Mesh<1> mesh(5, Spectral::Basis::Legendre, quadrature);
+  const Mesh<1> mesh(5, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
@@ -69,14 +70,16 @@ void test_reconstruction_1d_impl(const Spectral::Quadrature quadrature) {
 
 void test_reconstruction_1d() {
   INFO("Testing WENO reconstruction in 1D");
-  test_reconstruction_1d_impl(Spectral::Quadrature::GaussLobatto);
-  test_reconstruction_1d_impl(Spectral::Quadrature::Gauss);
+  test_reconstruction_1d_impl(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_reconstruction_1d_impl(SpatialDiscretization::Quadrature::Gauss);
 }
 
-void test_reconstruction_2d_impl(const Spectral::Quadrature quadrature) {
+void test_reconstruction_2d_impl(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
-  const Mesh<2> mesh({{3, 3}}, Spectral::Basis::Legendre, quadrature);
+  const Mesh<2> mesh({{3, 3}}, SpatialDiscretization::Basis::Legendre,
+                     quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
@@ -132,14 +135,16 @@ void test_reconstruction_2d_impl(const Spectral::Quadrature quadrature) {
 
 void test_reconstruction_2d() {
   INFO("Testing WENO reconstruction in 2D");
-  test_reconstruction_2d_impl(Spectral::Quadrature::GaussLobatto);
-  test_reconstruction_2d_impl(Spectral::Quadrature::Gauss);
+  test_reconstruction_2d_impl(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_reconstruction_2d_impl(SpatialDiscretization::Quadrature::Gauss);
 }
 
-void test_reconstruction_3d_impl(const Spectral::Quadrature quadrature) {
+void test_reconstruction_3d_impl(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
-  const Mesh<3> mesh({{3, 3, 3}}, Spectral::Basis::Legendre, quadrature);
+  const Mesh<3> mesh({{3, 3, 3}}, SpatialDiscretization::Basis::Legendre,
+                     quadrature);
   const auto coords = logical_coordinates(mesh);
 
   // 3D case has so many modes... so we simplify by only setting 6 of them, the
@@ -199,8 +204,8 @@ void test_reconstruction_3d_impl(const Spectral::Quadrature quadrature) {
 
 void test_reconstruction_3d() {
   INFO("Testing WENO reconstruction in 3D");
-  test_reconstruction_3d_impl(Spectral::Quadrature::GaussLobatto);
-  test_reconstruction_3d_impl(Spectral::Quadrature::Gauss);
+  test_reconstruction_3d_impl(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_reconstruction_3d_impl(SpatialDiscretization::Quadrature::Gauss);
 }
 
 }  // namespace

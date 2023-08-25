@@ -44,8 +44,9 @@ void check_volume_data(
     const double observation_value,
     const std::vector<DataType>& tensor_components_and_coords,
     const std::vector<std::string>& grid_names,
-    const std::vector<std::vector<Spectral::Basis>>& bases,
-    const std::vector<std::vector<Spectral::Quadrature>>& quadratures,
+    const std::vector<std::vector<SpatialDiscretization::Basis>>& bases,
+    const std::vector<std::vector<SpatialDiscretization::Quadrature>>&
+        quadratures,
     const std::vector<std::vector<size_t>>& extents,
     const std::vector<std::string>& expected_components,
     const std::vector<std::vector<size_t>>& grid_data_orders,

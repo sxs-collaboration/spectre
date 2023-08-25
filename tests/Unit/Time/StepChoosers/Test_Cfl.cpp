@@ -91,8 +91,8 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
                              compute_largest_characteristic_speed>>(
       Metavariables{}, characteristic_speed,
       tnsr::I<DataVector, dim, frame>{{{coordinates}}},
-      Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto),
+      Mesh<dim>(coordinates.size(), SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto),
       std::unique_ptr<TimeStepper>{
           std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
 

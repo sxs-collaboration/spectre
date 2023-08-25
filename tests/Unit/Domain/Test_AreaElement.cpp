@@ -53,8 +53,8 @@ void test_area_element_against_normal_vector() {
 
   gr::Solutions::Minkowski<3> minkowski{};
 
-  const Mesh<2> interface_mesh{8, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> interface_mesh{8, SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
   const Direction<3> direction{};
   const auto logical_coords =
       interface_logical_coordinates(interface_mesh, direction);
@@ -119,8 +119,8 @@ void test_sphere_integral() {
     const auto element_ids = initial_element_ids(initial_ref_levels);
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");
-    const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> face_mesh{10, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
     double sphere_surface = 0.;
     double test_func_integral = 0.;
     for (const auto& element_id : element_ids) {
@@ -172,8 +172,8 @@ void test_kerr_area() {
     const auto element_ids = initial_element_ids(initial_ref_levels);
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");
-    const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> face_mesh{10, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
     // Shell does not distort to conform to the horizon in Kerr-Schild
     // coordinates for spinning black holes, so we append the horizon
     // conforming map

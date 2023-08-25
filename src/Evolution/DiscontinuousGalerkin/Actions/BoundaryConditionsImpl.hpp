@@ -577,7 +577,8 @@ void apply_boundary_condition_on_face(
         get<evolution::dg::Tags::MagnitudeOfNormal>(
             *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
                  .at(direction));
-    if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (volume_mesh.quadrature(0) ==
+        SpatialDiscretization::Quadrature::GaussLobatto) {
       // The lift_flux function lifts only on the slice, it does not add
       // the contribution to the volume.
       ::dg::lift_flux(make_not_null(&boundary_corrections_on_face),
@@ -630,7 +631,8 @@ void apply_boundary_condition_on_face(
   }
   // Add TimeDerivative correction to volume time derivatives.
   if constexpr (uses_time_derivative_condition) {
-    if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (volume_mesh.quadrature(0) ==
+        SpatialDiscretization::Quadrature::GaussLobatto) {
       db::mutate<dt_variables_tag>(
           [&direction, &dt_time_derivative_correction,
            &volume_mesh](const auto dt_variables_ptr) {

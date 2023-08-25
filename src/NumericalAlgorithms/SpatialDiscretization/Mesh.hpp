@@ -10,7 +10,8 @@
 #include <cstddef>
 
 #include "DataStructures/Index.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -57,13 +58,13 @@ class Mesh {
   };
 
   struct Basis {
-    using type = Spectral::Basis;
+    using type = SpatialDiscretization::Basis;
     static constexpr Options::String help = {
         "The choice of spectral basis to compute the collocation points"};
   };
 
   struct Quadrature {
-    using type = Spectral::Quadrature;
+    using type = SpatialDiscretization::Quadrature;
     static constexpr Options::String help = {
         "The choice of quadrature to compute the collocation points"};
   };
@@ -94,10 +95,10 @@ class Mesh {
    * \note Because a `Mesh<0>` extends over no dimensions, it has 1 grid point
    * independent of the value of `isotropic_extents`.
    */
-  Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature)
+  Mesh(const size_t isotropic_extents, const SpatialDiscretization::Basis basis,
+       const SpatialDiscretization::Quadrature quadrature)
       : extents_(isotropic_extents) {
-    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
+    ASSERT(basis != SpatialDiscretization::Basis::SphericalHarmonic,
            "SphericalHarmonic is not a valid basis for the Mesh");
     bases_.fill(basis);
     quadratures_.fill(quadrature);
@@ -113,10 +114,11 @@ class Mesh {
    * \param quadrature The choice of quadrature to compute
    * the collocation points
    */
-  Mesh(std::array<size_t, Dim> extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature)
+  Mesh(std::array<size_t, Dim> extents,
+       const SpatialDiscretization::Basis basis,
+       const SpatialDiscretization::Quadrature quadrature)
       : extents_(std::move(extents)) {
-    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
+    ASSERT(basis != SpatialDiscretization::Basis::SphericalHarmonic,
            "SphericalHarmonic is not a valid basis for the Mesh");
     bases_.fill(basis);
     quadratures_.fill(quadrature);
@@ -132,11 +134,12 @@ class Mesh {
    * \param quadratures The choice of quadratures to compute
    * the collocation points per dimension
    */
-  Mesh(std::array<size_t, Dim> extents, std::array<Spectral::Basis, Dim> bases,
-       std::array<Spectral::Quadrature, Dim> quadratures)
+  Mesh(std::array<size_t, Dim> extents,
+       std::array<SpatialDiscretization::Basis, Dim> bases,
+       std::array<SpatialDiscretization::Quadrature, Dim> quadratures)
       : extents_(std::move(extents)), quadratures_(std::move(quadratures)) {
     for (auto it = bases.begin(); it != bases.end(); it++) {
-      ASSERT(*it != Spectral::Basis::SphericalHarmonic,
+      ASSERT(*it != SpatialDiscretization::Basis::SphericalHarmonic,
              "SphericalHarmonic is not a valid basis for the Mesh");
     }
     bases_ = std::move(bases);
@@ -179,24 +182,28 @@ class Mesh {
   /*!
    * \brief The basis chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Basis, Dim>& basis() const { return bases_; }
+  const std::array<SpatialDiscretization::Basis, Dim>& basis() const {
+    return bases_;
+  }
 
   /*!
    * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Basis basis(const size_t d) const { return gsl::at(bases_, d); }
+  SpatialDiscretization::Basis basis(const size_t d) const {
+    return gsl::at(bases_, d);
+  }
 
   /*!
    * \brief The quadrature chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Quadrature, Dim>& quadrature() const {
+  const std::array<SpatialDiscretization::Quadrature, Dim>& quadrature() const {
     return quadratures_;
   }
 
   /*!
    * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Quadrature quadrature(const size_t d) const {
+  SpatialDiscretization::Quadrature quadrature(const size_t d) const {
     return gsl::at(quadratures_, d);
   }
 
@@ -250,8 +257,8 @@ class Mesh {
 
  private:
   Index<Dim> extents_{};
-  std::array<Spectral::Basis, Dim> bases_{};
-  std::array<Spectral::Quadrature, Dim> quadratures_{};
+  std::array<SpatialDiscretization::Basis, Dim> bases_{};
+  std::array<SpatialDiscretization::Quadrature, Dim> quadratures_{};
 };
 
 /*!

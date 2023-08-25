@@ -84,8 +84,8 @@ void test() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> dist(-10.0, 10.0);
 
-  const Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{5, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_pts = mesh.number_of_grid_points();
 
   tnsr::I<DataVector, Dim, Frame::Grid> grid_coords{num_pts};

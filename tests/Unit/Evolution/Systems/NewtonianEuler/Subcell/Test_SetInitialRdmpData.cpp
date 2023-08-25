@@ -23,8 +23,8 @@ void test() {
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
   using ConsVars =
       Variables<tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>;
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   ConsVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};
 

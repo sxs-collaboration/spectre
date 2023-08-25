@@ -103,16 +103,18 @@ void test() {
 
   std::pair<const TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};
   for (size_t d = 0; d < Dim; ++d) {
-    const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto};
-    const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
-                                   Spectral::Basis::FiniteDifference,
-                                   Spectral::Quadrature::CellCentered};
-    const Mesh<Dim - 1> dg_face_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto};
-    const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
-                                     Spectral::Basis::FiniteDifference,
-                                     Spectral::Quadrature::CellCentered};
+    const Mesh<Dim> dg_volume_mesh{
+        2 + 2 * Dim, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
+    const Mesh<Dim> fd_volume_mesh{
+        2 + 2 * Dim + 1, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered};
+    const Mesh<Dim - 1> dg_face_mesh{
+        2 + 2 * Dim, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
+    const Mesh<Dim - 1> fd_face_mesh{
+        2 + 2 * Dim + 1, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered};
     DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
     DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
     for (size_t i = 0; i < 4; ++i) {

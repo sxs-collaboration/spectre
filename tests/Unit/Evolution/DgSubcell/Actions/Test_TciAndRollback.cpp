@@ -143,8 +143,8 @@ struct Metavariables {
     template <typename DbTagsList>
     static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) {
       CHECK(db::get<domain::Tags::Mesh<Dim>>(box) ==
-            Mesh<Dim>(5, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto));
+            Mesh<Dim>(5, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto));
       return 2;
     }
   };
@@ -290,8 +290,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const TimeStepId time_step_id{false, self_starting ? -1 : 1,
                                 Slab{1.0, 2.0}.end()};
   const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const Element<Dim> element = create_element<Dim>(with_neighbors);
   const evolution::dg::subcell::ActiveGrid active_grid =

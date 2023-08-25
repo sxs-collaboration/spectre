@@ -140,8 +140,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   using limiter_comm_tag =
       Limiters::Tags::LimiterCommunicationTag<metavariables>;
 
-  const Mesh<2> mesh{
-      {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{{{3, 4}},
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   //      xi      Block       +- xi
   //      |     0   |   1     |
@@ -273,8 +274,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
     };
 
     const Mesh<2> rotated_mesh{{{4, 3}},
-                               Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
     check_inbox(west_id, Direction<2>::lower_xi(), 5., rotated_mesh);
     check_inbox(east_id, Direction<2>::upper_xi(), 6., mesh);
     check_inbox(south_id, Direction<2>::upper_eta(), 7., mesh);
@@ -308,8 +309,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
   using limiter_comm_tag =
       Limiters::Tags::LimiterCommunicationTag<metavariables>;
 
-  const Mesh<2> mesh{
-      {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{{{3, 4}},
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
   const Element<2> element(self_id, {});
 

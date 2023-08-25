@@ -108,8 +108,8 @@ void test_observe(
 
   const ElementId<volume_dim> element_id(2);
   const typename element_component::array_index array_index(element_id);
-  const Mesh<volume_dim> mesh(5, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto);
+  const Mesh<volume_dim> mesh(5, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto);
 
   const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
@@ -361,16 +361,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 12\n"
         "    Basis: Legendre\n"
         "    Quadrature: GaussLobatto";
-    const Mesh<1> interpolating_mesh_1d{12, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto};
+    const Mesh<1> interpolating_mesh_1d{
+        12, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, interpolating_mesh_1d, true),
                          (ScalarSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, interpolating_mesh_1d, false),
                          (ScalarSystem<dg::Events::ObserveFields>));
-    const Mesh<2> interpolating_mesh_2d{12, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2d{
+        12, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
         interpolating_mesh_str, interpolating_mesh_2d);
   }
@@ -382,10 +384,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 3\n"
         "    Basis: Legendre\n"
         "    Quadrature: GaussLobatto";
-    const Mesh<1> interpolating_mesh_1{3, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto};
-    const Mesh<2> interpolating_mesh_2{3, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<1> interpolating_mesh_1{
+        3, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2{
+        3, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
     test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
                                                          interpolating_mesh_1);
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -399,10 +403,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 5\n"
         "    Basis: Chebyshev\n"
         "    Quadrature: GaussLobatto";
-    const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Chebyshev,
-                                       Spectral::Quadrature::GaussLobatto};
-    const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Chebyshev,
-                                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<1> interpolating_mesh_1{
+        5, SpatialDiscretization::Basis::Chebyshev,
+        SpatialDiscretization::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2{
+        5, SpatialDiscretization::Basis::Chebyshev,
+        SpatialDiscretization::Quadrature::GaussLobatto};
     test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
                                                          interpolating_mesh_1);
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -416,10 +422,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 5\n"
         "    Basis: Legendre\n"
         "    Quadrature: Gauss";
-    const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::Gauss};
-    const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::Gauss};
+    const Mesh<1> interpolating_mesh_1{
+        5, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::Gauss};
+    const Mesh<2> interpolating_mesh_2{
+        5, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::Gauss};
     test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
                                                          interpolating_mesh_1);
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -433,10 +441,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 8\n"
         "    Basis: FiniteDifference\n"
         "    Quadrature: CellCentered";
-    const Mesh<1> interpolating_mesh_1{8, Spectral::Basis::FiniteDifference,
-                                       Spectral::Quadrature::CellCentered};
-    const Mesh<2> interpolating_mesh_2{8, Spectral::Basis::FiniteDifference,
-                                       Spectral::Quadrature::CellCentered};
+    const Mesh<1> interpolating_mesh_1{
+        8, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered};
+    const Mesh<2> interpolating_mesh_2{
+        8, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered};
     test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
                                                          interpolating_mesh_1);
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -447,8 +457,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
     INFO("Interpolate to non-uniform mesh");
     // test nonuniform mesh, these cannot be parsed yet
     const Mesh<2> interpolating_mesh(
-        {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-        {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
+        {3, 9},
+        {SpatialDiscretization::Basis::Legendre,
+         SpatialDiscretization::Basis::Chebyshev},
+        {SpatialDiscretization::Quadrature::Gauss,
+         SpatialDiscretization::Quadrature::GaussLobatto});
 
     test_observe<ComplicatedSystem<dg::Events::ObserveFields>>(
         std::make_unique<typename ComplicatedSystem<

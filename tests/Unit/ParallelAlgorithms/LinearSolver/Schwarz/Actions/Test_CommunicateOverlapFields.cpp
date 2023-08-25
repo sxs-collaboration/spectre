@@ -94,8 +94,8 @@ void test_communicate_overlap_fields(const size_t num_points_per_dim,
   // Setup element array
   const auto add_element = [num_points_per_dim, overlap, &overlap_data,
                             &runner](const Element<Dim>& element) {
-    Mesh<Dim> mesh{num_points_per_dim, Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
+    Mesh<Dim> mesh{num_points_per_dim, SpatialDiscretization::Basis::Legendre,
+                   SpatialDiscretization::Quadrature::GaussLobatto};
     auto intruding_extents = make_array<Dim>(overlap);
     typename fields_tag::type fields{mesh.number_of_grid_points()};
     get(get<ScalarFieldTag<0>>(fields)) = overlap_data;

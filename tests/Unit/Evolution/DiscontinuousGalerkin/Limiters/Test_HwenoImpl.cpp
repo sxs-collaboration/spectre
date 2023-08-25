@@ -116,13 +116,15 @@ void test_secondary_neighbors_to_exclude_from_fit() {
   check_excluded_neighbors(4., upper_eta, {{lower_xi}});
 }
 
-void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
-                                 Spectral::Quadrature::GaussLobatto) {
+void test_constrained_fit_1d(
+    const SpatialDiscretization::Quadrature quadrature =
+        SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 1D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const auto mesh = Mesh<1>{{{3}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<1>{{{3}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto lower_xi_neighbor =
@@ -201,7 +203,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 3>{{41. / 30., -31. / 10., -7. / 10.}}
               : std::array<double, 3>{
                     {803. / 579., -1247. / 386., -734. / 965.}};
@@ -211,7 +213,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     // Fit procedure has somewhat larger error scale than default
     // Error further increases when using Gauss points
     const double gauss_tol =
-        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+        (quadrature == SpatialDiscretization::Quadrature::Gauss ? 10. : 1.);
     Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
@@ -247,7 +249,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 3>{{929. / 850., -124. / 425., 103. / 850.}}
               : std::array<double, 3>{
                     {1054. / 965., -286. / 965., 119. / 965.}};
@@ -257,7 +259,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     // Fit procedure has somewhat larger error scale than default
     // Error further increases when using Gauss points
     const double gauss_tol =
-        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+        (quadrature == SpatialDiscretization::Quadrature::Gauss ? 10. : 1.);
     Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     CHECK(mean_value(constrained_fit, mesh) ==
@@ -299,7 +301,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 3>{{41. / 30., -31. / 10., -7. / 10.}}
               : std::array<double, 3>{
                     {803. / 579., -1247. / 386., -734. / 965.}};
@@ -309,7 +311,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     // Fit procedure has somewhat larger error scale than default
     // Error further increases when using Gauss points
     const double gauss_tol =
-        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+        (quadrature == SpatialDiscretization::Quadrature::Gauss ? 10. : 1.);
     Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     CHECK(mean_value(constrained_fit, mesh) ==
@@ -319,13 +321,15 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
 
 // Test in 2D using a vector tensor, to test multiple components.
 // Multiple components becomes very tedious in 3D, so 3D will test a scalar.
-void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
-                                        Spectral::Quadrature::GaussLobatto) {
+void test_constrained_fit_2d_vector(
+    const SpatialDiscretization::Quadrature quadrature =
+        SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 2D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const auto mesh = Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<2>{{{4, 3}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto lower_xi_neighbor =
@@ -475,7 +479,7 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
       const auto& y = get<1>(logical_coords);
       // x-component coefficients
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 12>{{6049013. / 5913219., 92367. / 360620.,
                                         -1659. / 558961., -6083. / 558961.,
                                         61831556. / 187251935., 42. / 6935.,
@@ -491,7 +495,7 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
                      -135. / 394823., -105. / 35893.}};
       // y-component coefficients
       const auto d =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 12>{{3609701941. / 1685267415.,
                                         120807. / 180310., -1018741. / 5589610.,
                                         -168586. / 558961.,
@@ -522,7 +526,7 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
     // Fit procedure has somewhat larger error scale than default
     // Error further increases when using Gauss points
     const double gauss_tol =
-        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+        (quadrature == SpatialDiscretization::Quadrature::Gauss ? 10. : 1.);
     Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-10).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
@@ -568,20 +572,21 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double, 12>{{398. / 329., -1738. / 1645.,
                                         -207. / 329., -33. / 329., -1. / 10.,
                                         0., 0., 0., 0., 0., 0., 0.}}
               : std::array<double, 12>{{4366. / 3581., -19294. / 17905.,
                                         -2355. / 3581., -385. / 3581.,
                                         -1. / 10., 0., 0., 0., 0., 0., 0., 0.}};
-      const auto d = (quadrature == Spectral::Quadrature::GaussLobatto)
-                         ? std::array<double, 12>{{589. / 329., 2067. / 1645.,
-                                                   207. / 329., 33. / 329., 0.,
-                                                   0., 0., 0., 0., 0., 0., 0.}}
-                         : std::array<double, 12>{
-                               {6377. / 3581., 4575. / 3581., 2355. / 3581.,
-                                385. / 3581., 0., 0., 0., 0., 0., 0., 0., 0.}};
+      const auto d =
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
+              ? std::array<double, 12>{{589. / 329., 2067. / 1645., 207. / 329.,
+                                        33. / 329., 0., 0., 0., 0., 0., 0., 0.,
+                                        0.}}
+              : std::array<double, 12>{{6377. / 3581., 4575. / 3581.,
+                                        2355. / 3581., 385. / 3581., 0., 0., 0.,
+                                        0., 0., 0., 0., 0.}};
       return tnsr::I<DataVector, 2>{
           {{DataVector{
                 c[0] + c[1] * x + c[2] * square(x) + c[3] * cube(x) +
@@ -598,7 +603,7 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
     // Fit procedure has somewhat larger error scale than default
     // Error further increases when using Gauss points
     const double gauss_tol =
-        (quadrature == Spectral::Quadrature::Gauss ? 100. : 1.);
+        (quadrature == SpatialDiscretization::Quadrature::Gauss ? 100. : 1.);
     Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-10).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
@@ -609,8 +614,9 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
   }
 }
 
-void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
-                                 Spectral::Quadrature::GaussLobatto) {
+void test_constrained_fit_3d(
+    const SpatialDiscretization::Quadrature quadrature =
+        SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 3D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
@@ -634,7 +640,8 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
 
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<3>{{{3, 3, 4}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto local_data = [&logical_coords]() {
@@ -808,7 +815,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
       const auto c =
-          (quadrature == Spectral::Quadrature::GaussLobatto)
+          (quadrature == SpatialDiscretization::Quadrature::GaussLobatto)
               ? std::array<double,
                            36>{{7734190419582420551. / 62148673763526035437.,
                                 765121. / 1263364.,
@@ -949,7 +956,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
       auto c = make_array<36>(0.);
-      if (quadrature == Spectral::Quadrature::GaussLobatto) {
+      if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
         c[0] = 139558567. / 190046570.;
         c[1] = 306385833. / 95023285.;
         c[2] = -70704423. / 95023285.;
@@ -1104,12 +1111,13 @@ void test_hweno_work(
   CHECK_ITERABLE_CUSTOM_APPROX(vector_to_limit, expected_hweno, local_approx);
 }
 
-void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) {
+void test_hweno_impl_1d(const SpatialDiscretization::Quadrature quadrature =
+                            SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 1D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<1>>;
-  const auto mesh = Mesh<1>{{{3}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<1>{{{3}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1153,12 +1161,13 @@ void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
       local_approx);
 }
 
-void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) {
+void test_hweno_impl_2d(const SpatialDiscretization::Quadrature quadrature =
+                            SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 2D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
-  const auto mesh = Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<2>{{{4, 3}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1245,12 +1254,13 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
       local_approx);
 }
 
-void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) {
+void test_hweno_impl_3d(const SpatialDiscretization::Quadrature quadrature =
+                            SpatialDiscretization::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 3D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<3>>;
-  const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
+  const auto mesh =
+      Mesh<3>{{{3, 3, 4}}, SpatialDiscretization::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1407,7 +1417,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl", "[Limiters][Unit]") {
 // 2. To keep the test case duration comfortably under the 2s time limit
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl.GaussQuadrature",
                   "[Limiters][Unit]") {
-  const auto gauss = Spectral::Quadrature::Gauss;
+  const auto gauss = SpatialDiscretization::Quadrature::Gauss;
   test_constrained_fit_1d(gauss);
   test_constrained_fit_2d_vector(gauss);
   test_constrained_fit_3d(gauss);

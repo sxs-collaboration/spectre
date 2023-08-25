@@ -68,8 +68,9 @@ void test_subcell_timederivative() {
   const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
 
   const size_t num_dg_pts_per_dimension = 5;
-  const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension,
+                          SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // Perform test with MC reconstruction & Rusanov riemann solver

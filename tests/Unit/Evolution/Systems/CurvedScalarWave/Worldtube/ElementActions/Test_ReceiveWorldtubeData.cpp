@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
   using worldtube_chare = MockWorldtubeSingleton<metavars>;
   const size_t initial_extent = 5;
   const size_t face_size = initial_extent * initial_extent;
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
   // we create several differently refined shells so a different number of
   // elements sends data
   for (const auto& [expansion_order, initial_refinement, worldtube_radius] :

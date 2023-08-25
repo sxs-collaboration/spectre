@@ -221,8 +221,9 @@ struct WedgeSectionTorus
         const double diff = 0.5 * (options.max_radius - options.min_radius);
         result =
             mean + diff * Spectral::collocation_points<
-                              Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(num_radial);
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto>(
+                              num_radial);
       }
       return result;
     }();
@@ -242,8 +243,9 @@ struct WedgeSectionTorus
         const double diff = 0.5 * (options.max_theta - options.min_theta);
         result =
             mean + diff * Spectral::collocation_points<
-                              Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(num_theta);
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto>(
+                              num_theta);
       }
       return result;
     }();

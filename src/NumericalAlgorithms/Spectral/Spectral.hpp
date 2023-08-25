@@ -14,6 +14,9 @@
 #include <limits>
 #include <utility>
 
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
+
 /// \cond
 class Matrix;
 class DataVector;
@@ -34,9 +37,9 @@ struct create_from_yaml;
  * \details The functions in this namespace provide low-level access to
  * collocation points, quadrature weights and associated matrices, such as for
  * differentiation and interpolation. They are available in two versions: either
- * templated directly on the enum cases of the Spectral::Basis and
- * Spectral::Quadrature types, or taking a one-dimensional Mesh as their
- * argument.
+ * templated directly on the enum cases of the SpatialDiscretization::Basis and
+ * SpatialDiscretization::Quadrature types, or taking a one-dimensional Mesh as
+ * their argument.
  *
  * \note Generally you should prefer working with a Mesh. Use its
  * Mesh::slice_through() method to retrieve the mesh in a particular dimension:
@@ -46,86 +49,23 @@ struct create_from_yaml;
  * Most algorithms in this namespace are adapted from \cite Kopriva.
  */
 namespace Spectral {
-
-/*!
- * \ingroup SpectralGroup
- * \brief The choice of basis functions for computing collocation points and
- * weights.
- *
- * \details Choose `Legendre` for a general-purpose DG mesh, unless you have a
- * particular reason for choosing another basis.
- *
- * \warning The `FiniteDifference` "basis" is used to denote that only the
- * collocation points are defined, but that differentiation, integration, and
- * interpolation schemes are to be chosen locally wherever a `FiniteDifference`
- * mesh is being used. The reason is that there isn't a requirement that the
- * basis and collocation point locations are at all related to the
- * differentiation, integration, or interpolation methods - it is merely a
- * convenient choice in a lot of cases. For `FiniteDifference` we need to choose
- * the order of the scheme (and hence the weights, differentiation matrix,
- * integration weights, and interpolant) locally in space and time to handle
- * discontinuous solutions. Our current implementation of the weights is such
- * that integration of a function uses the midpoint method, but the weights are
- * ONLY useful to perform integration and no longer have any other meaning.
- */
-enum class Basis { Chebyshev, Legendre, FiniteDifference, SphericalHarmonic };
-
-/// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os, const Basis& basis);
-/// \endcond
-
-/*!
- * \brief Convert a string to a Basis enum.
- */
-Basis to_basis(const std::string& basis);
-
-/*!
- * \ingroup SpectralGroup
- * \brief The choice of quadrature method to compute integration weights.
- *
- * \details Integrals using \f$N\f$ collocation points with Gauss quadrature are
- * exact to polynomial order \f$p=2N-1\f$. Gauss-Lobatto quadrature is exact
- * only to polynomial order \f$p=2N-3\f$, but includes collocation points at the
- * domain boundary.
- *
- * \warning `CellCentered` and `FaceCentered` are intended to be used with the
- * `FiniteDifference` basis (though in principle they could be used with any
- * basis), and thus do not implement differentiation matrices and
- * interpolation matrices.
- */
-enum class Quadrature {
-  Gauss,
-  GaussLobatto,
-  CellCentered,
-  FaceCentered,
-  Equiangular
-};
-
-/// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
-/// \endcond
-
-/*!
- * \brief Convert a string to a Basis enum.
- */
-Quadrature to_quadrature(const std::string& quadrature);
-
 namespace detail {
-constexpr size_t minimum_number_of_points(const Basis /*basis*/,
-                                          const Quadrature quadrature) {
+constexpr size_t minimum_number_of_points(
+    const SpatialDiscretization::Basis /*basis*/,
+    const SpatialDiscretization::Quadrature quadrature) {
   // NOLINTNEXTLINE(bugprone-branch-clone)
-  if (quadrature == Quadrature::Gauss) {
+  if (quadrature == SpatialDiscretization::Quadrature::Gauss) {
     return 1;
     // NOLINTNEXTLINE(bugprone-branch-clone)
-  } else if (quadrature == Quadrature::GaussLobatto) {
+  } else if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
     return 2;
     // NOLINTNEXTLINE(bugprone-branch-clone)
-  } else if (quadrature == Quadrature::CellCentered) {
+  } else if (quadrature == SpatialDiscretization::Quadrature::CellCentered) {
     return 1;
     // NOLINTNEXTLINE(bugprone-branch-clone)
-  } else if (quadrature == Quadrature::FaceCentered) {
+  } else if (quadrature == SpatialDiscretization::Quadrature::FaceCentered) {
     return 2;
-  } else if (quadrature == Quadrature::Equiangular) {
+  } else if (quadrature == SpatialDiscretization::Quadrature::Equiangular) {
     return 1;
   }
   return std::numeric_limits<size_t>::max();
@@ -142,9 +82,10 @@ constexpr size_t minimum_number_of_points(const Basis /*basis*/,
  * \details For `CellCentered` the minimum number of points is 1, while for
  * `FaceCentered` it is 2.
  */
-template <Basis basis, Quadrature quadrature>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 constexpr size_t minimum_number_of_points =
-    detail::minimum_number_of_points(basis, quadrature);
+    detail::minimum_number_of_points(Basis, Quadrature);
 
 /*!
  * \brief Maximum number of allowed collocation points.
@@ -158,15 +99,15 @@ constexpr size_t minimum_number_of_points =
  * Note that for good task-based parallelization 24 grid points is already a
  * fairly large number.
  */
-template <Basis basis>
+template <SpatialDiscretization::Basis Basis>
 constexpr size_t maximum_number_of_points =
-    basis == Basis::FiniteDifference ? 24 : 12;
+    Basis == SpatialDiscretization::Basis::FiniteDifference ? 24 : 12;
 
 /*!
  * \brief Compute the function values of the basis function \f$\Phi_k(x)\f$
  * (zero-indexed).
  */
-template <Basis BasisType, typename T>
+template <SpatialDiscretization::Basis Basis, typename T>
 T compute_basis_function_value(size_t k, const T& x);
 
 /*!
@@ -176,14 +117,14 @@ T compute_basis_function_value(size_t k, const T& x);
  * This is arbitrarily set to 1 for FiniteDifference basis, to integrate
  * using the midpoint method (see `quadrature_weights (size_t)` for details).
  */
-template <Basis>
+template <SpatialDiscretization::Basis>
 DataVector compute_inverse_weight_function_values(const DataVector&);
 
 /*!
  * \brief Compute the normalization square of the basis function \f$\Phi_k\f$
  * (zero-indexed), i.e. the weighted definite integral over its square.
  */
-template <Basis BasisType>
+template <SpatialDiscretization::Basis Basis>
 double compute_basis_function_normalization_square(size_t k);
 
 /*!
@@ -198,7 +139,8 @@ double compute_basis_function_normalization_square(size_t k);
  * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
  * quadratures, the weights are defined to integrate with the midpoint method
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
     size_t num_points);
 
@@ -206,7 +148,8 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
  * \brief Collocation points
  * \param num_points The number of collocation points
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const DataVector& collocation_points(size_t num_points);
 
 /*!
@@ -243,7 +186,8 @@ const DataVector& collocation_points(const Mesh<1>& mesh);
  *
  * \param num_points The number of collocation points
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const DataVector& quadrature_weights(size_t num_points);
 
 /*!
@@ -268,7 +212,8 @@ const DataVector& quadrature_weights(const Mesh<1>& mesh);
  *
  * \param num_points The number of collocation points
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& differentiation_matrix(size_t num_points);
 
 /*!
@@ -283,7 +228,8 @@ const Matrix& differentiation_matrix(const Mesh<1>& mesh);
  *
  * \param num_points The number of collocation points
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& weak_flux_differentiation_matrix(size_t num_points);
 
 /*!
@@ -414,7 +360,8 @@ const Matrix& weak_flux_differentiation_matrix(const Mesh<1>& mesh);
  *
  * where \f$\Gamma(x)\f$ is the Gamma function.
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& integration_matrix(size_t num_points);
 
 /*!
@@ -428,7 +375,7 @@ const Matrix& integration_matrix(const Mesh<1>& mesh);
  * \brief %Matrix used to interpolate to the \p target_points.
  *
  * \warning For each target point located outside of the logical coordinate
- * interval covered by `BasisType` (often \f$[-1,1]\f$), the resulting matrix
+ * interval covered by `Basis` (often \f$[-1,1]\f$), the resulting matrix
  * performs polynomial extrapolation instead of interpolation. The extrapolation
  * will be correct but may suffer from reduced accuracy, especially for
  * higher-order polynomials (i.e., larger values of `num_points`).
@@ -436,7 +383,8 @@ const Matrix& integration_matrix(const Mesh<1>& mesh);
  * \param num_points The number of collocation points
  * \param target_points The points to interpolate to
  */
-template <Basis BasisType, Quadrature QuadratureType, typename T>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename T>
 Matrix interpolation_matrix(size_t num_points, const T& target_points);
 
 /*!
@@ -464,7 +412,8 @@ Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points);
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
     const Mesh<1>& mesh);
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
     size_t num_points);
 /// @}
@@ -498,7 +447,8 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
     const Mesh<1>& mesh);
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
     size_t num_points);
 /// @}
@@ -521,7 +471,8 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
     const Mesh<1>& mesh);
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
     size_t num_points);
 /// @}
@@ -545,7 +496,8 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
 
  * \see nodal_to_modal_matrix(size_t)
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& modal_to_nodal_matrix(size_t num_points);
 
 /*!
@@ -575,7 +527,8 @@ const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh);
  *
  * \see modal_to_nodal_matrix(size_t)
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& nodal_to_modal_matrix(size_t num_points);
 
 /*!
@@ -599,7 +552,8 @@ const Matrix& nodal_to_modal_matrix(const Mesh<1>& mesh);
  * \see modal_to_nodal_matrix(size_t)
  * \see nodal_to_modal_matrix(size_t)
  */
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& linear_filter_matrix(size_t num_points);
 
 /*!
@@ -610,30 +564,3 @@ const Matrix& linear_filter_matrix(size_t num_points);
 const Matrix& linear_filter_matrix(const Mesh<1>& mesh);
 
 }  // namespace Spectral
-
-/// \cond
-template <>
-struct Options::create_from_yaml<Spectral::Quadrature> {
-  template <typename Metavariables>
-  static Spectral::Quadrature create(const Options::Option& options) {
-    return create<void>(options);
-  }
-};
-
-template <>
-Spectral::Quadrature
-Options::create_from_yaml<Spectral::Quadrature>::create<void>(
-    const Options::Option& options);
-
-template <>
-struct Options::create_from_yaml<Spectral::Basis> {
-  template <typename Metavariables>
-  static Spectral::Basis create(const Options::Option& options) {
-    return create<void>(options);
-  }
-};
-
-template <>
-Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
-    const Options::Option& options);
-/// \endcond

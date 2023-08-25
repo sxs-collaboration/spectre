@@ -466,7 +466,8 @@ struct ApplyBoundaryCorrections {
             make_array<volume_dim>(volume_mesh.quadrature(0)),
         "Must have isotropic quadrature, but got volume mesh: " << volume_mesh);
     const bool using_gauss_lobatto_points =
-        volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto;
+        volume_mesh.quadrature(0) ==
+        SpatialDiscretization::Quadrature::GaussLobatto;
 
     Scalar<DataVector> volume_det_inv_jacobian{};
     Scalar<DataVector> volume_det_jacobian{};

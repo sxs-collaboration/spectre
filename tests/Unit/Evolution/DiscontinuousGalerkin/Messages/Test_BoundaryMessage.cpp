@@ -53,8 +53,8 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   const ElementId<Dim> element_id{0};
 
   const size_t extents = 4;
-  const Mesh<Dim> volume_mesh{extents, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_mesh{extents, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim - 1> interface_mesh = volume_mesh.slice_away(0);
 
   std::uniform_real_distribution<double> dist{-1.0, 1.0};
@@ -126,8 +126,8 @@ void test_output() {
   const ElementId<2> element_id{0};
 
   const size_t extents = 4;
-  const Mesh<2> volume_mesh{extents, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> volume_mesh{extents, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<1> interface_mesh = volume_mesh.slice_away(0);
 
   DataVector subcell_data{0.1, 0.2, 0.3, 0.4};

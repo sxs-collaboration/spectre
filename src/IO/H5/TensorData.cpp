@@ -54,8 +54,9 @@ bool operator!=(const TensorComponent& lhs, const TensorComponent& rhs) {
 
 ElementVolumeData::ElementVolumeData(
     std::string element_name_in, std::vector<TensorComponent> components,
-    std::vector<size_t> extents_in, std::vector<Spectral::Basis> basis_in,
-    std::vector<Spectral::Quadrature> quadrature_in)
+    std::vector<size_t> extents_in,
+    std::vector<SpatialDiscretization::Basis> basis_in,
+    std::vector<SpatialDiscretization::Quadrature> quadrature_in)
     : element_name(std::move(element_name_in)),
       tensor_components(std::move(components)),
       extents(std::move(extents_in)),

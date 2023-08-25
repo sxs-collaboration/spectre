@@ -30,14 +30,15 @@ Matrix exponential_filter(const Mesh<1>& mesh, const double alpha,
 }
 
 namespace {
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct ZeroLowestModesImpl {
   Matrix operator()(const size_t num_points,
                     const size_t num_modes_to_zero) const {
     const Matrix& nodal_to_modal =
-        Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(num_points);
+        Spectral::nodal_to_modal_matrix<Basis, Quadrature>(num_points);
     const Matrix& modal_to_nodal =
-        Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
+        Spectral::modal_to_nodal_matrix<Basis, Quadrature>(num_points);
     Matrix filter_matrix(num_points, num_points, 0.0);
     for (size_t i = num_modes_to_zero; i < num_points; ++i) {
       filter_matrix(i, i) = 1.0;
@@ -55,62 +56,66 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
                                << number_of_modes_to_zero << " modes.");
 
   switch (mesh.basis(0)) {
-    case Basis::Legendre:
+    case SpatialDiscretization::Basis::Legendre:
       switch (mesh.quadrature(0)) {
-        case Spectral::Quadrature::GaussLobatto: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+        case SpatialDiscretization::Quadrature::GaussLobatto: {
+          constexpr size_t max_num_points = Spectral::maximum_number_of_points<
+              SpatialDiscretization::Basis::Legendre>;
           constexpr size_t min_num_points = Spectral::minimum_number_of_points<
-              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
                                 CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>{});
+                  ZeroLowestModesImpl<
+                      SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
-        case Spectral::Quadrature::Gauss: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-          constexpr size_t min_num_points =
-              Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                                 Spectral::Quadrature::Gauss>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>{});
+        case SpatialDiscretization::Quadrature::Gauss: {
+          constexpr size_t max_num_points = Spectral::maximum_number_of_points<
+              SpatialDiscretization::Basis::Legendre>;
+          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss>;
+          const auto cache = make_static_cache<
+              CacheRange<min_num_points, max_num_points + 1>,
+              CacheRange<0_st, max_num_points>>(
+              ZeroLowestModesImpl<SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         default:
           ERROR("Unsupported quadrature type in filtering lowest modes: "
                 << mesh.quadrature(0));
       };
-    case Basis::Chebyshev:
+    case SpatialDiscretization::Basis::Chebyshev:
       switch (mesh.quadrature(0)) {
-        case Spectral::Quadrature::GaussLobatto: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
+        case SpatialDiscretization::Quadrature::GaussLobatto: {
+          constexpr size_t max_num_points = Spectral::maximum_number_of_points<
+              SpatialDiscretization::Basis::Chebyshev>;
           constexpr size_t min_num_points = Spectral::minimum_number_of_points<
-              Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>;
+              SpatialDiscretization::Basis::Chebyshev,
+              SpatialDiscretization::Quadrature::GaussLobatto>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
                                 CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::GaussLobatto>{});
+                  ZeroLowestModesImpl<
+                      SpatialDiscretization::Basis::Chebyshev,
+                      SpatialDiscretization::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
-        case Spectral::Quadrature::Gauss: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
-          constexpr size_t min_num_points =
-              Spectral::minimum_number_of_points<Spectral::Basis::Chebyshev,
-                                                 Spectral::Quadrature::Gauss>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::Gauss>{});
+        case SpatialDiscretization::Quadrature::Gauss: {
+          constexpr size_t max_num_points = Spectral::maximum_number_of_points<
+              SpatialDiscretization::Basis::Chebyshev>;
+          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
+              SpatialDiscretization::Basis::Chebyshev,
+              SpatialDiscretization::Quadrature::Gauss>;
+          const auto cache = make_static_cache<
+              CacheRange<min_num_points, max_num_points + 1>,
+              CacheRange<0_st, max_num_points>>(
+              ZeroLowestModesImpl<SpatialDiscretization::Basis::Chebyshev,
+                                  SpatialDiscretization::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         default:

@@ -209,7 +209,8 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
   }
 }
 
-template <Spectral::Basis Basis, Spectral::Quadrature Quadrature>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_irregular_interpolant() {
   const size_t start_points = 4;
   const size_t end_points = 6;
@@ -230,17 +231,21 @@ void test_irregular_interpolant_mixed_quadrature() {
   const size_t end_points = 6;
   for (size_t n0 = start_points; n0 < end_points; ++n0) {
     for (size_t n1 = start_points; n1 < end_points; ++n1) {
-      test_interpolate_to_points<2>(Mesh<2>{
-          {{n0, n1}},
-          {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-          {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}});
+      test_interpolate_to_points<2>(
+          Mesh<2>{{{n0, n1}},
+                  {{SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Basis::Legendre}},
+                  {{SpatialDiscretization::Quadrature::GaussLobatto,
+                    SpatialDiscretization::Quadrature::Gauss}}});
       for (size_t n2 = start_points; n2 < end_points; ++n2) {
-        test_interpolate_to_points<3>(Mesh<3>{
-            {{n0, n1, n2}},
-            {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-              Spectral::Basis::Legendre}},
-            {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
-              Spectral::Quadrature::GaussLobatto}}});
+        test_interpolate_to_points<3>(
+            Mesh<3>{{{n0, n1, n2}},
+                    {{SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Basis::Legendre}},
+                    {{SpatialDiscretization::Quadrature::GaussLobatto,
+                      SpatialDiscretization::Quadrature::Gauss,
+                      SpatialDiscretization::Quadrature::GaussLobatto}}});
       }
     }
   }
@@ -320,8 +325,8 @@ void test_polynomial_interpolant(const std::array<size_t, Dim>& extents) {
   const auto& block = domain.blocks()[0];
   const ElementMap<Dim, Frame::Inertial> element_map{
       ElementId<Dim>{0}, block.stationary_map().get_clone()};
-  Mesh<Dim> mesh(extents, Spectral::Basis::FiniteDifference,
-                 Spectral::Quadrature::CellCentered);
+  Mesh<Dim> mesh(extents, SpatialDiscretization::Basis::FiniteDifference,
+                 SpatialDiscretization::Quadrature::CellCentered);
 
   const auto source_xi = logical_coordinates(mesh);
   const auto source_x = element_map(source_xi);
@@ -347,8 +352,9 @@ void test_tov() {
     const Domain<3> domain = create_domain<3>(
         6.6666666666666666666 / two_to_the(i), isotropic_extents);
     const Block<3>& cube = domain.blocks()[0];
-    Mesh<3> mesh(isotropic_extents, Spectral::Basis::FiniteDifference,
-                 Spectral::Quadrature::CellCentered);
+    Mesh<3> mesh(isotropic_extents,
+                 SpatialDiscretization::Basis::FiniteDifference,
+                 SpatialDiscretization::Quadrature::CellCentered);
     const auto xi = logical_coordinates(mesh);
     const ElementMap<3, Frame::Inertial> element_map{
         ElementId<3>{0}, cube.stationary_map().get_clone()};
@@ -387,10 +393,10 @@ void test_tov() {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
                   "[Unit][NumericalAlgorithms]") {
-  test_irregular_interpolant<Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto>();
-  test_irregular_interpolant<Spectral::Basis::Legendre,
-                             Spectral::Quadrature::Gauss>();
+  test_irregular_interpolant<SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_irregular_interpolant<SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::Gauss>();
   test_irregular_interpolant_mixed_quadrature();
   test_polynomial_interpolant<1, 1>({{11}});
   test_polynomial_interpolant<2, 1>({{11, 11}});

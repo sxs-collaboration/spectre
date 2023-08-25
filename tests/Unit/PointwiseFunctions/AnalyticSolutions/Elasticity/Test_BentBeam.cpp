@@ -144,8 +144,8 @@ SPECTRE_TEST_CASE(
   // Since the solution is a polynomial of degree 2, it should numerically
   // solve the system equations to machine precision on 3 grid points per
   // dimension.
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{3, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
   const auto inertial_coords = coord_map(logical_coords);
   {

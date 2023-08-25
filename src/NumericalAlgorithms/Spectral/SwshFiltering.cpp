@@ -36,17 +36,18 @@ void filter_swsh_volume_quantity(
   if (LIKELY(exponential_alpha != 0.0)) {
     buffer->destructive_resize(to_filter->size());
     // Filter the radial direction using the provided exponential parameters.
-    apply_matrices(buffer,
-                   make_array(Matrix{}, Matrix{},
-                              Spectral::filtering::exponential_filter(
-                                  Mesh<1>{number_of_radial_grid_points,
-                                          Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto},
-                                  exponential_alpha, exponential_half_power)),
-                   to_filter->data(),
-                   Index<3>{number_of_swsh_phi_collocation_points(l_max),
-                            number_of_swsh_theta_collocation_points(l_max),
-                            number_of_radial_grid_points});
+    apply_matrices(
+        buffer,
+        make_array(Matrix{}, Matrix{},
+                   Spectral::filtering::exponential_filter(
+                       Mesh<1>{number_of_radial_grid_points,
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto},
+                       exponential_alpha, exponential_half_power)),
+        to_filter->data(),
+        Index<3>{number_of_swsh_phi_collocation_points(l_max),
+                 number_of_swsh_theta_collocation_points(l_max),
+                 number_of_radial_grid_points});
     to_filter->data() = *buffer;
   }
   if (LIKELY(filter_max_l < l_max)) {

@@ -44,10 +44,11 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleBoundaryData", "[Unit][NumericalAlgorithms]") {
   CHECK(get<ExtraData>(data.extra_data) == 2);
 
   // Test projections
-  const Mesh<1> face_mesh{num_points, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> mortar_mesh{num_points + 1, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> face_mesh{num_points, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<1> mortar_mesh{num_points + 1,
+                            SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
   const std::array<Spectral::MortarSize, 1> mortar_size{
       {Spectral::MortarSize::UpperHalf}};
   const auto projected_data =

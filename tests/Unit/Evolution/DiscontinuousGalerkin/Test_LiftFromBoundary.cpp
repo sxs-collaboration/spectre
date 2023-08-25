@@ -122,8 +122,8 @@ void test(const double eps) {
   // boundary term does not have the metric identity satisfying normal and
   // Jacobian terms.
   using tags = tmpl::list<Var1, Var2<Dim>>;
-  Mesh<Dim> volume_mesh{8, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss};
+  Mesh<Dim> volume_mesh{8, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss};
   CAPTURE(Dim);
   CAPTURE(volume_mesh);
 

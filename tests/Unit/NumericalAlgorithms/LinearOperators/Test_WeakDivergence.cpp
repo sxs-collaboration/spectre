@@ -91,7 +91,7 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   tmpl::for_each<div_tags>([&divergence_result, &expected_divergence_result,
                             &local_approx, &mesh](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
-    if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto) {
       // Only the interior points are zero. Points on the boundary are non-zero
       // because they need the flux lifted to be zero.
       for (size_t i = 1; i < mesh.extents(0) - 1; ++i) {
@@ -210,7 +210,7 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
       }
     });
   };
-  if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+  if (mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto) {
     fill_with_random_values(make_not_null(&fluxes), make_not_null(&gen),
                             make_not_null(&dist));
   } else {
@@ -224,7 +224,7 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   Variables<div_tags> expected_divergence = [&compute_smooth_fluxes,
                                              &det_jacobian, &fluxes,
                                              &inverse_jacobian, &mesh]() {
-    if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto) {
       auto local_expected_divergence =
           divergence(fluxes, mesh, inverse_jacobian);
       local_expected_divergence *= -get(det_jacobian);
@@ -235,7 +235,7 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
       // didn't use random data so that the result all fits inside the basis
       // function space.
       const Mesh<Dim> gl_mesh{mesh.extents(0), mesh.basis(0),
-                              Spectral::Quadrature::GaussLobatto};
+                              SpatialDiscretization::Quadrature::GaussLobatto};
       const auto gl_logical_coords = logical_coordinates(gl_mesh);
       tnsr::I<DataVector, Dim, Frame::Inertial> gl_inertial_coords{
           gl_mesh.number_of_grid_points()};
@@ -262,9 +262,10 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
 
       const Matrix interp_1d = Spectral::interpolation_matrix(
           Mesh<1>{mesh.extents(0), mesh.basis(0),
-                  Spectral::Quadrature::GaussLobatto},
-          get<0>(logical_coordinates(Mesh<1>{mesh.extents(0), mesh.basis(0),
-                                             Spectral::Quadrature::Gauss})));
+                  SpatialDiscretization::Quadrature::GaussLobatto},
+          get<0>(logical_coordinates(
+              Mesh<1>{mesh.extents(0), mesh.basis(0),
+                      SpatialDiscretization::Quadrature::Gauss})));
       return apply_matrices(make_array<Dim>(interp_1d), gl_divergence_result,
                             gl_mesh.extents());
     }
@@ -274,7 +275,7 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   tmpl::for_each<div_tags>([&divergence_result, &expected_divergence,
                             &local_approx, &mesh](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
-    if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto) {
       // Only the interior points are zero. Points on the boundary are non-zero
       // because they need the flux lifted to be zero.
       for (size_t i = 1; i < mesh.extents(0) - 1; ++i) {
@@ -316,13 +317,14 @@ template <size_t Dim>
 void test() {
   for (size_t num_pts = 3; num_pts < 9; num_pts += 2) {
     for (const auto& quadrature :
-         {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
-      test_weak_divergence_random_jacobian(
-          Mesh<Dim>{num_pts, Spectral::Basis::Legendre, quadrature});
+         {SpatialDiscretization::Quadrature::Gauss,
+          SpatialDiscretization::Quadrature::GaussLobatto}) {
+      test_weak_divergence_random_jacobian(Mesh<Dim>{
+          num_pts, SpatialDiscretization::Basis::Legendre, quadrature});
       if constexpr (Dim == 1) {
         // Haven't figured out a good test in 2d and 3d
-        test_weak_divergence_constant_jacobian(
-            Mesh<Dim>{num_pts, Spectral::Basis::Legendre, quadrature});
+        test_weak_divergence_constant_jacobian(Mesh<Dim>{
+            num_pts, SpatialDiscretization::Basis::Legendre, quadrature});
       }
     }
   }

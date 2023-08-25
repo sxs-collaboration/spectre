@@ -109,40 +109,44 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   test_definite_integral_0d();
 
-  constexpr size_t min_extents =
-      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>;
-  constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  constexpr size_t min_extents = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>;
   for (size_t n0 = min_extents; n0 <= max_extents; ++n0) {
-    test_definite_integral_1d(Mesh<1>{n0, Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto});
+    test_definite_integral_1d(
+        Mesh<1>{n0, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto});
   }
   for (size_t n0 = min_extents; n0 <= max_extents; ++n0) {
     for (size_t n1 = min_extents; n1 <= max_extents - 1; ++n1) {
-      test_definite_integral_2d(Mesh<2>{{{n0, n1}},
-                                        Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto});
+      test_definite_integral_2d(
+          Mesh<2>{{{n0, n1}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto});
     }
   }
   for (size_t n0 = min_extents; n0 <= std::min(6_st, max_extents); ++n0) {
     for (size_t n1 = min_extents; n1 <= std::min(7_st, max_extents); ++n1) {
       for (size_t n2 = min_extents; n2 <= std::min(8_st, max_extents); ++n2) {
-        test_definite_integral_3d(Mesh<3>{{{n0, n1, n2}},
-                                          Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto});
+        test_definite_integral_3d(
+            Mesh<3>{{{n0, n1, n2}},
+                    SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto});
       }
     }
   }
 
   // Test finite difference integral
-  constexpr size_t min_extents_fd =
-      Spectral::minimum_number_of_points<Spectral::Basis::FiniteDifference,
-                                         Spectral::Quadrature::CellCentered>;
-  constexpr size_t max_extents_fd =
-    Spectral::maximum_number_of_points<Spectral::Basis::FiniteDifference>;
+  constexpr size_t min_extents_fd = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::FiniteDifference,
+      SpatialDiscretization::Quadrature::CellCentered>;
+  constexpr size_t max_extents_fd = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::FiniteDifference>;
   for (size_t n0 = min_extents_fd; n0 <= max_extents_fd; ++n0) {
-    test_midpoint_integral_1d(Mesh<1>{n0, Spectral::Basis::FiniteDifference,
-                                      Spectral::Quadrature::CellCentered});
+    test_midpoint_integral_1d(
+        Mesh<1>{n0, SpatialDiscretization::Basis::FiniteDifference,
+                SpatialDiscretization::Quadrature::CellCentered});
   }
 }

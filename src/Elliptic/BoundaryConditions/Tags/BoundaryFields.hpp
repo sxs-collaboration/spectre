@@ -34,10 +34,11 @@ struct BoundaryFieldsCompute : db::ComputeTag,
   static void function(const gsl::not_null<return_type*> vars_on_face,
                        const typename FieldsTag::type& vars,
                        const Mesh<Dim>& mesh, const Element<Dim>& element) {
-    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-           "Slicing fields to the boundary currently supports only "
-           "Gauss-Lobatto grids. Add support to "
-           "'elliptic::Tags::BoundaryFieldsCompute'.");
+    ASSERT(
+        mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto,
+        "Slicing fields to the boundary currently supports only "
+        "Gauss-Lobatto grids. Add support to "
+        "'elliptic::Tags::BoundaryFieldsCompute'.");
     for (const auto& direction : element.external_boundaries()) {
       data_on_slice(make_not_null(&((*vars_on_face)[direction])), vars,
                     mesh.extents(), direction.dimension(),
@@ -65,10 +66,11 @@ struct BoundaryFluxesCompute
       const typename FluxesTag::type& fluxes,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
       const Mesh<Dim>& mesh, const Element<Dim>& element) {
-    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-           "Slicing fluxes to the boundary currently supports only "
-           "Gauss-Lobatto grids. Add support to "
-           "'elliptic::Tags::BoundaryFluxesCompute'.");
+    ASSERT(
+        mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto,
+        "Slicing fluxes to the boundary currently supports only "
+        "Gauss-Lobatto grids. Add support to "
+        "'elliptic::Tags::BoundaryFluxesCompute'.");
     for (const auto& direction : element.external_boundaries()) {
       const auto fluxes_on_face =
           data_on_slice(fluxes, mesh.extents(), direction.dimension(),

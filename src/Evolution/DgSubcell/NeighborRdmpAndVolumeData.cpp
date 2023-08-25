@@ -51,7 +51,8 @@ void insert_or_update_neighbor_volume_data(
   DataVector& ghost_data = (*ghost_data_ptr)[directional_element_id]
                                .neighbor_ghost_data_for_reconstruction();
   DataVector computed_ghost_data{};
-  if (neighbor_mesh.basis(0) == Spectral::Basis::FiniteDifference) {
+  if (neighbor_mesh.basis(0) ==
+      SpatialDiscretization::Basis::FiniteDifference) {
     ASSERT(neighbor_mesh == subcell_mesh,
            "Neighbor mesh ("
                << neighbor_mesh << ") and my mesh (" << subcell_mesh
@@ -113,7 +114,7 @@ void insert_or_update_neighbor_volume_data(
                   std::cref(evolution::dg::subcell::fd::projection_matrix(
                       neighbor_mesh_for_projection.slice_through(i),
                       subcell_mesh.extents(i),
-                      Spectral::Quadrature::CellCentered));
+                      SpatialDiscretization::Quadrature::CellCentered));
             }
           }
           apply_matrices(make_not_null(&computed_ghost_data),

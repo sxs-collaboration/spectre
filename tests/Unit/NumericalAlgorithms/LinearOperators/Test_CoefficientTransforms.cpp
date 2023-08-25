@@ -31,7 +31,8 @@
 // coefficients and compared to `u_nodal_expected`.
 namespace {
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature, size_t Dim>
+          SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, size_t Dim>
 void check_transforms(
     const Mesh<Dim>& mesh,
     const std::vector<std::array<size_t, Dim>>& coeffs_to_include) {
@@ -91,8 +92,8 @@ void check_transforms(
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
-          typename Generator>
+          SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Generator>
 void test_1d(const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<size_t> dist{
       1, Spectral::maximum_number_of_points<Basis> - 1};
@@ -112,8 +113,8 @@ void test_1d(const gsl::not_null<Generator*> generator) {
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
-          typename Generator>
+          SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Generator>
 void test_2d(const gsl::not_null<Generator*> generator) {
   // Start at one higher order so we can drop one order in the y-direction.
   UniformCustomDistribution<size_t> dist{
@@ -137,8 +138,8 @@ void test_2d(const gsl::not_null<Generator*> generator) {
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
-          typename Generator>
+          SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Generator>
 void test_3d(const gsl::not_null<Generator*> generator) {
   // Start at two orders higher so we can drop one order in the y-direction and
   // two in z-direction.
@@ -165,55 +166,79 @@ void test_3d(const gsl::not_null<Generator*> generator) {
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.CoefficientTransforms",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   MAKE_GENERATOR(generator);
-  test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
+  test_1d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_1d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_2d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_2d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_3d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_3d<ModalVector, DataVector, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
 
-  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
+  test_1d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_1d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_2d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_2d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_3d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_3d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
 
-  test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
+  test_1d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_1d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_2d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_2d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_3d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_3d<ModalVector, DataVector, SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
 
-  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
-  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
-  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>(make_not_null(&generator));
+  test_1d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_1d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_2d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_2d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
+  test_3d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
+      make_not_null(&generator));
+  test_3d<ComplexModalVector, ComplexDataVector,
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::Gauss>(make_not_null(&generator));
 }

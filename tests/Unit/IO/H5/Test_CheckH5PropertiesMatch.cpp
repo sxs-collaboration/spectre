@@ -33,9 +33,10 @@ void setup_test_files(const std::vector<std::string>& h5_file_names) {
 
   const std::vector<size_t> observation_ids{2345, 3456, 4567};
   const std::vector<double> observation_values{1.0, 2.0, 3.0};
-  const std::vector<Spectral::Basis> bases{Spectral::Basis::Legendre};
-  const std::vector<Spectral::Quadrature> quadratures{
-      Spectral::Quadrature::Gauss};
+  const std::vector<SpatialDiscretization::Basis> bases{
+      SpatialDiscretization::Basis::Legendre};
+  const std::vector<SpatialDiscretization::Quadrature> quadratures{
+      SpatialDiscretization::Quadrature::Gauss};
   const std::vector<size_t> extents{2};
 
   const uint32_t version_number = 4;

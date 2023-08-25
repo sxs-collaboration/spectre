@@ -92,8 +92,8 @@ void test_compute_excision_boundary_volume_quantities() {
   // We always compute our source quantities in the inertial frame.
   // But we want our destination quantities in the target frame.
   const Mesh mesh{domain_creator->initial_extents()[element_ids[0].block_id()],
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto};
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
   tnsr::I<DataVector, 3, TargetFrame> target_frame_coords{};
   Jacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>

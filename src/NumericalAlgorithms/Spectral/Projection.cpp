@@ -52,9 +52,10 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                                 const Mesh<1>& parent_mesh,
                                                 const ChildSize size,
                                                 const bool operand_is_massive) {
-  constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
-  ASSERT(parent_mesh.basis(0) == Basis::Legendre and
-             child_mesh.basis(0) == Basis::Legendre,
+  constexpr size_t max_points =
+      maximum_number_of_points<SpatialDiscretization::Basis::Legendre>;
+  ASSERT(parent_mesh.basis(0) == SpatialDiscretization::Basis::Legendre and
+             child_mesh.basis(0) == SpatialDiscretization::Basis::Legendre,
          "Projections only implemented on Legendre basis");
   ASSERT(parent_mesh.extents(0) <= max_points and
              child_mesh.extents(0) <= max_points,
@@ -68,20 +69,26 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
     // The restriction operator for massive quantities is just the interpolation
     // transpose
     const static auto cache = make_static_cache<
-        CacheEnumeration<Quadrature, Quadrature::Gauss,
-                         Quadrature::GaussLobatto>,
+        CacheEnumeration<SpatialDiscretization::Quadrature,
+                         SpatialDiscretization::Quadrature::Gauss,
+                         SpatialDiscretization::Quadrature::GaussLobatto>,
         CacheRange<2_st, max_points + 1>,
-        CacheEnumeration<Quadrature, Quadrature::Gauss,
-                         Quadrature::GaussLobatto>,
+        CacheEnumeration<SpatialDiscretization::Quadrature,
+                         SpatialDiscretization::Quadrature::Gauss,
+                         SpatialDiscretization::Quadrature::GaussLobatto>,
         CacheRange<2_st, max_points + 1>,
         CacheEnumeration<ChildSize, ChildSize::Full, ChildSize::UpperHalf,
                          ChildSize::LowerHalf>>(
-        [](const Quadrature child_quadrature, const size_t child_extent,
-           const Quadrature parent_quadrature, const size_t parent_extent,
+        [](const SpatialDiscretization::Quadrature child_quadrature,
+           const size_t child_extent,
+           const SpatialDiscretization::Quadrature parent_quadrature,
+           const size_t parent_extent,
            const ChildSize local_child_size) -> Matrix {
           const auto& prolongation_operator = projection_matrix_parent_to_child(
-              {parent_extent, Spectral::Basis::Legendre, parent_quadrature},
-              {child_extent, Spectral::Basis::Legendre, child_quadrature},
+              {parent_extent, SpatialDiscretization::Basis::Legendre,
+               parent_quadrature},
+              {child_extent, SpatialDiscretization::Basis::Legendre,
+               child_quadrature},
               local_child_size);
           return blaze::trans(prolongation_operator);
         });
@@ -92,23 +99,28 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
   switch (size) {
     case ChildSize::Full: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
-                            CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              [](const Quadrature quadrature_element,
+          make_static_cache<
+              CacheEnumeration<SpatialDiscretization::Quadrature,
+                               SpatialDiscretization::Quadrature::Gauss,
+                               SpatialDiscretization::Quadrature::GaussLobatto>,
+              CacheRange<2_st, max_points + 1>,
+              CacheEnumeration<SpatialDiscretization::Quadrature,
+                               SpatialDiscretization::Quadrature::Gauss,
+                               SpatialDiscretization::Quadrature::GaussLobatto>,
+              CacheRange<2_st, max_points + 1>>(
+              [](const SpatialDiscretization::Quadrature quadrature_element,
                  const size_t extents_element,
-                 const Quadrature quadrature_mortar,
+                 const SpatialDiscretization::Quadrature quadrature_mortar,
                  const size_t extents_mortar) {
                 if (extents_element > extents_mortar) {
                   return Matrix{};
                 }
-                const Mesh<1> mesh_element(extents_element, Basis::Legendre,
-                                           quadrature_element);
-                const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
-                                          quadrature_mortar);
+                const Mesh<1> mesh_element(
+                    extents_element, SpatialDiscretization::Basis::Legendre,
+                    quadrature_element);
+                const Mesh<1> mesh_mortar(
+                    extents_mortar, SpatialDiscretization::Basis::Legendre,
+                    quadrature_mortar);
 
                 // The projection in spectral space is just a truncation
                 // of the modes.
@@ -134,104 +146,115 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
 
     case ChildSize::UpperHalf: {
       const static auto cache = make_static_cache<
-          CacheEnumeration<Quadrature, Quadrature::Gauss,
-                           Quadrature::GaussLobatto>,
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
           CacheRange<2_st, max_points + 1>,
-          CacheEnumeration<Quadrature, Quadrature::Gauss,
-                           Quadrature::GaussLobatto>,
-          CacheRange<2_st,
-                     max_points + 1>>([](const Quadrature quadrature_element,
-                                         const size_t extents_element,
-                                         const Quadrature quadrature_mortar,
-                                         const size_t extents_mortar) {
-        if (extents_element > extents_mortar) {
-          return Matrix{};
-        }
-        const Mesh<1> mesh_element(extents_element, Basis::Legendre,
-                                   quadrature_element);
-        const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
-                                  quadrature_mortar);
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>>(
+          [](const SpatialDiscretization::Quadrature quadrature_element,
+             const size_t extents_element,
+             const SpatialDiscretization::Quadrature quadrature_mortar,
+             const size_t extents_mortar) {
+            if (extents_element > extents_mortar) {
+              return Matrix{};
+            }
+            const Mesh<1> mesh_element(extents_element,
+                                       SpatialDiscretization::Basis::Legendre,
+                                       quadrature_element);
+            const Mesh<1> mesh_mortar(extents_mortar,
+                                      SpatialDiscretization::Basis::Legendre,
+                                      quadrature_mortar);
 
-        // The transformation from the small interval to the large
-        // interval in spectral space.  This is a rearranged
-        // version of the equation given in the header.  This form
-        // was easier to code.
-        const auto spectral_transformation = [](const size_t large_index,
-                                                const size_t small_index) {
-          ASSERT(large_index >= small_index,
-                 "Above-diagonal entries are zero.  Don't use them.");
-          double result = 1.;
-          for (size_t i = (large_index - small_index) / 2; i > 0; --i) {
-            result = 1 - result *
-                             static_cast<double>(
-                                 (large_index + small_index + 3 - 2 * i) *
-                                 (large_index + small_index + 2 - 2 * i) *
-                                 (large_index - small_index + 2 - 2 * i) *
-                                 (large_index - small_index + 1 - 2 * i)) /
-                             static_cast<double>(2 * i *
-                                                 (2 * large_index + 1 - 2 * i) *
-                                                 (large_index + 2 - 2 * i) *
-                                                 (large_index + 1 - 2 * i));
-          }
+            // The transformation from the small interval to the large
+            // interval in spectral space.  This is a rearranged
+            // version of the equation given in the header.  This form
+            // was easier to code.
+            const auto spectral_transformation = [](const size_t large_index,
+                                                    const size_t small_index) {
+              ASSERT(large_index >= small_index,
+                     "Above-diagonal entries are zero.  Don't use them.");
+              double result = 1.;
+              for (size_t i = (large_index - small_index) / 2; i > 0; --i) {
+                result = 1 - result *
+                                 static_cast<double>(
+                                     (large_index + small_index + 3 - 2 * i) *
+                                     (large_index + small_index + 2 - 2 * i) *
+                                     (large_index - small_index + 2 - 2 * i) *
+                                     (large_index - small_index + 1 - 2 * i)) /
+                                 static_cast<double>(
+                                     2 * i * (2 * large_index + 1 - 2 * i) *
+                                     (large_index + 2 - 2 * i) *
+                                     (large_index + 1 - 2 * i));
+              }
 
-          for (size_t i = 1; i <= large_index - small_index; ++i) {
-            result *=
-                1. + static_cast<double>(large_index + small_index + 1) / i;
-          }
-          result /= pow(2., static_cast<int>(large_index) + 1);
-          return result;
-        };
+              for (size_t i = 1; i <= large_index - small_index; ++i) {
+                result *=
+                    1. + static_cast<double>(large_index + small_index + 1) / i;
+              }
+              result /= pow(2., static_cast<int>(large_index) + 1);
+              return result;
+            };
 
-        const auto& spectral_to_grid_element =
-            modal_to_nodal_matrix(mesh_element);
-        const auto& grid_to_spectral_mortar =
-            nodal_to_modal_matrix(mesh_mortar);
+            const auto& spectral_to_grid_element =
+                modal_to_nodal_matrix(mesh_element);
+            const auto& grid_to_spectral_mortar =
+                nodal_to_modal_matrix(mesh_mortar);
 
-        Matrix temp(extents_element, extents_element, 0.);
-        for (size_t j = 0; j < extents_element; ++j) {
-          for (size_t k = j; k < extents_element; ++k) {
-            const double transformation_entry = spectral_transformation(k, j);
+            Matrix temp(extents_element, extents_element, 0.);
+            for (size_t j = 0; j < extents_element; ++j) {
+              for (size_t k = j; k < extents_element; ++k) {
+                const double transformation_entry =
+                    spectral_transformation(k, j);
+                for (size_t i = 0; i < extents_element; ++i) {
+                  temp(i, j) +=
+                      spectral_to_grid_element(i, k) * transformation_entry;
+                }
+              }
+            }
+
+            Matrix projection(extents_element, extents_mortar, 0.);
             for (size_t i = 0; i < extents_element; ++i) {
-              temp(i, j) +=
-                  spectral_to_grid_element(i, k) * transformation_entry;
+              for (size_t j = 0; j < extents_mortar; ++j) {
+                for (size_t k = 0; k < extents_element; ++k) {
+                  projection(i, j) +=
+                      temp(i, k) * grid_to_spectral_mortar(k, j);
+                }
+              }
             }
-          }
-        }
 
-        Matrix projection(extents_element, extents_mortar, 0.);
-        for (size_t i = 0; i < extents_element; ++i) {
-          for (size_t j = 0; j < extents_mortar; ++j) {
-            for (size_t k = 0; k < extents_element; ++k) {
-              projection(i, j) += temp(i, k) * grid_to_spectral_mortar(k, j);
-            }
-          }
-        }
-
-        return projection;
-      });
+            return projection;
+          });
       return cache(parent_mesh.quadrature(0), parent_mesh.extents(0),
                    child_mesh.quadrature(0), child_mesh.extents(0));
     }
 
     case ChildSize::LowerHalf: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
-                            CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              [](const Quadrature quadrature_element,
+          make_static_cache<
+              CacheEnumeration<SpatialDiscretization::Quadrature,
+                               SpatialDiscretization::Quadrature::Gauss,
+                               SpatialDiscretization::Quadrature::GaussLobatto>,
+              CacheRange<2_st, max_points + 1>,
+              CacheEnumeration<SpatialDiscretization::Quadrature,
+                               SpatialDiscretization::Quadrature::Gauss,
+                               SpatialDiscretization::Quadrature::GaussLobatto>,
+              CacheRange<2_st, max_points + 1>>(
+              [](const SpatialDiscretization::Quadrature quadrature_element,
                  const size_t extents_element,
-                 const Quadrature quadrature_mortar,
+                 const SpatialDiscretization::Quadrature quadrature_mortar,
                  const size_t extents_mortar) {
                 if (extents_element > extents_mortar) {
                   return Matrix{};
                 }
-                const Mesh<1> mesh_element(extents_element, Basis::Legendre,
-                                           quadrature_element);
-                const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
-                                          quadrature_mortar);
+                const Mesh<1> mesh_element(
+                    extents_element, SpatialDiscretization::Basis::Legendre,
+                    quadrature_element);
+                const Mesh<1> mesh_mortar(
+                    extents_mortar, SpatialDiscretization::Basis::Legendre,
+                    quadrature_mortar);
 
                 // The lower-half matrices are generated from the upper-half
                 // matrices using symmetry.
@@ -286,9 +309,10 @@ projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
                                                 const ChildSize size) {
-  constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
-  ASSERT(child_mesh.basis(0) == Basis::Legendre and
-             parent_mesh.basis(0) == Basis::Legendre,
+  constexpr size_t max_points =
+      maximum_number_of_points<SpatialDiscretization::Basis::Legendre>;
+  ASSERT(child_mesh.basis(0) == SpatialDiscretization::Basis::Legendre and
+             parent_mesh.basis(0) == SpatialDiscretization::Basis::Legendre,
          "Projections only implemented on Legendre basis");
   ASSERT(child_mesh.extents(0) <= max_points and
              parent_mesh.extents(0) <= max_points,
@@ -304,15 +328,18 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
   // Element-to-mortar projections are always interpolations.
   const auto make_interpolators = [](auto interval_transform) {
     return [interval_transform = std::move(interval_transform)](
-               const Quadrature quadrature_mortar, const size_t extents_mortar,
-               const Quadrature quadrature_element,
+               const SpatialDiscretization::Quadrature quadrature_mortar,
+               const size_t extents_mortar,
+               const SpatialDiscretization::Quadrature quadrature_element,
                const size_t extents_element) {
       if (extents_mortar < extents_element) {
         return Matrix{};
       }
-      const Mesh<1> mesh_element(extents_element, Basis::Legendre,
+      const Mesh<1> mesh_element(extents_element,
+                                 SpatialDiscretization::Basis::Legendre,
                                  quadrature_element);
-      const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
+      const Mesh<1> mesh_mortar(extents_mortar,
+                                SpatialDiscretization::Basis::Legendre,
                                 quadrature_mortar);
       return interpolation_matrix(
           mesh_element, interval_transform(collocation_points(mesh_mortar)));
@@ -321,44 +348,46 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
 
   switch (size) {
     case ChildSize::Full: {
-      const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
-                            CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              make_interpolators([](const DataVector& x) { return x; }));
+      const static auto cache = make_static_cache<
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>,
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>>(
+          make_interpolators([](const DataVector& x) { return x; }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
                    parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
 
     case ChildSize::UpperHalf: {
-      const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
-                            CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              make_interpolators([](const DataVector& x) {
-                return DataVector(0.5 * (x + 1.));
-              }));
+      const static auto cache = make_static_cache<
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>,
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>>(make_interpolators(
+          [](const DataVector& x) { return DataVector(0.5 * (x + 1.)); }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
                    parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
 
     case ChildSize::LowerHalf: {
-      const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
-                            CacheEnumeration<Quadrature, Quadrature::Gauss,
-                                             Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              make_interpolators([](const DataVector& x) {
-                return DataVector(0.5 * (x - 1.));
-              }));
+      const static auto cache = make_static_cache<
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>,
+          CacheEnumeration<SpatialDiscretization::Quadrature,
+                           SpatialDiscretization::Quadrature::Gauss,
+                           SpatialDiscretization::Quadrature::GaussLobatto>,
+          CacheRange<2_st, max_points + 1>>(make_interpolators(
+          [](const DataVector& x) { return DataVector(0.5 * (x - 1.)); }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
                    parent_mesh.quadrature(0), parent_mesh.extents(0));
     }

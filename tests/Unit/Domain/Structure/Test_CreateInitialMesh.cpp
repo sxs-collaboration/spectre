@@ -18,27 +18,32 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
   {
     INFO("Single element");
     for (const auto& quadrature :
-         {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+         {SpatialDiscretization::Quadrature::GaussLobatto,
+          SpatialDiscretization::Quadrature::Gauss}) {
       CHECK(create_initial_mesh({{{3}}}, ElementId<1>{0}, quadrature) ==
-            Mesh<1>{3, Spectral::Basis::Legendre, quadrature});
+            Mesh<1>{3, SpatialDiscretization::Basis::Legendre, quadrature});
       CHECK(create_initial_mesh({{{3, 2}}}, ElementId<2>{0}, quadrature) ==
-            Mesh<2>{{{3, 2}}, Spectral::Basis::Legendre, quadrature});
+            Mesh<2>{
+                {{3, 2}}, SpatialDiscretization::Basis::Legendre, quadrature});
       CHECK(create_initial_mesh({{{3, 2, 4}}}, ElementId<3>{0}, quadrature) ==
-            Mesh<3>{{{3, 2, 4}}, Spectral::Basis::Legendre, quadrature});
+            Mesh<3>{{{3, 2, 4}},
+                    SpatialDiscretization::Basis::Legendre,
+                    quadrature});
     }
   }
   {
     INFO("Another element");
     for (const auto& quadrature :
-         {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+         {SpatialDiscretization::Quadrature::GaussLobatto,
+          SpatialDiscretization::Quadrature::Gauss}) {
       CHECK(create_initial_mesh({{{3}}, {{2}}}, ElementId<1>{1}, quadrature) ==
-            Mesh<1>{2, Spectral::Basis::Legendre, quadrature});
+            Mesh<1>{2, SpatialDiscretization::Basis::Legendre, quadrature});
       CHECK(create_initial_mesh({{{3, 3}}, {{2, 2}}}, ElementId<2>{1},
                                 quadrature) ==
-            Mesh<2>{2, Spectral::Basis::Legendre, quadrature});
+            Mesh<2>{2, SpatialDiscretization::Basis::Legendre, quadrature});
       CHECK(create_initial_mesh({{{3, 3, 3}}, {{2, 2, 2}}}, ElementId<3>{1},
                                 quadrature) ==
-            Mesh<3>{2, Spectral::Basis::Legendre, quadrature});
+            Mesh<3>{2, SpatialDiscretization::Basis::Legendre, quadrature});
     }
   }
   {
@@ -46,13 +51,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
     OrientationMap<2> unaligned(
         make_array(Direction<2>::lower_eta(), Direction<2>::upper_xi()));
     for (const auto& quadrature :
-         {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+         {SpatialDiscretization::Quadrature::GaussLobatto,
+          SpatialDiscretization::Quadrature::Gauss}) {
       CHECK(create_initial_mesh({{{2, 3}}, {{4, 5}}}, ElementId<2>{0},
                                 quadrature, unaligned) ==
-            Mesh<2>{{{3, 2}}, Spectral::Basis::Legendre, quadrature});
+            Mesh<2>{
+                {{3, 2}}, SpatialDiscretization::Basis::Legendre, quadrature});
       CHECK(create_initial_mesh({{{2, 3}}, {{4, 5}}}, ElementId<2>{1},
                                 quadrature, unaligned) ==
-            Mesh<2>{{{5, 4}}, Spectral::Basis::Legendre, quadrature});
+            Mesh<2>{
+                {{5, 4}}, SpatialDiscretization::Basis::Legendre, quadrature});
     }
   }
 }

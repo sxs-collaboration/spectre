@@ -92,8 +92,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
   helpers::test_boundary_correction_conservation<
       NewtonianEuler::System<Dim, DummyInitialData>>(
       gen, NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
@@ -109,8 +109,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       {{"dg_boundary_terms_mass_density", "dg_boundary_terms_momentum_density",
         "dg_boundary_terms_energy_density"}},
       NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 
   const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
@@ -131,8 +131,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
         "dg_boundary_terms_energy_density"}},
       dynamic_cast<const NewtonianEuler::BoundaryCorrections::Rusanov<Dim>&>(
           *rusanov),
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 }
 }  // namespace

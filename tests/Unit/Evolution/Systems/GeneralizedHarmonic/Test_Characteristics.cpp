@@ -137,8 +137,9 @@ void test_characteristic_speeds_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -277,8 +278,9 @@ void test_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -444,8 +446,9 @@ void test_evolved_from_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =

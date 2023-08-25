@@ -34,8 +34,9 @@ void generate_boundary_values_and_expected(
   ComplexDataVector y = outer_product(
       ComplexDataVector{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
+      Spectral::collocation_points<
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
           number_of_radial_grid_points));
 
   UniformCustomDistribution<double> dist(0.1, 1.0);

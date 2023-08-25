@@ -20,8 +20,8 @@
 
 SPECTRE_TEST_CASE("Unit.Burgers.TimeDerivativeTerms", "[Unit][Burgers]") {
   constexpr size_t num_points = 10;
-  const Mesh<1> mesh(num_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(num_points, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const auto coords = get<0>(logical_coordinates(mesh));
 
   // Arbitrary polynomial whose square is exactly representable.

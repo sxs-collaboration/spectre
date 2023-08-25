@@ -59,22 +59,21 @@ namespace test_1d {
 void test_package_data(const size_t order) {
   INFO("Testing package data");
   CAPTURE(order);
-  const Mesh<1> mesh(order + 1, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const DataVector& x = Spectral::collocation_points(mesh);
   using Limiter = Krivodonova<1, tmpl::list<ScalarTag<0>, VectorTag<1, 0>>>;
   Limiter krivodonova{};
 
   Scalar<DataVector> tensor0(mesh.number_of_grid_points());
-  get(tensor0) =
-      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(order,
-                                                                        x);
+  get(tensor0) = Spectral::compute_basis_function_value<
+      SpatialDiscretization::Basis::Legendre>(order, x);
   tnsr::I<DataVector, 1> tensor1(mesh.number_of_grid_points());
   get<0>(tensor1) =
-      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(order,
-                                                                        x) +
-      2.0 * Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-                order - 1, x);
+      Spectral::compute_basis_function_value<
+          SpatialDiscretization::Basis::Legendre>(order, x) +
+      2.0 * Spectral::compute_basis_function_value<
+                SpatialDiscretization::Basis::Legendre>(order - 1, x);
   Limiter::PackagedData packaged_data{};
 
   // test no reorienting
@@ -116,16 +115,15 @@ void test_limiting_two_neighbors() {
   INFO("Testing applying limiter to coefficients");
   static constexpr size_t dim = 1;
   const size_t order = 3;
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
 
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -254,15 +252,14 @@ void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 1;
   const size_t order = 3;
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -317,8 +314,10 @@ void test_limiting_different_values_different_tensors() {
 void run() {
   INFO("Testing 1d limiter");
   for (size_t order = Spectral::minimum_number_of_points<
-           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       order < Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+           SpatialDiscretization::Basis::Legendre,
+           SpatialDiscretization::Quadrature::GaussLobatto>;
+       order < Spectral::maximum_number_of_points<
+                   SpatialDiscretization::Basis::Legendre>;
        ++order) {
     test_package_data(order);
   }
@@ -332,9 +331,10 @@ void test_package_data() {
   INFO("Testing package data");
   static constexpr size_t dim = 2;
   const Mesh<dim> mesh({{2, 3}},
-                       {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                       {{Spectral::Quadrature::GaussLobatto,
-                         Spectral::Quadrature::GaussLobatto}});
+                       {{SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Basis::Legendre}},
+                       {{SpatialDiscretization::Quadrature::GaussLobatto,
+                         SpatialDiscretization::Quadrature::GaussLobatto}});
   CAPTURE(mesh);
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   Limiter krivodonova{};
@@ -811,15 +811,14 @@ void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 2;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -915,15 +914,14 @@ void run() {
   INFO("Testing applying limiter to coefficients");
   static constexpr size_t dim = 2;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -993,12 +991,13 @@ namespace test_3d {
 void test_package_data() {
   INFO("Testing package data");
   static constexpr size_t dim = 3;
-  const Mesh<dim> mesh(
-      {{2, 3, 4}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-        Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::GaussLobatto}});
+  const Mesh<dim> mesh({{2, 3, 4}},
+                       {{SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Basis::Legendre}},
+                       {{SpatialDiscretization::Quadrature::GaussLobatto,
+                         SpatialDiscretization::Quadrature::GaussLobatto,
+                         SpatialDiscretization::Quadrature::GaussLobatto}});
   CAPTURE(mesh);
   const auto logical_x = logical_coordinates(mesh);
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
@@ -2544,16 +2543,15 @@ void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 3;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   const auto x = logical_coordinates(mesh);
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -2776,15 +2774,14 @@ void run() {
   INFO("Testing applying limiter to coefficients");
   static constexpr size_t dim = 3;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
-  const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<dim> mesh(order + 1, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 

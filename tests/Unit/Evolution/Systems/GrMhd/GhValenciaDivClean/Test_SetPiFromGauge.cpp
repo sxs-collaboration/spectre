@@ -57,8 +57,8 @@ SPECTRE_TEST_CASE(
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
 
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto make_vars = [&generator, &deriv_dist,
                           &metric_dist](const Mesh<3>& mesh) {
     const size_t num_points = mesh.number_of_grid_points();

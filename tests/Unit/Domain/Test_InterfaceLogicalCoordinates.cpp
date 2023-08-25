@@ -52,8 +52,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
 
   CHECK(x_1d_ub[0][0] == 7.0);
 
-  const Mesh<1> mesh_2d_xbdry{3, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh_2d_xbdry{3, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto x_2d_lb_xi = map_2d(
       interface_logical_coordinates(mesh_2d_xbdry, Direction<2>::lower_xi()));
@@ -77,8 +77,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_2d_ub_xi[1][1] == 17.0);
   CHECK(x_2d_ub_xi[1][2] == 47.0);
 
-  const Mesh<1> mesh_2d_ybdry{2, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh_2d_ybdry{2, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto x_2d_lb_eta = map_2d(
       interface_logical_coordinates(mesh_2d_ybdry, Direction<2>::lower_eta()));
@@ -98,8 +98,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_2d_ub_eta[1][0] == 47.0);
   CHECK(x_2d_ub_eta[1][1] == 47.0);
 
-  const Mesh<2> mesh_3d_xbdry{
-      {{3, 2}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_3d_xbdry{{{3, 2}},
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto x_3d_lb_xi = map_3d(
       interface_logical_coordinates(mesh_3d_xbdry, Direction<3>::lower_xi()));
@@ -149,8 +150,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_xi[2][4] == 74.0);
   CHECK(x_3d_ub_xi[2][5] == 74.0);
 
-  const Mesh<2> mesh_3d_ybdry{
-      {{5, 2}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_3d_ybdry{{{5, 2}},
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto x_3d_lb_eta = map_3d(
       interface_logical_coordinates(mesh_3d_ybdry, Direction<3>::lower_eta()));
@@ -201,8 +203,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_eta[2][9] == 74.0);
 
   // [interface_logical_coordinates_example]
-  const Mesh<2> mesh_3d_zbdry{
-      {{5, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_3d_zbdry{{{5, 3}},
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto x_3d_lb_zeta = map_3d(
       interface_logical_coordinates(mesh_3d_zbdry, Direction<3>::lower_zeta()));

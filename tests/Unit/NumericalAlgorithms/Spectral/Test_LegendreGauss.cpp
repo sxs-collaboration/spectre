@@ -15,12 +15,14 @@ void test_points_and_weights(const size_t num_points,
                              const DataVector expected_points,
                              const DataVector expected_weights) {
   const auto& points =
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::Gauss>(num_points);
+      Spectral::collocation_points<SpatialDiscretization::Basis::Legendre,
+                                   SpatialDiscretization::Quadrature::Gauss>(
+          num_points);
   CHECK_ITERABLE_APPROX(expected_points, points);
   const auto& weights =
-      Spectral::quadrature_weights<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::Gauss>(num_points);
+      Spectral::quadrature_weights<SpatialDiscretization::Basis::Legendre,
+                                   SpatialDiscretization::Quadrature::Gauss>(
+          num_points);
   CHECK_ITERABLE_APPROX(expected_weights, weights);
 }
 
@@ -69,9 +71,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGauss.PointsAndWeights",
 namespace {
 
 void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
-  const auto& diff_matrix =
-      Spectral::differentiation_matrix<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::Gauss>(num_points);
+  const auto& diff_matrix = Spectral::differentiation_matrix<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::Gauss>(num_points);
   CHECK_MATRIX_APPROX(expected_matrix, diff_matrix);
 }
 
@@ -131,8 +133,9 @@ namespace {
 void test_modal_to_nodal_matrix(const size_t num_points,
                                 const Matrix& expected_matrix) {
   const auto& matrix =
-      Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>(num_points);
+      Spectral::modal_to_nodal_matrix<SpatialDiscretization::Basis::Legendre,
+                                      SpatialDiscretization::Quadrature::Gauss>(
+          num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
@@ -179,8 +182,9 @@ namespace {
 void test_nodal_to_modal_matrix(const size_t num_points,
                                 const Matrix& expected_matrix) {
   const auto& matrix =
-      Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>(num_points);
+      Spectral::nodal_to_modal_matrix<SpatialDiscretization::Basis::Legendre,
+                                      SpatialDiscretization::Quadrature::Gauss>(
+          num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 

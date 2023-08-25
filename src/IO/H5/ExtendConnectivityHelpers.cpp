@@ -373,8 +373,8 @@ namespace h5::detail {
 template <size_t SpatialDim>
 std::vector<int> extend_connectivity(
     std::vector<std::string>& grid_names,
-    std::vector<std::vector<Spectral::Basis>>& bases,
-    std::vector<std::vector<Spectral::Quadrature>>& quadratures,
+    std::vector<std::vector<SpatialDiscretization::Basis>>& bases,
+    std::vector<std::vector<SpatialDiscretization::Quadrature>>& quadratures,
     std::vector<std::vector<size_t>>& extents) {
   auto [number_of_blocks, block_number_for_each_element,
         sorted_element_indices] = compute_and_organize_block_info(grid_names);
@@ -494,8 +494,9 @@ std::vector<int> extend_connectivity(
 #define INSTANTIATE(_, data)                                            \
   template std::vector<int> h5::detail::extend_connectivity<DIM(data)>( \
       std::vector<std::string> & grid_names,                            \
-      std::vector<std::vector<Spectral::Basis>> & bases,                \
-      std::vector<std::vector<Spectral::Quadrature>> & quadratures,     \
+      std::vector<std::vector<SpatialDiscretization::Basis>> & bases,   \
+      std::vector<std::vector<SpatialDiscretization::Quadrature>> &     \
+          quadratures,                                                  \
       std::vector<std::vector<size_t>> & extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

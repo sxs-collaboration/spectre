@@ -18,7 +18,8 @@
 
 namespace {
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_exponential_filter(const double alpha, const unsigned half_power,
                              const double eps) {
   Approx local_approx = Approx::custom().epsilon(eps).scale(1.0);
@@ -65,23 +66,24 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
   const std::vector<unsigned> half_powers{2, 4, 8, 16};
   for (const double alpha : alphas) {
     for (const unsigned half_power : half_powers) {
-      test_exponential_filter<Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(
+      test_exponential_filter<SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto>(
           alpha, half_power, 2.0e-14);
-      test_exponential_filter<Spectral::Basis::Legendre,
-                              Spectral::Quadrature::Gauss>(alpha, half_power,
-                                                           1.0e-12);
-      test_exponential_filter<Spectral::Basis::Chebyshev,
-                              Spectral::Quadrature::GaussLobatto>(
+      test_exponential_filter<SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::Gauss>(
+          alpha, half_power, 1.0e-12);
+      test_exponential_filter<SpatialDiscretization::Basis::Chebyshev,
+                              SpatialDiscretization::Quadrature::GaussLobatto>(
           alpha, half_power, 2.0e-14);
-      test_exponential_filter<Spectral::Basis::Chebyshev,
-                              Spectral::Quadrature::Gauss>(alpha, half_power,
-                                                           1.0e-12);
+      test_exponential_filter<SpatialDiscretization::Basis::Chebyshev,
+                              SpatialDiscretization::Quadrature::Gauss>(
+          alpha, half_power, 1.0e-12);
     }
   }
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_zero_lowest_modes() {
   Approx local_approx = Approx::custom().epsilon(1.0e-13);
   CAPTURE(BasisType);
@@ -123,13 +125,13 @@ void test_zero_lowest_modes() {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ZeroLowestModesFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
-  test_zero_lowest_modes<Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto>();
-  test_zero_lowest_modes<Spectral::Basis::Legendre,
-                         Spectral::Quadrature::Gauss>();
-  test_zero_lowest_modes<Spectral::Basis::Chebyshev,
-                         Spectral::Quadrature::GaussLobatto>();
-  test_zero_lowest_modes<Spectral::Basis::Chebyshev,
-                         Spectral::Quadrature::Gauss>();
+  test_zero_lowest_modes<SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_zero_lowest_modes<SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss>();
+  test_zero_lowest_modes<SpatialDiscretization::Basis::Chebyshev,
+                         SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_zero_lowest_modes<SpatialDiscretization::Basis::Chebyshev,
+                         SpatialDiscretization::Quadrature::Gauss>();
 }
 }  // namespace

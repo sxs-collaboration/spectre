@@ -66,8 +66,9 @@ struct Directions : db::SimpleTag {
 template <typename Map>
 void check(const Map& map,
            const std::array<std::array<double, Map::dim>, Map::dim>& expected) {
-  const Mesh<Map::dim - 1> mesh{3, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
+  const Mesh<Map::dim - 1> mesh{
+      3, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   const auto num_grid_points = mesh.number_of_grid_points();
   for (size_t d = 0; d < Map::dim; ++d) {
     const auto upper_normal = unnormalized_face_normal(
@@ -118,8 +119,9 @@ void check_time_dependent(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  const Mesh<Dim - 1> interface_mesh{3, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> interface_mesh{
+      3, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   for (size_t d = 0; d < Dim; ++d) {
     const auto upper_normal = unnormalized_face_normal(
         interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
@@ -171,8 +173,8 @@ void check_time_dependent(
               Directions<Dim>,
               Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>>>(
       Element<Dim>(logical_to_grid_map.element_id(), {}), get_directions<Dim>(),
-      Mesh<Dim>{3, Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto},
+      Mesh<Dim>{3, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto},
       ElementMap<Dim, Frame::Grid>(logical_to_grid_map.element_id(),
                                    logical_to_grid_map.block_map().get_clone()),
       grid_to_inertial_map->get_clone(), time,
@@ -384,7 +386,8 @@ void test_compute_item() {
       Element<2>(ElementId<2>(0), {}),
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
-      Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Mesh<2>{2, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
           make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
@@ -441,7 +444,8 @@ void test_compute_item() {
           Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<2>,
                                  Tags::UnnormalizedFaceNormalCompute<2>>>>(
       Element<2>(ElementId<2>(0), {}),
-      Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Mesh<2>{2, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
           make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(

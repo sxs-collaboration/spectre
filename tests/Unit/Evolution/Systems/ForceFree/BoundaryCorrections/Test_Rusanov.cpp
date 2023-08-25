@@ -29,8 +29,9 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(
       make_not_null(&gen), BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
       make_not_null(&gen), "Rusanov",
@@ -46,8 +47,9 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
         "dg_boundary_terms_tilde_psi", "dg_boundary_terms_tilde_phi",
         "dg_boundary_terms_tilde_q"}},
       BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 
   const auto rusanov = TestHelpers::test_creation<
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection>>("Rusanov:");
@@ -66,8 +68,9 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
         "dg_boundary_terms_tilde_psi", "dg_boundary_terms_tilde_phi",
         "dg_boundary_terms_tilde_q"}},
       dynamic_cast<const BoundaryCorrections::Rusanov&>(*rusanov),
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 
   CHECK_FALSE(BoundaryCorrections::Rusanov{} != BoundaryCorrections::Rusanov{});
 }

@@ -27,8 +27,8 @@ class KastaunEtAl;
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
-  const Mesh<3> mesh(2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const size_t num_points = mesh.number_of_grid_points();
 
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);

@@ -17,9 +17,9 @@ class Block;
 template <size_t Dim>
 class ElementId;
 
-namespace Spectral {
+namespace SpatialDiscretization {
 enum class Quadrature;
-}  // namespace Spectral
+}  // namespace SpatialDiscretization
 
 namespace domain {
 /// The weighting scheme for assigning computational costs to `Element`s for
@@ -52,7 +52,7 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     ElementWeight element_weight,
-    const std::optional<Spectral::Quadrature>& quadrature);
+    const std::optional<SpatialDiscretization::Quadrature>& quadrature);
 
 /*!
  * \brief Distribution strategy for assigning elements to CPUs using a

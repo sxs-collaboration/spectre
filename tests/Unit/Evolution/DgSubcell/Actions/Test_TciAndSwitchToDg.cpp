@@ -254,8 +254,8 @@ void test_impl(
     time_step_id =
         TimeStepId{false, 1, Slab{1.0, 2.0}.end(), 1, step_size, 1.1};
   }
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;

@@ -47,8 +47,8 @@ Element<1> create_parent() {
 }
 
 Mesh<1> create_parent_mesh() {
-  return Mesh<1>{3, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  return Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 
 std::array<amr::Flag, 1> create_parent_flags() {

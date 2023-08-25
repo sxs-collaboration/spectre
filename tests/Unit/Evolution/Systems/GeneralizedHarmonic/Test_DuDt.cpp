@@ -474,8 +474,9 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   const gh::gauges::DampedHarmonic gauge_condition{
       100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6}};
   const size_t num_grid_points_1d = 3;
-  const Mesh<Dim> mesh(num_grid_points_1d, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> mesh(num_grid_points_1d,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const DataVector used_for_size(mesh.number_of_grid_points());
 
   Variables<gh_tags_list> evolved_vars(mesh.number_of_grid_points());

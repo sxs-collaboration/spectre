@@ -37,8 +37,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
                   "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   // Set up a mesh for numerical derivatives
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   auto inv_jacobian = make_with_value<
       InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>>(

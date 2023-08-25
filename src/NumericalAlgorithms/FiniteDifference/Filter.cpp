@@ -367,9 +367,10 @@ void filter_impl(
                                   volume_mesh.quadrature(0)),
          "The mesh must be isotropic, but got " << volume_mesh);
   ASSERT(
-      volume_mesh.basis(0) == Spectral::Basis::FiniteDifference,
+      volume_mesh.basis(0) == SpatialDiscretization::Basis::FiniteDifference,
       "Mesh basis must be FiniteDifference but got " << volume_mesh.basis(0));
-  ASSERT(volume_mesh.quadrature(0) == Spectral::Quadrature::CellCentered,
+  ASSERT(volume_mesh.quadrature(0) ==
+             SpatialDiscretization::Quadrature::CellCentered,
          "Mesh quadrature must be CellCentered but got "
              << volume_mesh.quadrature(0));
   const size_t number_of_points = volume_mesh.number_of_grid_points();

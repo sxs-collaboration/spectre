@@ -90,8 +90,8 @@ struct Metavariables {
     static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
       time_derivative_invoked = true;
       CHECK(db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box) ==
-            Mesh<Dim>(5, Spectral::Basis::FiniteDifference,
-                      Spectral::Quadrature::CellCentered));
+            Mesh<Dim>(5, SpatialDiscretization::Basis::FiniteDifference,
+                      SpatialDiscretization::Quadrature::CellCentered));
       const auto inv_jacobian =
           db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(*box)
               .inv_jacobian(db::get<evolution::dg::subcell::Tags::Coordinates<
@@ -143,8 +143,9 @@ void test() {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{}};
 
-  const Mesh<Dim> subcell_mesh{5, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> subcell_mesh{5,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
   // Set up nonsense mortar data since we only need to check that it got
   // cleared.
   using Key = std::pair<Direction<Dim>, ElementId<Dim>>;

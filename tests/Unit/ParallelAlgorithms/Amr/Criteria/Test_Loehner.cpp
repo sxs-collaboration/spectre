@@ -47,8 +47,8 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Amr.Criteria.Loehner", "[Unit][ParallelAlgorithms]") {
   static constexpr size_t Dim = 2;
-  const Mesh<Dim> mesh{6, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{6, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
 
   {

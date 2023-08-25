@@ -48,8 +48,8 @@ auto make_affine_coord_map() {
 template <size_t Dim>
 void test_flat_logical_metric() {
   CAPTURE(Dim);
-  const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{3, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   const auto logical_coords = logical_coordinates(mesh);
   const auto coord_map = make_affine_coord_map<Dim>();
@@ -88,8 +88,8 @@ void test_equiangular() {
       coord_map{{1., 2., 1., 1., {}, true}};
   using CoordAxis = domain::CoordinateMaps::detail::WedgeCoordOrientation<2>;
   // Set up a grid
-  const Mesh<2> mesh{6, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{6, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   const auto logical_coords = logical_coordinates(mesh);
   const auto jacobian = coord_map.jacobian(logical_coords);

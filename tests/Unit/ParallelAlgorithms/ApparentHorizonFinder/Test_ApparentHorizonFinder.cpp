@@ -454,8 +454,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     for (const auto& element_id : element_ids) {
       const auto& block = domain.blocks()[element_id.block_id()];
       ::Mesh<3> mesh{domain_creator->initial_extents()[element_id.block_id()],
-                     Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
       // If the map is time-independent, we always compute
       // analytic_solution_coords in the inertial frame.

@@ -144,8 +144,8 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
 
   // Setup element
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
-  const Mesh<3> mesh{6, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{6, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   const auto map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(

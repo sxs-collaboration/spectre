@@ -45,8 +45,8 @@ void test_criterion(
     const std::array<amr::Flag, VolumeDim>& expected_flags) {
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
   const auto databox = db::create<tmpl::list<::domain::Tags::Mesh<VolumeDim>>>(
-      Mesh<VolumeDim>{mesh_extents, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto});
+      Mesh<VolumeDim>{mesh_extents, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto});
   ObservationBox<tmpl::list<>,
                  db::DataBox<tmpl::list<::domain::Tags::Mesh<VolumeDim>>>>
       box{databox};

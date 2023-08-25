@@ -272,8 +272,9 @@ template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
 void test_impl(const gsl::not_null<std::mt19937*> gen) {
   PUPable_reg(SINGLE_ARG(Correction<Dim, VolumeDoubleType>));
   const Correction<Dim, VolumeDoubleType> correction{};
-  const Mesh<Dim - 1> face_mesh{Dim * Dim, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::Gauss};
+  const Mesh<Dim - 1> face_mesh{Dim * Dim,
+                                SpatialDiscretization::Basis::Legendre,
+                                SpatialDiscretization::Quadrature::Gauss};
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       System<Dim, CurvedBackground>>(

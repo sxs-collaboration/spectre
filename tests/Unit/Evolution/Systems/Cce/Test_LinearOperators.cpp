@@ -25,8 +25,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearOperators",
   const ComplexDataVector y = outer_product(
       ComplexDataVector{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
+      Spectral::collocation_points<
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
           number_of_radial_points));
   const size_t polynomial_order = 3;
   const auto y_polynomial_coefficients = make_with_random_values<DataVector>(
@@ -47,8 +48,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearOperators",
       Mesh<3>{{{Spectral::Swsh::number_of_swsh_theta_collocation_points(l_max),
                 Spectral::Swsh::number_of_swsh_phi_collocation_points(l_max),
                 number_of_radial_points}},
-              Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto},
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       2);
   CHECK_ITERABLE_APPROX(expected_derivative, derivative);
 }

@@ -26,8 +26,8 @@ SPECTRE_TEST_CASE(
   using ConsVars =
       typename grmhd::ValenciaDivClean::System::variables_tag::type;
 
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   ConsVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};
 

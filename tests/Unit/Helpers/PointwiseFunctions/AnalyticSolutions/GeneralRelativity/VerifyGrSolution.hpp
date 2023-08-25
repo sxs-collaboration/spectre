@@ -85,8 +85,9 @@ void verify_time_independent_einstein_solution(
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension,
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =

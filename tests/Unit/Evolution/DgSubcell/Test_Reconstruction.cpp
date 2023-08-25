@@ -83,8 +83,8 @@ auto make_map() {
   }
 }
 
-template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_reconstruct_fd(const std::vector<double>& eps,
                          const evolution::dg::subcell::fd::ReconstructionMethod
                              reconstruction_method) {
@@ -114,9 +114,9 @@ void test_reconstruct_fd(const std::vector<double>& eps,
     const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
     const auto inertial_coords = coord_map(logical_coordinates(dg_mesh));
     const size_t num_subcells_1d = 2 * num_pts_1d - 1;
-    const Mesh<Dim> subcell_mesh(num_subcells_1d,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered);
+    const Mesh<Dim> subcell_mesh(
+        num_subcells_1d, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered);
 
     const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
     const auto subcell_inertial_coords = coord_map(subcell_logical_coords);
@@ -230,27 +230,27 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
   for (const auto reconstruction_method :
        {evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce,
         evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}) {
-    test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(
+    test_reconstruct_fd<10, 1, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
         {1.0e-13}, reconstruction_method);
-    test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>({1.0e-13},
-                                                     reconstruction_method);
+    test_reconstruct_fd<10, 1, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(
+        {1.0e-13}, reconstruction_method);
 
-    test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(
+    test_reconstruct_fd<8, 2, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
         {1.0e-14, 2.0e-13, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10},
         reconstruction_method);
-    test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>(
+    test_reconstruct_fd<8, 2, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(
         {1.0e-14, 1.0e-14, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10},
         reconstruction_method);
 
-    test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(
+    test_reconstruct_fd<6, 3, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
         {1.0e-14, 1.0e-14, 3.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
-    test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>(
+    test_reconstruct_fd<6, 3, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(
         {1.0e-14, 1.0e-14, 1.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
   }
 }

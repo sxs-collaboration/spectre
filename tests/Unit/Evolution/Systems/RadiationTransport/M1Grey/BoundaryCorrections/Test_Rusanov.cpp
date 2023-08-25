@@ -33,7 +33,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 
   helpers::test_boundary_correction_conservation<system>(
       gen, rusanov{},
-      Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+      Mesh<2>{num_pts, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 
   helpers::test_boundary_correction_with_python<system>(
@@ -47,7 +48,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       {{"dg_boundary_terms_tilde_e_nue", "dg_boundary_terms_tilde_e_bar_nue",
         "dg_boundary_terms_tilde_s_nue", "dg_boundary_terms_tilde_s_bar_nue"}},
       rusanov{},
-      Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+      Mesh<2>{num_pts, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 
   const auto rusanov_from_factory = TestHelpers::test_creation<
@@ -65,7 +67,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       {{"dg_boundary_terms_tilde_e_nue", "dg_boundary_terms_tilde_e_bar_nue",
         "dg_boundary_terms_tilde_s_nue", "dg_boundary_terms_tilde_s_bar_nue"}},
       dynamic_cast<const rusanov&>(*rusanov_from_factory),
-      Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+      Mesh<2>{num_pts, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 }
 }  // namespace

@@ -34,17 +34,17 @@ template <size_t Dim>
 DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
                 const size_t number_of_modes_per_dim,
                 const std::array<double, Dim>& highest_coeffs) {
-  DataVector result =
-      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-          1, get<0>(coords));
+  DataVector result = Spectral::compute_basis_function_value<
+      SpatialDiscretization::Basis::Legendre>(1, get<0>(coords));
   for (size_t d = 1; d < Dim; ++d) {
-    result += Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-        1, coords.get(d));
+    result += Spectral::compute_basis_function_value<
+        SpatialDiscretization::Basis::Legendre>(1, coords.get(d));
   }
 
   for (size_t d = 0; d < Dim; ++d) {
     result += gsl::at(highest_coeffs, d) *
-              Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
+              Spectral::compute_basis_function_value<
+                  SpatialDiscretization::Basis::Legendre>(
                   number_of_modes_per_dim - 1, coords.get(d));
   }
   return result;
@@ -63,8 +63,8 @@ void test_persson_impl(
   CAPTURE(tensor_component_to_modify);
   CAPTURE(persson_exponent);
   CAPTURE(expected_tci_triggered);
-  const Mesh<Dim> dg_mesh{num_pts_1d, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_pts_1d, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(dg_mesh);
   const std::array<double, Dim> zero_highest_coeffs = make_array<Dim>(0.0);
 
@@ -101,7 +101,8 @@ void test_persson() {
   // test runtime.
   const size_t maximum_number_of_points_1d =
       Dim == 3 ? 7
-               : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+               : Spectral::maximum_number_of_points<
+                     SpatialDiscretization::Basis::Legendre>;
   for (const double persson_exponent : {1.0, 4.0}) {
     const bool should_trigger = persson_exponent == 4.0;
     for (size_t num_pts_1d = 4; num_pts_1d < maximum_number_of_points_1d;

@@ -340,8 +340,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         "The variables must have the same tensor types as the system fields.");
 #ifdef SPECTRE_DEBUG
     for (size_t d = 0; d < Dim; ++d) {
-      ASSERT(mesh.basis(d) == Spectral::Basis::Legendre and
-                 mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto,
+      ASSERT(mesh.basis(d) == SpatialDiscretization::Basis::Legendre and
+                 mesh.quadrature(d) ==
+                     SpatialDiscretization::Quadrature::GaussLobatto,
              "The elliptic DG operator is currently only implemented for "
              "Legendre-Gauss-Lobatto grids. Found basis '"
                  << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)
@@ -710,8 +711,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         "The variables must have the same tensor types as the system fields.");
 #ifdef SPECTRE_DEBUG
     for (size_t d = 0; d < Dim; ++d) {
-      ASSERT(mesh.basis(d) == Spectral::Basis::Legendre and
-                 mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto,
+      ASSERT(mesh.basis(d) == SpatialDiscretization::Basis::Legendre and
+                 mesh.quadrature(d) ==
+                     SpatialDiscretization::Quadrature::GaussLobatto,
              "The elliptic DG operator is currently only implemented for "
              "Legendre-Gauss-Lobatto grids. Found basis '"
                  << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)

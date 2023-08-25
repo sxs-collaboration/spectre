@@ -26,8 +26,9 @@ template <typename F>
 void test_positivity_with_roundoff(const size_t stencil_width,
                                    const F& invoke_recons) {
   const size_t num_fd_points = 4;
-  const Mesh<1> mesh{num_fd_points, Spectral::Basis::FiniteDifference,
-                     Spectral::Quadrature::CellCentered};
+  const Mesh<1> mesh{num_fd_points,
+                     SpatialDiscretization::Basis::FiniteDifference,
+                     SpatialDiscretization::Quadrature::CellCentered};
   const auto logical_coords = logical_coordinates(mesh);
 
   std::vector<double> volume_vars(mesh.number_of_grid_points(), 0.0);

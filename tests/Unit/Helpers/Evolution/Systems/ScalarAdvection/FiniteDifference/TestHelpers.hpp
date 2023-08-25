@@ -116,8 +116,8 @@ void test_reconstructor(const size_t points_per_dimension,
 
   // compute neighbor data
   const Mesh<Dim> subcell_mesh{points_per_dimension,
-                               Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
   const FixedHashMap<maximum_number_of_neighbors(Dim),
                      std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
@@ -153,11 +153,13 @@ void test_reconstructor(const size_t points_per_dimension,
 
   for (size_t dim = 0; dim < Dim; ++dim) {
     // construct face-centered coordinates
-    const auto basis = make_array<Dim>(Spectral::Basis::FiniteDifference);
-    auto quadrature = make_array<Dim>(Spectral::Quadrature::CellCentered);
+    const auto basis =
+        make_array<Dim>(SpatialDiscretization::Basis::FiniteDifference);
+    auto quadrature =
+        make_array<Dim>(SpatialDiscretization::Quadrature::CellCentered);
     auto extents = make_array<Dim>(points_per_dimension);
     gsl::at(extents, dim) = points_per_dimension + 1;
-    gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, dim) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
     auto logical_coords_face_centered = logical_coordinates(face_centered_mesh);
 

@@ -21,44 +21,26 @@
 #include "Utilities/Math.hpp"
 
 namespace {
-void test_streaming() {
-  CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
-  CHECK(get_output(Spectral::Basis::Chebyshev) == "Chebyshev");
-  CHECK(get_output(Spectral::Basis::FiniteDifference) == "FiniteDifference");
-  for (const auto& basis :
-       {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
-        Spectral::Basis::FiniteDifference}) {
-    CHECK(Spectral::to_basis(get_output(basis)) == basis);
-  }
-
-  CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
-  CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
-  CHECK(get_output(Spectral::Quadrature::CellCentered) == "CellCentered");
-  CHECK(get_output(Spectral::Quadrature::FaceCentered) == "FaceCentered");
-  for (const auto& quadrature :
-       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::CellCentered,
-        Spectral::Quadrature::FaceCentered}) {
-    CHECK(Spectral::to_quadrature(get_output(quadrature)) == quadrature);
-  }
-}
-
 void test_creation() {
-  CHECK(Spectral::Basis::Legendre ==
-        TestHelpers::test_creation<Spectral::Basis>("Legendre"));
-  CHECK(Spectral::Basis::Chebyshev ==
-        TestHelpers::test_creation<Spectral::Basis>("Chebyshev"));
-  CHECK(Spectral::Basis::FiniteDifference ==
-        TestHelpers::test_creation<Spectral::Basis>("FiniteDifference"));
+  CHECK(SpatialDiscretization::Basis::Legendre ==
+        TestHelpers::test_creation<SpatialDiscretization::Basis>("Legendre"));
+  CHECK(SpatialDiscretization::Basis::Chebyshev ==
+        TestHelpers::test_creation<SpatialDiscretization::Basis>("Chebyshev"));
+  CHECK(SpatialDiscretization::Basis::FiniteDifference ==
+        TestHelpers::test_creation<SpatialDiscretization::Basis>(
+            "FiniteDifference"));
 
-  CHECK(Spectral::Quadrature::Gauss ==
-        TestHelpers::test_creation<Spectral::Quadrature>("Gauss"));
-  CHECK(Spectral::Quadrature::GaussLobatto ==
-        TestHelpers::test_creation<Spectral::Quadrature>("GaussLobatto"));
-  CHECK(Spectral::Quadrature::CellCentered ==
-        TestHelpers::test_creation<Spectral::Quadrature>("CellCentered"));
-  CHECK(Spectral::Quadrature::FaceCentered ==
-        TestHelpers::test_creation<Spectral::Quadrature>("FaceCentered"));
+  CHECK(SpatialDiscretization::Quadrature::Gauss ==
+        TestHelpers::test_creation<SpatialDiscretization::Quadrature>("Gauss"));
+  CHECK(SpatialDiscretization::Quadrature::GaussLobatto ==
+        TestHelpers::test_creation<SpatialDiscretization::Quadrature>(
+            "GaussLobatto"));
+  CHECK(SpatialDiscretization::Quadrature::CellCentered ==
+        TestHelpers::test_creation<SpatialDiscretization::Quadrature>(
+            "CellCentered"));
+  CHECK(SpatialDiscretization::Quadrature::FaceCentered ==
+        TestHelpers::test_creation<SpatialDiscretization::Quadrature>(
+            "FaceCentered"));
 }
 
 DataVector unit_polynomial(const size_t deg, const DataVector& x) {
@@ -83,28 +65,28 @@ double unit_polynomial_integral(const size_t deg) {
   return integrals[1] - integrals[0];
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-          typename Function>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Function>
 void test_exact_differentiation_impl(const Function& max_poly_deg) {
   INFO("Test exact differentiation.");
-  CAPTURE(BasisType);
-  CAPTURE(QuadratureType);
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral ::maximum_number_of_points<BasisType>; n++) {
+  CAPTURE(Basis);
+  CAPTURE(Quadrature);
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral ::maximum_number_of_points<Basis>; n++) {
     CAPTURE(n);
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       CAPTURE(p);
       const auto& collocation_pts =
-          Spectral::collocation_points<BasisType, QuadratureType>(n);
+          Spectral::collocation_points<Basis, Quadrature>(n);
       const auto& diff_matrix =
-          Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
+          Spectral::differentiation_matrix<Basis, Quadrature>(n);
       const auto u = unit_polynomial(p, collocation_pts);
       DataVector numeric_derivative{n};
       dgemv_('N', n, n, 1., diff_matrix.data(), diff_matrix.spacing(), u.data(),
              1, 0.0, numeric_derivative.data(), 1);
       const auto analytic_derivative =
           unit_polynomial_derivative(p, collocation_pts);
-      if (BasisType == Spectral::Basis::FiniteDifference and n > 20) {
+      if (Basis == SpatialDiscretization::Basis::FiniteDifference and n > 20) {
         Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(analytic_derivative, numeric_derivative,
                                      local_approx);
@@ -115,25 +97,25 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
   }
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_weak_differentiation() {
-  static_assert(BasisType == Spectral::Basis::Legendre,
+  static_assert(Basis == SpatialDiscretization::Basis::Legendre,
                 "test_weak_differentiation_matrix may not be correct for "
                 "non-Legendre basis functions.");
   INFO("Test weak differentiation.");
-  CAPTURE(BasisType);
-  CAPTURE(QuadratureType);
+  CAPTURE(Basis);
+  CAPTURE(Quadrature);
 
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral::maximum_number_of_points<Basis>; n++) {
     CAPTURE(n);
     const DataVector& quad_weights =
-        Spectral::quadrature_weights<BasisType, QuadratureType>(n);
+        Spectral::quadrature_weights<Basis, Quadrature>(n);
     const Matrix& weak_diff_matrix =
-        Spectral::weak_flux_differentiation_matrix<BasisType, QuadratureType>(
-            n);
+        Spectral::weak_flux_differentiation_matrix<Basis, Quadrature>(n);
     const Matrix& diff_matrix =
-        Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
+        Spectral::differentiation_matrix<Basis, Quadrature>(n);
     Matrix expected_weak_diff_matrix(diff_matrix.rows(), diff_matrix.columns());
 
     for (size_t i = 0; i < n; ++i) {
@@ -151,10 +133,10 @@ void test_weak_differentiation() {
       }
     }
 
-    if (QuadratureType == Spectral::Quadrature::GaussLobatto) {
+    if (Quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
       for (size_t p = 0; p <= n - 1; p++) {
         const auto& collocation_pts =
-            Spectral::collocation_points<BasisType, QuadratureType>(n);
+            Spectral::collocation_points<Basis, Quadrature>(n);
         const auto u = unit_polynomial(p, collocation_pts);
         DataVector numeric_derivative{n};
         dgemv_('N', n, n, 1., weak_diff_matrix.data(),
@@ -173,42 +155,46 @@ void test_weak_differentiation() {
 
 void test_exact_differentiation_matrices() {
   const auto minus_one = [](const size_t n) { return n - 1; };
-  test_exact_differentiation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::Gauss>(minus_one);
-  test_exact_differentiation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto>(
+  test_exact_differentiation_impl<SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss>(
       minus_one);
-  test_exact_differentiation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::Gauss>(minus_one);
-  test_exact_differentiation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::GaussLobatto>(
+  test_exact_differentiation_impl<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
+  test_exact_differentiation_impl<SpatialDiscretization::Basis::Chebyshev,
+                                  SpatialDiscretization::Quadrature::Gauss>(
       minus_one);
+  test_exact_differentiation_impl<
+      SpatialDiscretization::Basis::Chebyshev,
+      SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
 
-  test_weak_differentiation<Spectral::Basis::Legendre,
-                            Spectral::Quadrature::Gauss>();
-  test_weak_differentiation<Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto>();
+  test_weak_differentiation<SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::Gauss>();
+  test_weak_differentiation<SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto>();
 
   // Test summation by parts cell-centered FD.
-  test_exact_differentiation_impl<Spectral::Basis::FiniteDifference,
-                                  Spectral::Quadrature::CellCentered>(
+  test_exact_differentiation_impl<
+      SpatialDiscretization::Basis::FiniteDifference,
+      SpatialDiscretization::Quadrature::CellCentered>(
       [](const size_t n) -> size_t {
         return n >= 10 ? 5 : (n >= 7 ? 3 : (n == 6 ? 2 : (n == 1 ? 0 : 1)));
       });
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_linear_filter_impl() {
-  CAPTURE(BasisType);
-  CAPTURE(QuadratureType);
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+  CAPTURE(Basis);
+  CAPTURE(Quadrature);
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral::maximum_number_of_points<Basis>; n++) {
     const auto& filter_matrix =
-        Spectral::linear_filter_matrix<BasisType, QuadratureType>(n);
+        Spectral::linear_filter_matrix<Basis, Quadrature>(n);
     const auto& nodal_to_modal_matrix =
-        Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(n);
+        Spectral::nodal_to_modal_matrix<Basis, Quadrature>(n);
     const auto& collocation_pts =
-        Spectral::collocation_points<BasisType, QuadratureType>(n);
+        Spectral::collocation_points<Basis, Quadrature>(n);
     const DataVector u = exp(collocation_pts);
     DataVector u_filtered(n);
     dgemv_('N', n, n, 1.0, filter_matrix.data(), filter_matrix.spacing(),
@@ -224,31 +210,30 @@ void test_linear_filter_impl() {
 }
 
 void test_linear_filter() {
-  test_linear_filter_impl<Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>();
-  test_linear_filter_impl<Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>();
-  test_linear_filter_impl<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>();
-  test_linear_filter_impl<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>();
+  test_linear_filter_impl<SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::Gauss>();
+  test_linear_filter_impl<SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_linear_filter_impl<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>();
+  test_linear_filter_impl<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
 }
 
 // By default, uses the default tolerance for floating-point comparisons. When
 // a non-zero eps is passed in as last argument, uses that tolerance instead.
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-          typename Function>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Function>
 void test_interpolation_matrix(const DataVector& target_points,
                                const Function& max_poly_deg,
                                const double eps = 0.) {
   DataVector interpolated_u(target_points.size(), 0.);
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral::maximum_number_of_points<Basis>; n++) {
     const auto& collocation_pts =
-        Spectral::collocation_points<BasisType, QuadratureType>(n);
+        Spectral::collocation_points<Basis, Quadrature>(n);
     const auto interp_matrix =
-        Spectral::interpolation_matrix<BasisType, QuadratureType>(
-            n, target_points);
+        Spectral::interpolation_matrix<Basis, Quadrature>(n, target_points);
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       const DataVector u = unit_polynomial(p, collocation_pts);
       dgemv_('n', target_points.size(), n, 1., interp_matrix.data(),
@@ -267,22 +252,21 @@ void test_interpolation_matrix(const DataVector& target_points,
   }
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-          typename Function>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Function>
 void test_exact_interpolation_impl(const Function& max_poly_deg) {
   const DataVector target_points{-0.5, -0.4837, 0.5, 0.9378, 1.};
-  test_interpolation_matrix<BasisType, QuadratureType>(target_points,
-                                                       max_poly_deg);
+  test_interpolation_matrix<Basis, Quadrature>(target_points, max_poly_deg);
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-          typename Function>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Function>
 void test_exact_extrapolation_impl(const Function& max_poly_deg) {
   const DataVector target_points{-1.66, 1., 1.5, 1.98, 2.};
   // Errors are larger when extrapolating outside of the original grid:
   const double eps = 1.e-9;
-  test_interpolation_matrix<BasisType, QuadratureType>(target_points,
-                                                       max_poly_deg, eps);
+  test_interpolation_matrix<Basis, Quadrature>(target_points, max_poly_deg,
+                                               eps);
 }
 
 void test_exact_extrapolation() {
@@ -291,69 +275,72 @@ void test_exact_extrapolation() {
     INFO(
         "Legendre-Gauss interpolation is exact to polynomial order "
         "num_points-1");
-    test_exact_interpolation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::Gauss>(minus_one);
-    test_exact_extrapolation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::Gauss>(minus_one);
+    test_exact_interpolation_impl<SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss>(
+        minus_one);
+    test_exact_extrapolation_impl<SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss>(
+        minus_one);
   }
   {
     INFO(
         "Legendre-Gauss-Lobatto interpolation is exact to polynomial "
         "order num_points-1");
-    test_exact_interpolation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto>(
-        minus_one);
-    test_exact_extrapolation_impl<Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto>(
-        minus_one);
+    test_exact_interpolation_impl<
+        SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
+    test_exact_extrapolation_impl<
+        SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
   }
   {
     INFO(
         "Chebyshev-Gauss interpolation is exact to polynomial "
         "order num_points-1");
-    test_exact_interpolation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::Gauss>(minus_one);
-    test_exact_extrapolation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::Gauss>(minus_one);
+    test_exact_interpolation_impl<SpatialDiscretization::Basis::Chebyshev,
+                                  SpatialDiscretization::Quadrature::Gauss>(
+        minus_one);
+    test_exact_extrapolation_impl<SpatialDiscretization::Basis::Chebyshev,
+                                  SpatialDiscretization::Quadrature::Gauss>(
+        minus_one);
   }
   {
     INFO(
         "Chebyshev-Gauss-Lobatto interpolation is exact to polynomial "
         "order num_points-1");
-    test_exact_interpolation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::GaussLobatto>(
-        minus_one);
-    test_exact_extrapolation_impl<Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::GaussLobatto>(
-        minus_one);
+    test_exact_interpolation_impl<
+        SpatialDiscretization::Basis::Chebyshev,
+        SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
+    test_exact_extrapolation_impl<
+        SpatialDiscretization::Basis::Chebyshev,
+        SpatialDiscretization::Quadrature::GaussLobatto>(minus_one);
   }
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_exact_quadrature(const size_t n, const size_t p,
                            const double analytic_quadrature) {
   const auto& collocation_pts =
-      Spectral::collocation_points<BasisType, QuadratureType>(n);
+      Spectral::collocation_points<Basis, Quadrature>(n);
   // Get the \f$w_k\f$, as opposed to the Spectral::quadrature_weights that are
   // used to compute definite integrals (see test below).
   const auto w_k =
-      Spectral::compute_collocation_points_and_weights<BasisType,
-                                                       QuadratureType>(n)
+      Spectral::compute_collocation_points_and_weights<Basis, Quadrature>(n)
           .second;
   const DataVector u = unit_polynomial(p, collocation_pts);
   const double numeric_quadrature = ddot_(n, u.data(), 1, w_k.data(), 1);
   CHECK_ITERABLE_APPROX(analytic_quadrature, numeric_quadrature);
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-          typename Function>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename Function>
 void test_exact_unit_weight_quadrature(const Function& max_poly_deg) {
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral::maximum_number_of_points<Basis>; n++) {
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       const double analytic_quadrature = unit_polynomial_integral(p);
-      test_exact_quadrature<BasisType, QuadratureType>(n, p,
-                                                       analytic_quadrature);
+      test_exact_quadrature<Basis, Quadrature>(n, p, analytic_quadrature);
     }
   }
 }
@@ -363,16 +350,17 @@ void test_exact_quadrature() {
     INFO(
         "Legendre-Gauss quadrature is exact to polynomial order "
         "2*num_points-1");
-    test_exact_unit_weight_quadrature<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>(
+    test_exact_unit_weight_quadrature<SpatialDiscretization::Basis::Legendre,
+                                      SpatialDiscretization::Quadrature::Gauss>(
         [](const size_t n) { return 2 * n - 1; });
   }
   {
     INFO(
         "Legendre-Gauss-Lobatto quadrature is exact to polynomial order "
         "2*num_points-3");
-    test_exact_unit_weight_quadrature<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>(
+    test_exact_unit_weight_quadrature<
+        SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto>(
         [](const size_t n) { return 2 * n - 3; });
   }
   // For a function \f$f(x)\f$ the exact quadrature is
@@ -383,56 +371,59 @@ void test_exact_quadrature() {
     INFO(
         "Chebyshev-Gauss quadrature is exact to polynomial order "
         "2*num_points-1");
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(1, 1, M_PI);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(2, 3, 3. * M_PI / 2.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(3, 5, 15. * M_PI / 8.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(4, 7, 35. * M_PI / 16.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(5, 9,
-                                                       315. * M_PI / 128.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::Gauss>(6, 11,
-                                                       693. * M_PI / 256.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(1, 1, M_PI);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(
+        2, 3, 3. * M_PI / 2.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(
+        3, 5, 15. * M_PI / 8.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(
+        4, 7, 35. * M_PI / 16.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(
+        5, 9, 315. * M_PI / 128.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::Gauss>(
+        6, 11, 693. * M_PI / 256.);
   }
   {
     INFO(
         "Chebyshev-Gauss-Lobatto quadrature is exact to polynomial order "
         "2*num_points-3");
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>(2, 1, M_PI);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>(3, 3,
-                                                              3. * M_PI / 2.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>(4, 5,
-                                                              15. * M_PI / 8.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>(5, 7,
-                                                              35. * M_PI / 16.);
-    test_exact_quadrature<Spectral::Basis::Chebyshev,
-                          Spectral::Quadrature::GaussLobatto>(
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
+        2, 1, M_PI);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
+        3, 3, 3. * M_PI / 2.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
+        4, 5, 15. * M_PI / 8.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
+        5, 7, 35. * M_PI / 16.);
+    test_exact_quadrature<SpatialDiscretization::Basis::Chebyshev,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
         6, 9, 315. * M_PI / 128.);
   }
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_quadrature_weights_impl() {
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
-    const auto& weights =
-        Spectral::quadrature_weights<BasisType, QuadratureType>(n);
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n <= Spectral::maximum_number_of_points<Basis>; n++) {
+    const auto& weights = Spectral::quadrature_weights<Basis, Quadrature>(n);
     const auto w_k =
-        Spectral::compute_collocation_points_and_weights<BasisType,
-                                                         QuadratureType>(n)
+        Spectral::compute_collocation_points_and_weights<Basis, Quadrature>(n)
             .second;
     const auto& collocation_pts =
-        Spectral::collocation_points<BasisType, QuadratureType>(n);
+        Spectral::collocation_points<Basis, Quadrature>(n);
     const auto inverse_weight_function_values =
-        Spectral::compute_inverse_weight_function_values<BasisType>(
+        Spectral::compute_inverse_weight_function_values<Basis>(
             collocation_pts);
     CHECK_ITERABLE_APPROX(weights, w_k * inverse_weight_function_values);
   }
@@ -441,75 +432,81 @@ void test_quadrature_weights_impl() {
 void test_quadrature_weights() {
   // Test that the Spectral::quadrature_weights are those used to compute
   // definite integrals, as opposed to the weighted inner product.
-  test_quadrature_weights_impl<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>();
-  test_quadrature_weights_impl<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto>();
-  test_quadrature_weights_impl<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::Gauss>();
-  test_quadrature_weights_impl<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::GaussLobatto>();
+  test_quadrature_weights_impl<SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss>();
+  test_quadrature_weights_impl<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_quadrature_weights_impl<SpatialDiscretization::Basis::Chebyshev,
+                               SpatialDiscretization::Quadrature::Gauss>();
+  test_quadrature_weights_impl<
+      SpatialDiscretization::Basis::Chebyshev,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void test_spectral_quantities_for_mesh_impl(const Mesh<1>& slice) {
   const auto num_points = slice.extents(0);
   const auto& expected_points =
-      Spectral::collocation_points<BasisType, QuadratureType>(num_points);
+      Spectral::collocation_points<Basis, Quadrature>(num_points);
   CHECK(Spectral::collocation_points(slice) == expected_points);
   const auto& expected_weights =
-      Spectral::quadrature_weights<BasisType, QuadratureType>(num_points);
+      Spectral::quadrature_weights<Basis, Quadrature>(num_points);
   CHECK(Spectral::quadrature_weights(slice) == expected_weights);
   const auto& expected_diff_matrix =
-      Spectral::differentiation_matrix<BasisType, QuadratureType>(num_points);
+      Spectral::differentiation_matrix<Basis, Quadrature>(num_points);
   CHECK(Spectral::differentiation_matrix(slice) == expected_diff_matrix);
   const DataVector target_points{-0.5, -0.1, 0., 0.75, 0.9888, 1.};
   const auto expected_interp_matrix_points =
-      Spectral::interpolation_matrix<BasisType, QuadratureType>(num_points,
-                                                                target_points);
+      Spectral::interpolation_matrix<Basis, Quadrature>(num_points,
+                                                        target_points);
   CHECK(Spectral::interpolation_matrix(slice, target_points) ==
         expected_interp_matrix_points);
   const auto& expected_vand_matrix =
-      Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
+      Spectral::modal_to_nodal_matrix<Basis, Quadrature>(num_points);
   CHECK(Spectral::modal_to_nodal_matrix(slice) == expected_vand_matrix);
   const auto& expected_inv_vand_matrix =
-      Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(num_points);
+      Spectral::nodal_to_modal_matrix<Basis, Quadrature>(num_points);
   CHECK(Spectral::nodal_to_modal_matrix(slice) == expected_inv_vand_matrix);
   const auto& expected_lin_matrix =
-      Spectral::linear_filter_matrix<BasisType, QuadratureType>(num_points);
+      Spectral::linear_filter_matrix<Basis, Quadrature>(num_points);
   CHECK(Spectral::linear_filter_matrix(slice) == expected_lin_matrix);
 }
 
 void test_spectral_quantities_for_mesh() {
   // [get_points_for_mesh]
-  const Mesh<2> mesh2d{
-      {{3, 4}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}};
+  const Mesh<2> mesh2d{{{3, 4}},
+                       {{SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Basis::Legendre}},
+                       {{SpatialDiscretization::Quadrature::Gauss,
+                         SpatialDiscretization::Quadrature::GaussLobatto}}};
   const auto collocation_points_in_first_dim =
       Spectral::collocation_points(mesh2d.slice_through(0));
   // [get_points_for_mesh]
-  test_spectral_quantities_for_mesh_impl<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::Gauss>(
-      mesh2d.slice_through(0));
-  test_spectral_quantities_for_mesh_impl<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>(
-      mesh2d.slice_through(1));
+  test_spectral_quantities_for_mesh_impl<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::Gauss>(mesh2d.slice_through(0));
+  test_spectral_quantities_for_mesh_impl<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(mesh2d.slice_through(1));
 }
 
 void test_gauss_points_boundary_interpolation_and_lifting() {
   const auto max_poly_deg = [](const size_t num_pts) { return num_pts - 1; };
-  constexpr Spectral::Basis BasisType = Spectral::Basis::Legendre;
-  constexpr Spectral::Quadrature QuadratureType = Spectral::Quadrature::Gauss;
+  constexpr SpatialDiscretization::Basis Basis =
+      SpatialDiscretization::Basis::Legendre;
+  constexpr SpatialDiscretization::Quadrature Quadrature =
+      SpatialDiscretization::Quadrature::Gauss;
 
   DataVector interpolated_u_lower(1, 0.);
   DataVector interpolated_u_upper(1, 0.);
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n < Spectral::maximum_number_of_points<BasisType>; n++) {
+  for (size_t n = Spectral::minimum_number_of_points<Basis, Quadrature>;
+       n < Spectral::maximum_number_of_points<Basis>; n++) {
     CAPTURE(n);
     const auto& collocation_pts =
-        Spectral::collocation_points<BasisType, QuadratureType>(n);
-    Mesh<1> local_mesh{n, BasisType, QuadratureType};
+        Spectral::collocation_points<Basis, Quadrature>(n);
+    Mesh<1> local_mesh{n, Basis, Quadrature};
     const std::pair<Matrix, Matrix>& boundary_interp_matrices =
         Spectral::boundary_interpolation_matrices(local_mesh);
     const std::pair<DataVector, DataVector>& lifting_terms =
@@ -548,8 +545,9 @@ void test_gauss_points_boundary_interpolation_and_lifting() {
     const std::pair<DataVector, DataVector>& interp_terms =
         Spectral::boundary_interpolation_term(local_mesh);
     const Matrix interp_to_gauss_matrix = Spectral::interpolation_matrix(
-        Mesh<1>{n == 1 ? 2 : n, BasisType, Spectral::Quadrature::GaussLobatto},
-        Spectral::collocation_points<BasisType, QuadratureType>(n));
+        Mesh<1>{n == 1 ? 2 : n, Basis,
+                SpatialDiscretization::Quadrature::GaussLobatto},
+        Spectral::collocation_points<Basis, Quadrature>(n));
 
     for (size_t i = 0; i < n; ++i) {
       CHECK(approx(interp_terms.first[i]) == interp_to_gauss_matrix(i, 0));
@@ -560,8 +558,9 @@ void test_gauss_points_boundary_interpolation_and_lifting() {
 void test_double_instantiation() {
   // generate an interpolation matrix using a double and a std::vector of size
   // 1, and compare.
-  const Mesh<1> mesh1d{
-      {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh1d{{{4}},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const double interpolation_target = 0.2;
   const auto double_matrix =
       Spectral::interpolation_matrix(mesh1d, interpolation_target);
@@ -573,7 +572,6 @@ void test_double_instantiation() {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
                   "[NumericalAlgorithms][Spectral][Unit]") {
-  test_streaming();
   test_creation();
   test_exact_differentiation_matrices();
   test_linear_filter();

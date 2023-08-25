@@ -51,7 +51,7 @@ template <>
 Matrix interpolation_matrix(
     const Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::ElementLogical>& points) {
-  if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
+  if (mesh.basis()[0] == SpatialDiscretization::Basis::FiniteDifference) {
     auto source_xi = logical_coordinates(mesh);
     const auto number_of_source_points = mesh.number_of_grid_points();
     const DataVector xi_source(get<0>(source_xi).data(),
@@ -79,8 +79,8 @@ Matrix interpolation_matrix(
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
-  if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
-    ASSERT(mesh.basis()[1] == Spectral::Basis::FiniteDifference,
+  if (mesh.basis()[0] == SpatialDiscretization::Basis::FiniteDifference) {
+    ASSERT(mesh.basis()[1] == SpatialDiscretization::Basis::FiniteDifference,
            "Mixed FD and DG bases are not supported. Mesh = " << mesh);
     auto source_xi = logical_coordinates(mesh);
     DataVector xi_source{get<0>(source_xi).data(), mesh.extents(0)};
@@ -132,10 +132,11 @@ Matrix interpolation_matrix(
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
-  if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
-    ASSERT(mesh.basis()[1] == Spectral::Basis::FiniteDifference and
-               mesh.basis()[2] == Spectral::Basis::FiniteDifference,
-           "Mixed FD and DG bases are not supported. Mesh = " << mesh);
+  if (mesh.basis()[0] == SpatialDiscretization::Basis::FiniteDifference) {
+    ASSERT(
+        mesh.basis()[1] == SpatialDiscretization::Basis::FiniteDifference and
+            mesh.basis()[2] == SpatialDiscretization::Basis::FiniteDifference,
+        "Mixed FD and DG bases are not supported. Mesh = " << mesh);
     auto source_xi = logical_coordinates(mesh);
     DataVector xi_source{get<0>(source_xi).data(), mesh.extents(0)};
     DataVector eta_source;

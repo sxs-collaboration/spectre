@@ -49,8 +49,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;
   using PrimVars = Variables<prim_tags>;
 
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   auto cons_vars = make_with_random_values<ConsVars>(

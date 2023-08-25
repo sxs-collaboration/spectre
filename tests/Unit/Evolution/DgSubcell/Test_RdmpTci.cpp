@@ -37,12 +37,11 @@ struct Vector : db::SimpleTag {
 
 template <size_t Dim>
 DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords) {
-  DataVector result =
-      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-          1, get<0>(coords));
+  DataVector result = Spectral::compute_basis_function_value<
+      SpatialDiscretization::Basis::Legendre>(1, get<0>(coords));
   for (size_t d = 1; d < Dim; ++d) {
-    result += Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-        1, coords.get(d));
+    result += Spectral::compute_basis_function_value<
+        SpatialDiscretization::Basis::Legendre>(1, coords.get(d));
   }
   return result;
 }
@@ -60,11 +59,11 @@ void test_rdmp_impl(const DataVector& past_max_values,
   CAPTURE(expected_tci_triggered);
   CAPTURE(past_max_values);
   CAPTURE(past_min_values);
-  const Mesh<Dim> dg_mesh{num_pts_1d, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_pts_1d, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh{2 * num_pts_1d - 1,
-                               Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::FaceCentered};
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::FaceCentered};
   const auto logical_coords = logical_coordinates(dg_mesh);
 
   Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>> dg_vars(
@@ -135,7 +134,8 @@ void test_rdmp() {
   // test runtime.
   const size_t maximum_number_of_points_1d =
       Dim == 3 ? 7
-               : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+               : Spectral::maximum_number_of_points<
+                     SpatialDiscretization::Basis::Legendre>;
   for (size_t num_pts_1d = 2; num_pts_1d < maximum_number_of_points_1d;
        ++num_pts_1d) {
     test_rdmp_impl<Dim>(past_max_values, past_min_values, 1.0e-4, 1.0e-3,

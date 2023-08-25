@@ -35,8 +35,8 @@
 namespace {
 template <size_t Dim>
 Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) {
-  return {extents, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto};
+  return {extents, SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto};
 }
 }  // namespace
 

@@ -71,8 +71,8 @@ struct InitializeElementFacesGridCoordinates {
           element_faces_grid_coords,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
-      const Spectral::Quadrature& quadrature, const Domain<Dim>& domain,
-      const ::ExcisionSphere<Dim>& excision_sphere) {
+      const SpatialDiscretization::Quadrature& quadrature,
+      const Domain<Dim>& domain, const ::ExcisionSphere<Dim>& excision_sphere) {
     const auto& blocks = domain.blocks();
     const auto& worldtube_grid_coords = excision_sphere.center();
     const auto& neighboring_blocks = excision_sphere.abutting_directions();

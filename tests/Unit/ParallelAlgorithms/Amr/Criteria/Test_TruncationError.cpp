@@ -58,8 +58,8 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.TruncationError",
       "  AbsoluteTarget: 1.e-3\n"
       "  RelativeTarget: 1.e-3\n");
 
-  const Mesh<Dim> mesh{4, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{4, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
   // Manufacture some test data
   tnsr::I<DataVector, Dim> test_data{};

@@ -39,8 +39,9 @@ template <size_t Dim>
 void test() {
   using Vars = Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>;
   const size_t ghost_zone_size = 2;
-  const Mesh<Dim> subcell_mesh{5, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> subcell_mesh{5,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
   const size_t neighbor_mesh_size =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   FixedHashMap<maximum_number_of_neighbors(Dim),

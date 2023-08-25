@@ -53,8 +53,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.QuadrupoleFormula",
       "QuadrupoleFormula", {"quadrupole_moment_derivative"}, {{{0.0, 1.0}}},
       used_for_size);
 
-  const Mesh<3> mesh{12, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{12, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const Scalar<DataVector> rho_flat{mesh.number_of_grid_points(), 1.28e-3};
   const Scalar<DataVector> velocity_squared{mesh.number_of_grid_points(), 0.04};
   const Scalar<DataVector> W = lorentz_factor(velocity_squared);

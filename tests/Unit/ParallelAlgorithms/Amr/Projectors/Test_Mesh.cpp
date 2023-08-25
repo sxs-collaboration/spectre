@@ -15,8 +15,8 @@
 
 namespace {
 void test_mesh_1d() {
-  const auto legendre = Spectral::Basis::Legendre;
-  const auto gauss_lobatto = Spectral::Quadrature::GaussLobatto;
+  const auto legendre = SpatialDiscretization::Basis::Legendre;
+  const auto gauss_lobatto = SpatialDiscretization::Quadrature::GaussLobatto;
   const auto refine = std::array{amr::Flag::IncreaseResolution};
   const auto coarsen = std::array{amr::Flag::DecreaseResolution};
   const auto split = std::array{amr::Flag::Split};
@@ -34,8 +34,8 @@ void test_mesh_1d() {
 }
 
 void test_mesh_2d() {
-  const auto legendre = Spectral::Basis::Legendre;
-  const auto gauss_lobatto = Spectral::Quadrature::GaussLobatto;
+  const auto legendre = SpatialDiscretization::Basis::Legendre;
+  const auto gauss_lobatto = SpatialDiscretization::Quadrature::GaussLobatto;
   const auto refine_refine =
       std::array{amr::Flag::IncreaseResolution, amr::Flag::IncreaseResolution};
   const auto refine_stay =
@@ -62,9 +62,10 @@ void test_mesh_2d() {
   CHECK(amr::projectors::parent_mesh(
             std::vector{mesh_3_5, mesh_4_5, mesh_3_6}) == mesh_4_6);
 #ifdef SPECTRE_DEBUG
-  Mesh<2> mesh_mismatch_basis{std::array{2_st, 4_st},
-                              std::array{legendre, Spectral::Basis::Chebyshev},
-                              std::array{gauss_lobatto, gauss_lobatto}};
+  Mesh<2> mesh_mismatch_basis{
+      std::array{2_st, 4_st},
+      std::array{legendre, SpatialDiscretization::Basis::Chebyshev},
+      std::array{gauss_lobatto, gauss_lobatto}};
   CHECK_THROWS_WITH(
       amr::projectors::parent_mesh(std::vector{mesh_3_5, mesh_mismatch_basis}),
       Catch::Matchers::ContainsSubstring(
@@ -72,7 +73,7 @@ void test_mesh_2d() {
           "different quadratures or bases"));
   Mesh<2> mesh_mismatch_quadrature{
       std::array{2_st, 4_st}, std::array{legendre, legendre},
-      std::array{Spectral::Quadrature::Gauss, gauss_lobatto}};
+      std::array{SpatialDiscretization::Quadrature::Gauss, gauss_lobatto}};
   CHECK_THROWS_WITH(amr::projectors::parent_mesh(
                         std::vector{mesh_3_5, mesh_mismatch_quadrature}),
                     Catch::Matchers::ContainsSubstring(
@@ -82,8 +83,8 @@ void test_mesh_2d() {
 }
 
 void test_mesh_3d() {
-  const auto legendre = Spectral::Basis::Legendre;
-  const auto gauss_lobatto = Spectral::Quadrature::GaussLobatto;
+  const auto legendre = SpatialDiscretization::Basis::Legendre;
+  const auto gauss_lobatto = SpatialDiscretization::Quadrature::GaussLobatto;
   const auto refine_refine_refine =
       std::array{amr::Flag::IncreaseResolution, amr::Flag::IncreaseResolution,
                  amr::Flag::IncreaseResolution};
@@ -150,7 +151,7 @@ void test_mesh_3d() {
 #ifdef SPECTRE_DEBUG
   Mesh<3> mesh_mismatch_basis{
       std::array{2_st, 4_st, 3_st},
-      std::array{legendre, Spectral::Basis::Chebyshev, legendre},
+      std::array{legendre, SpatialDiscretization::Basis::Chebyshev, legendre},
       std::array{gauss_lobatto, gauss_lobatto, gauss_lobatto}};
   CHECK_THROWS_WITH(amr::projectors::parent_mesh(
                         std::vector{mesh_3_5_7, mesh_mismatch_basis}),
@@ -159,7 +160,8 @@ void test_mesh_3d() {
                         "different quadratures or bases"));
   Mesh<3> mesh_mismatch_quadrature{
       std::array{2_st, 4_st, 3_st}, std::array{legendre, legendre, legendre},
-      std::array{Spectral::Quadrature::Gauss, gauss_lobatto, gauss_lobatto}};
+      std::array{SpatialDiscretization::Quadrature::Gauss, gauss_lobatto,
+                 gauss_lobatto}};
   CHECK_THROWS_WITH(amr::projectors::parent_mesh(
                         std::vector{mesh_3_5_7, mesh_mismatch_quadrature}),
                     Catch::Matchers::ContainsSubstring(

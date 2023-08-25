@@ -37,8 +37,8 @@ struct Vector : db::SimpleTag {
 };
 }  // namespace Tags
 
-template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_project_fd() {
   CAPTURE(Dim);
   CAPTURE(BasisType);
@@ -52,9 +52,9 @@ void test_project_fd() {
     const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
     const auto logical_coords = logical_coordinates(dg_mesh);
     const size_t num_subcells_1d = 2 * num_pts_1d - 1;
-    const Mesh<Dim> subcell_mesh(num_subcells_1d,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered);
+    const Mesh<Dim> subcell_mesh(
+        num_subcells_1d, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered);
     const DataVector nodal_coeffs =
         TestHelpers::evolution::dg::subcell::cell_values(dg_mesh.extents(0) - 2,
                                                          logical_coords);
@@ -121,8 +121,9 @@ void test_project_fd() {
   }
 }
 
-template <size_t MaxPts, size_t Dim, size_t Face_Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, size_t Face_Dim,
+          SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_project_on_face_fd() {
   CAPTURE(Dim);
   CAPTURE(Face_Dim);
@@ -142,16 +143,16 @@ void test_project_on_face_fd() {
     CAPTURE(num_subcells_1d_cell);
 
     std::array<size_t, Dim> extents{};
-    std::array<Spectral::Basis, Dim> basis{};
-    std::array<Spectral::Quadrature, Dim> quadrature{};
+    std::array<SpatialDiscretization::Basis, Dim> basis{};
+    std::array<SpatialDiscretization::Quadrature, Dim> quadrature{};
     for (size_t d = 0; d < Dim; d++) {
-      basis[d] = Spectral::Basis::FiniteDifference;
+      basis[d] = SpatialDiscretization::Basis::FiniteDifference;
       if (d == Face_Dim) {
         extents[d] = num_subcells_1d_face;
-        quadrature[d] = Spectral::Quadrature::FaceCentered;
+        quadrature[d] = SpatialDiscretization::Quadrature::FaceCentered;
       } else {
         extents[d] = num_subcells_1d_cell;
-        quadrature[d] = Spectral::Quadrature::CellCentered;
+        quadrature[d] = SpatialDiscretization::Quadrature::CellCentered;
       }
     }
 
@@ -171,35 +172,35 @@ void test_project_on_face_fd() {
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Projection", "[Evolution][Unit]") {
-  test_project_fd<10, 1, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto>();
-  test_project_fd<10, 1, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::Gauss>();
+  test_project_fd<10, 1, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_fd<10, 1, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::Gauss>();
 
-  test_project_fd<10, 2, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto>();
-  test_project_fd<10, 2, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::Gauss>();
+  test_project_fd<10, 2, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_fd<10, 2, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::Gauss>();
 
-  test_project_fd<5, 3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto>();
-  test_project_fd<4, 3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::Gauss>();
-  test_project_on_face_fd<10, 1, 0, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>();
-  test_project_on_face_fd<10, 1, 0, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>();
-  test_project_on_face_fd<5, 3, 0, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>();
-  test_project_on_face_fd<4, 3, 0, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>();
-  test_project_on_face_fd<5, 3, 1, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>();
-  test_project_on_face_fd<4, 3, 1, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>();
-  test_project_on_face_fd<5, 3, 2, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>();
-  test_project_on_face_fd<4, 3, 2, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>();
+  test_project_fd<5, 3, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_fd<4, 3, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::Gauss>();
+  test_project_on_face_fd<10, 1, 0, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<10, 1, 0, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 0, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 0, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 1, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 1, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::Gauss>();
+  test_project_on_face_fd<5, 3, 2, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_project_on_face_fd<4, 3, 2, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::Gauss>();
 }
 }  // namespace

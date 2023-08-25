@@ -109,10 +109,10 @@ void test(const Mesh<Dim>& mesh) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.Tags", "[Unit]") {
-  test(Mesh<1>{3, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
-  test(Mesh<2>{3, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
-  test(Mesh<3>{3, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
+  test(Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
+  test(Mesh<2>{3, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
+  test(Mesh<3>{3, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
 }

@@ -253,10 +253,12 @@ void test_1d_regular_interpolation() {
   const size_t end_points = 6;
   const DataVector coords = {1.0, 1.5, 2.5, 3.0};  // some extrapolating points
   for (size_t n = start_points; n < end_points; ++n) {
-    const auto mesh_lgl = Mesh<1>{n, Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto};
+    const auto mesh_lgl =
+        Mesh<1>{n, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto};
     const auto mesh_lg_high_res =
-        Mesh<1>{n + 2, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+        Mesh<1>{n + 2, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::Gauss};
     test_regular_interpolation(mesh_lgl, mesh_lgl);
     test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
     test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
@@ -270,12 +272,14 @@ void test_2d_regular_interpolation() {
   const DataVector coords = {1.0, 1.5, 2.5, 3.0};  // some extrapolating points
   for (size_t nx = start_points; nx < end_points; ++nx) {
     for (size_t ny = start_points; ny < end_points; ++ny) {
-      const auto mesh_lgl = Mesh<2>{{{nx, ny}},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto};
-      const auto mesh_lg_high_res = Mesh<2>{{{nx + 2, ny + 3}},
-                                            Spectral::Basis::Legendre,
-                                            Spectral::Quadrature::Gauss};
+      const auto mesh_lgl =
+          Mesh<2>{{{nx, ny}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto};
+      const auto mesh_lg_high_res =
+          Mesh<2>{{{nx + 2, ny + 3}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::Gauss};
       test_regular_interpolation(mesh_lgl, mesh_lgl);
       test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
       test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
@@ -291,12 +295,14 @@ void test_3d_regular_interpolation() {
   for (size_t nx = start_points; nx < end_points; ++nx) {
     for (size_t ny = start_points; ny < end_points; ++ny) {
       for (size_t nz = start_points; nz < end_points; ++nz) {
-        const auto mesh_lgl = Mesh<3>{{{nx, ny, nz}},
-                                      Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto};
-        const auto mesh_lg_high_res = Mesh<3>{{{nx + 2, ny + 3, nz + 1}},
-                                              Spectral::Basis::Legendre,
-                                              Spectral::Quadrature::Gauss};
+        const auto mesh_lgl =
+            Mesh<3>{{{nx, ny, nz}},
+                    SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto};
+        const auto mesh_lg_high_res =
+            Mesh<3>{{{nx + 2, ny + 3, nz + 1}},
+                    SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss};
         test_regular_interpolation(mesh_lgl, mesh_lgl);
         test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
         test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);

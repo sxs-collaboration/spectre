@@ -262,9 +262,10 @@ void logical_partial_derivatives_impl(
                                   volume_mesh.quadrature(0)),
          "The mesh must be isotropic, but got " << volume_mesh);
   ASSERT(
-      volume_mesh.basis(0) == Spectral::Basis::FiniteDifference,
+      volume_mesh.basis(0) == SpatialDiscretization::Basis::FiniteDifference,
       "Mesh basis must be FiniteDifference but got " << volume_mesh.basis(0));
-  ASSERT(volume_mesh.quadrature(0) == Spectral::Quadrature::CellCentered,
+  ASSERT(volume_mesh.quadrature(0) ==
+             SpatialDiscretization::Quadrature::CellCentered,
          "Mesh quadrature must be CellCentered but got "
              << volume_mesh.quadrature(0));
   const size_t number_of_points = volume_mesh.number_of_grid_points();
@@ -287,10 +288,9 @@ void logical_partial_derivatives_impl(
          "Couldn't find upper ghost data in upper-xi");
   const Index<Dim>& volume_extents = volume_mesh.extents();
 
-  const auto& logical_xi_coords =
-      Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                   Spectral::Quadrature::CellCentered>(
-          volume_mesh.extents(0));
+  const auto& logical_xi_coords = Spectral::collocation_points<
+      SpatialDiscretization::Basis::FiniteDifference,
+      SpatialDiscretization::Quadrature::CellCentered>(volume_mesh.extents(0));
   logical_partial_derivatives_fastest_dim<DerivativeComputer>(
       make_not_null(&(*logical_derivatives)[0]), volume_vars,
       ghost_cell_vars.at(Direction<Dim>::lower_xi()),
@@ -339,10 +339,10 @@ void logical_partial_derivatives_impl(
     gsl::span<double> derivative_view =
         gsl::make_span(&buffer[derivative_offset_in_buffer], derivative_size);
 
-    const auto& logical_eta_coords =
-        Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                     Spectral::Quadrature::CellCentered>(
-            volume_mesh.extents(1));
+    const auto& logical_eta_coords = Spectral::collocation_points<
+        SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered>(
+        volume_mesh.extents(1));
 
     logical_partial_derivatives_fastest_dim<DerivativeComputer>(
         make_not_null(&derivative_view),
@@ -378,10 +378,10 @@ void logical_partial_derivatives_impl(
           ghost_cell_vars.at(Direction<Dim>::upper_zeta()).data(), chunk_size,
           number_of_neighbor_chunks);
 
-      const auto& logical_zeta_coords =
-          Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                       Spectral::Quadrature::CellCentered>(
-              volume_mesh.extents(2));
+      const auto& logical_zeta_coords = Spectral::collocation_points<
+          SpatialDiscretization::Basis::FiniteDifference,
+          SpatialDiscretization::Quadrature::CellCentered>(
+          volume_mesh.extents(2));
 
       logical_partial_derivatives_fastest_dim<DerivativeComputer>(
           make_not_null(&derivative_view),

@@ -296,8 +296,9 @@ void test_lapse_deriv_functions_analytic(
     const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
@@ -410,8 +411,9 @@ void test_shift_deriv_functions_analytic(
     const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t SpatialDim = 3;
-  Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{grid_size_each_dimension,
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
@@ -519,8 +521,9 @@ void test_gij_deriv_functions_analytic(
     const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t SpatialDim = 3;
-  Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{grid_size_each_dimension,
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{
@@ -681,8 +684,9 @@ void test_spatial_ricci_tensor_spec(const size_t grid_size_each_dimension,
   using frame = Frame::Inertial;
   constexpr size_t VolumeDim = 3;
   // Setup grid
-  Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<VolumeDim> mesh{grid_size_each_dimension,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{

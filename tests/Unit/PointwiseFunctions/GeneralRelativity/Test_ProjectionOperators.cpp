@@ -114,8 +114,9 @@ void test_spatial_projection_tensors_3D(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound) {
   // Setup grid
-  Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{grid_size_each_dimension,
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{

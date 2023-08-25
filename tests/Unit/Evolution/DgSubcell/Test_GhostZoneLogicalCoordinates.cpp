@@ -21,8 +21,8 @@ namespace {
 template <size_t Dim>
 void test() {
   // Create a subcell mesh
-  const Mesh<Dim> dg_mesh{3, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{3, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = mesh(dg_mesh);
   const Index<Dim> subcell_extents = subcell_mesh.extents();
 

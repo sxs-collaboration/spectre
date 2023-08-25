@@ -12,6 +12,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -29,12 +30,14 @@ bool tvb_minmod_indicator(
   // Check that basis is LGL or LG. Note that...
   // - non-Legendre bases may work "out of the box", but are untested
   // - mixed bases may be okay in principle, but are untested
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+  ASSERT(mesh.basis() ==
+             make_array<VolumeDim>(SpatialDiscretization::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
-             mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+                 make_array<VolumeDim>(
+                     SpatialDiscretization::Quadrature::GaussLobatto) or
+             mesh.quadrature() == make_array<VolumeDim>(
+                                      SpatialDiscretization::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
 
   const double tvb_scale = [&tvb_constant, &element_size]() {
@@ -70,7 +73,7 @@ bool tvb_minmod_indicator(
     // This TCI compares mean-to-neighbor vs mean-to-cell-boundary differences.
     // In the case of an LGL mesh, the boundary values can be read off directly,
     // but in the case of a LG mesh, we must interpolate to the boundary.
-    if (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto) {
+    if (mesh.quadrature(d) == SpatialDiscretization::Quadrature::GaussLobatto) {
       const auto& volume_and_slice_indices_d =
           gsl::at(buffer->volume_and_slice_indices, d);
       u_lower = mean_value_on_boundary(&boundary_buffers_d,
@@ -80,7 +83,8 @@ bool tvb_minmod_indicator(
                                        volume_and_slice_indices_d.second, u,
                                        mesh, d, Side::Upper);
     } else {
-      // We have Spectral::Quadrature::Gauss, so interpolate to boundary
+      // We have SpatialDiscretization::Quadrature::Gauss, so interpolate to
+      // boundary
       const Matrix identity{};
       auto interpolation_matrices = make_array<VolumeDim>(std::cref(identity));
       const auto& matrices =

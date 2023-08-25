@@ -214,8 +214,8 @@ void test_prim_reconstructor_impl(
       ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
   const Mesh<3> subcell_mesh{points_per_dimension,
-                             Spectral::Basis::FiniteDifference,
-                             Spectral::Quadrature::CellCentered};
+                             SpatialDiscretization::Basis::FiniteDifference,
+                             SpatialDiscretization::Quadrature::CellCentered};
   const auto logical_coords = set_logical_coordinates(subcell_mesh);
   const Element<3> element = set_element(true);
 
@@ -303,11 +303,13 @@ void test_prim_reconstructor_impl(
 
   for (size_t dim = 0; dim < 3; ++dim) {
     CAPTURE(dim);
-    const auto basis = make_array<3>(Spectral::Basis::FiniteDifference);
-    auto quadrature = make_array<3>(Spectral::Quadrature::CellCentered);
+    const auto basis =
+        make_array<3>(SpatialDiscretization::Basis::FiniteDifference);
+    auto quadrature =
+        make_array<3>(SpatialDiscretization::Quadrature::CellCentered);
     auto extents = make_array<3>(points_per_dimension);
     gsl::at(extents, dim) = points_per_dimension + 1;
-    gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, dim) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<3> face_centered_mesh{extents, basis, quadrature};
     auto logical_coords_face_centered = logical_coordinates(face_centered_mesh);
     for (size_t i = 1; i < 3; ++i) {

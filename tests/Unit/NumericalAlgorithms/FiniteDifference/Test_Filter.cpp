@@ -91,8 +91,8 @@ void test_ko_dissipation() {
   const size_t number_of_vars = 2;
   const double epsilon = 0.1;
 
-  const Mesh<Dim> mesh{13, Spectral::Basis::FiniteDifference,
-                       Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> mesh{13, SpatialDiscretization::Basis::FiniteDifference,
+                       SpatialDiscretization::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(mesh);
   // Make the logical coordinates different in each direction
   for (size_t i = 1; i < Dim; ++i) {
@@ -144,8 +144,8 @@ void test_low_pass_filter() {
   const size_t number_of_vars = 2;
   const double epsilon = 1.0;
 
-  const Mesh<Dim> mesh{13, Spectral::Basis::FiniteDifference,
-                       Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> mesh{13, SpatialDiscretization::Basis::FiniteDifference,
+                       SpatialDiscretization::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(mesh);
   // Make the logical coordinates different in each direction
   for (size_t i = 1; i < Dim; ++i) {

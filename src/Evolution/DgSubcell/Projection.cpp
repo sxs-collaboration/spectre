@@ -27,7 +27,7 @@ void project_impl(gsl::span<double> subcell_u,
   for (size_t d = 0; d < Dim; d++) {
     gsl::at(projection_mat, d) = std::cref(
         projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                          Spectral::Quadrature::CellCentered));
+                          SpatialDiscretization::Quadrature::CellCentered));
   }
   DataVector result{subcell_u.data(), subcell_u.size()};
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
@@ -50,11 +50,11 @@ void project_to_face_impl(gsl::span<double> subcell_u,
     if (d == face_direction) {
       gsl::at(projection_mat, d) = std::cref(
           projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                            Spectral::Quadrature::FaceCentered));
+                            SpatialDiscretization::Quadrature::FaceCentered));
     } else {
       gsl::at(projection_mat, d) = std::cref(
           projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                            Spectral::Quadrature::CellCentered));
+                            SpatialDiscretization::Quadrature::CellCentered));
     }
   }
   DataVector result{subcell_u.data(), subcell_u.size()};

@@ -258,8 +258,9 @@ void test_boundary_correction_combination(
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       grmhd::GhValenciaDivClean::System>(
       make_not_null(&gen), derived_product_correction,
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 }
 }  // namespace
 

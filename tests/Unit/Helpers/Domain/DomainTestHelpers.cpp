@@ -273,8 +273,9 @@ void check_block_face_grid_points_align(
       find_neighbor_orientation(host_block, neighbor_block);
   // Set up a Mesh on the shared face. Corner points are already checked by
   // physical_separation, so check on Gauss points
-  const Mesh<VolumeDim - 1> face_mesh{3_st, Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss};
+  const Mesh<VolumeDim - 1> face_mesh{3_st,
+                                      SpatialDiscretization::Basis::Legendre,
+                                      SpatialDiscretization::Quadrature::Gauss};
   // We want block logical coordinates on face_mesh on the host side and the
   // neighbor. The following returns element logical coordinates in the host
   // frame, which we then copy into tensors holding block logical coordinates,

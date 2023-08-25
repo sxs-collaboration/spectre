@@ -76,17 +76,17 @@ void test_weighted_cost_function(const domain::ElementWeight element_weight) {
   const auto costs1 = domain::get_element_costs(
       blocks1, domain_creator1.initial_refinement_levels(),
       domain_creator1.initial_extents(), element_weight,
-      Spectral::Quadrature::GaussLobatto);
+      SpatialDiscretization::Quadrature::GaussLobatto);
 
   const auto costs2 = domain::get_element_costs(
       blocks2, domain_creator2.initial_refinement_levels(),
       domain_creator2.initial_extents(), element_weight,
-      Spectral::Quadrature::GaussLobatto);
+      SpatialDiscretization::Quadrature::GaussLobatto);
 
   const auto costs3 = domain::get_element_costs(
       blocks3, domain_creator3.initial_refinement_levels(),
       domain_creator3.initial_extents(), element_weight,
-      Spectral::Quadrature::GaussLobatto);
+      SpatialDiscretization::Quadrature::GaussLobatto);
 
   // check that all elements in each domain have the same cost
 
@@ -263,7 +263,7 @@ void test_weighted_element_distribution_construction(
 
   const auto costs = domain::get_element_costs(
       blocks, initial_refinement_levels, initial_extents, element_weight,
-      Spectral::Quadrature::GaussLobatto);
+      SpatialDiscretization::Quadrature::GaussLobatto);
 
   const domain::BlockZCurveProcDistribution<Dim> element_distribution(
       costs, number_of_procs_with_elements, blocks, initial_refinement_levels,
@@ -450,7 +450,7 @@ void test_proc_retrieval(
 
   const auto costs = domain::get_element_costs(
       blocks, initial_refinement_levels, initial_extents, element_weight,
-      Spectral::Quadrature::GaussLobatto);
+      SpatialDiscretization::Quadrature::GaussLobatto);
 
   const domain::BlockZCurveProcDistribution<Dim> element_distribution(
       costs, number_of_procs_with_elements, blocks, initial_refinement_levels,

@@ -22,8 +22,8 @@ void test_initialize_constraint_damping_gammas() {
                                    CurvedScalarWave::Tags::ConstraintGamma2,
                                    domain::Tags::Mesh<Dim>>>(
           Scalar<DataVector>{}, Scalar<DataVector>{},
-          Mesh<Dim>{4, Spectral::Basis::Chebyshev,
-                    Spectral::Quadrature::Gauss});
+          Mesh<Dim>{4, SpatialDiscretization::Basis::Chebyshev,
+                    SpatialDiscretization::Quadrature::Gauss});
   db::mutate_apply<
       CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<Dim>>(
       make_not_null(&box));

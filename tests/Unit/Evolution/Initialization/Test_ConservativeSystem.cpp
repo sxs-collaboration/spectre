@@ -105,8 +105,8 @@ void test() {
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{SystemAnalyticSolution{}}};
-  Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  Mesh<Dim> mesh{5, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
   ActionTesting::emplace_component_and_initialize<comp>(&runner, 0, {mesh});
   // Invoke the ConservativeSystem action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);

@@ -182,16 +182,16 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.Weighting",
   }
   // Test weights conservation on all possible element-neighbor configurations
   {
-    test_weights(Mesh<1>{3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
+    test_weights(Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto},
                  4);
     test_weights(Mesh<2>{{3, 4},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto},
                  4);
     test_weights(Mesh<3>{{2, 3, 4},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto},
                  4);
   }
 }

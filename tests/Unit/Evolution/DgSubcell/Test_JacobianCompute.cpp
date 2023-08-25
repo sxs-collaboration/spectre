@@ -54,8 +54,8 @@ void test() {
                       ? block.moving_mesh_logical_to_grid_map().get_clone()
                       : block.stationary_map().get_to_grid_frame()};
   const double time = 0.0;
-  const Mesh<3> subcell_mesh{2, Spectral::Basis::FiniteDifference,
-                             Spectral::Quadrature::CellCentered};
+  const Mesh<3> subcell_mesh{2, SpatialDiscretization::Basis::FiniteDifference,
+                             SpatialDiscretization::Quadrature::CellCentered};
 
   auto box = db::create<
       db::AddSimpleTags<evolution::dg::subcell::Tags::Mesh<3>,

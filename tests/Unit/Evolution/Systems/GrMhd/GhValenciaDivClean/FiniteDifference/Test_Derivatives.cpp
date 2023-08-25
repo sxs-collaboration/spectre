@@ -36,8 +36,8 @@ SPECTRE_TEST_CASE(
   const size_t ghost_zone_size = 3;
   const size_t fd_deriv_order = 4;
   const Mesh<3> subcell_mesh{points_per_dimension,
-                             Spectral::Basis::FiniteDifference,
-                             Spectral::Quadrature::CellCentered};
+                             SpatialDiscretization::Basis::FiniteDifference,
+                             SpatialDiscretization::Quadrature::CellCentered};
   const auto logical_coords = TestHelpers::grmhd::GhValenciaDivClean::fd::
       detail::set_logical_coordinates(subcell_mesh);
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>

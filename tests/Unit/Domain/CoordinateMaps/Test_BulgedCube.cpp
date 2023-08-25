@@ -70,9 +70,9 @@ void test_bulged_cube(bool with_equiangular_map) {
   const std::array<DataVector, 3> test_points{
       {DataVector{-1.0, 1.0, 0.7, 0.0}, DataVector{0.25, 1.0, -0.2, 0.0},
        DataVector{0.0, -0.5, 0.4, 0.0}}};
-  const DataVector& collocation_pts =
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(7);
+  const DataVector& collocation_pts = Spectral::collocation_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(7);
   const std::array<DataVector, 3> test_points2{
       {collocation_pts, collocation_pts, collocation_pts}};
 

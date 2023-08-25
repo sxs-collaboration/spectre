@@ -28,10 +28,10 @@ struct Var2 : db::SimpleTag {
 template <size_t Dim>
 void test(const double eps) {
   using dt_variables_tags = tmpl::list<Tags::dt<Var1>, Tags::dt<Var2<Dim>>>;
-  Mesh<Dim> volume_mesh{8, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss};
-  Mesh<Dim> volume_mesh_gl{8, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+  Mesh<Dim> volume_mesh{8, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss};
+  Mesh<Dim> volume_mesh_gl{8, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
   CAPTURE(Dim);
   CAPTURE(volume_mesh);
   const double correction_value = 2.0e-3;

@@ -21,15 +21,16 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
   py::class_<Mesh<Dim>>(m, ("Mesh" + std::to_string(Dim) + "D").c_str())
       .def_property_readonly_static(
           "dim", [](const py::object& /*self */) { return Dim; })
-      .def(py::init<const size_t, const Spectral::Basis,
-                    const Spectral::Quadrature>(),
+      .def(py::init<const size_t, const SpatialDiscretization::Basis,
+                    const SpatialDiscretization::Quadrature>(),
            py::arg("isotropic_extents"), py::arg("basis"),
            py::arg("quadrature"))
-      .def(py::init<std::array<size_t, Dim>, const Spectral::Basis,
-                    const Spectral::Quadrature>(),
+      .def(py::init<std::array<size_t, Dim>, const SpatialDiscretization::Basis,
+                    const SpatialDiscretization::Quadrature>(),
            py::arg("extents"), py::arg("basis"), py::arg("quadrature"))
-      .def(py::init<std::array<size_t, Dim>, std::array<Spectral::Basis, Dim>,
-                    std::array<Spectral::Quadrature, Dim>>(),
+      .def(py::init<std::array<size_t, Dim>,
+                    std::array<SpatialDiscretization::Basis, Dim>,
+                    std::array<SpatialDiscretization::Quadrature, Dim>>(),
            py::arg("extents"), py::arg("bases"), py::arg("quadratures"))
       .def(
           "extents",
@@ -43,21 +44,22 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
       .def("number_of_grid_points", &Mesh<Dim>::number_of_grid_points,
            "The total number of grid points in all dimensions.")
       .def("basis",
-           static_cast<const std::array<Spectral::Basis, Dim>& (Mesh<Dim>::*)()
-                           const>(&Mesh<Dim>::basis),
+           static_cast<const std::array<SpatialDiscretization::Basis, Dim>& (
+               Mesh<Dim>::*)() const>(&Mesh<Dim>::basis),
            "The basis chosen in each dimension of the grid.")
       .def("basis",
-           static_cast<Spectral::Basis (Mesh<Dim>::*)(const size_t) const>(
-               &Mesh<Dim>::basis),
+           static_cast<SpatialDiscretization::Basis (Mesh<Dim>::*)(const size_t)
+                           const>(&Mesh<Dim>::basis),
            py::arg("d"),
            "The basis chosen in the requested dimension of the grid.")
       .def("quadrature",
-           static_cast<const std::array<Spectral::Quadrature, Dim>& (
-               Mesh<Dim>::*)() const>(&Mesh<Dim>::quadrature),
+           static_cast<const std::array<SpatialDiscretization::Quadrature,
+                                        Dim>& (Mesh<Dim>::*)() const>(
+               &Mesh<Dim>::quadrature),
            "The quadrature chosen in each dimension of the grid.")
       .def("quadrature",
-           static_cast<Spectral::Quadrature (Mesh<Dim>::*)(const size_t) const>(
-               &Mesh<Dim>::quadrature),
+           static_cast<SpatialDiscretization::Quadrature (Mesh<Dim>::*)(
+               const size_t) const>(&Mesh<Dim>::quadrature),
            py::arg("d"),
            "The quadrature chosen in the requested dimension of the grid.")
       .def("slices", &Mesh<Dim>::slices,
@@ -75,8 +77,10 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
             }
             return Mesh<Dim>(
                 state[0].cast<std::array<size_t, Dim>>(),
-                state[1].cast<std::array<Spectral::Basis, Dim>>(),
-                state[2].cast<std::array<Spectral::Quadrature, Dim>>());
+                state[1].cast<std::array<SpatialDiscretization::Basis, Dim>>(),
+                state[2]
+                    .cast<
+                        std::array<SpatialDiscretization::Quadrature, Dim>>());
           }));
 }
 }  // namespace

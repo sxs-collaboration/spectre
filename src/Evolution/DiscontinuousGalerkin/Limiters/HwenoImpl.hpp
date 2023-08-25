@@ -539,12 +539,14 @@ void hweno_impl(
   // The Hweno reconstruction implemented here is specialized to the case of a
   // Legendre basis. While the underlying algorithm should work for other bases
   // as well, the matrix computations would need to be generalized.
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+  ASSERT(mesh.basis() ==
+             make_array<VolumeDim>(SpatialDiscretization::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
-             mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+                 make_array<VolumeDim>(
+                     SpatialDiscretization::Quadrature::GaussLobatto) or
+             mesh.quadrature() == make_array<VolumeDim>(
+                                      SpatialDiscretization::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
 
   ASSERT(

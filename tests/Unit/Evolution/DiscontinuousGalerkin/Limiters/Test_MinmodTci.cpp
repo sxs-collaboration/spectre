@@ -76,14 +76,15 @@ void test_tci_detection(
   CHECK(detection == expected_detection);
 }
 
-void test_tci_on_linear_function(const size_t number_of_grid_points,
-                                 const Spectral::Quadrature quadrature) {
+void test_tci_on_linear_function(
+    const size_t number_of_grid_points,
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing TCI on linear function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
@@ -125,14 +126,15 @@ void test_tci_on_linear_function(const size_t number_of_grid_points,
   test_tci(false, input, 1.45, 1.5, 0.21);
 }
 
-void test_tci_on_quadratic_function(const size_t number_of_grid_points,
-                                    const Spectral::Quadrature quadrature) {
+void test_tci_on_quadratic_function(
+    const size_t number_of_grid_points,
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing TCI on quadratic function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
@@ -198,13 +200,13 @@ void test_tci_on_quadratic_function(const size_t number_of_grid_points,
 }
 
 void test_tci_at_boundary(const size_t number_of_grid_points,
-                          const Spectral::Quadrature quadrature) {
+                          const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing TCI at boundary");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element_size = make_array<1>(2.0);
 
   const auto input = [&mesh]() {
@@ -243,14 +245,15 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
 }
 
 void test_tci_with_different_size_neighbor(
-    const size_t number_of_grid_points, const Spectral::Quadrature quadrature) {
+    const size_t number_of_grid_points,
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing TCI with neighboring elements of different size");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
 
@@ -298,8 +301,8 @@ void test_tci_with_different_size_neighbor(
 // Check that each combination has the expected TCI behavior.
 void test_tvb_minmod_tci_1d() {
   INFO("Testing MinmodTci in 1D");
-  for (const auto quadrature :
-       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+  for (const auto quadrature : {SpatialDiscretization::Quadrature::GaussLobatto,
+                                SpatialDiscretization::Quadrature::Gauss}) {
     for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
       test_tci_on_linear_function(num_grid_points, quadrature);
       test_tci_at_boundary(num_grid_points, quadrature);
@@ -311,11 +314,12 @@ void test_tvb_minmod_tci_1d() {
   }
 }
 
-void test_tvb_minmod_tci_2d_impl(const Spectral::Quadrature quadrature) {
+void test_tvb_minmod_tci_2d_impl(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre, quadrature);
+  const Mesh<2> mesh(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element_size = make_array<2>(2.0);
 
   const auto test_tci =
@@ -355,15 +359,16 @@ void test_tvb_minmod_tci_2d_impl(const Spectral::Quadrature quadrature) {
 // expected.
 void test_tvb_minmod_tci_2d() {
   INFO("Testing MinmodTci in 2D");
-  test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::GaussLobatto);
-  test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::Gauss);
+  test_tvb_minmod_tci_2d_impl(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_tvb_minmod_tci_2d_impl(SpatialDiscretization::Quadrature::Gauss);
 }
 
-void test_tvb_minmod_tci_3d_impl(const Spectral::Quadrature quadrature) {
+void test_tvb_minmod_tci_3d_impl(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const Mesh<3> mesh(3, Spectral::Basis::Legendre, quadrature);
+  const Mesh<3> mesh(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element_size = make_array<3>(2.0);
 
   const auto test_tci =
@@ -409,8 +414,8 @@ void test_tvb_minmod_tci_3d_impl(const Spectral::Quadrature quadrature) {
 // expected.
 void test_tvb_minmod_tci_3d() {
   INFO("Testing MinmodTci in 3D");
-  test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::GaussLobatto);
-  test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::Gauss);
+  test_tvb_minmod_tci_3d_impl(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_tvb_minmod_tci_3d_impl(SpatialDiscretization::Quadrature::Gauss);
 }
 
 struct ScalarTag : db::SimpleTag {
@@ -431,8 +436,9 @@ void test_tvb_minmod_tci_several_tensors() {
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
   const size_t number_of_grid_points = 2;
-  const Mesh<3> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(1.0);
 
   const auto linear_data = [&mesh](const double mean, const double slope_x,

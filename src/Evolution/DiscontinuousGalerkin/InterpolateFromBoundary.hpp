@@ -48,11 +48,11 @@ void interpolate_dt_terms_gauss_points(
     const gsl::not_null<Variables<DtTagsList>*> dt_vars,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
     const Variables<DtTagsList>& dt_corrections) {
-  ASSERT(std::all_of(volume_mesh.quadrature().begin(),
-                     volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) {
-                       return quadrature == Spectral::Quadrature::Gauss;
-                     }),
+  ASSERT(std::all_of(
+             volume_mesh.quadrature().begin(), volume_mesh.quadrature().end(),
+             [](const SpatialDiscretization::Quadrature quadrature) {
+               return quadrature == SpatialDiscretization::Quadrature::Gauss;
+             }),
          "Must use Gauss points in all directions but got the mesh: "
              << volume_mesh);
   const Mesh<Dim - 1> boundary_mesh =

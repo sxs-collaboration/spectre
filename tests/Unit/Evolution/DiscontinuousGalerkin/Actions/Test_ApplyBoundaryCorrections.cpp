@@ -267,7 +267,8 @@ struct SetLocalMortarData {
                     direction.dimension() +
                         10 * static_cast<unsigned long>(direction.side()) +
                         100 * count + 100000);
-          if (volume_mesh.quadrature(0) == Spectral::Quadrature::Gauss) {
+          if (volume_mesh.quadrature(0) ==
+              SpatialDiscretization::Quadrature::Gauss) {
             Scalar<DataVector> local_face_det_jacobian{
                 face_mesh.number_of_grid_points()};
             alg::iota(get(local_face_det_jacobian),
@@ -318,8 +319,9 @@ struct SetLocalMortarData {
                         *normal_covector_and_magnitude.at(mortar_id.first));
 
                 const bool using_gauss_points =
-                    mesh.quadrature() == make_array<Metavariables::volume_dim>(
-                                             Spectral::Quadrature::Gauss);
+                    mesh.quadrature() ==
+                    make_array<Metavariables::volume_dim>(
+                        SpatialDiscretization::Quadrature::Gauss);
                 if (using_gauss_points) {
                   const Scalar<DataVector> det_jacobian{
                       DataVector{1.0 / get(det_inv_jacobian)}};
@@ -455,7 +457,7 @@ const auto& get_tag(
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
           bool UseLocalTimeStepping>
-void test_impl(const Spectral::Quadrature quadrature,
+void test_impl(const SpatialDiscretization::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(Dim);
   CAPTURE(SystemType);
@@ -534,7 +536,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   const size_t number_of_grid_points_per_dimension = 5;
   const Mesh<Dim> mesh{number_of_grid_points_per_dimension,
-                       Spectral::Basis::Legendre, quadrature};
+                       SpatialDiscretization::Basis::Legendre, quadrature};
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
@@ -773,7 +775,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     const auto& mortar_mesh = mortar_meshes.at(mortar_id);
     const size_t dimension = direction.dimension();
 
-    if (UseLocalTimeStepping and quadrature == Spectral::Quadrature::Gauss) {
+    if (UseLocalTimeStepping and
+        quadrature == SpatialDiscretization::Quadrature::Gauss) {
       // This needs to be updated every call because the Jacobian may be
       // time-dependent. In the case of time-independent maps and local
       // time stepping we could first perform the integral on the
@@ -851,7 +854,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                .at(direction));
     }
 
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
       // The lift_flux function lifts only on the slice, it does not add
       // the contribution to the volume.
       ::dg::lift_flux(make_not_null(&dt_boundary_correction),
@@ -915,14 +918,14 @@ void test_impl(const Spectral::Quadrature quadrature,
       auto& mortar_data_hist = mortar_id_and_data.second;
       mortar_id_ptr = &mortar_id;
       Variables<variables_tags> lifted_volume_data{
-          quadrature == Spectral::Quadrature::GaussLobatto
+          quadrature == SpatialDiscretization::Quadrature::GaussLobatto
               ? mesh.slice_away(direction.dimension()).number_of_grid_points()
               : mesh.number_of_grid_points(),
           0.0};
       time_stepper.add_boundary_delta(&lifted_volume_data,
                                       make_not_null(&mortar_data_hist),
                                       time_step, compute_correction_coupling);
-      if (quadrature == Spectral::Quadrature::GaussLobatto) {
+      if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
         // Add the flux contribution to the volume data
         add_slice_to_data(make_not_null(&expected_evolved_variables),
                           lifted_volume_data, mesh.extents(),
@@ -992,7 +995,8 @@ void test() {
   for (const auto dg_formulation :
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     for (const auto quadrature :
-         {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+         {SpatialDiscretization::Quadrature::GaussLobatto,
+          SpatialDiscretization::Quadrature::Gauss}) {
       test_impl<Dim, SystemType, UseLocalTimeStepping>(quadrature,
                                                        dg_formulation);
     }

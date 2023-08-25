@@ -101,8 +101,8 @@ void test(const BoundaryConditionType& boundary_condition,
       std::vector<std::array<size_t, 3>>{{refinement_levels}});
 
   // Mesh and coordinates
-  const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // use MC reconstruction for test

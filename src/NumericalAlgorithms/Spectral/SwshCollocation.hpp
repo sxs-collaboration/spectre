@@ -65,8 +65,8 @@ SPECTRE_ALWAYS_INLINE Mesh<3> swsh_volume_mesh_for_radial_operations(
   return Mesh<3>{{{number_of_swsh_phi_collocation_points(l_max),
                    number_of_swsh_theta_collocation_points(l_max),
                    number_of_radial_points}},
-                 Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+                 SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 
 namespace detail {

@@ -359,8 +359,9 @@ void ConformalFactor::operator()(
       iteration_function, require_convergence_, finalize_function);
 
   const DataVector one_minus_y_collocation =
-      1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>(
+      1.0 - Spectral::collocation_points<
+                SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto>(
                 number_of_radial_points);
   if (not use_input_modes_) {
     one_minus_y_coefficient =

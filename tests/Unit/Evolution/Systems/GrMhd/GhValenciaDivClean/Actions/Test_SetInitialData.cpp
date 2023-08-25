@@ -175,8 +175,8 @@ void test_set_initial_data(
 
   // Setup element
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
-  const Mesh<3> dg_mesh{8, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{8, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const size_t dg_num_points = dg_mesh.number_of_grid_points();
   const size_t subcell_num_points = subcell_mesh.number_of_grid_points();

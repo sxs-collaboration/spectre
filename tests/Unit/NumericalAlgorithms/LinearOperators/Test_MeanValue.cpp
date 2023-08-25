@@ -21,17 +21,17 @@
 
 namespace {
 void test_mean_value() {
-  constexpr size_t min_extents =
-      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>;
-  constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  constexpr size_t min_extents = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>;
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
         const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -53,17 +53,17 @@ void test_mean_value() {
 }
 
 void test_mean_value_on_boundary() {
-  constexpr size_t min_extents =
-      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>;
-  constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  constexpr size_t min_extents = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>;
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
         const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -172,14 +172,14 @@ void test_mean_value_on_boundary() {
 }
 
 void test_mean_value_on_boundary_1d() {
-  constexpr size_t min_extents =
-      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>;
-  constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  constexpr size_t min_extents = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>;
   for (size_t nx = min_extents; nx < max_extents; ++nx) {
-    const Mesh<1> mesh{nx, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<1> mesh{nx, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
     const DataVector& x = Spectral::collocation_points(mesh);
     const DataVector u_lin = [&mesh, &x]() {
       DataVector temp(mesh.number_of_grid_points());

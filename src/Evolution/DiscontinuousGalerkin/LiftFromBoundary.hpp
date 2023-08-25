@@ -76,11 +76,11 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& boundary_corrections,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian) {
-  ASSERT(std::all_of(volume_mesh.quadrature().begin(),
-                     volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) {
-                       return quadrature == Spectral::Quadrature::Gauss;
-                     }),
+  ASSERT(std::all_of(
+             volume_mesh.quadrature().begin(), volume_mesh.quadrature().end(),
+             [](const SpatialDiscretization::Quadrature quadrature) {
+               return quadrature == SpatialDiscretization::Quadrature::Gauss;
+             }),
          "Must use Gauss points in all directions but got the mesh: "
              << volume_mesh);
   const Mesh<Dim - 1> boundary_mesh =
@@ -150,11 +150,11 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& lower_boundary_corrections,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian) {
-  ASSERT(std::all_of(volume_mesh.quadrature().begin(),
-                     volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) {
-                       return quadrature == Spectral::Quadrature::Gauss;
-                     }),
+  ASSERT(std::all_of(
+             volume_mesh.quadrature().begin(), volume_mesh.quadrature().end(),
+             [](const SpatialDiscretization::Quadrature quadrature) {
+               return quadrature == SpatialDiscretization::Quadrature::Gauss;
+             }),
          "Must use Gauss points in all directions but got the mesh: "
              << volume_mesh);
   const Mesh<Dim - 1> boundary_mesh = volume_mesh.slice_away(dimension);

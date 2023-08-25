@@ -116,8 +116,8 @@ template <size_t Dim>
 void test_characteristic_helpers() {
   INFO("Testing characteristic helpers");
   CAPTURE(Dim);
-  const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> mesh(3, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
 
   Scalar<DataVector> mass_density;
@@ -199,8 +199,8 @@ template <size_t Dim>
 void test_apply_limiter_to_char_fields() {
   INFO("Testing apply_limiter_to_characteristic_fields_in_all_directions");
   CAPTURE(Dim);
-  const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> mesh(3, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
 
   Scalar<DataVector> mass_density;

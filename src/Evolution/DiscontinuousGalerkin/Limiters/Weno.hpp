@@ -357,12 +357,14 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
   // Check that basis is LGL or LG
   // A Legendre basis is assumed for the oscillation indicator (used in both
   // SimpleWeno and Hweno) and in the Hweno reconstruction.
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+  ASSERT(mesh.basis() ==
+             make_array<VolumeDim>(SpatialDiscretization::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
-             mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+                 make_array<VolumeDim>(
+                     SpatialDiscretization::Quadrature::GaussLobatto) or
+             mesh.quadrature() == make_array<VolumeDim>(
+                                      SpatialDiscretization::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
 
   // Enforce restrictions on h-refinement, p-refinement

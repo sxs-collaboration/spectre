@@ -44,20 +44,20 @@ ElementId<2> neighbor_2_id{2, std::array{SegmentId{1, 0}, SegmentId{0, 0}}};
 ElementId<2> neighbor_3_id{2, std::array{SegmentId{1, 1}, SegmentId{1, 1}}};
 
 auto child_1_mesh() {
-  return Mesh<2>{std::array{3_st, 3_st}, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  return Mesh<2>{std::array{3_st, 3_st}, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 auto child_2_mesh() {
-  return Mesh<2>{std::array{3_st, 4_st}, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  return Mesh<2>{std::array{3_st, 4_st}, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 auto child_3_mesh() {
-  return Mesh<2>{std::array{4_st, 3_st}, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  return Mesh<2>{std::array{4_st, 3_st}, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 auto child_4_mesh() {
-  return Mesh<2>{std::array{4_st, 4_st}, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  return Mesh<2>{std::array{4_st, 4_st}, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
 }
 
 auto child_flags() { return std::array{amr::Flag::Join, amr::Flag::Join}; }

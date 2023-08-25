@@ -66,11 +66,11 @@ std::vector<std::optional<double>> find_radial_surface(
 
     // Perform root-find only if the element brackets a root.
     const double lower_radial_bound =
-        mesh.quadrature(2) == Spectral::Quadrature::GaussLobatto
+        mesh.quadrature(2) == SpatialDiscretization::Quadrature::GaussLobatto
             ? interpolated_data[0]
             : data_interpolator(-1.);
     const double upper_radial_bound =
-        mesh.quadrature(2) == Spectral::Quadrature::GaussLobatto
+        mesh.quadrature(2) == SpatialDiscretization::Quadrature::GaussLobatto
             ? interpolated_data[mesh.extents(2) - 1]
             : data_interpolator(1.);
     if (std::signbit(lower_radial_bound) != std::signbit(upper_radial_bound)) {

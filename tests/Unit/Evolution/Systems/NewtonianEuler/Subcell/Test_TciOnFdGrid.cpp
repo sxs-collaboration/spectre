@@ -46,8 +46,8 @@ void test(const TestThis test_this) {
       NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
   using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
 
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   using cons_tags = tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>;

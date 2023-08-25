@@ -30,8 +30,8 @@ namespace {
 void test_ghost_data_on_subcells(
     const gsl::not_null<std::mt19937*> gen,
     const gsl::not_null<std::uniform_real_distribution<>*> dist) {
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   using evolved_vars_tags = System::variables_tag::tags_list;

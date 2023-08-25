@@ -51,7 +51,7 @@ void InitializeGeometry<Dim>::operator()(
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
     const Domain<Dim>& domain, const ElementId<Dim>& element_id) const {
   // Mesh
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
                                                       element_id, quadrature);
   // Element
@@ -86,7 +86,7 @@ void deriv_unnormalized_face_normals_impl(
   if (element.external_boundaries().empty()) {
     return;
   }
-  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
+  ASSERT(mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto,
          "Slicing the Hessian to the boundary currently supports only "
          "Gauss-Lobatto grids. Add support to "
          "'elliptic::dg::InitializeFacesAndMortars'.");

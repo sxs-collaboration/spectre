@@ -154,8 +154,8 @@ double test(const size_t num_dg_pts) {
                       0.01};
 
   const double time = 0.0;
-  const Mesh<Dim> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const auto dg_coords = coordinate_map(logical_coordinates(dg_mesh));
 

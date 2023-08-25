@@ -170,8 +170,8 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
   const Slab slab(time, time + 1.0);
   const TimeStepId current_time(true, 0, slab.start());
   const TimeStepId next_time(true, 0, slab.end());
-  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh{2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,

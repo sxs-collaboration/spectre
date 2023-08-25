@@ -177,7 +177,7 @@ struct InitializeFacesAndMortars {
             (void)background;
           }
         };
-    const Spectral::Quadrature quadrature = mesh.quadrature(0);
+    const SpatialDiscretization::Quadrature quadrature = mesh.quadrature(0);
     ASSERT(std::equal(mesh.quadrature().begin() + 1, mesh.quadrature().end(),
                       mesh.quadrature().begin()),
            "This function is implemented assuming the quadrature is isotropic");
@@ -307,9 +307,10 @@ struct InitializeBackground {
               return variables_from_tagged_tuple(derived->variables(
                   inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
             });
-    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-           "Only Gauss-Lobatto quadrature is currently implemented for "
-           "slicing background fields to faces.");
+    ASSERT(
+        mesh.quadrature(0) == SpatialDiscretization::Quadrature::GaussLobatto,
+        "Only Gauss-Lobatto quadrature is currently implemented for "
+        "slicing background fields to faces.");
     for (const auto& direction : Direction<Dim>::all_directions()) {
       // Possible optimization: Only the background fields in the
       // System::fluxes_computer::argument_tags are needed on internal faces.

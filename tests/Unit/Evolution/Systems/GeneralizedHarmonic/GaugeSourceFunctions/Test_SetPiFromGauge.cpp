@@ -61,8 +61,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>>;
 
-  const Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{5, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   Variables<evolved_vars_tags> evolved_vars{mesh.number_of_grid_points()};
   get<gh::Tags::Pi<DataVector, Dim>>(evolved_vars) =

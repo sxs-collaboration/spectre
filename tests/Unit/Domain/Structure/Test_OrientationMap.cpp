@@ -50,8 +50,8 @@ void test_1d() {
   CHECK(parallel_orientation(segment_ids) == segment_ids);
   CHECK(antiparallel_orientation(segment_ids) ==
         expected_antiparallel_segment_ids);
-  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(4, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   CHECK(parallel_orientation(mesh) == mesh);
   CHECK(antiparallel_orientation(mesh) == mesh);
   CHECK(std::array<int, 1>{{1}} ==
@@ -172,12 +172,17 @@ void test_2d() {
         expected_pos_eta_neg_xi_segment_ids);
 
   // Check mapped(Mesh<2> mesh)
-  const Mesh<2> input_mesh(
-      {{3, 4}}, {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}});
+  const Mesh<2> input_mesh({{3, 4}},
+                           {{SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Basis::Chebyshev}},
+                           {{SpatialDiscretization::Quadrature::GaussLobatto,
+                             SpatialDiscretization::Quadrature::Gauss}});
   const Mesh<2> flipped_mesh(
-      {{4, 3}}, {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
+      {{4, 3}},
+      {{SpatialDiscretization::Basis::Chebyshev,
+        SpatialDiscretization::Basis::Legendre}},
+      {{SpatialDiscretization::Quadrature::Gauss,
+        SpatialDiscretization::Quadrature::GaussLobatto}});
   CHECK(rotated2d_pos_xi_pos_eta(input_mesh) == input_mesh);
   CHECK(rotated2d_neg_xi_neg_eta(input_mesh) == input_mesh);
   CHECK(rotated2d_neg_eta_pos_xi(input_mesh) == flipped_mesh);
@@ -301,12 +306,14 @@ void test_3d() {
 
   // Test permutations and mesh
   const Mesh<3> mesh{{{3, 4, 5}},
-                     Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-  CHECK(custom3(mesh) == Mesh<3>({{5, 3, 4}}, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto));
-  CHECK(custom4(mesh) == Mesh<3>({{4, 5, 3}}, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto));
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
+  CHECK(custom3(mesh) ==
+        Mesh<3>({{5, 3, 4}}, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto));
+  CHECK(custom4(mesh) ==
+        Mesh<3>({{4, 5, 3}}, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto));
   CHECK(custom3.permute_to_neighbor(std::array<int, 3>{{4, -8, 12}}) ==
         std::array<int, 3>{{12, 4, -8}});
   CHECK(custom4.permute_to_neighbor(std::array<int, 3>{{4, -8, 12}}) ==

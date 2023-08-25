@@ -54,8 +54,8 @@ VectorType integral(const std::array<size_t, Dim>& exponent, const T& x,
   return integral;
 }
 
-template <typename VectorType, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <typename VectorType, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_zero_bc() {
   const size_t min_pts = 2;
   REQUIRE(5 <= Spectral::maximum_number_of_points<BasisType>);
@@ -114,12 +114,12 @@ void test_zero_bc() {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.IndefiniteIntegral",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  test_zero_bc<DataVector, Spectral::Basis::Chebyshev,
-               Spectral::Quadrature::GaussLobatto>();
-  test_zero_bc<DataVector, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto>();
-  test_zero_bc<ComplexDataVector, Spectral::Basis::Chebyshev,
-               Spectral::Quadrature::GaussLobatto>();
-  test_zero_bc<ComplexDataVector, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto>();
+  test_zero_bc<DataVector, SpatialDiscretization::Basis::Chebyshev,
+               SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_zero_bc<DataVector, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_zero_bc<ComplexDataVector, SpatialDiscretization::Basis::Chebyshev,
+               SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_zero_bc<ComplexDataVector, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto>();
 }

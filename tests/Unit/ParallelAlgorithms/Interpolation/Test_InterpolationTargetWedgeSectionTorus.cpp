@@ -69,17 +69,17 @@ void test_r_theta_lgl() {
     tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius =
-          2.6 +
-          1.4 *
-              Spectral::collocation_points<Spectral::Basis::Legendre,
-                                           Spectral::Quadrature::GaussLobatto>(
-                  num_radial)[r];
+          2.6 + 1.4 * Spectral::collocation_points<
+                          SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto>(
+                          num_radial)[r];
       for (size_t t = 0; t < num_theta; ++t) {
         const double theta =
-            M_PI * (0.45 + 0.1 * Spectral::collocation_points<
-                                     Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto>(
-                                     num_theta)[t]);
+            M_PI *
+            (0.45 + 0.1 * Spectral::collocation_points<
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto>(
+                              num_theta)[t]);
         for (size_t p = 0; p < num_phi; ++p) {
           const double phi = 2.0 * M_PI * p / num_phi;
           const size_t i = r + t * num_radial + p * num_theta * num_radial;

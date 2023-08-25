@@ -215,28 +215,31 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1> functions{
         {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a)}};
-    test_tensor_product(Mesh<1>{4, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto},
-                        1.5, std::move(functions), {{a}});
+    test_tensor_product(
+        Mesh<1>{4, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto},
+        1.5, std::move(functions), {{a}});
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 2>
           functions_2d{
               {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
                std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b)}};
-      test_tensor_product(Mesh<2>{{{4, 3}},
-                                  Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto},
-                          2.5, std::move(functions_2d), {{a, b}});
+      test_tensor_product(
+          Mesh<2>{{{4, 3}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto},
+          2.5, std::move(functions_2d), {{a, b}});
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3>
             functions_3d{
                 {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
                  std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b),
                  std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(c)}};
-        test_tensor_product(Mesh<3>{{{4, 3, 5}},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto},
-                            3.5, std::move(functions_3d), {{a, b, c}});
+        test_tensor_product(
+            Mesh<3>{{{4, 3, 5}},
+                    SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
+            3.5, std::move(functions_3d), {{a, b, c}});
       }
     }
   }
@@ -246,7 +249,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
                                                                      -1.0)}};
 
   test_with_numerical_derivatives(
-      Mesh<1>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Mesh<1>{8, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       1.5, std::move(sinusoid));
 
   std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3> generic_3d{
@@ -257,6 +261,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
        std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(2)}};
 
   test_with_numerical_derivatives(
-      Mesh<3>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Mesh<3>{8, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       1.5, std::move(generic_3d));
 }

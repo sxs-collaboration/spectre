@@ -42,8 +42,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
   CAPTURE(test_this);
   CAPTURE(expected_tci_status);
 
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   using TildeE = ForceFree::Tags::TildeE;

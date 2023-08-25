@@ -13,17 +13,19 @@
 
 namespace h5_detail {
 
-std::array<Spectral::Basis, 4> allowed_bases() {
-  return {Spectral::Basis::Chebyshev, Spectral::Basis::Legendre,
-          Spectral::Basis::FiniteDifference,
-          Spectral::Basis::SphericalHarmonic};
+std::array<SpatialDiscretization::Basis, 4> allowed_bases() {
+  return {SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Basis::FiniteDifference,
+          SpatialDiscretization::Basis::SphericalHarmonic};
 }
 
-std::array<Spectral::Quadrature, 5> allowed_quadratures() {
-  return {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::CellCentered,
-          Spectral::Quadrature::FaceCentered,
-          Spectral::Quadrature::Equiangular};
+std::array<SpatialDiscretization::Quadrature, 5> allowed_quadratures() {
+  return {SpatialDiscretization::Quadrature::Gauss,
+          SpatialDiscretization::Quadrature::GaussLobatto,
+          SpatialDiscretization::Quadrature::CellCentered,
+          SpatialDiscretization::Quadrature::FaceCentered,
+          SpatialDiscretization::Quadrature::Equiangular};
 }
 
 void write_dictionary(const std::string& dict_name,

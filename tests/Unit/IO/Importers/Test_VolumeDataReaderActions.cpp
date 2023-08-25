@@ -228,8 +228,8 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
         {element_name,
          tensor_data,
          {2, 2},
-         {2, Spectral::Basis::Legendre},
-         {2, Spectral::Quadrature::GaussLobatto}});
+         {2, SpatialDiscretization::Basis::Legendre},
+         {2, SpatialDiscretization::Quadrature::GaussLobatto}});
   }
   // Write the sample data into an H5 file
   for (size_t i = 0; i < all_element_data.size(); ++i) {

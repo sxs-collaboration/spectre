@@ -82,7 +82,8 @@ void project_contiguous_data_to_boundary(
       Variables<VolumeVarsTagsList>::number_of_independent_components;
   using first_volume_tag = tmpl::front<VolumeVarsTagsList>;
   const size_t sliced_dim = direction.dimension();
-  if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
+  if (volume_mesh.quadrature(sliced_dim) ==
+      SpatialDiscretization::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const auto& matrix = Spectral::boundary_interpolation_matrices(
@@ -166,7 +167,8 @@ void project_tensors_to_boundary(
                                        VolumeVarsTagsList>>::value == 0,
       "All of the tags in TagsToProjectList must be in VolumeVarsTagsList");
   const size_t sliced_dim = direction.dimension();
-  if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
+  if (volume_mesh.quadrature(sliced_dim) ==
+      SpatialDiscretization::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const std::pair<Matrix, Matrix>& matrices =
@@ -235,7 +237,7 @@ void project_tensor_to_boundary(
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   const size_t sliced_dim = direction.dimension();
   if (volume_mesh.quadrature(sliced_dim) ==
-      Spectral::Quadrature::Gauss) {
+      SpatialDiscretization::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const std::pair<Matrix, Matrix>& matrices =

@@ -215,8 +215,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   // Any domain, mesh and basis should be fine--we'll just check received data
   const auto creator = domain_creator<VolumeDim>();
   Mesh<VolumeDim> mesh{creator->initial_extents()[0],
-                       Spectral::Basis::Chebyshev,
-                       Spectral::Quadrature::GaussLobatto};
+                       SpatialDiscretization::Basis::Chebyshev,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
 
   // Any data held by tensors to integrate should be fine
   MAKE_GENERATOR(gen);

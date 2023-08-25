@@ -108,12 +108,13 @@ void test_ccsn_collapse(std::string progenitor_filename,
       dynamic_cast<const grmhd::AnalyticData::CcsnCollapse&>(
           *deserialized_option_solution);
 
-  const Mesh<3> mesh{
-      {{5, 5, 5}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-        Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::GaussLobatto}}};
+  const Mesh<3> mesh{{{5, 5, 5}},
+                     {{SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Basis::Legendre}},
+                     {{SpatialDiscretization::Quadrature::GaussLobatto,
+                       SpatialDiscretization::Quadrature::GaussLobatto,
+                       SpatialDiscretization::Quadrature::GaussLobatto}}};
   const auto log_coords = logical_coordinates(mesh);
 
   // Coordinates where we check the data. Includes the origin.

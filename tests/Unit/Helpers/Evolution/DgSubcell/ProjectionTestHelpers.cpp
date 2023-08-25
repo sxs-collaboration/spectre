@@ -44,10 +44,10 @@ DataVector cell_averages_times_volume(
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(subcell_boundary_coords, d) =
         DataVector(subcell_boundary_extents.product());
-    const auto& collocation_points_in_this_dim =
-        Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                     Spectral::Quadrature::FaceCentered>(
-            subcell_boundary_extents[d]);
+    const auto& collocation_points_in_this_dim = Spectral::collocation_points<
+        SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::FaceCentered>(
+        subcell_boundary_extents[d]);
     for (IndexIterator<Dim> index(subcell_boundary_extents); index; ++index) {
       gsl::at(subcell_boundary_coords, d)[index.collapsed_index()] =
           collocation_points_in_this_dim[index()[d]];

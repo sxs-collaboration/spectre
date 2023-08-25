@@ -133,8 +133,8 @@ void test(const gsl::not_null<std::mt19937*> gen) {
       element_id, domain.blocks().at(0),
       std::vector<std::array<size_t, 3>>{{0, 0, 0}});
 
-  const Mesh<3> mesh{num_dg_pts, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto compute_inertial_coords = [&brick, &domain, &element_id,
                                         &mesh](const double time) {

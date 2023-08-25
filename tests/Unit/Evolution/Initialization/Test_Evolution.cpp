@@ -177,8 +177,8 @@ void check(const db::DataBox<DbTagList>& box,
 void test_p_refine() {
   const ElementId<1> element_id{0};
   const Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{}};
-  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh{2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const Slab slab(0., 1.);
   const Time start{slab.start()};
   const TimeDelta time_step{slab.duration()};

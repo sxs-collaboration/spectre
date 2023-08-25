@@ -10,7 +10,8 @@
 #include "Utilities/StaticCache.hpp"
 
 namespace ader::dg {
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType,
           typename SpectralQuantityGenerator>
 const auto& precomputed_spectral_quantity(const size_t num_points) {
   constexpr size_t max_num_points =
@@ -32,15 +33,16 @@ const auto& precomputed_spectral_quantity(const size_t num_points) {
   return precomputed_data(num_points);
 }
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 struct PredictorInverseTemporalMatrix;
 
-template <Spectral::Basis BasisType>
-struct PredictorInverseTemporalMatrix<BasisType,
-                                      Spectral::Quadrature::GaussLobatto> {
+template <SpatialDiscretization::Basis BasisType>
+struct PredictorInverseTemporalMatrix<
+    BasisType, SpatialDiscretization::Quadrature::GaussLobatto> {
   Matrix operator()(const size_t num_points) const {
     const DataVector& collocation_pts = Spectral::collocation_points<
-        BasisType, Spectral::Quadrature::GaussLobatto>(num_points);
+        BasisType, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
     Matrix differences(num_points, num_points);
     for (size_t i = 0; i < num_points; ++i) {
       for (size_t j = 0; j < num_points; ++j) {
@@ -69,7 +71,7 @@ struct PredictorInverseTemporalMatrix<BasisType,
     };
 
     const DataVector& weights = Spectral::quadrature_weights<
-        BasisType, Spectral::Quadrature::GaussLobatto>(num_points);
+        BasisType, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
     Matrix result(num_points, num_points);
     Matrix mass(num_points, num_points, 0.0);
     for (size_t i = 0; i < num_points; ++i) {
@@ -84,7 +86,8 @@ struct PredictorInverseTemporalMatrix<BasisType,
   }
 };
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 const Matrix& predictor_inverse_temporal_matrix(const size_t num_points) {
   return precomputed_spectral_quantity<
       BasisType, QuadratureType,
@@ -92,6 +95,6 @@ const Matrix& predictor_inverse_temporal_matrix(const size_t num_points) {
 }
 
 template const Matrix& predictor_inverse_temporal_matrix<
-    Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
-    const size_t num_points);
+    SpatialDiscretization::Basis::Legendre,
+    SpatialDiscretization::Quadrature::GaussLobatto>(const size_t num_points);
 }  // namespace ader::dg

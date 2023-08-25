@@ -98,8 +98,8 @@ void test_gauge_constraint_analytic(const Solution& solution,
                                     const std::array<double, 3>& upper_bound) {
   // Check vs. time-independent analytic solution
   // Set up grid
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -205,8 +205,8 @@ void test_two_index_constraint_analytic(
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -348,8 +348,8 @@ void test_four_index_constraint_analytic(
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -465,8 +465,8 @@ void test_f_constraint_analytic(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -616,8 +616,8 @@ void test_constraint_energy_analytic(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -790,8 +790,8 @@ void test_constraint_compute_items(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size);
-  Mesh<3> mesh{grid_size, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;

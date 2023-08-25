@@ -46,26 +46,27 @@ T compute_basis_function_value_impl(const size_t k, const T& x) {
 }  // namespace
 
 template <>
-DataVector compute_basis_function_value<Basis::Legendre>(const size_t k,
-                                                         const DataVector& x) {
+DataVector compute_basis_function_value<SpatialDiscretization::Basis::Legendre>(
+    const size_t k, const DataVector& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
-double compute_basis_function_value<Basis::Legendre>(const size_t k,
-                                                     const double& x) {
+double compute_basis_function_value<SpatialDiscretization::Basis::Legendre>(
+    const size_t k, const double& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
-DataVector compute_inverse_weight_function_values<Basis::Legendre>(
+DataVector
+compute_inverse_weight_function_values<SpatialDiscretization::Basis::Legendre>(
     const DataVector& x) {
   return DataVector(x.size(), 1.);
 }
 
 template <>
-double compute_basis_function_normalization_square<Basis::Legendre>(
-    const size_t k) {
+double compute_basis_function_normalization_square<
+    SpatialDiscretization::Basis::Legendre>(const size_t k) {
   return 2. / (2. * k + 1.);
 }
 
@@ -104,9 +105,9 @@ LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
 }  // namespace
 
 template <>
-std::pair<DataVector, DataVector>
-compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
-    const size_t num_points) {
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
+    SpatialDiscretization::Basis::Legendre,
+    SpatialDiscretization::Quadrature::Gauss>(const size_t num_points) {
   // Algorithm 23 in Kopriva, p.64
   ASSERT(num_points >= 1,
          "Legendre-Gauss quadrature requires at least one collocation point.");
@@ -186,7 +187,8 @@ EvaluateQandL::EvaluateQandL(const size_t poly_degree, const double x) {
 
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
-    Basis::Legendre, Quadrature::GaussLobatto>(const size_t num_points) {
+    SpatialDiscretization::Basis::Legendre,
+    SpatialDiscretization::Quadrature::GaussLobatto>(const size_t num_points) {
   // Algorithm 25 in Kopriva, p. 66
   ASSERT(num_points >= 2,
          "Legendre-Gauss-Lobatto quadrature requires at least two collocation "
@@ -231,11 +233,12 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
   return std::make_pair(std::move(x), std::move(w));
 }
 
-template <Basis BasisType>
+template <SpatialDiscretization::Basis Basis>
 Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 template <>
-Matrix spectral_indefinite_integral_matrix<Basis::Legendre>(
+Matrix
+spectral_indefinite_integral_matrix<SpatialDiscretization::Basis::Legendre>(
     const size_t num_points) {
   // Tridiagonal matrix that gives the indefinite integral modulo a constant
   Matrix indef_int(num_points, num_points, 0.0);

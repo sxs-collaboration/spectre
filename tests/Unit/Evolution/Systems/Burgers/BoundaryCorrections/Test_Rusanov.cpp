@@ -24,19 +24,21 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Rusanov",
   MAKE_GENERATOR(gen);
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      Burgers::System>(
-      make_not_null(&gen), Burgers::BoundaryCorrections::Rusanov{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Burgers::System>(make_not_null(&gen),
+                       Burgers::BoundaryCorrections::Rusanov{},
+                       Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss},
+                       {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      Burgers::System>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_u"}}, Burgers::BoundaryCorrections::Rusanov{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Burgers::System>(make_not_null(&gen), "Rusanov",
+                       {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
+                         "dg_package_data_abs_char_speed"}},
+                       {{"dg_boundary_terms_u"}},
+                       Burgers::BoundaryCorrections::Rusanov{},
+                       Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss},
+                       {}, {});
 
   const auto rusanov = TestHelpers::test_creation<
       std::unique_ptr<Burgers::BoundaryCorrections::BoundaryCorrection>>(
@@ -49,6 +51,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Rusanov",
         "dg_package_data_abs_char_speed"}},
       {{"dg_boundary_terms_u"}},
       dynamic_cast<const Burgers::BoundaryCorrections::Rusanov&>(*rusanov),
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 }

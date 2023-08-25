@@ -35,8 +35,9 @@ struct Var : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
                   "[Unit][NumericalAlgorithms]") {
-  const Mesh<2> mesh{
-      {{3, 5}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{{{3, 5}},
+                     SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map(-1., 1., -5., 7.);

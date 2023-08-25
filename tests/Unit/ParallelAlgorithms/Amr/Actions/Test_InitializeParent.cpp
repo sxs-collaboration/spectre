@@ -158,8 +158,9 @@ void test() {
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
   Element<3> child_1{child_1_id, std::move(child_1_neighbors)};
-  Mesh<3> child_1_mesh{std::array{3_st, 4_st, 3_st}, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<3> child_1_mesh{std::array{3_st, 4_st, 3_st},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   std::array child_1_flags{amr::Flag::Join, amr::Flag::Join,
                            amr::Flag::IncreaseResolution};
 
@@ -177,8 +178,9 @@ void test() {
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
   Element<3> child_2{child_2_id, std::move(child_2_neighbors)};
-  Mesh<3> child_2_mesh{std::array{4_st, 3_st, 4_st}, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<3> child_2_mesh{std::array{4_st, 3_st, 4_st},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   std::array child_2_flags{amr::Flag::Join, amr::Flag::Join,
                            amr::Flag::DecreaseResolution};
 
@@ -196,8 +198,9 @@ void test() {
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
   Element<3> child_3{child_3_id, std::move(child_3_neighbors)};
-  Mesh<3> child_3_mesh{std::array{4_st, 4_st, 3_st}, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<3> child_3_mesh{std::array{4_st, 4_st, 3_st},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   std::array child_3_flags{amr::Flag::DecreaseResolution, amr::Flag::Join,
                            amr::Flag::IncreaseResolution};
 
@@ -276,8 +279,9 @@ void test() {
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
   Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors)};
 
-  const Mesh<3> expected_parent_mesh{4, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> expected_parent_mesh{
+      4, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   const std::array expected_parent_flags{
       amr::Flag::Undefined, amr::Flag::Undefined, amr::Flag::Undefined};
   const std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>

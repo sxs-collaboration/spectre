@@ -48,8 +48,9 @@ void test() {
   using face_vars = typename subcell_faces_velocity_field::type::value_type;
 
   const size_t num_pts = 5;
-  const Mesh<Dim> subcell_mesh{num_pts, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> subcell_mesh{num_pts,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
 
   const double time = 0.0;
   std::unordered_map<std::string,
@@ -123,7 +124,7 @@ void test() {
         gsl::at(extents, j) = subcell_mesh.extents(0);
       }
     }
-    gsl::at(quadrature, i) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, i) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
     const auto face_logical_coords = logical_coordinates(face_centered_mesh);
     const auto face_inertial_coords = (*grid_to_inertial_map)(

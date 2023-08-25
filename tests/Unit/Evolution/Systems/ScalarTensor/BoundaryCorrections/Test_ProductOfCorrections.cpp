@@ -224,10 +224,10 @@ void test_boundary_correction_combination(
                  DerivedGhCorrection, DerivedScalarCorrection>));
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      ScalarTensor::System>(
-      make_not_null(&gen), derived_product_correction,
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      ScalarTensor::System>(make_not_null(&gen), derived_product_correction,
+                            Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+                                    SpatialDiscretization::Quadrature::Gauss},
+                            {}, {});
 }
 }  // namespace
 

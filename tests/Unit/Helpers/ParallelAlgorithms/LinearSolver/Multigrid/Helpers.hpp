@@ -105,7 +105,8 @@ struct InitializeElement {
         db::get<::domain::Tags::InitialExtents<1>>(box);
     const auto& domain = db::get<::domain::Tags::Domain<1>>(box);
     auto mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+        initial_extents, element_id,
+        SpatialDiscretization::Quadrature::GaussLobatto);
     const auto logical_coords = logical_coordinates(mesh);
     const auto& block = domain.blocks()[element_id.block_id()];
     const ElementMap<1, Frame::Inertial> element_map{

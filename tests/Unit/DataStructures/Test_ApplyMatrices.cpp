@@ -31,8 +31,10 @@
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 namespace {
-constexpr Spectral::Basis basis = Spectral::Basis::Legendre;
-constexpr Spectral::Quadrature quadrature = Spectral::Quadrature::Gauss;
+constexpr SpatialDiscretization::Basis basis =
+    SpatialDiscretization::Basis::Legendre;
+constexpr SpatialDiscretization::Quadrature quadrature =
+    SpatialDiscretization::Quadrature::Gauss;
 template <size_t Dim>
 constexpr size_t max_points = 4;
 template <>

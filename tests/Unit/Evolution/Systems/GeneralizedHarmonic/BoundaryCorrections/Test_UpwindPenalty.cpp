@@ -22,27 +22,29 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
   PUPable_reg(gh::BoundaryCorrections::UpwindPenalty<Dim>);
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      gh::System<Dim>>(gen, gh::BoundaryCorrections::UpwindPenalty<Dim>{},
-                       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::Gauss},
-                       {}, {});
+      gh::System<Dim>>(
+      gen, gh::BoundaryCorrections::UpwindPenalty<Dim>{},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      gh::System<Dim>>(gen, "UpwindPenalty",
-                       {{"dg_package_data_char_speed_v_spacetime_metric",
-                         "dg_package_data_char_speed_v_zero",
-                         "dg_package_data_char_speed_v_plus",
-                         "dg_package_data_char_speed_v_minus",
-                         "dg_package_data_char_speed_v_plus_times_normal",
-                         "dg_package_data_char_speed_v_minus_times_normal",
-                         "dg_package_data_char_speed_gamma2_v_spacetime_metric",
-                         "dg_package_data_char_speeds"}},
-                       {{"dg_boundary_terms_spacetime_metric",
-                         "dg_boundary_terms_pi", "dg_boundary_terms_phi"}},
-                       gh::BoundaryCorrections::UpwindPenalty<Dim>{},
-                       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::Gauss},
-                       {}, {});
+      gh::System<Dim>>(
+      gen, "UpwindPenalty",
+      {{"dg_package_data_char_speed_v_spacetime_metric",
+        "dg_package_data_char_speed_v_zero",
+        "dg_package_data_char_speed_v_plus",
+        "dg_package_data_char_speed_v_minus",
+        "dg_package_data_char_speed_v_plus_times_normal",
+        "dg_package_data_char_speed_v_minus_times_normal",
+        "dg_package_data_char_speed_gamma2_v_spacetime_metric",
+        "dg_package_data_char_speeds"}},
+      {{"dg_boundary_terms_spacetime_metric", "dg_boundary_terms_pi",
+        "dg_boundary_terms_phi"}},
+      gh::BoundaryCorrections::UpwindPenalty<Dim>{},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 
   const auto upwind_penalty = TestHelpers::test_creation<
       std::unique_ptr<gh::BoundaryCorrections::BoundaryCorrection<Dim>>>(
@@ -63,8 +65,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
         "dg_boundary_terms_phi"}},
       dynamic_cast<const gh::BoundaryCorrections::UpwindPenalty<Dim>&>(
           *upwind_penalty),
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 
   CHECK_FALSE(gh::BoundaryCorrections::UpwindPenalty<Dim>{} !=

@@ -13,7 +13,7 @@ namespace evolution::dg {
 namespace OptionTags {
 /// The quadrature points to use.
 struct Quadrature {
-  using type = Spectral::Quadrature;
+  using type = SpatialDiscretization::Quadrature;
   using group = ::dg::OptionTags::DiscontinuousGalerkinGroup;
   static constexpr Options::String help =
       "The point distribution/quadrature rule used.";
@@ -27,7 +27,7 @@ namespace Tags {
 /// reason to do so or that changing them during an evolution would even be
 /// stable.
 struct Quadrature : db::SimpleTag {
-  using type = Spectral::Quadrature;
+  using type = SpatialDiscretization::Quadrature;
 
   using option_tags = tmpl::list<OptionTags::Quadrature>;
   static constexpr bool pass_metavariables = false;

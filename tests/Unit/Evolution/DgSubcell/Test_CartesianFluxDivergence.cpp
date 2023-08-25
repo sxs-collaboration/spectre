@@ -26,9 +26,11 @@ void test() {
     CAPTURE(d);
     auto extents = make_array<Dim>(num_pts_1d);
     ++gsl::at(extents, d);
-    const auto basis = make_array<Dim>(Spectral::Basis::FiniteDifference);
-    auto quadrature = make_array<Dim>(Spectral::Quadrature::CellCentered);
-    gsl::at(quadrature, d) = Spectral::Quadrature::FaceCentered;
+    const auto basis =
+        make_array<Dim>(SpatialDiscretization::Basis::FiniteDifference);
+    auto quadrature =
+        make_array<Dim>(SpatialDiscretization::Quadrature::CellCentered);
+    gsl::at(quadrature, d) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<Dim> subcell_face_mesh{extents, basis, quadrature};
 
     DataVector dt_var{subcell_extents.product(), 1.2};

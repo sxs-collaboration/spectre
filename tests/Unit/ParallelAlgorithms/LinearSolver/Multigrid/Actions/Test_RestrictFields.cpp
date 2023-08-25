@@ -173,10 +173,10 @@ void test_restrict_fields(const Mesh<1>& fine_mesh, const Mesh<1>& coarse_mesh,
 
 SPECTRE_TEST_CASE("Unit.ParallelMultigrid.Action.RestrictFields",
                   "[Unit][ParallelAlgorithms][LinearSolver][Actions]") {
-  const Mesh<1> fine_mesh{4, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> coarse_mesh{3, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> fine_mesh{4, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<1> coarse_mesh{3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
   const DataVector fine_data_left{0., 1., 2., 3.};
   const DataVector fine_data_right{4., 5., 6., 7.};
   {

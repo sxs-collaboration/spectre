@@ -20,8 +20,8 @@
 
 namespace Spectral {
 namespace {
-constexpr auto quadratures = {Spectral::Quadrature::Gauss,
-                              Spectral::Quadrature::GaussLobatto};
+constexpr auto quadratures = {SpatialDiscretization::Quadrature::Gauss,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
 
 DataVector apply_matrix(const Matrix& m, const DataVector& v) {
   ASSERT(m.columns() == v.size(), "Bad apply_matrix");
@@ -44,32 +44,48 @@ void test_needs_projection() {
   INFO("Needs projection");
   CHECK_FALSE(needs_projection<0>({}, {}, {}));
   CHECK_FALSE(
-      needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+      needs_projection<1>({3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
+                          {3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
                           make_array<1>(ChildSize::Full)));
   CHECK_FALSE(
-      needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+      needs_projection<2>({3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
+                          {3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
                           make_array<2>(ChildSize::Full)));
   CHECK_FALSE(
-      needs_projection<3>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+      needs_projection<3>({3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
+                          {3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto},
                           make_array<3>(ChildSize::Full)));
-  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {4, Basis::Legendre, Quadrature::GaussLobatto},
+  CHECK(needs_projection<1>({3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
+                            {4, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
                             make_array<1>(ChildSize::Full)));
-  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {3, Basis::Legendre, Quadrature::Gauss},
+  CHECK(needs_projection<1>({3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
+                            {3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::Gauss},
                             make_array<1>(ChildSize::Full)));
-  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {3, Basis::Legendre, Quadrature::GaussLobatto},
+  CHECK(needs_projection<1>({3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
+                            {3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
                             {{ChildSize::LowerHalf}}));
-  CHECK(needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {3, Basis::Legendre, Quadrature::GaussLobatto},
+  CHECK(needs_projection<2>({3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
+                            {3, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto},
                             {{ChildSize::Full, ChildSize::LowerHalf}}));
   CHECK(needs_projection<3>(
-      {3, Basis::Legendre, Quadrature::GaussLobatto},
-      {3, Basis::Legendre, Quadrature::GaussLobatto},
+      {3, SpatialDiscretization::Basis::Legendre,
+       SpatialDiscretization::Quadrature::GaussLobatto},
+      {3, SpatialDiscretization::Basis::Legendre,
+       SpatialDiscretization::Quadrature::GaussLobatto},
       {{ChildSize::Full, ChildSize::Full, ChildSize::UpperHalf}}));
 }
 
@@ -77,19 +93,21 @@ void test_p_mortar_to_element() {
   INFO("p - mortar to element");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
-         num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         num_points_dest <= Spectral::maximum_number_of_points<
+                                SpatialDiscretization::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
+      const Mesh<1> mesh_dest(num_points_dest,
+                              SpatialDiscretization::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
-             num_points_source <=
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+             num_points_source <= Spectral::maximum_number_of_points<
+                                      SpatialDiscretization::Basis::Legendre>;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
-              num_points_source, Spectral::Basis::Legendre, quadrature_source);
+          const Mesh<1> mesh_source(num_points_source,
+                                    SpatialDiscretization::Basis::Legendre,
+                                    quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
           const auto& projection = projection_matrix_child_to_parent(
@@ -131,10 +149,11 @@ void test_p_element_to_mortar() {
   INFO("p - element to mortar");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
-         num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         num_points_dest <= Spectral::maximum_number_of_points<
+                                SpatialDiscretization::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
+      const Mesh<1> mesh_dest(num_points_dest,
+                              SpatialDiscretization::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
@@ -142,8 +161,9 @@ void test_p_element_to_mortar() {
         for (size_t num_points_source = 2;
              num_points_source <= num_points_dest;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
-              num_points_source, Spectral::Basis::Legendre, quadrature_source);
+          const Mesh<1> mesh_source(num_points_source,
+                                    SpatialDiscretization::Basis::Legendre,
+                                    quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
           const auto& projection = projection_matrix_parent_to_child(
@@ -263,20 +283,23 @@ void test_h_mortar_to_element() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          // We need one extra point to do the quadrature later.
-         num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
+         num_points_dest <= Spectral::maximum_number_of_points<
+                                SpatialDiscretization::Basis::Legendre> -
+                                1;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
+      const Mesh<1> mesh_dest(num_points_dest,
+                              SpatialDiscretization::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
-             num_points_source <=
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre> -
-                 1;
+             num_points_source <= Spectral::maximum_number_of_points<
+                                      SpatialDiscretization::Basis::Legendre> -
+                                      1;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
-              num_points_source, Spectral::Basis::Legendre, quadrature_source);
+          const Mesh<1> mesh_source(num_points_source,
+                                    SpatialDiscretization::Basis::Legendre,
+                                    quadrature_source);
           CAPTURE(mesh_source);
           check_mortar_to_element_projection(Spectral::MortarSize::UpperHalf,
                                              mesh_dest, mesh_source,
@@ -294,10 +317,11 @@ void test_h_element_to_mortar() {
   INFO("h - element to mortar");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
-         num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         num_points_dest <= Spectral::maximum_number_of_points<
+                                SpatialDiscretization::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
+      const Mesh<1> mesh_dest(num_points_dest,
+                              SpatialDiscretization::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
@@ -305,8 +329,9 @@ void test_h_element_to_mortar() {
         for (size_t num_points_source = 2;
              num_points_source <= num_points_dest;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
-              num_points_source, Spectral::Basis::Legendre, quadrature_source);
+          const Mesh<1> mesh_source(num_points_source,
+                                    SpatialDiscretization::Basis::Legendre,
+                                    quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
           for (size_t test_order = 0;
@@ -351,10 +376,12 @@ void test_massive_restriction(const size_t parent_num_points,
   // the mass matrix is diagonally approximated in most places in the code, but
   // the `projection_matrix_child_to_parent` uses the exact mass matrix because
   // it is implemented in terms of Vandermonde matrices.
-  const Mesh<1> parent_mesh{parent_num_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::Gauss};
-  const Mesh<1> child_mesh{child_num_points, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::Gauss};
+  const Mesh<1> parent_mesh{parent_num_points,
+                            SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::Gauss};
+  const Mesh<1> child_mesh{child_num_points,
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::Gauss};
   const auto& x_child = Spectral::collocation_points(child_mesh);
   DataVector child_data = square(x_child) + x_child + 1.;
   for (const ChildSize child_size :
@@ -389,10 +416,10 @@ void test_massive_restriction(const size_t parent_num_points,
 
 void test_exact_restriction() {
   INFO("Exact restriction");
-  const Mesh<1> child_mesh{3, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::Gauss};
-  const Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::Gauss};
+  const Mesh<1> child_mesh{3, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::Gauss};
+  const Mesh<1> parent_mesh{3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::Gauss};
   const auto& x_parent = Spectral::collocation_points(parent_mesh);
   const auto& xi_child = Spectral::collocation_points(child_mesh);
   const DataVector x_child_left = xi_child / 2. - 0.5;
@@ -446,8 +473,8 @@ void test_higher_dimensions() {
   // Higher-dimensional operators are just Cartesian products of the 1D
   // matrices, we only test here if they are constructed correctly.
   // The particular basis and quadrature don't matter for this test.
-  const auto basis = Spectral::Basis::Legendre;
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto basis = SpatialDiscretization::Basis::Legendre;
+  const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
   {
     INFO("Identity");
     const auto restriction_identity =
@@ -501,7 +528,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_h_mortar_to_element();
   test_h_element_to_mortar();
   for (size_t child_num_points = 4;
-       child_num_points <= maximum_number_of_points<Spectral::Basis::Legendre>;
+       child_num_points <=
+       maximum_number_of_points<SpatialDiscretization::Basis::Legendre>;
        ++child_num_points) {
     for (size_t parent_num_points = 3; parent_num_points < child_num_points;
          ++parent_num_points) {

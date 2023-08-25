@@ -270,8 +270,9 @@ void generate_separable_expected(
   const ComplexDataVector y = outer_product(
       ComplexDataVector{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
+      Spectral::collocation_points<
+          SpatialDiscretization::Basis::Legendre,
+          SpatialDiscretization::Quadrature::GaussLobatto>(
           number_of_radial_points));
 
   // generate the separable variables

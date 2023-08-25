@@ -110,8 +110,8 @@ SPECTRE_TEST_CASE(
                                 AffineMap3D>
         coord_map{
             {{-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}}};
-    Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+    Mesh<3> mesh{8, SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto};
     const DataVector used_for_size{mesh.number_of_grid_points()};
     auto inv_spatial_metric =
         make_with_value<tnsr::II<DataVector, 3>>(used_for_size, 0.);

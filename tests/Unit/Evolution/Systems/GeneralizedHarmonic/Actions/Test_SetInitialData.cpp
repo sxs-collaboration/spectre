@@ -179,8 +179,8 @@ void test_set_initial_data(
 
   // Setup element
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           domain::CoordinateMaps::Wedge<3>{2., 4., 1., 1., {}, true});

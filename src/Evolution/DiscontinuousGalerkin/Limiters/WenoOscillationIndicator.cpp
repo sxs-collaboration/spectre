@@ -51,8 +51,8 @@ ModalVector modal_derivative(const ModalVector& coeffs) {
 // carried out using the orthogonality relations between these basis functions.
 double compute_sum_of_legendre_derivs(
     const size_t number_of_modes, const size_t m, const size_t n,
-    const std::array<
-        double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>&
+    const std::array<double, Spectral::maximum_number_of_points<
+                                 SpatialDiscretization::Basis::Legendre>>&
         weights_for_derivatives) {
   ModalVector coeffs_m(number_of_modes, 0.);
   coeffs_m[m] = 1.;
@@ -63,7 +63,7 @@ double compute_sum_of_legendre_derivs(
   if (m == n) {
     result += weights_for_derivatives[0] *
               Spectral::compute_basis_function_normalization_square<
-                  Spectral::Basis::Legendre>(m);
+                  SpatialDiscretization::Basis::Legendre>(m);
   }
   // This is the main l > 0 part of the sum
   for (size_t l = 1; l < number_of_modes; ++l) {
@@ -73,7 +73,7 @@ double compute_sum_of_legendre_derivs(
     for (size_t i = 0; i < number_of_modes; ++i) {
       result += weight * coeffs_m[i] * coeffs_n[i] *
                 Spectral::compute_basis_function_normalization_square<
-                    Spectral::Basis::Legendre>(i);
+                    SpatialDiscretization::Basis::Legendre>(i);
     }
   }
   return result;
@@ -107,11 +107,11 @@ Matrix compute_indicator_matrix(
     const Index<VolumeDim>& extents) {
   Matrix result(extents.product() - 1, extents.product() - 1);
 
-  const std::array<
-      double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
+  const std::array<double, Spectral::maximum_number_of_points<
+                               SpatialDiscretization::Basis::Legendre>>
       weights_for_derivatives = [&derivative_weight]() {
-        auto weights = make_array<
-            Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.);
+        auto weights = make_array<Spectral::maximum_number_of_points<
+            SpatialDiscretization::Basis::Legendre>>(1.);
         if (derivative_weight ==
             Limiters::Weno_detail::DerivativeWeight::PowTwoEll) {
           for (size_t l = 0; l < weights.size(); ++l) {
@@ -152,12 +152,12 @@ Matrix compute_indicator_matrix(
     double term_with_no_derivs =
         weights_for_derivatives[0] *
         Spectral::compute_basis_function_normalization_square<
-            Spectral::Basis::Legendre>(m()[0]);
+            SpatialDiscretization::Basis::Legendre>(m()[0]);
     for (size_t dim = 1; dim < VolumeDim; ++dim) {
       term_with_no_derivs *=
           weights_for_derivatives[0] *
           Spectral::compute_basis_function_normalization_square<
-              Spectral::Basis::Legendre>(m()[dim]);
+              SpatialDiscretization::Basis::Legendre>(m()[dim]);
     }
     result(m.collapsed_index() - 1, m.collapsed_index() - 1) -=
         term_with_no_derivs;
@@ -180,8 +180,8 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
       Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial>;
   // Oscillation indicator needs at least two grid points
   constexpr size_t min = 2;
-  constexpr size_t max =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  constexpr size_t max = Spectral::maximum_number_of_points<
+      SpatialDiscretization::Basis::Legendre>;
   if constexpr (VolumeDim == 1) {
     const auto cache = make_static_cache<CacheEnumerationDerivativeWeight,
                                          CacheRange<min, max>>(
@@ -233,12 +233,14 @@ template <size_t VolumeDim>
 double oscillation_indicator(const DerivativeWeight derivative_weight,
                              const DataVector& data,
                              const Mesh<VolumeDim>& mesh) {
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+  ASSERT(mesh.basis() ==
+             make_array<VolumeDim>(SpatialDiscretization::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
-             mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+                 make_array<VolumeDim>(
+                     SpatialDiscretization::Quadrature::GaussLobatto) or
+             mesh.quadrature() == make_array<VolumeDim>(
+                                      SpatialDiscretization::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
   // The oscillation indicator is computed from the N>0 spectral modes of the
   // input data, so we need at least two modes => at least two grid points.

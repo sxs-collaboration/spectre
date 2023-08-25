@@ -191,12 +191,14 @@ void test_simple_weno_work(
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector_to_limit, local_approx);
 }
 
-void test_simple_weno_1d_impl(const Spectral::Quadrature quadrature,
-                              const std::unordered_set<Direction<1>>&
-                                  directions_of_external_boundaries = {}) {
+void test_simple_weno_1d_impl(
+    const SpatialDiscretization::Quadrature quadrature,
+    const std::unordered_set<Direction<1>>& directions_of_external_boundaries =
+        {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
-  const auto mesh = Mesh<1>(3, Spectral::Basis::Legendre, quadrature);
+  const auto mesh =
+      Mesh<1>(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element =
       TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
   const auto logical_coords = logical_coordinates(mesh);
@@ -266,8 +268,8 @@ void test_simple_weno_1d_impl(const Spectral::Quadrature quadrature,
 
 void test_simple_weno_1d() {
   INFO("Testing simple_weno_impl in 1D");
-  const auto gl = Spectral::Quadrature::GaussLobatto;
-  const auto gauss = Spectral::Quadrature::Gauss;
+  const auto gl = SpatialDiscretization::Quadrature::GaussLobatto;
+  const auto gauss = SpatialDiscretization::Quadrature::Gauss;
 
   test_simple_weno_1d_impl(gl);
   test_simple_weno_1d_impl(gauss);
@@ -278,13 +280,14 @@ void test_simple_weno_1d() {
   test_simple_weno_1d_impl(gl, {{Direction<1>::lower_xi()}});
 }
 
-void test_simple_weno_2d_impl(const Spectral::Quadrature quadrature,
-                              const std::unordered_set<Direction<2>>&
-                                  directions_of_external_boundaries = {}) {
+void test_simple_weno_2d_impl(
+    const SpatialDiscretization::Quadrature quadrature,
+    const std::unordered_set<Direction<2>>& directions_of_external_boundaries =
+        {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<2>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element =
       TestHelpers::Limiters::make_element<2>(directions_of_external_boundaries);
   const auto logical_coords = logical_coordinates(mesh);
@@ -388,8 +391,8 @@ void test_simple_weno_2d_impl(const Spectral::Quadrature quadrature,
 
 void test_simple_weno_2d() {
   INFO("Testing simple_weno_impl in 2D");
-  const auto gl = Spectral::Quadrature::GaussLobatto;
-  const auto gauss = Spectral::Quadrature::Gauss;
+  const auto gl = SpatialDiscretization::Quadrature::GaussLobatto;
+  const auto gauss = SpatialDiscretization::Quadrature::Gauss;
 
   test_simple_weno_2d_impl(gl);
   test_simple_weno_2d_impl(gauss);
@@ -403,12 +406,14 @@ void test_simple_weno_2d() {
             Direction<2>::upper_eta()}});
 }
 
-void test_simple_weno_3d_impl(const Spectral::Quadrature quadrature,
-                              const std::unordered_set<Direction<3>>&
-                                  directions_of_external_boundaries = {}) {
+void test_simple_weno_3d_impl(
+    const SpatialDiscretization::Quadrature quadrature,
+    const std::unordered_set<Direction<3>>& directions_of_external_boundaries =
+        {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
-  const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre, quadrature);
+  const auto mesh =
+      Mesh<3>({{3, 4, 5}}, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element =
       TestHelpers::Limiters::make_element<3>(directions_of_external_boundaries);
   const auto logical_coords = logical_coordinates(mesh);
@@ -557,8 +562,8 @@ void test_simple_weno_3d_impl(const Spectral::Quadrature quadrature,
 
 void test_simple_weno_3d() {
   INFO("Testing simple_weno_impl in 3D");
-  const auto gl = Spectral::Quadrature::GaussLobatto;
-  const auto gauss = Spectral::Quadrature::Gauss;
+  const auto gl = SpatialDiscretization::Quadrature::GaussLobatto;
+  const auto gauss = SpatialDiscretization::Quadrature::Gauss;
 
   test_simple_weno_3d_impl(gl);
   test_simple_weno_3d_impl(gauss);

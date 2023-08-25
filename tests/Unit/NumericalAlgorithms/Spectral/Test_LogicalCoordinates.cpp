@@ -30,15 +30,16 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.LogicalCoordinates",
   using Affine3d = CoordinateMaps::ProductOf3Maps<
       CoordinateMaps::Affine, CoordinateMaps::Affine, CoordinateMaps::Affine>;
 
-  const Mesh<1> mesh_1d{3, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
-  const Mesh<2> mesh_2d{
-      {{2, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh_1d{3, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_2d{{{2, 3}},
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
 
   // [logical_coordinates_example]
   const Mesh<3> mesh_3d{{{5, 3, 2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
 
   const CoordinateMaps::Affine x_map{-1.0, 1.0, -3.0, 7.0};
   const CoordinateMaps::Affine y_map{-1.0, 1.0, -13.0, 47.0};

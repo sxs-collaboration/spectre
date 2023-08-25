@@ -27,8 +27,8 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.SwapGrTags",
                   "[Unit][Evolution]") {
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   const grmhd::ValenciaDivClean::System::spacetime_variables_tag::type

@@ -115,7 +115,7 @@ std::array<Mesh<3>, 3> create_face_centered_meshes(
     auto quadrature = make_array<3>(cell_centered_mesh.quadrature(0));
     auto extents = make_array<3>(cell_centered_mesh.extents(0));
     gsl::at(extents, dim) = cell_centered_mesh.extents(0) + 1;
-    gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, dim) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<3> face_centered_mesh{extents, basis, quadrature};
     gsl::at(face_centered_meshes, dim) = Mesh<3>{extents, basis, quadrature};
   }
@@ -168,8 +168,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
       element_id, domain.blocks().at(0),
       std::vector<std::array<size_t, 3>>{{0, 0, 0}});
 
-  const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh<3>(dg_mesh);
 
   const auto face_centered_meshes = create_face_centered_meshes(subcell_mesh);

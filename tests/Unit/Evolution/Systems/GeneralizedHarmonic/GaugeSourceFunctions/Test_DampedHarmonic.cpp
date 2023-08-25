@@ -317,10 +317,10 @@ SPECTRE_TEST_CASE(
   // Check the derived class for input file creation works.
   gh::gauges::register_derived_with_charm();
   for (const auto& basis_and_quadrature :
-       {std::pair{Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto},
-        {Spectral::Basis::FiniteDifference,
-         Spectral::Quadrature::CellCentered}}) {
+       {std::pair{SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto},
+        {SpatialDiscretization::Basis::FiniteDifference,
+         SpatialDiscretization::Quadrature::CellCentered}}) {
     test_derived_class<1>(
         {5, basis_and_quadrature.first, basis_and_quadrature.second});
     test_derived_class<2>(

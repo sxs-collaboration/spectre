@@ -23,8 +23,8 @@ void test() {
   using Vars = Variables<tmpl::list<ScalarAdvection::Tags::U>>;
 
   // create DG mesh and subcell mesh for test
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const size_t number_of_dg_grid_points{dg_mesh.number_of_grid_points()};
 

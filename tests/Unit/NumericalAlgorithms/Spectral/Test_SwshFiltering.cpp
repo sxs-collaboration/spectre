@@ -132,10 +132,10 @@ void test_radial_filtering() {
   SpinWeighted<ComplexDataVector, Spin> to_filter{outer_product(
       ComplexDataVector{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
-      to_nodal_coefficients(modes,
-                            Mesh<1>{{{modes.size()}},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto}))};
+      to_nodal_coefficients(
+          modes, Mesh<1>{{{modes.size()}},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto}))};
 
   const double alpha = 10.0;
   const size_t half_power = 4;
@@ -147,10 +147,11 @@ void test_radial_filtering() {
       outer_product(
           ComplexDataVector{
               Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
-          to_nodal_coefficients(modes,
-                                Mesh<1>{{{modes.size()}},
-                                        Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto}))};
+          to_nodal_coefficients(
+              modes,
+              Mesh<1>{{{modes.size()}},
+                      SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto}))};
 
   filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max,
                               alpha, half_power);

@@ -70,10 +70,9 @@ void radial_evolve_psi0_condition(
 
   std::pair<double, double> step_range =
       dense_stepper.do_step(psi_0_condition_system);
-  const auto& y_collocation =
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
-                                       number_of_radial_points);
+  const auto& y_collocation = Spectral::collocation_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(number_of_radial_points);
   for (size_t y_collocation_point = 0;
        y_collocation_point < number_of_radial_points; ++y_collocation_point) {
     while(step_range.second < y_collocation[y_collocation_point]) {

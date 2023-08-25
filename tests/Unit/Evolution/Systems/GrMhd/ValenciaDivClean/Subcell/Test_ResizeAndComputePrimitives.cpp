@@ -48,8 +48,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
           const bool start_on_dg) {
   CAPTURE(active_grid);
   CAPTURE(start_on_dg);
-  const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   using cons_tag = typename grmhd::ValenciaDivClean::System::variables_tag;

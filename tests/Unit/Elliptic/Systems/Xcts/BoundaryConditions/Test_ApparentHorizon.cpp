@@ -414,8 +414,8 @@ void test_consistency_with_kerr(const bool compute_expansion) {
           : std::nullopt};
 
   // Set up a wedge with a Kerr-horizon-conforming inner surface
-  const Mesh<3> mesh{6, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{6, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   const domain::CoordinateMaps::Wedge<3> wedge_map{
       horizon_kerrschild_radius,

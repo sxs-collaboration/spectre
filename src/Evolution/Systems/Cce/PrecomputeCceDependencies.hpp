@@ -77,8 +77,9 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::OneMinusY> {
     const size_t number_of_angular_points =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     const DataVector one_minus_y_collocation =
-        1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                           Spectral::Quadrature::GaussLobatto>(
+        1.0 - Spectral::collocation_points<
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto>(
                   number_of_radial_points);
     // iterate through the angular 'chunks' and set them to their 1-y value
     for (size_t i = 0; i < number_of_radial_points; ++i) {

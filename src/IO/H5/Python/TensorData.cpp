@@ -36,8 +36,9 @@ void bind_tensordata(py::module& m) {
 
   py::class_<ElementVolumeData>(m, "ElementVolumeData")
       .def(py::init<std::string, std::vector<TensorComponent>,
-                    std::vector<size_t>, std::vector<Spectral::Basis>,
-                    std::vector<Spectral::Quadrature>>(),
+                    std::vector<size_t>,
+                    std::vector<SpatialDiscretization::Basis>,
+                    std::vector<SpatialDiscretization::Quadrature>>(),
            py::arg("element_name"), py::arg("components"), py::arg("extents"),
            py::arg("basis"), py::arg("quadrature"))
       .def(py::init<ElementId<1>, std::vector<TensorComponent>, Mesh<1>>(),

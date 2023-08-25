@@ -87,8 +87,9 @@ void test_analytic_solution() {
   }
   {
     INFO("Test applying the boundary conditions");
-    const Mesh<Dim> volume_mesh{3, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
+    const Mesh<Dim> volume_mesh{
+        3, SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto};
     const size_t volume_num_points = volume_mesh.number_of_grid_points();
     const auto direction = Direction<Dim>::lower_xi();
     const auto face_mesh = volume_mesh.slice_away(direction.dimension());

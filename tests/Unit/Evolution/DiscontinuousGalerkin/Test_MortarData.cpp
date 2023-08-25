@@ -105,18 +105,19 @@ void test_global_time_stepping_usage() {
   CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
-  const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::Gauss};
+  const Mesh<Dim - 1> mortar_mesh{4, SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss};
 
-  const Mesh<Dim - 1> local_mesh{4, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> local_mesh{
+      4, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   DataVector local_data{
       mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  const Mesh<Dim - 1> neighbor_mesh{3, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::Gauss};
+  const Mesh<Dim - 1> neighbor_mesh{3, SpatialDiscretization::Basis::Legendre,
+                                    SpatialDiscretization::Quadrature::Gauss};
   DataVector neighbor_data{
       mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
@@ -183,11 +184,12 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
-  const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::Gauss};
+  const Mesh<Dim - 1> mortar_mesh{4, SpatialDiscretization::Basis::Legendre,
+                                  SpatialDiscretization::Quadrature::Gauss};
 
-  const Mesh<Dim - 1> local_mesh{4, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> local_mesh{
+      4, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   DataVector local_data{
       mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),

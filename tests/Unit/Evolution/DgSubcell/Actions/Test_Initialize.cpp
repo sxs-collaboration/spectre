@@ -162,8 +162,9 @@ struct Metavariables {
         const Variables<tmpl::list<Var1>>& fd_vars,
         const Mesh<volume_dim>& dg_mesh, const double persson_exponent,
         const bool need_rdmp_data_only) {
-      CHECK(dg_mesh == Mesh<Dim>(5, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto));
+      CHECK(dg_mesh ==
+            Mesh<Dim>(5, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto));
       CHECK(persson_exponent == 5.1);
       evolution::dg::subcell::RdmpTciData rdmp_data{};
       rdmp_data.max_variables_values = DataVector{max(get(get<Var1>(fd_vars)))};
@@ -253,8 +254,8 @@ void test(const bool always_use_subcell, const bool interior_element,
   metavars::FdInitialDataTci::invoked = false;
   metavars::SetInitialRdmpData::invoked = false;
 
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const ElementId<Dim> self_id{0};
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};

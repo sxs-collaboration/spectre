@@ -49,14 +49,15 @@ Variables<tmpl::list<Var2, Var3>> polynomial_volume_data(
 }
 
 template <size_t Dim>
-void test(const Spectral::Quadrature quadrature) {
+void test(const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(Dim);
   CAPTURE(quadrature);
 
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{5, 10};
 
-  Mesh<Dim> volume_mesh{sdist(gen), Spectral::Basis::Legendre, quadrature};
+  Mesh<Dim> volume_mesh{sdist(gen), SpatialDiscretization::Basis::Legendre,
+                        quadrature};
   Index<Dim> powers{};
   for (size_t i = 0; i < Dim; ++i) {
     powers[i] = volume_mesh.extents(i) - 2 - i;
@@ -78,7 +79,7 @@ void test(const Spectral::Quadrature quadrature) {
                                    : 0;
     const auto face_mesh = volume_mesh.slice_away(sliced_dim);
     Variables<tmpl::list<Var2, Var3>> expected_face_values{};
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
       expected_face_values = data_on_slice(volume_data, volume_mesh.extents(),
                                            sliced_dim, fixed_index);
     } else {
@@ -143,8 +144,8 @@ void test(const Spectral::Quadrature quadrature) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ProjectToBoundary", "[Unit][Evolution]") {
-  for (const auto quadrature :
-       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+  for (const auto quadrature : {SpatialDiscretization::Quadrature::GaussLobatto,
+                                SpatialDiscretization::Quadrature::Gauss}) {
     test<1>(quadrature);
     test<2>(quadrature);
     test<3>(quadrature);

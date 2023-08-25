@@ -120,8 +120,8 @@ void test_abutting_direction_shell() {
           shell_domain.excision_spheres().at("ExcisionSphere");
       const auto& abutting_directions = excision_sphere.abutting_directions();
       size_t num_excision_neighbors = 0;
-      const Mesh<2> face_mesh{10, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+      const Mesh<2> face_mesh{10, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
       for (const auto& element_id : element_ids) {
         const auto& current_block = blocks.at(element_id.block_id());
         const auto element_abutting_direction =

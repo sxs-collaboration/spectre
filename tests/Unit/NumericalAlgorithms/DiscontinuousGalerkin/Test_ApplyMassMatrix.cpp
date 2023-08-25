@@ -28,7 +28,8 @@ namespace {
 // Vandermonde matrix: M = (V * V^T)^-1. We don't currently use this way of
 // computing the mass matrix in the DG code because it is cheaper to apply the
 // mass matrix as a pointwise multiplication over the grid.
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 Matrix exact_logical_mass_matrix(const size_t num_points) {
   auto normalized_vandermonde_matrix =
       Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
@@ -47,21 +48,20 @@ template <size_t Dim>
 std::array<Matrix, Dim> exact_logical_mass_matrix(const Mesh<Dim>& mesh) {
   std::array<Matrix, Dim> result{};
   for (size_t d = 0; d < Dim; ++d) {
-    ASSERT(mesh.basis(d) == Spectral::Basis::Legendre,
+    ASSERT(mesh.basis(d) == SpatialDiscretization::Basis::Legendre,
            "This function is currently only implemented for a Legendre basis.");
     switch (mesh.quadrature(d)) {
-      case Spectral::Quadrature::Gauss: {
+      case SpatialDiscretization::Quadrature::Gauss: {
         gsl::at(result, d) =
-            exact_logical_mass_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>(
+            exact_logical_mass_matrix<SpatialDiscretization::Basis::Legendre,
+                                      SpatialDiscretization::Quadrature::Gauss>(
                 mesh.extents(d));
         break;
       }
-      case Spectral::Quadrature::GaussLobatto: {
-        gsl::at(result, d) =
-            exact_logical_mass_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>(
-                mesh.extents(d));
+      case SpatialDiscretization::Quadrature::GaussLobatto: {
+        gsl::at(result, d) = exact_logical_mass_matrix<
+            SpatialDiscretization::Basis::Legendre,
+            SpatialDiscretization::Quadrature::GaussLobatto>(mesh.extents(d));
         break;
       }
       default:
@@ -112,8 +112,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     INFO("1D");
     {
       INFO("Gauss quadrature (exact)");
-      const Mesh<1> mesh{
-          {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+      const Mesh<1> mesh{{{4}},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss};
       const DataVector data{1., 2., 3., 4.};
       const auto mass_matrix = exact_logical_mass_matrix(mesh);
       const auto massive_data =
@@ -122,8 +123,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     }
     {
       INFO("Gauss-Lobatto quadrature");
-      const Mesh<1> mesh{
-          {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+      const Mesh<1> mesh{{{4}},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
       test_apply_mass_matrix(mesh, {1., 2., 3., 4.},
                              // Data divided by LGL quadrature weights
                              DataVector{1., 10., 15., 4.} / 6.);
@@ -133,8 +135,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     INFO("2D");
     {
       INFO("Gauss quadrature (exact)");
-      const Mesh<2> mesh{
-          {{4, 2}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+      const Mesh<2> mesh{{{4, 2}},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss};
       const DataVector data{1., 2., 3., 4., 5., 6., 7., 8.};
       const auto mass_matrix = exact_logical_mass_matrix(mesh);
       const auto massive_data =
@@ -144,8 +147,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     {
       INFO("Gauss-Lobatto quadrature");
       const Mesh<2> mesh{{{4, 2}},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
       test_apply_mass_matrix(
           mesh, {1., 2., 3., 4., 5., 6., 7., 8.},
           // Data divided by LGL quadrature weights
@@ -156,8 +159,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     INFO("3D");
     {
       INFO("Gauss quadrature (exact)");
-      const Mesh<3> mesh{
-          {{4, 2, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+      const Mesh<3> mesh{{{4, 2, 3}},
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss};
       const DataVector data{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,
                             9.,  10., 11., 12., 13., 14., 15., 16.,
                             17., 18., 19., 20., 21., 22., 23., 24.};
@@ -169,8 +173,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
     {
       INFO("Gauss-Lobatto quadrature");
       const Mesh<3> mesh{{{4, 2, 3}},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
       test_apply_mass_matrix(
           mesh, {1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
                  13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.},

@@ -14,15 +14,13 @@ namespace {
 void test_points_and_weights(const size_t num_points,
                              const DataVector expected_points,
                              const DataVector expected_weights) {
-  const auto& points =
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& points = Spectral::collocation_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   CHECK_ITERABLE_APPROX(expected_points, points);
-  const auto& weights =
-      Spectral::quadrature_weights<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& weights = Spectral::quadrature_weights<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   CHECK_ITERABLE_APPROX(expected_weights, weights);
 }
 
@@ -104,7 +102,8 @@ SPECTRE_TEST_CASE(
                    0.292042683679680, 0.224889342063126, 0.133305990851071,
                    1.0 / 45.0});
   }
-  if (Spectral::maximum_number_of_points<Spectral::Basis::Legendre> >= 20) {
+  if (Spectral::maximum_number_of_points<
+          SpatialDiscretization::Basis::Legendre> >= 20) {
     SECTION("Check 20 points") {
       test_points_and_weights(
           20,
@@ -142,10 +141,9 @@ SPECTRE_TEST_CASE(
 namespace {
 
 void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
-  const auto& diff_matrix =
-      Spectral::differentiation_matrix<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& diff_matrix = Spectral::differentiation_matrix<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   Approx diff_approx = approx;
   diff_approx.margin(1.0e-13);
   CHECK_MATRIX_CUSTOM_APPROX(expected_matrix, diff_matrix, diff_approx);
@@ -253,10 +251,9 @@ namespace {
 
 void test_modal_to_nodal_matrix(const size_t num_points,
                                 const Matrix& expected_matrix) {
-  const auto& matrix =
-      Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& matrix = Spectral::modal_to_nodal_matrix<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
@@ -340,10 +337,9 @@ namespace {
 
 void test_nodal_to_modal_matrix(const size_t num_points,
                                 const Matrix& expected_matrix) {
-  const auto& matrix =
-      Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& matrix = Spectral::nodal_to_modal_matrix<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 

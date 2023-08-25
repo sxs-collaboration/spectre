@@ -116,12 +116,13 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0);
 
-  const Mesh<3> mesh{
-      {{5, 5, 5}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-        Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::GaussLobatto}}};
+  const Mesh<3> mesh{{{5, 5, 5}},
+                     {{SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Basis::Legendre}},
+                     {{SpatialDiscretization::Quadrature::GaussLobatto,
+                       SpatialDiscretization::Quadrature::GaussLobatto,
+                       SpatialDiscretization::Quadrature::GaussLobatto}}};
   const auto log_coords = logical_coordinates(mesh);
 
   // Coordinates where we check the data.

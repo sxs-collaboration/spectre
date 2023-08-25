@@ -25,8 +25,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {
         const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -66,8 +66,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {
         const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -94,8 +94,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {
         const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =

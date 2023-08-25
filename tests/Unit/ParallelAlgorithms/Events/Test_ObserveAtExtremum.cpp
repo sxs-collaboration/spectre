@@ -154,8 +154,9 @@ struct Metavariables {
 
 template <typename ArraySectionIdTag, typename ObserveEvent>
 void test(const std::unique_ptr<ObserveEvent> observe,
-          const std::string& extremum_type, const Spectral::Basis basis,
-          const Spectral::Quadrature quadrature,
+          const std::string& extremum_type,
+          const SpatialDiscretization::Basis basis,
+          const SpatialDiscretization::Quadrature quadrature,
           const std::optional<std::string>& section) {
   CAPTURE(pretty_type::name<ArraySectionIdTag>());
   CAPTURE(section);
@@ -251,14 +252,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveAtExtremum", "[Unit][Evolution]") {
       std::make_unique<ObserveAtExtremumEvent<TestSectionIdTag>>(
           ObserveAtExtremumEvent<TestSectionIdTag>{
               "reduction0", {"Var0", "Max", {"Var0", "Var1"}}}),
-      "Max", Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto,
-      "Section0");
+      "Max", SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto, "Section0");
   test<TestSectionIdTag>(
       std::make_unique<ObserveAtExtremumEvent<TestSectionIdTag>>(
           ObserveAtExtremumEvent<TestSectionIdTag>{
               "reduction0", {"Var0", "Min", {"Var0", "Var1"}}}),
-      "Min", Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto,
-      "Section0");
+      "Min", SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto, "Section0");
 
   INFO("create/serialize");
   register_factory_classes_with_charm<Metavariables<3, void>>();
@@ -277,14 +278,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveAtExtremum", "[Unit][Evolution]") {
         )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test<void>(std::move(serialized_event), "Max", Spectral::Basis::Legendre,
-             Spectral::Quadrature::GaussLobatto, std::nullopt);
+  test<void>(std::move(serialized_event), "Max",
+             SpatialDiscretization::Basis::Legendre,
+             SpatialDiscretization::Quadrature::GaussLobatto, std::nullopt);
 
   test<void>(std::make_unique<ObserveAtExtremumEvent<void>>(
                  ObserveAtExtremumEvent<void>{
                      "reduction0", {"Var0", "Max", {"Var0", "Var1"}}}),
-             "Max", Spectral::Basis::FiniteDifference,
-             Spectral::Quadrature::CellCentered, std::nullopt);
+             "Max", SpatialDiscretization::Basis::FiniteDifference,
+             SpatialDiscretization::Quadrature::CellCentered, std::nullopt);
 
   // Test that Max reduction has the desired behavior on vectors
   {

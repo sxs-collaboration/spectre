@@ -163,8 +163,9 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
 
   const ComplexDataVector one_minus_y =
       std::complex<double>(1.0, 0.0) *
-      (1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto>(
+      (1.0 - Spectral::collocation_points<
+                 SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto>(
                  number_of_radial_grid_points));
 
   const auto random_angular_data = make_with_random_values<ComplexDataVector>(
@@ -250,8 +251,9 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
 
   const ComplexDataVector one_minus_y =
       std::complex<double>(1.0, 0.0) *
-      (1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto>(
+      (1.0 - Spectral::collocation_points<
+                 SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto>(
                  number_of_radial_grid_points));
 
   const auto random_angular_data = make_with_random_values<ComplexDataVector>(
@@ -337,8 +339,9 @@ void test_pole_integration_with_linear_operator(
 
   const ComplexDataVector one_minus_y =
       std::complex<double>(1.0, 0.0) *
-      (1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto>(
+      (1.0 - Spectral::collocation_points<
+                 SpatialDiscretization::Basis::Legendre,
+                 SpatialDiscretization::Quadrature::GaussLobatto>(
                  number_of_radial_grid_points));
 
   // generate random modes rather than random collocation values to ensure

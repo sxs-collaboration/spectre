@@ -44,10 +44,9 @@ void ghost_zone_logical_coordinates(
   ghost_zone_extents[dim_direction] = ghost_zone_size;
 
   for (size_t d = 0; d < Dim; ++d) {
-    const auto& collocation_points_in_this_dim =
-        Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                     Spectral::Quadrature::CellCentered>(
-            subcell_extents[d]);
+    const auto& collocation_points_in_this_dim = Spectral::collocation_points<
+        SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered>(subcell_extents[d]);
 
     if (d == dim_direction) {
       const size_t index_offset =

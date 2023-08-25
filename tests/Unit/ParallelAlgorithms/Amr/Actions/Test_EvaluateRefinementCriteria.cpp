@@ -95,8 +95,8 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   const ElementId<1> self_id(0, {{{1, 1}}});
   const ElementId<1> lo_id(0, {{{1, 0}}});
   const ElementId<1> up_id(1, {{{1, 0}}});
-  const Mesh<1> mesh{2_st, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh{2_st, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
       initial_neighbor_flags;
@@ -214,8 +214,8 @@ void check_split_while_join_is_avoided() {
   // from neighbors, so we just use a single Element setup on refinement
   // levels (0, 1)
   const ElementId<2> self_id(0, {{{0, 0}, {1, 1}}});
-  const Mesh<2> mesh{2_st, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{2_st, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
       initial_neighbor_flags{};
 

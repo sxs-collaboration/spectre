@@ -195,11 +195,11 @@ class VolumeData : public h5::Object {
   static char separator() { return ':'; }
 
   /// Return the basis being used for each element along each axis
-  std::vector<std::vector<Spectral::Basis>> get_bases(
+  std::vector<std::vector<SpatialDiscretization::Basis>> get_bases(
       size_t observation_id) const;
 
   /// Return the quadrature being used for each element along each axis
-  std::vector<std::vector<Spectral::Quadrature>> get_quadratures(
+  std::vector<std::vector<SpatialDiscretization::Quadrature>> get_quadratures(
       size_t observation_id) const;
 
   /// Get the serialized domain in the subfile at this observation ID, or
@@ -253,7 +253,8 @@ Mesh<Dim> mesh_for_grid(
     const std::string& grid_name,
     const std::vector<std::string>& all_grid_names,
     const std::vector<std::vector<size_t>>& all_extents,
-    const std::vector<std::vector<Spectral::Basis>>& all_bases,
-    const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures);
+    const std::vector<std::vector<SpatialDiscretization::Basis>>& all_bases,
+    const std::vector<std::vector<SpatialDiscretization::Quadrature>>&
+        all_quadratures);
 
 }  // namespace h5

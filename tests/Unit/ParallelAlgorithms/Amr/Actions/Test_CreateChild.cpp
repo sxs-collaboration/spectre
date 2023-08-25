@@ -98,8 +98,8 @@ void test() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{parent_upper_neighbor_id}, aligned});
   Element<1> parent{parent_id, std::move(parent_neighbors)};
-  Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto};
+  Mesh<1> parent_mesh{3, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto};
   std::array<amr::Flag, 1> parent_flags{amr::Flag::Split};
   std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
       parent_neighbor_flags;

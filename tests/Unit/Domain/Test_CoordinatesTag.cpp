@@ -51,17 +51,18 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinatesTag", "[Unit][Domain]") {
   using Affine3d = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
   test_coordinates_compute_item(
-      Mesh<1>{5, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Mesh<1>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       Affine{-1.0, 1.0, -0.3, 0.7});
   test_coordinates_compute_item(
       Mesh<2>{{{5, 7}},
-              Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto},
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       Affine2d{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
   test_coordinates_compute_item(
       Mesh<3>{{{5, 6, 9}},
-              Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto},
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
       Affine3d{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }

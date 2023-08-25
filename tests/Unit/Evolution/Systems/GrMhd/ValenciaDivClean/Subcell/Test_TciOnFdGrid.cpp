@@ -42,8 +42,8 @@ enum class TestThis {
 };
 
 void test(const TestThis test_this, const int expected_tci_status) {
-  const Mesh<3> mesh{6, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{6, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
   const double persson_exponent = 5.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{

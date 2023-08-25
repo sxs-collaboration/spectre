@@ -899,10 +899,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
   {
     INFO("Zero boundary data");
     const auto direction = Direction<2>::lower_xi();
-    const Mesh<2> mesh{
-        {5, 3}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-    const Mesh<1> mortar_mesh{4, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> mesh{{5, 3},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
+    const Mesh<1> mortar_mesh{4, SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
     const ::dg::MortarSize<1> mortar_size{{Spectral::MortarSize::LowerHalf}};
     const Scalar<DataVector> face_normal_magnitude{{{{1., 2., 3.}}}};
     const auto boundary_data =

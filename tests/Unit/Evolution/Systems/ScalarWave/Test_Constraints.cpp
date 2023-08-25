@@ -79,8 +79,8 @@ void test_constraints_and_compute_tags_analytic(
 
   // Check vs. time-independent analytic solution
   // Set up grid
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  Mesh<3> mesh{grid_size_each_dimension, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t data_size = mesh.number_of_grid_points();
 
   using Affine = domain::CoordinateMaps::Affine;

@@ -103,8 +103,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
                   "[Unit][Evolution]") {
   const size_t points_per_dimension = 5;
   const Mesh<3> subcell_mesh{points_per_dimension,
-                             Spectral::Basis::FiniteDifference,
-                             Spectral::Quadrature::CellCentered};
+                             SpatialDiscretization::Basis::FiniteDifference,
+                             SpatialDiscretization::Quadrature::CellCentered};
   const auto logical_coords = TestHelpers::grmhd::GhValenciaDivClean::fd::
       detail::set_logical_coordinates(subcell_mesh);
 

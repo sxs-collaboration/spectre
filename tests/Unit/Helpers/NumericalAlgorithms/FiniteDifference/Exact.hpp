@@ -48,8 +48,9 @@ void test_reconstruction_is_exact_if_in_basis(
   CAPTURE(Dim);
   const size_t number_of_vars = 2;  // arbitrary, 2 is "cheap but not trivial"
 
-  const Mesh<Dim> mesh{points_per_dimension, Spectral::Basis::FiniteDifference,
-                       Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> mesh{points_per_dimension,
+                       SpatialDiscretization::Basis::FiniteDifference,
+                       SpatialDiscretization::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(mesh);
   // Make the logical coordinates different in each direction
   for (size_t i = 1; i < Dim; ++i) {
@@ -145,11 +146,13 @@ void test_reconstruction_is_exact_if_in_basis(
                           gsl::at(reconstructed_lower_side_of_face_vars, dim));
 
     // Compare to analytic solution on the faces.
-    const auto basis = make_array<Dim>(Spectral::Basis::FiniteDifference);
-    auto quadrature = make_array<Dim>(Spectral::Quadrature::CellCentered);
+    const auto basis =
+        make_array<Dim>(SpatialDiscretization::Basis::FiniteDifference);
+    auto quadrature =
+        make_array<Dim>(SpatialDiscretization::Quadrature::CellCentered);
     auto extents = make_array<Dim>(points_per_dimension);
     gsl::at(extents, dim) = points_per_dimension + 1;
-    gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, dim) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
     auto logical_coords_face_centered = logical_coordinates(face_centered_mesh);
     for (size_t i = 1; i < Dim; ++i) {

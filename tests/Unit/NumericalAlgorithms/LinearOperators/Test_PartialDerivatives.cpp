@@ -492,26 +492,27 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  constexpr size_t min_points =
-      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>;
-  constexpr size_t max_points =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  constexpr size_t min_points = Spectral::minimum_number_of_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>;
+  constexpr size_t max_points = Spectral::maximum_number_of_points<
+                                    SpatialDiscretization::Basis::Legendre> /
+                                2;
   for (size_t n0 = min_points; n0 <= max_points; ++n0) {
-    const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+    const Mesh<1> mesh_1d{n0, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
     test_logical_partial_derivatives_1d<two_vars<1>>(mesh_1d);
     test_logical_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
     for (size_t n1 = min_points; n1 <= max_points; ++n1) {
       const Mesh<2> mesh_2d{{{n0, n1}},
-                            Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+                            SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
       test_logical_partial_derivatives_2d<two_vars<2>>(mesh_2d);
       test_logical_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
       for (size_t n2 = min_points; n2 <= max_points; ++n2) {
         const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                              Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
+                              SpatialDiscretization::Basis::Legendre,
+                              SpatialDiscretization::Quadrature::GaussLobatto};
         test_logical_partial_derivatives_3d<two_vars<3>>(mesh_3d);
         test_logical_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
       }
@@ -521,24 +522,29 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
-  const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
-  const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
-  const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const size_t n0 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                    2;
+  const size_t n1 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 +
+                    1;
+  const size_t n2 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 -
+                    1;
+  const Mesh<1> mesh_1d{n0, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   test_partial_derivatives_1d<two_vars<1>>(mesh_1d);
   test_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
   const Mesh<2> mesh_2d{{{n0, n1}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   test_partial_derivatives_2d<two_vars<2>>(mesh_2d);
   test_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
   const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   test_partial_derivatives_3d<two_vars<3>>(mesh_3d);
   test_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
 
@@ -550,8 +556,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
 
   BENCHMARK_ADVANCED("Partial derivatives")
   (Catch::Benchmark::Chronometer meter) {
-    const Mesh<3> mesh{4, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<3> mesh{4, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
     const Affine map1d(-1.0, 1.0, -1.0, 1.0);
     const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid, Affine3D>
         map(Affine3D{map1d, map1d, map1d});
@@ -606,8 +612,8 @@ void test_partial_derivatives_compute_item(
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
-  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{extents_array, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_grid_points = mesh.number_of_grid_points();
   Variables<vars_tags> u(num_grid_points);
   Variables<
@@ -666,8 +672,8 @@ void test_partial_derivatives_tensor_compute_item(
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
-  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{extents_array, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto x_logical = logical_coordinates(mesh);
   const auto x = map(logical_coordinates(mesh));
 

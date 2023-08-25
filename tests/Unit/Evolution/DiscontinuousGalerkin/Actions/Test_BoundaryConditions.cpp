@@ -2125,7 +2125,7 @@ void fill_variables(const gsl::not_null<Variables<TagsList>*> variables,
 // template parameter gets around that.
 template <typename System, size_t Dim = System::volume_dim>
 void test_1d(const bool moving_mesh, const dg::Formulation formulation,
-             const Spectral::Quadrature quadrature) {
+             const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(moving_mesh);
   CAPTURE(formulation);
   CAPTURE(quadrature);
@@ -2144,7 +2144,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
 
   using dt_variables_tag =
       db::add_tag_prefix<::Tags::dt, typename System::variables_tag>;
-  const Mesh<Dim> mesh{5, Spectral::Basis::Legendre, quadrature};
+  const Mesh<Dim> mesh{5, SpatialDiscretization::Basis::Legendre, quadrature};
   const ElementId<Dim> self_id{0, {{{1, 0}}}};
   const Element<Dim> element{self_id, {}};
   ElementMap<Dim, Frame::Grid> element_map{
@@ -2306,7 +2306,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         get<evolution::dg::Tags::MagnitudeOfNormal>(
             *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box)
                  .at(ghost_direction));
-    if (quadrature == Spectral::Quadrature::Gauss) {
+    if (quadrature == SpatialDiscretization::Quadrature::Gauss) {
       Scalar<DataVector> face_det_inv_jacobian{
           mesh.slice_away(ghost_direction.dimension()).number_of_grid_points()};
       const Matrix identity{};
@@ -2390,8 +2390,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                               dt_direction) {
     Variables<tmpl::list<::Tags::dt<Tags::Var1>, ::Tags::dt<Tags::Var2<Dim>>>>
         expected_dt_volume_correction{mesh.number_of_grid_points(), 0.0};
-    const Mesh<Dim> mesh_gl{5, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+    const Mesh<Dim> mesh_gl{5, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto};
     Variables<
         db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>
         dt_correction_gl{mesh_gl.number_of_grid_points(), 0.0};
@@ -2405,7 +2405,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       get<::Tags::dt<Tags::Var2<Dim>>>(dt_correction_gl)
           .get(i)[boundary_index] += offset_boundary_condition + 1.0 + i;
     }
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
       expected_dt_volume_correction += dt_correction_gl;
     } else {
       // Interpolate to Gauss mesh
@@ -2607,8 +2607,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
   for (const bool moving_mesh : {true, false}) {
     for (const dg::Formulation formulation :
          {dg::Formulation::WeakInertial, dg::Formulation::StrongInertial}) {
-      for (const Spectral::Quadrature quadrature :
-           {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
+      for (const SpatialDiscretization::Quadrature quadrature :
+           {SpatialDiscretization::Quadrature::Gauss,
+            SpatialDiscretization::Quadrature::GaussLobatto}) {
         // Second last template parameter on System:
         // - true: has primitive variables
         // - false: no primitive variables

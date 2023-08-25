@@ -591,10 +591,10 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
   VectorTypeToInterpolate derivative_lobatto_collocation_values{
       2 * target_number_of_points};
   DataVector interpolation_times{2 * target_number_of_points};
-  DataVector collocation_points =
-      Spectral::collocation_points<Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto>(
-          2 * target_number_of_points);
+  DataVector collocation_points = Spectral::collocation_points<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(2 *
+                                                       target_number_of_points);
 
   const size_t interpolation_data_size =
       argument_interpolation_manager_.to_interpolate_values_.size();
@@ -662,10 +662,10 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
     // range [-1, 1]
     apply_matrices(
         make_not_null(&derivative_lobatto_collocation_values),
-        make_array<1>(
-            Spectral::differentiation_matrix<
-                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
-                lobatto_collocation_values.size())),
+        make_array<1>(Spectral::differentiation_matrix<
+                      SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto>(
+            lobatto_collocation_values.size())),
         lobatto_collocation_values,
         Index<1>(lobatto_collocation_values.size()));
 

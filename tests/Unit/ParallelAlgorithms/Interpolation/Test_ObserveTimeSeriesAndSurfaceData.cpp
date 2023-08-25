@@ -114,10 +114,11 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
       {grid_name + "/InertialCoordinates_z", tensor_and_coord_data[2]},
       {grid_name + "/Square", tensor_and_coord_data[3]}};
 
-  const std::vector<Spectral::Basis> bases{2,
-                                           Spectral::Basis::SphericalHarmonic};
-  const std::vector<Spectral::Quadrature> quadratures{
-      {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
+  const std::vector<SpatialDiscretization::Basis> bases{
+      2, SpatialDiscretization::Basis::SphericalHarmonic};
+  const std::vector<SpatialDiscretization::Quadrature> quadratures{
+      {SpatialDiscretization::Quadrature::Gauss,
+       SpatialDiscretization::Quadrature::Equiangular}};
   const observers::ObservationId observation_id{0., "/SurfaceD.vol"};
   TestHelpers::io::VolumeData::check_volume_data(
       surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
@@ -488,8 +489,8 @@ SPECTRE_TEST_CASE(
   for (const auto& element_id : element_ids) {
     const auto& block = domain.blocks()[element_id.block_id()];
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
+                   SpatialDiscretization::Basis::Legendre,
+                   SpatialDiscretization::Quadrature::GaussLobatto};
     if (block.is_time_dependent()) {
       ERROR("The block must be time-independent");
     }

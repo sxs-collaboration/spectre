@@ -168,7 +168,8 @@ struct Metavariables {
 
 template <typename ArraySectionIdTag, typename ObserveEvent>
 void test(const std::unique_ptr<ObserveEvent> observe,
-          const Spectral::Basis basis, const Spectral::Quadrature quadrature,
+          const SpatialDiscretization::Basis basis,
+          const SpatialDiscretization::Quadrature quadrature,
           const std::optional<std::string>& section) {
   CAPTURE(pretty_type::name<ArraySectionIdTag>());
   CAPTURE(section);
@@ -275,7 +276,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.reduction_names[16] == "L2IntegralNorm(Var1_x)");
   CHECK(results.reduction_names[17] == "L2IntegralNorm(Var1_y)");
   CHECK(results.reduction_names[18] == "L2IntegralNorm(Var1_z)");
-  if (basis != Spectral::Basis::FiniteDifference) {
+  if (basis != SpatialDiscretization::Basis::FiniteDifference) {
     CHECK(results.l2_integral_norm_values[0] == approx(124.18131904598212145));
     CHECK(results.l2_integral_norm_values[1] == approx(41.36826480931165406));
     CHECK(results.l2_integral_norm_values[2] == approx(68.22267462752640199));
@@ -303,8 +304,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                   {"Var1", "L2Norm", "Individual"},
                                   {"Var1", "L2IntegralNorm", "Individual"},
                                   {"Var1", "Min", "Sum"}}}),
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto, "Section0");
+                         SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto,
+                         "Section0");
 
   INFO("create/serialize");
   register_factory_classes_with_charm<Metavariables<3, void>>();
@@ -348,8 +350,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
         )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test<void>(std::move(serialized_event), Spectral::Basis::Legendre,
-             Spectral::Quadrature::GaussLobatto, std::nullopt);
+  test<void>(std::move(serialized_event),
+             SpatialDiscretization::Basis::Legendre,
+             SpatialDiscretization::Quadrature::GaussLobatto, std::nullopt);
 
   test<void>(std::make_unique<ObserveNormsEvent<void>>(ObserveNormsEvent<void>{
                  "reduction0",
@@ -363,6 +366,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                   {"Var1", "L2Norm", "Individual"},
                   {"Var1", "L2IntegralNorm", "Individual"},
                   {"Var1", "Min", "Sum"}}}),
-             Spectral::Basis::FiniteDifference,
-             Spectral::Quadrature::CellCentered, std::nullopt);
+             SpatialDiscretization::Basis::FiniteDifference,
+             SpatialDiscretization::Quadrature::CellCentered, std::nullopt);
 }

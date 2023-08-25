@@ -26,8 +26,9 @@ void check_volume_data(
     const double observation_value,
     const std::vector<DataType>& tensor_components_and_coords,
     const std::vector<std::string>& grid_names,
-    const std::vector<std::vector<Spectral::Basis>>& bases,
-    const std::vector<std::vector<Spectral::Quadrature>>& quadratures,
+    const std::vector<std::vector<SpatialDiscretization::Basis>>& bases,
+    const std::vector<std::vector<SpatialDiscretization::Quadrature>>&
+        quadratures,
     const std::vector<std::vector<size_t>>& extents,
     const std::vector<std::string>& expected_components,
     const std::vector<std::vector<size_t>>& grid_data_orders,
@@ -199,19 +200,20 @@ void check_volume_data(
 
 #define GET_DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                           \
-  template void check_volume_data(                                       \
-      const std::string& h5_file_name, const uint32_t version_number,    \
-      const std::string& group_name, const size_t observation_id,        \
-      const double observation_value,                                    \
-      const std::vector<GET_DTYPE(data)>& tensor_components_and_coords,  \
-      const std::vector<std::string>& grid_names,                        \
-      const std::vector<std::vector<Spectral::Basis>>& bases,            \
-      const std::vector<std::vector<Spectral::Quadrature>>& quadratures, \
-      const std::vector<std::vector<size_t>>& extents,                   \
-      const std::vector<std::string>& expected_components,               \
-      const std::vector<std::vector<size_t>>& grid_data_orders,          \
-      const std::optional<double>& components_comparison_precision,      \
+#define INSTANTIATION(r, data)                                             \
+  template void check_volume_data(                                         \
+      const std::string& h5_file_name, const uint32_t version_number,      \
+      const std::string& group_name, const size_t observation_id,          \
+      const double observation_value,                                      \
+      const std::vector<GET_DTYPE(data)>& tensor_components_and_coords,    \
+      const std::vector<std::string>& grid_names,                          \
+      const std::vector<std::vector<SpatialDiscretization::Basis>>& bases, \
+      const std::vector<std::vector<SpatialDiscretization::Quadrature>>&   \
+          quadratures,                                                     \
+      const std::vector<std::vector<size_t>>& extents,                     \
+      const std::vector<std::string>& expected_components,                 \
+      const std::vector<std::vector<size_t>>& grid_data_orders,            \
+      const std::optional<double>& components_comparison_precision,        \
       const double factor_to_rescale_components);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (DataVector, std::vector<float>))

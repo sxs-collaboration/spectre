@@ -188,8 +188,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   std::uniform_real_distribution<> dist(0.1, 1.0);
 
   const double time = 1.3;
-  const Mesh<3> subcell_mesh{9, Spectral::Basis::FiniteDifference,
-                             Spectral::Quadrature::CellCentered};
+  const Mesh<3> subcell_mesh{9, SpatialDiscretization::Basis::FiniteDifference,
+                             SpatialDiscretization::Quadrature::CellCentered};
 
   std::unordered_map<std::string,
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>

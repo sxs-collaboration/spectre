@@ -83,8 +83,8 @@ void test() {
       Direction<2>::upper_xi(),
       Neighbors<2>{std::unordered_set{parent_upper_neighbor_id}, aligned});
   Element<2> parent{parent_id, std::move(parent_neighbors)};
-  Mesh<2> parent_mesh{3, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto};
+  Mesh<2> parent_mesh{3, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto};
   std::array<amr::Flag, 2> parent_flags{amr::Flag::Split,
                                         amr::Flag::IncreaseResolution};
   std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
@@ -119,9 +119,9 @@ void test() {
   const Element<2> expected_child{child_id,
                                   std::move(expected_child_neighbors)};
 
-  const Mesh<2> expected_child_mesh{std::array{3_st, 4_st},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> expected_child_mesh{
+      std::array{3_st, 4_st}, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   const std::array<amr::Flag, 2> expected_child_flags{amr::Flag::Undefined,
                                                       amr::Flag::Undefined};
   const std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>

@@ -26,13 +26,14 @@ DataVector integrate(const DataVector& u, const Mesh<1>& mesh) {
   return result;
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 void check_integration(const size_t min_pts, const size_t max_pts) {
-  CAPTURE(BasisType);
-  CAPTURE(QuadratureType);
+  CAPTURE(Basis);
+  CAPTURE(Quadrature);
   for (size_t num_pts = min_pts; num_pts < max_pts; ++num_pts) {
     CAPTURE(num_pts);
-    const Mesh<1> mesh{num_pts, BasisType, QuadratureType};
+    const Mesh<1> mesh{num_pts, Basis, Quadrature};
     const auto logical_coords = logical_coordinates(mesh);
     DataVector u(num_pts);
     DataVector u_int_exact(num_pts);
@@ -62,13 +63,17 @@ void check_integration(const size_t min_pts, const size_t max_pts) {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.IndefiniteIntegral",
                   "[NumericalAlgorithms][Spectral][Unit]") {
-  check_integration<Basis::Chebyshev, Quadrature::GaussLobatto>(
-      2, maximum_number_of_points<Basis::Chebyshev>);
-  check_integration<Basis::Chebyshev, Quadrature::Gauss>(
-      2, maximum_number_of_points<Basis::Chebyshev>);
-  check_integration<Basis::Legendre, Quadrature::GaussLobatto>(
-      2, maximum_number_of_points<Basis::Legendre>);
-  check_integration<Basis::Legendre, Quadrature::Gauss>(
-      2, maximum_number_of_points<Basis::Legendre>);
+  check_integration<SpatialDiscretization::Basis::Chebyshev,
+                    SpatialDiscretization::Quadrature::GaussLobatto>(
+      2, maximum_number_of_points<SpatialDiscretization::Basis::Chebyshev>);
+  check_integration<SpatialDiscretization::Basis::Chebyshev,
+                    SpatialDiscretization::Quadrature::Gauss>(
+      2, maximum_number_of_points<SpatialDiscretization::Basis::Chebyshev>);
+  check_integration<SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto>(
+      2, maximum_number_of_points<SpatialDiscretization::Basis::Legendre>);
+  check_integration<SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss>(
+      2, maximum_number_of_points<SpatialDiscretization::Basis::Legendre>);
 }
 }  // namespace Spectral

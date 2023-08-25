@@ -14,18 +14,17 @@ namespace {
 void test_points_and_weights(const size_t num_points,
                              const DataVector expected_points,
                              const DataVector expected_weights) {
-  const auto& points =
-      Spectral::collocation_points<Spectral::Basis::Chebyshev,
-                                   Spectral::Quadrature::GaussLobatto>(
-          num_points);
+  const auto& points = Spectral::collocation_points<
+      SpatialDiscretization::Basis::Chebyshev,
+      SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
   CHECK_ITERABLE_APPROX(expected_points, points);
   // We test the \f$w_k\f$ here directly. Test_Spectral.cpp and
   // Test_DefiniteIntegral.cpp take care of testing the
   // Spectral::quadrature_weights.
   const auto weights =
       Spectral::compute_collocation_points_and_weights<
-          Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>(
-          num_points)
+          SpatialDiscretization::Basis::Chebyshev,
+          SpatialDiscretization::Quadrature::GaussLobatto>(num_points)
           .second;
   CHECK_ITERABLE_APPROX(expected_weights, weights);
 }

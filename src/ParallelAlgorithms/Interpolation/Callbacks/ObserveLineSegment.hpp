@@ -91,10 +91,10 @@ struct ObserveLineSegment
     const std::string& name = pretty_type::name<InterpolationTargetTag>();
     const std::string subfile_path{std::string{"/"} + name};
     const std::vector<size_t> extents_vector{number_of_points};
-    const std::vector<Spectral::Basis> bases_vector{
-        Spectral::Basis::FiniteDifference};
-    const std::vector<Spectral::Quadrature> quadratures_vector{
-        1, Spectral::Quadrature::CellCentered};
+    const std::vector<SpatialDiscretization::Basis> bases_vector{
+        SpatialDiscretization::Basis::FiniteDifference};
+    const std::vector<SpatialDiscretization::Quadrature> quadratures_vector{
+        1, SpatialDiscretization::Quadrature::CellCentered};
     const observers::ObservationId& observation_id = observers::ObservationId(
         InterpolationTarget_detail::get_temporal_id_value(temporal_id),
         subfile_path + ".vol");

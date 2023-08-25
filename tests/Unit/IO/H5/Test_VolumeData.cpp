@@ -56,10 +56,11 @@ void test_strahlkorper() {
 
   const std::vector<size_t> observation_ids{4444};
   const std::vector<double> observation_values{1.0};
-  const std::vector<Spectral::Basis> bases{2,
-                                           Spectral::Basis::SphericalHarmonic};
-  const std::vector<Spectral::Quadrature> quadratures{
-      {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
+  const std::vector<SpatialDiscretization::Basis> bases{
+      2, SpatialDiscretization::Basis::SphericalHarmonic};
+  const std::vector<SpatialDiscretization::Quadrature> quadratures{
+      {SpatialDiscretization::Quadrature::Gauss,
+       SpatialDiscretization::Quadrature::Equiangular}};
 
   const std::string h5_file_name{"Unit.IO.H5.VolumeData.Strahlkorper.h5"};
   const uint32_t version_number = 4;
@@ -125,11 +126,12 @@ void test() {
   const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
   const std::vector<double> observation_values{8.0, -2.3};
   const std::vector<std::string> grid_names{"[[2,3,4]]", "[[5,6,7]]"};
-  const std::vector<std::vector<Spectral::Basis>> bases{
-      {3, Spectral::Basis::Chebyshev}, {3, Spectral::Basis::Legendre}};
-  const std::vector<std::vector<Spectral::Quadrature>> quadratures{
-      {3, Spectral::Quadrature::Gauss},
-      {3, Spectral::Quadrature::GaussLobatto}};
+  const std::vector<std::vector<SpatialDiscretization::Basis>> bases{
+      {3, SpatialDiscretization::Basis::Chebyshev},
+      {3, SpatialDiscretization::Basis::Legendre}};
+  const std::vector<std::vector<SpatialDiscretization::Quadrature>> quadratures{
+      {3, SpatialDiscretization::Quadrature::Gauss},
+      {3, SpatialDiscretization::Quadrature::GaussLobatto}};
   const auto domain_creator = domain::creators::Brick{
       {{0., 0., 0.}},
       {{1., 2., 3.}},
@@ -286,13 +288,14 @@ void test() {
     const auto first_mesh =
         h5::mesh_for_grid<3>(grid_names.front(), all_grid_names, all_extents,
                              all_bases, all_quadratures);
-    CHECK(first_mesh ==
-          Mesh<3>(2, Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss));
+    CHECK(first_mesh == Mesh<3>(2, SpatialDiscretization::Basis::Chebyshev,
+                                SpatialDiscretization::Quadrature::Gauss));
     const auto last_mesh =
         h5::mesh_for_grid<3>(grid_names.back(), all_grid_names, all_extents,
                              all_bases, all_quadratures);
-    CHECK(last_mesh == Mesh<3>(2, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto));
+    CHECK(last_mesh ==
+          Mesh<3>(2, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto));
   }
 
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -313,10 +316,12 @@ void test_extend_connectivity_data() {
   // Instantiate components for write_volume_data
   std::vector<std::vector<size_t>> extents(number_of_elements,
                                            std::vector<size_t>(SpatialDim));
-  std::vector<std::vector<Spectral::Basis>> bases(
-      number_of_elements, std::vector<Spectral::Basis>(SpatialDim));
-  std::vector<std::vector<Spectral::Quadrature>> quadratures(
-      number_of_elements, std::vector<Spectral::Quadrature>(SpatialDim));
+  std::vector<std::vector<SpatialDiscretization::Basis>> bases(
+      number_of_elements,
+      std::vector<SpatialDiscretization::Basis>(SpatialDim));
+  std::vector<std::vector<SpatialDiscretization::Quadrature>> quadratures(
+      number_of_elements,
+      std::vector<SpatialDiscretization::Quadrature>(SpatialDim));
   std::vector<std::string> grid_names(number_of_elements);
   std::vector<std::vector<std::vector<float>>> tensor_components_and_coords(
       number_of_elements, std::vector<std::vector<float>>(
@@ -397,8 +402,8 @@ void test_extend_connectivity_data() {
   for (size_t i = 0; i < number_of_elements; i++) {
     for (size_t j = 0; j < SpatialDim; j++) {
       extents[i][j] = 2;
-      bases[i][j] = Spectral::Basis::Legendre;
-      quadratures[i][j] = Spectral::Quadrature::Gauss;
+      bases[i][j] = SpatialDiscretization::Basis::Legendre;
+      quadratures[i][j] = SpatialDiscretization::Quadrature::Gauss;
     }
     for (size_t point_num = 0; point_num < number_of_elements; point_num++) {
       tensor_components_and_coords[i][SpatialDim][point_num] =
@@ -540,8 +545,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
             {{"grid_name",
               {TensorComponent{"grid_name/S", DataVector{1.0, 2.0}}},
               {2},
-              {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {SpatialDiscretization::Basis::Legendre},
+              {SpatialDiscretization::Quadrature::Gauss}}});
       }(),
       Catch::Matchers::ContainsSubstring(
           "The expected format of the tensor component names is "
@@ -562,8 +567,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
               {TensorComponent{"S", DataVector{1.0, 2.0}},
                TensorComponent{"S", DataVector{1.0, 2.0}}},
               {2},
-              {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {SpatialDiscretization::Basis::Legendre},
+              {SpatialDiscretization::Quadrature::Gauss}}});
       }(),
       Catch::Matchers::ContainsSubstring(
           "Trying to write tensor component 'S' which already exists in HDF5 "
@@ -586,8 +591,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
             {{"grid_name",
               {TensorComponent{"S", DataVector{1.0, 2.0}}},
               {2},
-              {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {SpatialDiscretization::Basis::Legendre},
+              {SpatialDiscretization::Quadrature::Gauss}}});
         volume_file.find_observation_id(11.0);
       }(),
       Catch::Matchers::ContainsSubstring("No observation with value"));

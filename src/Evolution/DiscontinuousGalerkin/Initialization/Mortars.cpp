@@ -45,7 +45,7 @@ std::tuple<
                           evolution::dg::Tags::MagnitudeOfNormal,
                           evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
-                   const Spectral::Quadrature quadrature,
+                   const SpatialDiscretization::Quadrature quadrature,
                    const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh) {
@@ -114,7 +114,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                        evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>     \
   mortars_apply_impl(                                                          \
       const std::vector<std::array<size_t, DIM(data)>>& initial_extents,       \
-      const Spectral::Quadrature quadrature,                                   \
+      const SpatialDiscretization::Quadrature quadrature,                      \
       const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \
       const Mesh<DIM(data)>& volume_mesh);
 

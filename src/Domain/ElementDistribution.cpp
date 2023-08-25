@@ -58,7 +58,7 @@ double get_num_points_and_grid_spacing_cost(
     const ElementId<Dim>& element_id, const Block<Dim>& block,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
       initial_extents, element_id, quadrature);
   Element<Dim> element = ::domain::Initialization::create_initial_element(
@@ -84,7 +84,7 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementWeight element_weight,
-    const std::optional<Spectral::Quadrature>& quadrature) {
+    const std::optional<SpatialDiscretization::Quadrature>& quadrature) {
   std::unordered_map<ElementId<Dim>, double> element_costs{};
 
   for (size_t block_number = 0; block_number < blocks.size(); block_number++) {
@@ -315,7 +315,7 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
       const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
-      Spectral::Quadrature quadrature);                                      \
+      SpatialDiscretization::Quadrature quadrature);                         \
   template std::unordered_map<ElementId<GET_DIM(data)>, double>              \
   get_element_costs(                                                         \
       const std::vector<Block<GET_DIM(data)>>& blocks,                       \
@@ -323,7 +323,7 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
       ElementWeight element_weight,                                          \
-      const std::optional<Spectral::Quadrature>& quadrature);
+      const std::optional<SpatialDiscretization::Quadrature>& quadrature);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

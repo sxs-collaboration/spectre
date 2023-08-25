@@ -88,8 +88,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
   helpers::test_boundary_correction_conservation<
       RelativisticEuler::Valencia::System<Dim>>(
       gen, RelativisticEuler::Valencia::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
@@ -106,8 +106,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       {{"dg_boundary_terms_tilde_d", "dg_boundary_terms_tilde_tau",
         "dg_boundary_terms_tilde_s"}},
       RelativisticEuler::Valencia::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 
   const auto rusanov = TestHelpers::test_creation<
@@ -129,8 +129,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
         "dg_boundary_terms_tilde_s"}},
       dynamic_cast<const RelativisticEuler::Valencia::BoundaryCorrections::
                        Rusanov<Dim>&>(*rusanov),
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       volume_data, ranges);
 }
 }  // namespace

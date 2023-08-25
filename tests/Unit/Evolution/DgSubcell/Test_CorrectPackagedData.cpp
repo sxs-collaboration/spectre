@@ -48,8 +48,9 @@ void test() {
   using Vars = Variables<tmpl::list<Var1, Var2<Dim>>>;
   using SubcellFaceVars =
       tmpl::conditional_t<SkipFirstVar, Variables<tmpl::list<Var2<Dim>>>, Vars>;
-  const Mesh<Dim> volume_dg_mesh{5, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_dg_mesh{
+      5, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> volume_subcell_mesh =
       evolution::dg::subcell::fd::mesh(volume_dg_mesh);
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};

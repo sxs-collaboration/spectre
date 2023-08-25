@@ -169,8 +169,8 @@ std::array<double, 3> test(const size_t num_dg_pts) {
   const solution soln = metavariables::solution();
 
   const double time = 0.0;
-  const Mesh<dim> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<dim> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const auto cell_centered_coords =
       (*grid_to_inertial_map)(element_map(logical_coordinates(subcell_mesh)));

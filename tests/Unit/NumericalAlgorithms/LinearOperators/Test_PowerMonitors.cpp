@@ -29,8 +29,8 @@ void test_power_monitors_impl() {
   const DataVector test_data_vector = DataVector{number_of_points, 1.0};
 
   const Mesh<2_st> mesh{number_of_points_per_dimension,
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
 
   auto test_power_monitors =
       PowerMonitors::power_monitors<2_st>(test_data_vector, mesh);
@@ -51,8 +51,8 @@ void test_power_monitors_second_impl() {
   size_t number_of_points_per_dimension = 4;
 
   const Mesh<2_st> mesh{number_of_points_per_dimension,
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -64,9 +64,9 @@ void test_power_monitors_second_impl() {
 
   DataVector u_nodal(mesh.number_of_grid_points(), 1.0);
   for (size_t dim = 0; dim < 2; ++dim) {
-    u_nodal *=
-        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-            gsl::at(coeff, dim), logical_coords.get(dim));
+    u_nodal *= Spectral::compute_basis_function_value<
+        SpatialDiscretization::Basis::Legendre>(gsl::at(coeff, dim),
+                                                logical_coords.get(dim));
   }
 
   auto test_power_monitors =
@@ -97,8 +97,8 @@ void test_relative_truncation_error_impl() {
   // power monitors analytically
   const size_t number_of_points_per_dimension = 8;
   const Mesh<1_st> mesh{number_of_points_per_dimension,
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
 
   // Build a test function with no zero power monitors
@@ -107,10 +107,9 @@ void test_relative_truncation_error_impl() {
   double ampl = 0.0;
   for (auto coeff : coeffs) {
     ampl = pow(10.0, -coeff);
-    u_nodal +=
-        ampl *
-        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
-            static_cast<size_t>(coeff), logical_coords.get(0_st));
+    u_nodal += ampl * Spectral::compute_basis_function_value<
+                          SpatialDiscretization::Basis::Legendre>(
+                          static_cast<size_t>(coeff), logical_coords.get(0_st));
   }
 
   // Compute the relative truncation error

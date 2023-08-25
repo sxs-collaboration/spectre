@@ -32,6 +32,7 @@ namespace domain::Initialization {
 template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
-    const ElementId<Dim>& element_id, Spectral::Quadrature quadrature,
+    const ElementId<Dim>& element_id,
+    SpatialDiscretization::Quadrature quadrature,
     const OrientationMap<Dim>& orientation = {});
 }  // namespace domain::Initialization

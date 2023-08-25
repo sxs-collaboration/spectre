@@ -34,8 +34,8 @@ void test() {
   CAPTURE(Dim);
   // Have upper xi neighbor do DG and lower xi neighbor do FD. For eta do
   // reverse, and zeta do same as xi.
-  const Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{6, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const size_t number_of_rdmp_vars = 2;
   const size_t number_of_ghost_zones = 3;  // 5th order method
@@ -112,7 +112,7 @@ void test() {
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
-            Spectral::Quadrature::CellCentered)));
+            SpatialDiscretization::Quadrature::CellCentered)));
     projection_matrices[0] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
@@ -227,7 +227,7 @@ void test() {
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
-            Spectral::Quadrature::CellCentered)));
+            SpatialDiscretization::Quadrature::CellCentered)));
     projection_matrices[1] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
@@ -273,7 +273,7 @@ void test() {
     auto projection_matrices =
         make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
-            Spectral::Quadrature::CellCentered)));
+            SpatialDiscretization::Quadrature::CellCentered)));
     projection_matrices[2] =
         std::cref(evolution::dg::subcell::fd::projection_matrix(
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
@@ -343,8 +343,8 @@ void test() {
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
           make_not_null(&neighbor_data), received_fd_data, number_of_rdmp_vars,
           upper_xi_id,
-          Mesh<Dim>{5, Spectral::Basis::FiniteDifference,
-                    Spectral::Quadrature::CellCentered},
+          Mesh<Dim>{5, SpatialDiscretization::Basis::FiniteDifference,
+                    SpatialDiscretization::Quadrature::CellCentered},
           element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::ContainsSubstring(
           "must be the same if we are both doing subcell."));
@@ -352,8 +352,8 @@ void test() {
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data), received_fd_data, number_of_rdmp_vars,
           upper_xi_id,
-          Mesh<Dim>{5, Spectral::Basis::FiniteDifference,
-                    Spectral::Quadrature::CellCentered},
+          Mesh<Dim>{5, SpatialDiscretization::Basis::FiniteDifference,
+                    SpatialDiscretization::Quadrature::CellCentered},
           element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::ContainsSubstring(
           "must be the same if we are both doing subcell."));
@@ -362,8 +362,8 @@ void test() {
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
           make_not_null(&neighbor_data), received_dg_data, number_of_rdmp_vars,
           lower_xi_id, dg_mesh, element,
-          Mesh<Dim>{4, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::GaussLobatto},
+          Mesh<Dim>{4, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
           number_of_ghost_zones),
       Catch::Matchers::ContainsSubstring(
           "Neighbor subcell mesh computed from the neighbor DG mesh "));
@@ -371,8 +371,8 @@ void test() {
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data), received_dg_data, number_of_rdmp_vars,
           lower_xi_id, dg_mesh, element,
-          Mesh<Dim>{4, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::GaussLobatto},
+          Mesh<Dim>{4, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
           number_of_ghost_zones),
       Catch::Matchers::ContainsSubstring(
           "Neighbor subcell mesh computed from the neighbor DG mesh "));
@@ -395,13 +395,15 @@ void test() {
   if constexpr (Dim > 1) {
     Mesh<Dim> non_uniform_mesh{};
     if constexpr (Dim == 2) {
-      non_uniform_mesh = Mesh<2>{{{4, 5}},
-                                 Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto};
+      non_uniform_mesh =
+          Mesh<2>{{{4, 5}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto};
     } else if constexpr (Dim == 3) {
-      non_uniform_mesh = Mesh<3>{{{4, 5, 6}},
-                                 Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto};
+      non_uniform_mesh =
+          Mesh<3>{{{4, 5, 6}},
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto};
     }
     CHECK_THROWS_WITH(
         evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(

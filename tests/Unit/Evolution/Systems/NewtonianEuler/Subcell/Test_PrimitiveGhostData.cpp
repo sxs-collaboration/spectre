@@ -38,8 +38,9 @@ void test_subcells(
   using prims_to_reconstruct_tags = tmpl::list<MassDensity, Velocity, Pressure>;
   using ReconsPrimVars = Variables<prims_to_reconstruct_tags>;
 
-  const Mesh<Dim> subcell_mesh{9, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> subcell_mesh{9,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
   // NOLINTNEXTLINE(modernize-use-auto)
   const PrimVars prims = make_with_random_values<PrimVars>(
       gen, dist, subcell_mesh.number_of_grid_points());
@@ -73,8 +74,8 @@ void test_dg(const gsl::not_null<std::mt19937*> gen,
   using prims_to_reconstruct_tags = tmpl::list<MassDensity, Velocity, Pressure>;
   using ReconsPrimVars = Variables<prims_to_reconstruct_tags>;
 
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // NOLINTNEXTLINE(modernize-use-auto)

@@ -91,8 +91,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     };
 
     CHECK(get_tag(domain::Tags::Mesh<1>{}) ==
-          Mesh<1>{4, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          Mesh<1>{4, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto});
     CHECK(get_tag(domain::Tags::Element<1>{}) ==
           Element<1>{element_id,
                      {{Direction<1>::lower_xi(),
@@ -111,8 +111,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& logical_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::ElementLogical>{});
     CHECK(get<0>(logical_coords) ==
-          Spectral::collocation_points<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto>(4));
+          Spectral::collocation_points<
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto>(4));
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
@@ -161,8 +162,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     CHECK(get_tag(domain::Tags::Mesh<2>{}) ==
           Mesh<2>{{{4, 3}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto});
     CHECK(
         get_tag(domain::Tags::Element<2>{}) ==
         Element<2>{
@@ -234,8 +235,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     CHECK(get_tag(domain::Tags::Mesh<3>{}) ==
           Mesh<3>{{{4, 3, 2}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto});
     CHECK(
         get_tag(domain::Tags::Element<3>{}) ==
         Element<3>{

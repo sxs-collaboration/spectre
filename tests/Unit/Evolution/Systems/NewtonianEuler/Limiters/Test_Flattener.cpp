@@ -21,8 +21,8 @@ namespace {
 
 void test_flattener_1d() {
   INFO("Testing flatten_solution in 1D");
-  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(4, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
   const Scalar<DataVector> det_logical_to_inertial_jacobian(
       DataVector{{2., 2., 2., 2.}});
@@ -144,8 +144,8 @@ void test_flattener_1d() {
 
 void test_flattener_2d() {
   INFO("Testing flatten_solution in 2D");
-  const Mesh<2> mesh({{2, 3}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh({{2, 3}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
   const Scalar<DataVector> det_logical_to_inertial_jacobian(
       DataVector{{2., 2.1, 2.1, 2.2, 2.2, 2.3}});
@@ -253,8 +253,8 @@ void test_flattener_2d() {
 
 void test_flattener_3d() {
   INFO("Testing flatten_solution in 3D");
-  const Mesh<3> mesh(2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
   const Scalar<DataVector> det_logical_to_inertial_jacobian(
       DataVector{{0.2, 0.1, 0.3, 0.2, 0.5, 0.6, 0.4, 0.5}});

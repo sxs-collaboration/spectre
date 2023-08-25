@@ -198,7 +198,8 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
                           const TemporalId& temporal_id) {
   const auto& block = domain.blocks()[element_id.block_id()];
   Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-               Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+               SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto};
 
   const auto inertial_coords =
       [&element_id, &block, &mesh, &runner, &temporal_id]() {

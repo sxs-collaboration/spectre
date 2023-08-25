@@ -16,15 +16,16 @@ namespace py = pybind11;
 namespace Spectral::py_bindings {
 
 void bind_spectral(py::module& m) {
-  py::enum_<Spectral::Basis>(m, "Basis")
-      .value("Legendre", Spectral::Basis::Legendre)
-      .value("Chebyshev", Spectral::Basis::Chebyshev)
-      .value("FiniteDifference", Spectral::Basis::FiniteDifference);
-  py::enum_<Spectral::Quadrature>(m, "Quadrature")
-      .value("Gauss", Spectral::Quadrature::Gauss)
-      .value("GaussLobatto", Spectral::Quadrature::GaussLobatto)
-      .value("CellCentered", Spectral::Quadrature::CellCentered)
-      .value("FaceCentered", Spectral::Quadrature::FaceCentered);
+  py::enum_<SpatialDiscretization::Basis>(m, "Basis")
+      .value("Legendre", SpatialDiscretization::Basis::Legendre)
+      .value("Chebyshev", SpatialDiscretization::Basis::Chebyshev)
+      .value("FiniteDifference",
+             SpatialDiscretization::Basis::FiniteDifference);
+  py::enum_<SpatialDiscretization::Quadrature>(m, "Quadrature")
+      .value("Gauss", SpatialDiscretization::Quadrature::Gauss)
+      .value("GaussLobatto", SpatialDiscretization::Quadrature::GaussLobatto)
+      .value("CellCentered", SpatialDiscretization::Quadrature::CellCentered)
+      .value("FaceCentered", SpatialDiscretization::Quadrature::FaceCentered);
   m.def("collocation_points",
         static_cast<const DataVector& (*)(const Mesh<1>&)>(
             &Spectral::collocation_points),

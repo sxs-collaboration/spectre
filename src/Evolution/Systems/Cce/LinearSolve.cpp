@@ -77,23 +77,25 @@ Matrix q_integration_matrix(const size_t number_of_points) {
   lhs_mat(0, 1) += -2.0;
   lhs_mat(number_of_points - 1, number_of_points - 2) += 2.0;
 
-  return Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>(
+  return Spectral::modal_to_nodal_matrix<
+             SpatialDiscretization::Basis::Legendre,
+             SpatialDiscretization::Quadrature::GaussLobatto>(
              number_of_points) *
          indefinite_integral * inv(lhs_mat) *
-         Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto>(
-             number_of_points);
+         Spectral::nodal_to_modal_matrix<
+             SpatialDiscretization::Basis::Legendre,
+             SpatialDiscretization::Quadrature::GaussLobatto>(number_of_points);
 }
 }  // namespace
 
 const Matrix& precomputed_cce_q_integrator(
     const size_t number_of_radial_grid_points) {
-  static const auto lazy_matrix_cache = make_static_cache<CacheRange<
-      1_st, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>>(
-      [](const size_t local_number_of_radial_points) {
-        return q_integration_matrix(local_number_of_radial_points);
-      });
+  static const auto lazy_matrix_cache = make_static_cache<
+      CacheRange<1_st, Spectral::maximum_number_of_points<
+                           SpatialDiscretization::Basis::Legendre> +
+                           1>>([](const size_t local_number_of_radial_points) {
+    return q_integration_matrix(local_number_of_radial_points);
+  });
   return lazy_matrix_cache(number_of_radial_grid_points);
 }
 
@@ -121,12 +123,12 @@ void radial_integrate_cce_pole_equations(
               ComplexDataVector{
                   integral_result->data(),
                   Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
-  const ComplexDataVector one_minus_y_squared = square(
-      1.0 -
-      std::complex<double>(1.0, 0.0) *
-          Spectral::collocation_points<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto>(
-              number_of_radial_points));
+  const ComplexDataVector one_minus_y_squared =
+      square(1.0 - std::complex<double>(1.0, 0.0) *
+                       Spectral::collocation_points<
+                           SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto>(
+                           number_of_radial_points));
   *integral_result += outer_product(boundary_correction, one_minus_y_squared);
 }
 
@@ -240,10 +242,9 @@ void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH>::apply(
                 linear_solve_buffer.data(), number_of_radial_points,
                 2 * number_of_angular_points);
 
-  const auto& derivative_matrix =
-      Spectral::differentiation_matrix<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto>(
-          number_of_radial_points);
+  const auto& derivative_matrix = Spectral::differentiation_matrix<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>(number_of_radial_points);
   for (size_t offset = 0; offset < number_of_angular_points; ++offset) {
     // on repeated evaluations, the matrix gets permuted by the dgesv routine.
     // We'll ignore its pivots and just overwrite the whole thing on each

@@ -42,8 +42,9 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
                                                                     0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Mesh<Dim>{
-        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
+    auto logical_coords = logical_coordinates(
+        Mesh<Dim>{3, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
       coords.get(i) = std::move(logical_coords.get(i));

@@ -63,10 +63,11 @@ void test(const fd::DerivativeOrder derivative_order, const bool did_rollback) {
   using flux_variables = typename TestSystem::flux_variables;
   using CellCenteredFluxTag =
       evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>;
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh{9, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<Dim> subcell_mesh{9,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
   const std::optional<tnsr::I<DataVector, Dim>> dg_mesh_velocity{};
 
   auto box =

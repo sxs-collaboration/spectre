@@ -111,7 +111,7 @@ auto face_centered_gr_tags(
     auto quadrature = make_array<Dim>(subcell_mesh.quadrature(0));
     auto extents = make_array<Dim>(subcell_mesh.extents(0));
     gsl::at(extents, d) = subcell_mesh.extents(0) + 1;
-    gsl::at(quadrature, d) = Spectral::Quadrature::FaceCentered;
+    gsl::at(quadrature, d) = SpatialDiscretization::Quadrature::FaceCentered;
     const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
     const auto face_centered_logical_coords =
         logical_coordinates(face_centered_mesh);
@@ -165,8 +165,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
   const double time = 0.0;
-  const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const size_t num_dg_pts_3d = num_dg_pts * num_dg_pts * num_dg_pts;
   const auto cell_centered_coords =

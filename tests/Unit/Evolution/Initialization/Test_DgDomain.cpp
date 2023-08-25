@@ -173,7 +173,7 @@ struct Metavariables {
 };
 
 template <size_t Dim, bool TimeDependent>
-void test(const Spectral::Quadrature quadrature) {
+void test(const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(Dim);
   CAPTURE(TimeDependent);
   CAPTURE(quadrature);
@@ -623,8 +623,8 @@ void test_p_refine() {
       &global_cache, std::move(element_map), std::move(grid_to_inertial_map),
       std::move(element));
 
-  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mesh{2, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
       make_not_null(&box), std::make_pair(mesh, element));
   check_maps<IsTimeDependent>(
@@ -788,7 +788,8 @@ void test_join() {
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
                   "[Parallel][Unit]") {
   for (const auto quadrature :
-       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
+       {SpatialDiscretization::Quadrature::Gauss,
+        SpatialDiscretization::Quadrature::GaussLobatto}) {
     test<1, true>(quadrature);
     test<2, true>(quadrature);
     test<3, true>(quadrature);

@@ -394,21 +394,23 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(box);
   ASSERT(alg::all_of(mesh.basis(),
-                     [&mesh](const Spectral::Basis current_basis) {
+                     [&mesh](const SpatialDiscretization::Basis current_basis) {
                        return current_basis == mesh.basis(0);
                      }),
          "An isotropic basis must be used in the evolution code. While "
          "theoretically this restriction could be lifted, the simplification "
          "it offers are quite substantial. Relaxing this assumption is likely "
          "to require quite a bit of careful code refactoring and debugging.");
-  ASSERT(alg::all_of(mesh.quadrature(),
-                     [&mesh](const Spectral::Quadrature current_quadrature) {
-                       return current_quadrature == mesh.quadrature(0);
-                     }),
-         "An isotropic quadrature must be used in the evolution code. While "
-         "theoretically this restriction could be lifted, the simplification "
-         "it offers are quite substantial. Relaxing this assumption is likely "
-         "to require quite a bit of careful code refactoring and debugging.");
+  ASSERT(
+      alg::all_of(
+          mesh.quadrature(),
+          [&mesh](const SpatialDiscretization::Quadrature current_quadrature) {
+            return current_quadrature == mesh.quadrature(0);
+          }),
+      "An isotropic quadrature must be used in the evolution code. While "
+      "theoretically this restriction could be lifted, the simplification "
+      "it offers are quite substantial. Relaxing this assumption is likely "
+      "to require quite a bit of careful code refactoring and debugging.");
 
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
@@ -752,7 +754,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     // all directions.
     const bool using_gauss_points =
         db::get<domain::Tags::Mesh<Dim>>(*box).quadrature() ==
-        make_array<Dim>(Spectral::Quadrature::Gauss);
+        make_array<Dim>(SpatialDiscretization::Quadrature::Gauss);
 
     const Scalar<DataVector> volume_det_inv_jacobian{};
     if (using_gauss_points) {

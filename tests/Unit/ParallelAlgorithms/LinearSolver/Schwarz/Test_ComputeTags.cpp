@@ -43,8 +43,8 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.ComputeTags",
              Scalar<DataVector>{DataVector{0.5, 0.1}}},
             {Direction<1>::upper_xi(),
              Scalar<DataVector>{DataVector{0.1, 0.5}}}},
-        Mesh<1>{3, Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto},
+        Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto},
         std::array<size_t, 1>{{2}});
     const DataVector expected_weights{0.5, 0.2, 0.5};
     CHECK_ITERABLE_APPROX(

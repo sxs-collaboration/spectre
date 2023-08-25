@@ -58,8 +58,8 @@ void test_solution() {
 
   using system =
       Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
-  const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{12, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map = make_coord_map<Dim>();
   FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
       solution, mesh, coord_map, 1.e-14);

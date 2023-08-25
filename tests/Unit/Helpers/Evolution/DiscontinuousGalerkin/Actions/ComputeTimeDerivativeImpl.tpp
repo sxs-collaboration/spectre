@@ -1015,7 +1015,7 @@ double dg_package_data(
 
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
           SystemType system_type, bool HasPrims, bool PassVariables>
-void test_impl(const Spectral::Quadrature quadrature,
+void test_impl(const SpatialDiscretization::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(LocalTimeStepping);
   CAPTURE(UseMovingMesh);
@@ -1156,7 +1156,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                                                     self_id);
   };
 
-  const Mesh<Dim> mesh{2, Spectral::Basis::Legendre, quadrature};
+  const Mesh<Dim> mesh{2, SpatialDiscretization::Basis::Legendre, quadrature};
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
@@ -1449,10 +1449,10 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (system_type == SystemType::Nonconservative or
                 system_type == SystemType::Mixed) {
     for (size_t i = 0; i < mesh.number_of_grid_points(); i += 2) {
-      if (quadrature == Spectral::Quadrature::GaussLobatto) {
+      if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i] = 26.0;
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i + 1] = 39.0;
-      } else if (quadrature == Spectral::Quadrature::Gauss) {
+      } else if (quadrature == SpatialDiscretization::Quadrature::Gauss) {
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i] =
             26.7320508075688785;
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i + 1] =
@@ -1478,7 +1478,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           1.5 * get(get<Var1>(evolved_vars));
     }
     // Deal with volume flux divergence
-    if (quadrature == Spectral::Quadrature::GaussLobatto and
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto and
         dg_formulation == ::dg::Formulation::StrongInertial) {
       get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -= 3.0;
       if constexpr (UseMovingMesh) {
@@ -1522,7 +1522,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           j * get(var3);
     }
     // Deal with volume flux divergence
-    if (quadrature == Spectral::Quadrature::GaussLobatto and
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto and
         dg_formulation == ::dg::Formulation::StrongInertial) {
       get<0>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) += 4.0;
       if constexpr (Dim > 1) {
@@ -1578,13 +1578,13 @@ void test_impl(const Spectral::Quadrature quadrature,
     }
   } else {
     const tnsr::iJ<DataVector, Dim> d_var2 =
-        quadrature == Spectral::Quadrature::GaussLobatto
+        quadrature == SpatialDiscretization::Quadrature::GaussLobatto
             ? tnsr::iJ<DataVector, Dim>{}
             : get<::Tags::deriv<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
                   partial_derivatives<tmpl::list<Var1, Var2<Dim>>>(
                       variables_before_compute_time_derivatives, mesh,
                       inv_jac));
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
       for (size_t i = 0; i < mesh.number_of_grid_points(); i += 2) {
         for (size_t j = 0; j < Dim; ++j) {
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j)[i] = -6.;
@@ -1612,7 +1612,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     }
     if (UseMovingMesh) {
       for (size_t j = 0; j < Dim; ++j) {
-        if (quadrature == Spectral::Quadrature::GaussLobatto) {
+        if (quadrature == SpatialDiscretization::Quadrature::GaussLobatto) {
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j) +=
               2.0 * get<0>(*mesh_velocity);
         } else {
@@ -1799,7 +1799,8 @@ void test_impl(const Spectral::Quadrature quadrature,
         compute_expected_mortar_data(mortar_id.first, mortar_id.second, true));
 
     // Check face normal and/or Jacobians
-    const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
+    const bool using_gauss_points =
+        quadrature == SpatialDiscretization::Quadrature::Gauss;
 
     Scalar<DataVector> local_face_normal_magnitude{};
     mortar_data.get_local_face_normal_magnitude(
@@ -2003,7 +2004,7 @@ void test() {
       BoundaryCorrection<Dim, false>>();
 
   const auto invoke_tests_with_quadrature_and_formulation =
-      [](const Spectral::Quadrature quadrature,
+      [](const SpatialDiscretization::Quadrature quadrature,
          const ::dg::Formulation local_dg_formulation) {
         const auto moving_mesh_helper = [&local_dg_formulation,
                                          &quadrature](auto moving_mesh) {
@@ -2040,9 +2041,9 @@ void test() {
   for (const auto dg_formulation :
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     invoke_tests_with_quadrature_and_formulation(
-        Spectral::Quadrature::GaussLobatto, dg_formulation);
-    invoke_tests_with_quadrature_and_formulation(Spectral::Quadrature::Gauss,
-                                                 dg_formulation);
+        SpatialDiscretization::Quadrature::GaussLobatto, dg_formulation);
+    invoke_tests_with_quadrature_and_formulation(
+        SpatialDiscretization::Quadrature::Gauss, dg_formulation);
   }
 }
 }  // namespace TestHelpers::evolution::dg::Actions

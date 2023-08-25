@@ -114,8 +114,8 @@ double test(const size_t num_dg_pts) {
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
 
   const double time = 0.0;
-  const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const auto dg_coords = moving_mesh_map(
       element_map(logical_coordinates(dg_mesh)), time, functions_of_time);

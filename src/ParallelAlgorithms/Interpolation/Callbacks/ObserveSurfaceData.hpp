@@ -103,10 +103,11 @@ struct ObserveSurfaceData
     const std::string subfile_path{std::string{"/"} + surface_name};
     const std::vector<size_t> extents_vector{
         {ylm.physical_extents()[0], ylm.physical_extents()[1]}};
-    const std::vector<Spectral::Basis> bases_vector{
-        2, Spectral::Basis::SphericalHarmonic};
-    const std::vector<Spectral::Quadrature> quadratures_vector{
-        {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
+    const std::vector<SpatialDiscretization::Basis> bases_vector{
+        2, SpatialDiscretization::Basis::SphericalHarmonic};
+    const std::vector<SpatialDiscretization::Quadrature> quadratures_vector{
+        {SpatialDiscretization::Quadrature::Gauss,
+         SpatialDiscretization::Quadrature::Equiangular}};
     const observers::ObservationId& observation_id = observers::ObservationId(
         InterpolationTarget_detail::get_temporal_id_value(temporal_id),
         subfile_path + ".vol");

@@ -64,7 +64,8 @@ std::tuple<
                           evolution::dg::Tags::MagnitudeOfNormal,
                           evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
-                   Spectral::Quadrature quadrature, const Element<Dim>& element,
+                   SpatialDiscretization::Quadrature quadrature,
+                   const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh);
 }  // namespace detail

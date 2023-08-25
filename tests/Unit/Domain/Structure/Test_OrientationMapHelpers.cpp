@@ -162,8 +162,9 @@ void test_2d_orient_variables_simple_case_by_hand() {
 // this provides both the input tensor and the expected output tensor.
 void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
   const auto extents = Index<2>{3, 4};
-  const auto mesh = Mesh<2>(extents.indices(), Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      Mesh<2>(extents.indices(), SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto);
   const auto affine =
       Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
   const auto map =
@@ -290,8 +291,9 @@ void test_3d_orient_variables_simple_case_by_hand() {
 // this provides both the input tensor and the expected output tensor.
 void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
   const auto extents = Index<3>{2, 3, 4};
-  const auto mesh = Mesh<3>(extents.indices(), Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      Mesh<3>(extents.indices(), SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto);
   const auto affine =
       Affine3D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1),
                Affine(-1.0, 1.0, -4.8, -3.9)};
@@ -410,8 +412,8 @@ void test_0d_orient_variables_on_slice() {
 void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
   const auto slice_extents = Index<1>{4};
   const auto slice_mesh =
-      Mesh<1>(slice_extents.indices(), Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+      Mesh<1>(slice_extents.indices(), SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto);
   const auto affine = Affine(-1.0, 1.0, 2.3, 4.5);
   const auto map =
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
@@ -502,8 +504,8 @@ void test_1d_orient_variables_on_slice() {
 void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
   const auto slice_extents = Index<2>{3, 4};
   const auto slice_mesh =
-      Mesh<2>(slice_extents.indices(), Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+      Mesh<2>(slice_extents.indices(), SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto);
   const auto affine =
       Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
   const auto map =

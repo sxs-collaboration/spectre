@@ -169,8 +169,8 @@ void test(const bool moving_mesh) {
 
   const int tci_decision = 22;  // some non-zero value
   const double time = 1.3;
-  const Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> dg_mesh(4, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto);
   using ReconsOrder = typename subcell::Tags::ReconstructionOrder<Dim>::type;
   auto active_coords_box = db::create<
       db::AddSimpleTags<domain::Tags::ElementMap<Dim, Frame::Grid>,

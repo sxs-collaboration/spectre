@@ -54,11 +54,11 @@ bool operator!=(const TensorComponent& lhs, const TensorComponent& rhs);
  */
 struct ElementVolumeData {
   ElementVolumeData() = default;
-  ElementVolumeData(std::string element_name_in,
-                    std::vector<TensorComponent> components,
-                    std::vector<size_t> extents_in,
-                    std::vector<Spectral::Basis> basis_in,
-                    std::vector<Spectral::Quadrature> quadrature_in);
+  ElementVolumeData(
+      std::string element_name_in, std::vector<TensorComponent> components,
+      std::vector<size_t> extents_in,
+      std::vector<SpatialDiscretization::Basis> basis_in,
+      std::vector<SpatialDiscretization::Quadrature> quadrature_in);
   template <size_t Dim>
   ElementVolumeData(const ElementId<Dim>& element_id,
                     std::vector<TensorComponent> components,
@@ -75,10 +75,10 @@ struct ElementVolumeData {
   std::vector<TensorComponent> tensor_components{};
   /// Number of grid points in every dimension of the grid
   std::vector<size_t> extents{};
-  /// Spectral::Basis in every dimension of the grid
-  std::vector<Spectral::Basis> basis{};
-  /// Spectral::Quadrature in every dimension of the grid
-  std::vector<Spectral::Quadrature> quadrature{};
+  /// SpatialDiscretization::Basis in every dimension of the grid
+  std::vector<SpatialDiscretization::Basis> basis{};
+  /// SpatialDiscretization::Quadrature in every dimension of the grid
+  std::vector<SpatialDiscretization::Quadrature> quadrature{};
 };
 
 bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs);

@@ -82,8 +82,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
 
   // generate random U on the dg mesh and project it to subcell mesh
   const size_t num_dg_pts = 5;
-  const Mesh<1> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   Variables<evolved_vars_tags> volume_vars_dg{dg_mesh.number_of_grid_points()};

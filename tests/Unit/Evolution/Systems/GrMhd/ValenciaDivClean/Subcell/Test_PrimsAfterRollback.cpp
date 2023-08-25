@@ -44,8 +44,8 @@ namespace {
 void test(const gsl::not_null<std::mt19937*> gen,
           const gsl::not_null<std::uniform_real_distribution<>*> dist,
           const bool did_rollback) {
-  const Mesh<3> dg_mesh{4, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> dg_mesh{4, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   using cons_tag = typename grmhd::ValenciaDivClean::System::variables_tag;

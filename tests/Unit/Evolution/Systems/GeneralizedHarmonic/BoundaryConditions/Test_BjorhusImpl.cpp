@@ -31,8 +31,9 @@ constexpr size_t VolumeDim = 3;
 void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
     const size_t grid_size_each_dimension) {
   // Setup grid
-  Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<VolumeDim> mesh{grid_size_each_dimension,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const Direction<VolumeDim> direction(1, Side::Upper);  // +y direction
   const size_t slice_grid_points =
       mesh.extents().slice_away(direction.dimension()).product();
@@ -172,8 +173,9 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
 void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
     const size_t grid_size_each_dimension) {
   // Setup grid
-  Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<VolumeDim> mesh{grid_size_each_dimension,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const Direction<VolumeDim> direction(1, Side::Upper);  // +y direction
   const size_t slice_grid_points =
       mesh.extents().slice_away(direction.dimension()).product();
@@ -341,8 +343,9 @@ void test_constraint_preserving_physical_bjorhus_v_minus_vs_spec_3d(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& /* upper_bound */) {
   // Setup grid
-  Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  Mesh<VolumeDim> mesh{grid_size_each_dimension,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   // Setup coordinates
   const Direction<VolumeDim> direction(1, Side::Upper);  // +y direction
   const size_t slice_grid_points =

@@ -32,8 +32,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
       elliptic::Tags::BoundaryFluxesCompute<Dim, vars_tag, fluxes_tag>>(
       "Faces(Variables(NormalDotFlux(TempTensor0)))");
   {
-    const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+    const Mesh<Dim> mesh{3, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
     const Element<Dim> element{
         ElementId<Dim>{0},
         {{Direction<Dim>::upper_xi(), {{{ElementId<Dim>{1}}}, {}}},

@@ -396,8 +396,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   for (const auto& element_id : element_ids) {
     const auto& block = domain.blocks()[element_id.block_id()];
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
+                   SpatialDiscretization::Basis::Legendre,
+                   SpatialDiscretization::Quadrature::GaussLobatto};
     if (block.is_time_dependent()) {
       ERROR("The block must be time-independent");
     }

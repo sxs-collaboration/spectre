@@ -36,8 +36,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(
       make_not_null(&gen), grmhd::ValenciaDivClean::BoundaryCorrections::Hll{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      ranges);
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, ranges);
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
       make_not_null(&gen), "Hll",
@@ -56,8 +57,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
         "dg_boundary_terms_tilde_tau", "dg_boundary_terms_tilde_s",
         "dg_boundary_terms_tilde_b", "dg_boundary_terms_tilde_phi"}},
       grmhd::ValenciaDivClean::BoundaryCorrections::Hll{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      ranges);
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, ranges);
 
   const auto hll = TestHelpers::test_creation<std::unique_ptr<
       grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
@@ -81,8 +83,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
         "dg_boundary_terms_tilde_b", "dg_boundary_terms_tilde_phi"}},
       dynamic_cast<const grmhd::ValenciaDivClean::BoundaryCorrections::Hll&>(
           *hll),
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      ranges);
+      Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, ranges);
 
   CHECK_FALSE(grmhd::ValenciaDivClean::BoundaryCorrections::Hll{} !=
               grmhd::ValenciaDivClean::BoundaryCorrections::Hll{});

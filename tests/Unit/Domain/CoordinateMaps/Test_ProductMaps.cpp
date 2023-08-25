@@ -146,8 +146,8 @@ void test_product_of_2_maps() {
   CHECK(jac_xi.get(1, 1) == jacobian_11);
 
   // Check Jacobians for DataVectors
-  const Mesh<2> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 2> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1)}};
@@ -325,8 +325,8 @@ void test_product_of_3_maps() {
   CHECK(jac_xi.get(2, 2) == jacobian_22);
 
   // Check Jacobians for DataVectors
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 3> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1),

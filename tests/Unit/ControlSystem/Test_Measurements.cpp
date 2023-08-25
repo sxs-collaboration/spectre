@@ -149,8 +149,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
                   "[ControlSystem][Unit]") {
   // Part 1 of the test: calculation of the relevant integrals
   // within a (mock) element.
-  const Mesh<3> mesh(2, Spectral::Basis::FiniteDifference,
-                     Spectral::Quadrature::CellCentered);
+  const Mesh<3> mesh(2, SpatialDiscretization::Basis::FiniteDifference,
+                     SpatialDiscretization::Quadrature::CellCentered);
   const Scalar<DataVector> tilde_d{
       DataVector{0.0, 0.5, 1.0, 1.0, 0.5, 0.0, 1.0, 1.0}};
   const Scalar<DataVector> inv_det_jacobian{

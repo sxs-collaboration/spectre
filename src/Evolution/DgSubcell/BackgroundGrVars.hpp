@@ -224,7 +224,8 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
       auto extents = make_array<volume_dim>(subcell_mesh.extents(0));
 
       gsl::at(extents, dim) = subcell_mesh.extents(0) + 1;
-      gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+      gsl::at(quadrature, dim) =
+          SpatialDiscretization::Quadrature::FaceCentered;
 
       const Mesh<volume_dim> face_centered_mesh{extents, basis, quadrature};
       const auto face_centered_logical_coords =

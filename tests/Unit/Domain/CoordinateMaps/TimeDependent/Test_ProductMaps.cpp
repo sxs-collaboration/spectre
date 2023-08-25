@@ -118,8 +118,8 @@ void test_product_of_2_maps_time_dep(
         expected_frame_velocity);
 
   // Check Jacobians for DataVectors
-  const Mesh<2> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 2> logical_coords{
       {get<0>(tensor_logical_coords), get<1>(tensor_logical_coords)}};
@@ -407,8 +407,8 @@ void test_product_of_3_maps_time_dep(
         expected_frame_velocity);
 
   // Check Jacobians for DataVectors
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{8, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 3> logical_coords{
       {get<0>(tensor_logical_coords), get<1>(tensor_logical_coords),

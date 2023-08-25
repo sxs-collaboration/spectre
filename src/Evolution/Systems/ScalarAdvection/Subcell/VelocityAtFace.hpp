@@ -135,7 +135,8 @@ struct VelocityAtFace : tt::ConformsTo<db::protocols::Mutator> {
       auto quadrature = make_array<Dim>(subcell_mesh.quadrature(0));
       auto extents = make_array<Dim>(subcell_mesh.extents(0));
       gsl::at(extents, dim) = subcell_mesh.extents(0) + 1;
-      gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+      gsl::at(quadrature, dim) =
+          SpatialDiscretization::Quadrature::FaceCentered;
       const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
       const auto face_centered_logical_coords =
           logical_coordinates(face_centered_mesh);

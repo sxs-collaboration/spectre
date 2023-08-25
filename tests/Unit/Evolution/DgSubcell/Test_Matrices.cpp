@@ -24,8 +24,8 @@
 
 namespace evolution::dg::subcell::fd {
 namespace {
-template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_projection_matrix() {
   CAPTURE(Dim);
   CAPTURE(BasisType);
@@ -40,9 +40,9 @@ void test_projection_matrix() {
     const auto logical_coords = logical_coordinates(dg_mesh);
     const size_t num_subcells_1d = 2 * num_pts_1d - 1;
     CAPTURE(num_subcells_1d);
-    const Mesh<Dim> subcell_mesh(num_subcells_1d,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered);
+    const Mesh<Dim> subcell_mesh(
+        num_subcells_1d, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered);
     const size_t num_subcells = subcell_mesh.number_of_grid_points();
     const DataVector nodal_coeffs =
         TestHelpers::evolution::dg::subcell::cell_values(dg_mesh.extents(0) - 2,
@@ -53,7 +53,7 @@ void test_projection_matrix() {
     for (size_t d = 0; d < Dim; ++d) {
       gsl::at(projection_mat, d) = std::cref(
           projection_matrix(dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-                            Spectral::Quadrature::CellCentered));
+                            SpatialDiscretization::Quadrature::CellCentered));
     }
     DataVector cell_centered_values(num_subcells, 0.0);
     apply_matrices(make_not_null(&cell_centered_values), projection_mat,
@@ -98,27 +98,31 @@ void test_projection_matrix() {
 #ifdef SPECTRE_DEBUG
   if constexpr (Dim == 1) {
     CHECK_THROWS_WITH(
-        projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto},
-                          5, 1, Side::Lower),
+        projection_matrix(
+            Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
+            5, 1, Side::Lower),
         Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
-        projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto},
-                          5, 6, Side::Lower),
+        projection_matrix(
+            Mesh<1>{3, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
+            5, 6, Side::Lower),
         Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
-        projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
-                                  Spectral::Quadrature::GaussLobatto},
-                          5, 1, Side::Lower),
+        projection_matrix(
+            Mesh<1>{3, SpatialDiscretization::Basis::Chebyshev,
+                    SpatialDiscretization::Quadrature::GaussLobatto},
+            5, 1, Side::Lower),
         Catch::Matchers::ContainsSubstring(
             "FD Subcell projection only supports Legendre basis"));
   }
 #endif
 }
 
-template <size_t MaxPts, size_t Dim, size_t Face_Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, size_t Face_Dim,
+          SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void test_projection_matrix_to_face() {
   CAPTURE(Dim);
   CAPTURE(BasisType);
@@ -137,16 +141,16 @@ void test_projection_matrix_to_face() {
     CAPTURE(num_subcells_1d_cell);
 
     std::array<size_t, Dim> extents{};
-    std::array<Spectral::Basis, Dim> basis{};
-    std::array<Spectral::Quadrature, Dim> quadrature{};
+    std::array<SpatialDiscretization::Basis, Dim> basis{};
+    std::array<SpatialDiscretization::Quadrature, Dim> quadrature{};
     for (size_t d = 0; d < Dim; d++) {
-      basis[d] = Spectral::Basis::FiniteDifference;
+      basis[d] = SpatialDiscretization::Basis::FiniteDifference;
       if (d == Face_Dim) {
         extents[d] = num_subcells_1d_face;
-        quadrature[d] = Spectral::Quadrature::FaceCentered;
+        quadrature[d] = SpatialDiscretization::Quadrature::FaceCentered;
       } else {
         extents[d] = num_subcells_1d_cell;
-        quadrature[d] = Spectral::Quadrature::CellCentered;
+        quadrature[d] = SpatialDiscretization::Quadrature::CellCentered;
       }
     }
 
@@ -162,11 +166,11 @@ void test_projection_matrix_to_face() {
       if (d == Face_Dim) {
         gsl::at(projection_mat, d) = std::cref(projection_matrix(
             dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-            Spectral::Quadrature::FaceCentered));
+            SpatialDiscretization::Quadrature::FaceCentered));
       } else {
         gsl::at(projection_mat, d) = std::cref(projection_matrix(
             dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-            Spectral::Quadrature::CellCentered));
+            SpatialDiscretization::Quadrature::CellCentered));
       }
     }
     DataVector subcell_values(num_subcells, 0.0);
@@ -180,8 +184,8 @@ void test_projection_matrix_to_face() {
   }
 }
 
-template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType>
+template <size_t MaxPts, size_t Dim, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 void reconstruction_matrix(const double eps) {
   CAPTURE(Dim);
   CAPTURE(BasisType);
@@ -198,9 +202,9 @@ void reconstruction_matrix(const double eps) {
     const size_t num_pts = dg_mesh.number_of_grid_points();
     const auto logical_coords = logical_coordinates(dg_mesh);
     const size_t num_subcells_1d = 2 * num_pts_1d - 1;
-    const Mesh<Dim> subcell_mesh(num_subcells_1d,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered);
+    const Mesh<Dim> subcell_mesh(
+        num_subcells_1d, SpatialDiscretization::Basis::FiniteDifference,
+        SpatialDiscretization::Quadrature::CellCentered);
     // Our FD reconstruction scheme can integrate polynomials up to degree 6
     // exactly. However, we want to verify that if we have more than 8 grid
     // points on the DG grid that we still are able to recover the correct
@@ -228,36 +232,44 @@ void reconstruction_matrix(const double eps) {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                   "[Evolution][Unit]") {
-  test_projection_matrix<10, 1, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix<10, 1, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::Gauss>();
+  test_projection_matrix<10, 1, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix<10, 1, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss>();
 
-  test_projection_matrix<10, 2, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix<10, 2, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::Gauss>();
+  test_projection_matrix<10, 2, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix<10, 2, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss>();
 
-  test_projection_matrix<5, 3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix<5, 3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::Gauss>();
-  test_projection_matrix_to_face<10, 1, 0, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix_to_face<10, 1, 0, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss>();
-  test_projection_matrix_to_face<5, 3, 0, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix_to_face<5, 3, 0, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss>();
-  test_projection_matrix_to_face<5, 3, 1, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix_to_face<5, 3, 1, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss>();
-  test_projection_matrix_to_face<5, 3, 2, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto>();
-  test_projection_matrix_to_face<5, 3, 2, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss>();
+  test_projection_matrix<5, 3, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix<5, 3, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::Gauss>();
+  test_projection_matrix_to_face<
+      10, 1, 0, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<10, 1, 0,
+                                 SpatialDiscretization::Basis::Legendre,
+                                 SpatialDiscretization::Quadrature::Gauss>();
+  test_projection_matrix_to_face<
+      5, 3, 0, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 0,
+                                 SpatialDiscretization::Basis::Legendre,
+                                 SpatialDiscretization::Quadrature::Gauss>();
+  test_projection_matrix_to_face<
+      5, 3, 1, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 1,
+                                 SpatialDiscretization::Basis::Legendre,
+                                 SpatialDiscretization::Quadrature::Gauss>();
+  test_projection_matrix_to_face<
+      5, 3, 2, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto>();
+  test_projection_matrix_to_face<5, 3, 2,
+                                 SpatialDiscretization::Basis::Legendre,
+                                 SpatialDiscretization::Quadrature::Gauss>();
 }
 
 // [[TimeOut, 10]]
@@ -267,20 +279,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ReconstructionMatrix",
   // Normally the test completes in less than 2 seconds on debug builds.
   // However, if ASAN is on, this time roughly doubles and we want to avoid
   // timeouts there.
-  reconstruction_matrix<10, 1, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(1.0e-13);
-  reconstruction_matrix<10, 1, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>(1.0e-13);
+  reconstruction_matrix<10, 1, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
+      1.0e-13);
+  reconstruction_matrix<10, 1, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(1.0e-13);
 
-  reconstruction_matrix<10, 2, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(1.0e-10);
-  reconstruction_matrix<10, 2, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>(1.0e-10);
+  reconstruction_matrix<10, 2, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
+      1.0e-10);
+  reconstruction_matrix<10, 2, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(1.0e-10);
 
-  reconstruction_matrix<5, 3, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto>(1.0e-11);
-  reconstruction_matrix<4, 3, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>(1.0e-11);
+  reconstruction_matrix<5, 3, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto>(
+      1.0e-11);
+  reconstruction_matrix<4, 3, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::Gauss>(1.0e-11);
 }
 }  // namespace
 }  // namespace evolution::dg::subcell::fd

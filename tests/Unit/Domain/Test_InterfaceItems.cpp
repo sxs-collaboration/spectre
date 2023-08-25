@@ -411,8 +411,9 @@ auto make_interface_tensor(DataVector value_xi, DataVector value_eta) {
 }
 
 void test_interface_subitems() {
-  const Mesh<dim> mesh{
-      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<dim> mesh{{{4, 3}},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
 
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
@@ -484,8 +485,9 @@ using compute_item_tag = ComputeCompute<1>;
 using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
 
 void test_interface_slice(){
-  const Mesh<dim> mesh{
-      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<dim> mesh{{{4, 3}},
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
 
   auto volume_tensor = [&mesh]() {
     DataVector result(mesh.number_of_grid_points());
@@ -509,11 +511,11 @@ void test_interface_slice(){
   const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
       expected_interface_mesh{
           {Direction<dim>::lower_xi(),
-           Mesh<dim - 1>{3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto}},
+           Mesh<dim - 1>{3, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto}},
           {Direction<dim>::upper_eta(),
-           Mesh<dim - 1>{4, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto}}};
+           Mesh<dim - 1>{4, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto}}};
 
   const auto expected_boundary_coords = [&expected_interface_mesh,
                                          &element_map]() {
@@ -623,8 +625,8 @@ void test_boundary_coordinates_moving_mesh_impl(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
   CAPTURE(Dim);
-  const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{3, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<Dim>, Directions<Dim>,
                         Tags::ElementMap<Dim, Frame::Grid>,

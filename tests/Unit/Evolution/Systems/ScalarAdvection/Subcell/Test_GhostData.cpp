@@ -27,8 +27,9 @@ template <size_t Dim>
 void test(const gsl::not_null<std::mt19937*> gen,
           const gsl::not_null<std::uniform_real_distribution<>*> dist) {
   // make random U on DG and subcell mesh
-  const Mesh<Dim> dg_mesh{num_of_pts_dg_grid, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_of_pts_dg_grid,
+                          SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const auto random_vars_dg =
       make_with_random_values<Variables<tmpl::list<ScalarAdvection::Tags::U>>>(

@@ -26,6 +26,7 @@ namespace ader::dg {
  *
  * where \f$M_{a_0 b_0}\f$ is the temporal mass matrix.
  */
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType>
 const Matrix& predictor_inverse_temporal_matrix(size_t num_points);
 }  // namespace ader::dg

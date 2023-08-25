@@ -97,8 +97,9 @@ bool kxrcf_indicator(
   //   handle extrapolation to the boundary, though this could be changed.
   // - the basis in principle could be changed, but until we need to change it
   //   we just check it's the expected Legendre for simplicity
-  ASSERT(mesh == Mesh<VolumeDim>(mesh.extents(0), Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto),
+  ASSERT(mesh == Mesh<VolumeDim>(
+                     mesh.extents(0), SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto),
          "The Kxrcf TCI expects a uniform LGL mesh, but got mesh = " << mesh);
 
   bool inflow_boundaries_present = false;

@@ -233,8 +233,8 @@ void test_minkowski(const Ccz4::EvolveShift evolve_shift,
   const size_t num_points_1d = 4;
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
-  Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{num_points_1d, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, FrameType>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
@@ -826,8 +826,8 @@ void test_kerrschild(const Ccz4::EvolveShift evolve_shift,
   const size_t num_points_1d = 6;
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
-  Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{num_points_1d, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, FrameType>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},

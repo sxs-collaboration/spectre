@@ -264,22 +264,23 @@ void test_predictor_inverse_temporal_matrix() {
            0.2714052409196041, 0.25127560320440273, 0.212508417764308,
            0.15797470556436372, 0.09168451741363809, 0.015151515151370839}}};
 
-  const auto perform_check =
-      [&expected_matrices](const size_t num_points) {
-        const Matrix& result = ader::dg::predictor_inverse_temporal_matrix<
-            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
-            num_points);
-        Approx custom_approx = Approx::custom().epsilon(1e-10);
-        for (size_t i = 0; i < num_points; ++i) {
-          for (size_t j = 0; j < num_points; ++j) {
-            CHECK(expected_matrices[num_points - 2](i, j) ==
-                  custom_approx(result(i, j)));
-          }
-        }
-      };
+  const auto perform_check = [&expected_matrices](const size_t num_points) {
+    const Matrix& result = ader::dg::predictor_inverse_temporal_matrix<
+        SpatialDiscretization::Basis::Legendre,
+        SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
+    Approx custom_approx = Approx::custom().epsilon(1e-10);
+    for (size_t i = 0; i < num_points; ++i) {
+      for (size_t j = 0; j < num_points; ++j) {
+        CHECK(expected_matrices[num_points - 2](i, j) ==
+              custom_approx(result(i, j)));
+      }
+    }
+  };
   for (size_t i = Spectral::minimum_number_of_points<
-           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       i <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+           SpatialDiscretization::Basis::Legendre,
+           SpatialDiscretization::Quadrature::GaussLobatto>;
+       i <= Spectral::maximum_number_of_points<
+                SpatialDiscretization::Basis::Legendre>;
        ++i) {
     perform_check(i);
   }

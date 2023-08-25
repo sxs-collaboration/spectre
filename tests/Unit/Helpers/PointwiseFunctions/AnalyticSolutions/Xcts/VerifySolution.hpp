@@ -35,8 +35,8 @@ void verify_adm_constraints(const Solution& solution,
   Approx custom_approx = Approx::custom().epsilon(tolerance).scale(1.0);
 
   // Set up a grid for evaluating the solution and taking numerical derivatives
-  const Mesh<3> mesh{12, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{12, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   using AffineMap = domain::CoordinateMaps::Affine;
   using AffineMap3D =
@@ -281,8 +281,8 @@ void verify_solution_impl(const Solution& solution,
   CAPTURE(ConformalGeometry);
   using system = ::Xcts::FirstOrderSystem<EnabledEquations, ConformalGeometry,
                                           ConformalMatterScale>;
-  const Mesh<3> mesh{12, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{12, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   using AffineMap = domain::CoordinateMaps::Affine;
   using AffineMap3D =
       domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;

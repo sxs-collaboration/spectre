@@ -333,8 +333,8 @@ void test_neuler_vs_generic_minmod_work(
 
 void test_neuler_vs_generic_minmod_1d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 1D");
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<1>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
   using Affine = domain::CoordinateMaps::Affine;
@@ -389,8 +389,8 @@ void test_neuler_vs_generic_minmod_1d() {
 
 void test_neuler_vs_generic_minmod_2d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 2D");
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<2>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto logical_coords = logical_coordinates(mesh);
   using Affine = domain::CoordinateMaps::Affine;
@@ -454,9 +454,9 @@ void test_neuler_vs_generic_minmod_2d() {
 
 void test_neuler_vs_generic_minmod_3d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 3D");
-  const auto mesh =
-      Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<3>(std::array<size_t, 3>{{3, 3, 4}},
+                            SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto logical_coords = logical_coordinates(mesh);
   using Affine = domain::CoordinateMaps::Affine;
@@ -530,8 +530,9 @@ void test_neuler_minmod_flattener() {
   INFO("Testing flattener use in NewtonianEuler::Limiters::Minmod limiter");
   CAPTURE(VolumeDim);
 
-  const auto mesh = Mesh<VolumeDim>(2, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      Mesh<VolumeDim>(2, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto);
   // We use an element with no neighbors so the limiter does nothing
   const auto element = Element<VolumeDim>{ElementId<VolumeDim>(0), {}};
   const auto logical_coords = logical_coordinates(mesh);

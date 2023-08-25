@@ -57,16 +57,18 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(
                 "parameters\n");
 
   const static auto cache = make_static_cache<
-      CacheRange<1_st,
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
-                     1>,
-      CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
-                       Spectral::Basis::Chebyshev>,
-      CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
-                       Spectral::Quadrature::GaussLobatto>>(
+      CacheRange<1_st, Spectral::maximum_number_of_points<
+                           SpatialDiscretization::Basis::Legendre> +
+                           1>,
+      CacheEnumeration<SpatialDiscretization::Basis,
+                       SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Basis::Chebyshev>,
+      CacheEnumeration<SpatialDiscretization::Quadrature,
+                       SpatialDiscretization::Quadrature::Gauss,
+                       SpatialDiscretization::Quadrature::GaussLobatto>>(
       [alpha = alpha_, half_power = half_power_](
-          const size_t extents, const Spectral::Basis basis,
-          const Spectral::Quadrature quadrature) {
+          const size_t extents, const SpatialDiscretization::Basis basis,
+          const SpatialDiscretization::Quadrature quadrature) {
         return Spectral::filtering::exponential_filter(
             Mesh<1>{extents, basis, quadrature}, alpha, half_power);
       });

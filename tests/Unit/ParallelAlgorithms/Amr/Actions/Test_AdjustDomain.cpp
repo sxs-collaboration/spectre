@@ -178,14 +178,18 @@ void test() {
           {Direction<1>::lower_xi(),
            Neighbors<1>{std::unordered_set{element_3_id}, aligned}}}};
 
-  const Mesh<1> element_1_mesh{std::array{3_st}, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> element_2_mesh{std::array{4_st}, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> element_3_mesh{std::array{5_st}, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> element_4_mesh{std::array{7_st}, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> element_1_mesh{std::array{3_st},
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<1> element_2_mesh{std::array{4_st},
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<1> element_3_mesh{std::array{5_st},
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<1> element_4_mesh{std::array{7_st},
+                               SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::GaussLobatto};
 
   std::array element_1_flags{amr::Flag::Join};
   std::array element_2_flags{amr::Flag::Join};
@@ -289,8 +293,8 @@ void test() {
           {Direction<1>::upper_xi(),
            Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
   const Mesh<1> element_3_mesh_post_refinement{
-      std::array{6_st}, Spectral::Basis::Legendre,
-      Spectral::Quadrature::GaussLobatto};
+      std::array{6_st}, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
   check_box(runner, element_3_id, element_3_post_refinement,
             element_3_mesh_post_refinement, std::array{amr::Flag::Undefined},
             {});

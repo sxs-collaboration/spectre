@@ -18,8 +18,9 @@ namespace {
 template <size_t Dim>
 void test() {
   namespace subcell = evolution::dg::subcell;
-  const Mesh<Dim> subcell_mesh{5, Spectral::Basis::FiniteDifference,
-                               Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> subcell_mesh{5,
+                               SpatialDiscretization::Basis::FiniteDifference,
+                               SpatialDiscretization::Quadrature::CellCentered};
 
   // Test first with no data
   auto box =

@@ -50,26 +50,28 @@ T compute_basis_function_value_impl(const size_t k, const T& x) {
 }  // namespace
 
 template <>
-DataVector compute_basis_function_value<Basis::Chebyshev>(const size_t k,
-                                                          const DataVector& x) {
+DataVector
+compute_basis_function_value<SpatialDiscretization::Basis::Chebyshev>(
+    const size_t k, const DataVector& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
-double compute_basis_function_value<Basis::Chebyshev>(const size_t k,
-                                                      const double& x) {
+double compute_basis_function_value<SpatialDiscretization::Basis::Chebyshev>(
+    const size_t k, const double& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
-DataVector compute_inverse_weight_function_values<Basis::Chebyshev>(
+DataVector
+compute_inverse_weight_function_values<SpatialDiscretization::Basis::Chebyshev>(
     const DataVector& x) {
   return sqrt(1. - square(x));
 }
 
 template <>
-double compute_basis_function_normalization_square<Basis::Chebyshev>(
-    const size_t k) {
+double compute_basis_function_normalization_square<
+    SpatialDiscretization::Basis::Chebyshev>(const size_t k) {
   if (k == 0) {
     return M_PI;
   } else {
@@ -80,9 +82,9 @@ double compute_basis_function_normalization_square<Basis::Chebyshev>(
 // Algorithm to compute Chebyshev-Gauss quadrature
 
 template <>
-std::pair<DataVector, DataVector>
-compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
-    const size_t num_points) {
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
+    SpatialDiscretization::Basis::Chebyshev,
+    SpatialDiscretization::Quadrature::Gauss>(const size_t num_points) {
   // Algorithm 26 in Kopriva, p. 67
   ASSERT(num_points >= 1,
          "Chebyshev-Gauss quadrature requires at least one collocation point.");
@@ -99,7 +101,8 @@ compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
 
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
-    Basis::Chebyshev, Quadrature::GaussLobatto>(const size_t num_points) {
+    SpatialDiscretization::Basis::Chebyshev,
+    SpatialDiscretization::Quadrature::GaussLobatto>(const size_t num_points) {
   // Algorithm 27 in Kopriva, p. 68
   ASSERT(num_points >= 2,
          "Chebyshev-Gauss-Lobatto quadrature requires at least two collocation "
@@ -115,11 +118,12 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
   return std::make_pair(std::move(x), std::move(w));
 }
 
-template <Basis BasisType>
+template <SpatialDiscretization::Basis Basis>
 Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 template <>
-Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
+Matrix
+spectral_indefinite_integral_matrix<SpatialDiscretization::Basis::Chebyshev>(
     const size_t num_points) {
   // Tridiagonal matrix that gives the indefinite integral modulo a constant
   Matrix indef_int(num_points, num_points, 0.0);

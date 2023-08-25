@@ -161,20 +161,26 @@ void test_divergence() {
   using TensorTag = Flux1<1, Frame::Inertial>;
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
 
-  const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
-  const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
-  const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
-  const Mesh<1> mesh_1d{
-      {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const size_t n0 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                    2;
+  const size_t n1 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 +
+                    1;
+  const size_t n2 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 -
+                    1;
+  const Mesh<1> mesh_1d{{{n0}},
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<2> mesh_2d{{{n0, n1}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1>
         functions_1d{
@@ -267,20 +273,26 @@ void test_divergence_compute_item_impl(
 }
 
 void test_divergence_compute() {
-  const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
-  const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
-  const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
-  const Mesh<1> mesh_1d{
-      {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const size_t n0 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                    2;
+  const size_t n1 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 +
+                    1;
+  const size_t n2 = Spectral::maximum_number_of_points<
+                        SpatialDiscretization::Basis::Legendre> /
+                        2 -
+                    1;
+  const Mesh<1> mesh_1d{{{n0}},
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<2> mesh_2d{{{n0, n1}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1>
         functions_1d{

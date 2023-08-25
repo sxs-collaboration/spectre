@@ -112,8 +112,8 @@ void test_with_kerr_horizon(const double mass,
           wedge_map, horizon_map);
 
   // Get some coordinates on the inner face
-  const Mesh<2> face_mesh{12, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> face_mesh{12, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords =
       interface_logical_coordinates(face_mesh, Direction<3>::lower_zeta());
   const tnsr::I<DataVector, 3> x = (*coord_map)(logical_coords);

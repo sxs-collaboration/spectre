@@ -123,8 +123,8 @@ void test_jacobian_diagnostic_databox() {
     for (size_t i = 0; i < Dim; ++i) {
       extents[i] = points_per_dimension;
     }
-    Mesh<Dim> mesh{extents, Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
+    Mesh<Dim> mesh{extents, SpatialDiscretization::Basis::Legendre,
+                   SpatialDiscretization::Quadrature::GaussLobatto};
     auto logical_coords = logical_coordinates(mesh);
     auto map = UseGenericMap ? jac_diag_generic_map<Dim>()
                              : jac_diag_map_that_fits<Dim>();

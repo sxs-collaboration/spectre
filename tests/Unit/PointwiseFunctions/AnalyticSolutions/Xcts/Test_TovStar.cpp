@@ -73,8 +73,8 @@ void test_solution(const TovCoordinates coord_system) {
     const Schwarzschild schwarzschild{total_mass,
                                       SchwarzschildCoordinates::Isotropic};
     // Look at a cube just outside the star
-    const Mesh<3> mesh{5, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<3> mesh{5, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
     const auto logical_coords = logical_coordinates(mesh);
     const double dx = 0.1 * star_radius;
     using AffineMap = domain::CoordinateMaps::Affine;

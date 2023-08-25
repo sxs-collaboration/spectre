@@ -110,10 +110,10 @@ void prepare_neighbor_data(
       alg::all_of(neighbor_meshes,
                   [](const auto& directional_element_id_and_mesh) {
                     ASSERT(directional_element_id_and_mesh.second.basis(0) !=
-                               Spectral::Basis::Chebyshev,
+                               SpatialDiscretization::Basis::Chebyshev,
                            "Don't yet support Chebyshev basis with DG-FD");
                     return directional_element_id_and_mesh.second.basis(0) ==
-                           Spectral::Basis::Legendre;
+                           SpatialDiscretization::Basis::Legendre;
                   })) {
     *ghost_data_mesh = dg_mesh;
     const size_t total_to_slice = directions_to_slice.size();

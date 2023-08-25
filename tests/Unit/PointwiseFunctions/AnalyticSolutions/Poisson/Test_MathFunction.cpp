@@ -142,8 +142,8 @@ void test_solution() {
             {{-1., 1., 0., 2.}, {-1., 1., 0., 2.}, {-1., 1., 0., 2.}}};
       }
     }();
-    const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+    const Mesh<Dim> mesh{12, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, mesh, coord_map, 2.e-4);
   }

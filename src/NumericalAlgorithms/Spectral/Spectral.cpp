@@ -26,80 +26,20 @@
 
 namespace Spectral {
 
-std::ostream& operator<<(std::ostream& os, const Basis& basis) {
-  switch (basis) {
-    case Basis::Legendre:
-      return os << "Legendre";
-    case Basis::Chebyshev:
-      return os << "Chebyshev";
-    case Basis::FiniteDifference:
-      return os << "FiniteDifference";
-    case Basis::SphericalHarmonic:
-      return os << "SphericalHarmonic";
-    default:
-      ERROR("Invalid basis");
-  }
-}
-
-std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature) {
-  switch (quadrature) {
-    case Quadrature::Gauss:
-      return os << "Gauss";
-    case Quadrature::GaussLobatto:
-      return os << "GaussLobatto";
-    case Quadrature::CellCentered:
-      return os << "CellCentered";
-    case Quadrature::FaceCentered:
-      return os << "FaceCentered";
-    case Quadrature::Equiangular:
-      return os << "Equiangular";
-    default:
-      ERROR("Invalid quadrature");
-  }
-}
-
-Basis to_basis(const std::string& basis) {
-  if ("Chebyshev" == basis) {
-    return Spectral::Basis::Chebyshev;
-  } else if ("Legendre" == basis) {
-    return Spectral::Basis::Legendre;
-  } else if ("FiniteDifference" == basis) {
-    return Spectral::Basis::FiniteDifference;
-  } else if ("SphericalHarmonic" == basis) {
-    return Spectral::Basis::SphericalHarmonic;
-  }
-  ERROR("Unknown basis " << basis);
-}
-
-Quadrature to_quadrature(const std::string& quadrature) {
-  if ("Gauss" == quadrature) {
-    return Spectral::Quadrature::Gauss;
-  } else if ("GaussLobatto" == quadrature) {
-    return Spectral::Quadrature::GaussLobatto;
-  } else if ("CellCentered" == quadrature) {
-    return Spectral::Quadrature::CellCentered;
-  } else if ("FaceCentered" == quadrature) {
-    return Spectral::Quadrature::FaceCentered;
-  } else if ("Equiangular" == quadrature) {
-    return Spectral::Quadrature::Equiangular;
-  }
-  ERROR("Unknown quadrature " << quadrature);
-}
-
-template <Basis BasisType>
+template <SpatialDiscretization::Basis Basis>
 Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 namespace {
 
 // Caching mechanism
 
-template <Basis BasisType, Quadrature QuadratureType,
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature,
           typename SpectralQuantityGenerator>
 const auto& precomputed_spectral_quantity(const size_t num_points) {
-  constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+  constexpr size_t max_num_points = Spectral::maximum_number_of_points<Basis>;
   constexpr size_t min_num_points =
-      Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+      Spectral::minimum_number_of_points<Basis, Quadrature>;
   ASSERT(num_points >= min_num_points,
          "Tried to work with less than the minimum number of collocation "
          "points for this quadrature.");
@@ -115,36 +55,36 @@ const auto& precomputed_spectral_quantity(const size_t num_points) {
   return precomputed_data(num_points);
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct CollocationPointsAndWeightsGenerator {
   std::pair<DataVector, DataVector> operator()(const size_t num_points) const {
-    return compute_collocation_points_and_weights<BasisType, QuadratureType>(
+    return compute_collocation_points_and_weights<Basis, Quadrature>(
         num_points);
   }
 };
 
 // Computation of basis-agnostic quantities
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct QuadratureWeightsGenerator {
   DataVector operator()(const size_t num_points) const {
     const auto& pts_and_weights = precomputed_spectral_quantity<
-        BasisType, QuadratureType,
-        CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
-        num_points);
+        Basis, Quadrature,
+        CollocationPointsAndWeightsGenerator<Basis, Quadrature>>(num_points);
     return pts_and_weights.second *
-           compute_inverse_weight_function_values<BasisType>(
-               pts_and_weights.first);
+           compute_inverse_weight_function_values<Basis>(pts_and_weights.first);
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct BarycentricWeightsGenerator {
   DataVector operator()(const size_t num_points) const {
     // Algorithm 30 in Kopriva, p. 75
     // This is valid for any collocation points.
-    const DataVector& x =
-        collocation_points<BasisType, QuadratureType>(num_points);
+    const DataVector& x = collocation_points<Basis, Quadrature>(num_points);
     DataVector bary_weights(num_points, 1.);
     for (size_t j = 1; j < num_points; j++) {
       for (size_t k = 0; k < j; k++) {
@@ -161,23 +101,25 @@ struct BarycentricWeightsGenerator {
 
 // We don't need this as part of the public interface, but precompute it since
 // `interpolation_matrix` needs it at runtime.
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const DataVector& barycentric_weights(const size_t num_points) {
   return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      BarycentricWeightsGenerator<BasisType, QuadratureType>>(num_points);
+      Basis, Quadrature, BarycentricWeightsGenerator<Basis, Quadrature>>(
+      num_points);
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct DifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     // Algorithm 37 in Kopriva, p. 82
     // It is valid for any collocation points and barycentric weights.
     const DataVector& collocation_pts =
-        collocation_points<BasisType, QuadratureType>(num_points);
+        collocation_points<Basis, Quadrature>(num_points);
     Matrix diff_matrix(num_points, num_points);
-    if constexpr (BasisType == Spectral::Basis::FiniteDifference) {
-      ASSERT(QuadratureType == Spectral::Quadrature::CellCentered,
+    if constexpr (Basis == SpatialDiscretization::Basis::FiniteDifference) {
+      ASSERT(Quadrature == SpatialDiscretization::Quadrature::CellCentered,
              "Currently only support cell-centered SBP FD derivatives. Most "
              "likely supporting cell- or vertex-centered just requires "
              "removing this ASSERT and adding tests.");
@@ -488,7 +430,7 @@ struct DifferentiationMatrixGenerator {
       }
     } else {
       const DataVector& bary_weights =
-          barycentric_weights<BasisType, QuadratureType>(num_points);
+          barycentric_weights<Basis, Quadrature>(num_points);
       for (size_t i = 0; i < num_points; ++i) {
         double& diagonal = diff_matrix(i, i) = 0.0;
         for (size_t j = 0; j < num_points; ++j) {
@@ -505,10 +447,11 @@ struct DifferentiationMatrixGenerator {
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct WeakFluxDifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
-    if (BasisType != Basis::Legendre) {
+    if (Basis != SpatialDiscretization::Basis::Legendre) {
       // We cannot use a `static_assert` because of the way our instantiation
       // macros work for creating matrices
       ERROR(
@@ -516,10 +459,10 @@ struct WeakFluxDifferentiationMatrixGenerator {
           "polynomials.");
     }
     const DataVector& weights =
-        quadrature_weights<BasisType, QuadratureType>(num_points);
+        quadrature_weights<Basis, Quadrature>(num_points);
 
     Matrix weak_diff_matrix =
-        DifferentiationMatrixGenerator<BasisType, QuadratureType>{}.operator()(
+        DifferentiationMatrixGenerator<Basis, Quadrature>{}.operator()(
             num_points);
     transpose(weak_diff_matrix);
     for (size_t i = 0; i < num_points; ++i) {
@@ -531,29 +474,29 @@ struct WeakFluxDifferentiationMatrixGenerator {
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct IntegrationMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
-    return Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(
-               num_points) *
-           spectral_indefinite_integral_matrix<BasisType>(num_points) *
-           Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(
-               num_points);
+    return Spectral::modal_to_nodal_matrix<Basis, Quadrature>(num_points) *
+           spectral_indefinite_integral_matrix<Basis>(num_points) *
+           Spectral::nodal_to_modal_matrix<Basis, Quadrature>(num_points);
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct ModalToNodalMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     // To obtain the Vandermonde matrix we need to compute the basis function
     // values at the collocation points. Constructing the matrix proceeds
     // the same for any basis.
     const DataVector& collocation_pts =
-        collocation_points<BasisType, QuadratureType>(num_points);
+        collocation_points<Basis, Quadrature>(num_points);
     Matrix vandermonde_matrix(num_points, num_points);
     for (size_t j = 0; j < num_points; j++) {
       const auto& basis_function_values =
-          compute_basis_function_value<BasisType>(j, collocation_pts);
+          compute_basis_function_value<Basis>(j, collocation_pts);
       for (size_t i = 0; i < num_points; i++) {
         vandermonde_matrix(i, j) = basis_function_values[i];
       }
@@ -562,16 +505,18 @@ struct ModalToNodalMatrixGenerator {
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct NodalToModalMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     // Numerically invert the matrix for this generic case
-    return inv(modal_to_nodal_matrix<BasisType, QuadratureType>(num_points));
+    return inv(modal_to_nodal_matrix<Basis, Quadrature>(num_points));
   }
 };
 
-template <Basis BasisType>
-struct NodalToModalMatrixGenerator<BasisType, Quadrature::Gauss> {
+template <SpatialDiscretization::Basis Basis>
+struct NodalToModalMatrixGenerator<Basis,
+                                   SpatialDiscretization::Quadrature::Gauss> {
   using data_type = Matrix;
   Matrix operator()(const size_t num_points) const {
     // For Gauss quadrature we implement the analytic expression
@@ -579,26 +524,28 @@ struct NodalToModalMatrixGenerator<BasisType, Quadrature::Gauss> {
     // (see description of `nodal_to_modal_matrix`).
     const DataVector& weights =
         precomputed_spectral_quantity<
-            BasisType, Quadrature::Gauss,
-            CollocationPointsAndWeightsGenerator<BasisType, Quadrature::Gauss>>(
-            num_points)
+            Basis, SpatialDiscretization::Quadrature::Gauss,
+            CollocationPointsAndWeightsGenerator<
+                Basis, SpatialDiscretization::Quadrature::Gauss>>(num_points)
             .second;
     const Matrix& vandermonde_matrix =
-        modal_to_nodal_matrix<BasisType, Quadrature::Gauss>(num_points);
+        modal_to_nodal_matrix<Basis, SpatialDiscretization::Quadrature::Gauss>(
+            num_points);
     Matrix vandermonde_inverse(num_points, num_points);
     // This should be vectorized when the functionality is implemented.
     for (size_t i = 0; i < num_points; i++) {
       for (size_t j = 0; j < num_points; j++) {
         vandermonde_inverse(i, j) =
             vandermonde_matrix(j, i) * weights[j] /
-            compute_basis_function_normalization_square<BasisType>(i);
+            compute_basis_function_normalization_square<Basis>(i);
       }
     }
     return vandermonde_inverse;
   }
 };
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct LinearFilterMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     // We implement the expression
@@ -608,13 +555,12 @@ struct LinearFilterMatrixGenerator {
     // `nodal_to_modal_matrix` with the first two rows of
     // `modal_to_nodal_matrix`.
     Matrix lin_filter(num_points, num_points);
-    dgemm_(
-        'N', 'N', num_points, num_points, std::min(size_t{2}, num_points), 1.0,
-        modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).data(),
-        modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).spacing(),
-        nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).data(),
-        nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).spacing(),
-        0.0, lin_filter.data(), lin_filter.spacing());
+    dgemm_('N', 'N', num_points, num_points, std::min(size_t{2}, num_points),
+           1.0, modal_to_nodal_matrix<Basis, Quadrature>(num_points).data(),
+           modal_to_nodal_matrix<Basis, Quadrature>(num_points).spacing(),
+           nodal_to_modal_matrix<Basis, Quadrature>(num_points).data(),
+           nodal_to_modal_matrix<Basis, Quadrature>(num_points).spacing(), 0.0,
+           lin_filter.data(), lin_filter.spacing());
     return lin_filter;
   }
 };
@@ -623,32 +569,34 @@ struct LinearFilterMatrixGenerator {
 
 // Public interface
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const DataVector& collocation_points(const size_t num_points) {
   return precomputed_spectral_quantity<
-             BasisType, QuadratureType,
-             CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
+             Basis, Quadrature,
+             CollocationPointsAndWeightsGenerator<Basis, Quadrature>>(
              num_points)
       .first;
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const DataVector& quadrature_weights(const size_t num_points) {
   return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      QuadratureWeightsGenerator<BasisType, QuadratureType>>(num_points);
+      Basis, Quadrature, QuadratureWeightsGenerator<Basis, Quadrature>>(
+      num_points);
 }
 
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
-#define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type, \
-                                      generator_name)             \
-  template <Basis BasisType, Quadrature QuadratureType>           \
-  const return_type& function_name(const size_t num_points) {     \
-    return precomputed_spectral_quantity<                         \
-        BasisType, QuadratureType,                                \
-        generator_name<BasisType, QuadratureType>>(/* NOLINT */   \
-                                                   num_points);   \
+#define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type,          \
+                                      generator_name)                      \
+  template <SpatialDiscretization::Basis Basis,                            \
+            SpatialDiscretization::Quadrature Quadrature>                  \
+  const return_type& function_name(const size_t num_points) {              \
+    return precomputed_spectral_quantity<                                  \
+        Basis, Quadrature, generator_name<Basis, Quadrature>>(/* NOLINT */ \
+                                                              num_points); \
   }
 
 PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
@@ -666,21 +614,21 @@ PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
 
 #undef PRECOMPUTED_SPECTRAL_QUANTITY
 
-template <Basis BasisType, Quadrature QuadratureType, typename T>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature, typename T>
 Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
-  constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+  constexpr size_t max_num_points = Spectral::maximum_number_of_points<Basis>;
   constexpr size_t min_num_points =
-      Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+      Spectral::minimum_number_of_points<Basis, Quadrature>;
   ASSERT(num_points >= min_num_points,
          "Tried to work with less than the minimum number of collocation "
          "points for this quadrature.");
   ASSERT(num_points <= max_num_points,
          "Exceeded maximum number of collocation points.");
   const DataVector& collocation_pts =
-      collocation_points<BasisType, QuadratureType>(num_points);
+      collocation_points<Basis, Quadrature>(num_points);
   const DataVector& bary_weights =
-      barycentric_weights<BasisType, QuadratureType>(num_points);
+      barycentric_weights<Basis, Quadrature>(num_points);
   const size_t num_target_points = get_size(target_points);
   Matrix interp_matrix(num_target_points, num_points);
   // Algorithm 32 in Kopriva, p. 76
@@ -713,57 +661,57 @@ Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
   return interp_matrix;
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
     const size_t num_points) {
-  static_assert(BasisType == Spectral::Basis::Legendre);
+  static_assert(Basis == SpatialDiscretization::Basis::Legendre);
   static_assert(
-      QuadratureType == Spectral::Quadrature::Gauss,
+      Quadrature == SpatialDiscretization::Quadrature::Gauss,
       "We only compute the boundary interpolation for Gauss quadrature "
       "since for Gauss-Lobatto you can just copy values off the volume.");
   static const auto cache = make_static_cache<
-      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+      CacheRange<Spectral::minimum_number_of_points<Basis, Quadrature>,
+                 Spectral::maximum_number_of_points<Basis>>>(
       [](const size_t local_num_points) {
         return std::pair<Matrix, Matrix>{
-            interpolation_matrix<BasisType, QuadratureType>(local_num_points,
-                                                            -1.0),
-            interpolation_matrix<BasisType, QuadratureType>(local_num_points,
-                                                            1.0)};
+            interpolation_matrix<Basis, Quadrature>(local_num_points, -1.0),
+            interpolation_matrix<Basis, Quadrature>(local_num_points, 1.0)};
       });
   return cache(num_points);
 }
 
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
     const Mesh<1>& mesh) {
-  ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
+  ASSERT(mesh.basis(0) == SpatialDiscretization::Basis::Legendre,
          "We only support DG with a Legendre basis.");
-  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
+  ASSERT(mesh.quadrature(0) == SpatialDiscretization::Quadrature::Gauss,
          "We only compute the boundary interpolation for Gauss quadrature "
          "since for Gauss-Lobatto you can just copy values off the volume.");
-  return boundary_interpolation_matrices<Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::Gauss>(
-      mesh.extents(0));
+  return boundary_interpolation_matrices<
+      SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::Gauss>(mesh.extents(0));
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
     const size_t num_points) {
-  static_assert(BasisType == Spectral::Basis::Legendre);
+  static_assert(Basis == SpatialDiscretization::Basis::Legendre);
   static_assert(
-      QuadratureType == Spectral::Quadrature::Gauss,
+      Quadrature == SpatialDiscretization::Quadrature::Gauss,
       "We only compute the time derivative correction interpolation for Gauss "
       "quadrature since for Gauss-Lobatto you can just copy values off the "
       "volume.");
   static const auto cache = make_static_cache<
-      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+      CacheRange<Spectral::minimum_number_of_points<Basis, Quadrature>,
+                 Spectral::maximum_number_of_points<Basis>>>(
       [](const size_t local_num_points) {
-        const Matrix interp_matrix =
-            interpolation_matrix<BasisType, Quadrature::GaussLobatto>(
-                local_num_points == 1 ? 2 : local_num_points,
-                collocation_points<BasisType, Quadrature::Gauss>(
-                    local_num_points));
+        const Matrix interp_matrix = interpolation_matrix<
+            Basis, SpatialDiscretization::Quadrature::GaussLobatto>(
+            local_num_points == 1 ? 2 : local_num_points,
+            collocation_points<Basis, SpatialDiscretization::Quadrature::Gauss>(
+                local_num_points));
 
         std::pair<DataVector, DataVector> result{DataVector{local_num_points},
                                                  DataVector{local_num_points}};
@@ -778,32 +726,33 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
 
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
     const Mesh<1>& mesh) {
-  ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
+  ASSERT(mesh.basis(0) == SpatialDiscretization::Basis::Legendre,
          "We only support DG with a Legendre basis.");
   ASSERT(
-      mesh.quadrature(0) == Spectral::Quadrature::Gauss,
+      mesh.quadrature(0) == SpatialDiscretization::Quadrature::Gauss,
       "We only compute the time derivative correction interpolation for Gauss "
       "quadrature since for Gauss-Lobatto you can just copy values off the "
       "volume.");
-  return boundary_interpolation_term<Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::Gauss>(
+  return boundary_interpolation_term<SpatialDiscretization::Basis::Legendre,
+                                     SpatialDiscretization::Quadrature::Gauss>(
       mesh.extents(0));
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
     const size_t num_points) {
-  static_assert(BasisType == Spectral::Basis::Legendre);
+  static_assert(Basis == SpatialDiscretization::Basis::Legendre);
   static_assert(
-      QuadratureType == Spectral::Quadrature::Gauss,
+      Quadrature == SpatialDiscretization::Quadrature::Gauss,
       "We only compute the boundary lifting for Gauss quadrature "
       "since for Gauss-Lobatto you can just copy values off the volume.");
   static const auto cache = make_static_cache<
-      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+      CacheRange<Spectral::minimum_number_of_points<Basis, Quadrature>,
+                 Spectral::maximum_number_of_points<Basis>>>(
       [](const size_t local_num_points) {
         const auto& matrices =
-            boundary_interpolation_matrices<BasisType, QuadratureType>(
+            boundary_interpolation_matrices<Basis, Quadrature>(
                 local_num_points);
         std::pair<DataVector, DataVector> result{DataVector{local_num_points},
                                                  DataVector{local_num_points}};
@@ -812,7 +761,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
           result.second[i] = matrices.second(0, i);
         }
         const DataVector& quad_weights =
-            quadrature_weights<BasisType, QuadratureType>(local_num_points);
+            quadrature_weights<Basis, Quadrature>(local_num_points);
         result.first /= quad_weights;
         result.second /= quad_weights;
         return result;
@@ -822,13 +771,14 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
 
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
     const Mesh<1>& mesh) {
-  ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
+  ASSERT(mesh.basis(0) == SpatialDiscretization::Basis::Legendre,
          "We only support DG with a Legendre basis.");
-  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
+  ASSERT(mesh.quadrature(0) == SpatialDiscretization::Quadrature::Gauss,
          "We only compute the boundary lifting for Gauss quadrature "
          "since for Gauss-Lobatto you can just copy values off the volume.");
-  return boundary_lifting_term<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>(mesh.extents(0));
+  return boundary_lifting_term<SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss>(
+      mesh.extents(0));
 }
 
 namespace {
@@ -841,46 +791,66 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
   // multiple dimensions we can generalize this function to take a
   // higher-dimensional Mesh.
   switch (mesh.basis(0)) {
-    case Basis::Legendre:
+    case SpatialDiscretization::Basis::Legendre:
       switch (mesh.quadrature(0)) {
-        case Quadrature::Gauss:
-          return f(std::integral_constant<Basis, Basis::Legendre>{},
-                   std::integral_constant<Quadrature, Quadrature::Gauss>{},
-                   num_points);
-        case Quadrature::GaussLobatto:
+        case SpatialDiscretization::Quadrature::Gauss:
           return f(
-              std::integral_constant<Basis, Basis::Legendre>{},
-              std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
+              std::integral_constant<SpatialDiscretization::Basis,
+                                     SpatialDiscretization::Basis::Legendre>{},
+              std::integral_constant<
+                  SpatialDiscretization::Quadrature,
+                  SpatialDiscretization::Quadrature::Gauss>{},
+              num_points);
+        case SpatialDiscretization::Quadrature::GaussLobatto:
+          return f(
+              std::integral_constant<SpatialDiscretization::Basis,
+                                     SpatialDiscretization::Basis::Legendre>{},
+              std::integral_constant<
+                  SpatialDiscretization::Quadrature,
+                  SpatialDiscretization::Quadrature::GaussLobatto>{},
               num_points);
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
-    case Basis::Chebyshev:
+    case SpatialDiscretization::Basis::Chebyshev:
       switch (mesh.quadrature(0)) {
-        case Quadrature::Gauss:
-          return f(std::integral_constant<Basis, Basis::Chebyshev>{},
-                   std::integral_constant<Quadrature, Quadrature::Gauss>{},
-                   num_points);
-        case Quadrature::GaussLobatto:
+        case SpatialDiscretization::Quadrature::Gauss:
           return f(
-              std::integral_constant<Basis, Basis::Chebyshev>{},
-              std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
+              std::integral_constant<SpatialDiscretization::Basis,
+                                     SpatialDiscretization::Basis::Chebyshev>{},
+              std::integral_constant<
+                  SpatialDiscretization::Quadrature,
+                  SpatialDiscretization::Quadrature::Gauss>{},
+              num_points);
+        case SpatialDiscretization::Quadrature::GaussLobatto:
+          return f(
+              std::integral_constant<SpatialDiscretization::Basis,
+                                     SpatialDiscretization::Basis::Chebyshev>{},
+              std::integral_constant<
+                  SpatialDiscretization::Quadrature,
+                  SpatialDiscretization::Quadrature::GaussLobatto>{},
               num_points);
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
-    case Basis::FiniteDifference:
+    case SpatialDiscretization::Basis::FiniteDifference:
       switch (mesh.quadrature(0)) {
-        case Quadrature::CellCentered:
-          return f(
-              std::integral_constant<Basis, Basis::FiniteDifference>{},
-              std::integral_constant<Quadrature, Quadrature::CellCentered>{},
-              num_points);
-        case Quadrature::FaceCentered:
-          return f(
-              std::integral_constant<Basis, Basis::FiniteDifference>{},
-              std::integral_constant<Quadrature, Quadrature::FaceCentered>{},
-              num_points);
+        case SpatialDiscretization::Quadrature::CellCentered:
+          return f(std::integral_constant<
+                       SpatialDiscretization::Basis,
+                       SpatialDiscretization::Basis::FiniteDifference>{},
+                   std::integral_constant<
+                       SpatialDiscretization::Quadrature,
+                       SpatialDiscretization::Quadrature::CellCentered>{},
+                   num_points);
+        case SpatialDiscretization::Quadrature::FaceCentered:
+          return f(std::integral_constant<
+                       SpatialDiscretization::Basis,
+                       SpatialDiscretization::Basis::FiniteDifference>{},
+                   std::integral_constant<
+                       SpatialDiscretization::Quadrature,
+                       SpatialDiscretization::Quadrature::FaceCentered>{},
+                   num_points);
         default:
           ERROR(
               "Only CellCentered and FaceCentered are supported for finite "
@@ -963,58 +933,27 @@ template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
                                                const double&);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
-                        (Spectral::Basis::Chebyshev, Spectral::Basis::Legendre),
-                        (Spectral::Quadrature::Gauss,
-                         Spectral::Quadrature::GaussLobatto))
+                        (SpatialDiscretization::Basis::Chebyshev,
+                         SpatialDiscretization::Basis::Legendre),
+                        (SpatialDiscretization::Quadrature::Gauss,
+                         SpatialDiscretization::Quadrature::GaussLobatto))
 
 #undef BASIS
 #undef QUAD
 #undef INSTANTIATE
 
-template const DataVector&
-    Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered>(size_t);
-template const DataVector&
-    Spectral::quadrature_weights<Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered>(size_t);
-template const DataVector&
-    Spectral::collocation_points<Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::FaceCentered>(size_t);
-template const DataVector&
-    Spectral::quadrature_weights<Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::FaceCentered>(size_t);
+template const DataVector& Spectral::collocation_points<
+    SpatialDiscretization::Basis::FiniteDifference,
+    SpatialDiscretization::Quadrature::CellCentered>(size_t);
+template const DataVector& Spectral::quadrature_weights<
+    SpatialDiscretization::Basis::FiniteDifference,
+    SpatialDiscretization::Quadrature::CellCentered>(size_t);
+template const DataVector& Spectral::collocation_points<
+    SpatialDiscretization::Basis::FiniteDifference,
+    SpatialDiscretization::Quadrature::FaceCentered>(size_t);
+template const DataVector& Spectral::quadrature_weights<
+    SpatialDiscretization::Basis::FiniteDifference,
+    SpatialDiscretization::Quadrature::FaceCentered>(size_t);
 template const Matrix& Spectral::differentiation_matrix<
-    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
-    size_t);
-
-template <>
-Spectral::Quadrature
-Options::create_from_yaml<Spectral::Quadrature>::create<void>(
-    const Options::Option& options) {
-  const auto type_read = options.parse_as<std::string>();
-  try {
-    return Spectral::to_quadrature(type_read);
-  } catch (const std::exception& /*e*/) {
-    PARSE_ERROR(
-        options.context(),
-        "Failed to convert \""
-            << type_read
-            << "\" to Spectral::Quadrature. Must be one "
-               "of Gauss, GaussLobatto, CellCentered, or FaceCentered.");
-  }
-}
-
-template <>
-Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
-    const Options::Option& options) {
-  const auto type_read = options.parse_as<std::string>();
-  try {
-    return Spectral::to_basis(type_read);
-  } catch (const std::exception& /*e*/) {
-    PARSE_ERROR(options.context(),
-                "Failed to convert \""
-                    << type_read
-                    << "\" to Spectral::Basis. Must be one "
-                       "of Chebyshev, Legendre, or FiniteDifference.");
-  }
-}
+    SpatialDiscretization::Basis::FiniteDifference,
+    SpatialDiscretization::Quadrature::CellCentered>(size_t);

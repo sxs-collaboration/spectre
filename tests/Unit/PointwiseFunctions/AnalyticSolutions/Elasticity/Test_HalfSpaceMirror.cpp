@@ -140,8 +140,8 @@ SPECTRE_TEST_CASE(
     const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
                                 AffineMap3D>
         coord_map{{{-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}}};
-    const Mesh<3> mesh{12, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<3> mesh{12, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
     const auto logical_coords = logical_coordinates(mesh);
     const auto inertial_coords = coord_map(logical_coords);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(

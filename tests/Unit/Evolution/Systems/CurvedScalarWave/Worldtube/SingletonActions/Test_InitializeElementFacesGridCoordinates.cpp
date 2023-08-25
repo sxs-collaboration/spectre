@@ -34,7 +34,7 @@ namespace CurvedScalarWave::Worldtube {
 namespace {
 void test_initialize_element_faces_coordinates_map(
     const DomainCreator<3>& domain_creator,
-    const Spectral::Quadrature& quadrature) {
+    const SpatialDiscretization::Quadrature& quadrature) {
   static constexpr size_t Dim = 3;
   const auto domain = domain_creator.create_domain();
   const auto& excision_spheres = domain.excision_spheres();
@@ -80,7 +80,7 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   for (const auto initial_refinement : std::array<size_t, 2>{{0, 1}}) {
     const size_t initial_extents = 3;
-    const auto quadrature = Spectral::Quadrature::GaussLobatto;
+    const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
     CAPTURE(initial_refinement);
     CAPTURE(quadrature);
     INFO("Testing Shell time independent");

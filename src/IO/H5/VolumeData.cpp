@@ -83,8 +83,8 @@ void append_element_extents_and_connectivity(
   // If element is 2D and the bases are both SphericalHarmonic,
   // then add extra connections to close the surface.
   if (dim == 2) {
-    if (element.basis[0] == Spectral::Basis::SphericalHarmonic and
-        element.basis[1] == Spectral::Basis::SphericalHarmonic) {
+    if (element.basis[0] == SpatialDiscretization::Basis::SphericalHarmonic and
+        element.basis[1] == SpatialDiscretization::Basis::SphericalHarmonic) {
       // Extents are (l+1, 2l+1)
       const size_t l = element.extents[0] - 1;
 
@@ -275,13 +275,14 @@ void VolumeData::write_volume_data(
               // True if first tensor component being accessed
               grid_names += element.element_name + h5::VolumeData::separator();
               // append element basis
-              alg::transform(
-                  element.basis, std::back_inserter(bases),
-                  [](const Spectral::Basis t) { return static_cast<int>(t); });
+              alg::transform(element.basis, std::back_inserter(bases),
+                             [](const SpatialDiscretization::Basis t) {
+                               return static_cast<int>(t);
+                             });
               // append element quadraature
               alg::transform(element.quadrature,
                              std::back_inserter(quadratures),
-                             [](const Spectral::Quadrature t) {
+                             [](const SpatialDiscretization::Quadrature t) {
                                return static_cast<int>(t);
                              });
 
@@ -335,7 +336,7 @@ void VolumeData::write_volume_data(
   const auto io_quadratures = h5_detail::allowed_quadratures();
   std::vector<std::string> quadrature_dict(io_quadratures.size());
   alg::transform(io_quadratures, quadrature_dict.begin(),
-                 get_output<Spectral::Quadrature>);
+                 get_output<SpatialDiscretization::Quadrature>);
   h5_detail::write_dictionary("Quadrature dictionary", quadrature_dict,
                               observation_group);
   h5::write_data(observation_group.id(), quadratures, {quadratures.size()},
@@ -343,7 +344,8 @@ void VolumeData::write_volume_data(
   // Write the coded basis, along with the dictionary
   const auto io_bases = h5_detail::allowed_bases();
   std::vector<std::string> basis_dict(io_bases.size());
-  alg::transform(io_bases, basis_dict.begin(), get_output<Spectral::Basis>);
+  alg::transform(io_bases, basis_dict.begin(),
+                 get_output<SpatialDiscretization::Basis>);
   h5_detail::write_dictionary("Basis dictionary", basis_dict,
                               observation_group);
   h5::write_data(observation_group.id(), bases, {bases.size()}, "bases");
@@ -666,7 +668,7 @@ size_t VolumeData::get_dimension() const {
   return h5::read_value_attribute<double>(volume_data_group_.id(), "dimension");
 }
 
-std::vector<std::vector<Spectral::Basis>> VolumeData::get_bases(
+std::vector<std::vector<SpatialDiscretization::Basis>> VolumeData::get_bases(
     const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
@@ -680,18 +682,32 @@ std::vector<std::vector<Spectral::Basis>> VolumeData::get_bases(
   const auto all_bases = h5_detail::decode_with_dictionary_name(
       "Basis dictionary", bases_coded, observation_group);
 
-  std::vector<std::vector<Spectral::Basis>> element_bases;
+  std::vector<std::vector<SpatialDiscretization::Basis>> element_bases;
+
+  const auto to_basis = [](const std::string& input_basis) {
+    for (const auto basis : h5_detail::allowed_bases()) {
+      if (input_basis == get_output(basis)) {
+        return basis;
+      }
+    }
+    using ::operator<<;
+    ERROR("Failed to convert \""
+          << input_basis
+          << "\" to SpatialDiscretization::Basis.\nMust be one of "
+          << h5_detail::allowed_bases() << ".");
+  };
+
   for (auto iter = all_bases.begin(); iter != all_bases.end();
        std::advance(iter, bases_per_element)) {
     element_bases.emplace_back(
-        boost::make_transform_iterator(iter, Spectral::to_basis),
+        boost::make_transform_iterator(iter, to_basis),
         boost::make_transform_iterator(std::next(iter, bases_per_element),
-                                       Spectral::to_basis));
+                                       to_basis));
   }
   return element_bases;
 }
-std::vector<std::vector<Spectral::Quadrature>> VolumeData::get_quadratures(
-    const size_t observation_id) const {
+std::vector<std::vector<SpatialDiscretization::Quadrature>>
+VolumeData::get_quadratures(const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -702,13 +718,28 @@ std::vector<std::vector<Spectral::Quadrature>> VolumeData::get_quadratures(
       h5::read_data<1, std::vector<int>>(observation_group.id(), "quadratures");
   const auto all_quadratures = h5_detail::decode_with_dictionary_name(
       "Quadrature dictionary", quadratures_coded, observation_group);
-  std::vector<std::vector<Spectral::Quadrature>> element_quadratures;
+  std::vector<std::vector<SpatialDiscretization::Quadrature>>
+      element_quadratures;
+
+  const auto to_quadrature = [](const std::string& input_quadrature) {
+    for (const auto quadrature : h5_detail::allowed_quadratures()) {
+      if (input_quadrature == get_output(quadrature)) {
+        return quadrature;
+      }
+    }
+    using ::operator<<;
+    ERROR("Failed to convert \""
+          << input_quadrature
+          << "\" to SpatialDiscretization::Quadrature.\nMust be one of "
+          << h5_detail::allowed_quadratures() << ".");
+  };
+
   for (auto iter = all_quadratures.begin(); iter != all_quadratures.end();
        std::advance(iter, quadratures_per_element)) {
     element_quadratures.emplace_back(
-        boost::make_transform_iterator(iter, Spectral::to_quadrature),
+        boost::make_transform_iterator(iter, to_quadrature),
         boost::make_transform_iterator(std::next(iter, quadratures_per_element),
-                                       Spectral::to_quadrature));
+                                       to_quadrature));
   }
   return element_quadratures;
 }
@@ -742,8 +773,9 @@ Mesh<Dim> mesh_for_grid(
     const std::string& grid_name,
     const std::vector<std::string>& all_grid_names,
     const std::vector<std::vector<size_t>>& all_extents,
-    const std::vector<std::vector<Spectral::Basis>>& all_bases,
-    const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures) {
+    const std::vector<std::vector<SpatialDiscretization::Basis>>& all_bases,
+    const std::vector<std::vector<SpatialDiscretization::Quadrature>>&
+        all_quadratures) {
   const auto found_grid_name = alg::find(all_grid_names, grid_name);
   if (found_grid_name == all_grid_names.end()) {
     ERROR("Found no grid named '" + grid_name + "'.");
@@ -763,23 +795,25 @@ Mesh<Dim> mesh_for_grid(
                                           << Dim << "D should have size " << Dim
                                           << ", but found size "
                                           << quadratures.size() << ".");
-    return Mesh<Dim>{make_array<size_t, Dim>(extents),
-                     make_array<Spectral::Basis, Dim>(bases),
-                     make_array<Spectral::Quadrature, Dim>(quadratures)};
+    return Mesh<Dim>{
+        make_array<size_t, Dim>(extents),
+        make_array<SpatialDiscretization::Basis, Dim>(bases),
+        make_array<SpatialDiscretization::Quadrature, Dim>(quadratures)};
   }
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                         \
-  template void h5::VolumeData::extend_connectivity_data<DIM(data)>( \
-      const std::vector<size_t>& observation_ids);                   \
-  template Mesh<DIM(data)> mesh_for_grid(                            \
-      const std::string& grid_name,                                  \
-      const std::vector<std::string>& all_grid_names,                \
-      const std::vector<std::vector<size_t>>& all_extents,           \
-      const std::vector<std::vector<Spectral::Basis>>& all_bases,    \
-      const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures);
+#define INSTANTIATE(_, data)                                                   \
+  template void h5::VolumeData::extend_connectivity_data<DIM(data)>(           \
+      const std::vector<size_t>& observation_ids);                             \
+  template Mesh<DIM(data)> mesh_for_grid(                                      \
+      const std::string& grid_name,                                            \
+      const std::vector<std::string>& all_grid_names,                          \
+      const std::vector<std::vector<size_t>>& all_extents,                     \
+      const std::vector<std::vector<SpatialDiscretization::Basis>>& all_bases, \
+      const std::vector<std::vector<SpatialDiscretization::Quadrature>>&       \
+          all_quadratures);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

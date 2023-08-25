@@ -305,8 +305,8 @@ struct PreSwshDerivatives<Tags::Dy<Tag>> {
               Spectral::Swsh::number_of_swsh_phi_collocation_points(l_max),
               get(val).size() /
                   Spectral::Swsh::number_of_swsh_collocation_points(l_max)}},
-            Spectral::Basis::Legendre,
-            Spectral::Quadrature::GaussLobatto},
+            SpatialDiscretization::Basis::Legendre,
+            SpatialDiscretization::Quadrature::GaussLobatto},
         // 2 for differentiating in y; coordinate ordering is:
         // {\phi, \theta, y}.
         2);
@@ -416,8 +416,8 @@ struct PreSwshDerivatives<
               Spectral::Swsh::number_of_swsh_phi_collocation_points(l_max),
               get(val).size() /
                   Spectral::Swsh::number_of_swsh_collocation_points(l_max)}},
-            Spectral::Basis::Legendre,
-            Spectral::Quadrature::GaussLobatto},
+            SpatialDiscretization::Basis::Legendre,
+            SpatialDiscretization::Quadrature::GaussLobatto},
         // 2 for differentiating in y; coordinate ordering is:
         // {\phi, \theta, y}.
         2);

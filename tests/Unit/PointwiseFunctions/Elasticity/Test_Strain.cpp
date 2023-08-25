@@ -97,8 +97,8 @@ void test_strain() {
             &Elasticity::strain<DataVector, Dim>),
         "Strain", {"strain_curved"}, {{{-1., 1.}}}, used_for_size);
   }
-  const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> mesh{3, SpatialDiscretization::Basis::Legendre,
+                       SpatialDiscretization::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
   const auto coord_map = make_coord_map<Dim>();
   const auto inertial_coords = coord_map(logical_coords);

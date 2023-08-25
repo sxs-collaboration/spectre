@@ -127,36 +127,36 @@ void check_grid_point_transform_no_href(const Mesh<VolumeDim>& local_mesh,
 void test_grid_helpers_1d() {
   INFO("Testing WENO grid helpers in 1D");
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const Mesh<1> mesh({{6}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh({{6}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
 
-  const Mesh<1> other_mesh({{6}}, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::Gauss);
+  const Mesh<1> other_mesh({{6}}, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::Gauss);
   check_grid_point_transform_no_href(mesh, other_mesh, element);
 }
 
 void test_grid_helpers_2d() {
   INFO("Testing WENO grid helpers in 2D");
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const Mesh<2> mesh({{5, 6}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh({{5, 6}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
 
-  const Mesh<2> other_mesh({{4, 6}}, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> other_mesh({{4, 6}}, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, other_mesh, element);
 }
 
 void test_grid_helpers_3d() {
   INFO("Testing WENO grid helpers in 3D");
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const Mesh<3> mesh({{4, 5, 6}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh({{4, 5, 6}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
 
-  const Mesh<3> other_mesh({{4, 5, 3}}, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> other_mesh({{4, 5, 3}}, SpatialDiscretization::Basis::Legendre,
+                           SpatialDiscretization::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, other_mesh, element);
 }
 

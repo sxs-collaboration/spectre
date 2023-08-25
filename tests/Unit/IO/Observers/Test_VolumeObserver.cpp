@@ -81,10 +81,11 @@ auto make_fake_volume_data(const observers::ArrayComponentId& id) {
       TensorComponent("S_yy"s, DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
                                           -13.0 * hashed_id, 22.0 * hashed_id});
 
-  return std::make_tuple(Mesh<2>{{{2, 2}},
-                                 Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto},
-                         std::move(data));
+  return std::make_tuple(
+      Mesh<2>{{{2, 2}},
+              SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::GaussLobatto},
+      std::move(data));
 }
 
 // Check that WriteVolumeData correctly writes a single element of volume
@@ -112,10 +113,12 @@ void check_write_volume_data(
 
   const std::vector<size_t> h5_write_volume_expected_extents{
       {expected_mesh.extents(0), expected_mesh.extents(1)}};
-  const std::vector<Spectral::Basis> h5_write_volume_expected_bases{
-      {expected_mesh.basis(0), expected_mesh.basis(1)}};
-  const std::vector<Spectral::Quadrature> h5_write_volume_expected_quadratures{
-      {expected_mesh.quadrature(0), expected_mesh.quadrature(1)}};
+  const std::vector<SpatialDiscretization::Basis>
+      h5_write_volume_expected_bases{
+          {expected_mesh.basis(0), expected_mesh.basis(1)}};
+  const std::vector<SpatialDiscretization::Quadrature>
+      h5_write_volume_expected_quadratures{
+          {expected_mesh.quadrature(0), expected_mesh.quadrature(1)}};
 
   const observers::ObservationId write_vol_observation_id{
       1., "ElementObservationType"};

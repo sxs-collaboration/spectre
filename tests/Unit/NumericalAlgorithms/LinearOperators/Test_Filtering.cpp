@@ -170,8 +170,9 @@ create_cache_tuple(const double alpha, const unsigned half_power,
       Filters::Exponential<0>{alpha, half_power, enable, get_block_names()}};
 }
 
-template <size_t Dim, Spectral::Basis BasisType,
-          Spectral::Quadrature QuadratureType, bool FilterIndividually>
+template <size_t Dim, SpatialDiscretization::Basis BasisType,
+          SpatialDiscretization::Quadrature QuadratureType,
+          bool FilterIndividually>
 void test_exponential_filter_action(const double alpha,
                                     const unsigned half_power,
                                     const bool enable) {
@@ -265,17 +266,19 @@ template <size_t Dim, bool FilterIndividually>
 void invoke_test_exponential_filter_action(const double alpha,
                                            const unsigned half_power,
                                            const bool enable) {
-  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto,
+  test_exponential_filter_action<
+      Dim, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto, FilterIndividually>(
+      alpha, half_power, enable);
+  test_exponential_filter_action<Dim, SpatialDiscretization::Basis::Legendre,
+                                 SpatialDiscretization::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power, enable);
-  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss,
-                                 FilterIndividually>(alpha, half_power, enable);
-  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
-                                 Spectral::Quadrature::GaussLobatto,
-                                 FilterIndividually>(alpha, half_power, enable);
-  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
-                                 Spectral::Quadrature::Gauss,
+  test_exponential_filter_action<
+      Dim, SpatialDiscretization::Basis::Chebyshev,
+      SpatialDiscretization::Quadrature::GaussLobatto, FilterIndividually>(
+      alpha, half_power, enable);
+  test_exponential_filter_action<Dim, SpatialDiscretization::Basis::Chebyshev,
+                                 SpatialDiscretization::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power, enable);
 }
 

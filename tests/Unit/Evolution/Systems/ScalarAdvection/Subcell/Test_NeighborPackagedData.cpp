@@ -99,8 +99,9 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
   const Element<Dim> element{ElementId<Dim>{0, {}}, element_neighbors};
 
   // generate random U on the dg mesh and project it to subcell mesh
-  const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension,
+                          SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   Variables<evolved_vars_tags> volume_vars_dg{dg_mesh.number_of_grid_points()};

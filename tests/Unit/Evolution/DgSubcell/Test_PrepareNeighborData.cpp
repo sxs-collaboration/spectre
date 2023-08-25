@@ -175,8 +175,8 @@ void test(const bool all_neighbors_are_doing_dg,
   CAPTURE(fd_derivative_order);
   CAPTURE(Dim);
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   const Element<Dim> element = create_element<Dim>();
 

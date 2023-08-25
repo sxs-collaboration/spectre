@@ -26,8 +26,8 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
                   const size_t num_pts) {
   helpers::test_boundary_correction_conservation<ScalarAdvection::System<Dim>>(
       gen, ScalarAdvection::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 
   helpers::test_boundary_correction_with_python<ScalarAdvection::System<Dim>>(
@@ -36,8 +36,8 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
         "dg_package_data_abs_char_speed"}},
       {{"dg_boundary_terms_u"}},
       ScalarAdvection::BoundaryCorrections::Rusanov<Dim>{},
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 
   const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
@@ -51,8 +51,8 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
       {{"dg_boundary_terms_u"}},
       dynamic_cast<const ScalarAdvection::BoundaryCorrections::Rusanov<Dim>&>(
           *rusanov),
-      Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::Gauss},
+      Mesh<Dim - 1>{num_pts, SpatialDiscretization::Basis::Legendre,
+                    SpatialDiscretization::Quadrature::Gauss},
       {}, {});
 }
 }  // namespace

@@ -239,7 +239,8 @@ void write_test_data(
   std::vector<ElementVolumeData> element_data{};
   for (const auto& element_id : element_ids) {
     const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+        initial_extents, element_id,
+        SpatialDiscretization::Quadrature::GaussLobatto);
     const size_t num_points = mesh.number_of_grid_points();
     const auto& block = domain.blocks()[element_id.block_id()];
     const auto inertial_coords = inertial_coordinates(
@@ -368,7 +369,8 @@ struct InitializeElement {
     const auto& initial_extents =
         db::get<Tags::InitialExtents<Dim, SourceOrTarget::Target>>(box);
     const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+        initial_extents, element_id,
+        SpatialDiscretization::Quadrature::GaussLobatto);
     const auto& block = domain.blocks()[element_id.block_id()];
     Initialization::mutate_assign<
         tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>>(

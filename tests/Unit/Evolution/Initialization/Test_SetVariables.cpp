@@ -258,8 +258,9 @@ auto emplace_component(
     const double initial_time, const double expiration_time) {
   using comp = component<Dim, Metavariables>;
 
-  const auto logical_coords = logical_coordinates(Mesh<Dim>{
-      5, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
+  const auto logical_coords = logical_coordinates(
+      Mesh<Dim>{5, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::GaussLobatto});
   ElementMap<Dim, Frame::Grid> logical_to_grid_map{
       ElementId<Dim>{0},
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(

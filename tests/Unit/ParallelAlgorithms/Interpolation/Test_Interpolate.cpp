@@ -242,8 +242,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                                              array_index);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto);
+  const Mesh<metavars::volume_dim> mesh(
+      5, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto);
   const double observation_time = 2.0;
   Variables<metavars::interpolator_source_vars> vars(
       mesh.number_of_grid_points());

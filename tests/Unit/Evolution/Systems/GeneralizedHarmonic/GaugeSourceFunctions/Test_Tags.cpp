@@ -52,8 +52,9 @@ void test() {
       tnsr::aa<DataVector, Dim, Frame::Inertial>{},
       tnsr::aa<DataVector, Dim, Frame::Inertial>{},
       tnsr::iaa<DataVector, Dim, Frame::Inertial>{},
-      Mesh<Dim>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, 1.3,
-      tnsr::I<DataVector, Dim, Frame::Inertial>{},
+      Mesh<Dim>{5, SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::Gauss},
+      1.3, tnsr::I<DataVector, Dim, Frame::Inertial>{},
       InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                       Frame::Inertial>{},
       std::unique_ptr<gh::gauges::GaugeCondition>{

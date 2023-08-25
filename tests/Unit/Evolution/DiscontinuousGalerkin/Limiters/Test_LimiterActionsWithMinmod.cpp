@@ -112,8 +112,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{3, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
   const Element<2> element(self_id, {});
 

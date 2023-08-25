@@ -57,8 +57,8 @@ void test(const TestThis test_this, const int expected_tci_status,
   CAPTURE(expected_tci_status);
   CAPTURE(element_stays_on_dg);
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
-  const Mesh<3> mesh{6, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{6, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
   using ConsVars =
       typename grmhd::ValenciaDivClean::System::variables_tag::type;

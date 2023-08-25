@@ -153,8 +153,9 @@ auto create_box(const size_t number_of_grid_points_per_dim,
 
   return db::create<simple_tags, compute_tags>(
       1.0,
-      Mesh<Dim>{number_of_grid_points_per_dim, Spectral::Basis::Legendre,
-                Spectral::Quadrature::Gauss},
+      Mesh<Dim>{number_of_grid_points_per_dim,
+                SpatialDiscretization::Basis::Legendre,
+                SpatialDiscretization::Quadrature::Gauss},
       std::move(grid_to_inertial_map), std::move(element),
       std::move(normal_covector_quantities));
 }

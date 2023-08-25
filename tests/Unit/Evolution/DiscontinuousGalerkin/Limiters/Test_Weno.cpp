@@ -196,8 +196,8 @@ void test_package_data_work(const Mesh<VolumeDim>& mesh,
 
 void test_package_data_1d() {
   INFO("Testing package_data in 1D");
-  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(4, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<1> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -209,8 +209,8 @@ void test_package_data_1d() {
 
 void test_package_data_2d() {
   INFO("Testing package_data in 2D");
-  const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh({{4, 6}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<2> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -222,8 +222,8 @@ void test_package_data_2d() {
 
 void test_package_data_3d() {
   INFO("Testing package_data in 3D");
-  const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh({{4, 6, 3}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<3> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -526,8 +526,9 @@ template <size_t VolumeDim>
 void test_simple_weno(const std::array<size_t, VolumeDim>& extents) {
   INFO("Testing simple WENO limiter");
   CAPTURE(VolumeDim);
-  const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::Gauss);
+  const auto mesh =
+      Mesh<VolumeDim>(extents, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::Gauss);
   const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
   const auto element_size = make_array<VolumeDim>(1.2);
 
@@ -601,8 +602,9 @@ template <size_t VolumeDim>
 void test_hweno(const std::array<size_t, VolumeDim>& extents) {
   INFO("Testing HWENO limiter");
   CAPTURE(VolumeDim);
-  const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      Mesh<VolumeDim>(extents, SpatialDiscretization::Basis::Legendre,
+                      SpatialDiscretization::Quadrature::GaussLobatto);
   const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
   const auto element_size = make_array<VolumeDim>(1.2);
 

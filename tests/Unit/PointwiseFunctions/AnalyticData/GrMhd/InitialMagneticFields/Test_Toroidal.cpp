@@ -102,8 +102,8 @@ SPECTRE_TEST_CASE(
       used_for_size);
 
   // test if the B field is divergence-free in the flat spacetime
-  const Mesh<3> mesh{5, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{5, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
   const size_t num_grid_pts = mesh.number_of_grid_points();
   const auto log_coords = logical_coordinates(mesh);
   const double scale = 1.0e-3;

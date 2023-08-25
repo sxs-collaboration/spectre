@@ -23,19 +23,20 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
   MAKE_GENERATOR(gen);
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      Burgers::System>(
-      make_not_null(&gen), Burgers::BoundaryCorrections::Hll{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Burgers::System>(make_not_null(&gen), Burgers::BoundaryCorrections::Hll{},
+                       Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss},
+                       {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      Burgers::System>(
-      make_not_null(&gen), "Hll",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_char_speed"}},
-      {{"dg_boundary_terms_u"}}, Burgers::BoundaryCorrections::Hll{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Burgers::System>(make_not_null(&gen), "Hll",
+                       {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
+                         "dg_package_data_char_speed"}},
+                       {{"dg_boundary_terms_u"}},
+                       Burgers::BoundaryCorrections::Hll{},
+                       Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+                               SpatialDiscretization::Quadrature::Gauss},
+                       {}, {});
 
   const auto Hll = TestHelpers::test_creation<
       std::unique_ptr<Burgers::BoundaryCorrections::BoundaryCorrection>>(
@@ -48,6 +49,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
         "dg_package_data_char_speed"}},
       {{"dg_boundary_terms_u"}},
       dynamic_cast<const Burgers::BoundaryCorrections::Hll&>(*Hll),
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<0>{1, SpatialDiscretization::Basis::Legendre,
+              SpatialDiscretization::Quadrature::Gauss},
+      {}, {});
 }

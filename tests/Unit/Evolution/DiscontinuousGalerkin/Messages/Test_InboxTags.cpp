@@ -75,10 +75,11 @@ void test_no_ghost_cells() {
   BmInbox bm_inbox{};
 
   BcType send_data_a{};
-  const Mesh<Dim> volume_mesh_a{5, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_mesh_a{
+      5, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> mesh_a{5, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto};
   get<0>(send_data_a) = volume_mesh_a;
   get<1>(send_data_a) = mesh_a;
   get<3>(send_data_a) =
@@ -103,10 +104,11 @@ void test_no_ghost_cells() {
         *boundary_message_a_compare);
 
   BcType send_data_b{};
-  const Mesh<Dim> volume_mesh_b{7, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_mesh_b{
+      7, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> mesh_b{7, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto};
   get<0>(send_data_b) = volume_mesh_b;
   get<1>(send_data_b) = mesh_b;
 
@@ -193,10 +195,11 @@ void test_with_ghost_cells() {
 
   // Send ghost cells first
   BcType send_data_a{};
-  const Mesh<Dim> volume_mesh_a{5, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_mesh_a{
+      5, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> mesh_a{5, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto};
   get<0>(send_data_a) = volume_mesh_a;
   get<1>(send_data_a) = mesh_a;
   get<2>(send_data_a) =
@@ -221,10 +224,11 @@ void test_with_ghost_cells() {
         *boundary_message_a_compare);
 
   BcType send_data_b{};
-  const Mesh<Dim> volume_mesh_b{7, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> volume_mesh_b{
+      7, SpatialDiscretization::Basis::Legendre,
+      SpatialDiscretization::Quadrature::GaussLobatto};
+  const Mesh<Dim - 1> mesh_b{7, SpatialDiscretization::Basis::Legendre,
+                             SpatialDiscretization::Quadrature::GaussLobatto};
   get<0>(send_data_b) = volume_mesh_b;
   get<1>(send_data_b) = mesh_b;
   get<2>(send_data_b) = DataVector{

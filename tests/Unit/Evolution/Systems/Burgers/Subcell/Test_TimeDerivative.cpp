@@ -92,8 +92,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
   const Element<1> element{ElementId<1>{0, {}}, neighbors};
 
   const size_t num_dg_pts = 5;
-  const Mesh<1> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> dg_mesh{num_dg_pts, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // Perform test with MC reconstruction & Rusanov riemann solver

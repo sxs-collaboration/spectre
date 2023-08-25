@@ -171,8 +171,8 @@ void test_package_data_work(const Mesh<VolumeDim>& mesh,
 
 void test_package_data_1d() {
   INFO("Testing package_data in 1D");
-  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(4, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<1> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -184,8 +184,8 @@ void test_package_data_1d() {
 
 void test_package_data_2d() {
   INFO("Testing package_data in 2D");
-  const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh({{4, 6}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<2> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -197,8 +197,8 @@ void test_package_data_2d() {
 
 void test_package_data_3d() {
   INFO("Testing package_data in 3D");
-  const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh({{4, 6, 3}}, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto);
 
   const OrientationMap<3> orientation_aligned{};
   test_package_data_work(mesh, orientation_aligned);
@@ -303,14 +303,14 @@ void test_minmod_does_not_activate(
 
 void test_minmod_slopes_on_linear_function(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes with linear function");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -395,14 +395,14 @@ void test_minmod_slopes_on_linear_function(
 
 void test_minmod_slopes_on_quadratic_function(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes with quadratic function");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -459,13 +459,13 @@ void test_minmod_slopes_on_quadratic_function(
 
 void test_minmod_slopes_with_tvb_correction(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes with TVB correction");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -514,10 +514,10 @@ void test_minmod_slopes_with_tvb_correction(
 // Here we test the coupling of the LambdaPiN troubled cell detector with the
 // TVB constant value.
 void test_lambda_pin_troubled_cell_tvb_correction(
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes with LambdaPiN-TVB correction");
   CAPTURE(quadrature);
-  const Mesh<1> mesh(4, Spectral::Basis::Legendre, quadrature);
+  const Mesh<1> mesh(4, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(2.0);
@@ -605,16 +605,16 @@ void test_lambda_pin_troubled_cell_tvb_correction(
   test_does_not_activate(m2, input, 0.0, 9.99);
 }
 
-void test_minmod_slopes_at_boundary(const size_t number_of_grid_points,
-                                    const Limiters::MinmodType minmod_type,
-                                    const Spectral::Quadrature quadrature) {
+void test_minmod_slopes_at_boundary(
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes at boundary");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element_size = make_array<1>(2.0);
 
   const double muscl_slope_factor =
@@ -669,14 +669,14 @@ void test_minmod_slopes_at_boundary(const size_t number_of_grid_points,
 
 void test_minmod_slopes_with_different_size_neighbor(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
-    const Spectral::Quadrature quadrature) {
+    const SpatialDiscretization::Quadrature quadrature) {
   INFO("Testing minmod_limited_slopes with different size neighbors");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     quadrature);
+  const Mesh<1> mesh(number_of_grid_points,
+                     SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
@@ -747,8 +747,8 @@ void test_minmod_slopes_with_different_size_neighbor(
 // Check that each combination reduces the slopes as expected.
 void test_minmod_limited_slopes_1d() {
   INFO("Testing minmod_limited_slopes in 1D");
-  for (const auto quadrature :
-       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+  for (const auto quadrature : {SpatialDiscretization::Quadrature::GaussLobatto,
+                                SpatialDiscretization::Quadrature::Gauss}) {
     for (const auto minmod_type :
          {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
           Limiters::MinmodType::Muscl}) {
@@ -773,11 +773,12 @@ void test_minmod_limited_slopes_1d() {
 }
 
 // In 2D, test that the slopes are correctly reduced dimension-by-dimension.
-void test_minmod_limited_slopes_2d_work(const Spectral::Quadrature quadrature) {
+void test_minmod_limited_slopes_2d_work(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvb_constant = 0.0;
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre, quadrature);
+  const Mesh<2> mesh(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto element_size = make_array<2>(2.0);
 
@@ -831,16 +832,18 @@ void test_minmod_limited_slopes_2d_work(const Spectral::Quadrature quadrature) {
 
 void test_minmod_limited_slopes_2d() {
   INFO("Testing minmod_limited_slopes in 2D");
-  test_minmod_limited_slopes_2d_work(Spectral::Quadrature::GaussLobatto);
-  test_minmod_limited_slopes_2d_work(Spectral::Quadrature::Gauss);
+  test_minmod_limited_slopes_2d_work(
+      SpatialDiscretization::Quadrature::GaussLobatto);
+  test_minmod_limited_slopes_2d_work(SpatialDiscretization::Quadrature::Gauss);
 }
 
 // In 3D, test that the slopes are correctly reduced dimension-by-dimension.
-void test_minmod_limited_slopes_3d_work(const Spectral::Quadrature quadrature) {
+void test_minmod_limited_slopes_3d_work(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvb_constant = 0.0;
-  const Mesh<3> mesh(3, Spectral::Basis::Legendre, quadrature);
+  const Mesh<3> mesh(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto element_size = make_array<3>(2.0);
 
@@ -901,8 +904,9 @@ void test_minmod_limited_slopes_3d_work(const Spectral::Quadrature quadrature) {
 
 void test_minmod_limited_slopes_3d() {
   INFO("Testing minmod_limited_slopes in 3D");
-  test_minmod_limited_slopes_3d_work(Spectral::Quadrature::GaussLobatto);
-  test_minmod_limited_slopes_3d_work(Spectral::Quadrature::Gauss);
+  test_minmod_limited_slopes_3d_work(
+      SpatialDiscretization::Quadrature::GaussLobatto);
+  test_minmod_limited_slopes_3d_work(SpatialDiscretization::Quadrature::Gauss);
 }
 
 // Helper function for testing minmod_impl
@@ -969,9 +973,11 @@ void test_minmod_impl_work(
   }
 }
 
-void test_minmod_impl_1d_work(const Spectral::Quadrature quadrature) {
+void test_minmod_impl_1d_work(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
-  const auto mesh = Mesh<1>(3, Spectral::Basis::Legendre, quadrature);
+  const auto mesh =
+      Mesh<1>(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
@@ -1011,14 +1017,16 @@ void test_minmod_impl_1d_work(const Spectral::Quadrature quadrature) {
 
 void test_minmod_impl_1d() {
   INFO("Testing minmod_impl in 1D");
-  test_minmod_impl_1d_work(Spectral::Quadrature::GaussLobatto);
-  test_minmod_impl_1d_work(Spectral::Quadrature::Gauss);
+  test_minmod_impl_1d_work(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_minmod_impl_1d_work(SpatialDiscretization::Quadrature::Gauss);
 }
 
-void test_minmod_impl_2d_work(const Spectral::Quadrature quadrature) {
+void test_minmod_impl_2d_work(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   // We fill each vector component with the same volume data
-  const auto mesh = Mesh<2>(3, Spectral::Basis::Legendre, quadrature);
+  const auto mesh =
+      Mesh<2>(3, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
@@ -1132,8 +1140,8 @@ void test_minmod_impl_two_lower_xi_neighbors() {
             OrientationMap<2>{}}},
           {Direction<2>::upper_xi(),
            TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<2>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double dx = 1.0;
   const auto element_size = make_array<2>(dx);
@@ -1185,16 +1193,18 @@ void test_minmod_impl_two_lower_xi_neighbors() {
 
 void test_minmod_impl_2d() {
   INFO("Testing minmod_impl in 2D");
-  test_minmod_impl_2d_work(Spectral::Quadrature::GaussLobatto);
-  test_minmod_impl_2d_work(Spectral::Quadrature::Gauss);
+  test_minmod_impl_2d_work(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_minmod_impl_2d_work(SpatialDiscretization::Quadrature::Gauss);
 
   test_minmod_impl_two_lower_xi_neighbors();
 }
 
-void test_minmod_impl_3d_work(const Spectral::Quadrature quadrature) {
+void test_minmod_impl_3d_work(
+    const SpatialDiscretization::Quadrature quadrature) {
   CAPTURE(quadrature);
   // We fill each vector component with the same volume data
-  const auto mesh = Mesh<3>({{3, 3, 4}}, Spectral::Basis::Legendre, quadrature);
+  const auto mesh =
+      Mesh<3>({{3, 3, 4}}, SpatialDiscretization::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
@@ -1282,8 +1292,8 @@ void test_minmod_impl_four_upper_xi_neighbors() {
                                              ElementId<3>(8), ElementId<3>(9)},
             OrientationMap<3>{}}},
       }};
-  const auto mesh =
-      Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<3>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double dx = 1.0;
   const auto element_size = make_array<3>(dx);
@@ -1345,8 +1355,8 @@ void test_minmod_impl_four_upper_xi_neighbors() {
 
 void test_minmod_impl_3d() {
   INFO("Testing minmod_impl in 3D");
-  test_minmod_impl_3d_work(Spectral::Quadrature::GaussLobatto);
-  test_minmod_impl_3d_work(Spectral::Quadrature::Gauss);
+  test_minmod_impl_3d_work(SpatialDiscretization::Quadrature::GaussLobatto);
+  test_minmod_impl_3d_work(SpatialDiscretization::Quadrature::Gauss);
 
   test_minmod_impl_four_upper_xi_neighbors();
 }
@@ -1433,8 +1443,8 @@ void test_minmod_1d() {
   // independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<1>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
@@ -1490,8 +1500,8 @@ void test_minmod_2d() {
   // - different dimensions independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<2>(3, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
@@ -1581,8 +1591,8 @@ void test_minmod_3d() {
   // - different dimensions independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh = Mesh<3>({{3, 3, 4}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<3>({{3, 3, 4}}, SpatialDiscretization::Basis::Legendre,
+                            SpatialDiscretization::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};

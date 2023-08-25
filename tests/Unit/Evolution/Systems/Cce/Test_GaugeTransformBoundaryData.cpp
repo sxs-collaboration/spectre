@@ -47,8 +47,9 @@ struct InverseCubicEvolutionGauge {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const size_t /*l_max*/, const size_t number_of_radial_points) const {
     const DataVector one_minus_y_collocation =
-        1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
-                                           Spectral::Quadrature::GaussLobatto>(
+        1.0 - Spectral::collocation_points<
+                  SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto>(
                   number_of_radial_points);
     for (size_t i = 0; i < number_of_radial_points; i++) {
       ComplexDataVector angular_view_j{

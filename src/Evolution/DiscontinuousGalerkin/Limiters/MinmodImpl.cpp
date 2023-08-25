@@ -13,6 +13,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,12 +36,14 @@ bool minmod_limited_slopes(
   // Check that basis is LGL or LG. Note that...
   // - non-Legendre bases may work "out of the box", but are untested
   // - mixed bases may be okay in principle, but are untested
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+  ASSERT(mesh.basis() ==
+             make_array<VolumeDim>(SpatialDiscretization::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
-             mesh.quadrature() ==
-                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+                 make_array<VolumeDim>(
+                     SpatialDiscretization::Quadrature::GaussLobatto) or
+             mesh.quadrature() == make_array<VolumeDim>(
+                                      SpatialDiscretization::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
 
   const double tvb_scale = [&tvb_constant, &element_size]() {
@@ -121,7 +124,7 @@ bool minmod_limited_slopes(
         mesh, d, Side::Upper);
     const double first_to_last_distance =
         2.0 *
-        (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto
+        (mesh.quadrature(d) == SpatialDiscretization::Quadrature::GaussLobatto
              ? 1.0
              : fabs(Spectral::collocation_points(mesh.slice_through(d))[0]));
     const double local_slope = (u_upper - u_lower) / first_to_last_distance;

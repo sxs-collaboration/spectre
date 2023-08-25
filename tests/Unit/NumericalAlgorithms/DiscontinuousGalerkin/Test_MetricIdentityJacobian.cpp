@@ -183,15 +183,18 @@ void test(const Mesh<Dim>& mesh) {
 
 SPECTRE_TEST_CASE("Unit.DG.MetricIdentityJacobian",
                   "[Unit][NumericalAlgorithms]") {
-  test(Mesh<1>{5, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
-  test(Mesh<1>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+  test(Mesh<1>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
+  test(Mesh<1>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::Gauss});
 
-  test(Mesh<2>{5, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
-  test(Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+  test(Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
+  test(Mesh<2>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::Gauss});
 
-  test(Mesh<3>{5, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto});
-  test(Mesh<3>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+  test(Mesh<3>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::GaussLobatto});
+  test(Mesh<3>{5, SpatialDiscretization::Basis::Legendre,
+               SpatialDiscretization::Quadrature::Gauss});
 }

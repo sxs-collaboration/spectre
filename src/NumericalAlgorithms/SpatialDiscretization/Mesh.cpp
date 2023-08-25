@@ -8,7 +8,8 @@
 #include <pup.h>  // IWYU pragma: keep
 #include <pup_stl.h>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -43,8 +44,8 @@ Mesh<SliceDim> Mesh<Dim>::slice_through(
       }(),
       "Dimensions to slice through contain duplicates.");
   std::array<size_t, SliceDim> slice_extents{};
-  std::array<Spectral::Basis, SliceDim> slice_bases{};
-  std::array<Spectral::Quadrature, SliceDim> slice_quadratures{};
+  std::array<SpatialDiscretization::Basis, SliceDim> slice_bases{};
+  std::array<SpatialDiscretization::Quadrature, SliceDim> slice_quadratures{};
   for (size_t i = 0; i < SliceDim; ++i) {
     const auto& d = gsl::at(dims, i);
     ASSERT(d < Dim, "Tried to slice through non-existing dimension "

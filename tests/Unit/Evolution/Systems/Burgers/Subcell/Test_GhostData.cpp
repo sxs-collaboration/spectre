@@ -26,8 +26,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.GhostData",
 
   // make random U on DG and subcell mesh
   const size_t num_of_pts_dg_grid = 4;
-  const Mesh<1> dg_mesh{num_of_pts_dg_grid, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> dg_mesh{num_of_pts_dg_grid,
+                        SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   const auto random_vars_dg =

@@ -150,7 +150,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.SurfaceFinder.SurfaceFinder",
   const auto refinement_levels = sphere.initial_refinement_levels();
   const auto extents = sphere.initial_extents();
   const ElementId<dim> id{0};
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto quadrature = SpatialDiscretization::Quadrature::GaussLobatto;
   const auto& block = domain.blocks()[id.block_id()];
   const auto mesh =
       domain::Initialization::create_initial_mesh(extents, id, quadrature);

@@ -35,8 +35,9 @@ void test(const gsl::not_null<std::mt19937*> generator,
   const size_t stencil_width = fd_order + 1;
   const size_t number_of_vars = 2;  // arbitrary, 2 is "cheap but not trivial"
 
-  const Mesh<Dim> mesh{points_per_dimension, Spectral::Basis::FiniteDifference,
-                       Spectral::Quadrature::CellCentered};
+  const Mesh<Dim> mesh{points_per_dimension,
+                       SpatialDiscretization::Basis::FiniteDifference,
+                       SpatialDiscretization::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(mesh);
   // Make the logical coordinates different in each direction
   for (size_t i = 1; i < Dim; ++i) {

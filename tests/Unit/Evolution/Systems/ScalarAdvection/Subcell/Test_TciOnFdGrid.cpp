@@ -22,8 +22,8 @@ enum class TestThis { AllGood, PerssonU, BelowCutoff, RdmpU };
 template <size_t Dim>
 void test(const TestThis& test_this) {
   // create DG mesh
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh{5, SpatialDiscretization::Basis::Legendre,
+                          SpatialDiscretization::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   // create scalar field U on the subcell mesh
   const size_t number_of_points{subcell_mesh.number_of_grid_points()};

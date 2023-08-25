@@ -247,8 +247,8 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const size_t SpatialDim = 3;
-  Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  Mesh<SpatialDim> mesh{num_points_1d, SpatialDiscretization::Basis::Legendre,
+                        SpatialDiscretization::Quadrature::GaussLobatto};
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical, FrameType>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},

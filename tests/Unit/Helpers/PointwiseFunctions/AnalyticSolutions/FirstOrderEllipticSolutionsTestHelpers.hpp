@@ -213,16 +213,17 @@ void verify_smooth_solution(
     PackageFluxesArgs&& package_fluxes_args) {
   INFO("Verify smooth solution");
   for (size_t num_points = Spectral::minimum_number_of_points<
-           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       num_points <=
-       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+           SpatialDiscretization::Basis::Legendre,
+           SpatialDiscretization::Quadrature::GaussLobatto>;
+       num_points <= Spectral::maximum_number_of_points<
+                         SpatialDiscretization::Basis::Legendre>;
        num_points++) {
     CAPTURE(num_points);
     const double tolerance =
         tolerance_offset * exp(-tolerance_scaling * num_points);
     CAPTURE(tolerance);
-    const Mesh<Dim> mesh{num_points, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+    const Mesh<Dim> mesh{num_points, SpatialDiscretization::Basis::Legendre,
+                         SpatialDiscretization::Quadrature::GaussLobatto};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<System>(
         solution, mesh, coord_map, tolerance, package_fluxes_args(mesh));
   }
@@ -251,17 +252,18 @@ void verify_solution_with_power_law_convergence(
     const double tolerance_offset, const double tolerance_pow) {
   INFO("Verify solution with power-law convergence");
   for (size_t num_points = Spectral::minimum_number_of_points<
-           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       num_points <=
-       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+           SpatialDiscretization::Basis::Legendre,
+           SpatialDiscretization::Quadrature::GaussLobatto>;
+       num_points <= Spectral::maximum_number_of_points<
+                         SpatialDiscretization::Basis::Legendre>;
        num_points++) {
     CAPTURE(num_points);
     const double tolerance = tolerance_offset * pow(num_points, -tolerance_pow);
     CAPTURE(tolerance);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<System>(
         solution,
-        Mesh<Dim>{num_points, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto},
+        Mesh<Dim>{num_points, SpatialDiscretization::Basis::Legendre,
+                  SpatialDiscretization::Quadrature::GaussLobatto},
         coord_map, tolerance);
   }
 }

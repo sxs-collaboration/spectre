@@ -99,7 +99,8 @@ template <bool LocalTimeStepping, size_t Dim>
 void test_impl(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Element<Dim>& element, const TimeStepId& time_step_id,
-    const TimeStepId& next_time_step_id, const Spectral::Quadrature quadrature,
+    const TimeStepId& next_time_step_id,
+    const SpatialDiscretization::Quadrature quadrature,
     const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
     const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         expected_mortar_sizes,
@@ -169,7 +170,7 @@ struct Test;
 
 template <bool LocalTimeStepping>
 struct Test<1, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+  static void apply(const SpatialDiscretization::Quadrature quadrature) {
     INFO("1D");
     // Reference element is denoted by X, has one internal boundary and one
     // external boundary:
@@ -211,7 +212,7 @@ struct Test<1, LocalTimeStepping> {
 
 template <bool LocalTimeStepping>
 struct Test<2, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+  static void apply(const SpatialDiscretization::Quadrature quadrature) {
     INFO("2D");
     // Reference element is denoted by X, has two internal boundaries (east and
     // south) and two external boundaries (west and north):
@@ -245,9 +246,9 @@ struct Test<2, LocalTimeStepping> {
 
     const MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {interface_mortar_id_east,
-         Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
+         Mesh<1>(2, SpatialDiscretization::Basis::Legendre, quadrature)},
         {interface_mortar_id_south,
-         Mesh<1>(3, Spectral::Basis::Legendre, quadrature)}};
+         Mesh<1>(3, SpatialDiscretization::Basis::Legendre, quadrature)}};
     MortarMap<2, std::array<Spectral::MortarSize, 1>> expected_mortar_sizes{};
     for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
       expected_mortar_sizes[mortar_id_and_mesh.first] = {
@@ -272,7 +273,7 @@ struct Test<2, LocalTimeStepping> {
 
 template <bool LocalTimeStepping>
 struct Test<3, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+  static void apply(const SpatialDiscretization::Quadrature quadrature) {
     INFO("3D");
     // Neighboring elements in:
     // - upper-xi (right id)
@@ -309,11 +310,12 @@ struct Test<3, LocalTimeStepping> {
 
     const MortarMap<3, Mesh<2>> expected_mortar_meshes{
         {interface_mortar_id_right,
-         Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
+         Mesh<2>({{3, 4}}, SpatialDiscretization::Basis::Legendre, quadrature)},
         {interface_mortar_id_front,
-         Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
+         Mesh<2>({{2, 4}}, SpatialDiscretization::Basis::Legendre, quadrature)},
         {interface_mortar_id_top,
-         Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)}};
+         Mesh<2>({{2, 3}}, SpatialDiscretization::Basis::Legendre,
+                 quadrature)}};
     MortarMap<3, std::array<Spectral::MortarSize, 2>> expected_mortar_sizes{};
     for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
       expected_mortar_sizes[mortar_id_and_mesh.first] = {
@@ -340,7 +342,8 @@ struct Test<3, LocalTimeStepping> {
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
                   "[Unit][Evolution]") {
   for (const auto quadrature :
-       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
+       {SpatialDiscretization::Quadrature::Gauss,
+        SpatialDiscretization::Quadrature::GaussLobatto}) {
     Test<1, true>::apply(quadrature);
     Test<2, true>::apply(quadrature);
     Test<3, true>::apply(quadrature);

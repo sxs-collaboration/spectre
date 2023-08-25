@@ -123,8 +123,8 @@ void test() {
 
   const ElementId<3> element_id{0};
   const double time = 0.0;
-  const Mesh<3> mesh{num_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{num_grid_points, SpatialDiscretization::Basis::Legendre,
+                     SpatialDiscretization::Quadrature::GaussLobatto};
 
   using tag = MockInterpolationTargetTag<Frame>;
 

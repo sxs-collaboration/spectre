@@ -359,8 +359,8 @@ void create_volume_data_and_send_it_to_interpolator(
   for (const auto& element_id : element_ids) {
     const auto& block = domain.blocks()[element_id.block_id()];
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
+                   SpatialDiscretization::Basis::Legendre,
+                   SpatialDiscretization::Quadrature::GaussLobatto};
     REQUIRE(not block.is_time_dependent());
     ElementMap<3, Frame::Inertial> map{element_id,
                                        block.stationary_map().get_clone()};
