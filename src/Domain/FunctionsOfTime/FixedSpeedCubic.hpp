@@ -67,7 +67,7 @@ class FixedSpeedCubic : public FunctionOfTime {
 
   /// Returns the domain of validity of the function.
   std::array<double, 2> time_bounds() const override {
-    return {{initial_time_, std::numeric_limits<double>::max()}};
+    return {{initial_time_, std::numeric_limits<double>::infinity()}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

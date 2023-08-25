@@ -59,7 +59,7 @@ void test(
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == initial_time);
-  CHECK(t_bounds[1] == std::numeric_limits<double>::max());
+  CHECK(t_bounds[1] == std::numeric_limits<double>::infinity());
 
   INFO("Test stream operator.");
   CHECK(

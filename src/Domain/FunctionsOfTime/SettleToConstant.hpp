@@ -62,7 +62,7 @@ class SettleToConstant : public FunctionOfTime {
 
   /// Returns the domain of validity of the function.
   std::array<double, 2> time_bounds() const override {
-    return {{match_time_, std::numeric_limits<double>::max()}};
+    return {{match_time_, std::numeric_limits<double>::infinity()}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
