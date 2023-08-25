@@ -3,18 +3,29 @@
 
 set(LIBRARY SpatialDiscretization)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Basis.cpp
+  Quadrature.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Basis.hpp
   OptionTags.hpp
+  Quadrature.hpp
   SpatialDiscretization.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
+  ErrorHandling
   Options
+  Utilities
   )
