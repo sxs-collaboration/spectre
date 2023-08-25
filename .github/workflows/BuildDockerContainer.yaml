@@ -62,3 +62,11 @@ jobs:
           target: ci
           tags: ${{ inputs.image_name }}:ci
           platforms: linux/amd64 #,linux/arm64
+
+  run_tests:
+    name: Test
+    uses: ./.github/workflows/Tests.yaml
+    needs: build_container
+    secrets: inherit
+    with:
+      container: ${{ inputs.image_name }}:ci

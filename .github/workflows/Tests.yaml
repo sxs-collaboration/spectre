@@ -50,7 +50,21 @@ on:
           Enter 'yes' without quotes to clear ccache before running
         required: false
         default: ''
-
+      container:
+        description: >
+          Container to use for builds
+        required: false
+        default: 'sxscollaboration/spectre:ci'
+  # Allow running this workflow as a job in another workflow. This is used to
+  # test a new Docker container before publishing it.
+  workflow_call:
+    inputs:
+      container:
+        description: >
+          Container to use for builds
+        required: false
+        type: string
+        default: 'sxscollaboration/spectre:ci'
 
 # Cancel all other queued or in-progress runs of this workflow when it is
 # scheduled, so repeated pushes to a branch or a PR don't block CI. Repeated
@@ -99,7 +113,7 @@ jobs:
     name: Files and formatting
     runs-on: ubuntu-latest
     container:
-      image: sxscollaboration/spectre:ci
+      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -194,7 +208,7 @@ jobs:
       || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
     container:
-      image: sxscollaboration/spectre:ci
+      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
     strategy:
       matrix:
         build_type: [Debug, Release]
@@ -254,7 +268,7 @@ jobs:
     needs: check_files_and_formatting
     runs-on: ubuntu-latest
     container:
-      image: sxscollaboration/spectre:ci
+      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -408,7 +422,7 @@ jobs:
             TEST_TIMEOUT_FACTOR: 3
 
     container:
-      image: sxscollaboration/spectre:ci
+      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
       env:
         # We run unit tests with the following compiler flags:
         # - `-Werror`: Treat warnings as error.
@@ -1042,7 +1056,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
             compiler: clang-13
     container:
-      image: sxscollaboration/spectre:ci
+      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
       env:
         # See the unit test job for the reasons for these configuration choices
         CXXFLAGS: "-Werror"
