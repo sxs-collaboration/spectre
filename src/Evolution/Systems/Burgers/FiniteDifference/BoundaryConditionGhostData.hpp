@@ -33,7 +33,7 @@
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

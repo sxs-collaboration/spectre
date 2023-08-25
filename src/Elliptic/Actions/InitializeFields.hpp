@@ -14,7 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Utilities/GetAnalyticData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"

@@ -11,7 +11,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryCorrections.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace ForceFree {

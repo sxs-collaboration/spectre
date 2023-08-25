@@ -12,7 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

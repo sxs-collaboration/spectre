@@ -28,7 +28,7 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"

@@ -4,7 +4,7 @@
 #include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
 
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

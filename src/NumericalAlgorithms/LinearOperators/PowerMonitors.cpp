@@ -10,7 +10,7 @@
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

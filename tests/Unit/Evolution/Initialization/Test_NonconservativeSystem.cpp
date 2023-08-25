@@ -13,7 +13,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"

@@ -27,7 +27,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"

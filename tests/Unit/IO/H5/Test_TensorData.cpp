@@ -11,7 +11,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/H5/TensorData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep

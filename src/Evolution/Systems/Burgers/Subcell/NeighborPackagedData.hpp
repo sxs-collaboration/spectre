@@ -36,7 +36,7 @@
 #include "Evolution/Systems/Burgers/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 

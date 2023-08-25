@@ -16,7 +16,6 @@ set(LIBRARY_SOURCES
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
   Test_LogicalCoordinates.cpp
-  Test_Mesh.cpp
   Test_Projection.cpp
   Test_Spectral.cpp
   Test_SwshCoefficients.cpp
@@ -40,6 +39,7 @@ target_link_libraries(
   Domain
   ErrorHandling
   LinearOperators
+  SpatialDiscretization
   Spectral
   SpectralHelpers
   Utilities

@@ -32,7 +32,7 @@
 #include "Evolution/Systems/ScalarAdvection/Fluxes.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"

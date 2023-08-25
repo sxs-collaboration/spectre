@@ -12,7 +12,7 @@
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 namespace grmhd::ValenciaDivClean::subcell {
 std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(

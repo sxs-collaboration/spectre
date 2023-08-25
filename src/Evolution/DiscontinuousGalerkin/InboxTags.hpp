@@ -20,7 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"

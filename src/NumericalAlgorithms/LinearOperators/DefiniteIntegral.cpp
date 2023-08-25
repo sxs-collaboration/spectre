@@ -7,7 +7,7 @@
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

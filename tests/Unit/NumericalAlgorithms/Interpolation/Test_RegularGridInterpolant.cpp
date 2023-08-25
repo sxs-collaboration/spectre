@@ -22,7 +22,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"  // IWYU pragma: keep

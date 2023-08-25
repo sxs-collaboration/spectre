@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 /// \cond
 template <size_t Dim>

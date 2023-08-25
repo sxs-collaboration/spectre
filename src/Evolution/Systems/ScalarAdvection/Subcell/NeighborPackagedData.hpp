@@ -42,7 +42,7 @@
 #include "Evolution/Systems/ScalarAdvection/Subcell/VelocityAtFace.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 

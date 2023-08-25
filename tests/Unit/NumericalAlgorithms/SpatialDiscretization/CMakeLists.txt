@@ -6,6 +6,7 @@ set(LIBRARY "Test_SpatialDiscretization")
 
 set(LIBRARY_SOURCES
   Test_Basis.cpp
+  Test_Mesh.cpp
   Test_Quadrature.cpp
  )
 
@@ -17,5 +18,6 @@ target_link_libraries(
   ErrorHandling
   Options
   SpatialDiscretization
+  Spectral
   Utilities
   )

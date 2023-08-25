@@ -17,7 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"

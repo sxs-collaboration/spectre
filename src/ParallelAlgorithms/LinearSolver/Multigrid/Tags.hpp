@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"

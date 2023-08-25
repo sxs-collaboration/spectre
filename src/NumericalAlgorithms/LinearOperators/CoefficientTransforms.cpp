@@ -12,7 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/ModalVector.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

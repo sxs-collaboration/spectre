@@ -10,7 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

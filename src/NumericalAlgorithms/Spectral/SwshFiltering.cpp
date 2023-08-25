@@ -10,7 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"

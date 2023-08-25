@@ -11,7 +11,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Transpose.hpp"
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Blas.hpp"

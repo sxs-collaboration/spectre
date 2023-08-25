@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {

@@ -12,7 +12,7 @@
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnFdGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {

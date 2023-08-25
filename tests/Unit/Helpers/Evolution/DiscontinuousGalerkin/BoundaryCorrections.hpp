@@ -25,7 +25,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/NormalVectors.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

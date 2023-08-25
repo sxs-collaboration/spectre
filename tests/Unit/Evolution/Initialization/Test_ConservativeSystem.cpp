@@ -16,7 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"

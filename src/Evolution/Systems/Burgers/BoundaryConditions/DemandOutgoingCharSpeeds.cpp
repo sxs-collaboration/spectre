@@ -12,7 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"

@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

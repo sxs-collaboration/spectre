@@ -32,7 +32,7 @@
 #include "Evolution/Systems/Burgers/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"

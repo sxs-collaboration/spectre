@@ -12,7 +12,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 

@@ -13,7 +13,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 

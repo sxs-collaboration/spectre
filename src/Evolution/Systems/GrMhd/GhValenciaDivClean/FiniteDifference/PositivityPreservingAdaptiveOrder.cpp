@@ -37,7 +37,7 @@
 #include "NumericalAlgorithms/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"

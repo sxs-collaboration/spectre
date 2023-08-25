@@ -45,7 +45,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"

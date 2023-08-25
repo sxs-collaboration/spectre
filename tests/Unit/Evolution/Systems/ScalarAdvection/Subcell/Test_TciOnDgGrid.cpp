@@ -11,7 +11,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {

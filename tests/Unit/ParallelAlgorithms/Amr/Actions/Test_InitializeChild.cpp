@@ -23,7 +23,7 @@
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"

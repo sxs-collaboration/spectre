@@ -50,7 +50,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"

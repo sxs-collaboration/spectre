@@ -11,7 +11,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/Systems/Burgers/Subcell/TciOnFdGrid.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TciOnFdGrid",

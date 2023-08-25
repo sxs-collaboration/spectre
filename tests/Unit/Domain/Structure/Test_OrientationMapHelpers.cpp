@@ -26,7 +26,7 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"

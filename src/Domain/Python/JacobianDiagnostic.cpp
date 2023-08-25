@@ -10,7 +10,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/JacobianDiagnostic.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace py = pybind11;

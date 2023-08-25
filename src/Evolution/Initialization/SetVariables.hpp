@@ -15,7 +15,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"

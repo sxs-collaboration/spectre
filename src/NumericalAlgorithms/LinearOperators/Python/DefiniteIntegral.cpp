@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 namespace py = pybind11;
 

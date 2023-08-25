@@ -10,7 +10,7 @@
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 namespace Burgers::subcell {
 std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(

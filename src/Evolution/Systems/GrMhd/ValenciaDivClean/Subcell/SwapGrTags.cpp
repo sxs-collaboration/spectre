@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::subcell {

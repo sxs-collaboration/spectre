@@ -11,7 +11,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/CcsnCollapse.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"

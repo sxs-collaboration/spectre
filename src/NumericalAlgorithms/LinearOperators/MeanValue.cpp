@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

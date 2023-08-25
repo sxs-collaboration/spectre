@@ -18,7 +18,7 @@
 #include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/Tags/BoundaryFields.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
                   "[Unit][Elliptic]") {

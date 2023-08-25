@@ -8,7 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 namespace ForceFree::subcell {
 

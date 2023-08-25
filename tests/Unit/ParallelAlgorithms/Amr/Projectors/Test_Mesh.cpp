@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "Utilities/Literals.hpp"

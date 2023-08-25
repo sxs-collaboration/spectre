@@ -10,7 +10,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace amr::Criteria {

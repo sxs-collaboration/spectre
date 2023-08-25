@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"

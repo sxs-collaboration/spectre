@@ -9,7 +9,7 @@
 
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"

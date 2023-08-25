@@ -14,7 +14,6 @@ spectre_target_sources(
   FiniteDifference.cpp
   Legendre.cpp
   LogicalCoordinates.cpp
-  Mesh.cpp
   Projection.cpp
   Spectral.cpp
   SwshCoefficients.cpp
@@ -34,7 +33,6 @@ spectre_target_headers(
   ComplexDataView.hpp
   Filtering.hpp
   LogicalCoordinates.hpp
-  Mesh.hpp
   Projection.hpp
   Spectral.hpp
   SwshCoefficients.hpp
@@ -54,6 +52,7 @@ target_link_libraries(
   ErrorHandling
   Libsharp
   Options
+  SpatialDiscretization
   PRIVATE
   BLAS::BLAS
   Boost::boost

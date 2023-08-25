@@ -21,7 +21,7 @@
 #include "Evolution/Systems/NewtonianEuler/Limiters/CharacteristicHelpers.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/Flattener.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

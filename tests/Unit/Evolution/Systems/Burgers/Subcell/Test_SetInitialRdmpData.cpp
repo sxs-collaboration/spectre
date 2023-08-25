@@ -11,7 +11,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/Burgers/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 

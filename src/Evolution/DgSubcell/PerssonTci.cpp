@@ -12,7 +12,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

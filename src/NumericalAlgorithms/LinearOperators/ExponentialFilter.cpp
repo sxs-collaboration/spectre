@@ -8,7 +8,7 @@
 
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

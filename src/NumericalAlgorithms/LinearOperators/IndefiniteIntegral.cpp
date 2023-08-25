@@ -9,7 +9,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "DataStructures/TempBuffer.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

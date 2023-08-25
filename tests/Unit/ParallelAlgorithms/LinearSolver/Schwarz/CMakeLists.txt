@@ -21,6 +21,7 @@ target_link_libraries(
   DomainStructure
   LinearSolver
   ParallelSchwarz
+  SpatialDiscretization
   Spectral
   )
 

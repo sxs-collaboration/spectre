@@ -19,7 +19,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

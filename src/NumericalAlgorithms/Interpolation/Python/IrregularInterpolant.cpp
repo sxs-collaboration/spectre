@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
 
 namespace py = pybind11;
 
