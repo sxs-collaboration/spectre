@@ -101,6 +101,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/QuadrupoleFormula.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/SetVariablesNeededFixingToFalse.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -526,7 +527,13 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
               volume_dim, Frame::Inertial>,
           ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
-                                                     Frame::Inertial>>>;
+                                                     Frame::Inertial>>,
+      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
+             DataVector, volume_dim,
+             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
+             DataVector, volume_dim,
+             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>>;
   using integrand_fields = tmpl::append<
       typename system::variables_tag::tags_list,
       tmpl::conditional_t<
