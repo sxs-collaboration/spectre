@@ -4,8 +4,8 @@
 #include <pybind11/pybind11.h>
 
 #include "DataStructures/Matrix.hpp"
-#include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Python/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Python/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Python/Spectral.hpp"

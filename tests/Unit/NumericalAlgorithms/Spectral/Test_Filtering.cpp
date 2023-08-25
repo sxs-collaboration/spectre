@@ -11,8 +11,8 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
-#include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 
