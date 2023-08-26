@@ -189,7 +189,7 @@ struct ObserverTags {
   using initial_data_list = gh::ScalarTensor::AnalyticData::all_analytic_data;
 
   using deriv_compute = ::Tags::DerivCompute<
-      variables_tag,
+      variables_tag, domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       typename system::gradient_variables>;
@@ -470,7 +470,7 @@ struct ScalarTensorTemplateBase {
       //   Actions::RandomizeVariables<typename system::variables_tag,
       //                               RandomizeInitialGuess>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
-          typename system::variables_tag,
+          typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,

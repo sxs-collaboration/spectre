@@ -539,6 +539,7 @@ struct EvolutionMetavars {
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<tmpl::list<::Tags::DerivCompute<
           typename system::variables_tag,
+          ::domain::Tags::Mesh<volume_dim>,
           ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                           Frame::Inertial>,
           typename system::gradient_variables>>>,

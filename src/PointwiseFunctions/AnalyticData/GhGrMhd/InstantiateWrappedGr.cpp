@@ -3,6 +3,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/CcsnCollapse.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -12,5 +13,6 @@
 
 GENERATE_INSTANTIATIONS(WRAPPED_GR_INSTANTIATE,
                         (grmhd::AnalyticData::BondiHoyleAccretion,
+                         grmhd::AnalyticData::CcsnCollapse,
                          grmhd::AnalyticData::MagnetizedFmDisk,
                          grmhd::AnalyticData::MagnetizedTovStar))
