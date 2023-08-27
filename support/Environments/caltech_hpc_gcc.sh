@@ -19,6 +19,7 @@ spectre_load_modules() {
     module load hdf5/1.12.1
     module load cmake/3.18.0
     module load git/2.37.2
+    module load clang/12.0.1  # for clang-format
     # Installed in SXS group
     module load blaze/3.8
     module load boost/1.82.0
@@ -43,6 +44,7 @@ spectre_unload_modules() {
     module unload hdf5/1.12.1
     module unload cmake/3.18.0
     module unload git/2.37.2
+    module unload clang/12.0.1
     # Installed in SXS group
     module unload blaze/3.8
     module unload boost/1.82.0
@@ -65,9 +67,11 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
-    cmake -D CHARM_ROOT=$CHARM_ROOT \
-          -D CMAKE_BUILD_TYPE=Release \
+    cmake -D CMAKE_C_COMPILER=gcc \
+          -D CMAKE_CXX_COMPILER=g++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CHARM_ROOT=$CHARM_ROOT \
+          -D CMAKE_BUILD_TYPE=Release \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=CaltechHpc \
