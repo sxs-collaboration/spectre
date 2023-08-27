@@ -213,11 +213,9 @@ struct EvolutionMetavars {
             tmpl::flatten<tmpl::list<
                 Events::time_events<system>, Events::Completion,
                 intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, PsiAlongAxis<1>, EvolutionMetavars,
-                    interpolator_source_vars>,
+                    volume_dim, PsiAlongAxis<1>, interpolator_source_vars>,
                 intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, PsiAlongAxis<2>, EvolutionMetavars,
-                    interpolator_source_vars>,
+                    volume_dim, PsiAlongAxis<2>, interpolator_source_vars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,

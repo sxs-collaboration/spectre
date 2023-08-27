@@ -163,6 +163,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -635,8 +636,9 @@ struct GhValenciaDivCleanTemplateBase<
                                           non_tensor_compute_tags>,
                 Events::time_events<system>,
                 control_system::control_system_events<control_systems>,
-                intrp::Events::Interpolate<3, InterpolationTargetTags,
-                                           interpolator_source_vars>...>>>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, InterpolationTargetTags,
+                    interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,

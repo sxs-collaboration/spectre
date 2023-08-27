@@ -48,7 +48,7 @@ struct SendGhVarsToCce {
     // not used by interpolation
     const Event::ObservationValue observation_value{};
     auto interpolate_event = intrp::Events::InterpolateWithoutInterpComponent<
-        Metavariables::volume_dim, CceWorltubeTargetTag, Metavariables,
+        Metavariables::volume_dim, CceWorltubeTargetTag,
         typename CceWorltubeTargetTag::vars_to_interpolate_to_target>{};
     ::apply(
         interpolate_event,

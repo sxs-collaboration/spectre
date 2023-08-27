@@ -120,12 +120,12 @@ struct MockMetavariables {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        Event, tmpl::flatten<
-                   tmpl::list<intrp::Events::InterpolateWithoutInterpComponent<
-                       volume_dim, InterpolationTargetA, MockMetavariables,
-                       typename InterpolationTargetAImpl::
-                           vars_to_interpolate_to_target>>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              intrp::Events::InterpolateWithoutInterpComponent<
+                                  volume_dim, InterpolationTargetA,
+                                  typename InterpolationTargetAImpl::
+                                      vars_to_interpolate_to_target>>>>>;
   };
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

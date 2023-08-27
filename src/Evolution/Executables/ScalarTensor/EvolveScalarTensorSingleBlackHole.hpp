@@ -182,10 +182,10 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                        intrp::Events::Interpolate<volume_dim, AhA,
                                                   interpolator_source_vars>,
                        intrp::Events::InterpolateWithoutInterpComponent<
-                           volume_dim, ExcisionBoundaryA, EvolutionMetavars,
+                         volume_dim, ExcisionBoundaryA,
                            interpolator_source_vars>,
                        intrp::Events::InterpolateWithoutInterpComponent<
-                           volume_dim, SphericalSurface, EvolutionMetavars,
+                           volume_dim, SphericalSurface,
                            scalar_charge_interpolator_source_vars>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>>;

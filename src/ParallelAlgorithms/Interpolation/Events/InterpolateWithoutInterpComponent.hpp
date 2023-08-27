@@ -45,16 +45,15 @@ struct InterpolationTarget;
 namespace intrp::Events {
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename SourceVarTags>
+          typename SourceVarTags>
 class InterpolateWithoutInterpComponent;
 /// \endcond
 
 /// Does an interpolation onto an InterpolationTargetTag by calling Actions on
 /// the InterpolationTarget component.
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... SourceVarTags>
+          typename... SourceVarTags>
 class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
-                                        Metavariables,
                                         tmpl::list<SourceVarTags...>>
     : public Event {
   /// \cond
@@ -80,10 +79,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   using argument_tags =
       tmpl::list<typename InterpolationTargetTag::temporal_id,
-                 Tags::InterpPointInfo<Metavariables>,
+                 Tags::InterpPointInfoBase,
                  ::Events::Tags::ObserverMesh<VolumeDim>, SourceVarTags...>;
 
-  template <typename ParallelComponent>
+  template <typename ParallelComponent, typename Metavariables>
   void operator()(
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
@@ -190,7 +189,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   using is_ready_argument_tags = tmpl::list<>;
 
-  template <typename ArrayIndex, typename Component>
+  template <typename ArrayIndex, typename Component, typename Metavariables>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
                 const Component* const /*meta*/) const {
@@ -202,10 +201,11 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... SourceVarTags>
-PUP::able::PUP_ID InterpolateWithoutInterpComponent<
-    VolumeDim, InterpolationTargetTag, Metavariables,
-    tmpl::list<SourceVarTags...>>::my_PUP_ID = 0;  // NOLINT
+          typename... SourceVarTags>
+PUP::able::PUP_ID
+    InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
+                                      tmpl::list<SourceVarTags...>>::my_PUP_ID =
+        0;  // NOLINT
 /// \endcond
 
 }  // namespace intrp::Events
