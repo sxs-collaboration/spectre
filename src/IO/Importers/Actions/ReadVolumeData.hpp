@@ -82,13 +82,16 @@ void read_tensor_data(const gsl::not_null<TensorType*> tensor_data,
                       const h5::VolumeData& volume_file,
                       const size_t observation_id) {
   for (size_t i = 0; i < tensor_data->size(); ++i) {
-    (*tensor_data)[i] = std::get<DataVector>(
-        volume_file
-            .get_tensor_component(
-                observation_id,
-                tensor_name + tensor_data->component_suffix(
-                                  tensor_data->get_tensor_index(i)))
-            .data);
+    const auto& tensor_component = volume_file.get_tensor_component(
+        observation_id, tensor_name + tensor_data->component_suffix(
+                                          tensor_data->get_tensor_index(i)));
+    if (not std::holds_alternative<DataVector>(tensor_component.data)) {
+      ERROR("The tensor component '"
+            << tensor_component.name
+            << "' is not a double-precision DataVector. Reading in "
+               "single-precision volume data is not supported.");
+    }
+    (*tensor_data)[i] = std::get<DataVector>(tensor_component.data);
   }
 }
 
