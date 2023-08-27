@@ -1128,8 +1128,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
   const auto strahlkorper_b =
       create_strahlkorper_y11(4.0 * y11_amplitude, radius, center);
   const Scalar<DataVector> expected_radial_dist_a_minus_b{
-      get(StrahlkorperFunctions::radius(strahlkorper_a)) -
-      get(StrahlkorperFunctions::radius(strahlkorper_b))};
+      get(ylm::radius(strahlkorper_a)) - get(ylm::radius(strahlkorper_b))};
   const Scalar<DataVector> expected_radial_dist_b_minus_a{
       -get(expected_radial_dist_a_minus_b)};
 

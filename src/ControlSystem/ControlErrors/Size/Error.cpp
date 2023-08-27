@@ -93,23 +93,17 @@ ErrorDiagnostics control_error(
   auto& characteristic_speed_on_excision_boundary = get<char_speed_tag>(buffer);
 
   // Compute the quantities on the excision boundary.
-  StrahlkorperFunctions::theta_phi(make_not_null(&excision_theta_phi),
-                                   excision_boundary);
-  StrahlkorperFunctions::radius(make_not_null(&excision_radius),
-                                excision_boundary);
+  ylm::theta_phi(make_not_null(&excision_theta_phi), excision_boundary);
+  ylm::radius(make_not_null(&excision_radius), excision_boundary);
   // rhat is x^i/r
-  StrahlkorperFunctions::rhat(make_not_null(&excision_rhat),
-                              excision_theta_phi);
-  StrahlkorperFunctions::jacobian(make_not_null(&excision_jacobian),
-                                  excision_theta_phi);
-  StrahlkorperFunctions::inv_jacobian(make_not_null(&excision_inv_jacobian),
-                                      excision_theta_phi);
-  StrahlkorperFunctions::cartesian_derivs_of_scalar(
-      make_not_null(&excision_dx_radius), excision_radius, excision_boundary,
-      excision_radius, excision_inv_jacobian);
-  StrahlkorperFunctions::normal_one_form(
-      make_not_null(&excision_normal_one_form), excision_dx_radius,
-      excision_rhat);
+  ylm::rhat(make_not_null(&excision_rhat), excision_theta_phi);
+  ylm::jacobian(make_not_null(&excision_jacobian), excision_theta_phi);
+  ylm::inv_jacobian(make_not_null(&excision_inv_jacobian), excision_theta_phi);
+  ylm::cartesian_derivs_of_scalar(make_not_null(&excision_dx_radius),
+                                  excision_radius, excision_boundary,
+                                  excision_radius, excision_inv_jacobian);
+  ylm::normal_one_form(make_not_null(&excision_normal_one_form),
+                       excision_dx_radius, excision_rhat);
   magnitude(make_not_null(&excision_normal_one_form_norm),
             excision_normal_one_form,
             inverse_spatial_metric_on_excision_boundary);
