@@ -58,7 +58,7 @@ target_link_libraries(
   INTERFACE
   Observer
   PRIVATE
-  StrahlkorperGr
+  GrSurfaces
   )
 
 add_subdirectory(Actions)

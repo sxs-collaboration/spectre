@@ -15,7 +15,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /*!
  * \ingroup SurfacesGroup
  * \brief Radial distance between two `Strahlkorper`s.
@@ -30,4 +30,4 @@ template <typename Frame>
 void radial_distance(gsl::not_null<Scalar<DataVector>*> radial_distance,
                      const Strahlkorper<Frame>& strahlkorper_a,
                      const Strahlkorper<Frame>& strahlkorper_b);
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

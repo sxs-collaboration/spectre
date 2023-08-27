@@ -13,7 +13,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes 3-covariant gradient \f$D_i S_j\f$ of a
@@ -51,4 +51,4 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
     const DataVector& one_over_one_form_magnitude,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

@@ -10,7 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void inverse_surface_metric(
     const gsl::not_null<tnsr::II<DataVector, 3, Frame>*> result,
@@ -34,16 +34,16 @@ tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
                          upper_spatial_metric);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                             \
-  template void StrahlkorperGr::inverse_surface_metric<FRAME(data)>(     \
+  template void gr::surfaces::inverse_surface_metric<FRAME(data)>(       \
       const gsl::not_null<tnsr::II<DataVector, 3, FRAME(data)>*> result, \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,     \
       const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric); \
   template tnsr::II<DataVector, 3, FRAME(data)>                          \
-  StrahlkorperGr::inverse_surface_metric<FRAME(data)>(                   \
+  gr::surfaces::inverse_surface_metric<FRAME(data)>(                     \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,     \
       const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric);
 GENERATE_INSTANTIATIONS(INSTANTIATE,

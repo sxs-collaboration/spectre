@@ -14,7 +14,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /*!
  * \ingroup SurfacesGroup
@@ -94,4 +94,4 @@ Scalar<DataVector> euclidean_area_element(
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

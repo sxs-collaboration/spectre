@@ -13,15 +13,15 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Expansion of a `Strahlkorper`. Should be zero on apparent horizons.
 ///
 /// \details Implements Eq. (5) in \cite Baumgarte1996hh.  The input argument
 /// `grad_normal` is the quantity returned by
-/// `StrahlkorperGr::grad_unit_normal_one_form`, and `inverse_surface_metric`
-/// is the quantity returned by `StrahlkorperGr::inverse_surface_metric`.
+/// `gr::surfaces::grad_unit_normal_one_form`, and `inverse_surface_metric`
+/// is the quantity returned by `gr::surfaces::inverse_surface_metric`.
 template <typename Frame>
 void expansion(gsl::not_null<Scalar<DataVector>*> result,
                const tnsr::ii<DataVector, 3, Frame>& grad_normal,
@@ -34,4 +34,4 @@ Scalar<DataVector> expansion(
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

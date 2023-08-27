@@ -32,13 +32,13 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  GrSurfaces
   FiniteDifference
   GeneralRelativity
   LinearAlgebra
   Logging
   Options
   SphericalHarmonics
-  StrahlkorperGr
   PRIVATE
   CoordinateMaps
   Domain

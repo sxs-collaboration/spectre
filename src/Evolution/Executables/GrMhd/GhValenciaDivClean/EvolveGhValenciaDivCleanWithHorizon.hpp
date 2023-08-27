@@ -87,7 +87,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using tags_to_observe =
-        tmpl::list<StrahlkorperGr::Tags::AreaCompute<domain_frame>>;
+        tmpl::list<gr::surfaces::Tags::AreaCompute<domain_frame>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target = tmpl::list<
         gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
@@ -96,7 +96,7 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
         gr::Tags::SpatialChristoffelSecondKind<DataVector, volume_dim,
                                                domain_frame>>;
     using compute_items_on_target = tmpl::append<
-        tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<domain_frame>>,
+        tmpl::list<gr::surfaces::Tags::AreaElementCompute<domain_frame>>,
         tags_to_observe>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;

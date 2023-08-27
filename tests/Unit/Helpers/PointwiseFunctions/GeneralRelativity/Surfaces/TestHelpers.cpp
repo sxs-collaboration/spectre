@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Helpers/PointwiseFunctions/GeneralRelativity/Surfaces/StrahlkorperGrTestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/Surfaces/TestHelpers.hpp"
 
 #include <cmath>
 #include <cstddef>

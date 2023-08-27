@@ -138,7 +138,7 @@ namespace ControlErrors {
  *   (averaging scheme detailed above.)
  * - RawDtHorizonCoef00: The raw 00 component of the horizon passed in to the
  *   control error.
- * - MinDeltaR: The minimum of the `StrahlkorperGr::radial_distance` between the
+ * - MinDeltaR: The minimum of the `gr::surfaces::radial_distance` between the
  *   horizon and the excision surfaces.
  * - MinRelativeDeltaR: MinDeltaR divided by the `Strahlkorper::average_radius`
  *   of the horizon

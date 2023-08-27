@@ -91,7 +91,7 @@ void test() {
           const auto rhat = StrahlkorperFunctions::rhat(theta_phi);
 
           // Set area element to the Euclidean area element for the test.
-          *box_area_element = StrahlkorperGr::euclidean_area_element(
+          *box_area_element = gr::surfaces::euclidean_area_element(
               StrahlkorperFunctions::jacobian(theta_phi),
               StrahlkorperFunctions::normal_one_form(
                   StrahlkorperFunctions::cartesian_derivs_of_scalar(

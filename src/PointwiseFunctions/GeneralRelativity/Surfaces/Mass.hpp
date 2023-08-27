@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /*!
  * \ingroup SurfacesGroup
  * \brief Irreducible mass of a 2D `Strahlkorper`.
@@ -26,4 +26,4 @@ double irreducible_mass(double area);
  */
 double christodoulou_mass(double dimensionful_spin_magnitude,
                           double irreducible_mass);
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

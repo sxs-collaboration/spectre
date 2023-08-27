@@ -38,12 +38,12 @@ using vars_to_interpolate_to_target =
 
 template <typename Frame>
 using tags_for_observing =
-    tmpl::list<StrahlkorperGr::Tags::AreaCompute<Frame>,
-               StrahlkorperGr::Tags::IrreducibleMassCompute<Frame>,
+    tmpl::list<gr::surfaces::Tags::AreaCompute<Frame>,
+               gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
                StrahlkorperTags::MaxRicciScalarCompute,
                StrahlkorperTags::MinRicciScalarCompute,
-               StrahlkorperGr::Tags::ChristodoulouMassCompute<Frame>,
-               StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<Frame>>;
+               gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
+               gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>>;
 
 using surface_tags_for_observing = tmpl::list<StrahlkorperTags::RicciScalar>;
 
@@ -69,11 +69,11 @@ using compute_items_on_target = tmpl::append<
                // slice, whereas gr::tags::ExtrinsicCurvature is the 3d
                // extrinsic curvature of the slice embedded in 4d spacetime.
                // Both quantities are in the DataBox.
-               StrahlkorperGr::Tags::AreaElementCompute<Frame>,
+               gr::surfaces::Tags::AreaElementCompute<Frame>,
                StrahlkorperTags::EuclideanAreaElementCompute<Frame>,
                StrahlkorperTags::ExtrinsicCurvatureCompute<Frame>,
                StrahlkorperTags::RicciScalarCompute<Frame>,
-               StrahlkorperGr::Tags::SpinFunctionCompute<Frame>,
-               StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<Frame>>,
+               gr::surfaces::Tags::SpinFunctionCompute<Frame>,
+               gr::surfaces::Tags::DimensionfulSpinMagnitudeCompute<Frame>>,
     tags_for_observing<Frame>>;
 }  // namespace ah

@@ -15,8 +15,8 @@ struct SomeTag : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
                   "[ApparentHorizons][Unit]") {
-  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
-  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
+  TestHelpers::db::test_simple_tag<gr::surfaces::Tags::Area>("Area");
+  TestHelpers::db::test_simple_tag<gr::surfaces::Tags::IrreducibleMass>(
       "IrreducibleMass");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::OneOverOneFormMagnitude>(
       "OneOverOneFormMagnitude");
@@ -26,12 +26,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
       "MaxRicciScalar");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::MinRicciScalar>(
       "MinRicciScalar");
-  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::SpinFunction>(
+  TestHelpers::db::test_simple_tag<gr::surfaces::Tags::SpinFunction>(
       "SpinFunction");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperGr::Tags::DimensionfulSpinMagnitude>(
+      gr::surfaces::Tags::DimensionfulSpinMagnitude>(
       "DimensionfulSpinMagnitude");
-  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::ChristodoulouMass>(
+  TestHelpers::db::test_simple_tag<gr::surfaces::Tags::ChristodoulouMass>(
       "ChristodoulouMass");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::UnitNormalOneForm<Frame::Inertial>>(
@@ -55,15 +55,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
                                                        Frame::Inertial>>(
       "EuclideanSurfaceIntegralVector(SomeTag)");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperGr::Tags::AreaElement<Frame::Inertial>>("AreaElement");
+      gr::surfaces::Tags::AreaElement<Frame::Inertial>>("AreaElement");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperGr::Tags::SurfaceIntegral<SomeTag, Frame::Inertial>>(
+      gr::surfaces::Tags::SurfaceIntegral<SomeTag, Frame::Inertial>>(
       "SurfaceIntegral(SomeTag)");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
+      gr::surfaces::Tags::DimensionfulSpinVector<Frame::Inertial>>(
       "DimensionfulSpinVector");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
+      gr::surfaces::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::EuclideanAreaElementCompute<Frame::Inertial>>(
@@ -77,14 +77,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
                                                               Frame::Inertial>>(
       "EuclideanSurfaceIntegralVector(SomeTag)");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>>("AreaElement");
+      gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>>("AreaElement");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<SomeTag, Frame::Inertial>>(
+      gr::surfaces::Tags::SurfaceIntegralCompute<SomeTag, Frame::Inertial>>(
       "SurfaceIntegral(SomeTag)");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::AreaCompute<Frame::Inertial>>("Area");
+      gr::surfaces::Tags::AreaCompute<Frame::Inertial>>("Area");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::IrreducibleMassCompute<Frame::Inertial>>(
+      gr::surfaces::Tags::IrreducibleMassCompute<Frame::Inertial>>(
       "IrreducibleMass");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::OneOverOneFormMagnitudeCompute<DataVector, 1,
@@ -117,19 +117,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
   TestHelpers::db::test_compute_tag<StrahlkorperTags::MinRicciScalarCompute>(
       "MinRicciScalar");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::SpinFunctionCompute<Frame::Inertial>>(
-      "SpinFunction");
+      gr::surfaces::Tags::SpinFunctionCompute<Frame::Inertial>>("SpinFunction");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<Frame::Inertial>>(
+      gr::surfaces::Tags::DimensionfulSpinMagnitudeCompute<Frame::Inertial>>(
       "DimensionfulSpinMagnitude");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::ChristodoulouMassCompute<Frame::Inertial>>(
+      gr::surfaces::Tags::ChristodoulouMassCompute<Frame::Inertial>>(
       "ChristodoulouMass");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<Frame::Inertial,
-                                                          Frame::Inertial>>(
+      gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame::Inertial,
+                                                        Frame::Inertial>>(
       "DimensionfulSpinVector");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
+      gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
 }

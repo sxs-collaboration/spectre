@@ -158,24 +158,24 @@ void test_dimensionful_spin_vector_compute_tag() {
       make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
           make_not_null(&generator), dist, used_for_size);
   const auto box = db::create<
-      db::AddSimpleTags<StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
-                        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
+      db::AddSimpleTags<gr::surfaces::Tags::DimensionfulSpinMagnitude,
+                        gr::surfaces::Tags::AreaElement<Frame::Inertial>,
                         StrahlkorperTags::Radius<Frame::Inertial>,
                         StrahlkorperTags::Rhat<Frame::Inertial>,
                         StrahlkorperTags::RicciScalar,
-                        StrahlkorperGr::Tags::SpinFunction,
+                        gr::surfaces::Tags::SpinFunction,
                         StrahlkorperTags::Strahlkorper<Frame::Inertial>,
                         StrahlkorperTags::CartesianCoords<Frame::Inertial>>,
-      db::AddComputeTags<StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<
+      db::AddComputeTags<gr::surfaces::Tags::DimensionfulSpinVectorCompute<
           Frame::Inertial, Frame::Inertial>>>(
       dimensionful_spin_magnitude, area_element, radius, r_hat, ricci_scalar,
       spin_function, strahlkorper, strahlkorper_cartesian_coords);
   // LHS of the == in the CHECK is retrieving the computed dimensionful spin
   // vector from your DimensionfulSpinVectorCompute tag and RHS of ==
   // should be same logic as DimensionfulSpinVectorCompute::function
-  CHECK(db::get<StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
+  CHECK(db::get<gr::surfaces::Tags::DimensionfulSpinVector<Frame::Inertial>>(
             box) ==
-        StrahlkorperGr::spin_vector<Frame::Inertial, Frame::Inertial>(
+        gr::surfaces::spin_vector<Frame::Inertial, Frame::Inertial>(
             dimensionful_spin_magnitude, area_element, ricci_scalar,
             spin_function, strahlkorper, strahlkorper_cartesian_coords));
 }
@@ -185,20 +185,18 @@ void test_dimensionless_spin_magnitude_compute_tag() {
   const double christodoulou_mass = 4.444;
 
   const auto box = db::create<
-      db::AddSimpleTags<StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
-                        StrahlkorperGr::Tags::ChristodoulouMass>,
-      db::AddComputeTags<
-          StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<
-              Frame::Inertial>>>(dimensionful_spin_magnitude,
-                                 christodoulou_mass);
+      db::AddSimpleTags<gr::surfaces::Tags::DimensionfulSpinMagnitude,
+                        gr::surfaces::Tags::ChristodoulouMass>,
+      db::AddComputeTags<gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<
+          Frame::Inertial>>>(dimensionful_spin_magnitude, christodoulou_mass);
   // LHS of the == in the CHECK is retrieving the computed dimensionless spin
   // magnitude from your DimensionlessSpinMagnitudeCompute tag and RHS of ==
   // should be same logic as DimensionlessSpinMagnitudeCompute::function
-  CHECK(db::get<
-            StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
-            box) ==
-        StrahlkorperGr::dimensionless_spin_magnitude(
-            dimensionful_spin_magnitude, christodoulou_mass));
+  CHECK(
+      db::get<gr::surfaces::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
+          box) ==
+      gr::surfaces::dimensionless_spin_magnitude(dimensionful_spin_magnitude,
+                                                 christodoulou_mass));
 }
 }  // namespace
 

@@ -9,7 +9,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
                      const Strahlkorper<Frame>& strahlkorper_a,
@@ -42,11 +42,11 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
             strahlkorper_b.l_max(), strahlkorper_b.m_max(), strahlkorper_a)));
   };
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                    \
-  template void StrahlkorperGr::radial_distance<FRAME(data)>(   \
+  template void gr::surfaces::radial_distance<FRAME(data)>(     \
       const gsl::not_null<Scalar<DataVector>*> radial_distance, \
       const Strahlkorper<FRAME(data)>& strahlkorper_a,          \
       const Strahlkorper<FRAME(data)>& strahlkorper_b);

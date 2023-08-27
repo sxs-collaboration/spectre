@@ -42,7 +42,7 @@ template <typename Frame>
 struct DimensionfulSpinVectorCompute;
 }  // namespace StrahlkorperTags
 
-namespace StrahlkorperGr::Tags {
+namespace gr::surfaces::Tags {
 template <typename Frame>
 struct AreaElement;
 template <typename Frame>
@@ -72,4 +72,4 @@ template <typename Frame>
 struct DimensionfulSpinVector;
 template <typename MeasurementFrame, typename MetricDataFrame>
 struct DimensionfulSpinVectorCompute;
-}  // namespace StrahlkorperGr::Tags
+}  // namespace gr::surfaces::Tags

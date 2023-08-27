@@ -113,10 +113,10 @@ ErrorDiagnostics control_error(
   magnitude(make_not_null(&excision_normal_one_form_norm),
             excision_normal_one_form,
             inverse_spatial_metric_on_excision_boundary);
-  StrahlkorperGr::area_element(make_not_null(&area_element),
-                               spatial_metric_on_excision_boundary,
-                               excision_jacobian, excision_normal_one_form,
-                               excision_radius, excision_rhat);
+  gr::surfaces::area_element(make_not_null(&area_element),
+                             spatial_metric_on_excision_boundary,
+                             excision_jacobian, excision_normal_one_form,
+                             excision_radius, excision_rhat);
 
   // distorted_normal_dot_unit_coord_vector is nhat_i x^i/r where
   // nhat_i is the distorted-frame unit normal to the excision
@@ -142,11 +142,11 @@ ErrorDiagnostics control_error(
   // boundary.  Compute the average by integrating.
   get(unity) = 1.0;
   const double avg_distorted_normal_dot_unit_coord_vector =
-      StrahlkorperGr::surface_integral_of_scalar(
+      gr::surfaces::surface_integral_of_scalar(
           area_element, distorted_normal_dot_unit_coord_vector,
           excision_boundary) /
-      StrahlkorperGr::surface_integral_of_scalar(area_element, unity,
-                                                 excision_boundary);
+      gr::surfaces::surface_integral_of_scalar(area_element, unity,
+                                               excision_boundary);
 
   // Compute char speed on excision boundary, Eq. 87 in ArXiv:1211.6079
   get(characteristic_speed_on_excision_boundary) =
@@ -173,8 +173,8 @@ ErrorDiagnostics control_error(
   const double min_comoving_char_speed = min(get(comoving_char_speed));
 
   // Difference between horizon and excision boundary.
-  StrahlkorperGr::radial_distance(make_not_null(&radial_distance),
-                                  apparent_horizon, excision_boundary);
+  gr::surfaces::radial_distance(make_not_null(&radial_distance),
+                                apparent_horizon, excision_boundary);
 
   // Update zero-crossing predictors.
   predictor_char_speed->add(time,

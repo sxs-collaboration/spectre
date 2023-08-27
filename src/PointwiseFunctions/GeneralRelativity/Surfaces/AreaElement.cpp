@@ -13,7 +13,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void area_element(const gsl::not_null<Scalar<DataVector>*> result,
                   const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
@@ -95,34 +95,34 @@ Scalar<DataVector> euclidean_area_element(
                          radius, r_hat);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                             \
-  template void StrahlkorperGr::area_element<FRAME(data)>(               \
-      const gsl::not_null<Scalar<DataVector>*> result,                   \
-      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,        \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian,  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,        \
-      const Scalar<DataVector>& radius,                                  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                 \
-  template Scalar<DataVector> StrahlkorperGr::area_element<FRAME(data)>( \
-      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,        \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian,  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,        \
-      const Scalar<DataVector>& radius,                                  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                 \
-  template void StrahlkorperGr::euclidean_area_element<FRAME(data)>(     \
-      const gsl::not_null<Scalar<DataVector>*> result,                   \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian,  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,        \
-      const Scalar<DataVector>& radius,                                  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                 \
-  template Scalar<DataVector>                                            \
-  StrahlkorperGr::euclidean_area_element<FRAME(data)>(                   \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian,  \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,        \
-      const Scalar<DataVector>& radius,                                  \
+#define INSTANTIATE(_, data)                                            \
+  template void gr::surfaces::area_element<FRAME(data)>(                \
+      const gsl::not_null<Scalar<DataVector>*> result,                  \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,       \
+      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
+      const Scalar<DataVector>& radius,                                 \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
+  template Scalar<DataVector> gr::surfaces::area_element<FRAME(data)>(  \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,       \
+      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
+      const Scalar<DataVector>& radius,                                 \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
+  template void gr::surfaces::euclidean_area_element<FRAME(data)>(      \
+      const gsl::not_null<Scalar<DataVector>*> result,                  \
+      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
+      const Scalar<DataVector>& radius,                                 \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
+  template Scalar<DataVector>                                           \
+  gr::surfaces::euclidean_area_element<FRAME(data)>(                    \
+      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
+      const Scalar<DataVector>& radius,                                 \
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))

@@ -70,7 +70,7 @@ struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*>,
       const tnsr::i<DataVector, 3, Frame>&, const DataVector&)>(
-      &::StrahlkorperGr::unit_normal_one_form<Frame>);
+      &::gr::surfaces::unit_normal_one_form<Frame>);
   using argument_tags = tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
                                    OneOverOneFormMagnitude>;
   using return_type = tnsr::i<DataVector, 3, Frame>;
@@ -115,7 +115,7 @@ struct GradUnitNormalOneFormCompute : GradUnitNormalOneForm<Frame>,
       const tnsr::i<DataVector, 3, Frame>&,
       const tnsr::ii<DataVector, 3, Frame>&, const DataVector&,
       const tnsr::Ijj<DataVector, 3, Frame>&)>(
-      &StrahlkorperGr::grad_unit_normal_one_form<Frame>);
+      &gr::surfaces::grad_unit_normal_one_form<Frame>);
   using argument_tags =
       tmpl::list<Rhat<Frame>, Radius<Frame>, UnitNormalOneForm<Frame>,
                  D2xRadius<Frame>, OneOverOneFormMagnitude,
@@ -138,7 +138,7 @@ struct ExtrinsicCurvatureCompute : ExtrinsicCurvature<Frame>, db::ComputeTag {
                            const tnsr::ii<DataVector, 3, Frame>&,
                            const tnsr::i<DataVector, 3, Frame>&,
                            const tnsr::I<DataVector, 3, Frame>&)>(
-          &StrahlkorperGr::extrinsic_curvature<Frame>);
+          &gr::surfaces::extrinsic_curvature<Frame>);
   using argument_tags =
       tmpl::list<GradUnitNormalOneForm<Frame>, UnitNormalOneForm<Frame>,
                  UnitNormalVector<Frame>>;
@@ -160,7 +160,7 @@ struct RicciScalarCompute : RicciScalar, db::ComputeTag {
       const tnsr::I<DataVector, 3, Frame>&,
       const tnsr::ii<DataVector, 3, Frame>&,
       const tnsr::II<DataVector, 3, Frame>&)>(
-      &StrahlkorperGr::ricci_scalar<Frame>);
+      &gr::surfaces::ricci_scalar<Frame>);
   using argument_tags =
       tmpl::list<gr::Tags::SpatialRicci<DataVector, 3, Frame>,
                  UnitNormalVector<Frame>, ExtrinsicCurvature<Frame>,
@@ -222,7 +222,7 @@ struct EuclideanAreaElementCompute : EuclideanAreaElement<Frame>,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
       const tnsr::i<DataVector, 3, Frame>&)>(
-      &::StrahlkorperGr::euclidean_area_element<Frame>);
+      &::gr::surfaces::euclidean_area_element<Frame>);
   using argument_tags = tmpl::list<
       StrahlkorperTags::Jacobian<Frame>, StrahlkorperTags::NormalOneForm<Frame>,
       StrahlkorperTags::Radius<Frame>, StrahlkorperTags::Rhat<Frame>>;
@@ -249,7 +249,7 @@ struct EuclideanSurfaceIntegralCompute
                        const Scalar<DataVector>& euclidean_area_element,
                        const Scalar<DataVector>& integrand,
                        const ::Strahlkorper<Frame>& strahlkorper) {
-    *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
+    *surface_integral = ::gr::surfaces::surface_integral_of_scalar<Frame>(
         euclidean_area_element, integrand, strahlkorper);
   }
   using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
@@ -285,7 +285,7 @@ struct EuclideanSurfaceIntegralVectorCompute
                        const tnsr::i<DataVector, 3, Frame>& normal_one_form,
                        const ::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral =
-        ::StrahlkorperGr::euclidean_surface_integral_of_vector<Frame>(
+        ::gr::surfaces::euclidean_surface_integral_of_vector<Frame>(
             euclidean_area_element, integrand, normal_one_form, strahlkorper);
   }
   using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
@@ -295,7 +295,7 @@ struct EuclideanSurfaceIntegralVectorCompute
 /// @}
 }  // namespace StrahlkorperTags
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper` that
 /// also need a metric.
@@ -343,7 +343,7 @@ struct SurfaceIntegralCompute : SurfaceIntegral<IntegrandTag, Frame>,
                        const Scalar<DataVector>& area_element,
                        const Scalar<DataVector>& integrand,
                        const ::Strahlkorper<Frame>& strahlkorper) {
-    *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
+    *surface_integral = ::gr::surfaces::surface_integral_of_scalar<Frame>(
         area_element, integrand, strahlkorper);
   }
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,
@@ -383,7 +383,7 @@ struct IrreducibleMassCompute : IrreducibleMass, db::ComputeTag {
   using base = IrreducibleMass;
   using return_type = double;
   static void function(const gsl::not_null<double*> result, const double area) {
-    *result = ::StrahlkorperGr::irreducible_mass(area);
+    *result = ::gr::surfaces::irreducible_mass(area);
   }
 
   using argument_tags = tmpl::list<Area>;
@@ -406,7 +406,7 @@ struct SpinFunctionCompute : SpinFunction, db::ComputeTag {
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const Strahlkorper<Frame>&, const tnsr::I<DataVector, 3, Frame>&,
       const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&)>(
-      &StrahlkorperGr::spin_function<Frame>);
+      &gr::surfaces::spin_function<Frame>);
   using argument_tags =
       tmpl::list<StrahlkorperTags::Tangents<Frame>,
                  StrahlkorperTags::Strahlkorper<Frame>,
@@ -433,7 +433,7 @@ struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
       const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const Strahlkorper<Frame>&, const Scalar<DataVector>&)>(
-      &StrahlkorperGr::dimensionful_spin_magnitude<Frame>);
+      &gr::surfaces::dimensionful_spin_magnitude<Frame>);
   using argument_tags =
       tmpl::list<StrahlkorperTags::RicciScalar, SpinFunction,
                  gr::Tags::SpatialMetric<DataVector, 3, Frame>,
@@ -458,7 +458,7 @@ struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<MeasurementFrame>,
       const Scalar<DataVector>&, const Scalar<DataVector>&,
       const Scalar<DataVector>&, const Strahlkorper<MetricDataFrame>&,
       const tnsr::I<DataVector, 3, MeasurementFrame>&)>(
-      &StrahlkorperGr::spin_vector<MetricDataFrame, MeasurementFrame>);
+      &gr::surfaces::spin_vector<MetricDataFrame, MeasurementFrame>);
   using argument_tags =
       tmpl::list<DimensionfulSpinMagnitude, AreaElement<MetricDataFrame>,
                  StrahlkorperTags::RicciScalar, SpinFunction,
@@ -481,8 +481,8 @@ struct ChristodoulouMassCompute : ChristodoulouMass, db::ComputeTag {
   static void function(const gsl::not_null<double*> result,
                        const double dimensionful_spin_magnitude,
                        const double irreducible_mass) {
-    *result = ::StrahlkorperGr::christodoulou_mass(dimensionful_spin_magnitude,
-                                                   irreducible_mass);
+    *result = ::gr::surfaces::christodoulou_mass(dimensionful_spin_magnitude,
+                                                 irreducible_mass);
   }
 
   using argument_tags = tmpl::list<DimensionfulSpinMagnitude, IrreducibleMass>;
@@ -504,10 +504,10 @@ struct DimensionlessSpinMagnitudeCompute : DimensionlessSpinMagnitude<Frame>,
   using return_type = double;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<double*>, const double, const double)>(
-      &StrahlkorperGr::dimensionless_spin_magnitude);
+      &gr::surfaces::dimensionless_spin_magnitude);
   using argument_tags =
       tmpl::list<DimensionfulSpinMagnitude, ChristodoulouMass>;
 };
 
 }  // namespace Tags
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

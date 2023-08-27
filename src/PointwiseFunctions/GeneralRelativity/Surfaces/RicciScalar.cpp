@@ -12,7 +12,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void ricci_scalar(const gsl::not_null<Scalar<DataVector>*> result,
                   const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
@@ -49,17 +49,17 @@ Scalar<DataVector> ricci_scalar(
                extrinsic_curvature, upper_spatial_metric);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                             \
-  template void StrahlkorperGr::ricci_scalar<FRAME(data)>(               \
+  template void gr::surfaces::ricci_scalar<FRAME(data)>(                 \
       const gsl::not_null<Scalar<DataVector>*> result,                   \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_ricci_tensor,  \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,     \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,   \
       const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric); \
-  template Scalar<DataVector> StrahlkorperGr::ricci_scalar<FRAME(data)>( \
+  template Scalar<DataVector> gr::surfaces::ricci_scalar<FRAME(data)>(   \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_ricci_tensor,  \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,     \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,   \

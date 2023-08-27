@@ -13,7 +13,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes inverse 2-metric \f$g^{ij}-S^i S^j\f$ of a Strahlkorper.
@@ -37,4 +37,4 @@ tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

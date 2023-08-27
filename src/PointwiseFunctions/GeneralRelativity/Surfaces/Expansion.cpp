@@ -11,7 +11,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void expansion(const gsl::not_null<Scalar<DataVector>*> result,
                const tnsr::ii<DataVector, 3, Frame>& grad_normal,
@@ -48,16 +48,16 @@ Scalar<DataVector> expansion(
             extrinsic_curvature);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                              \
-  template void StrahlkorperGr::expansion<FRAME(data)>(                   \
+  template void gr::surfaces::expansion<FRAME(data)>(                     \
       const gsl::not_null<Scalar<DataVector>*> result,                    \
       const tnsr::ii<DataVector, 3, FRAME(data)>& grad_normal,            \
       const tnsr::II<DataVector, 3, FRAME(data)>& inverse_surface_metric, \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature);   \
-  template Scalar<DataVector> StrahlkorperGr::expansion<FRAME(data)>(     \
+  template Scalar<DataVector> gr::surfaces::expansion<FRAME(data)>(       \
       const tnsr::ii<DataVector, 3, FRAME(data)>& grad_normal,            \
       const tnsr::II<DataVector, 3, FRAME(data)>& inverse_surface_metric, \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature);

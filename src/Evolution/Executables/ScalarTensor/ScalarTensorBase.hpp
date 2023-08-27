@@ -318,24 +318,24 @@ struct ObserverTags {
                                                        ::Frame::Inertial>,
       StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Inertial>,
       StrahlkorperTags::UnitNormalVectorCompute<::Frame::Inertial>,
-      StrahlkorperGr::Tags::AreaElementCompute<::Frame::Inertial>,
+      gr::surfaces::Tags::AreaElementCompute<::Frame::Inertial>,
       ScalarTensor::StrahlkorperScalar::Tags::ScalarChargeIntegrandCompute,
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<
+      gr::surfaces::Tags::SurfaceIntegralCompute<
           ScalarTensor::StrahlkorperScalar::Tags::ScalarChargeIntegrand,
           ::Frame::Inertial>,
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<CurvedScalarWave::Tags::Psi,
-                                                   ::Frame::Inertial>,
+      gr::surfaces::Tags::SurfaceIntegralCompute<CurvedScalarWave::Tags::Psi,
+                                                 ::Frame::Inertial>,
       CurvedScalarWave::Tags::PsiSquaredCompute,
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<
+      gr::surfaces::Tags::SurfaceIntegralCompute<
           CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
 
   using scalar_charge_surface_obs_tags = tmpl::list<
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<
+      gr::surfaces::Tags::SurfaceIntegralCompute<
           ScalarTensor::StrahlkorperScalar::Tags::ScalarChargeIntegrand,
           ::Frame::Inertial>,
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<CurvedScalarWave::Tags::Psi,
-                                                   ::Frame::Inertial>,
-      StrahlkorperGr::Tags::SurfaceIntegralCompute<
+      gr::surfaces::Tags::SurfaceIntegralCompute<CurvedScalarWave::Tags::Psi,
+                                                 ::Frame::Inertial>,
+      gr::surfaces::Tags::SurfaceIntegralCompute<
           CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
 };
 

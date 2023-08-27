@@ -91,10 +91,10 @@ void test_strahlkorper_compute_items(const T& used_for_size) {
                      gh::Tags::Pi<DataVector, Dim, Frame>,
                      gh::Tags::Phi<DataVector, Dim, Frame>>>,
       db::AddComputeTags<tmpl::list<
-          StrahlkorperGr::Tags::InverseSpatialMetricCompute<Dim, Frame>,
-          StrahlkorperGr::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,
-          StrahlkorperGr::Tags::SpatialChristoffelSecondKindCompute<Dim,
-                                                                    Frame>>>>(
+          gr::surfaces::Tags::InverseSpatialMetricCompute<Dim, Frame>,
+          gr::surfaces::Tags::ExtrinsicCurvatureCompute<Dim, Frame>,
+          gr::surfaces::Tags::SpatialChristoffelSecondKindCompute<Dim,
+                                                                  Frame>>>>(
       spacetime_metric, pi, phi);
 
   const auto& inverse_spatial_metric =
@@ -119,12 +119,13 @@ SPECTRE_TEST_CASE(
   // Need only Dim=3 and DataVectors for apparent horizons.
   test_strahlkorper_compute_items<3, Frame::Inertial>(used_for_size);
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>>(
+      gr::surfaces::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>>(
       "InverseSpatialMetric");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      gr::surfaces::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
       "ExtrinsicCurvature");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::SpatialChristoffelSecondKindCompute<
-          3, Frame::Inertial>>("SpatialChristoffelSecondKind");
+      gr::surfaces::Tags::SpatialChristoffelSecondKindCompute<3,
+                                                              Frame::Inertial>>(
+      "SpatialChristoffelSecondKind");
 }

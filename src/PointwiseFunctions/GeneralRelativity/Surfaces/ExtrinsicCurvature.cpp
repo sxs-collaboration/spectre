@@ -10,7 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void extrinsic_curvature(
     const gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
@@ -50,17 +50,17 @@ tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
                       unit_normal_vector);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                             \
-  template void StrahlkorperGr::extrinsic_curvature<FRAME(data)>(        \
+  template void gr::surfaces::extrinsic_curvature<FRAME(data)>(          \
       const gsl::not_null<tnsr::ii<DataVector, 3, FRAME(data)>*> result, \
       const tnsr::ii<DataVector, 3, FRAME(data)>& grad_normal,           \
       const tnsr::i<DataVector, 3, FRAME(data)>& unit_normal_one_form,   \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector);    \
   template tnsr::ii<DataVector, 3, FRAME(data)>                          \
-  StrahlkorperGr::extrinsic_curvature<FRAME(data)>(                      \
+  gr::surfaces::extrinsic_curvature<FRAME(data)>(                        \
       const tnsr::ii<DataVector, 3, FRAME(data)>& grad_normal,           \
       const tnsr::i<DataVector, 3, FRAME(data)>& unit_normal_one_form,   \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector);
