@@ -17,7 +17,7 @@ namespace gr::surfaces {
 template <typename Frame>
 void area_element(const gsl::not_null<Scalar<DataVector>*> result,
                   const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-                  const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+                  const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
                   const tnsr::i<DataVector, 3, Frame>& normal_one_form,
                   const Scalar<DataVector>& radius,
                   const tnsr::i<DataVector, 3, Frame>& r_hat) {
@@ -46,7 +46,7 @@ void area_element(const gsl::not_null<Scalar<DataVector>*> result,
 template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) {
@@ -59,7 +59,7 @@ Scalar<DataVector> area_element(
 template <typename Frame>
 void euclidean_area_element(
     const gsl::not_null<Scalar<DataVector>*> result,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) {
@@ -86,7 +86,7 @@ void euclidean_area_element(
 
 template <typename Frame>
 Scalar<DataVector> euclidean_area_element(
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) {
@@ -98,31 +98,31 @@ Scalar<DataVector> euclidean_area_element(
 }  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                            \
-  template void gr::surfaces::area_element<FRAME(data)>(                \
-      const gsl::not_null<Scalar<DataVector>*> result,                  \
-      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,       \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
-      const Scalar<DataVector>& radius,                                 \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
-  template Scalar<DataVector> gr::surfaces::area_element<FRAME(data)>(  \
-      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,       \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
-      const Scalar<DataVector>& radius,                                 \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
-  template void gr::surfaces::euclidean_area_element<FRAME(data)>(      \
-      const gsl::not_null<Scalar<DataVector>*> result,                  \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
-      const Scalar<DataVector>& radius,                                 \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                \
-  template Scalar<DataVector>                                           \
-  gr::surfaces::euclidean_area_element<FRAME(data)>(                    \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& jacobian, \
-      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,       \
-      const Scalar<DataVector>& radius,                                 \
+#define INSTANTIATE(_, data)                                           \
+  template void gr::surfaces::area_element<FRAME(data)>(               \
+      const gsl::not_null<Scalar<DataVector>*> result,                 \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,      \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& jacobian,       \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,      \
+      const Scalar<DataVector>& radius,                                \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);               \
+  template Scalar<DataVector> gr::surfaces::area_element<FRAME(data)>( \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,      \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& jacobian,       \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,      \
+      const Scalar<DataVector>& radius,                                \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);               \
+  template void gr::surfaces::euclidean_area_element<FRAME(data)>(     \
+      const gsl::not_null<Scalar<DataVector>*> result,                 \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& jacobian,       \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,      \
+      const Scalar<DataVector>& radius,                                \
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);               \
+  template Scalar<DataVector>                                          \
+  gr::surfaces::euclidean_area_element<FRAME(data)>(                   \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& jacobian,       \
+      const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,      \
+      const Scalar<DataVector>& radius,                                \
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))

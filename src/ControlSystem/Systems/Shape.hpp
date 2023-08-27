@@ -107,8 +107,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
   struct process_measurement {
     template <typename Submeasurement>
-    using argument_tags =
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>>;
+    using argument_tags = tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>>;
 
     template <typename Metavariables>
     static void apply(typename measurements::SingleHorizon<

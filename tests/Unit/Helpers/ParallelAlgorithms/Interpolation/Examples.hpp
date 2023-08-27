@@ -177,9 +177,9 @@ struct ExampleInterpolationTargetTag
 
   // This list will be a lot longer for apparent horizon finding
   using compute_items_on_target =
-      tmpl::list<StrahlkorperTags::ThetaPhiCompute<::Frame::Grid>,
-                 StrahlkorperTags::RadiusCompute<::Frame::Grid>,
-                 StrahlkorperTags::RhatCompute<::Frame::Grid>>;
+      tmpl::list<ylm::Tags::ThetaPhiCompute<::Frame::Grid>,
+                 ylm::Tags::RadiusCompute<::Frame::Grid>,
+                 ylm::Tags::RhatCompute<::Frame::Grid>>;
 
   using compute_target_points = ExampleComputeTargetPoints;
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 template <typename Frame>
 struct EuclideanAreaElement;
 template <typename Frame>
@@ -40,7 +40,7 @@ template <typename Frame>
 struct DimensionfulSpinVector;
 template <typename Frame>
 struct DimensionfulSpinVectorCompute;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 
 namespace gr::surfaces::Tags {
 template <typename Frame>

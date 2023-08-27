@@ -67,10 +67,10 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 template <typename Frame>
 struct Strahlkorper;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 
 namespace {
 // Simple DataBoxItems for test.
@@ -180,7 +180,7 @@ struct TestKerrHorizonIntegral
                     const TemporalId& /*temporal_id*/) {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+        get<ylm::Tags::Strahlkorper<Frame::Inertial>>(box);
     const double integral = strahlkorper.ylm_spherepack().definite_integral(
         make_not_null(get(interpolation_result).data()));
     const double expected_integral = 608.0 * M_PI / 3.0;  // by hand

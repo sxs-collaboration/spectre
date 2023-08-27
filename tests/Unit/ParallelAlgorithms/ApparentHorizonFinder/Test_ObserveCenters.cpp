@@ -63,9 +63,9 @@ void test() {
   std::vector<std::array<double, 3>> grid_centers{};
   std::vector<std::array<double, 3>> inertial_centers{};
 
-  db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
-                         StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
-                         StrahlkorperTags::EuclideanAreaElement<Frame>>>
+  db::DataBox<tmpl::list<ylm::Tags::Strahlkorper<Frame>,
+                         ylm::Tags::CartesianCoords<::Frame::Inertial>,
+                         ylm::Tags::EuclideanAreaElement<Frame>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
@@ -76,9 +76,9 @@ void test() {
     grid_centers.push_back(grid_center);
     inertial_centers.push_back(inertial_center);
 
-    db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-               StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
-               StrahlkorperTags::EuclideanAreaElement<Frame>>(
+    db::mutate<ylm::Tags::Strahlkorper<Frame>,
+               ylm::Tags::CartesianCoords<::Frame::Inertial>,
+               ylm::Tags::EuclideanAreaElement<Frame>>(
         [&grid_center, &inertial_center](
             gsl::not_null<Strahlkorper<Frame>*> box_grid_horizon,
             gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>

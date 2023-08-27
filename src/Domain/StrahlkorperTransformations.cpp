@@ -335,13 +335,13 @@ void strahlkorper_coords_in_different_frame(
   auto& src_cartesian_coords = get<Tags::TempI<2, 3, SrcFrame>>(temp_buffer);
   auto& src_radius = get<::Tags::TempScalar<3>>(temp_buffer);
 
-  StrahlkorperTags::ThetaPhiCompute<SrcFrame>::function(
-      make_not_null(&src_theta_phi), src_strahlkorper);
-  StrahlkorperTags::RhatCompute<SrcFrame>::function(make_not_null(&r_hat),
-                                                    src_theta_phi);
-  StrahlkorperTags::RadiusCompute<SrcFrame>::function(
-      make_not_null(&src_radius), src_strahlkorper);
-  StrahlkorperTags::CartesianCoordsCompute<SrcFrame>::function(
+  ylm::Tags::ThetaPhiCompute<SrcFrame>::function(make_not_null(&src_theta_phi),
+                                                 src_strahlkorper);
+  ylm::Tags::RhatCompute<SrcFrame>::function(make_not_null(&r_hat),
+                                             src_theta_phi);
+  ylm::Tags::RadiusCompute<SrcFrame>::function(make_not_null(&src_radius),
+                                               src_strahlkorper);
+  ylm::Tags::CartesianCoordsCompute<SrcFrame>::function(
       make_not_null(&src_cartesian_coords), src_strahlkorper, src_radius,
       r_hat);
 

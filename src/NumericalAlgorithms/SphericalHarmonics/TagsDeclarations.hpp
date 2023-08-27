@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 template <typename Frame>
 struct Strahlkorper;
 template <typename Frame>
@@ -32,4 +32,4 @@ template <typename Frame>
 struct NormalOneForm;
 template <typename Frame>
 struct Tangents;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags

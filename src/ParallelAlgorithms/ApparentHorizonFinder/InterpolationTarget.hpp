@@ -152,17 +152,17 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using frame = Frame;
 
   using common_tags =
-      tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
+      tmpl::push_back<ylm::Tags::items_tags<Frame>, ::ah::Tags::FastFlow,
                       logging::Tags::Verbosity<InterpolationTargetTag>,
-                      StrahlkorperTags::PreviousStrahlkorpers<Frame>>;
+                      ylm::Tags::PreviousStrahlkorpers<Frame>>;
   using simple_tags = tmpl::append<
       common_tags,
       tmpl::conditional_t<
           std::is_same_v<Frame, ::Frame::Inertial>, tmpl::list<>,
-          tmpl::list<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>>>;
+          tmpl::list<ylm::Tags::CartesianCoords<::Frame::Inertial>>>>;
   using compute_tags =
-      tmpl::append<typename StrahlkorperTags::compute_items_tags<Frame>,
-                   StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame>>;
+      tmpl::append<typename ylm::Tags::compute_items_tags<Frame>,
+                   ylm::Tags::TimeDerivStrahlkorperCompute<Frame>>;
 
   template <typename DbTags, typename Metavariables>
   static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -180,9 +180,9 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     // so we can test for it later without generating an FPE.
     //
     // Note that if frame is not inertial,
-    // StrahlkorperTags::Strahlkorper<::Frame::Inertial> is already
+    // ylm::Tags::Strahlkorper<::Frame::Inertial> is already
     // default initialized so there is no need to do anything special
-    // here for StrahlkorperTags::Strahlkorper<::Frame::Inertial>.
+    // here for ylm::Tags::Strahlkorper<::Frame::Inertial>.
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
         std::deque<std::pair<double, ::Strahlkorper<Frame>>>{std::make_pair(
@@ -195,8 +195,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
       const tmpl::type_<Metavariables>& /*meta*/,
       const TemporalId& /*temporal_id*/) {
     const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
-    const auto& strahlkorper =
-        db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);
 
     const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
     const auto prolonged_strahlkorper =
@@ -210,15 +209,14 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
         get<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>>(temp_buffer);
     auto& r_hat = get<::Tags::Tempi<1, 3, Frame>>(temp_buffer);
     auto& radius = get<::Tags::TempScalar<2>>(temp_buffer);
-    StrahlkorperTags::ThetaPhiCompute<Frame>::function(
-        make_not_null(&theta_phi), prolonged_strahlkorper);
-    StrahlkorperTags::RhatCompute<Frame>::function(make_not_null(&r_hat),
-                                                   theta_phi);
-    StrahlkorperTags::RadiusCompute<Frame>::function(make_not_null(&radius),
-                                                     prolonged_strahlkorper);
+    ylm::Tags::ThetaPhiCompute<Frame>::function(make_not_null(&theta_phi),
+                                                prolonged_strahlkorper);
+    ylm::Tags::RhatCompute<Frame>::function(make_not_null(&r_hat), theta_phi);
+    ylm::Tags::RadiusCompute<Frame>::function(make_not_null(&radius),
+                                              prolonged_strahlkorper);
 
     tnsr::I<DataVector, 3, Frame> prolonged_coords{};
-    StrahlkorperTags::CartesianCoordsCompute<Frame>::function(
+    ylm::Tags::CartesianCoordsCompute<Frame>::function(
         make_not_null(&prolonged_coords), prolonged_strahlkorper, radius,
         r_hat);
 

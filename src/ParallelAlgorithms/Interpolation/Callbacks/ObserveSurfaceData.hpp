@@ -60,7 +60,7 @@ struct ObserveSurfaceData
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
     const Strahlkorper<HorizonFrame>& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<HorizonFrame>>(box);
+        get<ylm::Tags::Strahlkorper<HorizonFrame>>(box);
     const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
 
     // Output the inertial-frame coordinates of the Stralhlkorper.
@@ -70,10 +70,10 @@ struct ObserveSurfaceData
     // sphere).
     std::vector<TensorComponent> tensor_components;
     if constexpr (db::tag_is_retrievable_v<
-                      StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
+                      ylm::Tags::CartesianCoords<::Frame::Inertial>,
                       db::DataBox<DbTags>>) {
       const auto& inertial_strahlkorper_coords =
-          get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+          get<ylm::Tags::CartesianCoords<::Frame::Inertial>>(box);
       tensor_components.push_back(
           {"InertialCoordinates_x"s, get<0>(inertial_strahlkorper_coords)});
       tensor_components.push_back(

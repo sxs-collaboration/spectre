@@ -64,7 +64,7 @@ struct ScalarChargeIntegrandCompute : ScalarChargeIntegrand, db::ComputeTag {
   static constexpr auto function = &ScalarTensor::scalar_charge_integrand;
   using argument_tags =
       tmpl::list<CurvedScalarWave::Tags::Phi<Dim>,
-                 StrahlkorperTags::UnitNormalVector<Frame::Inertial>>;
+                 ylm::Tags::UnitNormalVector<Frame::Inertial>>;
   using return_type = Scalar<DataVector>;
 };
 

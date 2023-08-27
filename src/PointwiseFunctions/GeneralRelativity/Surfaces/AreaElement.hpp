@@ -31,7 +31,7 @@ namespace gr::surfaces {
  * `jacobian`, `normal_one_form`, `radius`, and `r_hat`, respectively;
  * these input arguments depend only on the Strahlkorper, not on the
  * metric, and can be computed from a Strahlkorper using ComputeItems
- * in `StrahlkorperTags`. Note that this does not include the factor
+ * in `ylm::Tags`. Note that this does not include the factor
  * of \f$\sin\theta\f$, i.e., this returns \f$r^2\f$ for a spherical
  * `Strahlkorper` in flat space.
  * This choice makes the area element returned here compatible with
@@ -40,7 +40,7 @@ namespace gr::surfaces {
 template <typename Frame>
 void area_element(gsl::not_null<Scalar<DataVector>*> result,
                   const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-                  const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+                  const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
                   const tnsr::i<DataVector, 3, Frame>& normal_one_form,
                   const Scalar<DataVector>& radius,
                   const tnsr::i<DataVector, 3, Frame>& r_hat);
@@ -48,7 +48,7 @@ void area_element(gsl::not_null<Scalar<DataVector>*> result,
 template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat);
@@ -73,7 +73,7 @@ Scalar<DataVector> area_element(
  * `jacobian`, `normal_one_form`, `radius`, and `r_hat`, respectively;
  * these input arguments depend only on the Strahlkorper, not on the
  * metric, and can be computed from a Strahlkorper using ComputeItems
- * in `StrahlkorperTags`. Note that this does not include the factor
+ * in `ylm::Tags`. Note that this does not include the factor
  * of \f$\sin\theta\f$, i.e., this returns \f$r^2\f$ for a spherical
  * `Strahlkorper`.
  * This choice makes the area element returned here compatible with
@@ -82,14 +82,14 @@ Scalar<DataVector> area_element(
 template <typename Frame>
 void euclidean_area_element(
     gsl::not_null<Scalar<DataVector>*> result,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat);
 
 template <typename Frame>
 Scalar<DataVector> euclidean_area_element(
-    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const ylm::Tags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat);

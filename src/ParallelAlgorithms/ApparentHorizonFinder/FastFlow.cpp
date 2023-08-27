@@ -103,13 +103,13 @@ FastFlow::iterate_horizon_finder(
   // Make a DataBox with this strahlkorper.
   // Do we want to define ComputeItems for expansion, normalized
   // unit norms, etc in this DataBox? So far we do not.
-  auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
-      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
-      strahlkorper);
+  auto box =
+      db::create<db::AddSimpleTags<ylm::Tags::items_tags<Frame>>,
+                 db::AddComputeTags<ylm::Tags::compute_items_tags<Frame>>>(
+          strahlkorper);
 
   // Get minimum radius.
-  const auto& radius = db::get<StrahlkorperTags::Radius<Frame>>(box);
+  const auto& radius = db::get<ylm::Tags::Radius<Frame>>(box);
   const auto r_minmax =
       std::minmax_element(get(radius).begin(), get(radius).end());
   const auto r_min = *r_minmax.first;
@@ -121,12 +121,11 @@ FastFlow::iterate_horizon_finder(
   }
 
   // Evaluate the current residual on the surface
-  const auto one_form_magnitude =
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
-                upper_spatial_metric);
+  const auto one_form_magnitude = magnitude(
+      db::get<ylm::Tags::NormalOneForm<Frame>>(box), upper_spatial_metric);
   const DataVector one_over_one_form_magnitude = 1.0 / get(one_form_magnitude);
   const auto unit_normal_one_form = gr::surfaces::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
+      db::get<ylm::Tags::NormalOneForm<Frame>>(box),
       one_over_one_form_magnitude);
   const auto inverse_surface_metric = gr::surfaces::inverse_surface_metric(
       raise_or_lower_index(unit_normal_one_form, upper_spatial_metric),
@@ -134,9 +133,9 @@ FastFlow::iterate_horizon_finder(
 
   const auto surface_residual = gr::surfaces::expansion(
       gr::surfaces::grad_unit_normal_one_form(
-          db::get<StrahlkorperTags::Rhat<Frame>>(box),
-          db::get<StrahlkorperTags::Radius<Frame>>(box), unit_normal_one_form,
-          db::get<StrahlkorperTags::D2xRadius<Frame>>(box),
+          db::get<ylm::Tags::Rhat<Frame>>(box),
+          db::get<ylm::Tags::Radius<Frame>>(box), unit_normal_one_form,
+          db::get<ylm::Tags::D2xRadius<Frame>>(box),
           one_over_one_form_magnitude, christoffel_2nd_kind),
       inverse_surface_metric, extrinsic_curvature);
 
@@ -150,9 +149,8 @@ FastFlow::iterate_horizon_finder(
     } break;
     case FlowType::Fast: {
       weighted_residual *= fast_flow_weight<Frame>(
-          one_form_magnitude, db::get<StrahlkorperTags::Rhat<Frame>>(box),
-          get(db::get<StrahlkorperTags::Radius<Frame>>(box)),
-          inverse_surface_metric);
+          one_form_magnitude, db::get<ylm::Tags::Rhat<Frame>>(box),
+          get(db::get<ylm::Tags::Radius<Frame>>(box)), inverse_surface_metric);
     } break;
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START

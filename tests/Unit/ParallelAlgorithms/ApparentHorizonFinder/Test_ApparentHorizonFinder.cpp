@@ -85,14 +85,14 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 template <typename Frame>
 struct CartesianCoords;
 template <typename Frame>
 struct Radius;
 template <typename Frame>
 struct Strahlkorper;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 namespace Tags {
 template <class TagList>
 struct Variables;
@@ -132,9 +132,9 @@ void test_inertial_strahlkorper_coords(
     const Parallel::GlobalCache<Metavariables>& cache,
     const typename Metavariables::AhA::temporal_id::type& temporal_id) {
   if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
-    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = get<ylm::Tags::Strahlkorper<Frame>>(box);
     const auto& inertial_strahlkorper_coords =
-        get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+        get<ylm::Tags::CartesianCoords<::Frame::Inertial>>(box);
     const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
     const auto& domain = get<domain::Tags::Domain<3>>(cache);
 
@@ -159,7 +159,7 @@ struct TestSchwarzschildHorizon {
       const Parallel::GlobalCache<Metavariables>& cache,
       const typename Metavariables::AhA::temporal_id::type& temporal_id) {
     // [post_horizon_find_callback_example]
-    const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
+    const auto& horizon_radius = get(get<ylm::Tags::Radius<Frame>>(box));
     const auto expected_radius =
         make_with_value<DataVector>(horizon_radius, 2.0);
     // We don't choose many grid points (for speed of test), so we
@@ -171,7 +171,7 @@ struct TestSchwarzschildHorizon {
     // Test that InverseSpatialMetric can be retrieved from the
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
-    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = get<ylm::Tags::Strahlkorper<Frame>>(box);
     const auto& inv_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
@@ -192,13 +192,13 @@ struct TestKerrHorizon {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& cache,
       const typename Metavariables::AhA::temporal_id::type& temporal_id) {
-    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = get<ylm::Tags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
     // theta,phi points.
     const auto expected_radius = gr::Solutions::kerr_horizon_radius(
         strahlkorper.ylm_spherepack().theta_phi_points(), 1.1,
         {{0.12, 0.23, 0.45}});
-    const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
+    const auto& horizon_radius = get(get<ylm::Tags::Radius<Frame>>(box));
     // The accuracy is not great because I use only a few grid points
     // to speed up the test.
     Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);

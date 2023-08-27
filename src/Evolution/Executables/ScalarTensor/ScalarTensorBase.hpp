@@ -307,17 +307,17 @@ struct ObserverTags {
       CurvedScalarWave::Tags::Phi<volume_dim>, CurvedScalarWave::Tags::Psi>;
 
   using scalar_charge_compute_items_on_target = tmpl::list<
-      StrahlkorperTags::ThetaPhiCompute<::Frame::Inertial>,
-      StrahlkorperTags::RadiusCompute<::Frame::Inertial>,
-      StrahlkorperTags::RhatCompute<::Frame::Inertial>,
-      StrahlkorperTags::InvJacobianCompute<::Frame::Inertial>,
-      StrahlkorperTags::JacobianCompute<::Frame::Inertial>,
-      StrahlkorperTags::DxRadiusCompute<::Frame::Inertial>,
-      StrahlkorperTags::NormalOneFormCompute<::Frame::Inertial>,
-      StrahlkorperTags::OneOverOneFormMagnitudeCompute<DataVector, volume_dim,
-                                                       ::Frame::Inertial>,
-      StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Inertial>,
-      StrahlkorperTags::UnitNormalVectorCompute<::Frame::Inertial>,
+      ylm::Tags::ThetaPhiCompute<::Frame::Inertial>,
+      ylm::Tags::RadiusCompute<::Frame::Inertial>,
+      ylm::Tags::RhatCompute<::Frame::Inertial>,
+      ylm::Tags::InvJacobianCompute<::Frame::Inertial>,
+      ylm::Tags::JacobianCompute<::Frame::Inertial>,
+      ylm::Tags::DxRadiusCompute<::Frame::Inertial>,
+      ylm::Tags::NormalOneFormCompute<::Frame::Inertial>,
+      ylm::Tags::OneOverOneFormMagnitudeCompute<DataVector, volume_dim,
+                                                ::Frame::Inertial>,
+      ylm::Tags::UnitNormalOneFormCompute<::Frame::Inertial>,
+      ylm::Tags::UnitNormalVectorCompute<::Frame::Inertial>,
       gr::surfaces::Tags::AreaElementCompute<::Frame::Inertial>,
       ScalarTensor::StrahlkorperScalar::Tags::ScalarChargeIntegrandCompute,
       gr::surfaces::Tags::SurfaceIntegralCompute<

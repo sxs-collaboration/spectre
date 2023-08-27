@@ -75,11 +75,11 @@ void rhat(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> r_hat,
  * `Jacobian` doesn't depend on the shape of the surface.
  */
 template <typename Fr>
-StrahlkorperTags::aliases::Jacobian<Fr> jacobian(
+ylm::Tags::aliases::Jacobian<Fr> jacobian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 
 template <typename Fr>
-void jacobian(const gsl::not_null<StrahlkorperTags::aliases::Jacobian<Fr>*> jac,
+void jacobian(const gsl::not_null<ylm::Tags::aliases::Jacobian<Fr>*> jac,
               const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 /// @}
 
@@ -91,12 +91,12 @@ void jacobian(const gsl::not_null<StrahlkorperTags::aliases::Jacobian<Fr>*> jac,
  * `InvJacobian` doesn't depend on the shape of the surface.
  */
 template <typename Fr>
-StrahlkorperTags::aliases::InvJacobian<Fr> inv_jacobian(
+ylm::Tags::aliases::InvJacobian<Fr> inv_jacobian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 
 template <typename Fr>
 void inv_jacobian(
-    const gsl::not_null<StrahlkorperTags::aliases::InvJacobian<Fr>*> inv_jac,
+    const gsl::not_null<ylm::Tags::aliases::InvJacobian<Fr>*> inv_jac,
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 /// @}
 
@@ -109,12 +109,12 @@ void inv_jacobian(
  * `InvHessian` doesn't depend on the shape of the surface.
  */
 template <typename Fr>
-StrahlkorperTags::aliases::InvHessian<Fr> inv_hessian(
+ylm::Tags::aliases::InvHessian<Fr> inv_hessian(
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 
 template <typename Fr>
 void inv_hessian(
-    const gsl::not_null<StrahlkorperTags::aliases::InvHessian<Fr>*> inv_hess,
+    const gsl::not_null<ylm::Tags::aliases::InvHessian<Fr>*> inv_hess,
     const tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>& theta_phi);
 /// @}
 
@@ -181,7 +181,7 @@ template <typename Fr>
 tnsr::i<DataVector, 3, Fr> cartesian_derivs_of_scalar(
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
-    const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac);
+    const ylm::Tags::aliases::InvJacobian<Fr>& inv_jac);
 
 /*!
  * \param dx_scalar The returned derivatives of the scalar.
@@ -197,7 +197,7 @@ void cartesian_derivs_of_scalar(
     const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> dx_scalar,
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
-    const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac);
+    const ylm::Tags::aliases::InvJacobian<Fr>& inv_jac);
 /// @}
 
 /// @{
@@ -222,8 +222,8 @@ template <typename Fr>
 tnsr::ii<DataVector, 3, Fr> cartesian_second_derivs_of_scalar(
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
-    const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac,
-    const StrahlkorperTags::aliases::InvHessian<Fr>& inv_hess);
+    const ylm::Tags::aliases::InvJacobian<Fr>& inv_jac,
+    const ylm::Tags::aliases::InvHessian<Fr>& inv_hess);
 
 /*!
  * \param d2x_scalar The returned 2nd derivatives of the scalar.
@@ -241,8 +241,8 @@ void cartesian_second_derivs_of_scalar(
     const gsl::not_null<tnsr::ii<DataVector, 3, Fr>*> d2x_scalar,
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
-    const StrahlkorperTags::aliases::InvJacobian<Fr>& inv_jac,
-    const StrahlkorperTags::aliases::InvHessian<Fr>& inv_hess);
+    const ylm::Tags::aliases::InvJacobian<Fr>& inv_jac,
+    const ylm::Tags::aliases::InvHessian<Fr>& inv_hess);
 /// @}
 
 /// @{
@@ -293,10 +293,10 @@ void laplacian_of_scalar(
  * \param jac The jacobian as returned by `StrahlkorperFunctions::jacobian`.
  */
 template <typename Fr>
-StrahlkorperTags::aliases::Jacobian<Fr> tangents(
+ylm::Tags::aliases::Jacobian<Fr> tangents(
     const ::Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Fr>& r_hat,
-    const StrahlkorperTags::aliases::Jacobian<Fr>& jac);
+    const ylm::Tags::aliases::Jacobian<Fr>& jac);
 
 /*!
  * \param result The computed tangent vectors.
@@ -308,11 +308,11 @@ StrahlkorperTags::aliases::Jacobian<Fr> tangents(
  * \param jac The jacobian as returned by `StrahlkorperFunctions::jacobian`.
  */
 template <typename Fr>
-void tangents(
-    const gsl::not_null<StrahlkorperTags::aliases::Jacobian<Fr>*> result,
-    const ::Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
-    const tnsr::i<DataVector, 3, Fr>& r_hat,
-    const StrahlkorperTags::aliases::Jacobian<Fr>& jac);
+void tangents(const gsl::not_null<ylm::Tags::aliases::Jacobian<Fr>*> result,
+              const ::Strahlkorper<Fr>& strahlkorper,
+              const Scalar<DataVector>& radius,
+              const tnsr::i<DataVector, 3, Fr>& r_hat,
+              const ylm::Tags::aliases::Jacobian<Fr>& jac);
 /// @}
 
 /// @{

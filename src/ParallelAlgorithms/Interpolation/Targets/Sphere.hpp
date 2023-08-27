@@ -145,8 +145,8 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using frame = Frame;
 
   using simple_tags =
-      tmpl::list<StrahlkorperTags::Strahlkorper<Frame>, Tags::AllCoords<Frame>>;
-  using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
+      tmpl::list<ylm::Tags::Strahlkorper<Frame>, Tags::AllCoords<Frame>>;
+  using compute_tags = typename ylm::Tags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>
   static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -168,7 +168,7 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
           l_max, l_max, DataVector{(l_max + 1) * (2 * l_max + 1), radius},
           sphere.center);
 
-      db::mutate<StrahlkorperTags::Strahlkorper<Frame>>(
+      db::mutate<ylm::Tags::Strahlkorper<Frame>>(
           [&strahlkorper](
               const gsl::not_null<::Strahlkorper<Frame>*> local_strahlkorper) {
             *local_strahlkorper = std::move(strahlkorper);
@@ -176,7 +176,7 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
           box);
 
       // This copy is ok because it's just in initialization
-      auto coords = db::get<StrahlkorperTags::CartesianCoords<Frame>>(*box);
+      auto coords = db::get<ylm::Tags::CartesianCoords<Frame>>(*box);
 
       // If the angular ordering is Strahlkorper then we don't have to do
       // anything to the coords because they are already in the right order

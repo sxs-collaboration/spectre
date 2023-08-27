@@ -22,7 +22,7 @@
 
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper`.
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
@@ -86,7 +86,7 @@ struct JacobianCompute : Jacobian<Frame>, db::ComputeTag {
   using base = Jacobian<Frame>;
   using return_type = aliases::Jacobian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::Jacobian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::Jacobian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
       &::StrahlkorperFunctions::jacobian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -108,7 +108,7 @@ struct InvJacobianCompute : InvJacobian<Frame>, db::ComputeTag {
   using base = InvJacobian<Frame>;
   using return_type = aliases::InvJacobian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::InvJacobian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::InvJacobian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
       &::StrahlkorperFunctions::inv_jacobian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -130,7 +130,7 @@ struct InvHessianCompute : InvHessian<Frame>, db::ComputeTag {
   using base = InvHessian<Frame>;
   using return_type = aliases::InvHessian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::InvHessian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::InvHessian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
       &::StrahlkorperFunctions::inv_hessian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -387,7 +387,7 @@ using compute_items_tags =
                CartesianCoordsCompute<Frame>, DxRadiusCompute<Frame>,
                D2xRadiusCompute<Frame>, LaplacianRadiusCompute<Frame>,
                NormalOneFormCompute<Frame>, TangentsCompute<Frame>>;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 
 /// Tags related to symmetric trace-free tensors
 namespace Stf::Tags {

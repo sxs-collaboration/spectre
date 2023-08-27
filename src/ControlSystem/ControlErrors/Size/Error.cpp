@@ -54,9 +54,9 @@ ErrorDiagnostics control_error(
   using excision_rhat_tag = ::Tags::Tempi<1, 3, Frame, DataVector>;
   using excision_normal_one_form_tag = ::Tags::Tempi<2, 3, Frame, DataVector>;
   using excision_jacobian_tag =
-      ::Tags::TempTensor<0, StrahlkorperTags::aliases::Jacobian<Frame>>;
+      ::Tags::TempTensor<0, ylm::Tags::aliases::Jacobian<Frame>>;
   using excision_inv_jacobian_tag =
-      ::Tags::TempTensor<1, StrahlkorperTags::aliases::InvJacobian<Frame>>;
+      ::Tags::TempTensor<1, ylm::Tags::aliases::InvJacobian<Frame>>;
   using excision_dx_radius_tag = Tags::Tempi<3, 3, Frame, DataVector>;
   using area_element_tag = ::Tags::TempScalar<1, DataVector>;
   using distorted_normal_dot_unit_coord_vector_tag =

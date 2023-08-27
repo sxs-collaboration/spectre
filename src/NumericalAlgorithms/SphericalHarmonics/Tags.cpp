@@ -15,7 +15,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 
 template <typename Frame>
 void PhysicalCenterCompute<Frame>::function(
@@ -24,11 +24,11 @@ void PhysicalCenterCompute<Frame>::function(
   *physical_center = strahlkorper.physical_center();
 }
 
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data) \
-  template struct StrahlkorperTags::PhysicalCenterCompute<FRAME(data)>;
+  template struct ylm::Tags::PhysicalCenterCompute<FRAME(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME

@@ -160,8 +160,8 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = std::false_type;
   using frame = Frame;
 
-  using simple_tags = typename StrahlkorperTags::items_tags<Frame>;
-  using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
+  using simple_tags = typename ylm::Tags::items_tags<Frame>;
+  using compute_tags = typename ylm::Tags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>
   static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -194,12 +194,10 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
     if (kerr_horizon.angular_ordering == intrp::AngularOrdering::Strahlkorper) {
-      return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
+      return db::get<ylm::Tags::CartesianCoords<Frame>>(box);
     } else {
-      const auto& strahlkorper =
-          db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);
-      const auto& coords =
-          db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
+      const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);
+      const auto& coords = db::get<ylm::Tags::CartesianCoords<Frame>>(box);
       const auto physical_extents =
           strahlkorper.ylm_spherepack().physical_extents();
       auto transposed_coords =

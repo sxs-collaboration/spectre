@@ -176,8 +176,7 @@ void test_rhat_jacobian_hessian() {
                         StrahlkorperFunctions::rhat(
                             StrahlkorperFunctions::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::Jacobian<Frame::Inertial> expected_jac(
-      theta.size());
+  ylm::Tags::aliases::Jacobian<Frame::Inertial> expected_jac(theta.size());
   get<0, 0>(expected_jac) = cos_theta * cos_phi;  // 1/R dx/dth
   get<1, 0>(expected_jac) = cos_theta * sin_phi;  // 1/R dy/dth
   get<2, 0>(expected_jac) = -sin(theta);          // 1/R dz/dth
@@ -188,7 +187,7 @@ void test_rhat_jacobian_hessian() {
                         StrahlkorperFunctions::jacobian(
                             StrahlkorperFunctions::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::InvJacobian<Frame::Inertial> expected_inv_jac(
+  ylm::Tags::aliases::InvJacobian<Frame::Inertial> expected_inv_jac(
       theta.size());
   get<0, 0>(expected_inv_jac) = cos_theta * cos_phi;  // R dth/dx
   get<0, 1>(expected_inv_jac) = cos_theta * sin_phi;  // R dth/dy
@@ -200,7 +199,7 @@ void test_rhat_jacobian_hessian() {
                         StrahlkorperFunctions::inv_jacobian(
                             StrahlkorperFunctions::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::InvHessian<Frame::Inertial> expected_inv_hess(
+  ylm::Tags::aliases::InvHessian<Frame::Inertial> expected_inv_hess(
       theta.size());
   // Note that here expected_inv_hess is computed in a much more
   // straightforward way than in StrahlkorperFunctions.cpp, where it
@@ -300,8 +299,8 @@ void test_normals() {
   const auto n_pts = theta_phi[0].size();
 
   // Test surface_tangents
-  StrahlkorperTags::aliases ::Jacobian<Frame::Inertial>
-      expected_surface_tangents(n_pts);
+  ylm::Tags::aliases ::Jacobian<Frame::Inertial> expected_surface_tangents(
+      n_pts);
   const double amp = -sqrt(3.0 / 8.0 / M_PI) * y11_amplitude;
 
   const auto& theta = theta_phi[0];

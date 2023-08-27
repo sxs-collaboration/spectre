@@ -118,9 +118,9 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
     using compute_items_on_target = tmpl::append<
         tmpl::list<gr::Tags::DetAndInverseSpatialMetricCompute<
                        DataVector, volume_dim, Frame::Grid>,
-                   StrahlkorperTags::OneOverOneFormMagnitudeCompute<
+                   ylm::Tags::OneOverOneFormMagnitudeCompute<
                        DataVector, volume_dim, Frame::Grid>,
-                   StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
+                   ylm::Tags::UnitNormalOneFormCompute<Frame::Grid>,
                    gh::CharacteristicSpeedsOnStrahlkorperCompute<volume_dim,
                                                                  Frame::Grid>>>;
     using compute_target_points =

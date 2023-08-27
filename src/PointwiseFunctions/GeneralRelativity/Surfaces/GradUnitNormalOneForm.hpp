@@ -26,9 +26,9 @@ namespace gr::surfaces {
 /// definition.  The input arguments `r_hat`, `radius`, and
 /// `d2x_radius` depend on the Strahlkorper but not on the metric, and
 /// can be computed from a Strahlkorper using ComputeItems in
-/// `StrahlkorperTags`.  The input argument
+/// `ylm::Tags`.  The input argument
 /// `one_over_one_form_magnitude` is \f$1/\sqrt{g^{ij}n_i n_j}\f$,
-/// where \f$n_i\f$ is `StrahlkorperTags::NormalOneForm` (i.e.  the
+/// where \f$n_i\f$ is `ylm::Tags::NormalOneForm` (i.e.  the
 /// unnormalized one-form to the Strahlkorper); it can be computed
 /// using (one over) the `magnitude` function.  The input argument
 /// `unit_normal_one_form` is \f$S_j\f$,the normalized one-form.

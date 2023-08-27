@@ -35,7 +35,7 @@ namespace {
 template <typename Fr>
 tnsr::ii<DataVector, 2, Frame::Spherical<Fr>> get_surface_metric(
     const tnsr::ii<DataVector, 3, Fr>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Fr>& tangents,
+    const ylm::Tags::aliases::Jacobian<Fr>& tangents,
     const Scalar<DataVector>& sin_theta) {
   auto surface_metric =
       make_with_value<tnsr::ii<DataVector, 2, Frame::Spherical<Fr>>>(
@@ -357,7 +357,7 @@ double get_spin_magnitude(const std::array<DataVector, 3>& potentials,
 namespace gr::surfaces {
 template <typename Frame>
 void spin_function(const gsl::not_null<Scalar<DataVector>*> result,
-                   const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+                   const ylm::Tags::aliases::Jacobian<Frame>& tangents,
                    const Strahlkorper<Frame>& strahlkorper,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
@@ -413,7 +413,7 @@ void spin_function(const gsl::not_null<Scalar<DataVector>*> result,
 
 template <typename Frame>
 Scalar<DataVector> spin_function(
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -429,7 +429,7 @@ void dimensionful_spin_magnitude(
     const gsl::not_null<double*> result, const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element) {
   const Scalar<DataVector> sin_theta{
@@ -476,7 +476,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element) {
   double result{};
@@ -581,13 +581,13 @@ std::array<double, 3> spin_vector(
 #define INSTANTIATE(_, data)                                              \
   template void gr::surfaces::spin_function<FRAME(data)>(                 \
       const gsl::not_null<Scalar<DataVector>*> result,                    \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,   \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
       const Strahlkorper<FRAME(data)>& strahlkorper,                      \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,      \
       const Scalar<DataVector>& area_element,                             \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature);   \
   template Scalar<DataVector> gr::surfaces::spin_function<FRAME(data)>(   \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,   \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
       const Strahlkorper<FRAME(data)>& strahlkorper,                      \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,      \
       const Scalar<DataVector>& area_element,                             \
@@ -597,14 +597,14 @@ std::array<double, 3> spin_vector(
       const Scalar<DataVector>& ricci_scalar,                             \
       const Scalar<DataVector>& spin_function,                            \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,         \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,   \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
       const Strahlkorper<FRAME(data)>& strahlkorper,                      \
       const Scalar<DataVector>& area_element);                            \
   template double gr::surfaces::dimensionful_spin_magnitude<FRAME(data)>( \
       const Scalar<DataVector>& ricci_scalar,                             \
       const Scalar<DataVector>& spin_function,                            \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,         \
-      const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,   \
+      const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
       const Strahlkorper<FRAME(data)>& strahlkorper,                      \
       const Scalar<DataVector>& area_element);
 GENERATE_INSTANTIATIONS(INSTANTIATE,

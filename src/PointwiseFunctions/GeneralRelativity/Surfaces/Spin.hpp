@@ -51,11 +51,11 @@ namespace gr::surfaces {
  * The argument `unit_normal_vector` can be found by raising the
  * index of the one-form returned by `gr::surfaces::unit_normal_oneform`.
  * The argument `tangents` is a Tangents that can be obtained from the
- * StrahlkorperDataBox using the `StrahlkorperTags::Tangents` tag.
+ * StrahlkorperDataBox using the `ylm::Tags::Tangents` tag.
  */
 template <typename Frame>
 void spin_function(gsl::not_null<Scalar<DataVector>*> result,
-                   const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+                   const ylm::Tags::aliases::Jacobian<Frame>& tangents,
                    const Strahlkorper<Frame>& strahlkorper,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
@@ -63,7 +63,7 @@ void spin_function(gsl::not_null<Scalar<DataVector>*> result,
 
 template <typename Frame>
 Scalar<DataVector> spin_function(
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -96,7 +96,7 @@ Scalar<DataVector> spin_function(
  * The argument `spatial_metric` is the metric of the 3D spatial slice
  * evaluated on the `Strahlkorper`.
  * The argument `tangents` can be obtained from the StrahlkorperDataBox
- * using the `StrahlkorperTags::Tangents` tag, and the argument
+ * using the `ylm::Tags::Tangents` tag, and the argument
  * `unit_normal_vector` can
  * be found by raising the index of the one-form returned by
  * `gr::surfaces::unit_normal_one_form`.
@@ -110,7 +110,7 @@ void dimensionful_spin_magnitude(
     gsl::not_null<double*> result, const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 
@@ -119,7 +119,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 /// @}

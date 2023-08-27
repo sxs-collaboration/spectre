@@ -95,7 +95,7 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
         tmpl::list<
             measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::A>,
             measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::B>>,
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>>>;
+        tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>>>;
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(

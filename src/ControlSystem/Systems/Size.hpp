@@ -94,13 +94,12 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
         std::is_same_v<Submeasurement,
                        typename measurements::CharSpeed<Horizon>::Excision>,
         tmpl::list<
-            StrahlkorperTags::Strahlkorper<Frame::Grid>,
-            gr::Tags::Lapse<DataVector>,
+            ylm::Tags::Strahlkorper<Frame::Grid>, gr::Tags::Lapse<DataVector>,
             gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
             gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
             gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>>,
-        tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Distorted>,
-                   StrahlkorperTags::TimeDerivStrahlkorper<Frame::Distorted>>>;
+        tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>,
+                   ylm::Tags::TimeDerivStrahlkorper<Frame::Distorted>>>;
 
     template <typename Metavariables>
     static void apply(

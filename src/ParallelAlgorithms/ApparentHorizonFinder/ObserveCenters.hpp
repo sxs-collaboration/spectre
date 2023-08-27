@@ -56,9 +56,9 @@ namespace callbacks {
  * `::Frame::Distorted`, we still write `GridCenter_?` because the centers of
  * the objects are the same in the Grid and Distorted frames.
  *
- * \note Requires StrahlkorperTags::Strahlkorper<Frame>
- * and StrahlkorperTags::CartesianCoords<Frame::Inertial> and
- * StrahlkorperTags::EuclideanAreaElement<Frame> to be in the DataBox
+ * \note Requires ylm::Tags::Strahlkorper<Frame>
+ * and ylm::Tags::CartesianCoords<Frame::Inertial> and
+ * ylm::Tags::EuclideanAreaElement<Frame> to be in the DataBox
  * of the InterpolationTarget.
  */
 template <typename InterpolationTargetTag, typename Frame>
@@ -75,18 +75,17 @@ struct ObserveCenters {
     static_assert(std::is_same_v<Frame, ::Frame::Grid> or
                       std::is_same_v<Frame, ::Frame::Distorted>,
                   "Frame must be either Grid or Distorted.");
-    using HorizonTag = StrahlkorperTags::Strahlkorper<Frame>;
-    using CoordsTag = StrahlkorperTags::CartesianCoords<::Frame::Inertial>;
-    using EuclideanAreaElementTag =
-        StrahlkorperTags::EuclideanAreaElement<Frame>;
+    using HorizonTag = ylm::Tags::Strahlkorper<Frame>;
+    using CoordsTag = ylm::Tags::CartesianCoords<::Frame::Inertial>;
+    using EuclideanAreaElementTag = ylm::Tags::EuclideanAreaElement<Frame>;
     static_assert(db::tag_is_retrievable_v<HorizonTag, db::DataBox<DbTags>>,
-                  "DataBox must contain StrahlkorperTags::Strahlkorper<Frame>");
+                  "DataBox must contain ylm::Tags::Strahlkorper<Frame>");
     static_assert(db::tag_is_retrievable_v<CoordsTag, db::DataBox<DbTags>>,
                   "DataBox must contain "
-                  "StrahlkorperTags::CartesianCoords<Frame::Inertial>");
+                  "ylm::Tags::CartesianCoords<Frame::Inertial>");
     static_assert(
         db::tag_is_retrievable_v<EuclideanAreaElementTag, db::DataBox<DbTags>>,
-        "DataBox must contain StrahlkorperTags::EuclideanAreaElement<Frame>");
+        "DataBox must contain ylm::Tags::EuclideanAreaElement<Frame>");
 
     // Only print the centers if we want to.
     if (not Parallel::get<ah::Tags::ObserveCentersBase>(cache)) {

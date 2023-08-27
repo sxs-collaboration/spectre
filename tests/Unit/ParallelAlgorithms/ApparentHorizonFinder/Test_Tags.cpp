@@ -50,9 +50,9 @@ void test_normals() {
   const DataVector sin_theta = sin(theta);
 
   auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+      db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
+      strahlkorper);
 
   // Test surface_normal_magnitude.
   tnsr::II<DataVector, 3, Frame::Inertial> invg(n_pts);
@@ -64,8 +64,7 @@ void test_normals() {
   invg.get(2, 2) = 3.0;
 
   const auto expected_normal_mag = [&]() -> DataVector {
-    const auto& r =
-        get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
+    const auto& r = get(db::get<ylm::Tags::Radius<Frame::Inertial>>(box));
 
     // Nasty expression Mark Scheel computed in Mathematica.
     const DataVector normsquared =
@@ -99,7 +98,7 @@ void test_normals() {
     return sqrt(normsquared);
   }();
   const auto& normal_one_form =
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+      db::get<ylm::Tags::NormalOneForm<Frame::Inertial>>(box);
   const auto normal_mag = magnitude(normal_one_form, invg);
   CHECK_ITERABLE_APPROX(expected_normal_mag, get(normal_mag));
 }
@@ -109,7 +108,7 @@ void test_max_ricci_scalar() {
   Scalar<DataVector> d{{{{1., 2., 3.}}}};
   const double expected_max{3.};
   double max{std::numeric_limits<double>::signaling_NaN()};
-  StrahlkorperTags::MaxRicciScalarCompute::function(make_not_null(&max), d);
+  ylm::Tags::MaxRicciScalarCompute::function(make_not_null(&max), d);
   CHECK(expected_max == max);
 }
 
@@ -118,7 +117,7 @@ void test_min_ricci_scalar() {
   Scalar<DataVector> d{{{{1., 2., 3.}}}};
   const double expected_min{1.};
   double min{std::numeric_limits<double>::signaling_NaN()};
-  StrahlkorperTags::MinRicciScalarCompute::function(make_not_null(&min), d);
+  ylm::Tags::MinRicciScalarCompute::function(make_not_null(&min), d);
   CHECK(expected_min == min);
 }
 
@@ -158,14 +157,13 @@ void test_dimensionful_spin_vector_compute_tag() {
       make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
           make_not_null(&generator), dist, used_for_size);
   const auto box = db::create<
-      db::AddSimpleTags<gr::surfaces::Tags::DimensionfulSpinMagnitude,
-                        gr::surfaces::Tags::AreaElement<Frame::Inertial>,
-                        StrahlkorperTags::Radius<Frame::Inertial>,
-                        StrahlkorperTags::Rhat<Frame::Inertial>,
-                        StrahlkorperTags::RicciScalar,
-                        gr::surfaces::Tags::SpinFunction,
-                        StrahlkorperTags::Strahlkorper<Frame::Inertial>,
-                        StrahlkorperTags::CartesianCoords<Frame::Inertial>>,
+      db::AddSimpleTags<
+          gr::surfaces::Tags::DimensionfulSpinMagnitude,
+          gr::surfaces::Tags::AreaElement<Frame::Inertial>,
+          ylm::Tags::Radius<Frame::Inertial>, ylm::Tags::Rhat<Frame::Inertial>,
+          ylm::Tags::RicciScalar, gr::surfaces::Tags::SpinFunction,
+          ylm::Tags::Strahlkorper<Frame::Inertial>,
+          ylm::Tags::CartesianCoords<Frame::Inertial>>,
       db::AddComputeTags<gr::surfaces::Tags::DimensionfulSpinVectorCompute<
           Frame::Inertial, Frame::Inertial>>>(
       dimensionful_spin_magnitude, area_element, radius, r_hat, ricci_scalar,
