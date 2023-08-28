@@ -48,7 +48,7 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
   }
   return total_elements;
 }
-} //namespace
+}  // namespace
 namespace h5 {
 
 void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
@@ -60,12 +60,13 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
                    std::string{MakeString{} << file_names}.c_str());
 
   // Checks that volume data was generated with identical versions of SpECTRE
-  if (check_src){
+  if (check_src) {
     if (!h5::check_src_files_match(file_names)) {
-    ERROR(
-        "One or more of your files were found to have differing src.tar.gz "
-        "files, meaning that they may be from differing versions of SpECTRE.");
-  }
+      ERROR(
+          "One or more of your files were found to have differing src.tar.gz "
+          "files, meaning that they may be from differing versions of "
+          "SpECTRE.");
+    }
   }
 
   // Checks that volume data files contain the same observation ids
