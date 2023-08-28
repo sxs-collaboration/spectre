@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -16,6 +17,8 @@
 #include "Parallel/Printf.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeStep.hpp"
+#include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /*!
@@ -68,7 +71,15 @@ struct PrintElementInfo {
           local_object.deadlock_analysis_next_iterable_action();
       ss << " Next action: " << next_action << "\n";
 
-      // Start with inboxes
+      // Start with time step and next time
+      const auto& step = db::get<::Tags::TimeStep>(box);
+      // The time step only prints a slab (beginning/end) and a fraction so we
+      // also print the approx numerical value of the step for easier reading
+      ss << " Time step: " << step << ":" << step.value() << "\n";
+      ss << " Next time: "
+         << db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time()
+         << "\n";
+
       ss << " Inboxes:\n";
 
       const auto& inboxes = local_object.get_inboxes();
