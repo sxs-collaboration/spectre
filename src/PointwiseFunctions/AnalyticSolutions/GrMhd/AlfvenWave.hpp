@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -90,6 +91,7 @@ namespace grmhd::Solutions {
  */
 class AlfvenWave : public evolution::initial_data::InitialData,
                    public AnalyticSolution,
+                   public hydro::TemperatureInitialization<AlfvenWave>,
                    public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
@@ -225,21 +227,30 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return TemperatureInitialization::variables(
+        x, t, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
   /// @}
 
   /// Retrieve a collection of hydro variables at `(x, t)`
-  template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         double t,
-                                         tmpl::list<Tags...> /*meta*/) const {
-    static_assert(sizeof...(Tags) > 1,
-                  "The generic template will recurse infinitely if only one "
-                  "tag is being retrieved.");
-    return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
+  template <typename DataType, typename Tag1, typename Tag2, typename... Tags>
+  tuples::TaggedTuple<Tag1, Tag2, Tags...> variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<Tag1, Tag2, Tags...> /*meta*/) const {
+    return {tuples::get<Tag1>(variables(x, t, tmpl::list<Tag1>{})),
+            tuples::get<Tag2>(variables(x, t, tmpl::list<Tag2>{})),
+            tuples::get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
   /// Retrieve the metric variables
-  template <typename DataType, typename Tag>
+  template <typename DataType, typename Tag,
+            Requires<tmpl::list_contains_v<
+                gr::analytic_solution_tags<3, DataType>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
                                      tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});

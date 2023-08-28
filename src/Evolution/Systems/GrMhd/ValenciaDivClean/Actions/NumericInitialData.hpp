@@ -190,6 +190,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -237,6 +238,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
         get(*specific_internal_energy)[i] = 0.;
         get(*pressure)[i] = 0.;
         get(*specific_enthalpy)[i] = 1.;
+        get(*temperature)[i] = 0.;
         // Also reset velocity and Lorentz factor below cutoff to be safe
         for (size_t d = 0; d < 3; ++d) {
           spatial_velocity->get(d)[i] = 0.;
@@ -249,6 +251,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
                   Scalar<double>(local_rest_mass_density)));
           get(*pressure)[i] = get(equation_of_state.pressure_from_density(
               Scalar<double>(local_rest_mass_density)));
+          get(*temperature)[i] = get(equation_of_state.temperature_from_density(
+              Scalar<double>(local_rest_mass_density)));
         } else if constexpr (ThermodynamicDim == 2) {
           get(*specific_internal_energy)[i] =
               get(equation_of_state
@@ -257,6 +261,10 @@ class NumericInitialData : public evolution::initial_data::InitialData {
                           Scalar<double>(0.)));
           get(*pressure)[i] =
               get(equation_of_state.pressure_from_density_and_energy(
+                  Scalar<double>(local_rest_mass_density),
+                  Scalar<double>(get(*specific_internal_energy)[i])));
+          get(*temperature)[i] =
+              get(equation_of_state.temperature_from_density_and_energy(
                   Scalar<double>(local_rest_mass_density),
                   Scalar<double>(get(*specific_internal_energy)[i])));
         } else {
@@ -407,7 +415,8 @@ struct SetNumericInitialData {
                hydro::Tags::DivergenceCleaningField<DataVector>,
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
-               hydro::Tags::SpecificEnthalpy<DataVector>>(
+               hydro::Tags::SpecificEnthalpy<DataVector>,
+               hydro::Tags::Temperature<DataVector>>(
         [&initial_data, &numeric_data, &inv_spatial_metric, &equation_of_state](
             const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
             const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -417,11 +426,12 @@ struct SetNumericInitialData {
             const gsl::not_null<Scalar<DataVector>*> div_cleaning_field,
             const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
             const gsl::not_null<Scalar<DataVector>*> pressure,
-            const gsl::not_null<Scalar<DataVector>*> specific_enthalpy) {
+            const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+            const gsl::not_null<Scalar<DataVector>*> temperature) {
           initial_data.set_initial_data(
               rest_mass_density, electron_fraction, specific_internal_energy,
               spatial_velocity, magnetic_field, div_cleaning_field,
-              lorentz_factor, pressure, specific_enthalpy,
+              lorentz_factor, pressure, specific_enthalpy, temperature,
               make_not_null(&numeric_data), inv_spatial_metric,
               equation_of_state);
         },

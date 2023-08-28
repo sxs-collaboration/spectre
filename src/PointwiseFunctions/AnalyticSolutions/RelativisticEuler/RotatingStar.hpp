@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -303,7 +304,8 @@ class CstSolution {
  */
 class RotatingStar : public virtual evolution::initial_data::InitialData,
                      public MarkAsAnalyticSolution,
-                     public AnalyticSolution<3> {
+                     public AnalyticSolution<3>,
+                     public hydro::TemperatureInitialization<RotatingStar> {
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(

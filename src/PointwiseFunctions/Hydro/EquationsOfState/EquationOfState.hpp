@@ -214,7 +214,7 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   }
   virtual Scalar<DataVector> temperature_from_density(
       const Scalar<DataVector>& rest_mass_density) const {
-    return Scalar<DataVector>{DataVector{get(rest_mass_density).size(), 0.0}};
+    return make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
   }
   /// @}
 
@@ -229,8 +229,7 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   }
   virtual Scalar<DataVector> temperature_from_specific_internal_energy(
       const Scalar<DataVector>& specific_internal_energy) const {
-    return Scalar<DataVector>{
-        DataVector{get(specific_internal_energy).size(), 0.0}};
+    return make_with_value<Scalar<DataVector>>(specific_internal_energy, 0.0);
   }
   /// @}
 

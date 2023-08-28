@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_SpecificEnthalpy.cpp
   Test_StressEnergy.cpp
   Test_Tags.cpp
+  Test_Temperature.cpp
   Test_TestHelpers.cpp
   )
 
@@ -34,5 +35,6 @@ target_link_libraries(
   HydroHelpers
   LinearOperators
   Spectral
+  IO
   Utilities
 )

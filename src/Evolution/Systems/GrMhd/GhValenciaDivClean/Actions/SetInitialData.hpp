@@ -136,6 +136,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -150,8 +151,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     hydro_numeric_id_.set_initial_data(
         rest_mass_density, electron_fraction, specific_internal_energy,
         spatial_velocity, magnetic_field, div_cleaning_field, lorentz_factor,
-        pressure, specific_enthalpy, numeric_data, inv_spatial_metric,
-        equation_of_state);
+        pressure, specific_enthalpy, temperature, numeric_data,
+        inv_spatial_metric, equation_of_state);
   }
 
   void pup(PUP::er& p) override;
@@ -368,7 +369,8 @@ struct ReceiveNumericInitialData {
                hydro::Tags::DivergenceCleaningField<DataVector>,
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
-               hydro::Tags::SpecificEnthalpy<DataVector>>(
+               hydro::Tags::SpecificEnthalpy<DataVector>,
+               hydro::Tags::Temperature<DataVector>>(
         [&initial_data, &numeric_data, &equation_of_state](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
             const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
@@ -382,13 +384,14 @@ struct ReceiveNumericInitialData {
             const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
             const gsl::not_null<Scalar<DataVector>*> pressure,
             const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+            const gsl::not_null<Scalar<DataVector>*> temperature,
             const auto& local_mesh, const auto& local_inv_jacobian) {
           initial_data.set_initial_data(
               spacetime_metric, pi, phi, rest_mass_density, electron_fraction,
               specific_internal_energy, spatial_velocity, magnetic_field,
               div_cleaning_field, lorentz_factor, pressure, specific_enthalpy,
-              make_not_null(&numeric_data), local_mesh, local_inv_jacobian,
-              equation_of_state);
+              temperature, make_not_null(&numeric_data), local_mesh,
+              local_inv_jacobian, equation_of_state);
         },
         make_not_null(&box), mesh, inv_jacobian);
 

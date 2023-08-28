@@ -59,7 +59,8 @@ namespace grmhd::AnalyticData {
  */
 class SlabJet : public evolution::initial_data::InitialData,
                 public MarkAsAnalyticData,
-                public AnalyticDataBase {
+                public AnalyticDataBase,
+                public hydro::TemperatureInitialization<SlabJet> {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -206,22 +207,34 @@ class SlabJet : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return TemperatureInitialization::variables(
+        x, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
-  template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const {
-    static_assert(sizeof...(Tags) > 1, "The requested tag is not implemented.");
-    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+  template <typename DataType, typename Tag1, typename Tag2, typename... Tags>
+  tuples::TaggedTuple<Tag1, Tag2, Tags...> variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<Tag1, Tag2, Tags...> /*meta*/) const {
+    return {tuples::get<Tag1>(variables(x, tmpl::list<Tag1>{})),
+            tuples::get<Tag2>(variables(x, tmpl::list<Tag2>{})),
+            tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
   /// Retrieve the metric variables
-  template <typename DataType, typename Tag>
+  template <typename DataType, typename Tag,
+            Requires<tmpl::list_contains_v<
+                gr::analytic_solution_tags<3, DataType>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      tmpl::list<Tag> /*meta*/) const {
-    return background_spacetime_.variables(
-        x, std::numeric_limits<double>::signaling_NaN(), tmpl::list<Tag>{});
+    constexpr double dummy_time = 0.0;
+    return background_spacetime_.variables(x, dummy_time, tmpl::list<Tag>{});
   }
 
   const EquationsOfState::IdealFluid<true>& equation_of_state() const {

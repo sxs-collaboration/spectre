@@ -196,6 +196,7 @@ void test_prim_reconstructor_impl(
   using SpecificInternalEnergy =
       hydro::Tags::SpecificInternalEnergy<DataVector>;
   using SpecificEnthalpy = hydro::Tags::SpecificEnthalpy<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Lapse = gr::Tags::Lapse<DataVector>;
@@ -322,10 +323,16 @@ void test_prim_reconstructor_impl(
           eos.specific_internal_energy_from_density_and_pressure(
               get<Rho>(expected_lower_face_values),
               get<Pressure>(expected_lower_face_values));
+      get<Temperature>(expected_lower_face_values) =
+          eos.temperature_from_density_and_energy(
+              get<Rho>(expected_lower_face_values),
+              get<SpecificInternalEnergy>(expected_lower_face_values));
     } else {
       get<SpecificInternalEnergy>(expected_lower_face_values) =
           eos.specific_internal_energy_from_density(
               get<Rho>(expected_lower_face_values));
+      get<Temperature>(expected_lower_face_values) =
+          eos.temperature_from_density(get<Rho>(expected_lower_face_values));
     }
     get<SpecificEnthalpy>(expected_lower_face_values) =
         hydro::relativistic_specific_enthalpy(

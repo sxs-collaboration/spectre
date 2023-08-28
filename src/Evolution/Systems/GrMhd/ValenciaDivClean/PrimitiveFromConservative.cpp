@@ -50,6 +50,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
           const gsl::not_null<Scalar<DataVector>*> pressure,
           const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+          const gsl::not_null<Scalar<DataVector>*> temperature,
           const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
           const Scalar<DataVector>& tilde_tau,
           const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
@@ -189,6 +190,19 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
+
+      // We store rho * h here temporarily and divide by rho two lines later.
+      get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
+                                   (primitive_data.value().lorentz_factor *
+                                    primitive_data.value().lorentz_factor);
+      get(*specific_internal_energy)[s] =
+          (get(*specific_enthalpy)[s] -
+           primitive_data.value().rest_mass_density -
+           primitive_data.value().pressure) /
+          primitive_data.value().rest_mass_density;
+
+      get(*specific_enthalpy)[s] /= primitive_data.value().rest_mass_density;
+
     } else {
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "
@@ -214,18 +228,15 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     }
   }
   if constexpr (ThermodynamicDim == 1) {
-    *specific_internal_energy =
-        equation_of_state.specific_internal_energy_from_density(
-            *rest_mass_density);
+    *temperature =
+        equation_of_state.temperature_from_density(*rest_mass_density);
   } else if constexpr (ThermodynamicDim == 2) {
-    *specific_internal_energy =
-        equation_of_state.specific_internal_energy_from_density_and_pressure(
-            *rest_mass_density, *pressure);
+    *temperature = equation_of_state.temperature_from_density_and_energy(
+        *rest_mass_density, *specific_internal_energy);
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    *temperature = equation_of_state.temperature_from_density_and_energy(
+        *rest_mass_density, *specific_internal_energy, *electron_fraction);
   }
-  *specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      *rest_mass_density, *specific_internal_energy, *pressure);
   return true;
 }
 }  // namespace grmhd::ValenciaDivClean
@@ -273,6 +284,7 @@ GENERATE_INSTANTIATIONS(
           const gsl::not_null<Scalar<DataVector>*> lorentz_factor,            \
           const gsl::not_null<Scalar<DataVector>*> pressure,                  \
           const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,         \
+          const gsl::not_null<Scalar<DataVector>*> temperature,               \
           const Scalar<DataVector>& tilde_d,                                  \
           const Scalar<DataVector>& tilde_ye,                                 \
           const Scalar<DataVector>& tilde_tau,                                \

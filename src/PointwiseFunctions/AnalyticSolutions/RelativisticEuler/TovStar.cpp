@@ -272,6 +272,24 @@ void TovVariables<DataType, Region>::operator()(
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
+    const gsl::not_null<Scalar<DataType>*> temperature,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    hydro::Tags::Temperature<DataType> /*meta*/) const {
+  if constexpr (Region == StarRegion::Exterior) {
+    get(*temperature) = 0.;
+  } else {
+    const auto& rest_mass_density =
+        cache->get_var(*this, hydro::Tags::RestMassDensity<DataType>{});
+    if (get(rest_mass_density) == 0.) {
+      get(*temperature) = 0.;
+    } else {
+      *temperature = eos.temperature_from_density(rest_mass_density);
+    }
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> metric_time_potential,
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::MetricTimePotential<DataType> /*meta*/) const {

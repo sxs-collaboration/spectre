@@ -186,6 +186,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         make_not_null(&get<hydro::Tags::Pressure<DataVector>>(prim_vars)),
         make_not_null(
             &get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars)),
+        make_not_null(&get<hydro::Tags::Temperature<DataVector>>(prim_vars)),
         get<grmhd::ValenciaDivClean::Tags::TildeD>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeYe>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(cons_vars),
