@@ -104,7 +104,8 @@ struct Metavariables {
 template <bool AddSubcell>
 void test_actions(const std::variant<double, importers::ObservationSelector>&
                       observation_selection,
-                  const bool subcell_is_active) {
+                  const bool subcell_is_active,
+                  const bool single_precision = false) {
   CAPTURE(AddSubcell);
   CAPTURE(subcell_is_active);
   if (subcell_is_active) {
@@ -206,7 +207,14 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     const std::string element_name = MakeString{} << id;
     std::vector<TensorComponent> tensor_data(8);
     const auto& vector = get<VectorTag>(all_sample_data.at(id));
-    tensor_data[0] = TensorComponent("V_x"s, get<0>(vector));
+    // Write one component as single precision if requested
+    if (single_precision) {
+      tensor_data[0] = TensorComponent(
+          "V_x"s,
+          std::vector<float>(get<0>(vector).begin(), get<0>(vector).end()));
+    } else {
+      tensor_data[0] = TensorComponent("V_x"s, get<0>(vector));
+    }
     tensor_data[1] = TensorComponent("V_y"s, get<1>(vector));
     const auto& tensor = get<TensorTag>(all_sample_data.at(id));
     tensor_data[2] = TensorComponent("T_xx"s, get<0, 0>(tensor));
@@ -278,6 +286,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   test_actions<false>(0., false);
   test_actions<false>(importers::ObservationSelector::First, false);
   test_actions<false>(importers::ObservationSelector::Last, false);
+  CHECK_THROWS_WITH(test_actions<false>(0., false, true),
+                    Catch::Matchers::ContainsSubstring("not supported"));
 
   for (const bool subcell_is_active : {false, true}) {
     test_actions<true>(0., subcell_is_active);
