@@ -26,6 +26,7 @@ class TestCombineH5(unittest.TestCase):
         self.file_name2 = os.path.join(
             Informer.unit_test_build_path(), "IO/TestVolumeData1.h5"
         )
+        self.file_names = [self.file_name1, self.file_name2]
 
         self.output_file = os.path.join(
             Informer.unit_test_build_path(), "IO/TestOutput"
@@ -150,9 +151,7 @@ class TestCombineH5(unittest.TestCase):
         # Run the combine_h5 command and check if any feature (for eg.
         # connectivity length has increased due to combining two files)
 
-        combine_h5(
-            self.file_name1[:-4], "element_data", self.output_file, False
-        )
+        combine_h5(self.file_names, "element_data", self.output_file, False)
         h5_output = spectre_h5.H5File(
             file_name=self.output_file + "0.h5", mode="r"
         )
@@ -243,8 +242,7 @@ class TestCombineH5(unittest.TestCase):
         result = runner.invoke(
             combine_h5_command,
             [
-                "--file-prefix",
-                self.file_name1[:-4],
+                *self.file_names,
                 "-d",
                 "element_data",
                 "-o",
@@ -277,8 +275,7 @@ class TestCombineH5(unittest.TestCase):
         result = runner.invoke(
             combine_h5_command,
             [
-                "--file-prefix",
-                self.file_name1[:-4],
+                *self.file_names,
                 "-o",
                 self.output_file,
                 "--check-src",

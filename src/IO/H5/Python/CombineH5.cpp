@@ -14,7 +14,7 @@ namespace py = pybind11;
 namespace py_bindings {
 void bind_h5combine(py::module& m) {
   // Wrapper for combining h5 files
-  m.def("combine_h5", &h5::combine_h5, py::arg("file_prefix"),
+  m.def("combine_h5", &h5::combine_h5, py::arg("file_names"),
         py::arg("subfile_name"), py::arg("output"), py::arg("check_src"));
 }
 }  // namespace py_bindings

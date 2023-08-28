@@ -24,10 +24,10 @@
 namespace {
 // Returns all the observation_ids stored in the volume files. Assumes all
 // volume files have the same observation ids
-std::vector<size_t> get_observation_ids(const std::string& file_prefix,
-                                        const std::string& subfile_name) {
-  const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_prefix + "0.h5",
-                                                          false);
+std::vector<size_t> get_observation_ids(
+    const std::vector<std::string>& file_names,
+    const std::string& subfile_name) {
+  const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_names[0], false);
   const auto& initial_volume_file =
       initial_file.get<h5::VolumeData>("/" + subfile_name);
   return initial_volume_file.list_observation_ids();
@@ -51,11 +51,10 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
 }  // namespace
 namespace h5 {
 
-void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
-                const std::string& output, const bool check_src) {
+void combine_h5(const std::vector<std::string>& file_names,
+                const std::string& subfile_name, const std::string& output,
+                const bool check_src) {
   // Parses for and stores all input files to be looped over
-  const std::vector<std::string>& file_names =
-      file_system::glob(file_prefix + "[0-9]*.h5");
   Parallel::printf("Processing files:\n%s\n",
                    std::string{MakeString{} << file_names}.c_str());
 
@@ -89,7 +88,7 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
 
   // Obtains list of observation ids to loop over
   const std::vector<size_t> observation_ids =
-      get_observation_ids(file_prefix, subfile_name);
+      get_observation_ids(file_names, subfile_name);
 
   // Loops over observation ids to write volume data by observation id
   for (size_t obs_index = 0; obs_index < observation_ids.size(); ++obs_index) {
