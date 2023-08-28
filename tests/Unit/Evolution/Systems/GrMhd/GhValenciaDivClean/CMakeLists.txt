@@ -23,9 +23,9 @@ set(LIBRARY_SOURCES
   Subcell/Test_TimeDerivative.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
-  Test_Tags.cpp
   Test_SetPiFromGauge.cpp
   Test_StressEnergy.cpp
+  Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )
 
