@@ -19,8 +19,7 @@ import spectre.IO.H5 as spectre_h5
 @click.option(
     "--subfile-name",
     "-d",
-    type=str,
-    help="subfile name of the volume file in the H5 file (omit file extension)",
+    help="subfile name of the volume file in the H5 file",
 )
 @click.option(
     "--output",
@@ -33,7 +32,7 @@ import spectre.IO.H5 as spectre_h5
         writable=True,
         readable=True,
     ),
-    help="combined output filename (omit file extension)",
+    help="combined output filename",
 )
 @click.option(
     "--check-src/--no-check-src",
@@ -61,8 +60,13 @@ def combine_h5_command(h5files, subfile_name, output, check_src):
         rich.print(rich.columns.Columns(spectre_file.all_vol_files()))
         return
 
-    if subfile_name[0] == "/":
-        subfile_name = subfile_name[1:]
+    if not subfile_name.startswith("/"):
+        subfile_name = "/" + subfile_name
+    if subfile_name.endswith(".vol"):
+        subfile_name = subfile_name[:-4]
+
+    if not output.endswith(".h5"):
+        output += ".h5"
 
     spectre_h5.combine_h5(h5files, subfile_name, output, check_src)
 
