@@ -6,8 +6,9 @@
 #include <array>
 #include <cstddef>
 
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

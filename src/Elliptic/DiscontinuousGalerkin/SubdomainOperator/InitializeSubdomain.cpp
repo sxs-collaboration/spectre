@@ -14,7 +14,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 

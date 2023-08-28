@@ -24,7 +24,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

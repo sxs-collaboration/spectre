@@ -13,10 +13,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdHelpers.hpp"  // std::vector ostream
 

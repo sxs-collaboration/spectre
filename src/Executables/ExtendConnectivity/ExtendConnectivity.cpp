@@ -1,21 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <array>
 #include <boost/program_options.hpp>
 #include <cstddef>
 #include <string>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral//LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Printf.hpp"
 
 // Charm looks for this function but since we build without a main function or

@@ -9,7 +9,6 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"

@@ -48,7 +48,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/TimeStepId.hpp"

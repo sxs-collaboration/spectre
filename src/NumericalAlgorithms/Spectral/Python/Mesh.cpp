@@ -8,8 +8,9 @@
 #include <pybind11/stl.h>
 #include <string>
 
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 
 namespace py = pybind11;
 

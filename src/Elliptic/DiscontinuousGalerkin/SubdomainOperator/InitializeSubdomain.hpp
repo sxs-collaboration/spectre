@@ -41,8 +41,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"

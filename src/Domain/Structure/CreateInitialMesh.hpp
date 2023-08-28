@@ -7,13 +7,16 @@
 #include <cstddef>
 #include <vector>
 
-#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-
 /// \cond
 template <size_t Dim>
 struct ElementId;
 template <size_t Dim>
+struct Mesh;
+template <size_t Dim>
 struct OrientationMap;
+namespace SpatialDiscretization {
+enum class Quadrature;
+}  // namespace SpatialDiscretization
 /// \endcond
 
 namespace domain::Initialization {

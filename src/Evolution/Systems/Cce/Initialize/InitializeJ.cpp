@@ -16,7 +16,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"

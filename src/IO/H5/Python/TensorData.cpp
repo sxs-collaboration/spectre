@@ -12,8 +12,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/TensorData.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"
 

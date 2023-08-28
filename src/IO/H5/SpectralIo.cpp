@@ -9,7 +9,8 @@
 
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 
 namespace h5_detail {
 

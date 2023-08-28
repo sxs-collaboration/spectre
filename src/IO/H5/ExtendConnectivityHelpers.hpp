@@ -4,12 +4,15 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
-#include <hdf5.h>
 #include <string>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+/// \cond
+namespace SpatialDiscretization {
+enum class Basis;
+enum class Quadrature;
+}  // namespace SpatialDiscretization
+/// \endcond
 
 /// \cond
 namespace h5::detail {

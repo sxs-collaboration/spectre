@@ -6,6 +6,9 @@
 #include "DataStructures/Matrix.hpp"
 #include "Evolution/Ader/Matrices.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {
 void test_predictor_inverse_temporal_matrix() {

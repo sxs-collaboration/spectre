@@ -15,13 +15,17 @@
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/TensorData.hpp"
-#include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 class DataVector;
+template <size_t Dim>
+class Mesh;
+namespace SpatialDiscretization {
+enum class Basis;
+enum class Quadrature;
+}  // namespace SpatialDiscretization
 /// \endcond
 
 namespace h5 {

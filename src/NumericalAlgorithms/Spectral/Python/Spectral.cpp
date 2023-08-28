@@ -8,7 +8,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/Mesh.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace py = pybind11;

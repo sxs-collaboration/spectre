@@ -4,9 +4,6 @@
 
 #include <cstddef>
 
-#include "Domain/Structure/Side.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 /// \cond
 class DataVector;
 template <size_t Dim>
@@ -14,6 +11,10 @@ class Index;
 class Matrix;
 template <size_t Dim>
 class Mesh;
+enum class Side;
+namespace SpatialDiscretization {
+enum class Quadrature;
+}  // namespace SpatialDiscretization
 /// \endcond
 
 namespace evolution::dg::subcell::fd {

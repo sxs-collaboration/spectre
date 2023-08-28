@@ -5,10 +5,12 @@
 
 #include <cstddef>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 /// \cond
 class Matrix;
+namespace SpatialDiscretization {
+enum class Basis;
+enum class Quadrature;
+}  // namespace SpatialDiscretization
 /// \endcond
 
 namespace ader::dg {
@@ -26,7 +28,7 @@ namespace ader::dg {
  *
  * where \f$M_{a_0 b_0}\f$ is the temporal mass matrix.
  */
-template <SpatialDiscretization::Basis BasisType,
-          SpatialDiscretization::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& predictor_inverse_temporal_matrix(size_t num_points);
 }  // namespace ader::dg

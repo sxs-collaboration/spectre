@@ -5,19 +5,20 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace ader::dg {
-template <SpatialDiscretization::Basis BasisType,
-          SpatialDiscretization::Quadrature QuadratureType,
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature,
           typename SpectralQuantityGenerator>
 const auto& precomputed_spectral_quantity(const size_t num_points) {
-  constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+  constexpr size_t max_num_points = Spectral::maximum_number_of_points<Basis>;
   constexpr size_t min_num_points =
-      Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+      Spectral::minimum_number_of_points<Basis, Quadrature>;
   ASSERT(num_points >= min_num_points,
          "Tried to work with less than the minimum number of collocation "
          "points for this quadrature.");
@@ -33,16 +34,16 @@ const auto& precomputed_spectral_quantity(const size_t num_points) {
   return precomputed_data(num_points);
 }
 
-template <SpatialDiscretization::Basis BasisType,
-          SpatialDiscretization::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 struct PredictorInverseTemporalMatrix;
 
-template <SpatialDiscretization::Basis BasisType>
+template <SpatialDiscretization::Basis Basis>
 struct PredictorInverseTemporalMatrix<
-    BasisType, SpatialDiscretization::Quadrature::GaussLobatto> {
+    Basis, SpatialDiscretization::Quadrature::GaussLobatto> {
   Matrix operator()(const size_t num_points) const {
     const DataVector& collocation_pts = Spectral::collocation_points<
-        BasisType, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
+        Basis, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
     Matrix differences(num_points, num_points);
     for (size_t i = 0; i < num_points; ++i) {
       for (size_t j = 0; j < num_points; ++j) {
@@ -71,7 +72,7 @@ struct PredictorInverseTemporalMatrix<
     };
 
     const DataVector& weights = Spectral::quadrature_weights<
-        BasisType, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
+        Basis, SpatialDiscretization::Quadrature::GaussLobatto>(num_points);
     Matrix result(num_points, num_points);
     Matrix mass(num_points, num_points, 0.0);
     for (size_t i = 0; i < num_points; ++i) {
@@ -86,12 +87,12 @@ struct PredictorInverseTemporalMatrix<
   }
 };
 
-template <SpatialDiscretization::Basis BasisType,
-          SpatialDiscretization::Quadrature QuadratureType>
+template <SpatialDiscretization::Basis Basis,
+          SpatialDiscretization::Quadrature Quadrature>
 const Matrix& predictor_inverse_temporal_matrix(const size_t num_points) {
   return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      PredictorInverseTemporalMatrix<BasisType, QuadratureType>>(num_points);
+      Basis, Quadrature, PredictorInverseTemporalMatrix<Basis, Quadrature>>(
+      num_points);
 }
 
 template const Matrix& predictor_inverse_temporal_matrix<

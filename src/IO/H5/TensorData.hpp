@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/GetOutput.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Basis.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/Quadrature.hpp"
 
 /// \cond
 namespace PUP {
