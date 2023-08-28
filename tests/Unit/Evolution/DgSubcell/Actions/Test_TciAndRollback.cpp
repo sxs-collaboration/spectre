@@ -61,6 +61,19 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+class DummyReconstructor {
+ public:
+  static size_t ghost_zone_size() { return 2; }
+  void pup(PUP::er& /*p*/) {}
+};
+
+namespace Tags {
+struct Reconstructor : db::SimpleTag,
+                       evolution::dg::subcell::Tags::Reconstructor {
+  using type = std::unique_ptr<DummyReconstructor>;
+};
+}  // namespace Tags
+
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -73,7 +86,7 @@ template <size_t Dim, bool HasPrims>
 struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool has_primitive_and_conservative_vars = HasPrims;
-  using variables_tag = Tags::Variables<tmpl::list<Var1>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<PrimVar1>>;
 };
 
@@ -88,7 +101,7 @@ struct component {
 
   using initial_tags = tmpl::append<
       tmpl::list<
-          ::Tags::TimeStepId, domain::Tags::Mesh<Dim>,
+          Tags::Reconstructor, ::Tags::TimeStepId, domain::Tags::Mesh<Dim>,
           evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
           evolution::dg::subcell::Tags::ActiveGrid,
           evolution::dg::subcell::Tags::DidRollback,
@@ -96,15 +109,15 @@ struct component {
           evolution::dg::subcell::Tags::TciDecision,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           evolution::dg::Tags::NeighborMesh<Dim>,
-          Tags::Variables<tmpl::list<Var1>>,
-          Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
-          SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>,
+          ::Tags::Variables<tmpl::list<Var1>>,
+          ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
+          SelfStart::Tags::InitialValue<::Tags::Variables<tmpl::list<Var1>>>,
           evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>,
       tmpl::conditional_t<
           Metavariables::has_prims,
-          tmpl::list<Tags::Variables<tmpl::list<PrimVar1>>,
+          tmpl::list<::Tags::Variables<tmpl::list<PrimVar1>>,
                      SelfStart::Tags::InitialValue<
-                         Tags::Variables<tmpl::list<PrimVar1>>>>,
+                         ::Tags::Variables<tmpl::list<PrimVar1>>>>,
           tmpl::list<>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -139,20 +152,12 @@ struct Metavariables {
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary = false;
-
-    template <typename DbTagsList>
-    static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) {
-      CHECK(db::get<domain::Tags::Mesh<Dim>>(box) ==
-            Mesh<Dim>(5, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto));
-      return 2;
-    }
   };
 
   struct TciOnDgGrid {
     using return_tags = tmpl::list<>;
     using argument_tags =
-        tmpl::list<Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
+        tmpl::list<::Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
                    evolution::dg::subcell::Tags::Mesh<Dim>,
                    evolution::dg::subcell::Tags::DataForRdmpTci,
                    evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
@@ -358,7 +363,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       rdmp_tci_data;
 
   using evolved_vars_tags = tmpl::list<Var1>;
-  using dt_evolved_vars_tags = db::wrap_tags_in<Tags::dt, evolved_vars_tags>;
+  using dt_evolved_vars_tags = db::wrap_tags_in<::Tags::dt, evolved_vars_tags>;
   Variables<evolved_vars_tags> evolved_vars{dg_mesh.number_of_grid_points()};
   // Set Var1 to the logical coords, since those are linear
   get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(dg_mesh));
@@ -378,14 +383,14 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     for (size_t i = 0; i < history_size; ++i) {
       step_time += step_size;
       Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
-      get(get<Tags::dt<Var1>>(dt_vars)) =
+      get(get<::Tags::dt<Var1>>(dt_vars)) =
           (i + 20.0) * get<0>(logical_coordinates(dg_mesh));
       time_stepper_history.insert({false, 1, step_time}, i * evolved_vars,
                                   dt_vars);
     }
     for (size_t i = 0; i < history_substeps; ++i) {
       Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
-      get(get<Tags::dt<Var1>>(dt_vars)) =
+      get(get<::Tags::dt<Var1>>(dt_vars)) =
           (i + 40.0) * get<0>(logical_coordinates(dg_mesh));
       time_stepper_history.insert(
           {false, 1, step_time, i + 1, step_size, step_time.value()},
@@ -412,19 +417,20 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   if constexpr (HasPrims) {
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-        {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, ghost_data, tci_decision, rdmp_tci_data, neighbor_meshes,
-         evolved_vars, time_stepper_history, initial_value_evolved_vars,
-         neighbor_decisions, prim_vars, initial_value_prim_vars});
+        {std::make_unique<DummyReconstructor>(), time_step_id, dg_mesh,
+         subcell_mesh, element, active_grid, did_rollback, ghost_data,
+         tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
+         time_stepper_history, initial_value_evolved_vars, neighbor_decisions,
+         prim_vars, initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-        {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, ghost_data, tci_decision, rdmp_tci_data, neighbor_meshes,
-         evolved_vars, time_stepper_history, initial_value_evolved_vars,
-         neighbor_decisions});
+        {std::make_unique<DummyReconstructor>(), time_step_id, dg_mesh,
+         subcell_mesh, element, active_grid, did_rollback, ghost_data,
+         tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
+         time_stepper_history, initial_value_evolved_vars, neighbor_decisions});
   }
 
   // Invoke the TciAndRollback action on the runner
@@ -435,19 +441,20 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
                                      evolution::dg::subcell::Tags::ActiveGrid>(
           runner, 0);
   const auto& active_vars_from_box =
-      ActionTesting::get_databox_tag<comp, Tags::Variables<evolved_vars_tags>>(
+      ActionTesting::get_databox_tag<comp,
+                                     ::Tags::Variables<evolved_vars_tags>>(
           runner, 0);
   const auto& time_stepper_history_from_box =
-      ActionTesting::get_databox_tag<comp, Tags::HistoryEvolvedVariables<>>(
+      ActionTesting::get_databox_tag<comp, ::Tags::HistoryEvolvedVariables<>>(
           runner, 0);
   const auto& did_rollback_from_box =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(
           runner, 0);
-  const auto& initial_value_evolved_vars_from_box =
-      get<0>(ActionTesting::get_databox_tag<
-             comp,
-             SelfStart::Tags::InitialValue<Tags::Variables<evolved_vars_tags>>>(
+  const auto& initial_value_evolved_vars_from_box = get<0>(
+      ActionTesting::get_databox_tag<
+          comp,
+          SelfStart::Tags::InitialValue<::Tags::Variables<evolved_vars_tags>>>(
           runner, 0));
 
   const bool expected_rollback =
@@ -500,11 +507,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
             evolution::dg::subcell::fd::project(
                 initial_value_evolved_vars, dg_mesh, subcell_mesh.extents()));
       if constexpr (HasPrims) {
-        const auto& initial_value_prim_vars_from_box = get<0>(
-            ActionTesting::get_databox_tag<
-                comp,
-                SelfStart::Tags::InitialValue<Tags::Variables<prim_vars_tags>>>(
-                runner, 0));
+        const auto& initial_value_prim_vars_from_box =
+            get<0>(ActionTesting::get_databox_tag<
+                   comp, SelfStart::Tags::InitialValue<
+                             ::Tags::Variables<prim_vars_tags>>>(runner, 0));
         CHECK(initial_value_prim_vars_from_box ==
               evolution::dg::subcell::fd::project(
                   initial_value_prim_vars, dg_mesh, subcell_mesh.extents()));
@@ -567,11 +573,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     if (self_starting) {
       CHECK(initial_value_evolved_vars_from_box == initial_value_evolved_vars);
       if constexpr (HasPrims) {
-        const auto& initial_value_prim_vars_from_box = get<0>(
-            ActionTesting::get_databox_tag<
-                comp,
-                SelfStart::Tags::InitialValue<Tags::Variables<prim_vars_tags>>>(
-                runner, 0));
+        const auto& initial_value_prim_vars_from_box =
+            get<0>(ActionTesting::get_databox_tag<
+                   comp, SelfStart::Tags::InitialValue<
+                             ::Tags::Variables<prim_vars_tags>>>(runner, 0));
         CHECK(initial_value_prim_vars_from_box == initial_value_prim_vars);
       }
     }

@@ -32,6 +32,7 @@
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -261,7 +262,8 @@ struct TciAndRollback {
         },
         make_not_null(&box),
         db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),
-        Metavariables::SubcellOptions::ghost_zone_size(box));
+        db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
+            .ghost_zone_size());
 
     if (UNLIKELY(db::get<::Tags::TimeStepId>(box).slab_number() < 0)) {
       // If we are doing self start, then we need to project the initial

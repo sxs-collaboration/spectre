@@ -37,6 +37,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -57,6 +58,19 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+class DummyReconstructor {
+ public:
+  static size_t ghost_zone_size() { return 2; }
+  void pup(PUP::er& /*p*/) {}
+};
+
+namespace Tags {
+struct Reconstructor : db::SimpleTag,
+                       evolution::dg::subcell::Tags::Reconstructor {
+  using type = std::unique_ptr<DummyReconstructor>;
+};
+}  // namespace Tags
+
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -64,7 +78,7 @@ struct Var1 : db::SimpleTag {
 template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
-  using variables_tag = Tags::Variables<tmpl::list<Var1>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   using flux_variables = tmpl::list<Var1>;
 };
 
@@ -75,14 +89,14 @@ struct component {
   using array_index = ElementId<Dim>;
 
   using initial_tags = tmpl::list<
-      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<Dim>,
-      evolution::dg::subcell::Tags::Mesh<Dim>,
+      Tags::Reconstructor, ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+      domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciDecision,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-      Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
+      ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>>;
@@ -110,20 +124,9 @@ struct Metavariables {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool ghost_data_mutator_invoked;
 
-  struct SubcellOptions {
-    template <typename DbTagsList>
-    static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) {
-      CHECK(db::get<domain::Tags::Mesh<Dim>>(box) ==
-            Mesh<Dim>(5, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto));
-      ghost_zone_size_invoked = true;
-      return 2;
-    }
-  };
-
   struct GhostDataMutator {
     using return_tags = tmpl::list<>;
-    using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var1>>>;
+    using argument_tags = tmpl::list<::Tags::Variables<tmpl::list<Var1>>>;
     static DataVector apply(const Variables<tmpl::list<Var1>>& vars,
                             const size_t rdmp_size) {
       CAPTURE(rdmp_size);
@@ -274,8 +277,9 @@ void test(const bool use_cell_centered_flux) {
       ActionTesting::emplace_array_component_and_initialize<comp>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           neighbor_id,
-          {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
-           active_grid, Element<Dim>{}, NeighborDataMap{},
+          {std::make_unique<DummyReconstructor>(), time_step_id,
+           next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{}, active_grid,
+           Element<Dim>{}, NeighborDataMap{},
            evolution::dg::subcell::RdmpTciData{}, neighbor_tci_decision,
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
@@ -288,8 +292,8 @@ void test(const bool use_cell_centered_flux) {
   const int self_tci_decision = 100;
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
-      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
-       element, neighbor_data,
+      {std::make_unique<DummyReconstructor>(), time_step_id, next_time_step_id,
+       dg_mesh, subcell_mesh, active_grid, element, neighbor_data,
        // Explicitly set RDMP data since this would be set previously by the TCI
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},

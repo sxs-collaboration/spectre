@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -42,9 +43,17 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct GhostZoneSize : db::SimpleTag {
-  using type = size_t;
+class DummyReconstructor {
+ public:
+  static size_t ghost_zone_size() { return 2; }
 };
+
+namespace Tags {
+struct Reconstructor : db::SimpleTag,
+                       evolution::dg::subcell::Tags::Reconstructor {
+  using type = std::unique_ptr<DummyReconstructor>;
+};
+}  // namespace Tags
 
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -60,11 +69,6 @@ struct Metavariables {
   };
 
   struct SubcellOptions {
-    template <typename DbTagsList>
-    static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) {
-      return db::get<GhostZoneSize>(box);
-    }
-
     struct GhostVariables {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<typename system::variables_tag>;
@@ -192,7 +196,7 @@ void test(const bool all_neighbors_are_doing_dg,
     get<flux_tag>(volume_fluxes).get(i) = logical_coordinates(dg_mesh).get(i);
   }
 
-  const size_t ghost_zone_size = 2;
+  const size_t ghost_zone_size = DummyReconstructor::ghost_zone_size();
 
   const bool always_use_subcell = false;
   const bool use_halo = false;
@@ -211,13 +215,14 @@ void test(const bool all_neighbors_are_doing_dg,
           TestCreator<Dim>{}};
 
   auto box =
-      db::create<tmpl::list<GhostZoneSize, domain::Tags::Mesh<Dim>,
+      db::create<tmpl::list<Tags::Reconstructor, domain::Tags::Mesh<Dim>,
                             evolution::dg::subcell::Tags::Mesh<Dim>,
                             domain::Tags::Element<Dim>, variables_tag,
                             evolution::dg::subcell::Tags::DataForRdmpTci,
                             evolution::dg::Tags::NeighborMesh<Dim>,
                             evolution::dg::subcell::Tags::SubcellOptions<Dim>>>(
-          ghost_zone_size, dg_mesh, subcell_mesh, element, vars,
+          std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh,
+          element, vars,
           // Set RDMP data since it would've been calculated before already.
           evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
           subcell_options);
@@ -274,7 +279,8 @@ void test(const bool all_neighbors_are_doing_dg,
 
     // do same operation as GhostDataToSlice
     expected_neighbor_data = [&subcell_mesh, &directions_to_slice, &dg_mesh,
-                              &expected_vars, need_fluxes, &volume_fluxes]() {
+                              &expected_vars, need_fluxes, &volume_fluxes,
+                              &ghost_zone_size]() {
       if (need_fluxes) {
         Variables<tmpl::list<Var1, flux_tag>> expected_var_and_flux{
             expected_vars.number_of_grid_points()};
