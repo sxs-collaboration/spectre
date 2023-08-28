@@ -633,14 +633,16 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           du -sh .
           rm -r ./*
       - name: Test formaline tar can be built
+        # - We only run the formaline tests in debug mode to reduce total build
+        #   time in CI.
+        # - We do run for all compilers, though, because formaline injects data
+        #   at the linking stage, which means we are somewhat tied to the
+        #   compiler version.
+        # - We make sure to use the same compiler flags as the full build above
+        #   so ccache is able to speed up the build.
         if: matrix.build_type == 'Debug'
         working-directory: /work/build
         run: >
-          # We only run the formaline tests in debug mode to reduce total
-          # build time in CI. We do run for all compilers, though, because
-          # formaline injects data at the linking stage, which means we are
-          # somewhat tied to the compiler version.
-
           make EvolveBurgers -j2
 
           if [ ! -f ./bin/EvolveBurgers ]; then
@@ -674,8 +676,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             fi
           fi
 
+          BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
+          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
+          MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
           USE_PCH=${{ matrix.use_pch }};
+          USE_XSIMD=${{ matrix.use_xsimd }}
 
           cmake
           -D CMAKE_C_COMPILER=${CC}
@@ -684,7 +690,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D OVERRIDE_ARCH=x86-64
           -D BUILD_SHARED_LIBS=ON
-          -D CHARM_ROOT=${CHARM_ROOT}
+          -D CHARM_ROOT=${MATRIX_CHARM_ROOT:-$CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
@@ -692,8 +698,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH:-'ON'}
+          -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
-          -D BUILD_PYTHON_BINDINGS=OFF
+          -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
+          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
           ..
