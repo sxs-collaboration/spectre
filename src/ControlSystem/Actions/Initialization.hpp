@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "ControlSystem/Averager.hpp"
-#include "ControlSystem/Tags/IsActive.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
@@ -47,6 +47,7 @@ struct get_center_tags<domain::object_list<>> {
  *   - `control_system::Tags::WriteDataToDisk`
  *   - `control_system::Tags::ObserveCenters`
  *   - `control_system::Tags::Verbosity`
+ *   - `control_system::Tags::IsActiveMap`
  *   - `domain::Tags::ObjectCenter<domain::ObjectLabel::A>`
  *   - `domain::Tags::ObjectCenter<domain::ObjectLabel::B>`
  *
@@ -57,7 +58,6 @@ struct get_center_tags<domain::object_list<>> {
  *   - `control_system::Tags::Controller<ControlSystem>`
  *   - `control_system::Tags::TimescaleTuner<ControlSystem>`
  *   - `control_system::Tags::ControlError<ControlSystem>`
- *   - `control_system::Tags::IsActive<ControlSystem>`
  * - Removes: Nothing
  * - Modifies:
  *   - `control_system::Tags::Averager<ControlSystem>`
@@ -71,8 +71,7 @@ struct Initialize {
       tmpl::list<control_system::Tags::Averager<ControlSystem>,
                  control_system::Tags::Controller<ControlSystem>,
                  control_system::Tags::TimescaleTuner<ControlSystem>,
-                 control_system::Tags::ControlError<ControlSystem>,
-                 control_system::Tags::IsActive<ControlSystem>>;
+                 control_system::Tags::ControlError<ControlSystem>>;
 
   using simple_tags =
       tmpl::push_back<typename ControlSystem::simple_tags,
@@ -82,6 +81,7 @@ struct Initialize {
       control_system::Tags::MeasurementsPerUpdate,
       control_system::Tags::WriteDataToDisk,
       control_system::Tags::ObserveCenters, control_system::Tags::Verbosity,
+      control_system::Tags::IsActiveMap,
       typename detail::get_center_tags<
           typename ControlSystem::control_error::object_centers>::type>>;
 

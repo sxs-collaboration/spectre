@@ -32,6 +32,7 @@ struct ControlComponent {
   static_assert(tt::assert_conforms_to_v<
                 ControlSystem, control_system::protocols::ControlSystem>);
   using chare_type = Parallel::Algorithms::Singleton;
+  using control_system = ControlSystem;
 
   static std::string name() { return ControlSystem::name(); }
 
@@ -40,8 +41,8 @@ struct ControlComponent {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<Initialization::Actions::InitializeItems<
-                     control_system::Actions::Initialize<Metavariables,
-                                                         ControlSystem>>,
+                     ::control_system::Actions::Initialize<Metavariables,
+                                                           ControlSystem>>,
                  Parallel::Actions::TerminatePhase>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
@@ -59,7 +60,7 @@ struct ControlComponent {
 
 namespace control_system {
 /// \ingroup ControlSystemGroup
-/// List of control componenets to be added to the component list of the
+/// List of control components to be added to the component list of the
 /// metavars
 template <typename Metavariables, typename ControlSystems>
 using control_components = tmpl::transform<

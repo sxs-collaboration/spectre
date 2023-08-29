@@ -92,6 +92,7 @@ void test_expansion_control_system() {
   // domain and two functions of time are not const references because they need
   // to be moved into the runner
   auto& domain = system_helper.domain();
+  auto& is_active_map = system_helper.is_active_map();
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
@@ -103,11 +104,11 @@ void test_expansion_control_system() {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
-       std::move(grid_center_A), std::move(grid_center_B)},
-      {std::move(initial_functions_of_time),
-       std::move(initial_measurement_timescales)}};
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
+                            ::Verbosity::Silent, std::move(is_active_map),
+                            std::move(grid_center_A), std::move(grid_center_B)},
+                           {std::move(initial_functions_of_time),
+                            std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<
       expansion_component>(make_not_null(&runner), ActionTesting::NodeId{0},
                            ActionTesting::LocalCoreId{0}, init_exp_tuple);

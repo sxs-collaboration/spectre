@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 #include "ControlSystem/ExpirationTimes.hpp"
-#include "ControlSystem/Tags/IsActive.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -29,7 +29,6 @@ struct ControlComponent;
 
 namespace control_system::Tags {
 namespace detail {
-
 // Check that all control systems are actually controlling a function of
 // time, and that the expiration times have been set appropriately. If there
 // exists a control system that isn't controlling a function of time, or the
@@ -41,23 +40,6 @@ void check_expiration_time_consistency(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time);
-
-template <typename... OptionHolders>
-std::unordered_map<std::string, bool> create_is_active_map(
-    const OptionHolders&... option_holders) {
-  std::unordered_map<std::string, bool> result{};
-
-  [[maybe_unused]] const auto add_to_result =
-      [&result](const auto& option_holder) {
-        using control_system =
-            typename std::decay_t<decltype(option_holder)>::control_system;
-        result[control_system::name()] = option_holder.is_active;
-      };
-
-  EXPAND_PACK_LEFT_TO_RIGHT(add_to_result(option_holders));
-
-  return result;
-}
 }  // namespace detail
 
 /// \ingroup ControlSystemGroup

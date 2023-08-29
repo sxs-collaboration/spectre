@@ -6,6 +6,13 @@
 #include <type_traits>
 
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
+
+/// \cond
+template <class Metavariables, typename ControlSystem>
+struct ControlComponent;
+/// \endcond
 
 namespace control_system {
 /// \ingroup ControlSystemGroup
@@ -105,5 +112,23 @@ using interpolation_target_tags = tmpl::flatten<tmpl::transform<
             tmpl::_1,
             control_systems_with_measurement<tmpl::pin<ControlSystems>,
                                              tmpl::parent<tmpl::_1>>>>>>>;
+
+namespace detail {
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
+
+template <typename Metavariables>
+using all_components = typename Metavariables::component_list;
+
+template <typename Metavariables>
+using all_not_mocked_components =
+    tmpl::transform<all_components<Metavariables>,
+                    get_component_being_mocked_or_default<tmpl::_1, tmpl::_1>>;
+}  // namespace detail
+
+/// Get all ControlComponent%s from the metavariables, even if they are mocked.
+template <typename Metavariables>
+using all_control_components =
+    tmpl::filter<detail::all_not_mocked_components<Metavariables>,
+                 tt::is_a<ControlComponent, tmpl::_1>>;
 }  // namespace metafunctions
 }  // namespace control_system
