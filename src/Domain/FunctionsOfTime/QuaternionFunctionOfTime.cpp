@@ -11,6 +11,7 @@
 #include <boost/numeric/odeint.hpp>
 #include <deque>
 #include <list>
+#include <mutex>
 #include <ostream>
 #include <pup_stl.h>
 
@@ -32,6 +33,7 @@ QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
     : stored_quaternions_and_times_{{t, std::move(initial_quat_func)}},
       angle_f_of_t_(t, std::move(initial_angle_func), expiration_time) {
   stored_quaternion_size_.store(1, std::memory_order_release);
+  expiration_time_.store(expiration_time, std::memory_order_release);
 }
 
 template <size_t MaxDeriv>
@@ -51,6 +53,9 @@ QuaternionFunctionOfTime<MaxDeriv>::operator=(
   angle_f_of_t_ = std::move(rhs.angle_f_of_t_);
   stored_quaternion_size_.store(
       rhs.stored_quaternion_size_.exchange(0, std::memory_order_acq_rel),
+      std::memory_order_release);
+  expiration_time_.store(
+      rhs.expiration_time_.exchange(0, std::memory_order_acq_rel),
       std::memory_order_release);
   return *this;
 }
@@ -74,6 +79,8 @@ QuaternionFunctionOfTime<MaxDeriv>::operator=(
   stored_quaternion_size_.store(
       rhs.stored_quaternion_size_.load(std::memory_order_acquire),
       std::memory_order_release);
+  expiration_time_.store(rhs.expiration_time_.load(std::memory_order_acquire),
+                         std::memory_order_release);
   return *this;
 }
 
@@ -86,7 +93,7 @@ std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 2;
+  size_t version = 3;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -127,9 +134,19 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
         p | stored_quaternion_size_;
       }
     } else if (version >= 2) {
-      // However, for v2+, we store expiration angle fot, size, then data for
-      // thread-safety reasons
+      // However, for v2+, we store angle fot, expiration time, size, then data
+      // for thread-safety reasons
       p | angle_f_of_t_;
+
+      // For v3+ we pup our own expiration time, while for 2 we have to get it
+      // from the angle_f_of_t_.
+      if (version >= 3) {
+        p | expiration_time_;
+      } else {
+        expiration_time_.store(angle_f_of_t_.time_bounds()[1],
+                               std::memory_order_relaxed);
+      }
+
       size_t size = 0;
       p | size;
       stored_quaternion_size_.store(size, std::memory_order_release);
@@ -144,6 +161,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
     }
   } else {
     p | angle_f_of_t_;
+    p | expiration_time_;
     // This is guaranteed to be thread-safe for both packing and sizing
     size_t size = stored_quaternion_size_.load(std::memory_order_acquire);
     p | size;
@@ -158,13 +176,17 @@ template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::update(
     const double time_of_update, DataVector updated_max_deriv,
     const double next_expiration_time) {
+  const std::lock_guard<std::mutex> update_lock{update_mutex_};
   angle_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
                        next_expiration_time);
-  update_stored_info();
+  update_stored_info(next_expiration_time);
 }
 
 template <size_t MaxDeriv>
-void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() {
+void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info(
+    const double next_expiration_time) {
+  double current_expiration_time =
+      expiration_time_.load(std::memory_order_acquire);
   const auto& angle_deriv_info = angle_f_of_t_.get_deriv_info();
 
   // We copy the size so this whole function uses the same index
@@ -198,10 +220,22 @@ void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() {
   // during this call, there should never be two different threads trying to
   // update this object at the same time in our algorithm. An update should come
   // from only one place and nowhere else so this emplacement should be ok
+  //
+  // See the code comment at the bottom of the PiecewisePolynomial::update
+  // function for why we have to update these members in this specific order.
   stored_quaternions_and_times_.emplace_back(
       t, std::array<DataVector, 1>{
              quaternion_to_datavector(quaternion_to_integrate)});
   stored_quaternion_size_.fetch_add(1, std::memory_order_acq_rel);
+  if (not expiration_time_.compare_exchange_strong(current_expiration_time,
+                                                   next_expiration_time,
+                                                   std::memory_order_acq_rel)) {
+    ERROR(
+        "QuaternionFunctionOfTime could not exchange the current expiration "
+        "time "
+        << current_expiration_time << " for the new expiration time "
+        << next_expiration_time);
+  }
 
   ASSERT(angle_deriv_info.size() == stored_quaternions_and_times_.size(),
          "The number of stored angles must be the same as the number of stored "
@@ -323,6 +357,7 @@ bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
   return lhs.stored_quaternions_and_times_ ==
              rhs.stored_quaternions_and_times_ and
          lhs.angle_f_of_t_ == rhs.angle_f_of_t_ and
+         lhs.expiration_time_ == rhs.expiration_time_ and
          lhs.stored_quaternion_size_ == rhs.stored_quaternion_size_;
 }
 
