@@ -145,9 +145,8 @@ void run_test() {
       initialize_elements_and_queue_simple_actions<elem_component>{});
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.Cce.Actions.SendGhVarsToCce",
-    "[Unit][Cce]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.SendGhVarsToCce",
+                  "[Unit][Cce]") {
   domain::creators::register_derived_with_charm();
   run_test<MockMetavariables>();
 }

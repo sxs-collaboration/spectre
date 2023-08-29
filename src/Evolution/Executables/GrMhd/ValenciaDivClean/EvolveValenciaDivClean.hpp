@@ -295,11 +295,11 @@ struct EvolutionMetavars {
           ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
                                                      Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          DataVector, volume_dim,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          DataVector, volume_dim,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       hydro::Tags::InversePlasmaBetaCompute<DataVector>>;
   using non_tensor_compute_tags = tmpl::list<
       tmpl::conditional_t<
