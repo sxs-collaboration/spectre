@@ -36,6 +36,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
+  ControlSystem
   CoordinateMaps
   DataStructures
   Domain

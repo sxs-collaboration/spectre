@@ -148,11 +148,11 @@ void test_trigger_no_replace() {
 
   // Update the measurement timescales
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
-                   control_system::UpdateFunctionOfTime>(cache, "LabelB"s, 0.6,
-                                                         DataVector{2.0}, 4.0);
+                   control_system::UpdateSingleFunctionOfTime>(
+      cache, "LabelB"s, 0.6, DataVector{2.0}, 4.0);
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
-                   control_system::UpdateFunctionOfTime>(cache, "LabelC"s, 0.5,
-                                                         DataVector{1.0}, 4.0);
+                   control_system::UpdateSingleFunctionOfTime>(
+      cache, "LabelC"s, 0.5, DataVector{1.0}, 4.0);
 
   // Now we should be able to calculate the next check time once again and it
   // should be the same as it was before, since the current time hasn't changed.
@@ -178,8 +178,8 @@ void test_trigger_no_replace() {
 
   // Update a measurement timescale that is now expired
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
-                   control_system::UpdateFunctionOfTime>(cache, "LabelA"s, 1.5,
-                                                         DataVector{2.0}, 4.0);
+                   control_system::UpdateSingleFunctionOfTime>(
+      cache, "LabelA"s, 1.5, DataVector{2.0}, 4.0);
 
   // Now it should have a value
   CHECK(trigger.next_check_time(box, cache, 0, component_p) ==

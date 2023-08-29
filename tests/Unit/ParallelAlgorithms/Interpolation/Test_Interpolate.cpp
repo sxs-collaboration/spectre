@@ -301,7 +301,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   db::mutate<::Tags::Time>([](gsl::not_null<double*> time) { *time = 1.0; },
                            make_not_null(&box));
   Parallel::mutate<domain::Tags::FunctionsOfTime,
-                   control_system::UpdateFunctionOfTime>(
+                   control_system::UpdateSingleFunctionOfTime>(
       cache, name, initial_expr_time, DataVector{1, 0.0}, observation_time);
 
   // Now everything should be ready
