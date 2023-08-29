@@ -29,6 +29,7 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralizedHarmonic
+  Observer
   ParallelInterpolation
   Utilities
   )
