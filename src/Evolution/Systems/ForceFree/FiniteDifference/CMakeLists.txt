@@ -1,11 +1,12 @@
-#
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  MonotonisedCentral.cpp
   Reconstructor.cpp
+  RegisterDerivedWithCharm.cpp
   )
 
 spectre_target_headers(
@@ -14,6 +15,10 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   FiniteDifference.hpp
+  MonotonisedCentral.hpp
   Reconstructor.hpp
+  ReconstructWork.hpp
+  ReconstructWork.tpp
+  RegisterDerivedWithCharm.hpp
   Tags.hpp
   )

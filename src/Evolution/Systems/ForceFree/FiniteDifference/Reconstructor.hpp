@@ -12,6 +12,7 @@
 
 namespace ForceFree::fd {
 /// \cond
+class MonotonisedCentral;
 /// \endcond
 
 /*!
@@ -33,10 +34,12 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<>;
+  using creatable_classes = tmpl::list<MonotonisedCentral>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
   virtual size_t ghost_zone_size() const = 0;
+
+  virtual bool supports_adaptive_order() const { return false; }
 };
 }  // namespace ForceFree::fd
