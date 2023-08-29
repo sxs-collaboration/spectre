@@ -30,7 +30,7 @@ PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double expiration_time)
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}},
       expiration_time_(expiration_time) {
-  deriv_info_size_.store(1);
+  deriv_info_size_.store(1, std::memory_order_release);
 }
 
 template <size_t MaxDeriv>
@@ -48,7 +48,8 @@ PiecewisePolynomial<MaxDeriv>& PiecewisePolynomial<MaxDeriv>::operator=(
   }
   deriv_info_at_update_times_ = rhs.deriv_info_at_update_times_;
   expiration_time_ = rhs.expiration_time_;
-  deriv_info_size_.store(rhs.deriv_info_size_.load(std::memory_order_relaxed));
+  deriv_info_size_.store(rhs.deriv_info_size_.load(std::memory_order_acquire),
+                         std::memory_order_release);
   return *this;
 }
 
@@ -70,7 +71,7 @@ PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const {
   }
   const auto& deriv_info_at_t = stored_info_from_upper_bound(
       t, deriv_info_at_update_times_,
-      deriv_info_size_.load(std::memory_order_relaxed));
+      deriv_info_size_.load(std::memory_order_acquire));
   const double dt = t - deriv_info_at_t.time;
   const value_type& coefs = deriv_info_at_t.stored_quantities;
 
@@ -206,7 +207,8 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
       p | expiration_time_;
 
       if (version == 0) {
-        deriv_info_size_.store(deriv_info_at_update_times_.size());
+        deriv_info_size_.store(deriv_info_at_update_times_.size(),
+                               std::memory_order_release);
       } else {
         p | deriv_info_size_;
       }
@@ -216,10 +218,10 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
       p | expiration_time_;
       size_t size = 0;
       p | size;
-      deriv_info_size_.store(size);
+      deriv_info_size_.store(size, std::memory_order_release);
       deriv_info_at_update_times_.clear();
       deriv_info_at_update_times_.resize(
-          deriv_info_size_.load(std::memory_order_relaxed));
+          deriv_info_size_.load(std::memory_order_acquire));
       // Using range-based loop here is ok because we won't be updating while
       // packing/unpacking
       for (auto& deriv_info : deriv_info_at_update_times_) {
@@ -229,7 +231,7 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   } else {
     p | expiration_time_;
     // This is guaranteed to be thread-safe for both packing and sizing
-    size_t size = deriv_info_size_.load(std::memory_order_relaxed);
+    size_t size = deriv_info_size_.load(std::memory_order_acquire);
     p | size;
     auto it = deriv_info_at_update_times_.begin();
     for (size_t i = 0; i < size; i++, it++) {
@@ -257,7 +259,7 @@ std::ostream& operator<<(
     std::ostream& os,
     const PiecewisePolynomial<MaxDeriv>& piecewise_polynomial) {
   const size_t writable_size =
-      piecewise_polynomial.deriv_info_size_.load(std::memory_order_relaxed);
+      piecewise_polynomial.deriv_info_size_.load(std::memory_order_acquire);
   auto it = piecewise_polynomial.deriv_info_at_update_times_.begin();
   // Can't use .end() because of thread-safety and don't want to do expensive
   // std::next() call, so we just loop over allowed size while incrementing an
