@@ -24,12 +24,12 @@
 namespace {
 // Returns all the observation_ids stored in the volume files. Assumes all
 // volume files have the same observation ids
-std::vector<size_t> get_observation_ids(const std::string& file_prefix,
-                                        const std::string& subfile_name) {
-  const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_prefix + "0.h5",
-                                                          false);
+std::vector<size_t> get_observation_ids(
+    const std::vector<std::string>& file_names,
+    const std::string& subfile_name) {
+  const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_names[0], false);
   const auto& initial_volume_file =
-      initial_file.get<h5::VolumeData>("/" + subfile_name);
+      initial_file.get<h5::VolumeData>(subfile_name);
   return initial_volume_file.list_observation_ids();
 }
 
@@ -43,29 +43,29 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
     const h5::H5File<h5::AccessType::ReadOnly> original_file(input_filename,
                                                              false);
     const auto& original_volume_file =
-        original_file.get<h5::VolumeData>("/" + subfile_name);
+        original_file.get<h5::VolumeData>(subfile_name);
     total_elements += original_volume_file.get_extents(observation_id).size();
   }
   return total_elements;
 }
-} //namespace
+}  // namespace
 namespace h5 {
 
-void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
-                const std::string& output, const bool check_src) {
+void combine_h5(const std::vector<std::string>& file_names,
+                const std::string& subfile_name, const std::string& output,
+                const bool check_src) {
   // Parses for and stores all input files to be looped over
-  const std::vector<std::string>& file_names =
-      file_system::glob(file_prefix + "[0-9]*.h5");
   Parallel::printf("Processing files:\n%s\n",
                    std::string{MakeString{} << file_names}.c_str());
 
   // Checks that volume data was generated with identical versions of SpECTRE
-  if (check_src){
+  if (check_src) {
     if (!h5::check_src_files_match(file_names)) {
-    ERROR(
-        "One or more of your files were found to have differing src.tar.gz "
-        "files, meaning that they may be from differing versions of SpECTRE.");
-  }
+      ERROR(
+          "One or more of your files were found to have differing src.tar.gz "
+          "files, meaning that they may be from differing versions of "
+          "SpECTRE.");
+    }
   }
 
   // Checks that volume data files contain the same observation ids
@@ -80,15 +80,15 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
   {
     // Instantiates the output file and the .vol subfile to be filled with the
     // combined data later
-    Parallel::printf("Creating output file: %s0.h5\n", output.c_str());
-    h5::H5File<h5::AccessType::ReadWrite> new_file(output + "0.h5", true);
-    new_file.insert<h5::VolumeData>("/" + subfile_name + ".vol");
+    Parallel::printf("Creating output file: %s\n", output.c_str());
+    h5::H5File<h5::AccessType::ReadWrite> new_file(output, true);
+    new_file.insert<h5::VolumeData>(subfile_name);
     new_file.close_current_object();
   }  // End of scope for H5 file
 
   // Obtains list of observation ids to loop over
   const std::vector<size_t> observation_ids =
-      get_observation_ids(file_prefix, subfile_name);
+      get_observation_ids(file_names, subfile_name);
 
   // Loops over observation ids to write volume data by observation id
   for (size_t obs_index = 0; obs_index < observation_ids.size(); ++obs_index) {
@@ -111,7 +111,7 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
       const h5::H5File<h5::AccessType::ReadOnly> original_file(file_name,
                                                                false);
       const auto& original_volume_file =
-          original_file.get<h5::VolumeData>("/" + subfile_name);
+          original_file.get<h5::VolumeData>(subfile_name);
       obs_val = original_volume_file.get_observation_value(obs_id);
       if (not printed) {
         Parallel::printf(
@@ -140,8 +140,8 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
       original_file.close_current_object();
     }
 
-    h5::H5File<h5::AccessType::ReadWrite> new_file(output + "0.h5", true);
-    auto& new_volume_file = new_file.get<h5::VolumeData>("/" + subfile_name);
+    h5::H5File<h5::AccessType::ReadWrite> new_file(output, true);
+    auto& new_volume_file = new_file.get<h5::VolumeData>(subfile_name);
     new_volume_file.write_volume_data(obs_id, obs_val, element_data,
                                       serialized_domain,
                                       serialized_functions_of_time);

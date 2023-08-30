@@ -26,17 +26,19 @@ class TestCombineH5(unittest.TestCase):
         self.file_name2 = os.path.join(
             Informer.unit_test_build_path(), "IO/TestVolumeData1.h5"
         )
+        self.file_names = [self.file_name1, self.file_name2]
+        self.subfile_name = "/element_data"
 
         self.output_file = os.path.join(
-            Informer.unit_test_build_path(), "IO/TestOutput"
+            Informer.unit_test_build_path(), "IO/TestOutput.h5"
         )
 
         if os.path.isfile(self.file_name1):
             os.remove(self.file_name1)
         if os.path.isfile(self.file_name2):
             os.remove(self.file_name2)
-        if os.path.isfile(self.output_file + "0.h5"):
-            os.remove(self.output_file + "0.h5")
+        if os.path.isfile(self.output_file):
+            os.remove(self.output_file)
 
         # Initializing attributes
         grid_names1 = ["[B0(L0I0,L0I0,L1I0)]"]
@@ -54,9 +56,9 @@ class TestCombineH5(unittest.TestCase):
                 [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08],
             ]
         )
-        self.h5_file1.insert_vol("/element_data", version=0)
+        self.h5_file1.insert_vol(self.subfile_name, version=0)
         self.h5_file1.close_current_object()
-        self.vol_file1 = self.h5_file1.get_vol(path="/element_data")
+        self.vol_file1 = self.h5_file1.get_vol(self.subfile_name)
 
         self.element_vol_data_file_1 = [
             ElementVolumeData(
@@ -102,9 +104,9 @@ class TestCombineH5(unittest.TestCase):
                 [0.011, 0.021, 0.031, 0.041, 0.051, 0.061, 0.079, 0.089],
             ]
         )
-        self.h5_file2.insert_vol("/element_data", version=0)
+        self.h5_file2.insert_vol(self.subfile_name, version=0)
         self.h5_file2.close_current_object()
-        self.vol_file2 = self.h5_file2.get_vol(path="/element_data")
+        self.vol_file2 = self.h5_file2.get_vol(self.subfile_name)
 
         self.element_vol_data_file_2 = [
             ElementVolumeData(
@@ -143,20 +145,16 @@ class TestCombineH5(unittest.TestCase):
             os.remove(self.file_name1)
         if os.path.isfile(self.file_name2):
             os.remove(self.file_name2)
-        if os.path.isfile(self.output_file + "0.h5"):
-            os.remove(self.output_file + "0.h5")
+        if os.path.isfile(self.output_file):
+            os.remove(self.output_file)
 
     def test_combine_h5(self):
         # Run the combine_h5 command and check if any feature (for eg.
         # connectivity length has increased due to combining two files)
 
-        combine_h5(
-            self.file_name1[:-4], "element_data", self.output_file, False
-        )
-        h5_output = spectre_h5.H5File(
-            file_name=self.output_file + "0.h5", mode="r"
-        )
-        output_vol = h5_output.get_vol(path="/element_data")
+        combine_h5(self.file_names, self.subfile_name, self.output_file, False)
+        h5_output = spectre_h5.H5File(file_name=self.output_file, mode="r")
+        output_vol = h5_output.get_vol(self.subfile_name)
 
         # Test observation ids
 
@@ -243,10 +241,9 @@ class TestCombineH5(unittest.TestCase):
         result = runner.invoke(
             combine_h5_command,
             [
-                "--file-prefix",
-                self.file_name1[:-4],
+                *self.file_names,
                 "-d",
-                "element_data",
+                self.subfile_name,
                 "-o",
                 self.output_file,
                 "--check-src",
@@ -254,10 +251,8 @@ class TestCombineH5(unittest.TestCase):
             catch_exceptions=False,
         )
 
-        h5_output = spectre_h5.H5File(
-            file_name=self.output_file + "0.h5", mode="r"
-        )
-        output_vol = h5_output.get_vol(path="/element_data")
+        h5_output = spectre_h5.H5File(file_name=self.output_file, mode="r")
+        output_vol = h5_output.get_vol(self.subfile_name)
 
         # Extracts the connectivity data from the volume file
         # If length of final connectivity is more, combine_h5
@@ -277,8 +272,7 @@ class TestCombineH5(unittest.TestCase):
         result = runner.invoke(
             combine_h5_command,
             [
-                "--file-prefix",
-                self.file_name1[:-4],
+                *self.file_names,
                 "-o",
                 self.output_file,
                 "--check-src",
