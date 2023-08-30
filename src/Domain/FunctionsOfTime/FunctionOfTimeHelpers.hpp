@@ -54,11 +54,6 @@ struct StoredInfo<MaxDerivPlusOne, false> {
   void pup(PUP::er& p);
 };
 
-/// Resets the previous expiration time if the next expiration time is after,
-/// otherwise throws an error
-void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
-                           const double next_expiration_time);
-
 /*!
  * \brief Returns a StoredInfo corresponding to the closest element in the range
  * of `StoredInfo.time`s that is less than `t`.

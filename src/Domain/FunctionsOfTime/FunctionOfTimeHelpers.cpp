@@ -45,17 +45,6 @@ void StoredInfo<MaxDerivPlusOne, false>::pup(PUP::er& p) {
   p | stored_quantities;
 }
 
-void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
-                           const double next_expiration_time) {
-  if (next_expiration_time < *prev_expiration_time) {
-    ERROR("Attempted to change expiration time to "
-          << next_expiration_time
-          << ", which precedes the previous expiration time of "
-          << *prev_expiration_time << ".");
-  }
-  *prev_expiration_time = next_expiration_time;
-}
-
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
     const double t,

@@ -15,15 +15,13 @@
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                   "[Unit][Domain]") {
   {
-    INFO("QuaternionFunctionOfTime: Expiration time and time bounds");
+    INFO("QuaternionFunctionOfTime: Time bounds");
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{4, 0.0}},
         std::array<DataVector, 3>{DataVector{3, 0.0}, DataVector{3, 0.0},
                                   DataVector{3, 0.0}},
         0.5};
     CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.5}));
-    qfot.reset_expiration_time(0.6);
-    CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.6}));
   }
 
   {

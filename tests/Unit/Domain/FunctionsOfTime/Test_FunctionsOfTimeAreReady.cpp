@@ -36,7 +36,11 @@ struct OtherFunctionsOfTime : db::SimpleTag {
 struct UpdateFoT {
   static void apply(const gsl::not_null<FunctionMap*> functions,
                     const std::string& name, const double expiration) {
-    (*functions).at(name)->reset_expiration_time(expiration);
+    const double current_expiration = functions->at(name)->time_bounds()[1];
+    // Update value doesn't matter
+    (*functions)
+        .at(name)
+        ->update(current_expiration, DataVector{0.0}, expiration);
   }
 };
 
@@ -79,10 +83,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
   FunctionMap other_functions_of_time{};
   other_functions_of_time["OtherA"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          0.0, fot_init, 0.0);
+          0.0, fot_init, 0.1);
   other_functions_of_time["OtherB"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          0.0, fot_init, 0.0);
+          0.0, fot_init, 0.1);
 
   MockRuntimeSystem runner{
       {}, {std::move(functions_of_time), std::move(other_functions_of_time)}};

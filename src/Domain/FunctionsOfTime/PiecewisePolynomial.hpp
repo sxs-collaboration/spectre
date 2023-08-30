@@ -73,9 +73,6 @@ class PiecewisePolynomial : public FunctionOfTime {
   void update(double time_of_update, DataVector updated_max_deriv,
               double next_expiration_time) override;
 
-  /// Resets the expiration time to a later time.
-  void reset_expiration_time(double next_expiration_time) override;
-
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const override {

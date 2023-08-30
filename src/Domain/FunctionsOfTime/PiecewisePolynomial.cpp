@@ -163,13 +163,6 @@ void PiecewisePolynomial<MaxDeriv>::update(
 }
 
 template <size_t MaxDeriv>
-void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
-    const double next_expiration_time) {
-  FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expiration_time_),
-                                               next_expiration_time);
-}
-
-template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   size_t version = 2;

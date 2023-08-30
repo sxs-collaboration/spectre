@@ -267,10 +267,9 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<
-              intrp::Actions::InitializeInterpolator<
-                  intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
-                  intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
@@ -572,9 +571,12 @@ void test_interpolation_target_receive_vars() {
 
       // Now mutate the FunctionsOfTime.
       auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
+      const double current_expiration_time =
+          initial_expiration_times[f_of_t_name];
       Parallel::mutate<domain::Tags::FunctionsOfTime,
-                       control_system::ResetFunctionOfTimeExpirationTime>(
-          cache, f_of_t_name, new_expiration_time);
+                       control_system::UpdateSingleFunctionOfTime>(
+          cache, f_of_t_name, current_expiration_time, DataVector{3, 0.0},
+          new_expiration_time);
 
       // The callback should have queued a single simple action,
       // VerifyTemporalIdsAndSendPoints.

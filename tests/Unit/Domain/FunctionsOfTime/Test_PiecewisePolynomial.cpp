@@ -384,22 +384,6 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         const std::array<DataVector, deriv_order + 1> init_func{
             {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
         FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 2.0);
-        f_of_t.reset_expiration_time(1.5);
-        f_of_t.update(2.5, {6.0, 0.0}, 2.2);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempted to change expiration time to 1.5") and
-          Catch::Matchers::ContainsSubstring(
-              ", which precedes the previous expiration time of 2"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        // two component system (x**3 and x**2)
-        constexpr size_t deriv_order = 3;
-        const std::array<DataVector, deriv_order + 1> init_func{
-            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
                                                                  0.1);
         f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
       }()),

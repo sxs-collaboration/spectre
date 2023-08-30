@@ -136,31 +136,6 @@ void test_mutates() {
     CHECK(cache_pp == expected_pp);
     CHECK(cache_quatfot == expected_quatfot);
   }
-  // Update functions of time in global cache with new expiration time
-  expiration_time += 1.0;
-  for (auto& name : {pp_name, quatfot_name}) {
-    Parallel::mutate<domain::Tags::FunctionsOfTime,
-                     control_system::ResetFunctionOfTimeExpirationTime>(
-        cache, name, expiration_time);
-  }
-
-  // Update expected function of time
-  expected_pp.reset_expiration_time(expiration_time);
-  expected_quatfot.reset_expiration_time(expiration_time);
-  {
-    const auto& cache_pp = dynamic_cast<
-        const domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
-        *(cache_f_of_t_map.at(pp_name)));
-    const auto& cache_quatfot = dynamic_cast<
-        const domain::FunctionsOfTime::QuaternionFunctionOfTime<deriv_order>&>(
-        *(cache_f_of_t_map.at(quatfot_name)));
-
-    // Check that the FunctionsOfTime and expiration times are what we expected
-    CHECK(cache_pp == expected_pp);
-    CHECK(cache_quatfot == expected_quatfot);
-    CHECK(cache_pp.time_bounds()[1] == expiration_time);
-    CHECK(cache_quatfot.time_bounds()[1] == expiration_time);
-  }
 
   // Check updating both at the same time
   update_time = expiration_time;

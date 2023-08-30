@@ -344,7 +344,7 @@ void test_add_temporal_ids_time_dependent() {
   const std::string f_of_t_name = "Translation";
   std::unordered_map<std::string, double> initial_expiration_times{};
   initial_expiration_times[f_of_t_name] = 0.1;
-  const double new_expiration_time = 0.5;
+  double new_expiration_time = 0.5;
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()},
       {domain_creator.functions_of_time(initial_expiration_times)}};
@@ -517,9 +517,11 @@ void test_add_temporal_ids_time_dependent() {
   // started when the previous interpolation is finished
   // (and that code is not included in this test).
   auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
+  double current_expiration_time = initial_expiration_times[f_of_t_name];
   Parallel::mutate<domain::Tags::FunctionsOfTime,
-                   control_system::ResetFunctionOfTimeExpirationTime>(
-      cache, f_of_t_name, new_expiration_time);
+                   control_system::UpdateSingleFunctionOfTime>(
+      cache, f_of_t_name, current_expiration_time, DataVector{3, 0.0},
+      new_expiration_time);
 
   if (IsSequential::value) {
     // Check that there are no queued simple actions.
@@ -575,9 +577,12 @@ void test_add_temporal_ids_time_dependent() {
   // no more simple_actions in the queue.  Now we mutate the
   // FunctionsOfTime while there is still (for the nonsequential case) a
   // VerifyTemporalIdsAndSendPoints queued.
+  current_expiration_time = new_expiration_time;
+  new_expiration_time *= 2.0;
   Parallel::mutate<domain::Tags::FunctionsOfTime,
-                   control_system::ResetFunctionOfTimeExpirationTime>(
-      cache, f_of_t_name, new_expiration_time * 2.0);
+                   control_system::UpdateSingleFunctionOfTime>(
+      cache, f_of_t_name, current_expiration_time, DataVector{3, 0.0},
+      new_expiration_time);
 
   if (IsSequential::value) {
     // Check that there are no queued simple actions.

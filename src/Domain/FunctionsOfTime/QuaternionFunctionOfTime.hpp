@@ -83,10 +83,6 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
-  void reset_expiration_time(const double next_expiration_time) override {
-    angle_f_of_t_.reset_expiration_time(next_expiration_time);
-  }
-
   /// Returns domain of validity for the function of time
   std::array<double, 2> time_bounds() const override {
     return angle_f_of_t_.time_bounds();

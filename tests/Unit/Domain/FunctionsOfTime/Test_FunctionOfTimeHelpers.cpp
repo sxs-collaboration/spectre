@@ -111,18 +111,6 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
   }
 
   CHECK_THROWS_WITH(
-      []() {
-        double expr_time = 4.0;
-        double next_expr_time = 3.5;
-        FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expr_time),
-                                                     next_expr_time);
-      }(),
-      Catch::Matchers::ContainsSubstring(
-          "Attempted to change expiration time to 3.5") and
-          Catch::Matchers::ContainsSubstring(
-              ", which precedes the previous expiration time of 4"));
-
-  CHECK_THROWS_WITH(
       ([]() {
         constexpr size_t mdp1 = 1;
         std::list<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{

@@ -174,23 +174,6 @@ void test_errors() {
         f_of_t->update(update_time, updated_deriv, next_expr_time);
       }()),
       Catch::Matchers::ContainsSubstring("Cannot update this FunctionOfTime"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        const double initial_function_value = 1.0;
-        const double initial_time = 0.0;
-        const double velocity = -0.1;
-        const double decay_timescale = 0.0;
-        const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
-            std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-                initial_function_value, initial_time, velocity,
-                decay_timescale);
-
-        const double next_expr_time = 2.0;
-        f_of_t->reset_expiration_time(next_expr_time);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Cannot reset expiration time of this FunctionOfTime"));
 }
 }  // namespace
 
